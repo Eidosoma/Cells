@@ -5,6 +5,8 @@ from typing import NamedTuple
 
 import numpy as np
 
+from cells.core.betse_junction_spec import BetseJunctionModel
+from cells.core.betse_junction_spec import Control as BetseJunctionControl
 from cells.core.betse_spatial_spec import BetseSpatialModel
 from cells.core.betse_spatial_spec import Control as BetseSpatialControl
 from cells.core.er_spec import ERChange
@@ -108,15 +110,23 @@ def event_index(spec, time):
 def control_values(spec, times):
     changes = spec.experiment.changes
     if isinstance(spec.model, BetseSpatialModel):
+        control_type = (
+            BetseJunctionControl
+            if isinstance(spec.model, BetseJunctionModel)
+            else BetseSpatialControl
+        )
         if not changes:
-            return BetseSpatialControl(
-                *(np.ones((len(times), spec.execution.membrane_capacity)) for _ in range(2))
+            return control_type(
+                *(
+                    np.ones((len(times), spec.execution.membrane_capacity))
+                    for _ in control_type._fields
+                )
             )
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
-        return BetseSpatialControl(
+        return control_type(
             *(
                 np.asarray([getattr(p, k) for p in changes], dtype=np.float64)[indices]
-                for k in ("pump", "channel")
+                for k in control_type._fields
             )
         )
     if not changes:

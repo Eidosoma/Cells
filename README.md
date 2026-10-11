@@ -29,10 +29,11 @@ execution remains to be qualified. Distributing one interacting tissue across
 multiple GPUs requires further development. See the
 [GPU and ensemble guide](docs/GPU_ENSEMBLES.md).
 
-Verified results apply to the declared models and test conditions. Selected
-BETSE comparisons pass; full BETSE equivalence and biological validation remain
-unfinished. The [assembly-to-cell coupling](docs/CAPSID_ASSEMBLY.md) is an
-experimental modelling hypothesis.
+Cells uses BETSE as a reference to calibrate and verify the bioelectric layer
+of its broader simulations. Verified comparisons apply to the declared models
+and test conditions; biological validation remains separate. The
+[assembly-to-cell coupling](docs/CAPSID_ASSEMBLY.md) is an experimental modelling
+hypothesis.
 
 ## In progress
 

@@ -1,0 +1,143 @@
+{
+  "kind": "betse_spatial_dynamic_junction_runtime@1",
+  "scope": "Ordinary CPU/L4 configured dynamic junctions: all fourteen state arrays, accepted-step controls, disk restart, windows and independent worlds against completed component histories.",
+  "scope_exclusions": [
+    "Native per-moving-ion outer-dt updates and stored-opening blocking; the separate physical-time junction law is unchanged.",
+    "Fixed synthetic geometry, maintained ATP/ADP/Pi and Kv1p5, through 64 us at 1 and 0.5 us; no longer-time or spatial-convergence claim.",
+    "Mixed pump/channel/junction control mapping is checked against the unchanged component; new mixed-control native comparisons remain separate.",
+    "CPU/L4 correctness with counters; no Jupiter execution, distributed interacting tissue or throughput claim."
+  ],
+  "automatic_followup": false,
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-junction-20261011-01",
+    "completion_sha256": "ac21110df98ef9d31a6450b0b5327eff9c06be9859fed866b27e7544f08cddfc",
+    "registration_sha256": "f892edad6a2d37f36e2847eafae5bd74d860b1f4f0da243e914ff467b654171a",
+    "require_completed_cpu_and_gpu": true
+  },
+  "allowed_prior_source_changes": [
+    "src/cells/core/specs.py",
+    "src/cells/core/schedule.py",
+    "src/cells/models/registry.py"
+  ],
+  "new_production_files": [
+    "src/cells/core/betse_junction_spec.py",
+    "src/cells/models/betse_junction.py"
+  ],
+  "resources": {
+    "max_wall_seconds": 5400,
+    "native_timeout_seconds": 1800,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2,
+    "max_retained_array_estimate_bytes": 3221225472,
+    "batch_max_working_bytes": 1073741824
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "cases": [
+    "coupled",
+    "reversed",
+    "half_block",
+    "block_release",
+    "disconnected",
+    "single_pair"
+  ],
+  "step_indices": [
+    0,
+    1
+  ],
+  "native_species_inventory": [
+    "Na",
+    "K",
+    "Cl",
+    "Ca",
+    "P",
+    "M"
+  ],
+  "tests": [
+    "tests/unit/test_betse_junction_runtime.py",
+    "tests/unit/test_betse_spatial_runtime.py",
+    "tests/unit/test_batch.py",
+    "tests/unit/test_batch_windows.py",
+    "tests/unit/test_windows.py",
+    "tests/unit/test_specs.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_junction_runtime.py::test_runtime_cpu_gpu",
+    "tests/unit/test_betse_spatial_runtime.py::test_runtime_cpu_gpu"
+  ],
+  "required_evidence": [
+    "runtime-baseline",
+    "runtime-disk-windows",
+    "runtime-worlds",
+    "runtime-domain-controls",
+    "runtime-cli",
+    "runtime-horizon-branch",
+    "runtime-qualified-state-pump-0",
+    "runtime-qualified-state-pump-1",
+    "runtime-qualified-state-pump-2",
+    "runtime-qualified-state-channel-0",
+    "runtime-qualified-state-channel-1",
+    "runtime-qualified-state-channel-2",
+    "runtime-qualified-state-coupled-0",
+    "runtime-qualified-state-coupled-1",
+    "runtime-qualified-state-coupled-2",
+    "runtime-qualified-state-partial-0",
+    "runtime-qualified-state-partial-1",
+    "runtime-qualified-state-partial-2",
+    "junction-runtime-baseline",
+    "junction-runtime-resources",
+    "junction-runtime-disk-windows",
+    "junction-runtime-worlds",
+    "junction-runtime-branch",
+    "junction-runtime-domain",
+    "junction-runtime-mixed-controls",
+    "junction-runtime-cli",
+    "junction-runtime-legacy-schedules",
+    "junction-runtime-qualified-coupled-0",
+    "junction-runtime-qualified-coupled-1",
+    "junction-runtime-qualified-reversed-0",
+    "junction-runtime-qualified-reversed-1",
+    "junction-runtime-qualified-half_block-0",
+    "junction-runtime-qualified-half_block-1",
+    "junction-runtime-qualified-block_release-0",
+    "junction-runtime-qualified-block_release-1",
+    "junction-runtime-qualified-disconnected-0",
+    "junction-runtime-qualified-disconnected-1",
+    "junction-runtime-qualified-single_pair-0",
+    "junction-runtime-qualified-single_pair-1"
+  ],
+  "required_gpu_evidence": [
+    "runtime-cpu-gpu",
+    "junction-runtime-cpu-gpu"
+  ],
+  "checks": [
+    "Authenticate completed component source/results and allow only three dispatch additions; preserve old numerical kernels and qualified tests.",
+    "Compare full histories and fields to saved CPU/L4 component evidence with unchanged tolerances; initial/static data only as inputs.",
+    "Preserve all fourteen arrays and fixed-step control timing through checkpoints/windows/branches/reordered world partitions; reject corrupt gates, clocks and material.",
+    "Retain legacy configured runtime and scheduled histories, shared batch/window/spec regressions and measured GPU-busy/SM-active with coverage."
+  ]
+}

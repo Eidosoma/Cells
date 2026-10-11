@@ -1,4 +1,4 @@
-# BETSE-level capability through the Cells multiscale design
+# BETSE calibration of the Cells bioelectric layer
 
 Coverage reviewed against the checkout and recorded results on **2026-10-11**.
 This is a capability inventory, not a live run log. [Progress](../PROGRESS.md)
@@ -8,11 +8,11 @@ retains the earlier inventory, implementation sequence and failed comparisons.
 
 ## What the target means
 
-The target remains at least BETSE-level biological and physical realism, with
-modular CPU/GPU execution and later verified multiscale composition. Reduced
-models remain selectable. Full mechanism coverage, agreement with native
-trajectories, experimental validation and distributed execution are distinct
-requirements; no complete BETSE-equivalence claim is made.
+Cells uses BETSE as a reference to calibrate and verify the bioelectric layer
+of its broader cell and tissue simulations. This layer connects to chemistry,
+protein assembly and other processes within Cells' multiscale CPU/GPU framework.
+Reference comparisons, experimental validation and distributed execution each
+require their own evidence; reduced models remain selectable.
 
 The reproducible comparison baseline is BETSE **v1.5.0**, commit
 `5269a714aa2593ed2a6708c4516289977d8ae1a2`. It is not a moving latest release.
@@ -21,9 +21,9 @@ coupled regime still needs explicit coverage. Cells source-compatible components
 may retain native update ordering and clock conventions; those choices must not
 silently become universal physical laws or replace accepted physical-time models.
 
-Scientific parity does not require an identical GUI, plot style, YAML importer
-or legacy serialized-state loader. Source configuration support and experimental
-agreement must each be stated separately.
+Calibration focuses on the selected physical mechanisms, equations and responses.
+GUI, plot style, YAML import and legacy serialized-state compatibility are
+separate concerns. Experimental agreement requires its own evaluation.
 
 ## Primary-source baseline
 
@@ -56,7 +56,7 @@ and numerical limits; Progress links to the actual passing or failed evidence.
 | B02 | Passive membrane electrochemistry / B1-B2 | Partial: physical GHK transport and selected native single-cell/cluster/spatial comparisons; [spatial guide](TISSUE_RETURN_CURRENT.md) | Broader geometries, boundaries and convergence; no arbitrary-regime equivalence |
 | B03 | Voltage/ligand-gated channels / B1, B7 | Partial: Kv1.5 and selected [CaV1.2/IP3 routes](PLASMA_CALCIUM.md), with scoped native law or trajectory comparisons | Additional channel/ligand families, kinetic regimes and experimental calibration |
 | B04 | Pumps, exchangers and cotransport / B1, B3 | Partial: Na/K pumps including scheduled spatial comparisons; [PMCA and synthetic NCX](PLASMA_CALCIUM.md); [ER calcium pump](ER_CALCIUM.md) | Further transporters, physiological relaxation regimes and finite energetic supply; synthetic NCX is not native BETSE correspondence |
-| B05 | Selective, voltage-sensitive gap junctions / B1-B2 | Partial: physical-time junction models and separate native BETSE gate comparisons; combined spatial dynamic-junction work is tracked in Progress | Broader coupled native regimes, connexin diversity and fitted recovery/heterogeneity |
+| B05 | Selective, voltage-sensitive gap junctions / B1-B2 | Partial: physical-time junction models and selected native gate and combined spatial pump/channel/junction trajectories | Broader coupled native regimes, connexin diversity and fitted recovery/heterogeneity |
 | B06 | ER/calcium and mitochondrial compartments / B1, B6-B7 | Partial: finite [ER/cytosol](ER_CALCIUM.md), calcium buffers, plasma transport and IP3 composition | [Mitochondrial energetics and calcium coupling](PAPER_REVIEW_MITOCHONDRIA.md) remain proposed; ER support does not imply mitochondria support |
 | B07 | Chemistry, regulation and bioelectric feedback / B1, B3 | Partial: EMT, [compartment reactions](COMPARTMENT_REACTIONS.md), calcium/IP3 and one-way [assembly regulation](CAPSID_ASSEMBLY.md) | Broader regulatory networks, calibrated feedback and bidirectional assembly/energy coupling |
 | B08 | Extracellular electrodiffusion and barriers / B1-B2 | Partial: finite and spatial exterior, cross-region return currents and selected native spatial fields | Broader boundary/barrier physics, spatial convergence and transepithelial comparisons |
@@ -106,7 +106,7 @@ counts or a GPU kernel alone do not establish an organ-scale advance.
 ## Immediate next slice
 
 See [Progress](../PROGRESS.md#current-position) for the active comparison and its
-next integration step. The [realism baseline](BETSE_REALISM_AND_NEXT_STEPS.md)
+next integration step. The [calibration approach](BETSE_REALISM_AND_NEXT_STEPS.md)
 sets the acceptance distinctions; it is not a second current-status tracker.
 
 ## Reviewed byte identities

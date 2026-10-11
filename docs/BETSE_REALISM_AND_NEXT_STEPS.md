@@ -1,16 +1,17 @@
-# BETSE as the realism baseline
+# BETSE as a bioelectric calibration reference
 
-Direction agreed 2026-09-16, D107; navigation refreshed 2026-10-11. User requirement: Cells should ultimately be at least as
-biologically and physically detailed as BETSE, while retaining modular,
-computationally multiscale CPU/GPU execution. **This is a target, not today's
-capability claim.** Simplified models remain useful selectable resolutions;
-they must not become the ceiling on the detailed model.
+Framing updated 2026-10-11. Cells uses BETSE as a reference to calibrate and
+verify the bioelectric layer of its larger simulations. That layer forms part
+of a broader framework for cell chemistry, protein assembly, tissue organisation
+and future organ models, with modular multiscale CPU/GPU execution.
+Simplified models remain useful selectable resolutions.
 
 ## What counts as reaching the target
 
-Use the pinned BETSE 1.5.0 source as a reproducible initial comparator, alongside
-experimental evidence. It is not a permanent ceiling: review subsequent source
-and biological evidence explicitly. Track the full [B01–B17 inventory](BETSE_CAPABILITY_ROADMAP.md#capability-inventory-and-engineering-route).
+Use the pinned BETSE 1.5.0 source as a reproducible comparator for the bioelectric
+layer, alongside experimental evidence. Review subsequent source and biological
+evidence explicitly. Track reference coverage and related Cells extensions in
+the [B01–B17 inventory](BETSE_CAPABILITY_ROADMAP.md#capability-inventory-and-engineering-route).
 Deferring a feature does not remove it from that inventory.
 
 For each mechanism distinguish specification, independent numerical reference,

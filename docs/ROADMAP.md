@@ -12,10 +12,10 @@ build sequence and its historical status statements.
    spatial fields, compartments and chemistry with explicit ownership and
    independent references. Complete shared configuration, checkpoint and ensemble
    support for each new component before treating it as a usable model family.
-2. Broaden BETSE correspondence within declared physical and numerical regimes.
-   Check the named mechanisms and their combinations; retain source-specific
-   clock semantics separately from physical-time models. Full BETSE equivalence
-   remains a target beyond the selected comparisons already recorded.
+2. Use BETSE to calibrate and verify the bioelectric layer within the larger
+   Cells simulations. Broaden comparisons of named mechanisms and their
+   combinations within declared physical and numerical regimes; retain
+   source-specific clock semantics separately from physical-time models.
 3. Develop assembly coupling as an explicit model hypothesis. Keep finite protein
    material and ionic inventories distinct; use intervention and conservation
    checks before adding feedback from calcium, energy or neighbouring cells.
@@ -29,6 +29,25 @@ energy dynamics require new laws and references. Existing calcium and tissue
 implementations are useful prerequisites, not complete coverage of those targets.
 Biological calibration needs measured inputs, uncertainty and independent
 experimental evaluation in addition to numerical or source agreement.
+
+For broader BETSE coverage, the engineering order and relative difficulty are:
+
+| Remaining work | Relative difficulty | What makes it difficult |
+| --- | --- | --- |
+| Complete ordinary execution for new coupled components, then extend duration and timestep comparisons | Moderate | Preserve full state, native update order, intervention timing and conservation through every execution path |
+| Additional channel, ligand, pump and transporter families | Moderate to high | Each law needs explicit units, parameter provenance and coupled reference cases; one representative channel does not cover a family |
+| Varied tissue geometries, barriers, regional profiles, cutting and changing contacts | High | Boundaries and ownership change both field solutions and material accounting; spatial convergence needs independent evidence |
+| Surface redistribution of channels and pumps | High | Move membrane-bound quantities conservatively while their distributions alter local transport and fields |
+| Water, osmotic pressure, volume and flow | Very high | Water movement changes concentrations and geometry, which feed back into electrical and chemical dynamics |
+| Deformation and electromechanics | Very high | Evolving geometry changes forces, capacitance and contacts together; stable integration and force/material balance must agree |
+| Long-time behaviour of the complete coupled system | Very high | Individually checked components can produce new stiffness and feedback; both numerical convergence and suitable biological measurements are needed |
+
+These are engineering judgments, not runtime or delivery estimates. The
+[capability inventory](BETSE_CAPABILITY_ROADMAP.md) defines the remaining scope.
+Mitochondrial energetics and assembly feedback also serve the wider Cells research
+programme; their proposed scope should not be confused with a fully audited list
+of mechanisms exercised by the pinned BETSE runtime. Jupiter execution remains a
+separate qualification track.
 
 ## Milestones
 

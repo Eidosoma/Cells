@@ -5,6 +5,7 @@ checks, read-only observations, and a summary. Scientific meaning stays there;
 the runner owns scheduling, integration, replay, and resource policy.
 """
 
+from cells.core.betse_junction_spec import BetseJunctionModel
 from cells.core.betse_spatial_spec import BetseSpatialModel
 from cells.core.er_spec import ERModel
 from cells.core.gated_calcium_spec import GatedCalciumModel
@@ -36,6 +37,7 @@ from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.core.tissue_spec import TissueModel
 from cells.models import (
+    betse_junction,
     betse_spatial,
     bioelectric_cell,
     bioelectric_pair,
@@ -67,6 +69,8 @@ from cells.models import (
 
 
 def get_model(spec):
+    if isinstance(spec, BetseJunctionModel):
+        return betse_junction
     if isinstance(spec, BetseSpatialModel):
         return betse_spatial
     if isinstance(spec, SurfaceCalciumModel):

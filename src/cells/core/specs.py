@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from cells.core.betse_junction_spec import BetseJunctionModel
+    from cells.core.betse_junction_spec import Experiment as BetseJunctionExperiment
     from cells.core.betse_spatial_spec import BetseSpatialModel
     from cells.core.betse_spatial_spec import Experiment as BetseExperiment
     from cells.core.er_spec import ERExperiment, ERModel
@@ -751,6 +753,7 @@ class SimulationSpec:
         | ERModel
         | SurfaceTissueModel
         | BetseSpatialModel
+        | BetseJunctionModel
     )
     experiment: (
         ExperimentSpec
@@ -763,11 +766,16 @@ class SimulationSpec:
         | ERExperiment
         | SurfaceExperiment
         | BetseExperiment
+        | BetseJunctionExperiment
     )
     execution: ExecutionSpec
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core.betse_junction_spec import BetseJunctionModel, to_dict
+
+        if isinstance(m, BetseJunctionModel):
+            return to_dict(self)
         from cells.core.betse_spatial_spec import BetseSpatialModel, to_dict
 
         if isinstance(m, BetseSpatialModel):
@@ -1001,6 +1009,13 @@ def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "betse_spatial_nak_kv1p5_dynamic_gj@1"
+    ):
+        from cells.core.betse_junction_spec import parse
+
+        return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "betse_spatial_nak_kv1p5@1":
         from cells.core.betse_spatial_spec import parse
 
