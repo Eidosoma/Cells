@@ -9,47 +9,64 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Ordinary dynamic-junction runtime qualification launched at 17:39:42 UTC
-  on 11 October; CPU phase running at the launch check.** The new
-  [configuration](configs/betse_spatial_junction.json) uses the qualified native
-  per-moving-ion law through the existing CLI, fixed-step runner, snapshots,
-  windows and independent-world batches. It preserves **fourteen state arrays**,
-  explicit moving-ion order and reciprocal junction controls alongside pump and
-  channel controls. Initial inputs come only from the completed component's
-  initial/static records. The existing numerical kernels, physical-time models
-  and older configurations are unchanged; production edits are limited to three
-  dispatch files plus the new schema and model adapter.
-  [Preflight](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-01/preflight.xml)
-  passed **32 checks in 36.30 s**, including all twelve definition/clock mappings,
-  malformed input/state rejection and a six-step mixed-control comparison with
-  NumPy and compiled/eager execution. The
-  [preparation receipt](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-01/preparation.json)
-  authenticates the predecessor and binds the source changes and collection.
-  Ruff, formatting and whitespace checks pass. The twelve configured-history
-  estimate is **1,066,000,512 bytes**; full/windowed three-world estimates are
-  **460,654,720 / 137,371,200 bytes**, within the registered budgets.
-  The [protocol](validation/betse/spatial_active/junction_runtime_protocol.json)
-  registers **349 tests per backend**, expecting **347 CPU passes / two declared
-  GPU deferrals**, then **349 L4 passes**, with **80 required evidence reports**.
-  It compares the twelve saved **64-us** component histories at **1/0.5 us**,
-  exercises event-adjacent disk cuts, altered windows, future input branching,
-  corrupted checkpoints, domain failure retention and independent-world
-  reorder/partition/resume. It also retains the old configured runtime, three
-  **256-us** pump/channel schedule regressions and shared batch/window/spec tests.
-  The detached
-  [registration](/mnt/workspaces/Cells/betse-junction-runtime-20261011-01/registration.json)
-  freezes **947 source files**; the
-  [launch check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-01/launch-check.json)
-  confirms the live controller and CPU phase, with no failure artifact at that
-  check. L4 follows CPU, recording GPU-busy, measured SM-active and coverage.
-  Limits are **90 minutes**, **12 GiB worker RSS**, **4 GiB artifacts/cache** and
-  **0.2 GPU memory fraction**; durable logs and result/failure artifacts stay in
-  `/mnt/workspaces/Cells/betse-junction-runtime-20261011-01`.
-  Full acceptance remains pending. Mixed-control mapping checks are not new
-  native mixed-intervention evidence; longer dynamic-junction runs, refinement
-  and spatial convergence remain separate work. The next scientific comparison
-  after acceptance is longer/refined coupled junction trajectories and combined
-  interventions. No automatic follow-up is scheduled.
+- **Ordinary dynamic-junction runtime qualification: CPU complete; L4 phase
+  running at 18:22 UTC on 11 October.** The
+  [status check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/status-20261011T182200Z.json)
+  records **347 CPU passes / two declared GPU deferrals**, with no failures or
+  errors, in **12 min 10 s**. L4 has **170/349 passing tests reported** so far;
+  all new junction tests and their CPU/L4 comparison have passed, with shared
+  regressions continuing. The controller is alive, both stderr logs are empty
+  and no failure artifact exists. GPU console counts are provisional until full
+  qualification finishes. The retry launched at **17:56:37 UTC**. The
+  [initial attempt](/mnt/workspaces/Cells/betse-junction-runtime-20261011-01/failure.json)
+  stopped at **17:40:14 UTC**, after **31 CPU passes**. The first full-history
+  comparison rejected boundary-potential shapes **[64,10,10] versus [64,100]**:
+  the configured observer retains grid axes while the frozen reference flattens
+  boundary and exterior potentials. The test adapter now uses that reference's
+  C-order flattening for those two potentials, preserving electric-field grid
+  axes. The [failure review](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/failed-run-review.json)
+  authenticates all **947 frozen sources** and confirms that only this test file
+  changed; all **139 production modules**, tolerances, protocol and test
+  inventory remain unchanged. Failed evidence is preserved; GPU had not started.
+  The [targeted checks](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/preflight.xml)
+  passed **13 tests in 25.29 s**: all twelve **64-us** junction histories at
+  **1/0.5-us** steps, plus the three legacy **256-us** scheduled pump/channel
+  histories. These passed **3,430,656 / 4,528,128 state/field scalar comparisons**,
+  respectively. The [preparation receipt](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/preparation.json)
+  binds those checks and the completed component prerequisite. Ruff, formatting
+  and `git diff --check` pass.
+  The [configuration](configs/betse_spatial_junction.json) preserves **fourteen
+  state arrays**, explicit moving-ion order, and reciprocal junction controls
+  alongside pump/channel controls in the CLI, snapshots, windows and independent
+  worlds. The unchanged [protocol](validation/betse/spatial_active/junction_runtime_protocol.json)
+  requires **349 tests per backend**: **347 CPU passes / two declared GPU
+  deferrals**, then **349 L4 passes**, with **80 required evidence reports**.
+  Full qualification exercises disk cuts beside interventions, window changes,
+  future branching, corrupt snapshots, domain failure retention, world
+  reorder/partition/resume and existing shared-runner regressions.
+  Limits remain **90 minutes**, **12 GiB worker RSS**, **4 GiB artifacts/cache**
+  and **0.2 GPU memory fraction**. GPU-busy, measured SM-active and coverage are
+  recorded. The detached
+  [registration](/mnt/workspaces/Cells/betse-junction-runtime-20261011-02/registration.json)
+  freezes **947 sources**; the
+  [launch check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/launch-check.json)
+  confirms the controller and CPU phase, without a failure artifact at that
+  check. The retry uses `/mnt/workspaces/Cells/betse-junction-runtime-20261011-02`;
+  full acceptance is pending. After acceptance, the next scientific comparison
+  is longer/refined coupled junction trajectories and combined interventions.
+  Mixed-control mapping alone does not establish native mixed-intervention
+  correspondence. No longer dynamic-junction, spatial-convergence, biological
+  or multi-GPU claim follows; no automatic polling or follow-up is scheduled.
+
+- **README research purpose added, 11 October.** An
+  [early section](README.md#why-we-are-building-cells) now makes testing Plastic
+  Heredity and the Forms preprint in increasingly realistic cell/tissue models
+  a central goal. A matching [conceptual infographic](docs/assets/cells-research-goals.png)
+  presents questions, models, interventions and measurements as research goals.
+  [Prompts](docs/assets/readme-image-prompts.json) and
+  [documentation checks](/mnt/workspaces/Cells/readme-research-goals-20261011-01/verification.json)
+  preserve the asset provenance and distinguish this wording update from a new
+  experiment or scientific qualification.
 
 - **Documentation navigation and coverage refreshed, 11 October.** The README
   now links seven core guides and the [docs index](docs/README.md). Main design

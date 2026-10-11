@@ -53,8 +53,21 @@ def test_runtime_baseline(prior):
     common.evidence("junction-runtime-baseline", prior)
 
 
-def arrays(result):
+def reference_arrays(result):
+    """Match the qualified observable layout without changing values or ordering."""
     data = previous.saved_arrays(result)
+    # fixtures.comparison flattens these two potentials in C order. The two
+    # electric-field components retain their grid axes in the frozen reference.
+    grid = result.final.layout.tissue_boundary_values.shape
+    samples = len(result.observations.times)
+    for key in ("observed__Phi_b", "observed__v_env"):
+        assert data[key].shape == (samples, *grid), key
+        data[key] = data[key].reshape((samples, int(np.prod(grid))), order="C")
+    return data
+
+
+def arrays(result):
+    data = reference_arrays(result)
     data["junction__open"] = data.pop("active__junction_open")
     return data
 
@@ -503,7 +516,7 @@ def test_runtime_legacy_schedules():
     count = 0
     for case in ("coupled_block", "regional", "staggered"):
         result = run(parse_spec(legacy.definition(case, 1, backend=BACKEND)))
-        actual = {k: v[1:] for k, v in previous.saved_arrays(result).items()}
+        actual = {k: v[1:] for k, v in reference_arrays(result).items()}
         with np.load(
             root / f"evidence/{BACKEND}/long-intervention-native-{case}-1.npz", allow_pickle=False
         ) as saved:

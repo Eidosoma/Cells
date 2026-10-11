@@ -9,6 +9,31 @@ The simulation stack is **Python and JAX**, with independent CPU references and
 local NVIDIA GPU execution. See [Progress](PROGRESS.md) for current verification
 status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research background.
 
+## Why we are building Cells
+
+One of Cells' central goals is to test the ideas in our *Plastic Heredity* and
+*Where Do Forms Come From?* preprints in the most biologically and physically
+realistic simulations we can build and verify.
+
+![Cells research goals: ask questions from Plastic Heredity and Where Do Forms Come From?, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
+
+- **Plastic Heredity:** When does inherited organisation break, recover or
+  persist? What lets an acquired state pass to new carriers and be renewed?
+- **Forms:** How do experience, retained cellular state and tissue organisation
+  affect which patterns and functions can be expressed, repaired or reconstructed?
+
+We are building toward experiments that remove cues, disrupt candidate memory
+mechanisms, change cell membership and challenge cells with matched visible
+states but different histories. The aim is to identify what carries history,
+what it changes, and when it survives replacement.
+
+Realism means explicit physical mechanisms, material and energy accounting, and
+calibration against measurements. Bioelectricity, chemistry and assembly provide
+the starting point; mechanics, growth and turnover are planned extensions.
+The goal is to find where the ideas hold, fail or need revision. See the
+[research background](docs/SCIENTIFIC_BASIS.md) and
+[planned experiments](docs/EXPERIMENTS.md).
+
 ## Current functionality
 
 ![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](docs/assets/cells-current.png)
