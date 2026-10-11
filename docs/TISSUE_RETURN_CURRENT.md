@@ -551,3 +551,22 @@ This panel authenticates the complete prior qualification and all its unchanged
 source files before extending it. Resolved temporal refinement does not establish
 continuum accuracy, spatial convergence or biological recovery; completion and
 results remain recorded in `PROGRESS.md`.
+
+The experimental [dynamic junction component](../src/cells/numerics/betse_junction.py)
+composes evolving junction openings with the same spatial pump/channel kernel.
+It keeps fourteen state arrays and an explicit moving-ion order. In pinned BETSE,
+each moving ion advances the stored opening by one full outer timestep before
+using it for transport. Blocking then multiplies that stored opening. These
+source-compatibility rules differ from the separate physical-time junction law,
+where availability controls transport without overwriting the intrinsic gate.
+No existing model or numerical kernel is changed by this composition.
+
+The [junction protocol](../validation/betse/spatial_active/junction_protocol.json)
+checks six cases through 64 us at 1 and 0.5 us steps: coupled transport, reversed
+ion order, half blocking, block/release, disconnection and one connected pair.
+Independent scalar gate/flux checks accompany complete native trajectories,
+material accounting, CPU/L4 comparison, disk state restoration and independent
+world replay. Geometry, metabolic pools and the Kv1p5 population retain the
+previous scope. This component currently exposes the array API; integration
+into the ordinary configuration and snapshot registry is a subsequent task.
+Current qualification results belong in `PROGRESS.md`.

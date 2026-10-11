@@ -1,0 +1,384 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "resources": {
+    "max_wall_seconds": 3600,
+    "native_timeout_seconds": 1800,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2,
+    "max_retained_array_estimate_bytes": 1073741824
+  },
+  "kind": "betse_spatial_dynamic_junction@1",
+  "scope": "Native per-ion junction gating composed with the previously qualified spatial Na/K pump and Kv1p5 component; six 64-us cases on CPU/L4.",
+  "duration_s": 6.4e-05,
+  "native_steps_s": [
+    1e-06,
+    5e-07
+  ],
+  "temperature_K": 298.15,
+  "initial_gate": [
+    0.2,
+    0.6
+  ],
+  "pump_parameters": {
+    "cATP": 1.5,
+    "cADP": 0.1,
+    "cPi": 0.1,
+    "KmNK_Na": 12.0,
+    "KmNK_K": 0.2,
+    "KmNK_ATP": 0.5,
+    "deltaGATP": -37000.0
+  },
+  "cases": [
+    {
+      "id": "coupled",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "reversed",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Cl",
+        "K",
+        "Na"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "half_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 0.5
+        }
+      ]
+    },
+    {
+      "id": "block_release",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0.0
+        },
+        {
+          "time_s": 4e-05,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "disconnected",
+      "fixture": "mixed",
+      "topology": "none",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "single_pair",
+      "fixture": "mixed",
+      "topology": "single",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    }
+  ],
+  "tests": [
+    "tests/unit/test_betse_spatial_junction.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_junction.py::test_junction_cpu_gpu"
+  ],
+  "required_evidence": [
+    "junction-prerequisite",
+    "junction-resources",
+    "junction-native-coupled-0",
+    "junction-native-coupled-1",
+    "junction-native-reversed-0",
+    "junction-native-reversed-1",
+    "junction-native-half_block-0",
+    "junction-native-half_block-1",
+    "junction-native-block_release-0",
+    "junction-native-block_release-1",
+    "junction-native-disconnected-0",
+    "junction-native-disconnected-1",
+    "junction-native-single_pair-0",
+    "junction-native-single_pair-1",
+    "junction-replay",
+    "junction-worlds",
+    "junction-effects",
+    "junction-negative-controls"
+  ],
+  "required_gpu_evidence": [
+    "junction-cpu-gpu"
+  ],
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-intervention-refinement-20261011-02",
+    "registration_sha256": "807344e3e810838938a8f16cc7a99a7cb8a91a0016dda64b3eef4af350ef0f03",
+    "completion_sha256": "754ca139396152b228baf7c33a0b004d88c69c8e7cb7f8cdbd40a49496710056",
+    "require_completed_cpu_and_gpu": true
+  },
+  "checks": [
+    "Authenticate completed long intervention qualification and all 935 unchanged prior source files; only the new numerical component extends production",
+    "Unmodified pinned FULL INIT observed/bare pairs, explicit initial state and completed-step block controls; all moving ions advance the stored gate in native order",
+    "Independently reconstruct each gate update and junction flux, with existing native pump/channel/field and material checks",
+    "Complete Cells histories from initial/static data only; existing field/concentration/gate tolerances and material roundoff rules unchanged",
+    "All fourteen state arrays restart exactly from disk and changed windows; independent worlds retain identity under reordering and partition",
+    "Full blocking removes junction transport and stored opening; release starts from that state; reverse ion order, partial blocking, isolated and single-pair controls",
+    "Reject invalid domains and corrupted native clock/control, junction state and material ledgers; compare complete CPU/L4 evidence",
+    "Record GPU-busy and measured SM-active with coverage; no utilization acceptance threshold"
+  ],
+  "scope_exclusions": [
+    "Pinned BETSE compatibility uses a full outer dt per moving ion and blocking of stored state; the independent physical-time model is unchanged",
+    "Fixed geometry, maintained ATP/ADP/Pi, one Kv1p5 population, declared initial junction opening and threshold; no biological calibration or channel catalog",
+    "64-us component qualification only; no longer-time stability, temporal/spatial convergence, finite-energy, native built-in SIM events or remote GPU throughput claim",
+    "Ordinary configuration/snapshot registry integration of the new fourteen-array component is a subsequent task; this panel tests its array API, disk state and independent worlds"
+  ],
+  "automatic_followup": false,
+  "new_production_files": [
+    "src/cells/numerics/betse_junction.py"
+  ],
+  "junction": {
+    "threshold_voltage_V": 0.015,
+    "minimum_open_fraction": 0.1,
+    "initial_open": 0.35,
+    "native_source_sha256": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd"
+  }
+}

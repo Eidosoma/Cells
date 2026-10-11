@@ -1,43 +1,62 @@
 # Cells
 
+![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
+
 Cells is an early-stage multiscale simulator for investigating how cellular state,
 communication, and tissue organisation affect memory, inheritance, and adaptation.
 The long-term goal is a whole-organ model and later multiple interacting organs.
-Organ definitions will be data that composes reusable model components. The
-immediate build starts with one cell, with modular, multiscale interfaces from
-the outset. GPU execution is being developed on the local L4, with independent
-ensembles preparing the route to four-GPU JUPITER nodes. Coupled multiscale
-execution remains a longer-term engineering requirement.
+The simulation stack is **Python and JAX**, with independent CPU references and
+local NVIDIA GPU execution. See [Progress](PROGRESS.md) for current verification
+status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research background.
 
-The selected stack is **Python and JAX**, with CPU references and scoped GPU execution.
-The new [stochastic capsid assembly family](docs/CAPSID_ASSEMBLY.md) provides
-`cells assembly` on CPU and GPU, with complete event checkpoints and independent
-trajectory ensembles. Its prescribed protein-cage geometry and fixed-bath model
-are separate from the bioelectric families. See [Progress](PROGRESS.md) for checks
-and generated evidence; this is an implementation benchmark, not a fit to biology.
-The separate `cells assembly-pool` family adds finite neutral material, explicit
-breakable bonds and fragment recycling on CPU/GPU, including persistent ensemble
-workers. The initial `cells assembly-cell` composition uses an explicit assembly
-readout to control channel availability in a finite ionic cell. Its event timing,
-conservation and CPU/GPU qualification status is recorded in [Progress](PROGRESS.md);
-the coupling is a new kinetic hypothesis with no experimental validation.
-The [GPU and ensemble guide](docs/GPU_ENSEMBLES.md) covers public GPU execution
-for `finite_extracellular@2`, persistent assembly workers, measured arm balancing,
-complete interruption/resume and allocation-wide utilization accounting. The
-advisory efficiency target is 70% mean use of every allocated GPU, including
-startup and the final tail; useful throughput per allocated GPU-hour and balanced
-arms guide optimization, with qualification measured per workload.
-The initial scientific basis is Plastic Heredity v2.3 and the continuing
-Levin cancer / gap-junction exploration. The initial agreement was made on
-2026-09-07.
+## Current functionality
 
-The detailed-model target is **at least BETSE-level biological and physical
-realism**, with modular multiscale execution—not just agreement with selected
-benchmarks. See the [current plan](docs/BETSE_REALISM_AND_NEXT_STEPS.md): realistic
-Na/K pump kinetics, junction correspondence and original experimental data are
-the next tracks. Longer relaxation/recovery, full coupled physiology, biological
-validation and GPU support for the remaining ionic families are still work ahead. Simplified models remain
-selectable, not the fidelity ceiling.
+![Cells today: bioelectricity, calcium signalling and protein assembly. A shared work queue distributes independent simulations among GPU workers and collects results and checkpoints. CPU and L4 are verified locally; Jupiter qualification is planned.](docs/assets/cells-current.png)
+
+- **Electrical cells and tissues:** ion transport, membrane voltage, pumps,
+  channels, gap junctions and extracellular fields in selected model families.
+- **Cell chemistry:** calcium and IP3 signalling, internal compartments and
+  chemical reactions.
+- **Protein assembly:** stochastic cage formation, finite material pools,
+  breakable bonds and experimental coupling to cell models.
+- **Repeatable experiments:** checkpoints, restart, branching and independent
+  simulation ensembles, with CPU/L4 comparisons and conservation checks.
+
+For GPU ensembles, workers take batches of independent simulations from a shared
+queue and save their results and checkpoints. The four-worker illustration shows
+that execution design. Numerical qualification has used CPUs and one L4; Jupiter
+execution remains to be qualified. Distributing one interacting tissue across
+multiple GPUs requires further development. See the
+[GPU and ensemble guide](docs/GPU_ENSEMBLES.md).
+
+Verified results apply to the declared models and test conditions. Selected
+BETSE comparisons pass; full BETSE equivalence and biological validation remain
+unfinished. The [assembly-to-cell coupling](docs/CAPSID_ASSEMBLY.md) is an
+experimental modelling hypothesis.
+
+## In progress
+
+- Combining spatial fields, active membrane transport and dynamic junctions in
+  BETSE comparisons.
+- Extending verification of the integrated cell, tissue and assembly models.
+- Bringing new components into the shared configuration, checkpoint and ensemble
+  workflows.
+
+## Planned
+
+![Planned Cells development: broader BETSE channel and transport coverage; integrated assembly, energy and mechanics; Jupiter scaling from four to sixteen GPUs; and tissue-to-organ models.](docs/assets/cells-future.png)
+
+The next directions are broader BETSE coverage, richer cell physiology including
+water and mechanics, and Jupiter qualification from four to sixteen GPUs.
+Experimental calibration and organ models are longer-term goals. The organ
+illustration is schematic; it does not select a particular organ to build first.
+Detailed scope and priorities are recorded in [Progress](PROGRESS.md) and the
+[Roadmap](docs/ROADMAP.md).
+
+## Development history
+
+The entries below record earlier development milestones. Current run status is
+maintained in [Progress](PROGRESS.md).
 
 D108 [independently closes the Na/K kinetic source contact](reports/REF005A_PUMP_CONTACT_CLOSEOUT.md):
 1,240 comparisons and 248 raw flux triplets. D110 now also
@@ -917,8 +936,9 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --no-build-isolation --no-deps -e .
 ```
 
-The lock is CPU-only. Cells explicitly selects JAX CPU and float64 for its process;
-GPU execution is not implemented yet. No research-lane environment is modified.
+The lock is CPU-only. Supported model families can also select GPU execution;
+see the [GPU and ensemble guide](docs/GPU_ENSEMBLES.md) for the separate CUDA
+environment and model-specific requirements.
 
 ## Verify
 

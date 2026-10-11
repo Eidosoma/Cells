@@ -9,6 +9,46 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Spatial dynamic-junction qualification launched at 16:50:12 UTC on
+  11 October; the CPU phase is running.** Development now uses
+  `/home/robert/Cells`. The move preserved all **935 registered files** from the
+  completed predecessor, and durable evidence remains under `/mnt/workspaces`.
+  The new [array component](src/cells/numerics/betse_junction.py) adds junction
+  opening to the existing spatial pump/channel state, retaining **fourteen state
+  arrays**. All **136 existing production modules** are unchanged. It preserves
+  pinned BETSE's full-timestep gate update per moving ion and multiplication of
+  the stored opening by blocking; the separate physical-time junction law is
+  unchanged. This addresses composition of dynamic junctions, active membrane
+  transport and the extracellular field.
+  The [protocol](validation/betse/spatial_active/junction_protocol.json) covers
+  six **64-us** cases at **1 and 0.5 us** steps: coupled transport, reversed ion
+  order, half blocking, block/release, disconnection and one connected pair.
+  **24 native captures / 12 observed-bare pairs** precede CPU/L4 comparisons
+  from initial/static data only. Independent scalar gate/flux checks retain
+  the existing spatial, active-transport and material tolerances. Disk state
+  restoration, changed windows, independent-world reorder/partition, input
+  timing and deliberate state/material corruption checks are required.
+  [Twenty-two setup checks](/mnt/workspaces/Cells/betse-spatial-junction-development-20261011-01/preflight.xml)
+  passed in **10.82 s**. A separate **6-us setup trial** for coupled, reversed
+  and block/release cases recorded three identical observed/bare pairs and
+  [passed 102,492 native comparisons](/mnt/workspaces/Cells/betse-spatial-junction-development-20261011-01/smoke-comparison.json),
+  using at most **14.60%** of the existing error budget, with exact complete-state
+  restart. The [preparation receipt](/mnt/workspaces/Cells/betse-spatial-junction-development-20261011-01/preparation.json)
+  binds those checks, the unchanged predecessor and six added source files.
+  Ruff, formatting and whitespace checks pass. The retained-array estimate for
+  all twelve histories is **133,452,288 bytes**, below its 1 GiB allowance;
+  compiler/process memory has a separate **12 GiB worker ceiling**.
+  The detached [registration](/mnt/workspaces/Cells/betse-spatial-junction-20261011-01/registration.json)
+  freezes **941 sources and 39 tests**. Expected acceptance is **38 CPU passes /
+  one GPU deferral**, then **39 L4 passes / no skips**, with **37 required passing
+  evidence reports**. The [launch check](/mnt/workspaces/Cells/betse-spatial-junction-development-20261011-01/launch-check.json)
+  confirms the controller and CPU start. Estimated runtime is **20–30 minutes**,
+  with a **one-hour cap**, 4 GiB artifact/cache limit and GPU-busy/SM-active
+  coverage recording. **Full qualification remains pending.** The next integration
+  task is the ordinary configuration/snapshot registry for this fourteen-array
+  component. No longer-time, spatial-convergence, biological or multi-GPU claim
+  follows from this panel. No automatic polling or follow-up job is scheduled.
+
 - **Long scheduled BETSE intervention qualification passed at 15:34:53 UTC
   on 11 October**, after **40 min 12 s**. The
   [result](/mnt/workspaces/Cells/betse-spatial-intervention-refinement-20261011-02/result.json)
