@@ -9,6 +9,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Documentation navigation and coverage refreshed, 11 October.** The README
+  now links seven core guides and the [docs index](docs/README.md). Main design
+  introductions and the [BETSE inventory](docs/BETSE_CAPABILITY_ROADMAP.md) reflect
+  the recorded spatial, calcium, assembly and CPU/L4 work. Superseded roadmaps
+  remain in [dated snapshots](docs/history/); source contracts and acceptance
+  reports retain their scientific scope. GPU reporting still distinguishes busy
+  time, measured SM-active and coverage while optimization is parked. This is a
+  documentation review, with no new literature search, scientific qualification
+  or active-job status check.
+
 - **Spatial dynamic-junction qualification launched at 16:50:12 UTC on
   11 October; the CPU phase is running.** Development now uses
   `/home/robert/Cells`. The move preserved all **935 registered files** from the
@@ -6376,6 +6386,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   vectorized guard semantics, organs and GPU execution remain later work.
 
 ## Milestone status
+
+This table and the following task board preserve the early CPU-build snapshot.
+Their "planned" and "in progress" labels are historical; the
+[current position](#current-position) above records subsequent spatial, assembly
+and GPU work. They are retained for provenance, not maintained as a second
+current-status board.
 
 | Milestone | Status | Evidence or next action |
 | --- | --- | --- |

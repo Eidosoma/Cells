@@ -5,7 +5,10 @@ targets. E00 and the isolated regulatory E/M subset of E01 are implemented and
 verified. E02's passive prerequisite and bounded nominal source-compatible pair
 engineering are complete. Selected longer source switching protocols and E03
 onward remain unexecuted Cells assays, not automatically launched campaigns.
-Task status is maintained in [Progress](../PROGRESS.md).
+Task status is maintained in [Progress](../PROGRESS.md). Scope reviewed
+2026-10-11: recent tissue, calcium, assembly and CPU/L4 engineering results are
+prerequisites and separate model tests; they do not establish the proposed
+heredity/relay assays below. The engineering chronology retains its original dates.
 
 ## First engineering assay
 
@@ -57,10 +60,10 @@ cell benchmark needs appropriate data/boundaries and separate qualification.
 D045 returns to the [BETSE capability roadmap](BETSE_CAPABILITY_ROADMAP.md):
 small species/membrane, kinetic, graph and field fixtures precede wider physical
 composition. Source parity and biological agreement are separate experiments;
-neither follows from implementing a feature. GPU qualification later compares
-CPU and device results at declared precision/resolution, including partition
-boundaries, not just throughput. Optimization/GPU implementation and the long
-E02 candidate campaign stay paused/deferred during this architecture slice.
+neither follows from implementing a feature. At that September architecture stage, GPU implementation and the long E02
+candidate campaign were deferred. Selected CPU/L4 model qualifications now exist;
+see [GPU execution](GPU_ENSEMBLES.md). Those results do not complete the E02
+campaign or qualify future distributed partition boundaries.
 
 D046 / [SPEC-005](../reports/SPEC005_DESIGN_CHECK.md) now supplies two frozen
 synthetic assemblies and an independent instantaneous reference: old Na/K/Cl

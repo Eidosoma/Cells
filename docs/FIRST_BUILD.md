@@ -8,7 +8,8 @@ M1b has since been completed in 0.2.0; its separate
 [reference contract](EMT_REFERENCE.md) and [acceptance report](../reports/M1B_ACCEPTANCE.md)
 extend, rather than change, the historical 0.1.0 scope below.
 M1c-a adds a verified [passive two-cell contact](PASSIVE_CONTACT.md) in 0.3.0;
-its source-selective extension remains pending.
+later source-selective work is described in the [source-compatible pair guide](SOURCE_EMT_PAIR.md).
+The version 0.1.0 boundaries below remain historical, not current engine-wide limits.
 
 ## Deliverable
 

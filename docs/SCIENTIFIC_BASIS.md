@@ -27,34 +27,50 @@ gate contract, not a calibrated channel or coupled production trajectory.
 R011 reviews bulk electrodiffusion, membrane charge and scalable field-solver
 design for SPEC-009; it is not new biology or executed upstream solver evidence.
 
+## Subsequent research and model reviews
+
+The source catalogue began with the September baseline. Later reviews are
+recorded separately so a newer manuscript or mechanism does not silently replace
+an earlier source version. Navigation was reviewed on **2026-10-11**; no new
+literature search or experimental reanalysis was performed for this docs update.
+
+| Reviewed material | Maintained entry point | Scope |
+| --- | --- | --- |
+| Plastic Heredity v5.0 and Where Do Forms Come From? v0.11, September orientation | [Recorded orientation](../PROGRESS.md) | Later research context; manuscripts belong to the external research tree and do not overwrite S01's v2.3 review |
+| Asor et al. protein-cage assembly, reviewed 2026-09-19 | [Assembly model and source](CAPSID_ASSEMBLY.md) | Experimentally motivated stochastic model with prescribed geometry; implementation and cell coupling do not constitute a biological fit |
+| CCI-seq, reviewed 2026-10-08 | [Paper review](PAPER_REVIEW_CCI_SEQ.md) | Tissue neighbourhood measurements as future observational inputs; association is not an inferred electrical conductance |
+| Mitochondrial biology, reviewed 2026-10-10 | [Literature note](PAPER_REVIEW_MITOCHONDRIA.md) | Proposed energy, calcium and inheritance mechanisms; no mitochondrial simulator implementation or new experimental result |
+
 ## Current sources
 
-Paths below are relative to this document within the PlasticHeredity tree.
-The material was found under `/home/robert/Research/PlasticHeredity`; the originally
-supplied `/home/robert/Random-Replications/PlasticHeredity` path was absent.
+This catalogue retains the original review IDs and versions. External research
+files are identified by their original research-tree paths as provenance text;
+those paths are not links into the standalone Cells checkout. Local Cells notes
+and published sources remain linked. The historical path-discovery record does
+not describe the current checkout location.
 
 | ID | Source | Use in Cells |
 | --- | --- | --- |
-| S01 | [Plastic Heredity v2.3](../../../../PRE_PRINT_PAPER_DRAFT_V2.3.md) | Process endpoints, interventions, cross-model evidence, and carrier hypothesis |
-| S02 | [Exploration overview](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/README.md) | Entry point to the continuing Levin-derived programme |
-| S03 | [Starting point](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/STARTING_POINT.md) | Original cancer model, source provenance, and modelling assumptions |
-| S04 | [PH evidence ledger](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/PH_EVIDENCE_LEDGER.md) | Reported results and their experimental limits |
-| S05 | [Commitment components](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/COMMITMENT_COMPONENTS_RESULTS.md) | Same-label state differences and causal component interventions |
-| S06 | [H2 rewriting](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/REWRITE_TRADEOFF_RESULTS.md) | Group context, retained rewriting, and failed onward transfer |
-| S07 | [Post-robustness programme](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/POST_ROBUSTNESS_PROGRAMME.md) | Reliability, conditional benefit, and autonomous-renewal extensions |
-| S08 | [Bounded pilot](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/PILOT_RESULTS.md) | Source behaviour, numerical sensitivity, and reported CPU timings |
-| S09 | [Strict-eight atlas identifiability](../../../preprints/strict-8-paper-preparations/codex.reconstructionsAndStressTesting/fableAtlasIdentifiabilityR20_5/results/IDENTIFIABILITY_REPORT.md) | Colliding form labels and limits on lineage-specific routing claims |
-| S10 | [Ingressing/Ruliad law audit](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/codex.lawsConfirmation/LAW_LEDGER.md) | Later corrections and model-specific claim limits |
-| S11 | [CA reconstruction and writeback programme](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/codex.reconstructionsAndStressTesting/README.md) | Expression, observability, local writing, and renewal are separate tests |
-| S12 | [AI-3 learning-geometry dissection](../../../preprints/ai-3-ideas/GRAM_DISSECTION_READOUT.md) | Matched present function with different future learning; bounded mechanism evidence |
-| S13 | [AI-2 interface-adapter results](../../../preprints/ai-2-ideas/README.md) | Recipient/representation compatibility and repaired body-to-writer translation |
-| S14 | [AI-8 WSC deterministic entrance](../../../preprints/ai-8-new-frontier/DLM2_WSC_V1_FINAL_2026-08-27.md) | Separate reconstruction histories, common errors, and limited information access |
-| S15 | [AI-11 research charter](../../../preprints/ai-11-rl-frontier/RESEARCH_CHARTER.md) | Declared boundary, carrier, reader/writer, and cost contracts; design rather than result evidence |
-| S16 | [AI-4 two-byte memory result](../../../preprints/ai-4-ideas/Q31_Q4A_TWO_BYTE_ACTIVE_FOSSIL_RESULT_RECEIPT.md) | Analytical memory benefit versus full reader/writer observation costs |
-| S17 | [AI-5 refresh closeout](../../../preprints/ai-5-ideas/SCHEDULED_REFRESH_V1O_CLOSEOUT.md) | Single-episode failure analysis of proposed, refused, and installed refresh operations |
+| S01 | Plastic Heredity v2.3 (original research-tree path: `../../../../PRE_PRINT_PAPER_DRAFT_V2.3.md`) | Process endpoints, interventions, cross-model evidence, and carrier hypothesis |
+| S02 | Exploration overview (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/README.md`) | Entry point to the continuing Levin-derived programme |
+| S03 | Starting point (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/STARTING_POINT.md`) | Original cancer model, source provenance, and modelling assumptions |
+| S04 | PH evidence ledger (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/PH_EVIDENCE_LEDGER.md`) | Reported results and their experimental limits |
+| S05 | Commitment components (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/COMMITMENT_COMPONENTS_RESULTS.md`) | Same-label state differences and causal component interventions |
+| S06 | H2 rewriting (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/REWRITE_TRADEOFF_RESULTS.md`) | Group context, retained rewriting, and failed onward transfer |
+| S07 | Post-robustness programme (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/POST_ROBUSTNESS_PROGRAMME.md`) | Reliability, conditional benefit, and autonomous-renewal extensions |
+| S08 | Bounded pilot (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/PILOT_RESULTS.md`) | Source behaviour, numerical sensitivity, and reported CPU timings |
+| S09 | Strict-eight atlas identifiability (original research-tree path: `../../../preprints/strict-8-paper-preparations/codex.reconstructionsAndStressTesting/fableAtlasIdentifiabilityR20_5/results/IDENTIFIABILITY_REPORT.md`) | Colliding form labels and limits on lineage-specific routing claims |
+| S10 | Ingressing/Ruliad law audit (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/codex.lawsConfirmation/LAW_LEDGER.md`) | Later corrections and model-specific claim limits |
+| S11 | CA reconstruction and writeback programme (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/codex.reconstructionsAndStressTesting/README.md`) | Expression, observability, local writing, and renewal are separate tests |
+| S12 | AI-3 learning-geometry dissection (original research-tree path: `../../../preprints/ai-3-ideas/GRAM_DISSECTION_READOUT.md`) | Matched present function with different future learning; bounded mechanism evidence |
+| S13 | AI-2 interface-adapter results (original research-tree path: `../../../preprints/ai-2-ideas/README.md`) | Recipient/representation compatibility and repaired body-to-writer translation |
+| S14 | AI-8 WSC deterministic entrance (original research-tree path: `../../../preprints/ai-8-new-frontier/DLM2_WSC_V1_FINAL_2026-08-27.md`) | Separate reconstruction histories, common errors, and limited information access |
+| S15 | AI-11 research charter (original research-tree path: `../../../preprints/ai-11-rl-frontier/RESEARCH_CHARTER.md`) | Declared boundary, carrier, reader/writer, and cost contracts; design rather than result evidence |
+| S16 | AI-4 two-byte memory result (original research-tree path: `../../../preprints/ai-4-ideas/Q31_Q4A_TWO_BYTE_ACTIVE_FOSSIL_RESULT_RECEIPT.md`) | Analytical memory benefit versus full reader/writer observation costs |
+| S17 | AI-5 refresh closeout (original research-tree path: `../../../preprints/ai-5-ideas/SCHEDULED_REFRESH_V1O_CLOSEOUT.md`) | Single-episode failure analysis of proposed, refused, and installed refresh operations |
 | S18 | [Levin software directory and primary-source review](BETSE_DESIGN_REVIEW.md) | R004: BETSE/Calculion interface and physics lessons, experimental evidence tiers, and other reference candidates; dated code identifiers and external citations retained in the review |
-| S19 | [H3 reliability confirmation](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/RELIABILITY_CONFIRMATION_RESULTS.md) | R005: source-reported finite, externally managed group relay under held-out kicks; recovery provenance and ordinary controls |
-| S20 | [H4 changing environments](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/CHANGING_ENVIRONMENT_RESULTS.md) | R005: source-reported environment-dependent score and assigned-cost tradeoffs, not calibrated fitness or autonomous reproduction |
+| S19 | H3 reliability confirmation (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/RELIABILITY_CONFIRMATION_RESULTS.md`) | R005: source-reported finite, externally managed group relay under held-out kicks; recovery provenance and ordinary controls |
+| S20 | H4 changing environments (original research-tree path: `../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/CHANGING_ENVIRONMENT_RESULTS.md`) | R005: source-reported environment-dependent score and assigned-cost tradeoffs, not calibrated fitness or autonomous reproduction |
 | S21 | [Bonzanni et al. 2020](https://doi.org/10.1242/bio.048553) and [curated data](../data/biology/bonzanni2020_rptec_v1/README.md) | R007/BIO-001: RPTEC endpoint pilot, recording metadata and unresolved source/uncertainty boundaries |
 | S22 | [Costa et al. 1989](https://pmc.ncbi.nlm.nih.gov/articles/PMC1189096/) | R007: primary abstract review of the BETSE oocyte lead; chloride-homeostasis and voltage-clamp compatibility warnings, not a scanned-table reproduction |
 | S23 | [Bonzanni source-review attachment](../data/reviews/bio003_2026-09-09/README.md) | R008/BIO-003: hash-verified XML methods and complete one-page Figure S1; no new numerical endpoint extraction |

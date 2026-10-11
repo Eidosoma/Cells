@@ -230,6 +230,12 @@ environment and model-specific requirements.
 
 ## Verify
 
+The matrix below belongs to the original spatial build. Newer chemistry,
+assembly, tissue and GPU families have their own qualification protocols in the
+[model guides](docs/README.md#models-and-execution). This historical matrix and
+the release counts below are not the complete current test inventory. Use
+[Progress](PROGRESS.md) to identify the relevant completed or active qualification.
+
 ```bash
 .venv/bin/python scripts/test_spatial_extracellular_build.py --output reports/my-test-matrix
 .venv/bin/ruff check src tests scripts
@@ -285,127 +291,27 @@ to inspect them. They are not silently migrated into this version.
 
 | Document | Purpose |
 | --- | --- |
-| [Finite extracellular production guide](docs/FINITE_EXTRACELLULAR.md) | CORE-009: explicit outside inventories, shared feedback, independent capacities and a runnable one-cell example |
-| [Spatial extracellular contract](docs/SPATIAL_EXTRACELLULAR_SPEC.md) | SPEC-009: membrane-free bulk volumes, owned electrodiffusive faces, capacitor/current closure and future sparse field solves |
-| [Spatial numerical qualification](docs/SPATIAL_EXTRACELLULAR_NUMERICS.md) | NUM-010: frozen short trajectories, independent fields/methods, temporal/spatial refinement, complete-state restart and read-only replay |
-| [Spatial numerical result](reports/NUM010_REFERENCE.md) | Fourteen-case reference/audit, 0.125 ms plus 0.0625 ms refinement, analytic grid checks and retained coarse failures |
-| [Spatial design/reference result](reports/SPEC009_DESIGN_CHECK.md) | Eight synthetic definitions, independent high-precision arithmetic and explicit limits before spatial trajectories |
-| [Finite extracellular production acceptance](reports/CORE009_ACCEPTANCE.md) | Fourteen frozen cases, complete replay/accounting, independent worlds, preserved evidence and release status |
-| [Finite extracellular-compartment contract](docs/FINITE_EXTRACELLULAR_SPEC.md) | SPEC-008: real outside inventories, capacitor countercharge, closed ionic energy and future shared reduction |
-| [Finite extracellular design checks](reports/SPEC008_DESIGN_CHECK.md) | Nine synthetic cases, independent Decimal/reference reductions, correction history and unchanged production |
-| [Finite extracellular numerical amendment](docs/FINITE_EXTRACELLULAR_NUMERICS_V2.md) | NUM-009 v2: explicit inventories, conservation-tangent reference linearization and unchanged acceptance gates |
-| [Finite extracellular numerical results](reports/NUM009_REFERENCE_V2.md) | Fourteen cases, 1 ms / 0.5 ms refinement, depletion, saved-data audit and production boundary |
-| [Original finite-outside protocol](docs/FINITE_EXTRACELLULAR_NUMERICS.md) | Immutable v1 coordinates, cases and numerical/accounting gates |
-| [Original stopped attempt](reports/NUM009_REFERENCE.md) | Retained preflight correction and exact-blocking failure; not reclassified as passing |
-| [Physical ionic graph production guide](docs/PHYSICAL_IONIC_GRAPH.md) | New numeric model family, state ownership, runnable three-cell example and prospective CPU acceptance contract |
-| [Physical ionic graph production acceptance](reports/CORE008_ACCEPTANCE.md) | Targeted tests, preserved baseline, compiled/eager/replay/cohort evidence and release status |
-| [Physical ionic graph contract](docs/PHYSICAL_IONIC_GRAPH_SPEC.md) | SPEC-007: shared bath, explicit charge closure, one-owned edge transfer and independent state axes |
-| [Physical ionic graph design checks](reports/SPEC007_DESIGN_CHECK.md) | Frozen instantaneous pair/star reductions, Decimal arithmetic, conservation, history and preservation evidence |
-| [Physical ionic graph numerical protocol](docs/PHYSICAL_IONIC_GRAPH_NUMERICS.md) | NUM-008 frozen cases, common-stage control/observation rules, independent methods, refinement and resource caps |
-| [Physical ionic graph numerical result](reports/NUM008_REFERENCE.md) | Twelve short cases, 2 ms RK4/cubic with 1 ms refinement, complete history/energy checks, component reductions and saved-data audit |
-| [Pilot closeout](reports/BIO003_PILOT_CLOSEOUT.md) | Completed descriptive comparison and supplementary review; biological validation remains unestablished |
-| [BETSE capability roadmap](docs/BETSE_CAPABILITY_ROADMAP.md) | Pinned 17-family scientific target, current gaps, staged CPU build and later GPU qualification |
-| [Multiscale execution architecture](docs/MULTISCALE_EXECUTION_ARCHITECTURE.md) | Operator ownership, fine/coarse coupling, parallel GPU partitions, coupled clocks and checkpoint requirements |
-| [Multispecies membrane contract](docs/MULTISPECIES_MEMBRANE_SPEC.md) | SPEC-005 schema, species/charge ownership, equations, boundary support and frozen synthetic inputs |
-| [Multispecies reference result](reports/SPEC005_DESIGN_CHECK.md) | Design-stage evidence: 1,546 instantaneous checks and 352 targeted tests; production unchanged |
-| [Multispecies numerical qualification](reports/NUM006_REFERENCE.md) | 14 frozen trajectory cases, independent/refined methods, bounded RK4/cubic candidate and 446 targeted tests; production acceptance is next |
-| [Multispecies numerical protocol](docs/MULTISPECIES_NUMERICS.md) | Frozen error/resource limits, complete event handling, accounting and method-selection rule |
-| [Multispecies build sequence](docs/MULTISPECIES_MEMBRANE_NEXT.md) | Original stage-1 scope and reference gates |
-| [Multispecies production guide](docs/MULTISPECIES_MEMBRANE.md) | New 0.11.0 species/charge/role schema, numerical checks, complete replay and explicit test contexts |
-| [Multispecies production acceptance](reports/CORE006_ACCEPTANCE.md) | Frozen-panel eager/JIT and readout checks, exact replay/regressions, retained attempts and 2565 passing tests |
-| [First state-bearing channel contract](docs/VOLTAGE_GATED_CHANNEL_SPEC.md) | SPEC-006: Kv1.5-style activation/inactivation, separate mechanism ownership, exact gate reference and coupled/GPU boundaries |
-| [Channel design/reference evidence](reports/SPEC006_DESIGN_CHECK.md) | 7528 checks, seven analytic gate protocols, instantaneous ionic accounting and unchanged production |
-| [Coupled channel numerical protocol](docs/VOLTAGE_GATED_NUMERICS.md) | NUM-007 frozen preparations, accuracy/resource limits, full gate/channel histories and candidate refinement rule |
-| [Coupled channel numerical result](reports/NUM007_REFERENCE.md) | 14 cases/98 attempts, selected 0.5 ms RK4/cubic, retained coarse failures and source-bound dense replay audit |
-| [First biological benchmark](docs/BIOLOGICAL_BENCHMARK_001.md) | One-cell endpoint pilot, retrospective fit/evaluation split, measurement-boundary gaps and evidence criteria |
-| [Experimental data card](data/biology/bonzanni2020_rptec_v1/README.md) | RPTEC source figures, recipes, approximate voltages, unknown SEM and quarantined input conflicts |
-| [Conditioned voltage reference](docs/CONDITIONED_VOLTAGE_REFERENCE.md) | Fixed endpoint approximation, two-coefficient equation and reading-bound propagation, separate from production cells |
-| [First voltage prediction](reports/BIO002_CONDITIONED_VOLTAGE.md) | C1/C2-only fit, C3 result, comparison plot and 63 targeted checks; no biological acceptance claim |
-| [Windowed cohort guide](docs/WINDOWED_WORLDS.md) | Bounded independent rounds, prepared execution, complete cohort restart, recording and failure semantics |
-| [CORE-005b acceptance](reports/CORE005B_ACCEPTANCE.md) | 1057 tests, exact seven-model cohort recording/replay, unchanged regressions, archived 0.9.0 and isolated CPU trade-offs |
-| [Bounded-window guide](docs/WINDOWED_EXECUTION.md) | Exact clock/storage partitioning, selectable recording, complete restart, incremental artifacts and scope |
-| [CORE-005a acceptance](reports/CORE005A_ACCEPTANCE.md) | 982 tests, all accepted scalar/cohort arrays unchanged, archived 0.8.0 replay and measured memory/overhead trade-offs |
-| [Independent-world guide](docs/INDEPENDENT_WORLDS.md) | Batch definitions, world-local clocks/identity, conservative mapping, cohort replay and resource limits |
-| [CORE-004 acceptance](reports/CORE004_ACCEPTANCE.md) | 896 tests, 44 accepted batch-world runs, all 78 prior scalar trajectories unchanged, archived 0.7.0 and bounded CPU profiles |
-| [Physical-pair guide](docs/BIOELECTRIC_PAIR.md) | Runnable selective gated pair, independent controls, complete state/replay, and numerical limits |
-| [MODEL-004 acceptance](reports/MODEL004_ACCEPTANCE.md) | 670 tests, 20 frozen physical-pair cases, exact replay, five-model regressions and preserved 0.5.0 |
-| [Physical-cell guide](docs/BIOELECTRIC_CELL.md) | Runnable membrane/bath model, controls, outputs, replay, and limitations |
-| [Progress](PROGRESS.md) | Current milestone, task status, dependencies, and activity log |
-| [Scientific basis](docs/SCIENTIFIC_BASIS.md) | Source material, reviewed findings, hypotheses, and research updates |
-| [Architecture](docs/ARCHITECTURE.md) | Python/JAX design, state, coupling, numerical execution, and outputs |
-| [Engineering gate](docs/ENGINEERING_GATE.md) | Completed bounded composition build and separate source-correspondence gate |
-| [BETSE/software review](docs/BETSE_DESIGN_REVIEW.md) | Primary sources, experimental evidence and limits, accepted architecture lessons, and reference candidates |
-| [Bioelectric cell specification](docs/BIOELECTRIC_CELL_SPEC.md) | Physical equations, membrane/bath interfaces, units, charge/energy closure, controls, and original acceptance sequence |
-| [Bioelectric design checks](reports/BIOELECTRIC_DESIGN_CHECK.md) | 74 instantaneous equation checks, reproducible calculator and receipt; not trajectory or source validation |
-| [Bioelectric numerical contract](docs/BIOELECTRIC_NUMERICS.md) | Independent CPU reference, bounded RK4/cubic-observation candidate, numerical domain, and multiscale implications |
-| [NUM-002 qualification](reports/NUM002_REFERENCE.md) | 18 reference cases, solver/refinement and accounting checks, retained interpolation failures, and 346 passing tests; not a production model |
-| [MODEL-003 acceptance](reports/MODEL003_ACCEPTANCE.md) | 447 tests, pinned production comparisons, complete replay/branches, four-model regressions, and source preservation |
-| [Stateful selective contact](docs/SELECTIVE_CONTACT_SPEC.md) | Two-cell physical equations, gate/transfer contract and original 20-case qualification requirements; now implemented in MODEL-004 |
-| [Source-coupling map](docs/SOURCE_COUPLING_MAP.md) | Native contact probes, units/signs/gating/charge approximations, and the distinct source-compatible acceptance gate |
-| [Source-compatible pair specification](docs/SOURCE_EMT_PAIR_SPEC.md) | Complete ionic/regulatory state, fixed and derived roles, source equations/controls, prepared inputs and frozen future numerical gate |
-| [SPEC-003 evidence](reports/SPEC003_DESIGN_CHECK.md) | 3192 instantaneous checks against 17 native settings, state/control negative tests and unchanged 0.6.0 production; no coupled trajectories |
-| [Source-compatible numerics](docs/SOURCE_EMT_PAIR_NUMERICS.md) | Qualified nominal-clock RK4/cubic candidate, typed history, event semantics and native-clock distinction |
-| [NUM-004 qualification](reports/NUM004_REFERENCE.md) | 14 independent cases, 44 native paths, retained release-timing failure and passing refinement, 783 tests; production unchanged |
-| [Source-compatible pair guide](docs/SOURCE_EMT_PAIR.md) | Runnable nominal ionic/regulatory pair, independent routes, complete history, exact replay and limitations |
-| [MODEL-005 acceptance](reports/MODEL005_ACCEPTANCE.md) | 852 tests, 14 frozen cases plus replay/branch, six-model regressions and preserved 0.6.0 |
-| [E02-SW1 protocol](docs/E02_SWITCHING_PROTOCOL.md) | SPEC-004: fresh preparation, two-neighbour switching and 12 controls, fixed observers and source-reproduction boundaries; independent reference status in Progress, not production/native long reproduction |
-| [E02-SW1 numerical plan](docs/E02_SWITCHING_NUMERICS.md) | Prospective NUM-005 graph composition, long-time references, bounded candidate selection and full preparation sensitivity checks |
-| [SPEC-004 design evidence](reports/SPEC004_PROTOCOL_CHECK.md) | Frozen protocol/inventory checks and unchanged 0.10.0 production; no prepared outputs, graph model or long trajectories |
-| [Independent graph reference](docs/SOURCE_EMT_GRAPH_REFERENCE.md) | NUM-005a: source-coordinate cell/edge composition and complete reference state, native derivatives and pair reduction; no integrator or production model |
-| [NUM-005a acceptance](reports/NUM005A_REFERENCE.md) | 45 native inputs, 18,499 arithmetic/structural checks, 118 new tests and retained adapter failure; preparation and long-time qualification remain |
-| [Bounded preparation reference](docs/SOURCE_PREPARATION_REFERENCE.md) | NUM-005b: independent live implicit integration, chunked dense-state evidence, preparation qualification and strict publication boundaries |
-| [NUM-005b preparation evidence](reports/NUM005B_PREPARATION.md) | Six 500-unit trajectories, cross-method agreement, complete hash-pinned E/M packets, remaining ionic drift and independent artifact audit |
-| [Long fixed-graph reference paths](docs/SOURCE_GRAPH_PATHS_REFERENCE.md) | NUM-005c1: immutable prepared-state imports, lossless bounded evidence and full-panel implicit references/readouts; candidate qualification remains separate |
-| [NUM-005c1 long-reference session](reports/NUM005C1_LONG_REFERENCE.md) | Eight qualified conditions, retained one-hour resource stop and exact unfinished inventory; no full-panel or production claim |
-| [A2 amended reference policy](docs/E02_REFERENCE_POLICY_A2.md) | D036: explicit mixed-setting acceptance, immutable per-case reference manifests, bounded remaining controls and independent auditing |
-| [NUM-005c1 A2 panel evidence](reports/NUM005C1_A2_REFERENCE_PANEL.md) | All 14 amended-policy reference conditions/observers audited; original failure retained, production and candidate qualification still separate |
-| [Bounded candidate engineering](docs/E02_CANDIDATE_ENGINEERING.md) | NUM-005c2a: complete accepted RK4 carries, checked curves, bounded reference comparison and twelve short resource profiles |
-| [Candidate engineering evidence](reports/NUM005C2A_CANDIDATE_ENGINEERING.md) | Exact window/restart evidence and short-prefix accuracy pass; complete-runtime/storage estimates identify work before the long study |
-| [Cached diagnostic contract](docs/E02_DIAGNOSTIC_OPTIMIZATION.md) | NUM-005c2b: static-cache isolation, bounded observation-axis batching, frozen scalar equivalence and full retained evidence |
-| [Diagnostic optimization evidence](reports/NUM005C2B_DIAGNOSTIC_OPTIMIZATION.md) | Twelve matched short profiles, exact numerical/readout evidence, expanded audit and measured complete-path speed with remaining resource gates |
-| [Compact-evidence proposal](docs/E02_COMPACT_EVIDENCE_DESIGN.md) | D038 output-policy options and requirements; D039 implements a selected lossless prototype, not a compact long-study policy |
-| [Lossless recording contract](docs/E02_LOSSLESS_EVIDENCE.md) | NUM-005c2c: exact full/basis codecs, complete committed checkpoints, fail-closed bounded readers and unchanged numerical identity |
-| [Lossless recording evidence](reports/NUM005C2C_LOSSLESS_EVIDENCE.md) | Twelve short profiles and independent reconstruction audit; exact evidence, smaller storage, unchanged runtime and remaining long-study gates |
-| [Reference-backed comparison contract](docs/E02_COMPARISON_RECORDING.md) | NUM-005c2d: lossless sampled-state reconstruction, pinned dependencies, explicit reader/restart API and unchanged commit boundary |
-| [Reference-backed comparison evidence](reports/NUM005C2D_COMPARISON_RECORDING.md) | Implementation, short profiles, dependency/reconstruction auditing and remaining resource gates; current closeout status in the report |
-| [SPEC-002 evidence](reports/SPEC002_DESIGN_CHECK.md) | 709 instantaneous checks, native fixture, 483 tests and unchanged 0.5.0 production sources |
-| [Selective-contact numerics](docs/SELECTIVE_CONTACT_NUMERICS.md) | Independent physical-pair reference, bounded RK4/1 ms candidate, gate-domain/observation/accounting checks and production handoff |
-| [NUM-003 qualification](reports/NUM003_REFERENCE.md) | 20 passing cases, retained coarser/linear failures, 542 tests, two source capsules and separate native-state audit |
-| [Multiscale design](docs/MULTISCALE_DESIGN.md) | Data-defined composition, scale interfaces, and future organ-to-organ exchange |
-| [First build](docs/FIRST_BUILD.md) | Implemented one-cell scope, module boundaries, numerical contract, and limitations |
-| [M1a acceptance](reports/M1A_ACCEPTANCE.md) | Test results, saved examples, numerical errors, and reproduction commands |
-| [Isolated regulatory reference](docs/EMT_REFERENCE.md) | Source equations, units, approximations, reuse boundary, and reference capture |
-| [M1b acceptance](reports/M1B_ACCEPTANCE.md) | Source comparison, solver/refinement errors, replay, and version preservation |
-| [Passive contact](docs/PASSIVE_CONTACT.md) | Two-cell transport, cell/edge state, contact controls, units, and numerical contract |
-| [M1c-a acceptance](reports/M1C_A_ACCEPTANCE.md) | Conservation/reference errors, blocked/release/replay checks, and earlier-model regression |
-| [Reaction and transport](docs/REACTION_TRANSPORT.md) | Composed local/graph dynamics, species/cell/edge axes, controls, and numerical contract |
-| [CORE-003 acceptance](reports/CORE003_ACCEPTANCE.md) | 270 tests, eight composed-model runs, independent matrix checks, and all earlier-model regressions |
-| [Experiments](docs/EXPERIMENTS.md) | Reference assays, first tissue demonstration, controls, and later questions |
-| [Roadmap](docs/ROADMAP.md) | Staged implementation and evidence needed to complete each milestone |
-| [Decisions](docs/DECISIONS.md) | Accepted choices, their reasons, and unresolved implementation details |
+| [Architecture](docs/ARCHITECTURE.md) | Simulator structure, state ownership, numerical execution and checkpoints |
+| [Multiscale and parallel design](docs/MULTISCALE_EXECUTION_ARCHITECTURE.md) | How mechanisms, resolution, coupled clocks and device placement fit together |
+| [BETSE capability coverage](docs/BETSE_CAPABILITY_ROADMAP.md) | Implemented subsets, comparison scope and remaining gaps |
+| [Protein assembly](docs/CAPSID_ASSEMBLY.md) | Assembly models and their experimental connection to cell dynamics |
+| [GPU execution](docs/GPU_ENSEMBLES.md) | Independent ensembles, local qualification and Jupiter preparation |
+| [Scientific basis](docs/SCIENTIFIC_BASIS.md) | Research sources, hypotheses and evidence limits |
+| [Roadmap](docs/ROADMAP.md) | Development priorities and completion criteria |
+
+[Browse the docs folder](docs/) for model guides, specifications and research
+notes. [Progress](PROGRESS.md) tracks current work and run evidence.
 
 ## First build and first tissue destination
 
-First run one well-mixed cell with a timed external input, explicit numerical
-state, read-only observations, and verified save/restore. An analytically
-checkable fixture established the engine contract; source-backed isolated
-regulation, a passive two-cell contact, and reusable local-reaction/graph-transport
-composition now work. The physical-cell contract is now implemented: one
-Na/K/Cl cell, one membrane and maintained bath, charge-derived voltage, passive
-leaks, and an explicitly energized reference pump. Independent CPU trajectories
-and the bounded numerical candidate pass NUM-002; production JAX, independent
-controls, identified observations, complete replay and earlier-model regressions
-pass MODEL-003. D021 now specifies a stateful physical junction and records
-its differences from the source's algebraic gate and transport approximation.
-Independent pair trajectory qualification now passes NUM-003; production
-implementation and JAX/replay/regression acceptance come next. Coupled
-source compatibility and any physical regulatory unit/clock mapping remain
-separate work. The [engineering gate](docs/ENGINEERING_GATE.md)
-keeps engineering, numerical, and scientific acceptance distinct.
-The Levin assays are reference experiments on this foundation, not special engine
-behaviour. See [First build](docs/FIRST_BUILD.md) and [Passive contact](docs/PASSIVE_CONTACT.md).
+The [original one-cell build](docs/FIRST_BUILD.md) established explicit state,
+read-only observations and verified save/restore. Subsequent model families add
+regulation, communicating cells, spatial fields and intracellular chemistry.
+Their implemented and verified scopes are recorded in [Progress](PROGRESS.md)
+and the model guides. The [engineering gate](docs/ENGINEERING_GATE.md) preserves
+the original separation of engineering, numerical and scientific acceptance.
 
-The first tissue demonstration is a small 2D tissue in which a temporary local cue
+The proposed memory demonstration is a small 2D tissue in which a temporary local cue
 changes cellular state, communication determines whether that change spreads, and subsequent carrier
 replacement tests its persistence. Begin with a fixed contact graph and controlled
 relay assays. Add growth, division, and turnover as an explicit later extension.

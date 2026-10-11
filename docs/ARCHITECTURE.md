@@ -1,5 +1,436 @@
 # Architecture
 
+Implementation context reviewed: **2026-10-11**. Cells uses Python for definitions,
+orchestration and checks, and JAX array kernels for supported CPU/GPU execution.
+[Progress](../PROGRESS.md) owns the current qualification record; this document
+explains component responsibilities and target interfaces.
+
+Implemented building blocks include versioned cell/graph models, finite and
+spatial extracellular inventories, [resolved tissue fields](TISSUE_RETURN_CURRENT.md),
+[compartment chemistry](COMPARTMENT_REACTIONS.md), [calcium/IP3](PLASMA_CALCIUM.md),
+and [stochastic assembly with experimental cell coupling](CAPSID_ASSEMBLY.md).
+Shared workflows provide complete checkpoints, windows and independent ensembles.
+CPU/L4 results apply to their declared model families and test conditions.
+
+[GPU ensembles](GPU_ENSEMBLES.md) distribute independent worlds. Jupiter
+qualification, distributed interacting tissues, adaptive fine/coarse resolution,
+biophysical mechanics and organ models remain additional work. A named component
+can exist before ordinary configuration or full integrated qualification is ready;
+implementation alone does not complete those steps.
+
+The contracts below describe both exercised interfaces and future extensions.
+[Historical implementation notes](#historical-implementation-notes) retain the
+original version-specific milestones without acting as a current task board.
+
+## System shape
+
+Build one headless Python library. JAX executes numerical kernels on CPU and,
+for supported model families, GPU. Experiments, analysis, and a viewer use the same simulation
+interface. Small NumPy/SciPy reference calculations support verification of
+equations and numerical methods.
+
+| Component | Responsibility | Main exchanges |
+| --- | --- | --- |
+| Intracellular models | Regulatory, ionic, and explicitly specified carrier dynamics | Cell state, membrane fluxes, environmental inputs |
+| Communication | Molecule-selective and voltage-dependent exchange | Edge properties and endpoint states |
+| Spatial environment | Positions, geometry, extracellular fields, later mechanics | Cell-field source terms and physical contacts |
+| Lifecycle | Growth, division, death, partition, and ancestry | Cell volumes, amounts, identities, and topology |
+| Scheduler | Physical time, process update times, and discrete events | Valid coupling order and reproducible event handling |
+| Experiments | Initialisation, cues, interventions, checkpoint branches | Explicit external actions and their resource use |
+| Observers and outputs | Measurements, trajectories, manifests, and visualisation | Read-only state and declared sampling times |
+
+Resolve model, experiment, and execution definitions separately on the host.
+Organ presets select implemented processes and wire their interfaces; new physics
+requires a tested model module. The engine must not dispatch behaviour by an
+organ name. Component ownership is distinct from the graph of physical exchange.
+
+Each process declares its state schema, units, permitted reads, contributions to
+state change, and timing contract. Static definitions and dynamic array state
+remain separate. M1a/M1b/M1c-a, CORE-003 and MODEL-003/004/005 exercise these
+boundaries with small functions and an explicit model registry, not a general plugin or
+distributed-computing framework.
+Each model owns its numerical state/layout, pure derivative, checks, and observers.
+The reduced EMT model does not acquire a fictional physical volume or use the
+synthetic model's amount/ledger fields. Its fixed Snail context lives in the model
+definition; its derived complexes and E/M labels remain outside primary state.
+The passive model owns cell amounts and an edge-transfer ledger; a separate
+coupling module returns conservative amount fluxes. Its opening schedule is an
+external contact control, not an amount source or an intracellular gate law.
+The composition model maps two declared species into local conversion and the
+same passive coupler. Their derivatives add to the same amount fields at each
+RK stage; signed reaction and transport ledgers remain separate. This exercises
+reusable contributions, not arbitrary model-family assembly or reaction networks.
+
+Intracellular and intercellular networks are distinct structures. Different
+intracellular models may represent different hypotheses or levels of resolution.
+GARD, Boolean regulation, and continuous biochemical equations need explicit
+contracts if supported; they do not share an assumed universal physical clock.
+
+## Simulation state
+
+Represent each world as an explicit collection of arrays suitable for a JAX
+PyTree. Avoid hidden mutable global state in numerical kernels. A conceptual
+advance operation takes state, model parameters, inputs, and random state, and
+returns updated state plus diagnostics.
+
+| State block | Initial contents or extension point |
+| --- | --- |
+| Cells | Primary biochemical variables, active mask, stable cell IDs, model/type identifiers, volume, positions |
+| Membranes | Separate surface IDs/masks, owner-cell and facing-compartment mappings, area, capacitance and permeability implemented in MODEL-003/004; membrane-channel gates remain planned |
+| Contacts | Endpoint slots, active mask, contact geometry, conductance/permeability parameters, any declared dynamic gate state |
+| Environment | Reservoir conditions initially; field arrays, grid geometry, and boundary conditions when added |
+| Lifecycle | Parent IDs, generation or lineage metadata, age, cycle/resource state when the model includes them |
+| Execution | Physical time, scheduled update times, pending interventions, random state, and integrator state needed for restart |
+
+Derived species, voltage, and phenotype may be computed from primary variables.
+Each model declares which quantities are dynamic and which are algebraic, along
+with its units and refresh rules. Avoid evolving redundant representations
+independently. In the initial BITSEY comparison, preserve its documented primary
+totals, derived-species approximations, fixed inputs, and endpoint semantics.
+
+Parameters declare whether they are shared constraints, cell-specific constants,
+or dynamically writable state. An experiment changing a fixed parameter and a
+cell changing its own regulatory structure are separately identifiable actions.
+
+Experience-dependent responsiveness, thresholds, or plasticity rates are optional
+dynamic state when a model explicitly supplies their update laws. Do not infer
+state equivalence from equal visible phenotype. Record model-family identifiers
+separately from observer-derived cell-type labels.
+
+## Arrays, capacities, and identity
+
+Use array blocks for each model family, with a consistent species/cell ordering
+chosen during the first numerical prototype. A friendly Python cell interface
+may refer to an array slot; hot loops operate on the arrays.
+
+JAX compilation favours stable shapes. Allocate explicit cell and edge capacities
+and use active masks. Allocate new identities and slots through declared event
+rules. Padded entries must have finite neutral values so masked operations do not
+introduce invalid arithmetic. Capacity overflow is an explicit condition: stop
+with a checkpoint or expand at a host-controlled boundary and recompile. It must
+never silently discard cells, contacts, or scientific events.
+
+M1c-a implements separate cell and edge axes, masks, stable IDs, safe neutral
+padding, and shape-aware checkpoint/resource checks; passive_pair@1 still accepts
+exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
+species-by-edge transfer, and per-cell conversion. Its population and fixed
+topology are data, including zero contacts, disconnected cells, and parallel
+contacts with distinct IDs. Tiny reference cases extend through five cells;
+there is no hard-coded five-cell limit or performance claim. Independent-world
+batching is tested only at the process/RHS level, not as a full-run ensemble API.
+
+Stable biological IDs are independent of reusable storage slots. Ancestry records
+survive slot reuse and cell death. Track both daughters when division is introduced;
+an observer may additionally follow a selected daughter to compare with a source
+contract. Group membership and connected components are measurable properties,
+with persistent group identities added only when an experiment defines them.
+
+## Communication and space
+
+Begin with a fixed graph, including small stars, pairs, chains, and a regular 2D
+layout. Store physical adjacency separately from functional permeability. A
+contact can exist while molecular exchange is blocked.
+
+The implemented passive pair exercises this distinction with prescribed opening,
+unequal volumes, reciprocal transfer, and exact restart. CORE-003 extends it to
+data-defined fixed graphs, independently controlled contacts, and species-specific
+permeabilities alongside local reactions. The shipped three-cell chain has no
+spatial geometry or neighbour discovery. 2D geometry and the source's
+voltage-selective contact remain subsequent extensions.
+
+The communication model computes flux from endpoint state, contact properties,
+and molecule-specific rules. For a conservative exchange model, calculate each
+edge flux once and accumulate equal and opposite amount changes at its endpoints;
+convert these to concentration changes using volumes. Source/sink and charge
+accounting must follow the declared model, including external reservoirs.
+
+Preserve the source bioelectric coupling in reference comparisons. A simple
+diffusion equation or threshold rule can be a separate reduced model, with its
+own validation, rather than an undocumented replacement for voltage gating.
+
+The next spatial extension represents moving cell centres, sizes, and mechanical
+forces. Neighbour search supplies candidate physical contacts, then contact rules
+determine communication. Extracellular fields use their own grid, with explicit
+cell-to-field deposition and field-to-cell sampling. The field grid need not have
+one element per cell.
+
+Cellular Potts and vertex representations remain options if cell shape or junction
+mechanics becomes central. Their adoption would change the mechanical model and
+requires a new design decision.
+
+## Bioelectric interfaces: one physical cell
+
+D018 adds a membrane-to-bath interface before a coupled ionic tissue. A membrane
+has its own identity and area; it is not the cell volume, a physical adjacency
+edge, or a gate. Begin with one well-mixed cell facing one maintained bath through
+one lumped membrane. Bath concentrations, potential, and chemical drive are
+explicit external support. Finite extracellular compartments and fields will
+own dynamic state and different closure rules when their models are introduced.
+
+The implemented physical cell evolves ion amounts and signed exchange/cycle ledgers.
+Its voltage follows an immutable amount/charge/capacitance anchor. Leak and pump
+mechanisms read the same stage state and contribute to the same amounts; their
+experimental control groups remain independent. Evolving endogenous gates have
+primary state with their own kinetics and complete snapshots; algebraic gates
+are identified derived mechanisms. Neither is a relabelled prescribed opening.
+See [the contract](BIOELECTRIC_CELL_SPEC.md) for
+equations, units and external energy assumptions, and the
+[production guide](BIOELECTRIC_CELL.md) for its verified bounded implementation.
+
+The existing source-scaled EMT model is not silently wired to physical ions.
+Likewise, a new surface mapping alone does not validate a multicompartment
+electrical model. Add only exercised interfaces now, with sparse/local mappings
+compatible with later graph/field exchange and device-resident execution.
+
+D021's [physical-pair specification](SELECTIVE_CONTACT_SPEC.md) defines the
+bounded extension: two effective membrane capacitances to a common bath, one
+oriented selective flux/ledger, and one relaxing gate state. The gate continues
+evolving during prescribed transport block. This is implemented as
+[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023. The
+[NUM-003 reference](SELECTIVE_CONTACT_NUMERICS.md) requires a new 1 ms/cubic
+candidate for its bounded panel, rather than inheriting the single-cell timestep.
+Boundary-aware implicit Jacobian probes keep the reference domain explicit.
+Production reuses membrane laws, graph scatter and the checked engine, with
+explicit gate/transfer state, separate control-array capacities, diagnostic
+energy integrals and complete replay. Its read-only sampler checks every cubic's
+amount/gate/affine-voltage extrema, not only requested samples. Numerical failures
+are refused without clipping. Same-layout replay is exact; changing capacity or
+orientation can alter floating reduction order in diagnostics.
+The [source map](SOURCE_COUPLING_MAP.md) separately identifies BITSEY's algebraic
+gate, upwind junction law and regulatory tracer/clock approximations. Those
+choices belong in named models, not global runner exceptions. Future reductions
+must test the effect of eliminating gate history as well as fast voltage modes.
+
+## Time and numerical integration
+
+The scheduler coordinates continuous dynamics and discrete events. Start with a
+documented coupled update scheme whose numerical convergence can be checked.
+Introduce separate process update rates when justified by the model and profiles.
+Electrical dynamics, regulation, diffusion, mechanics, and lifecycle events may
+require different rates; their ordering and coupling error are part of the solver
+contract.
+
+Interventions occur at specified physical times or explicitly named lineage
+boundaries. Short cues must not disappear between integration steps. Distinguish
+an accepted live endpoint from the last saved sample, and record both times.
+
+M1a uses RK4 for its analytic source/decay fixture. M1b also validates RK4 at step
+0.1 for the source's isolated regulatory E/M cases against Radau/BDF references
+and the pinned native source. M1c-a validates RK4 for passive exchange with an
+event-local bound h*g*u*(1/VA + 1/VB) <= 1 and independent analytic references.
+CORE-003 uses h*alpha <= 0.5, where alpha includes reaction loss and every incident
+contact's outgoing rate for each species/cell coordinate. Both contributions use
+the same stage state. Its [contract](REACTION_TRANSPORT.md#numerical-domain-and-accuracy)
+explains this conservative positivity domain and independent matrix/refinement checks.
+This does not select the solver for coupled ionic/regulatory dynamics, whose
+timescales may make stiffness relevant. Compare that coupled
+candidate with trusted CPU references and the source's numerical settings.
+SciPy's [ODE solver documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
+describes explicit and stiff-method options for reference work. Fixed-step,
+adaptive, implicit, and split methods are candidates to assess, not interchangeable
+assumptions. A solver change is an identified numerical variant.
+
+Physical approximation is a separate model choice: an equivalent-circuit model
+that omits concentration dynamics is not the same ionic model with a faster
+integrator. Declare supported quantities and controls with each model and reject
+unsupported requests. Backend selection must not change those capabilities.
+NUM-002's [independent reference](BIOELECTRIC_NUMERICS.md) selects a bounded
+float64 RK4/5 ms candidate for the physical cell, with interval-correct cubic
+Hermite observations. This is not yet implemented in production; existing linear
+bounds do not transfer automatically. Its measured local time-scale separation
+also motivates later stiff/multirate methods, independently of device placement.
+
+Use float64 as the CPU reference precision and enable it explicitly in JAX.
+Reduced precision requires measured error bounds and agreement on scientific
+outcomes, especially near commitment thresholds. See
+[JAX's precision settings](https://docs.jax.dev/en/latest/default_dtypes.html).
+
+## Growth and renewal
+
+Scripted transfer to fresh prepared cells is the first relay assay. Autonomous
+growth and division are a later, separately specified model version.
+
+A biological boundary specification declares what each event retains,
+partitions, reconstructs, erases, or leaves external, including contact and
+environmental state. It is distinct from a complete numerical checkpoint.
+Transplantation, replacement, division, and fragmentation need different rules.
+Track original versus newly created material where a renewal claim needs that
+distinction; a lineage label alone is not evidence of material replacement.
+
+That extension defines resource uptake, synthesis/degradation, volume growth,
+division conditions, state partition, death, and contact formation. Where amounts
+are represented, partition parent amounts and volume consistently and derive
+daughter concentrations. Account for declared generation, degradation, and external
+exchange. Copying concentrations into two full-size cells is not a material
+partition model.
+
+A concentration-based source approximation may not conserve every molecular
+species. Record that approximation in the reference model; a revised accounting
+model needs its own equations and comparisons. Successor creation rules must be
+specified independently of the desired inherited label.
+
+## Information access and memory mechanisms
+
+Transport, biological reading, expression, and successor writing are distinct
+causal operations even when ordinary kinetics implement several together.
+Mechanism contracts state permitted local inputs and output targets. Global
+history labels, evaluator targets, and analysis decoders are not automatically
+available to a cell or controller.
+
+Communication and slow-state writing may have different access rules. Protected
+compartments, limited writing windows, recipient-compatible readers, and
+independent versus correlated disturbances are optional experimental mechanisms,
+not universal requirements. Record proposals, accepted interventions, and actual
+state/material changes separately when a controller can refuse a write.
+
+## Ensembles and the GPU path
+
+The shared-runner foundations below retain their original model scope. The
+[GPU guide](GPU_ENSEMBLES.md) covers later persistent workers, stable random
+streams, per-device telemetry and offline planning for up to sixteen GPUs.
+Remote scaling and a distributed interacting tissue remain unqualified.
+
+Support both one world with many interacting cells and many independent worlds.
+Batch worlds with compatible model structures and capacity shapes; use host-level
+orchestration for incompatible experiments. CPU parallelism can first distribute
+independent batches with explicit worker and thread limits.
+
+CORE-004/D027 implements the first [independent-world batch](INDEPENDENT_WORLDS.md)
+as an explicit world axis and conservative compiled mapping. Each world keeps
+its scalar event grid; terminal padding is masked without advancing state or
+evaluating a completed world's RHS. The batch wraps ordinary complete scalar
+snapshots and model observers, rather than creating a second biological schema.
+World IDs namespace cell/contact/bath IDs. This is independent experimentation,
+not tissue decomposition or communication between organs.
+
+The original bounded CPU profile separated compilation, warmed execution, host work
+and storage. It shows no universal batch speedup: graph batches help at the
+largest tested count, while nominal pairs have no overall gain there. Full
+histories, host work and output remain visible costs. CORE-005a/D028 adds
+[single-world windows](WINDOWED_EXECUTION.md), with a lazy exact grid, every
+ordinary interval/observer check, complete ledger/state continuity, and
+incremental selected recording. It bounds retained arrays, not biological work
+or whole-process RSS. CORE-005b/D029 applies the contract to
+[independent cohorts](WINDOWED_WORLDS.md): each execution round consumes each
+world's own existing intervals, with prepared parameters, active masks and
+compiled widths reused. A complete cohort checkpoint maps independent local
+clocks; it is not a simultaneous organ state. Per-world observers still check
+ordinary host results before any round is exposed. Vectorized failure guards,
+multi-device semantics and biological exchange still require qualification.
+
+JAX is the shared execution framework. GPU readiness requires checking compiled
+control flow, allocation, reductions, random semantics, and device-resident state;
+changing the device alone is not a performance guarantee. Keep state on the device
+across many steps and transfer selected observations or checkpoints in batches.
+
+Measure compilation separately from warmed execution, synchronise device work
+before recording elapsed time, and report both end-to-end experiment throughput
+and kernel timings. Local CPU/L4 comparisons cover selected ionic, tissue and assembly families;
+see [GPU execution](GPU_ENSEMBLES.md) and Progress for their scope. Changing-population
+physics and Jupiter measurements need separate qualification. A speedup on one
+workload is not a general performance guarantee.
+
+Differentiation is optional. Smooth intracellular or transport components may
+support inference, while discrete division, topology changes, and classifications
+need separate treatment. Gradients are not required to run the first experiments.
+
+## Randomness, replay, and checkpoints
+
+Make randomness explicit and separate initialisation, process noise, partition,
+intervention, and analysis streams. Record how stream keys derive from run,
+replicate, lineage, and event identity. Paired comparisons explicitly declare which
+draws are shared and which are independent. Diagnostics must not consume the
+simulation's random stream.
+
+A checkpoint contains all state needed for continuation, including pending inputs,
+identities, environment, numerical scheduler/integrator state, and random state.
+Fixed parameters and model code are referenced by immutable versions or hashes.
+Restart verification compares uninterrupted and restored execution under a pinned
+backend. Cross-device verification uses specified numerical tolerances and, for
+stochastic models, distributional and endpoint comparisons; bitwise equality is
+not presumed.
+
+## Experiment records and storage
+
+Preparation is an explicit experiment phase or preceding run, with its full
+initial conditions, controls, duration/stopping criteria, and resulting checkpoint.
+There is no silent equilibration on resume or branch. Preserve the prepared
+state, external support, electrical anchors, and earlier accounting history;
+re-preparing a cell would otherwise erase precisely the history a memory assay
+may intend to challenge. MODEL-003 preserves this physical state/history through
+run/checkpoint protocols; a general preparation API is not implemented.
+
+Each run records the model and observer versions, code revision and local source
+hashes when needed, resolved configuration, units, seeds, software versions,
+device, precision, solver settings, stopping rules, and source-checkpoint hashes.
+
+Store dense state in an array format such as HDF5 or Zarr and event/summary tables
+in Parquet, with a readable JSON manifest. The exact storage choice is open.
+M1a uses small numeric NPZ arrays plus JSON for a complete prototype snapshot;
+that does not fix the production storage backend.
+Use configurable observation rates plus complete restart checkpoints to control
+output volume. Preserve continuous state and identity alongside derived labels.
+
+Observation interpolation has its own accuracy contract. D019's reference found
+that linear samples could miss the voltage target despite accurate RK4 endpoints.
+The physical model now uses an explicitly identified cubic Hermite policy,
+with endpoint derivatives evaluated under each interval's held controls. At an
+event, left and right derivatives can differ. The existing four models retain
+their verified linear policy; sampling remains read-only in either case. A shared
+checked-RK4 path accepts a pure model-domain predicate, checks trials/endpoints,
+and refuses failed runs without publishing repaired trajectories. Membrane
+capacity is budgeted independently of cell/contact storage.
+
+Run status distinguishes numerical failure, capacity exhaustion, biological death,
+scientific negative outcomes, and a completed finite horizon. A scientifically
+negative result can be a correctly completed experiment.
+
+## Analysis and viewing
+
+The viewer consumes snapshots or a bounded stream; rendering does not determine
+simulation time or random draws. Initial views should show cellular state,
+voltage, functional contacts, environmental fields when present, and selected
+lineage histories. Interactive interventions go through the experiment interface
+and are recorded for replay.
+
+Python notebooks and optional R analysis read the same saved artifacts. Observers
+include retention, transmission, episode coherence, rewrite cost, recovery, and
+resource use. Phi-r or other information measures can be added with their complete
+sampling and estimation contracts.
+
+An observer specification fixes read access, coordinate frame, spatial and
+temporal scale, thresholds, null/positive calibration, and version. Observer
+frequency must not change the dynamics. Preserve continuous readouts alongside
+classes and allow trajectory/challenge signatures instead of assuming a finite
+catalogue of cell or tissue identities. Any feedback use of an observation is an
+explicit controller with declared access and cost.
+
+Cost outputs distinguish simulated material/energy assumptions, sensing and
+reconstruction requirements, shared machinery, and actual computation/storage.
+An inherited payload size alone is not the cost of the mechanism. Restoration,
+reprogramming, and environment-specific benefit have separate endpoints.
+
+Reduced models for larger scales must be validated on held-out trajectories and
+interventions. A reduction that preserves current E/M labels but loses commitment
+is insufficient for memory experiments.
+
+## Technical references
+
+- [JAX compilation and functional constraints](https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html)
+- [JAX JIT compilation and changing shapes](https://docs.jax.dev/en/latest/201/jit.html)
+- [JAX float64 configuration](https://docs.jax.dev/en/latest/default_dtypes.html)
+- [JAX explicit state](https://docs.jax.dev/en/latest/stateful-computations.html)
+- [JAX structured array state](https://docs.jax.dev/en/latest/101/pytrees.html)
+- [SciPy integration reference](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
+
+These references informed the initial design review. Exact supported versions
+and target-device compatibility will be checked when the environment is pinned.
+
+## Historical implementation notes
+
+These September build notes retain their original statuses, versions and test
+counts. Read the implementation context above and Progress for current coverage.
+
 Design baseline: 2026-09-07. Python and JAX are selected. The structures below
 describe the target architecture. The one-cell engine, isolated regulation,
 passive two-cell contact, local-reaction/graph-transport composition, one
@@ -306,400 +737,3 @@ explicit assumptions; no production schema or charge guard is weakened.
 The result does not add an eighth model, a time integrator or a dynamic pipette
 boundary. Those would require their own reusable, versioned contracts and
 numerical qualification after experimental boundary/uncertainty review.
-
-## System shape
-
-Build one headless Python library. JAX executes numerical kernels on CPU first
-and GPU later. Experiments, analysis, and a viewer use the same simulation
-interface. Small NumPy/SciPy reference calculations support verification of
-equations and numerical methods.
-
-| Component | Responsibility | Main exchanges |
-| --- | --- | --- |
-| Intracellular models | Regulatory, ionic, and explicitly specified carrier dynamics | Cell state, membrane fluxes, environmental inputs |
-| Communication | Molecule-selective and voltage-dependent exchange | Edge properties and endpoint states |
-| Spatial environment | Positions, geometry, extracellular fields, later mechanics | Cell-field source terms and physical contacts |
-| Lifecycle | Growth, division, death, partition, and ancestry | Cell volumes, amounts, identities, and topology |
-| Scheduler | Physical time, process update times, and discrete events | Valid coupling order and reproducible event handling |
-| Experiments | Initialisation, cues, interventions, checkpoint branches | Explicit external actions and their resource use |
-| Observers and outputs | Measurements, trajectories, manifests, and visualisation | Read-only state and declared sampling times |
-
-Resolve model, experiment, and execution definitions separately on the host.
-Organ presets select implemented processes and wire their interfaces; new physics
-requires a tested model module. The engine must not dispatch behaviour by an
-organ name. Component ownership is distinct from the graph of physical exchange.
-
-Each process declares its state schema, units, permitted reads, contributions to
-state change, and timing contract. Static definitions and dynamic array state
-remain separate. M1a/M1b/M1c-a, CORE-003 and MODEL-003/004/005 exercise these
-boundaries with small functions and an explicit model registry, not a general plugin or
-distributed-computing framework.
-Each model owns its numerical state/layout, pure derivative, checks, and observers.
-The reduced EMT model does not acquire a fictional physical volume or use the
-synthetic model's amount/ledger fields. Its fixed Snail context lives in the model
-definition; its derived complexes and E/M labels remain outside primary state.
-The passive model owns cell amounts and an edge-transfer ledger; a separate
-coupling module returns conservative amount fluxes. Its opening schedule is an
-external contact control, not an amount source or an intracellular gate law.
-The composition model maps two declared species into local conversion and the
-same passive coupler. Their derivatives add to the same amount fields at each
-RK stage; signed reaction and transport ledgers remain separate. This exercises
-reusable contributions, not arbitrary model-family assembly or reaction networks.
-
-Intracellular and intercellular networks are distinct structures. Different
-intracellular models may represent different hypotheses or levels of resolution.
-GARD, Boolean regulation, and continuous biochemical equations need explicit
-contracts if supported; they do not share an assumed universal physical clock.
-
-## Simulation state
-
-Represent each world as an explicit collection of arrays suitable for a JAX
-PyTree. Avoid hidden mutable global state in numerical kernels. A conceptual
-advance operation takes state, model parameters, inputs, and random state, and
-returns updated state plus diagnostics.
-
-| State block | Initial contents or extension point |
-| --- | --- |
-| Cells | Primary biochemical variables, active mask, stable cell IDs, model/type identifiers, volume, positions |
-| Membranes | Separate surface IDs/masks, owner-cell and facing-compartment mappings, area, capacitance and permeability implemented in MODEL-003/004; membrane-channel gates remain planned |
-| Contacts | Endpoint slots, active mask, contact geometry, conductance/permeability parameters, any declared dynamic gate state |
-| Environment | Reservoir conditions initially; field arrays, grid geometry, and boundary conditions when added |
-| Lifecycle | Parent IDs, generation or lineage metadata, age, cycle/resource state when the model includes them |
-| Execution | Physical time, scheduled update times, pending interventions, random state, and integrator state needed for restart |
-
-Derived species, voltage, and phenotype may be computed from primary variables.
-Each model declares which quantities are dynamic and which are algebraic, along
-with its units and refresh rules. Avoid evolving redundant representations
-independently. In the initial BITSEY comparison, preserve its documented primary
-totals, derived-species approximations, fixed inputs, and endpoint semantics.
-
-Parameters declare whether they are shared constraints, cell-specific constants,
-or dynamically writable state. An experiment changing a fixed parameter and a
-cell changing its own regulatory structure are separately identifiable actions.
-
-Experience-dependent responsiveness, thresholds, or plasticity rates are optional
-dynamic state when a model explicitly supplies their update laws. Do not infer
-state equivalence from equal visible phenotype. Record model-family identifiers
-separately from observer-derived cell-type labels.
-
-## Arrays, capacities, and identity
-
-Use array blocks for each model family, with a consistent species/cell ordering
-chosen during the first numerical prototype. A friendly Python cell interface
-may refer to an array slot; hot loops operate on the arrays.
-
-JAX compilation favours stable shapes. Allocate explicit cell and edge capacities
-and use active masks. Allocate new identities and slots through declared event
-rules. Padded entries must have finite neutral values so masked operations do not
-introduce invalid arithmetic. Capacity overflow is an explicit condition: stop
-with a checkpoint or expand at a host-controlled boundary and recompile. It must
-never silently discard cells, contacts, or scientific events.
-
-M1c-a implements separate cell and edge axes, masks, stable IDs, safe neutral
-padding, and shape-aware checkpoint/resource checks; passive_pair@1 still accepts
-exactly two active cells and one contact. CORE-003 adds species-by-cell amounts,
-species-by-edge transfer, and per-cell conversion. Its population and fixed
-topology are data, including zero contacts, disconnected cells, and parallel
-contacts with distinct IDs. Tiny reference cases extend through five cells;
-there is no hard-coded five-cell limit or performance claim. Independent-world
-batching is tested only at the process/RHS level, not as a full-run ensemble API.
-
-Stable biological IDs are independent of reusable storage slots. Ancestry records
-survive slot reuse and cell death. Track both daughters when division is introduced;
-an observer may additionally follow a selected daughter to compare with a source
-contract. Group membership and connected components are measurable properties,
-with persistent group identities added only when an experiment defines them.
-
-## Communication and space
-
-Begin with a fixed graph, including small stars, pairs, chains, and a regular 2D
-layout. Store physical adjacency separately from functional permeability. A
-contact can exist while molecular exchange is blocked.
-
-The implemented passive pair exercises this distinction with prescribed opening,
-unequal volumes, reciprocal transfer, and exact restart. CORE-003 extends it to
-data-defined fixed graphs, independently controlled contacts, and species-specific
-permeabilities alongside local reactions. The shipped three-cell chain has no
-spatial geometry or neighbour discovery. 2D geometry and the source's
-voltage-selective contact remain subsequent extensions.
-
-The communication model computes flux from endpoint state, contact properties,
-and molecule-specific rules. For a conservative exchange model, calculate each
-edge flux once and accumulate equal and opposite amount changes at its endpoints;
-convert these to concentration changes using volumes. Source/sink and charge
-accounting must follow the declared model, including external reservoirs.
-
-Preserve the source bioelectric coupling in reference comparisons. A simple
-diffusion equation or threshold rule can be a separate reduced model, with its
-own validation, rather than an undocumented replacement for voltage gating.
-
-The next spatial extension represents moving cell centres, sizes, and mechanical
-forces. Neighbour search supplies candidate physical contacts, then contact rules
-determine communication. Extracellular fields use their own grid, with explicit
-cell-to-field deposition and field-to-cell sampling. The field grid need not have
-one element per cell.
-
-Cellular Potts and vertex representations remain options if cell shape or junction
-mechanics becomes central. Their adoption would change the mechanical model and
-requires a new design decision.
-
-## Bioelectric interfaces: one physical cell
-
-D018 adds a membrane-to-bath interface before a coupled ionic tissue. A membrane
-has its own identity and area; it is not the cell volume, a physical adjacency
-edge, or a gate. Begin with one well-mixed cell facing one maintained bath through
-one lumped membrane. Bath concentrations, potential, and chemical drive are
-explicit external support. Finite extracellular compartments and fields will
-own dynamic state and different closure rules when their models are introduced.
-
-The implemented physical cell evolves ion amounts and signed exchange/cycle ledgers.
-Its voltage follows an immutable amount/charge/capacitance anchor. Leak and pump
-mechanisms read the same stage state and contribute to the same amounts; their
-experimental control groups remain independent. Evolving endogenous gates have
-primary state with their own kinetics and complete snapshots; algebraic gates
-are identified derived mechanisms. Neither is a relabelled prescribed opening.
-See [the contract](BIOELECTRIC_CELL_SPEC.md) for
-equations, units and external energy assumptions, and the
-[production guide](BIOELECTRIC_CELL.md) for its verified bounded implementation.
-
-The existing source-scaled EMT model is not silently wired to physical ions.
-Likewise, a new surface mapping alone does not validate a multicompartment
-electrical model. Add only exercised interfaces now, with sparse/local mappings
-compatible with later graph/field exchange and device-resident execution.
-
-D021's [physical-pair specification](SELECTIVE_CONTACT_SPEC.md) defines the
-bounded extension: two effective membrane capacitances to a common bath, one
-oriented selective flux/ledger, and one relaxing gate state. The gate continues
-evolving during prescribed transport block. This is implemented as
-[bioelectric_pair@1](BIOELECTRIC_PAIR.md) in D023. The
-[NUM-003 reference](SELECTIVE_CONTACT_NUMERICS.md) requires a new 1 ms/cubic
-candidate for its bounded panel, rather than inheriting the single-cell timestep.
-Boundary-aware implicit Jacobian probes keep the reference domain explicit.
-Production reuses membrane laws, graph scatter and the checked engine, with
-explicit gate/transfer state, separate control-array capacities, diagnostic
-energy integrals and complete replay. Its read-only sampler checks every cubic's
-amount/gate/affine-voltage extrema, not only requested samples. Numerical failures
-are refused without clipping. Same-layout replay is exact; changing capacity or
-orientation can alter floating reduction order in diagnostics.
-The [source map](SOURCE_COUPLING_MAP.md) separately identifies BITSEY's algebraic
-gate, upwind junction law and regulatory tracer/clock approximations. Those
-choices belong in named models, not global runner exceptions. Future reductions
-must test the effect of eliminating gate history as well as fast voltage modes.
-
-## Time and numerical integration
-
-The scheduler coordinates continuous dynamics and discrete events. Start with a
-documented coupled update scheme whose numerical convergence can be checked.
-Introduce separate process update rates when justified by the model and profiles.
-Electrical dynamics, regulation, diffusion, mechanics, and lifecycle events may
-require different rates; their ordering and coupling error are part of the solver
-contract.
-
-Interventions occur at specified physical times or explicitly named lineage
-boundaries. Short cues must not disappear between integration steps. Distinguish
-an accepted live endpoint from the last saved sample, and record both times.
-
-M1a uses RK4 for its analytic source/decay fixture. M1b also validates RK4 at step
-0.1 for the source's isolated regulatory E/M cases against Radau/BDF references
-and the pinned native source. M1c-a validates RK4 for passive exchange with an
-event-local bound h*g*u*(1/VA + 1/VB) <= 1 and independent analytic references.
-CORE-003 uses h*alpha <= 0.5, where alpha includes reaction loss and every incident
-contact's outgoing rate for each species/cell coordinate. Both contributions use
-the same stage state. Its [contract](REACTION_TRANSPORT.md#numerical-domain-and-accuracy)
-explains this conservative positivity domain and independent matrix/refinement checks.
-This does not select the solver for coupled ionic/regulatory dynamics, whose
-timescales may make stiffness relevant. Compare that coupled
-candidate with trusted CPU references and the source's numerical settings.
-SciPy's [ODE solver documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
-describes explicit and stiff-method options for reference work. Fixed-step,
-adaptive, implicit, and split methods are candidates to assess, not interchangeable
-assumptions. A solver change is an identified numerical variant.
-
-Physical approximation is a separate model choice: an equivalent-circuit model
-that omits concentration dynamics is not the same ionic model with a faster
-integrator. Declare supported quantities and controls with each model and reject
-unsupported requests. Backend selection must not change those capabilities.
-NUM-002's [independent reference](BIOELECTRIC_NUMERICS.md) selects a bounded
-float64 RK4/5 ms candidate for the physical cell, with interval-correct cubic
-Hermite observations. This is not yet implemented in production; existing linear
-bounds do not transfer automatically. Its measured local time-scale separation
-also motivates later stiff/multirate methods, independently of device placement.
-
-Use float64 as the CPU reference precision and enable it explicitly in JAX.
-Reduced precision requires measured error bounds and agreement on scientific
-outcomes, especially near commitment thresholds. See
-[JAX's precision settings](https://docs.jax.dev/en/latest/default_dtypes.html).
-
-## Growth and renewal
-
-Scripted transfer to fresh prepared cells is the first relay assay. Autonomous
-growth and division are a later, separately specified model version.
-
-A biological boundary specification declares what each event retains,
-partitions, reconstructs, erases, or leaves external, including contact and
-environmental state. It is distinct from a complete numerical checkpoint.
-Transplantation, replacement, division, and fragmentation need different rules.
-Track original versus newly created material where a renewal claim needs that
-distinction; a lineage label alone is not evidence of material replacement.
-
-That extension defines resource uptake, synthesis/degradation, volume growth,
-division conditions, state partition, death, and contact formation. Where amounts
-are represented, partition parent amounts and volume consistently and derive
-daughter concentrations. Account for declared generation, degradation, and external
-exchange. Copying concentrations into two full-size cells is not a material
-partition model.
-
-A concentration-based source approximation may not conserve every molecular
-species. Record that approximation in the reference model; a revised accounting
-model needs its own equations and comparisons. Successor creation rules must be
-specified independently of the desired inherited label.
-
-## Information access and memory mechanisms
-
-Transport, biological reading, expression, and successor writing are distinct
-causal operations even when ordinary kinetics implement several together.
-Mechanism contracts state permitted local inputs and output targets. Global
-history labels, evaluator targets, and analysis decoders are not automatically
-available to a cell or controller.
-
-Communication and slow-state writing may have different access rules. Protected
-compartments, limited writing windows, recipient-compatible readers, and
-independent versus correlated disturbances are optional experimental mechanisms,
-not universal requirements. Record proposals, accepted interventions, and actual
-state/material changes separately when a controller can refuse a write.
-
-## Ensembles and the GPU path
-
-Support both one world with many interacting cells and many independent worlds.
-Batch worlds with compatible model structures and capacity shapes; use host-level
-orchestration for incompatible experiments. CPU parallelism can first distribute
-independent batches with explicit worker and thread limits.
-
-CORE-004/D027 implements the first [independent-world batch](INDEPENDENT_WORLDS.md)
-as an explicit world axis and conservative compiled mapping. Each world keeps
-its scalar event grid; terminal padding is masked without advancing state or
-evaluating a completed world's RHS. The batch wraps ordinary complete scalar
-snapshots and model observers, rather than creating a second biological schema.
-World IDs namespace cell/contact/bath IDs. This is independent experimentation,
-not tissue decomposition or communication between organs.
-
-The bounded CPU profile now separates compilation, warmed execution, host work
-and storage. It shows no universal batch speedup: graph batches help at the
-largest tested count, while nominal pairs have no overall gain there. Full
-histories, host work and output remain visible costs. CORE-005a/D028 adds
-[single-world windows](WINDOWED_EXECUTION.md), with a lazy exact grid, every
-ordinary interval/observer check, complete ledger/state continuity, and
-incremental selected recording. It bounds retained arrays, not biological work
-or whole-process RSS. CORE-005b/D029 applies the contract to
-[independent cohorts](WINDOWED_WORLDS.md): each execution round consumes each
-world's own existing intervals, with prepared parameters, active masks and
-compiled widths reused. A complete cohort checkpoint maps independent local
-clocks; it is not a simultaneous organ state. Per-world observers still check
-ordinary host results before any round is exposed. Vectorized failure guards,
-multi-device semantics and biological exchange still require qualification.
-
-JAX is the shared execution framework. GPU readiness requires checking compiled
-control flow, allocation, reductions, random semantics, and device-resident state;
-changing the device alone is not a performance guarantee. Keep state on the device
-across many steps and transfer selected observations or checkpoints in batches.
-
-Measure compilation separately from warmed execution, synchronise device work
-before recording elapsed time, and report both end-to-end experiment throughput
-and kernel timings. Early comparisons cover small relay ensembles, a coupled 2D
-graph, and later changing-population events. No GPU model or speedup is assumed.
-
-Differentiation is optional. Smooth intracellular or transport components may
-support inference, while discrete division, topology changes, and classifications
-need separate treatment. Gradients are not required to run the first experiments.
-
-## Randomness, replay, and checkpoints
-
-Make randomness explicit and separate initialisation, process noise, partition,
-intervention, and analysis streams. Record how stream keys derive from run,
-replicate, lineage, and event identity. Paired comparisons explicitly declare which
-draws are shared and which are independent. Diagnostics must not consume the
-simulation's random stream.
-
-A checkpoint contains all state needed for continuation, including pending inputs,
-identities, environment, numerical scheduler/integrator state, and random state.
-Fixed parameters and model code are referenced by immutable versions or hashes.
-Restart verification compares uninterrupted and restored execution under a pinned
-backend. Cross-device verification uses specified numerical tolerances and, for
-stochastic models, distributional and endpoint comparisons; bitwise equality is
-not presumed.
-
-## Experiment records and storage
-
-Preparation is an explicit experiment phase or preceding run, with its full
-initial conditions, controls, duration/stopping criteria, and resulting checkpoint.
-There is no silent equilibration on resume or branch. Preserve the prepared
-state, external support, electrical anchors, and earlier accounting history;
-re-preparing a cell would otherwise erase precisely the history a memory assay
-may intend to challenge. MODEL-003 preserves this physical state/history through
-run/checkpoint protocols; a general preparation API is not implemented.
-
-Each run records the model and observer versions, code revision and local source
-hashes when needed, resolved configuration, units, seeds, software versions,
-device, precision, solver settings, stopping rules, and source-checkpoint hashes.
-
-Store dense state in an array format such as HDF5 or Zarr and event/summary tables
-in Parquet, with a readable JSON manifest. The exact storage choice is open.
-M1a uses small numeric NPZ arrays plus JSON for a complete prototype snapshot;
-that does not fix the production storage backend.
-Use configurable observation rates plus complete restart checkpoints to control
-output volume. Preserve continuous state and identity alongside derived labels.
-
-Observation interpolation has its own accuracy contract. D019's reference found
-that linear samples could miss the voltage target despite accurate RK4 endpoints.
-The physical model now uses an explicitly identified cubic Hermite policy,
-with endpoint derivatives evaluated under each interval's held controls. At an
-event, left and right derivatives can differ. The existing four models retain
-their verified linear policy; sampling remains read-only in either case. A shared
-checked-RK4 path accepts a pure model-domain predicate, checks trials/endpoints,
-and refuses failed runs without publishing repaired trajectories. Membrane
-capacity is budgeted independently of cell/contact storage.
-
-Run status distinguishes numerical failure, capacity exhaustion, biological death,
-scientific negative outcomes, and a completed finite horizon. A scientifically
-negative result can be a correctly completed experiment.
-
-## Analysis and viewing
-
-The viewer consumes snapshots or a bounded stream; rendering does not determine
-simulation time or random draws. Initial views should show cellular state,
-voltage, functional contacts, environmental fields when present, and selected
-lineage histories. Interactive interventions go through the experiment interface
-and are recorded for replay.
-
-Python notebooks and optional R analysis read the same saved artifacts. Observers
-include retention, transmission, episode coherence, rewrite cost, recovery, and
-resource use. Phi-r or other information measures can be added with their complete
-sampling and estimation contracts.
-
-An observer specification fixes read access, coordinate frame, spatial and
-temporal scale, thresholds, null/positive calibration, and version. Observer
-frequency must not change the dynamics. Preserve continuous readouts alongside
-classes and allow trajectory/challenge signatures instead of assuming a finite
-catalogue of cell or tissue identities. Any feedback use of an observation is an
-explicit controller with declared access and cost.
-
-Cost outputs distinguish simulated material/energy assumptions, sensing and
-reconstruction requirements, shared machinery, and actual computation/storage.
-An inherited payload size alone is not the cost of the mechanism. Restoration,
-reprogramming, and environment-specific benefit have separate endpoints.
-
-Reduced models for larger scales must be validated on held-out trajectories and
-interventions. A reduction that preserves current E/M labels but loses commitment
-is insufficient for memory experiments.
-
-## Technical references
-
-- [JAX compilation and functional constraints](https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html)
-- [JAX JIT compilation and changing shapes](https://docs.jax.dev/en/latest/201/jit.html)
-- [JAX float64 configuration](https://docs.jax.dev/en/latest/default_dtypes.html)
-- [JAX explicit state](https://docs.jax.dev/en/latest/stateful-computations.html)
-- [JAX structured array state](https://docs.jax.dev/en/latest/101/pytrees.html)
-- [SciPy integration reference](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)
-
-These references informed the initial design review. Exact supported versions
-and target-device compatibility will be checked when the environment is pinned.

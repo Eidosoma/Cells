@@ -7,6 +7,10 @@ implementation details remain adjustable through recorded evidence.
 Use stable decision IDs. A later change should supersede an entry with a new
 dated rationale rather than erase the earlier choice.
 
+This is a historical decision record, not a current feature list. Statements
+about pending work apply to the date of their entry. Consult [Architecture](ARCHITECTURE.md),
+[Roadmap](ROADMAP.md) and [Progress](../PROGRESS.md) for present scope and priorities.
+
 ## D001: Python with JAX, CPU first
 
 Status: accepted, 2026-09-07.

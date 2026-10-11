@@ -1,142 +1,18 @@
 # Multiscale composition and organ definitions
 
-Design direction: 2026-09-07. Start with one cell; support tissues, a whole organ,
-and eventually interacting organs through the same modular architecture. This
-document specifies extension contracts. Version 0.14.0 retains the one-cell
-fixture, isolated regulation, passive two-cell contact, and local-reaction/transport
-composition on data-defined fixed graphs, plus a [physical membrane/bath cell](BIOELECTRIC_CELL.md)
-and a [gated physical pair](BIOELECTRIC_PAIR.md), plus a separately typed
-[nominal source-compatible EMT pair](SOURCE_EMT_PAIR.md), and adds a
-[multispecies membrane family](MULTISPECIES_MEMBRANE.md) and
-[state-bearing membrane channel](VOLTAGE_GATED_MEMBRANE.md), with a separate
-[physical ionic graph family](PHYSICAL_IONIC_GRAPH.md) for communicating cells.
-It adds a distinct [finite extracellular family](FINITE_EXTRACELLULAR.md):
-one shared outside inventory with explicit membrane ownership, not a private
-bath copied into each cell.
-It retains [independent-world execution](INDEPENDENT_WORLDS.md) and adds
-[bounded single-world windows](WINDOWED_EXECUTION.md) and
-[independently clocked windowed cohorts](WINDOWED_WORLDS.md). Tissue, organ, and
-computational-multiscale execution remain future work. See [First build](FIRST_BUILD.md),
-[Isolated regulation](EMT_REFERENCE.md), [Passive contact](PASSIVE_CONTACT.md), and
-[Reaction and transport](REACTION_TRANSPORT.md)
-for the deliberately small delivered scopes.
+Scope reviewed: **2026-10-11**. This document defines composition, ownership and
+future organ interfaces. Current cell, spatial-tissue, calcium and assembly
+families exercise parts of these contracts; they are not a general organ or
+adaptive multiscale implementation. [Progress](../PROGRESS.md) records their
+verification, and the [model index](README.md#models-and-execution) locates the
+versioned guides.
 
-D055 / [SPEC-008](FINITE_EXTRACELLULAR_SPEC.md) now independently checks a small
-finite extracellular compartment at the design/reference level. It owns outside
-amounts, volume and fixed charge; membrane transfers have equal/opposite endpoint
-ownership, and total ionic chemical/capacitor energy is accounted for. A common
-well-mixed outside is a declared physical approximation, not one duplicated
-environment per cell or a generic organ wrapper. Distinct future organs sharing
-a transport compartment will likewise belong to one coupled world. Numerical
-qualification and production remain separate gates before spatial refinement.
-
-[NUM-009 v2](FINITE_EXTRACELLULAR_NUMERICS_V2.md) now tests the time-dependent numerical
-boundary with outside amount and concentration budgets, complete conserved
-state and small-reservoir depletion. Anchored numerical increments preserve
-small exchanges without changing the physical amount/charge ownership. Every
-inventory remains explicit, including disconnected compartments; a disabled
-owner must not become a sink for other owners' numerical cancellation. This is
-one resolution of a finite environment, not a validated organ or spatial model.
-
-D058 / CORE-009 now implements these anchored coordinates on separate numeric
-cell/membrane/channel/junction/outside axes. Its
-[formal CPU/JAX acceptance](../reports/CORE009_ACCEPTANCE.md) passes complete
-restart, branch and cohort paths; the shared execution machinery is unchanged.
-Outside volume and population size are data, with one-/five-cell scaling tests.
-One active outside is the current physical approximation, not a permanent
-engine-wide restriction. Spatial refinement needs a new electrical closure,
-convergence evidence and eventually a deliberate device communication plan.
-
-D059 / [SPEC-009](SPATIAL_EXTRACELLULAR_SPEC.md) supplies the next spatial
-design and instantaneous reference, not production spatial refinement. Outside
-volumes may have no membrane; membrane capacitance and extracellular current
-constraints are separate graph structures. The one-cell/two-outside fixture,
-two-cell chain and loop use data-defined ownership. No one-field-node-per-cell,
-one-organ-per-GPU or implicit independent-bath convention is introduced.
-Fine/coarse transfer will need charge/capacitance and energy constraints in
-addition to material aggregation; this reference does not yet supply it.
-
-D060 / [NUM-010](../reports/NUM010_REFERENCE.md) now supplies bounded short
-spatial trajectories and temporal/spatial checks without adding production
-multiscale execution. All five inventory/history fields survive reference
-restart; potentials are derived from current inventories. The 8/16/32-volume
-line panel separates continuum discretization error from analytic discrete-mode
-time error. Its finest grid rejects the old well-mixed 1 ms step and qualifies
-0.125 ms with 0.0625 ms refinement. Resolution-dependent stiffness remains a
-numerical design concern regardless of CPU/GPU placement; adaptive coarsening,
-fine/coarse transfers and multirate coupling are still separate gates.
-
-D061 / [CORE-010](SPATIAL_EXTRACELLULAR.md) now maps this passive subset into the
-shared CPU/JAX engine as a development family. Six array leaves retain the five
-reference coordinate fields by splitting amount increments across independent
-cell and outside axes. Pure-bulk worlds need no fake cell; membrane and face
-histories are independently sized. Potentials are recomputed from state at every
-stage and observation. The bounded dense field scratch is a numerical backend
-choice, not dense saved geometry or a GPU partition map. Formal release
-acceptance is still open; this adds no organ preset or cross-resolution coupling.
-
-D045, 2026-09-09, now makes [BETSE-level capability](BETSE_CAPABILITY_ROADMAP.md)
-and future parallel GPUs explicit targets. The companion
-[execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) refines ownership,
-multirate/fine-coarse interface transfers, distributed field solves, independent
-versus interacting GPU workloads, and collective/checkpoint semantics. It is
-design-only. D046 now completes [SPEC-005's one-cell reference](MULTISPECIES_MEMBRANE_SPEC.md);
-D047 adds [NUM-006's bounded trajectory qualification](../reports/NUM006_REFERENCE.md).
-CORE-006 now implements a new numeric CPU/JAX assembly, with
-[bounded acceptance complete](../reports/CORE006_ACCEPTANCE.md).
-Species/role bindings, independent capacity axes and complete histories are
-exercised through existing scalar/cohort paths. No organ wrapper, adaptive reduction
-or distributed runtime is needed for that first production extension.
-SPEC-006 now [checks two retained gates in one channel](../reports/SPEC006_DESIGN_CHECK.md)
-without changing production. Fast activation and slower inactivation must remain
-distinct from abundance and controls; equal open fraction is not complete state.
-Its [contract](VOLTAGE_GATED_CHANNEL_SPEC.md) proposes gate/channel axes and
-complete histories, with coupled NUM-007 qualification before production or
-multirate reduction. An analytic fixed-voltage gate step is not an exact
-feedback-coupled update or whole-cell voltage clamp.
-NUM-007 now [qualifies a coupled 0.5 ms RK4/cubic candidate](../reports/NUM007_REFERENCE.md)
-with independent refinement. The equal-open preparations evolve differently,
-so a reduction must preserve or explicitly approximate both gate histories.
-CORE-007 now implements those gate/channel axes through the common CPU/JAX
-engine, with [bounded acceptance complete](../reports/CORE007_ACCEPTANCE.md).
-Channel capacity is independent of cell
-and membrane capacity and enters memory/batch preflight. This is not a multirate
-or GPU result.
-
-[SPEC-007's physical graph](PHYSICAL_IONIC_GRAPH_SPEC.md) now has passing
-[instantaneous composition checks](../reports/SPEC007_DESIGN_CHECK.md). Its shared
-bath/diagonal-capacitance closure, one local membrane per cell and one owned
-transfer per edge are explicit. Amounts alone cannot reconstruct a graph's
-cycle transfer histories. Single/disconnected reductions and unequal pair/star
-checks now have separate [NUM-008 short trajectory qualification](../reports/NUM008_REFERENCE.md).
-The 2 ms candidate and 1 ms refinement cover only the frozen low-degree graphs;
-they do not justify skipping shared stages, averaging away gate/history state,
-or changing fine/coarse clocks. CORE-008 now implements the new production
-family through the shared CPU/JAX engine; [acceptance status](../reports/CORE008_ACCEPTANCE.md)
-is tracked separately. Independent worlds can have different physical cell and
-edge counts while sharing capacity buckets. This does not make worlds interact
-or establish coarse-grained physics, an organ preset, a larger-graph timestep or
-a GPU result.
-
-The first independent-world batch and bounded CPU profiles are now verified,
-without selecting GPU or multirate optimizations. A batch is a collection
-of independent experiments, not an organ hierarchy or an exchange model between
-organs. The source pair's nominal clock supplies no physical multiscale timestep.
-Complete batch histories still grow with world count and step count; conservative
-compiled mapping is not a large-organ memory policy. Single-world windows now
-separate bounded working traces from optional retained output, with exact
-continuation, observations and accounting preserved. Windowed cohorts extend
-this contract while retaining each world's own clock and complete restart state.
-Windowing is storage partitioning, not multirate stepping,
-coarse-grained physics or permission to bypass numerical checks.
-
-SPEC-004's [first longer switching design](E02_SWITCHING_PROTOCOL.md) needs
-three communicating cells, which the nominal pair cannot currently represent.
-Its next graph extension must compose one local process per cell and explicit
-edge contributions in a single world. Two independent pairs cannot stand in
-for one shared recipient. This is a fixed-graph model gate, not new multiscale
-physics; independently qualify it before production, then retain the same
-bounded execution and complete state interfaces for later larger graphs.
+Selected families run on CPU and L4. Independent-world GPU scheduling and offline
+Jupiter planning are described in [GPU execution](GPU_ENSEMBLES.md). Splitting one
+interacting tissue across devices, conservative fine/coarse reduction, coupled
+multirate stepping and organ validation need additional implementation and evidence.
+The [parallel architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) describes those
+requirements. Earlier build notes are preserved at the end of this document.
 
 ## What is data and what is code?
 
@@ -319,9 +195,10 @@ one compiled loop. Handle those changes at declared host boundaries, preserving
 state and provenance. See the
 [JIT compilation contract](https://docs.jax.dev/en/latest/201/jit.html).
 
-CPU/GPU agreement is tested at each new scale. Domain decomposition and multiple
-devices are future responses to measured limits, not prerequisites for one cell
-or guarantees that a whole organ will fit at full cellular detail.
+CPU/GPU agreement is tested at each new scale. Independent ensembles already
+have a GPU scheduling path; Jupiter execution remains to be qualified. Domain
+decomposition of one interacting world requires additional state ownership,
+communication and numerical checks. Device count does not establish organ capacity.
 
 ## Future note: computational multiscale and large GPUs
 
@@ -358,19 +235,17 @@ output, and end-to-end throughput. Precision can be selected per numerical block
 only after validation; float64 remains the reference. Raw GPU capacity or cell
 count does not establish organ-scale feasibility or biological accuracy.
 
-The current build preserves prerequisites: explicit array state, separate numerical
-and biological contracts, dimensioned inputs, stable identities, configurable
-sampling, and distinct cell/edge capacity and accumulation semantics.
-CORE-003 adds explicit species axes, tensor-aware read-only observation, and
-same-stage local/exchange composition. CORE-004 implements a homogeneous
-independent-world API with complete cohort snapshots and measured small CPU
-profiles. CORE-005a adds single-world bounded windows and incremental recording;
-CORE-005b adds bounded independent rounds with prepared execution reuse and
-complete cohort restart. Neither constitutes a fine/coarse biological interface;
-metadata schedules remain resident and working-array estimates exclude compiler
-caches and process overhead. Representative tissue/organ profiles remain future work.
-No adaptive mesh, multirate integrator, distributed runtime, sharding scheme,
-mixed-precision policy, or large-GPU purchase is selected now.
+The implementation preserves explicit array state, separate numerical and
+biological contracts, dimensioned inputs, stable identities and bounded recording.
+Spatial and resolved-tissue models add field and membrane ownership; assembly
+coupling adds complete stochastic event state. These are useful prerequisites,
+not a validated fine/coarse biological interface. Memory plans must also include
+compiler caches, process overhead and communication buffers.
+
+Adaptive meshes, coupled multirate stepping and distributed interacting state
+remain further work. The current Jupiter target is up to sixteen GPUs, beginning
+with qualification on one four-GPU node. Mixed precision requires separate
+numerical checks; it is not implied by that hardware target.
 
 NUM-002 supplies the first physical-cell [time-scale evidence](BIOELECTRIC_NUMERICS.md):
 fast electrical and much slower ionic modes in its synthetic reference. Its
@@ -391,3 +266,146 @@ cell cluster is not automatically a whole-organ model. Success means reproducing
 the selected organ function within a stated scope, not simulating every molecule
 or all physiology. The same definition mechanism must allow more than one organ
 instance without a fork of the engine.
+
+## Historical implementation notes
+
+These baseline notes preserve the scope of their original September versions.
+Their future-work statements are historical; current evidence lives in Progress.
+
+Design direction: 2026-09-07. Start with one cell; support tissues, a whole organ,
+and eventually interacting organs through the same modular architecture. This
+document specifies extension contracts. Version 0.14.0 retains the one-cell
+fixture, isolated regulation, passive two-cell contact, and local-reaction/transport
+composition on data-defined fixed graphs, plus a [physical membrane/bath cell](BIOELECTRIC_CELL.md)
+and a [gated physical pair](BIOELECTRIC_PAIR.md), plus a separately typed
+[nominal source-compatible EMT pair](SOURCE_EMT_PAIR.md), and adds a
+[multispecies membrane family](MULTISPECIES_MEMBRANE.md) and
+[state-bearing membrane channel](VOLTAGE_GATED_MEMBRANE.md), with a separate
+[physical ionic graph family](PHYSICAL_IONIC_GRAPH.md) for communicating cells.
+It adds a distinct [finite extracellular family](FINITE_EXTRACELLULAR.md):
+one shared outside inventory with explicit membrane ownership, not a private
+bath copied into each cell.
+It retains [independent-world execution](INDEPENDENT_WORLDS.md) and adds
+[bounded single-world windows](WINDOWED_EXECUTION.md) and
+[independently clocked windowed cohorts](WINDOWED_WORLDS.md). Tissue, organ, and
+computational-multiscale execution remain future work. See [First build](FIRST_BUILD.md),
+[Isolated regulation](EMT_REFERENCE.md), [Passive contact](PASSIVE_CONTACT.md), and
+[Reaction and transport](REACTION_TRANSPORT.md)
+for the deliberately small delivered scopes.
+
+D055 / [SPEC-008](FINITE_EXTRACELLULAR_SPEC.md) now independently checks a small
+finite extracellular compartment at the design/reference level. It owns outside
+amounts, volume and fixed charge; membrane transfers have equal/opposite endpoint
+ownership, and total ionic chemical/capacitor energy is accounted for. A common
+well-mixed outside is a declared physical approximation, not one duplicated
+environment per cell or a generic organ wrapper. Distinct future organs sharing
+a transport compartment will likewise belong to one coupled world. Numerical
+qualification and production remain separate gates before spatial refinement.
+
+[NUM-009 v2](FINITE_EXTRACELLULAR_NUMERICS_V2.md) now tests the time-dependent numerical
+boundary with outside amount and concentration budgets, complete conserved
+state and small-reservoir depletion. Anchored numerical increments preserve
+small exchanges without changing the physical amount/charge ownership. Every
+inventory remains explicit, including disconnected compartments; a disabled
+owner must not become a sink for other owners' numerical cancellation. This is
+one resolution of a finite environment, not a validated organ or spatial model.
+
+D058 / CORE-009 now implements these anchored coordinates on separate numeric
+cell/membrane/channel/junction/outside axes. Its
+[formal CPU/JAX acceptance](../reports/CORE009_ACCEPTANCE.md) passes complete
+restart, branch and cohort paths; the shared execution machinery is unchanged.
+Outside volume and population size are data, with one-/five-cell scaling tests.
+One active outside is the current physical approximation, not a permanent
+engine-wide restriction. Spatial refinement needs a new electrical closure,
+convergence evidence and eventually a deliberate device communication plan.
+
+D059 / [SPEC-009](SPATIAL_EXTRACELLULAR_SPEC.md) supplies the next spatial
+design and instantaneous reference, not production spatial refinement. Outside
+volumes may have no membrane; membrane capacitance and extracellular current
+constraints are separate graph structures. The one-cell/two-outside fixture,
+two-cell chain and loop use data-defined ownership. No one-field-node-per-cell,
+one-organ-per-GPU or implicit independent-bath convention is introduced.
+Fine/coarse transfer will need charge/capacitance and energy constraints in
+addition to material aggregation; this reference does not yet supply it.
+
+D060 / [NUM-010](../reports/NUM010_REFERENCE.md) now supplies bounded short
+spatial trajectories and temporal/spatial checks without adding production
+multiscale execution. All five inventory/history fields survive reference
+restart; potentials are derived from current inventories. The 8/16/32-volume
+line panel separates continuum discretization error from analytic discrete-mode
+time error. Its finest grid rejects the old well-mixed 1 ms step and qualifies
+0.125 ms with 0.0625 ms refinement. Resolution-dependent stiffness remains a
+numerical design concern regardless of CPU/GPU placement; adaptive coarsening,
+fine/coarse transfers and multirate coupling are still separate gates.
+
+D061 / [CORE-010](SPATIAL_EXTRACELLULAR.md) now maps this passive subset into the
+shared CPU/JAX engine as a development family. Six array leaves retain the five
+reference coordinate fields by splitting amount increments across independent
+cell and outside axes. Pure-bulk worlds need no fake cell; membrane and face
+histories are independently sized. Potentials are recomputed from state at every
+stage and observation. The bounded dense field scratch is a numerical backend
+choice, not dense saved geometry or a GPU partition map. Formal release
+acceptance is still open; this adds no organ preset or cross-resolution coupling.
+
+D045, 2026-09-09, now makes [BETSE-level capability](BETSE_CAPABILITY_ROADMAP.md)
+and future parallel GPUs explicit targets. The companion
+[execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) refines ownership,
+multirate/fine-coarse interface transfers, distributed field solves, independent
+versus interacting GPU workloads, and collective/checkpoint semantics. It is
+design-only. D046 now completes [SPEC-005's one-cell reference](MULTISPECIES_MEMBRANE_SPEC.md);
+D047 adds [NUM-006's bounded trajectory qualification](../reports/NUM006_REFERENCE.md).
+CORE-006 now implements a new numeric CPU/JAX assembly, with
+[bounded acceptance complete](../reports/CORE006_ACCEPTANCE.md).
+Species/role bindings, independent capacity axes and complete histories are
+exercised through existing scalar/cohort paths. No organ wrapper, adaptive reduction
+or distributed runtime is needed for that first production extension.
+SPEC-006 now [checks two retained gates in one channel](../reports/SPEC006_DESIGN_CHECK.md)
+without changing production. Fast activation and slower inactivation must remain
+distinct from abundance and controls; equal open fraction is not complete state.
+Its [contract](VOLTAGE_GATED_CHANNEL_SPEC.md) proposes gate/channel axes and
+complete histories, with coupled NUM-007 qualification before production or
+multirate reduction. An analytic fixed-voltage gate step is not an exact
+feedback-coupled update or whole-cell voltage clamp.
+NUM-007 now [qualifies a coupled 0.5 ms RK4/cubic candidate](../reports/NUM007_REFERENCE.md)
+with independent refinement. The equal-open preparations evolve differently,
+so a reduction must preserve or explicitly approximate both gate histories.
+CORE-007 now implements those gate/channel axes through the common CPU/JAX
+engine, with [bounded acceptance complete](../reports/CORE007_ACCEPTANCE.md).
+Channel capacity is independent of cell
+and membrane capacity and enters memory/batch preflight. This is not a multirate
+or GPU result.
+
+[SPEC-007's physical graph](PHYSICAL_IONIC_GRAPH_SPEC.md) now has passing
+[instantaneous composition checks](../reports/SPEC007_DESIGN_CHECK.md). Its shared
+bath/diagonal-capacitance closure, one local membrane per cell and one owned
+transfer per edge are explicit. Amounts alone cannot reconstruct a graph's
+cycle transfer histories. Single/disconnected reductions and unequal pair/star
+checks now have separate [NUM-008 short trajectory qualification](../reports/NUM008_REFERENCE.md).
+The 2 ms candidate and 1 ms refinement cover only the frozen low-degree graphs;
+they do not justify skipping shared stages, averaging away gate/history state,
+or changing fine/coarse clocks. CORE-008 now implements the new production
+family through the shared CPU/JAX engine; [acceptance status](../reports/CORE008_ACCEPTANCE.md)
+is tracked separately. Independent worlds can have different physical cell and
+edge counts while sharing capacity buckets. This does not make worlds interact
+or establish coarse-grained physics, an organ preset, a larger-graph timestep or
+a GPU result.
+
+The first independent-world batch and bounded CPU profiles are now verified,
+without selecting GPU or multirate optimizations. A batch is a collection
+of independent experiments, not an organ hierarchy or an exchange model between
+organs. The source pair's nominal clock supplies no physical multiscale timestep.
+Complete batch histories still grow with world count and step count; conservative
+compiled mapping is not a large-organ memory policy. Single-world windows now
+separate bounded working traces from optional retained output, with exact
+continuation, observations and accounting preserved. Windowed cohorts extend
+this contract while retaining each world's own clock and complete restart state.
+Windowing is storage partitioning, not multirate stepping,
+coarse-grained physics or permission to bypass numerical checks.
+
+SPEC-004's [first longer switching design](E02_SWITCHING_PROTOCOL.md) needs
+three communicating cells, which the nominal pair cannot currently represent.
+Its next graph extension must compose one local process per cell and explicit
+edge contributions in a single world. Two independent pairs cannot stand in
+for one shared recipient. This is a fixed-graph model gate, not new multiscale
+physics; independently qualify it before production, then retain the same
+bounded execution and complete state interfaces for later larger graphs.

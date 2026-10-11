@@ -1,9 +1,12 @@
 # Multiphysics, multiscale and parallel execution architecture
 
-2026-09-09, D045 / ARCH-003. Target design for the
-[BETSE capability roadmap](BETSE_CAPABILITY_ROADMAP.md). This refines the
-[existing multiscale design](MULTISCALE_DESIGN.md); it does not implement a new
-solver, spatial model, GPU backend or distributed runtime.
+Design baseline: 2026-09-09, D045 / ARCH-003; implementation context reviewed
+2026-10-11. This is the target architecture for [multiscale composition](MULTISCALE_DESIGN.md)
+and [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md). Current spatial/tissue,
+chemistry, assembly and CPU/L4 models exercise subsets of these interfaces.
+[GPU execution](GPU_ENSEMBLES.md) implements independent-world scheduling and
+up-to-sixteen-GPU planning; Jupiter qualification and a distributed interacting
+world remain additional work. [Progress](../PROGRESS.md) owns run status.
 
 ## Five separate decisions
 
@@ -18,7 +21,8 @@ Biological definition: mechanisms, compartments, geometry, organ ports
 All five identities belong in a run manifest. The organ is data selecting
 implemented mechanisms and wiring ports, not a solver branch. Organ membership,
 physical connectivity, numerical resolution and device ownership are distinct
-maps. One organ can span GPUs; one GPU can hold several organs or resolutions.
+maps. The target permits one organ to span GPUs or one GPU to hold several organs
+or resolutions; organ execution and distributed coupling are not implemented claims.
 Changing a device must not silently change physics, precision or resolution.
 
 Keep Python for assembly, validation, experiments and orchestration, and JAX
@@ -44,8 +48,8 @@ Use structured arrays/PyTrees grouped by compatible model family and capacity.
 Compartments, species, surfaces, edges and field sites have independent axes and
 stable IDs. No dense all-cell connectivity matrix is required. Padding is finite
 and mask-safe, and overflow is a checked checkpoint/reallocation boundary.
-The current explicit model registry and CPU-only schemas are not already a general
-assembly API; add exercised contracts incrementally and preserve their old versions.
+The explicit model registry and version-specific CPU/GPU schemas are not a
+general assembly API; add exercised contracts incrementally and preserve old versions.
 
 Amounts are primary where the model represents material. Derive concentrations
 from amounts/volumes; changing volume requires the correct dilution and transport
@@ -59,6 +63,11 @@ Multiple facing potentials, electrode currents or evolving membrane capacitance
 require a newly derived constraint/charge law. Do not copy that anchor to each
 surface or evolve both voltage and charge independently without a constraint.
 Geometry changes must account for any modeled capacitive/mechanical work.
+
+### Historical field-design foundations
+
+The following D055-D061 notes describe their original development stages;
+later spatial and resolved models are covered in the [tissue guide](TISSUE_RETURN_CURRENT.md).
 
 D055 / [SPEC-008](FINITE_EXTRACELLULAR_SPEC.md) adds a design/reference for one
 shared finite outside, not a production field solver. One outside inventory
@@ -291,6 +300,11 @@ end-to-end time alongside kernel time. No speedup, whole-organ capacity or
 hardware purchase is inferred from this design.
 
 ## What happens now
+
+Current priorities are in [Roadmap](ROADMAP.md), with execution status in
+[Progress](../PROGRESS.md). The original first-slice record below is historical.
+
+### Original production sequence
 
 The [SPEC-005 contract](MULTISPECIES_MEMBRANE_SPEC.md) and
 [instantaneous reference](../reports/SPEC005_DESIGN_CHECK.md) are now complete.

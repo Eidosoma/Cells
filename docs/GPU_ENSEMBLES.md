@@ -1,5 +1,10 @@
 # GPU execution and allocation efficiency
 
+Execution scope reviewed: **2026-10-11**. Selected model families have CPU/L4
+qualification; current results and active jobs live in [Progress](../PROGRESS.md).
+Jupiter execution and remote scaling remain to be qualified. Further utilization
+optimization is parked while simulation capabilities and verification advance.
+
 The deployment target is now **up to 16 GH200 GPUs on JUPITER**, across at most
 four nodes. The [site configuration](https://apps.fz-juelich.de/jsc/hps/jupiter/configuration.html)
 lists four GH200 superchips per node, each with 96 GB GPU memory and a 72-core
@@ -24,8 +29,9 @@ conservation and accuracy checks; ensemble scheduling alone cannot provide this.
 
 Qualification proceeds on the L4, then one JUPITER node, then 2–4 nodes. Measure
 every allocated GPU, compilation/I/O and tail costs, preserve the registered
-scientific arm counts, and rebalance using measured costs. The 70% utilization
-target remains advisory; improving it must not weaken the numerical checks.
+scientific arm counts, and rebalance using measured costs when optimization
+resumes. The earlier 70% utilization target remains advisory; it is not a
+numerical acceptance criterion.
 
 `finite_extracellular@2`, `finite_extracellular@3` and `spatial_extracellular@2`
 accept `execution.backend: "gpu"` with JIT and float64. Normal runs, windows,
@@ -38,7 +44,9 @@ GPU snapshots record CUDA packages, GPU kind and CUDA platform version. Saved
 continuation is checked on the same runtime/device kind. Moving from L4/x86 to
 GH200/Arm needs new numerical qualification. The physical RK4/domain checks
 are unchanged. Guarded ionic batches still use `lax.map`; functional GPU support
-does not yet establish high ionic throughput. Large spatial fields remain separate work.
+does not establish high ionic throughput. Later [tissue and resolved-surface
+families](TISSUE_RETURN_CURRENT.md) also have explicit CPU/GPU paths. Their bounded
+field solves do not establish large-mesh or distributed-field performance.
 
 ## Independent model ensembles
 
@@ -388,7 +396,15 @@ status once. Completion launches no automatic retry, campaign or scheduler job.
 
 ## Utilization and the node budget
 
-The initial target is **70% mean GPU busy time on every allocated GPU** across
+Current reporting records **GPU-busy time and measured SM-active percentage**,
+per-device coverage, throughput, allocated GPU/node time and arm finish gaps.
+Report whole-run and warmed measurements where a meaningful warmed interval
+exists. A mixed correctness suite with repeated compilation may have no such
+interval; say so. Missing hardware counters are unavailable, not measured zeros.
+Check telemetry support before each runner's next GPU campaign; do not infer
+coverage for an older run that did not collect the counters.
+
+The original registered target was **70% mean GPU busy time on every allocated GPU** across
 the whole allocation/runner interval. It is an advisory performance target;
 mixed CPU/GPU work may justify a different registered target after measurement.
 Any positive target up to 100% is supported. A separate measure starts after all
@@ -398,10 +414,13 @@ missed efficiency target. `ready_for_node_pilot` still means numerical completio
 and passing that registered utilization target; it does not submit or prevent
 a manually chosen pilot. The initial 70% target remains in the matched matrix.
 
-`gpu-utilization.jsonl` samples all allocated GPU UUIDs about once per second.
-The report time-weights readings, counts missing intervals as zero, and requires
+The original `gpu-utilization.jsonl` target check samples allocated GPU UUIDs
+about once per second. Its report time-weights readings, scores missing intervals
+as zero for that legacy target, and requires
 at least 30 seconds with 90% telemetry coverage. A long monitor gap cannot reuse
-an old high reading. NVIDIA GPU busy percent is distinct from SM occupancy;
+an old high reading; the score must not be presented as a measured counter value
+over those missing intervals. NVIDIA GPU busy percent, SM-active time and SM
+occupancy are different measurements;
 useful worlds/events per wall time also matter. Fresh completed campaigns report
 worlds and committed events per allocated GPU-hour. Resumed campaigns leave
 those ratios unset: their inherited work needs cumulative allocation accounting
