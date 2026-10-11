@@ -1,0 +1,57 @@
+{
+  "kind": "plasma_calcium_assembly_qualification@1",
+  "physical_scope": "Two owned cytosol/ER stores and finite outside regions with PMCA calcium extrusion, synthetic reversible NCX, buffering, spatial ion transport and assembly-controlled potassium channels",
+  "duration_s": 0.02,
+  "steps_s": [0.000025, 0.0000125, 0.00000625],
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_sources_sha256": {
+    "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8"
+  },
+  "checks": [
+    "Pinned BETSE positive-domain pumpCaATP with voltage/sign/area conversion, forward/reverse rates and actual CPU/L4 placement; explicit Cells blocker tested separately from unused native block argument",
+    "Independent direct-product synthetic 3Na/1Ca NCX rates, reversal potential, nonnegative dissipation, exact disabled routes and differentiability at stall; no native NCX parity claim",
+    "Strict membrane ownership, ionic roles, law identities, schedules, affinity and combined inventory loss bounds",
+    "Independent full stage derivative, Ca/Na stoichiometric scatter, distinct ER/plasma charge and maintained PMCA metabolic work; all-inventory physical energy derivative",
+    "Independent scalar DOP853 and Radau full-state trajectories, mutual agreement and 25/12.5/6.25 us timestep refinement at unchanged tolerances",
+    "PMCA/NCX blockers and merged timed interventions, absent/zero-capacity routes and exact reduction to spatial_calcium@1",
+    "Complete ionic scalar/batch checkpoint and window replay, world partitions 1/2/3 and future plasma controls; corrupt ledgers and interior cubic dissipation rejected",
+    "Assembly event-union independent reference, complete restart and world partitions, calcium response with unchanged protein streams",
+    "Model and world identity retained by ensemble planning through four nodes/16 GPUs, calcium aggregation and complete CPU/L4 state correspondence",
+    "Full prior spatial calcium, ER, native functions, compartment chemistry, reaction and checkpoint panel plus selected assembly-cluster regressions"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-9,
+    "independent_state_atol": 3e-12,
+    "reference_agreement_rtol": 2e-10,
+    "reference_agreement_atol": 5e-14,
+    "reference_solver_rtol": 2e-13,
+    "reference_solver_atol": 2e-17,
+    "reference_max_step_s": 0.00005,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "native_pump_rtol": 3e-12,
+    "native_pump_atol_fmol_per_s": 3e-14,
+    "energy_atol_pJ": 1e-9,
+    "minimum_refinement_improvement": 6,
+    "max_abs_voltage_V": 0.15,
+    "max_abs_plasma_affinity_RT": 80,
+    "max_actual_step_times_inventory_loss_bound": 0.25
+  },
+  "resources": {
+    "max_wall_seconds": 4500,
+    "artifact_and_cache_bytes": 1610612736,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.15
+  },
+  "resource_rationale": "New complete plasma/assembly trajectories and replay plus the previously 29-minute spatial regression panel; bounded at 75 minutes and 8 GiB host RSS while retaining the 4 GiB disk reserve",
+  "scope_exclusions": [
+    "Native BETSE initialization or complete trajectories; native NCX kinetics or native blocker behavior",
+    "Measured or calibrated PMCA/NCX capacities, calcium-driven assembly, biological validation, protein chemistry consuming ions or ATP",
+    "Detailed two-calcium SERCA, proton countertransport, finite ATP, IP3, calcium-selective gated channels",
+    "Cross-region junctions, variable volume, mechanics or lifecycle",
+    "Sustained utilization or speedup, distributed single-world integration or actual JUPITER execution"
+  ],
+  "automatic_followup": false
+}

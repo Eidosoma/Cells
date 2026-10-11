@@ -1,0 +1,96 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "anchors": {
+    "capture.json": "0bf8f5674a6b92af01171f95bab652d5c0cbfd8033d174d339fac9777a283b12",
+    "launch.json": "381fdbc002d7703da669b0cf8929ab5d493089a241831aa2397dd02e871c908b",
+    "registration.json": "1b6105df591e482697950feeac9b43f0228ae22038273c3f8c5284a6c6f90d82",
+    "sources.zip": "0baa5e0a5e6b4482206dc4b96d07790c769e28815e66bcb5e1dc710e0976ac45"
+  },
+  "baseline_files": 903,
+  "capture_rerun": false,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "f15e8c5a50e8fe2e0ba2103050ead0930f628b13fe18ef03c6aea54e237dce7b",
+      "before": "47208f60d6d915fcf7b7f6aac3d1d2b91262d7ee8e894dec557766a44da51c71"
+    },
+    "README.md": {
+      "after": "7da449d2b73727925c1f8b97e7919a6e92a5d241895c42da6f7d0b0602d83ae3",
+      "before": "21b67106c06aaf78f7ab58aee7d4792540a0ed3f9e517cf2a3398c7872616224"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "167b1f238369a98ae137625c024492fb452c9c5576bfb261badad265e902d99d",
+      "before": "b92b9438c83d72031f9de9912e7d8c9eb2333379e92ef16be8082ddfe0333baf"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "68eca0c55f47fb22d9b146a18c22200142960d884e857847d7431eacfbfac5a9",
+      "before": "9ab477abd3a6c899551553bc3826147370eb90dd6cafebaba52e61bb328fc1c1"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "c7d1c53054c470c18b7e9954f0ebca6746793d6bc6464232f5a94f002802fec0",
+      "before": "6ac2659b402e507a20994f89383dd746ba45881db68cb01fb3db6692c5919970"
+    },
+    "docs/DECISIONS.md": {
+      "after": "2fb99dd6497974dfbeb8a039ca8d486ea85d1eb79ecb3fdf1a151c8fb3ced98b",
+      "before": "d7046b4cea21900f31dad8356fa532a58a05aad1692c9ad8b962a96a77d675da"
+    },
+    "validation/betse/README.md": {
+      "after": "a429c72063a869d7dab88952dbe7292a6c953a3f5df824683b3e03863a47e62c",
+      "before": "929f7ac453817e009bc469b7623b29fb4746bab10b92f3b0568020d4b6664439"
+    }
+  },
+  "checked_utc": "2026-09-12T21:48:17.014161+00:00",
+  "independent_numerical_audit_run": false,
+  "job_plan": {
+    "automatic_expansion": false,
+    "automatic_retry": false,
+    "capture_rerun": false,
+    "cpu_affinity": "0-3",
+    "max_artifact_bytes": 67108864,
+    "schema": "cells.betse_full_loop_audit_job_plan@1",
+    "stage_timeout_seconds": 90,
+    "stages": [
+      "independent_saved_data_audit",
+      "focused_regression"
+    ],
+    "test_modules": [
+      "test_full_loop_bridge.py",
+      "test_full_loop_observer.py",
+      "test_saved_full_loop.py"
+    ],
+    "total_timeout_seconds": 210
+  },
+  "new_files_sha256_before_prelaunch": {
+    "docs/BETSE_FULL_LOOP_AUDIT.md": "a22c73919cf87efdf85b9f91476c1edf3d6d39143f779bbe21faa76297e02612",
+    "reports/REF003E0_PILOT_AUDIT_HANDOFF.md": "8ce808c00748be9ffa9d81e7025e22ab366a3d2ab5df72b3401fd8c02d20bdd9",
+    "reports/ref-003e0-loop-audit-checks-01.xml": "f00469f6c343bed8e0c76115b0d349e60b517c9520e87eae6e6876430b89e705",
+    "reports/ref-003e0-loop-audit-preservation.json": "5e7e514ed8a8a8fe055a5407ef55c73fb5e18c3b090cc7925f81889a7caedbc5",
+    "validation/betse/full_loop_audit.py": "20d60b6a657f574b6e93e647c1caefe18785b584392f85bb9309e5b148d029bc",
+    "validation/betse/full_loop_audit_context.py": "45935535a9ca25ab67e1f1d384353ef31cbd04b4282ed8f6da458aa01b25d7c0",
+    "validation/betse/full_loop_audit_job.py": "dbd345abd275a389baa00e74d6495accd2f60e237ce8e5816afcc29016ee9ac5",
+    "validation/betse/test_saved_full_loop.py": "bd998248622a680397d70d3ec7baa766bf92e6f0ade20452a58538577f7f17d4"
+  },
+  "pilot_files_unchanged": 142,
+  "preservation_sha256": "5e7e514ed8a8a8fe055a5407ef55c73fb5e18c3b090cc7925f81889a7caedbc5",
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "337 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "schema": "cells.betse_full_loop_audit_prelaunch@1",
+  "sources": {
+    "full_loop_audit.py": "20d60b6a657f574b6e93e647c1caefe18785b584392f85bb9309e5b148d029bc",
+    "full_loop_audit_context.py": "45935535a9ca25ab67e1f1d384353ef31cbd04b4282ed8f6da458aa01b25d7c0",
+    "full_loop_audit_job.py": "dbd345abd275a389baa00e74d6495accd2f60e237ce8e5816afcc29016ee9ac5",
+    "test_saved_full_loop.py": "bd998248622a680397d70d3ec7baa766bf92e6f0ade20452a58538577f7f17d4"
+  },
+  "status": "pass",
+  "test_receipt": "reports/ref-003e0-loop-audit-checks-01.xml",
+  "test_receipt_sha256": "f00469f6c343bed8e0c76115b0d349e60b517c9520e87eae6e6876430b89e705",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 65
+  },
+  "unchanged_baseline_files": 896
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "panel_sha256": "b67efad941db1b4c407aeddcac3836acf4a31653f3a1baa513ece6f5ce2e915d",
+  "purpose": "NUM-004 supplementary method/native-clock protocol; frozen SPEC-003 inputs and accuracy targets unchanged",
+  "study_cases": ["S01", "S05", "S13"],
+  "reference_max_step": 0.1,
+  "accounting_atol": 2e-9,
+  "ledger_error_targets": {
+    "ionic": {"atol": 5e-8, "rtol": 5e-10},
+    "regulatory": {"atol": 5e-6, "rtol": 5e-8}
+  },
+  "independent_limits": {"rhs_calls_per_case": 200000, "rk_steps_per_case": 100000, "seconds_per_case": 60},
+  "native_levels": [
+    {"name": "coarse", "time_step": 0.005, "max_delta_voltage": 0.0001, "max_fractional_concentration": 0.001},
+    {"name": "medium", "time_step": 0.0005, "max_delta_voltage": 0.00001, "max_fractional_concentration": 0.0001},
+    {"name": "fine", "time_step": 0.00005, "max_delta_voltage": 0.000001, "max_fractional_concentration": 0.00001}
+  ],
+  "native_limits": {"steps_per_case": 150000, "worker_timeout_seconds": 60, "max_total_clock": 20},
+  "native_error_targets": {
+    "ionic_concentration": {"atol": 2e-5, "rtol": 1e-7},
+    "regulatory_coordinate": {"atol": 0.005, "rtol": 1e-5},
+    "voltage": {"atol": 5e-6, "rtol": 0.0},
+    "gate_scale": {"atol": 0.0005, "rtol": 1e-5},
+    "membrane_and_junction_flux": {"atol": 1e-11, "rtol": 0.001}
+  },
+  "native_fine_event_time_atol": 0.01,
+  "native_refinement_max_fine_to_coarse_ratio": 0.5,
+  "native_refinement_noise_floor_score": 0.01,
+  "native_rhs_witnesses_per_phase": 257,
+  "native_notes": "Legacy first-order errors have separate, looser targets than production candidates. Compare every accepted primary state at its actual time under realized event times; also compare intended and realized schedules at common times. A native phase requests its original duration, does not rewind overshoot, and carries the full raw packet. Convergence required above the declared noise floor. No native implicit solver is used."
+}

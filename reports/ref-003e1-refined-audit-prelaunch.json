@@ -1,0 +1,1589 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "anchors": {
+    "capture.json": "e6e765413e6f8a160689e12f1fe38ed68ee5c651704f4055433cd5983797a53c",
+    "cells.json": "8f82cf9630429d2a76a218d171c81ccf7defa012f901c14239ec7b4e5c38a504",
+    "comparison.json": "fa2f2cb7d841ee6804f2d637f648926f967e3aa76ccca8ec09a160b87157134f",
+    "launch.json": "7aba009d06d3ccb790edc418e694126b9810daf626230d4d66cc0407824cabba",
+    "registration.json": "4305faee24b080ca63ab67721ce4b86d0116b084f5c2082ed706ea4d9b366ffb",
+    "sources.zip": "c85aa0a9b090bb45e4cee5dc5339d3ada1148686a7cbae7e370464a7521cedfd"
+  },
+  "baseline_files": 1027,
+  "capture_files_unchanged": 56,
+  "capture_rerun": false,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "9158e87a51313c8a91c0a81737fb5444c88f9ac77d524278f6ab3b832d87216d",
+      "before": "3d97d0f33995144f3b9c3f28f68e281a126c32464938ab8a47cf2573bb717b86"
+    },
+    "README.md": {
+      "after": "a0a42c3c2f554545dda77891c0a4fd4959662132d2765cc94fd5a5fe028b60c0",
+      "before": "599ed279ebfab33dbdf9eb30ad2e2451894dfa1c847397c131d7245334480928"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "1df6cc3d5c19b65dfa30a9e9eca088759c954c1a1c6e0af63b28f10057b9c2be",
+      "before": "c6403468a301711974c30c1681e7bde43e430a50c11701c14673b5ee2faf5e89"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "edeee8798db143243e54e89917c798337fcc5dfcbf9a2743f881681ba0ae86e4",
+      "before": "2bfb5e1968399ee17a91005507db520f515caeb955651397caccf628beaaad35"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "30696eacdba934870b4d789274ec0df0ff5b5984d163d7769bbb2d0e8c5ed511",
+      "before": "133f1612741509d535ba71bd91490d4b68dbce67f67ee4d8bfa5645d66ad5cf6"
+    },
+    "docs/DECISIONS.md": {
+      "after": "1b95adbcc97e4a79bffa9b3d964462df7b3405fe265d178f4c646dfe217a7d6b",
+      "before": "e139fe7b4312411f6fb785b6de3c1425c49ecaefd19e125efb68b00b9ab9a108"
+    },
+    "validation/betse/README.md": {
+      "after": "1a6b82f15c93b061f6171ebe379a3a7b7977f5631eb784ac063a8ab0cf9cea64",
+      "before": "8b445155d41eb7ea50a6081fd081de806dd2ca0fd5e0771d5ee4bef522c65c9f"
+    }
+  },
+  "created_utc": "2026-09-13T19:08:53.796606+00:00",
+  "expected_regression_identities": [
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_capsule_bytes_not_just_names_are_authenticated"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_clean_offline_process_import_fence"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_complete_failure_classification_keeps_every_identity"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_corrected_review_changes_only_the_alias_field"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_correction_cannot_hide_other_differences[count]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_correction_cannot_hide_other_differences[failure]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_correction_cannot_hide_other_differences[list]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_correction_cannot_hide_other_differences[maximum]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_correction_cannot_hide_other_differences[replay]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_detached_launch_returns_pid_without_wait_or_poll"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_endpoint_is_state_and_ledger_not_an_invented_native_rhs"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[backend]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[condition]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[duplicate]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[missing]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[quantity]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_failure_classification_cannot_silently_drop_or_relabel[time]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_frozen_reporting_bug_is_reproduced_without_edit"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_historical_guard_still_rejects_external_ignore_change"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_ignored_old_receipts_remain_in_preservation_inventory"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_independent_surface_axes_fail_closed[endpoint]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_independent_surface_axes_fail_closed[owner]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_independent_surface_axes_fail_closed[time]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_independent_surface_axes_fail_closed[transfer]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_job_commands_have_no_native_worker_and_do_not_skip_legacy_tests"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_job_failure_is_durable_and_never_retries[nonzero]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_job_failure_is_durable_and_never_retries[timeout]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_guard_is_reported_as_one_failure_not_a_green_suite"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[duplicate]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[extra_failure]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[returncode]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[skip]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[wrong_reason]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_legacy_metadata_exception_is_exactly_bounded[wrong_test]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[add_hash]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[digest]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[empty]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[extra]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[link]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[missing]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[omit_hash]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_manifest_rejects_corruption_even_when_rehashed[pass]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[cells-started/00.json-started_utc-2099-01-01T00:00:00+00:00]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[cells.json-device-gpu]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[cells.json-results-value12]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[cells.json-x64_enabled-False]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[comparison.json-failed_comparisons-0]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[comparison.json-trajectory_qualified-True]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[failure.json-automatic_retry-True]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[failure.json-elapsed_seconds-9999]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[failure.json-stage-cells]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[launch.json-automatic_polling-True]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[launch.json-launched_utc-2099-01-01T00:00:00+00:00]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[launch.json-pid-0]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[native.json-installed_python_sha256-value7]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[native.json-pairs-value8]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[native.json-results-value9]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_metadata_rejects_semantic_corruption[native.json-warnings-value6]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_nonfinite_or_nonnumeric_comparison_rejected[2]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_nonfinite_or_nonnumeric_comparison_rejected[True]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_nonfinite_or_nonnumeric_comparison_rejected[inf]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_nonfinite_or_nonnumeric_comparison_rejected[nan]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_normalization_uses_declared_expected_value_scale"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_preservation_and_explicit_metadata_amendment"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_saved_constant_input_ladder_does_not_claim_pulse_convergence"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_saved_cross_engine_scopes_keep_original_verdicts[baseline-34]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_saved_cross_engine_scopes_keep_original_verdicts[static_blocked-0]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_saved_cross_engine_scopes_keep_original_verdicts[suppression_recovery-7]"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_saved_packet_manifest_and_execution_metadata"
+    ],
+    [
+      "validation.betse.response_audit.test_saved_response",
+      "test_snapshot_never_aliases_later_or_nested_mutations"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_all_48_cell_paths_use_exact_original_or_continuation_source"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[count]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[digest]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[examples]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[model]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[qualified]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[scope]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[scope_total]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_corruptions_rejected_even_if_rehashed[truncated]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_audit_output_linkage_positive_synthetic_fixture"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_closeout_requires_exact_regression_identities"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_capture_metadata_and_resource_accounting"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[digest]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[empty]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[extra]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[extra_hash]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[failure]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[link]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[missing]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_completed_manifest_rejects_rehashed_corruption[omit_hash]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-combined_artifact_bytes_before_receipt-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-elapsed_seconds-9000]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-failed_comparisons-0]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-required_failed_comparisons-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-reused_cells_runs-48]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[capture.json-trajectory_qualified-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells-started/21.json-started_utc-2099-01-01T00:00:00+00:00]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells.json-device-gpu]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells.json-results-value11]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells.json-runtime_resource_probe_sha256-0000000000000000000000000000000000000000000000000000000000000000]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells.json-source_sha256-0000000000000000000000000000000000000000000000000000000000000000]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[cells.json-warnings-value10]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[comparison.json-coarse_rejection_replayed_exactly-False]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[comparison.json-criteria_unchanged-False]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[comparison.json-independent_audit_run-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[comparison.json-required_gates-value19]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[comparison.json-terminal_native_rate_invented-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[launch.json-automatic_retry-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[launch.json-launched_utc-2099-01-01T00:00:00+00:00]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_decoded_metadata_corruption_rejected[launch.json-pid-0]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_diagnostic_roundoff_allowance_never_relaxes_physical_threshold"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[coordinate]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[duplicate]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[missing]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[quantity]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[required]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[scope]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_ledger_corruption_rejected[score]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_panel_loader_routes_84_saved_records_without_relabelling"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_full_synthetic_failure_ledger_is_not_truncated"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_late_full_grid_corruption_is_not_hidden_by_projection[159-current_A-6-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_late_full_grid_corruption_is_not_hidden_by_projection[159-flux_fmol_per_s-20-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_late_full_grid_corruption_is_not_hidden_by_projection[160-amount_fmol-23-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_late_full_grid_corruption_is_not_hidden_by_projection[160-transfer_fmol-20-2]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_launch_failure_has_durable_receipt_and_no_retry"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_launch_is_detached_and_never_polls"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_offline_entrypoint_import_fence"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_regression_receipt_rejects_failure_skip_duplicate_or_missing_test[count]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_regression_receipt_rejects_failure_skip_duplicate_or_missing_test[duplicate]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_regression_receipt_rejects_failure_skip_duplicate_or_missing_test[failure]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_regression_receipt_rejects_failure_skip_duplicate_or_missing_test[skip]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_report_cannot_hide_rejection_or_change_required_scope[comparisons-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_report_cannot_hide_rejection_or_change_required_scope[failed_comparisons-0]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_report_cannot_hide_rejection_or_change_required_scope[hold_step_s-0.1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_report_cannot_hide_rejection_or_change_required_scope[required-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_report_cannot_hide_rejection_or_change_required_scope[status-pass]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[baseline-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[baseline-2.5e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[baseline-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[suppression_recovery-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[suppression_recovery-2.5e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_full_grid_cross_engine_surfaces_match[suppression_recovery-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_input_sensitivity_failures_remain[jax_jit-1-1.25e-05-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_input_sensitivity_failures_remain[jax_jit-1-2.5e-05-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_input_sensitivity_failures_remain[native-0-1.25e-05-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_selected_actual_input_sensitivity_failures_remain[native-0-2.5e-05-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[bool]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[field]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[grid]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[nan]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[owner]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_shape_endpoint_and_numeric_corruption_rejected[terminal_rhs]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_sources_production_and_both_capture_roots_preserved"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_synthetic_complete_surface_uses_no_original_comparison_helpers"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_timeout_preserves_partial_audit_and_never_starts_regression"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[automatic_polling-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[automatic_retry-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[biology_validated-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[capture_rerun-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[cpu_affinity-0-31]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[diagnostic_failed_comparisons-0]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[forcing_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[gpu_tested-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[independent_surface_comparisons-147312]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[max_artifact_bytes-1]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[max_worker_file_bytes-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[native_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[previous_regression_tests-230]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[required_comparisons-2298935]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[surface_scopes-131]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[test_modules-value9]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_unregistered_scope_resource_or_claim_rejected[total_timeout_seconds-9000]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_variable_grid_scalar_count_and_exact_common_projection[160]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_variable_grid_scalar_count_and_exact_common_projection[40]"
+    ],
+    [
+      "validation.betse.response_closeout.test_refined_audit",
+      "test_variable_grid_scalar_count_and_exact_common_projection[80]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[baseline-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[baseline-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[static_blocked-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[static_blocked-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[suppression_recovery-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[suppression_recovery-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[zero_amplitude-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_fixed_input_separate_from_unchanged_solver_subdivision[zero_amplitude-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_launch_failure_has_durable_receipt_without_retry"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_launcher_detaches_once_without_polling"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_preserve_closed_failure_dispatch_and_production"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_prospective_resource_allowance_and_exact_panel_size"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_registration_rejects_changed_source_before_authentication"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-baseline-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-baseline-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-static_blocked-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-static_blocked-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-zero_amplitude-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[observed-zero_amplitude-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-baseline-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-baseline-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-static_blocked-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-static_blocked-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-zero_amplitude-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_noop_links[unobserved-zero_amplitude-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_pair_and_zero_identity[1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_retained_fine_pair_and_zero_identity[6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[across_hold_policy-qualified]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[automatic_expansion-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[automatic_polling-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[automatic_retry-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[biology_validated-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[cells_runs-24]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[cells_steps_total-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[cells_subdivisions-value2]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[constant_profile-source_constants]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[control_atol-0.001]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[control_atol-nan]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[cpu_affinity-0-31]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[cross_failure_policy-relax]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[forcing_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[gpu_tested-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[hold_steps_s-value0]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[max_artifact_bytes-1099511627776]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[native_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[native_runs-8]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[required_gates-ignore_baseline]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[retained_hold_step_s-5e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[total_timeout_seconds-20000]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_scope_resource_criteria_and_claim_changes_rejected[trajectory_qualified-True]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_software_launcher_never_chains_a_trajectory"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_stage_commands_and_cpu_float64_environment"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response",
+      "test_stage_timeout_saves_failure_and_never_retries"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[baseline-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[baseline-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[static_blocked-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[static_blocked-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[zero_amplitude-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_all_retained_fine_native_steps_checked[zero_amplitude-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_checker_imports_and_subprocess_fence_without_models"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_coarse_arithmetic_is_exact_software_overlap"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_complete_scope_counts_required_selection_and_unhidden_rejection"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_generalized_checker_reproduces_all_original_coarse_surfaces"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[dtype-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[dtype-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[event_count-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[event_count-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[final_Dm-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[final_Dm-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_clock-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_clock-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_control-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_control-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_nonce-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_late_native_linkage_corruption_rejected[late_nonce-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_registered_definitions_parse_without_integrating"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[bytes-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[bytes-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[clock-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[clock-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[definition-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[definition-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[diagnostic-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[diagnostic-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[final_step-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[final_step-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[late_flux-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[late_flux-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[late_padding-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[late_padding-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[missing_readout-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[missing_readout-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[shape-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[shape-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[terminal_control-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[terminal_control-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[terminal_current-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_rehashed_fine_cells_corruptions_rejected[terminal_current-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_summary_and_aggregate_never_alias_mutable_failures"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[1-jax_eager-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[1-jax_eager-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[1-jax_jit-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[1-jax_jit-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[2-jax_eager-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[2-jax_eager-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[2-jax_jit-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[2-jax_jit-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[4-jax_eager-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[4-jax_eager-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[4-jax_jit-1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_blocked_solution_every_accepted_and_observed_point[4-jax_jit-6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_fine_pulse_with_baseline_transport_rejected[1.25e-05]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_synthetic_fine_pulse_with_baseline_transport_rejected[6.25e-06]"
+    ],
+    [
+      "validation.betse.response_panel.test_refined_response_check",
+      "test_terminal_hold_differs_from_analytic_endpoint_at_both_fine_grids"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_actual_production_timeline_probe_covers_original_and_amended_budgets"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_cells_worker_passes_only_missing_rows_after_full_timeline_probe"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_combined_loader_visits_every_original_and_new_row_once"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_comparison_imports_no_model_and_keeps_original_gate_surface"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_failed_resource_probe_prevents_any_rollout"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_launch_is_detached_and_does_not_poll"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_only_eight_unexecuted_definitions_change_one_resource_field"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_original_failure_sources_and_completed_payloads_preserved"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_registration_rejects_definition_mutation_before_reuse_check"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resolver_rejects_mismatched_provenance[digest]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resolver_rejects_mismatched_provenance[path]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resolver_rejects_mismatched_provenance[unknown]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[cap]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[count]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[estimate]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[grid]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[integration]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[original_guard]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[runtime]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_resource_receipt_corruptions_rejected[source]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_and_new_execution_are_disjoint_complete_and_correctly_costed"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[independent_audit_run-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[integration_calls-1]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[new_cells_runs-22]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[original_cells_worker_receipt_exists-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[retained_cells_runs-48]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[retained_native_runs-15]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reuse_receipt_cannot_overclaim_or_invent_worker_metadata[trajectory_qualified-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_reused_results_resolve_to_original_bytes_not_copies"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_saved_complete_rows_pass_unmodified_internal_arithmetic"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_timeout_preserves_partial_output_without_retry"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[automatic_expansion-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[automatic_polling-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[automatic_retry-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[biology_validated-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[cpu_affinity-0-31]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[forcing_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[gpu_tested-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[max_trace_bytes-33554432]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[max_trace_bytes-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[native_convergence_qualified-True]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[new_cells_runs-48]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[new_cells_steps-8481]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[new_native_runs-16]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[reused_cells_runs-25]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[total_timeout_seconds-20000]"
+    ],
+    [
+      "validation.betse.response_resume.test_trace_resume",
+      "test_unregistered_scope_resource_or_claim_change_rejected[trajectory_qualified-True]"
+    ]
+  ],
+  "files_sha256": {
+    "docs/BETSE_REFINED_RESPONSE_AUDIT.md": "8814f0a1ce9bcc8eeb116592683443fae75651dad3e27dd2d41270e37192f381",
+    "reports/REF003E1_REFINED_AUDIT_HANDOFF.md": "e94cd11b7004d9829688a76ab938fa17143c19c998826b0fe12e37d7d3f1bcaa",
+    "reports/ref-003e1-refined-audit-checks-01.xml": "59f4f2fcf68a292f66b373a25802466899943c4c17729befe379a2e272f3331c",
+    "reports/ref-003e1-refined-audit-checks-02.xml": "8db3ef1bc7f63465455bb5f1d5e907f809758088c93c6616801ceb3c710f6128",
+    "reports/ref-003e1-refined-audit-preservation.json": "bf482fbe254703e9ef376de6e7d8bcd9cb5ebc91c466b1dcecae82c70640a472",
+    "validation/betse/response_closeout/refined_audit.py": "eda77b5661d5868f6cf555af82def9aea3441bd30c22e6d79ebb91cff8df7236",
+    "validation/betse/response_closeout/refined_audit_context.py": "c384eb43ed642f3e581ea2e21a4dc3edc87833463ed4e42e2d74f2d9bc31ab6f",
+    "validation/betse/response_closeout/refined_audit_job.py": "e281838a38d6b69eea7c76f074f98eb4eb99dc020746062f486c9a9e3e421432",
+    "validation/betse/response_closeout/refined_audit_plan.json": "cb5454de435023dfa1659a4f87f315eadcf8f2f380be94cfe69410cbae49c68c",
+    "validation/betse/response_closeout/refined_audit_surfaces.py": "2713c4de48d55a0e05bb833e3c321caf4e4faf0758da644b934cca1af8998929",
+    "validation/betse/response_closeout/test_refined_audit.py": "5178e79d0c31da586de45fc5e288a3a0987094a6677546dbe19f7d95565e8eca"
+  },
+  "full_numerical_audit_run": false,
+  "plan": {
+    "automatic_expansion": false,
+    "automatic_polling": false,
+    "automatic_retry": false,
+    "biology_validated": false,
+    "capture_rerun": false,
+    "cpu_affinity": "0-3",
+    "diagnostic_failed_comparisons": 4173,
+    "forcing_convergence_qualified": false,
+    "frozen_comparisons": 2494936,
+    "gpu_tested": false,
+    "independent_surface_comparisons": 1121904,
+    "internal_comparisons": 1373032,
+    "max_artifact_bytes": 67108864,
+    "max_worker_file_bytes": 16777216,
+    "native_convergence_qualified": false,
+    "original_packets_rewritten": false,
+    "previous_regression_tests": 231,
+    "required_comparisons": 2298936,
+    "required_failed_comparisons": 0,
+    "schema": "cells.betse_refined_response_audit_plan@1",
+    "stage_timeout_seconds": {
+      "audit": 300,
+      "regression": 300
+    },
+    "surface_scopes": 132,
+    "test_modules": [
+      "response_audit/test_saved_response.py",
+      "response_panel/test_refined_response.py",
+      "response_panel/test_refined_response_check.py",
+      "response_resume/test_trace_resume.py",
+      "response_closeout/test_refined_audit.py"
+    ],
+    "total_timeout_seconds": 900
+  },
+  "preservation_sha256": "bf482fbe254703e9ef376de6e7d8bcd9cb5ebc91c466b1dcecae82c70640a472",
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "385 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "resource_failure_files_unchanged": 241,
+  "resources": {
+    "basis": "saved comparison and 231 earlier tests plus new preflight, with allowances",
+    "capture_copied": false,
+    "estimated_artifact_bytes_with_allowances": 11222792,
+    "new_preflight_seconds": 28.366,
+    "peak_RAM_measured": false,
+    "stage_seconds_with_allowances": {
+      "audit": 217,
+      "regression": 252
+    }
+  },
+  "schema": "cells.betse_refined_response_audit_prelaunch@1",
+  "sources": {
+    "alignment.py": "b10de826d8f6c9b793d27b132f21aae4f2945dea0094c939e1619ba12f5841f6",
+    "alignment_protocol.json": "86458da3279cdf5ac3a915afd4b263e7c7949d188125599fe165613aa4deff10",
+    "cluster_alignment.py": "6b351da0b93dcc43d3b13b2b193fdedc30549106c6d5ed158097b63253b86b30",
+    "cluster_check.py": "382afe6907142b6373f4bca72f4334464d1af0f444940b75b3b3b779e6fca72d",
+    "cluster_closeout.py": "5b6ab55944ac4d96b5876f09f919bdc4c6fd4d462e26c11871bcefbd2dca6e6c",
+    "cluster_evidence.py": "c0a302ae107c3d51e0202c28f37885084155aeaa68dedb87969b8bc7768c6fbf",
+    "cluster_protocol.json": "a56ed7751b46d7fcb47385078d578a238931feff03f42cbf957b0123b46ebe9b",
+    "contact.py": "c2fb432d3b0988b08abf43e3c0e37eb7a8ddd8f549ce8480657d5dfdfc18c67d",
+    "dispatch_preflight.py": "481e3111a0bda897c1c6bb5cd059f9c111001f868b19922f533909760ecee0f0",
+    "dispatch_preflight_check.py": "996ccf3eee24d31e9de92441d7a2f8c59d768fd51acda07fdc6f55f250375446",
+    "dispatch_preflight_context.py": "29888a6d826b015c88548abe56dc8cf83e835199276ed682596d496442f88dd7",
+    "dispatch_preflight_plan.json": "59930f220cbd77f0be35fdcb25e66ea329dd16030245535296f829d17ad9f6f1",
+    "expanded_audit.py": "a5c255a394a777ba13ba5e89019c07bc182d6a3874c1a95c2290672c4eee2132",
+    "expanded_audit_context.py": "a0decf93b1313369708706772aa8052257f19ca891650355d281585cb05799bc",
+    "expanded_audit_job.py": "21b6d4bdfc0446c45dd4c44cadc2cd75462b2821d436d5c10816e5db48fc77f3",
+    "expanded_bridge.py": "82028d8593d6bef546cf2907ca9d305c624c6015507ff20465020c235c05e444",
+    "expanded_bridge_check.py": "36e0814e799666b50866246b2382a6f4e173426de75af5408da5ef6cb720d343",
+    "expanded_bridge_context.py": "660d9c556a87babe8e29548d4b503d52bafd29ab44d43eb6068ffaa91caa42e2",
+    "expanded_bridge_plan.json": "aaa293b84c81c71d2fff0b4e18c4eb8704b4dcbdf92842fa02850b01092c7ec2",
+    "finish.py": "82d2255cad0e149a1526cd5c9f3e7dbf44505989050435751f2e85fe7b7fcdd5",
+    "finish_preparation.py": "ad2595ba091377c7b00002aa896e735fc0fd670d06ebc50024e7a6029a9838d6",
+    "full_loop_audit.py": "20d60b6a657f574b6e93e647c1caefe18785b584392f85bb9309e5b148d029bc",
+    "full_loop_audit_context.py": "45935535a9ca25ab67e1f1d384353ef31cbd04b4282ed8f6da458aa01b25d7c0",
+    "full_loop_audit_job.py": "dbd345abd275a389baa00e74d6495accd2f60e237ce8e5816afcc29016ee9ac5",
+    "full_loop_bridge.py": "c564e1501f8e66be64bcf3a79f9921f04c429068a5ca4611e21a46ddda8957c6",
+    "full_loop_bridge_check.py": "8f01732165286d18c8177fcf3060dae0f7de238d5d3e08b345bcb4a3557fba54",
+    "full_loop_bridge_context.py": "292e2157c5efbc97a9b70c6a5fc45063209f559ec7d5543dad1985b5c3741d86",
+    "full_loop_bridge_plan.json": "757a183a92ca3f07473ea87ece0f816448089f1d18f3ac9d2f0c493c30bd5052",
+    "full_loop_observer.py": "e8c5e2c37a2723d083b13283c50b3aea06abdb8b5eb8e8bf544e263af34c9361",
+    "geometry_probe.py": "dd9c77d92c10bef1894e7b0543950afef086a768558ac1535242db31deeb80b1",
+    "held_intervention.py": "047ac6a589650b432f92c7a5de47736b3d469443c10045cd5c5a99fd66a49a6d",
+    "held_intervention_context.py": "088a0a5040499ba0eacb303045e77359dd2fcaf0f91f8dab732fba1bcd58500f",
+    "held_intervention_plan.json": "2138da01984bf61f618410ae8233255ecedd62e75269c68d35bd7850f754e6b6",
+    "held_response_cells_check.py": "9c3fd075d91bd282b28b645d481bbd7b296465c695ae953d189a53e238d58457",
+    "held_response_check.py": "2f766a61ab1d5cc0ba2fc5b83017302fc54483c32ff75550be5b52d7e7ea7d48",
+    "held_response_context.py": "3fdb0812fbb6e7462a055d72489b32457a75bba2a08bab2d5fed0129fa0abf91",
+    "held_response_job.py": "327364e8ed1d4e3a0742ac135d2bd150ae4a8c4ef9bf4c4b35069a9fca469715",
+    "held_response_native.py": "933ecb3d68501e2b2dd0f20b618e371b81b7c7b59517146b03aaaa548183fcb3",
+    "held_response_plan.json": "bf690c0df4c0bec5e0bd270341726e8cf592cf461c73db816436423c9014e4c1",
+    "intervention_design.py": "7d1992c7112fe8ae83c32957fac69fa6cb43d5eabf373b54ecde6976987df932",
+    "intervention_plan.json": "20bbcf5d1c1ca923654dd961a31bb2e4097b8901c8c47e63fa3d743a74063f3f",
+    "native_event_observer.py": "4a07e1eee01fafe31069a990023dcc85848e0d0011d1912e6b5df5b9b0617f39",
+    "native_observer.py": "64e4de5c620f407677a606da36f2a0bc5f4bd335e7b4006d0c7de5df49d900c2",
+    "phase_bridge.py": "0a978832baf61f6e35fe522317c8e43876d6d8c35ec5384a70e32de9a8e42b1c",
+    "phase_bridge_context.py": "993924ca150e883876749a8a63bdd14f25543ab5c528655a5a9cfe15b11e9c58",
+    "preparation.py": "c0e768781c52ade2f5b7c0863cc7ab297d002add251e3d940ff94d4db8f928d8",
+    "preserve.py": "abb995d675ad02fde5b0a49ad0713638ac299e6700fde81f4e08516165c3a170",
+    "profile_bridge.py": "15db26782f53625e8a41f2d4eb61c17a6775e3591926fb901230e4a143e0f3e6",
+    "profile_bridge_check.py": "1c5af8be979988ebad2afffcbb2b337326ac0713be66fc3469a14fde52ebb3b9",
+    "profile_bridge_context.py": "68b6c062431ad766e79f57dd0e5544732e914b1d36db501f5f53d16be3454406",
+    "profile_bridge_plan.json": "bc74998dec3b1a9a8a64cc3d076595e649ac5c0f013331964f52836b483e65c7",
+    "protocol.json": "4931c3265784ba7b259cc464ffbb7764fc1a296581a4c4204cd180ffbdad7b2d",
+    "requirements-lock.txt": "dd48b289e5d77bcd7c9dcfed82a6a63149f93dda376d663ddb08d54785a9f7a5",
+    "response_audit/response_audit.py": "f7933c7b6bfbfc3afc33d6daf55033a253ea2293e2b296e21ad1d6bf74d8562f",
+    "response_audit/response_audit_context.py": "dbb7efa808a94cdcfc0d209ee714010b9d5a7706e865c8449f30bed7366ef0de",
+    "response_audit/response_audit_job.py": "836dfbce270e55bd56c4f9af1b590e224f238ef807d5ac1cf189b3cb47f71366",
+    "response_audit/test_saved_response.py": "d9ec7754211a7b1fe4014f76f18820b7e1fa2465016f36d4fc07257f3796eecd",
+    "response_closeout/refined_audit.py": "eda77b5661d5868f6cf555af82def9aea3441bd30c22e6d79ebb91cff8df7236",
+    "response_closeout/refined_audit_context.py": "c384eb43ed642f3e581ea2e21a4dc3edc87833463ed4e42e2d74f2d9bc31ab6f",
+    "response_closeout/refined_audit_job.py": "e281838a38d6b69eea7c76f074f98eb4eb99dc020746062f486c9a9e3e421432",
+    "response_closeout/refined_audit_plan.json": "cb5454de435023dfa1659a4f87f315eadcf8f2f380be94cfe69410cbae49c68c",
+    "response_closeout/refined_audit_surfaces.py": "2713c4de48d55a0e05bb833e3c321caf4e4faf0758da644b934cca1af8998929",
+    "response_closeout/test_refined_audit.py": "5178e79d0c31da586de45fc5e288a3a0987094a6677546dbe19f7d95565e8eca",
+    "response_panel/refined_response_cells_check.py": "0513260900d6844d852fc27db6ce9e22b9f8a860de30750bebb657b94147862c",
+    "response_panel/refined_response_check.py": "9d198f81178e6d7ff8675395be28f745e8c2b0fe6d4e2ec00a00fbf41b856f19",
+    "response_panel/refined_response_context.py": "ae7024e1a02609d359b1b6f7b919589f6537175d73e50603afa7b31e12980b3a",
+    "response_panel/refined_response_job.py": "c8c64ac521571d4ebdc95ab047fc74782d481ac7f1f4a0db95bbd81cffe76e8d",
+    "response_panel/refined_response_native.py": "ef064c5a8876660e35d33afe89d6640806c6b6455bb15b28bde97dcc9d5dd110",
+    "response_panel/refined_response_plan.json": "efe4d8bbff72d653a432c8c0344d6345f6552a77d34d78743235cd22a029770b",
+    "response_panel/test_refined_response.py": "e5e1ac743e46c2613740b1a7a173dfcb08a37ecac521a0817777a679283ecef2",
+    "response_panel/test_refined_response_check.py": "2083fe0a4faafa31581eb0bc008f6ec38a7a24cbcb4eed59370054ed15fce4d1",
+    "response_refinement/refined_dispatch_check.py": "92f6ea09f9b02335d5e37c4eebd0b4167e3453879d2a7bc08a333557ef5155e5",
+    "response_refinement/refined_dispatch_context.py": "d3b9811e19374b33da26f3d36f56585bc2cd5938b863400f4eef106068fa26e8",
+    "response_refinement/refined_dispatch_job.py": "276a7c135c73e431a91949d6188d038e8111699998130678fa23ec5607bd2f2e",
+    "response_refinement/refined_dispatch_native.py": "4b29c02de88522a124da6df7e6106eea84c1220bad7d3d1642e96a7a831902d7",
+    "response_refinement/refined_dispatch_plan.json": "77a16f00ae30805d6265200b2123c71a220d43b026cc9a6ad242e26c3a933c4f",
+    "response_refinement/test_refined_dispatch.py": "05bd88127ee895abd46cbd277f2c1afcbb6bda4300ab511708e84c862bbdb6a4",
+    "response_resume/test_trace_resume.py": "b3333dcc19f0020e84528c596f498bb35709703d402b2b8ffa660eeba880eac2",
+    "response_resume/trace_resume_check.py": "3998f7b84e502cb5387b36bb5b82b77887ee5df37271a54d481580e405f394ea",
+    "response_resume/trace_resume_context.py": "34cb2dd0c66cf1b2ad1315caa91db395ddaa9cfa068986f3a76cf3957f382950",
+    "response_resume/trace_resume_job.py": "1cab9ae718ff423b428d9939489d7f89ebb0049bff78a59f69b2417d1f2f2818",
+    "response_resume/trace_resume_plan.json": "529dda37fc6e5fa021ada3e26e57af5303f3484376b3c183f64381cedb3ff28b",
+    "response_resume/trace_resume_probe.py": "e5ec1c220aabcc1b4badece37fd0b219fea47b2a23eba6d4abd7804b7165a83a",
+    "single_cell.svg": "3f73da4940b837382a6dedb8a9c3a1c7757d667b9b211d875b63b1a55017b321",
+    "test_alignment.py": "e67e74c8f67423412c9f37b5dc03a9bd6cc82f10355779585dc4ea4352dd46dc",
+    "test_cluster.py": "e5f2772805f0979b08f5cd03ff1bddfdbf1aa63b152af6adf69c0e68cfa31f09",
+    "test_contact.py": "dc7ba77b9bbec19dc1251f35bc038b49721cbbe97f5acdf2b5dc8ab2b8f71dde",
+    "test_dispatch_preflight.py": "9c42bba21b1b639e0a386ebfd2f5934778cfc8b58ecc4a41fb3eae5ba5248be5",
+    "test_expanded_bridge.py": "47e3a54b740930dca32a806fc6e181ef85b98e952181a8c2b230e6de28e02c9c",
+    "test_full_loop_bridge.py": "d9e161f3080a5e4816fdb0e21e82347627b9a1cfdccd5e744a04bf67b9e4bcc0",
+    "test_full_loop_observer.py": "d5c11b93378c936744f66d4e2aa85d9a2d25c271f86037eddfa23b4ca1657156",
+    "test_held_intervention.py": "9c3d88ae4356a9b8cabb18b3d0fd60cb522fb0b3046d6060e7edc4fbece234cf",
+    "test_held_response.py": "9c82a361b608725ba9a80d4156c88d9e8a758b1f64758adb2cded223ecaf232f",
+    "test_held_response_check.py": "78e260ec28faacb951124b0c44a7c2df22d41e75ecb5fbf4d5e17aa9bc682b4c",
+    "test_intervention_design.py": "d8bef406a33ff801d2ff77dc92783d4d8930e1ed6279179532d48b33f79f943f",
+    "test_native_event_observer.py": "14f2937ec789a6b879abd264d2649e12f5d3acb1eea6d33360d96c59c7e79c28",
+    "test_native_observer.py": "93bf132831d08a5e85dd64051c508bd7ef3f31b62e9624e875a24c14c846c22c",
+    "test_phase_bridge.py": "de2f8ac96b93a3d321528502f5f7f4f4cf16d058465e473fb932f071601034f4",
+    "test_preparation.py": "25aab82f7499a34c91d9d04351b1c2c94dcad25ffd3aee4e4c99aff3d956034c",
+    "test_profile_bridge.py": "11c1fa38904042d6d9ac85eaf87b3bd21bef701c393c87372d9959f9c53b0645",
+    "test_refinement.py": "2b67bf6fe0e990265c8386156ccf6fd7918de5333ec071dee59aacf350589ac3",
+    "test_saved_cluster.py": "153c971a348b8201b7dce89cf6f008c2d303724374265add767704f2470ea6cb",
+    "test_saved_contact.py": "1ec44831ed109621e85e5d9de1c14da25c29f0163a2865a30789bcbdd2b006a3",
+    "test_saved_expanded.py": "b7e003c7be81303022fd2b4640b0b63541c8ae41c3283bc0762f1c1a595db68c",
+    "test_saved_full_loop.py": "bd998248622a680397d70d3ec7baa766bf92e6f0ade20452a58538577f7f17d4",
+    "test_saved_trajectory.py": "de27dfcb54d7fc2e7886e591ba16c317b58e718ccfe638accc5b1bd4bb551a82",
+    "test_trajectory.py": "6580a43d1deb694d33cafce45f1e40b327dde1fefdc8b714bb393a0976422fdf",
+    "trajectory.py": "65f716fbc528db07674e1fc69339f83de6f28b261cc394a8fbf3616ee73e4f8b",
+    "trajectory_check.py": "8e2acfe4e691cb7c86141a9229ff714d438c67f2569a63a2bd2ed445b78db92d",
+    "trajectory_closeout.py": "ec802adc80b21b9e3ec1034b9986c16cbeaa962395cc276c9cc4cf5538718607",
+    "trajectory_context.py": "a6540d0941d721277dc9f8de1bc826c4b44cdd2be89ebbceb076e1380b080452",
+    "trajectory_evidence.py": "398aeb1cef688841bf58f776706ad6fb442e83a9c25aafb03b818dac43280634",
+    "trajectory_failure.py": "75188182b4c4b8a03575604edb30cbcdb7db420aad70e09dcaab245941108dd6",
+    "trajectory_protocol.json": "205ca8a2f2a42d3af472bdcf4d2788cbfa46b7dfae06ce1c5e75b0fa75a7c6bd",
+    "trajectory_refinement.py": "17ac38d0385e6fc9d50b973e2792b26b493fa6ff2f0c20433d90c725b0642ca8",
+    "trajectory_refinement_check.py": "7eeb5b69808fb236f44fefde84282f3d964a46403a059c3bc711a9d887eff070",
+    "trajectory_refinement_context.py": "e6e7976e7434f7910abf1a367d2d34ad0649bcf66354ed0538c1d5fd0116c037",
+    "trajectory_refinement_protocol.json": "c2933437201d456d3183a652df75ef854ae3b62136716f8277b347600a45bb7b"
+  },
+  "status": "pass",
+  "test_receipt": "reports/ref-003e1-refined-audit-checks-02.xml",
+  "test_receipt_sha256": "8db3ef1bc7f63465455bb5f1d5e907f809758088c93c6616801ceb3c710f6128",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 105
+  },
+  "unchanged_baseline_files": 1020
+}

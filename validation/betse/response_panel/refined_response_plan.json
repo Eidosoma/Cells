@@ -1,0 +1,56 @@
+{
+  "schema": "cells.betse_refined_response_plan@1",
+  "hold_steps_s": [
+    0.0000125,
+    0.00000625
+  ],
+  "retained_hold_step_s": 0.000025,
+  "conditions": [
+    "baseline",
+    "zero_amplitude",
+    "static_blocked",
+    "suppression_recovery"
+  ],
+  "constant_profile": "matched_constants",
+  "duration_s": 0.001,
+  "cells_subdivisions": [
+    1,
+    2,
+    4
+  ],
+  "cells_backends": [
+    "jax_eager",
+    "jax_jit"
+  ],
+  "native_modes": [
+    "observed",
+    "unobserved"
+  ],
+  "native_runs": 16,
+  "cells_runs": 48,
+  "observed_native_steps": 960,
+  "cells_steps_total": 13440,
+  "criteria_source": "validation/betse/trajectory_refinement_protocol.json",
+  "control_atol": 2e-14,
+  "terminal_rate_policy": "validate_Cells_last_hold_but_no_invented_native_final_RHS",
+  "required_gates": "internal_laws_all_h_fixed_input_solver_all_h_backend_all_h_cross_engine_finest_h",
+  "cross_failure_policy": "retain_all_coarse_and_intermediate_rejections_report_required_gates_separately",
+  "across_hold_policy": "common_41_boundaries_diagnostic_only_native_joint_solver_and_resampling_Cells_input_sensitivity",
+  "stage_timeout_seconds": {
+    "native": 300,
+    "cells": 10800,
+    "comparison": 300
+  },
+  "total_timeout_seconds": 11700,
+  "max_artifact_bytes": 1073741824,
+  "max_worker_file_bytes": 67108864,
+  "cpu_affinity": "0-3",
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_expansion": false,
+  "native_convergence_qualified": false,
+  "forcing_convergence_qualified": false,
+  "trajectory_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

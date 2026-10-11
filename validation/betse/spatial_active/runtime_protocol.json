@@ -1,0 +1,151 @@
+{
+  "kind": "betse_spatial_ordinary_runtime@1",
+  "scope": "Ordinary configured CPU/L4 scalar, checkpoint, window and independent-world execution of the unchanged qualified BETSE active kernel. Saved qualified full-state targets, accounting and shared RK4 regressions.",
+  "scope_exclusions": [
+    "Static inputs and fixed geometry; accepted-step observations only; no off-grid events or scheduled control changes in this runtime version",
+    "Synthetic Na/K pump and Kv1p5 compatibility through 256 us; broader BETSE mechanisms, finite ATP, energy balance and spatial convergence remain unqualified",
+    "Local CPU/L4 and independent-world execution only; no remote multi-GPU execution or throughput claim"
+  ],
+  "automatic_followup": false,
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-active-refinement-20261010-01",
+    "completion_sha256": "995e299a47fd7eef787fd3631691b6475f8d4781bba9541714ea994c2a3c4a64",
+    "registration_sha256": "8a1eac0b21115ec6e79fb467892736a24d7e07d568e9371a51d2eb425da85b8b",
+    "require_completed_cpu_and_gpu": true
+  },
+  "allowed_prior_source_changes": [
+    "src/cells/core/specs.py",
+    "src/cells/models/registry.py",
+    "src/cells/core/runner.py",
+    "src/cells/core/batch.py",
+    "src/cells/core/batch_windows.py",
+    "src/cells/core/schedule.py"
+  ],
+  "new_runtime_files": [
+    "src/cells/core/betse_spatial_spec.py",
+    "src/cells/models/betse_spatial.py"
+  ],
+  "resources": {
+    "max_wall_seconds": 5400,
+    "native_timeout_seconds": 1800,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "cases": [
+    "pump",
+    "channel",
+    "coupled",
+    "partial"
+  ],
+  "step_indices": [
+    0,
+    1,
+    2
+  ],
+  "tests": [
+    "tests/unit/test_betse_spatial_runtime.py",
+    "tests/unit/test_betse_spatial_trajectory.py",
+    "tests/unit/test_betse_spatial_active.py",
+    "tests/unit/test_batch.py",
+    "tests/unit/test_batch_windows.py",
+    "tests/unit/test_windows.py",
+    "tests/unit/test_specs.py"
+  ],
+  "expected_cpu_skips": 3,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_trajectory.py::test_cpu_gpu_complete_trajectories",
+    "tests/unit/test_betse_spatial_active.py::test_active_cpu_gpu",
+    "tests/unit/test_betse_spatial_runtime.py::test_runtime_cpu_gpu"
+  ],
+  "required_evidence": [
+    "native-spatial-trajectory-uniform-0",
+    "native-spatial-trajectory-uniform-1",
+    "native-spatial-trajectory-diffusion-0",
+    "native-spatial-trajectory-diffusion-1",
+    "native-spatial-trajectory-junction-0",
+    "native-spatial-trajectory-junction-1",
+    "native-spatial-trajectory-combined-0",
+    "native-spatial-trajectory-combined-1",
+    "native-spatial-boundary-field",
+    "native-spatial-replay",
+    "native-spatial-negative-controls",
+    "active-native-trajectory-off-0",
+    "active-native-trajectory-off-1",
+    "active-native-trajectory-pump-0",
+    "active-native-trajectory-pump-1",
+    "active-native-trajectory-channel-0",
+    "active-native-trajectory-channel-1",
+    "active-native-trajectory-coupled-0",
+    "active-native-trajectory-coupled-1",
+    "active-native-trajectory-blocked-0",
+    "active-native-trajectory-blocked-1",
+    "active-native-trajectory-partial-0",
+    "active-native-trajectory-partial-1",
+    "active-native-controls",
+    "active-native-replay",
+    "active-native-negative-controls",
+    "runtime-baseline",
+    "runtime-disk-windows",
+    "runtime-worlds",
+    "runtime-domain-controls",
+    "runtime-cli",
+    "runtime-horizon-branch",
+    "runtime-qualified-state-pump-0",
+    "runtime-qualified-state-pump-1",
+    "runtime-qualified-state-pump-2",
+    "runtime-qualified-state-channel-0",
+    "runtime-qualified-state-channel-1",
+    "runtime-qualified-state-channel-2",
+    "runtime-qualified-state-coupled-0",
+    "runtime-qualified-state-coupled-1",
+    "runtime-qualified-state-coupled-2",
+    "runtime-qualified-state-partial-0",
+    "runtime-qualified-state-partial-1",
+    "runtime-qualified-state-partial-2"
+  ],
+  "required_gpu_evidence": [
+    "native-spatial-trajectory-cpu-gpu",
+    "active-native-cpu-gpu",
+    "runtime-cpu-gpu"
+  ],
+  "checks": [
+    "Preserve the qualified native kernel and exact timestep; authenticate predecessor and compare complete configured histories to its saved states",
+    "Preserve all thirteen state arrays, lagged membrane concentrations, gates, material ledgers and completed clocks through disk/restart/windows/world partitions",
+    "Reject wrong solver, off-grid requests, malformed geometry, incomplete checkpoints and numerical domain failures; account for channel transfer exactly once",
+    "Run established shared ordinary-RK4 batch/window/spec regression suites; record GPU-busy and measured SM-active with coverage"
+  ],
+  "native_species_inventory": [
+    "Na",
+    "K",
+    "Cl",
+    "Ca",
+    "P",
+    "M"
+  ],
+  "species_scope": "Na/K/Cl move; native Ca/P/M concentrations and charges are retained as fixed species, not new active calcium chemistry"
+}

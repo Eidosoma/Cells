@@ -1,0 +1,425 @@
+{
+  "schema": "cells.num009_v2_closeout@1",
+  "status": "pass",
+  "num009_gate_complete": true,
+  "scope": "Independent short finite-outside CPU numerical qualification; not production or biological/GPU acceptance",
+  "production_version": "0.13.0",
+  "production_change": false,
+  "selected_dt_s": 0.001,
+  "refinement_dt_s": 0.0005,
+  "results": {
+    "status": "pass",
+    "selected_dt_s": 0.001,
+    "depletion_witness": {
+      "case": "single_mono_depletion",
+      "fractional_drop": 0.8080565756235892,
+      "minimum_outside_fraction": 0.19194342437641077,
+      "pass": true,
+      "required_fractional_drop": 0.05,
+      "species": "K"
+    },
+    "seconds": 297.69205925706774,
+    "artifact_bytes": 103601932,
+    "rejected_candidates": 0,
+    "failures": [
+      {
+        "case": "disconnected_mono",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.3016789735529386
+      },
+      {
+        "case": "pair_mono",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.2986037503616086
+      },
+      {
+        "case": "star_mono",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.267399509657127
+      },
+      {
+        "case": "star_divalent",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.268718187245042
+      },
+      {
+        "case": "star_mono_block_release",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.267399509657127
+      },
+      {
+        "case": "star_mono_short_pulse",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 1.2793702307782986
+      },
+      {
+        "case": "single_mono_depletion",
+        "attempt": "rk4_0.002",
+        "status": "complete",
+        "observed_normalized_error": 12.339182694587421
+      },
+      {
+        "case": "single_mono_depletion",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 369.1065807198451
+      },
+      {
+        "case": "single_divalent_tiny",
+        "attempt": "rk4_0.004",
+        "status": "complete",
+        "observed_normalized_error": 3.168561472579263
+      }
+    ],
+    "payloads": 242,
+    "verification_sha256": "a628ee5eb7cbecb438728012ffe2a2ba6fb28b7a9ab20a7c4f429318f5b0c45b",
+    "selected_max_normalized_observed_error": 0.593937244720323,
+    "selected_max_normalized_endpoint_error": 0.5815365805659362,
+    "refinement_max_normalized_observed_error": 0.03224763497683067
+  },
+  "trajectory_review": {
+    "schema": "cells.num009_v2_trajectory_review@1",
+    "solver_rerun": false,
+    "verification_sha256": "a628ee5eb7cbecb438728012ffe2a2ba6fb28b7a9ab20a7c4f429318f5b0c45b",
+    "junction_only_exact_outside": {
+      "radau": {
+        "native_outside_increment_fmol": 0,
+        "observed_outside_increment_fmol": 0,
+        "dense_outside_nonzero_coefficients": 0
+      },
+      "bdf": {
+        "native_outside_increment_fmol": 0,
+        "observed_outside_increment_fmol": 0,
+        "dense_outside_nonzero_coefficients": 0
+      },
+      "refined": {
+        "native_outside_increment_fmol": 0,
+        "observed_outside_increment_fmol": 0,
+        "dense_outside_nonzero_coefficients": 0
+      }
+    },
+    "maximum_trial_countercharge_C": 2.766444441684969e-21,
+    "minimum_trial_outside_amount_fmol": 0.00009193300306005724,
+    "maximum_rhs_calls_per_attempt": 13358,
+    "maximum_steps_per_attempt": 1815,
+    "jacobian_evaluations": 120,
+    "jacobian_rhs_calls": 3740,
+    "central_columns": 1810,
+    "one_sided_columns": 0
+  },
+  "preservation_and_tests": {
+    "baseline_files": 529,
+    "unchanged_files_count": 520,
+    "documentation_changes_sha256": {
+      "PROGRESS.md": {
+        "before": "4a13497721bde43a772d45267ca7dba5adbc198318e79b37f828251366e225d6",
+        "after": "eae38cb4a01f6e1b7c0d61845670decef7fdefea961a30b91e07300ea5f5fe9f"
+      },
+      "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md": {
+        "before": "0a73feea6583453c7c6ce15f91d06270d35d23740d138d0e700e7292296f4a2c",
+        "after": "56866e2559e4c1337157b3edf212d8bb17b46d6f0db66517b1a88f0fbfff185b"
+      },
+      "docs/ARCHITECTURE.md": {
+        "before": "e76b60f2b2b11578d7ddf71013603a94ba416eb765bc8f7393aa655c11d0cb5e",
+        "after": "08de89be158f0cac842d12e23911bd17e1d05e05c01639b775f5a829512dfae2"
+      },
+      "docs/EXPERIMENTS.md": {
+        "before": "641648b6bc1afe37bdf785deed62c66aa14c545739df053901ee4be17cbd2d84",
+        "after": "184b62ab8385d2e5e4d593dbceff3a84a5150191d34cfa3fcec4060e2f2dee87"
+      },
+      "docs/DECISIONS.md": {
+        "before": "a152def50e5ea7e826abdaf584c2dd16f1ac10f04befee2dc616754f1276ce58",
+        "after": "589fa1a59188bb32981aa66d744caf6ea6074743b38d3e5c5e15abf10332ec61"
+      },
+      "docs/MULTISCALE_DESIGN.md": {
+        "before": "aaec4f1bdb8e456f3d75de2b20d8f312a5aee21c82cdc41a98834d72a98a15a1",
+        "after": "5a388c9a008628279cd04cc5cfc81ee40eee89dd4938b2384863c6001c17b1ea"
+      },
+      "docs/ROADMAP.md": {
+        "before": "ff5ec90e8b3b1533111493b35b1c1316493f96c0e4dfb80ece594f484f392f56",
+        "after": "0537b5d09c743733c0526065ebfac928bee609a93f2aff74da5c4adaf857287b"
+      },
+      "docs/BETSE_CAPABILITY_ROADMAP.md": {
+        "before": "dc1a1909e6d8da22ad87b02bb5d0eec770333eaaf3ad85c84e81d7b93ca1b918",
+        "after": "eb4d2f618b00ff10b1491a89091eda6a3810aa6851de05a08d0f0fb72a01db14"
+      },
+      "README.md": {
+        "before": "6d859119ffd06ab92126cfc43f011da6ce5a5098c4c3c468a186200ba3640b88",
+        "after": "78eaa0d81bf0cc47ef6a1906ef2b3e2a77098ec94fe3295098e9e5a5cea66a20"
+      }
+    },
+    "production_sources_sha256": {
+      "__init__.py": "c7f00b142c28e3bbd990edceedf7b220b77096ca4b668cedd1cf014a33633379",
+      "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+      "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+      "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+      "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+      "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+      "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+      "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+      "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+      "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+      "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+      "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+      "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+      "core/schedule.py": "abde97947a4b3e210829acd3a41cbbf5a41a2530273909d710f96315e1e72a52",
+      "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+      "core/specs.py": "bf511b016e4e25b3da9f667282c47731e9e5aab992e77db139cdc324c6873453",
+      "core/state.py": "c476782bf008bc1fccb16ef126bdc13c0fd62736b8438f661dd861423b9d8a13",
+      "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+      "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+      "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+      "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+      "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+      "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+      "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+      "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+      "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+      "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+      "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+      "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+      "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+      "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+      "models/registry.py": "68d590a7a9c4adcb9602e96dff32c0d84e6e8ca78fe480c8d72a0787cbae7fb7",
+      "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+      "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+      "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+      "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+      "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+      "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+      "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+      "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+      "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+    },
+    "accepted_implementation_dependencies": 223,
+    "v2_captured_sources_sha256": {
+      "configs/reference/finite_extracellular_trajectories_v1.json": "81e7e68a1821a57dc9e8b96889dfcc0d9b4eca514785f4aac9dce32a77aff397",
+      "configs/reference/finite_extracellular_trajectories_v2.json": "91d7e85deddcc98c4e0ea1a474192d4224bda86edbfce85d563c663d008bcaa8",
+      "configs/reference/finite_extracellular_v1.json": "5169c84abd14fe9d9963bd55bd6bb5b2614c8541031d1378367eba81b37b1e2a",
+      "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+      "docs/FINITE_EXTRACELLULAR_NUMERICS.md": "2357473e89deeaa1c232b2c94ad44b1a67b5adfa4354b2aacfd0a368883207ed",
+      "docs/FINITE_EXTRACELLULAR_NUMERICS_V2.md": "3dbcc6293e18aefdf3d05032f2dc9ed8267ac3f88b6d900cba7147dacfab4a0c",
+      "docs/FINITE_EXTRACELLULAR_SPEC.md": "f8e3a4798c0d9fa7ba7c82478aaede0c15a3bc8abadccceca3ae9d369ce34af1",
+      "pyproject.toml": "1472fcb9be661b2c7b7c7bf6f9de7b0b4c7eed9c681ad27350b1c7c761d026d6",
+      "reports/spec-008-design-check-v2.json": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+      "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+      "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+      "runs/core-008-2026-09-10/release-audit.json": "e03a211726888d3962825db544bba6742aa09603031d68ebbbc4745542393f08",
+      "scripts/audit_finite_extracellular_reference.py": "a4eedeeeb41a84fe3fb70402cec8e05e3e6a0be72c2440d7fac85a75bbb8e336",
+      "scripts/audit_finite_extracellular_reference_v2.py": "f0ebe1b248a4352a79237b726b8779b1b0360fb1c4619721faa61eb9c88b445d",
+      "scripts/audit_multispecies_reference.py": "bdadac94ff1b659327d7733aead918ab138b21b97d13ff2bbf252b0bdb0698f7",
+      "scripts/audit_physical_ionic_graph_reference.py": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+      "scripts/qualify_finite_extracellular_reference.py": "3878d58ee9af40a0d04776da75769c8fbb6830657bc303a0df29bd8b870dc0e4",
+      "scripts/qualify_finite_extracellular_reference_v2.py": "5b27777f6e760483255f55a30a08ed58aad4b18110602db7bd822955b878b88c",
+      "scripts/qualify_voltage_gated_reference.py": "a12cea1122ec1e4148e82f60ebbf3d64862d2569d00219f827e9f6719e309f0b",
+      "scripts/test_cells_build.py": "4102a34c4d31e2599ee40b684e31af4f5598a5b6f61b13fc8b39189169d15b99",
+      "scripts/test_finite_extracellular_build.py": "69fcfe9e01b500bfe9a7afeb52109d89f01d874a085783362e332ccaf1605b2e",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/finite_extracellular_numerical_checks.py": "81e430c5edf41e657f14ba6b179976e9ba89735296e74bf864ac5a8fdedf3b5c",
+      "tests/finite_extracellular_numerical_data.py": "aeb7f44265d414d827b52b0bdb35c33ad19f8a551ddbe7c741bb53ff36a6c81e",
+      "tests/finite_extracellular_numerical_data_v2.py": "0c55f4d00fa5625e982a0555c7a1d0660de39579bfcd8c4d81cc99459d8ab606",
+      "tests/finite_extracellular_tangent.py": "38f557af9156c88544044fb3d2c9e4bda834125ba7adc0d7c86178950f8ad0de",
+      "tests/multispecies_numerical_checks.py": "bf93b1c1286ce92d18ba23c208329fbdb81a9f88c5d1c7652ed7d24ea812bd6c",
+      "tests/physical_ionic_graph_numerical_checks.py": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+      "tests/physical_ionic_graph_numerical_data.py": "fb210feb2326963e58baa8988c3ca9631bb750deef805fce7e225925ab0d0ed8",
+      "tests/reference_finite_extracellular.py": "ce06463420fa29cd0d3fe9b49584644348e5467e7b9a2cbc1bcc21224a0f99bd",
+      "tests/reference_finite_extracellular_dynamics.py": "ea231867a226046a1ee7da536eb2fa5a63668e4b0d038584a792b05901a7a237",
+      "tests/reference_finite_extracellular_dynamics_v2.py": "e517afd01582a560c2c66550559200289a046700c3b514aab1def6792be705a6",
+      "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+      "tests/reference_multispecies_dynamics.py": "a8ece60a2c2267d692ab2c48d0a204813746558e8aaeb3db8109ada6a0afe650",
+      "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+      "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+      "tests/reference_voltage_gated_dynamics.py": "224fba61aa0449a5d12e2759ccd19b07ea07754058eb943aeb2bfe8a292e9fa7",
+      "tests/unit/test_finite_extracellular_artifact_audit.py": "43c3726befed5985cc763fa6d4519b6e6bf23d2c3dd1ee15126dc9e593d2858f",
+      "tests/unit/test_finite_extracellular_artifact_audit_v2.py": "f159bbe8292ab454a85ab1a829ca2b870c31aa93b24fb53dff5c3b6b16252cc9",
+      "tests/unit/test_finite_extracellular_dynamics.py": "1a1924c3d9dbe51fc4519e34d31c06618df9ab42e7a94f933f834dc8476a73f6",
+      "tests/unit/test_finite_extracellular_tangent.py": "04f660b15fa804ee15a414a95cfaa1ac21805c81ae6fa525b6cda1ff70a1a4f2",
+      "tests/unit/test_finite_extracellular_test_context.py": "e2502c9201f604bd9701e569e335c4d5500076136e92af282ae9c326f78a668e",
+      "tests/voltage_gated_numerical_checks.py": "4c27043f751bf5e1210d3ddedd8b356d9adde17e25cd36ffa735adf2354ef3f2"
+    },
+    "v2_payloads_verified": 242,
+    "v1_captured_sources_sha256": {
+      "configs/reference/finite_extracellular_trajectories_v1.json": "81e7e68a1821a57dc9e8b96889dfcc0d9b4eca514785f4aac9dce32a77aff397",
+      "configs/reference/finite_extracellular_v1.json": "5169c84abd14fe9d9963bd55bd6bb5b2614c8541031d1378367eba81b37b1e2a",
+      "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+      "docs/FINITE_EXTRACELLULAR_NUMERICS.md": "2357473e89deeaa1c232b2c94ad44b1a67b5adfa4354b2aacfd0a368883207ed",
+      "docs/FINITE_EXTRACELLULAR_SPEC.md": "f8e3a4798c0d9fa7ba7c82478aaede0c15a3bc8abadccceca3ae9d369ce34af1",
+      "pyproject.toml": "1472fcb9be661b2c7b7c7bf6f9de7b0b4c7eed9c681ad27350b1c7c761d026d6",
+      "reports/spec-008-design-check-v2.json": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+      "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+      "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+      "runs/core-008-2026-09-10/release-audit.json": "e03a211726888d3962825db544bba6742aa09603031d68ebbbc4745542393f08",
+      "scripts/audit_finite_extracellular_reference.py": "a4eedeeeb41a84fe3fb70402cec8e05e3e6a0be72c2440d7fac85a75bbb8e336",
+      "scripts/audit_multispecies_reference.py": "bdadac94ff1b659327d7733aead918ab138b21b97d13ff2bbf252b0bdb0698f7",
+      "scripts/audit_physical_ionic_graph_reference.py": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+      "scripts/qualify_finite_extracellular_reference.py": "3878d58ee9af40a0d04776da75769c8fbb6830657bc303a0df29bd8b870dc0e4",
+      "scripts/qualify_voltage_gated_reference.py": "a12cea1122ec1e4148e82f60ebbf3d64862d2569d00219f827e9f6719e309f0b",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/finite_extracellular_numerical_checks.py": "81e430c5edf41e657f14ba6b179976e9ba89735296e74bf864ac5a8fdedf3b5c",
+      "tests/finite_extracellular_numerical_data.py": "aeb7f44265d414d827b52b0bdb35c33ad19f8a551ddbe7c741bb53ff36a6c81e",
+      "tests/multispecies_numerical_checks.py": "bf93b1c1286ce92d18ba23c208329fbdb81a9f88c5d1c7652ed7d24ea812bd6c",
+      "tests/physical_ionic_graph_numerical_checks.py": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+      "tests/physical_ionic_graph_numerical_data.py": "fb210feb2326963e58baa8988c3ca9631bb750deef805fce7e225925ab0d0ed8",
+      "tests/reference_finite_extracellular.py": "ce06463420fa29cd0d3fe9b49584644348e5467e7b9a2cbc1bcc21224a0f99bd",
+      "tests/reference_finite_extracellular_dynamics.py": "ea231867a226046a1ee7da536eb2fa5a63668e4b0d038584a792b05901a7a237",
+      "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+      "tests/reference_multispecies_dynamics.py": "a8ece60a2c2267d692ab2c48d0a204813746558e8aaeb3db8109ada6a0afe650",
+      "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+      "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+      "tests/reference_voltage_gated_dynamics.py": "224fba61aa0449a5d12e2759ccd19b07ea07754058eb943aeb2bfe8a292e9fa7",
+      "tests/unit/test_finite_extracellular_artifact_audit.py": "43c3726befed5985cc763fa6d4519b6e6bf23d2c3dd1ee15126dc9e593d2858f",
+      "tests/unit/test_finite_extracellular_dynamics.py": "1a1924c3d9dbe51fc4519e34d31c06618df9ab42e7a94f933f834dc8476a73f6",
+      "tests/voltage_gated_numerical_checks.py": "4c27043f751bf5e1210d3ddedd8b356d9adde17e25cd36ffa735adf2354ef3f2"
+    },
+    "v1_payloads_verified": 174,
+    "v1_failure_sha256": "7dd501991ab3c61144d3f8862f91a8b76c146619e5c554b2b9fd46a5c87f3e67",
+    "v2_verification_sha256": "a628ee5eb7cbecb438728012ffe2a2ba6fb28b7a9ab20a7c4f429318f5b0c45b",
+    "test_receipts": {
+      "num-009-v2-preflight-01.xml": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 13.55,
+        "sha256": "5fd50ee47fca20e43c1e21f3f629126be524cf7e4a1c6a62c4653e5daf8d835e"
+      },
+      "num-009-v2-preflight-02.xml": {
+        "tests": 153,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 29.906,
+        "sha256": "6dbf8d18fad507a05e04c6b952ee8411abd64e339f9b3d98677bfbd5f35bc105"
+      },
+      "num-009-v2-preflight-03.xml": {
+        "tests": 153,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 29.086,
+        "sha256": "1f299bae19063fcea49691fd4565bcc8a8237e2245408d6b228cc7c94c90d4f7"
+      },
+      "num-009-v2-targeted-01.xml": {
+        "tests": 168,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 58.182,
+        "sha256": "988ad69cec015fda71aff01dbaabe27e3f6f6d179a708cedbca045195830a2a2"
+      }
+    },
+    "matrix": {
+      "child_receipts_sha256": {
+        "current": "2c8a12852c90c00e5982bc48f931884ee225ff17140b82dcefa6ee0dc367ac59",
+        "historical": "911aa50f3fd61ce8c5cdc60caabf7d034efdede92d6fabbb3e904f7adee46195"
+      },
+      "contexts": {
+        "current-production": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "f5aac21e1ea18924b9d7a4819bba6591f1c20b549342c33ae3a7d1dd33047188",
+          "log_sha256": "5914cac32b43f0c4851f0a8102fa8a6b54dc3bcf09dc86b9866aa9be84ac0a70",
+          "seconds": 737.6,
+          "skipped": 0,
+          "tests": 2077
+        },
+        "preserved-channel-reference": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "f49133c33810685e2a97f8d04ce3c205482abf220368fe22d27dda42d065d1d0",
+          "log_sha256": "41dbdd4fa96dac5ba073758fa950b05a3cc9bffb20f1a61a05a2c23d4a0fdf09",
+          "seconds": 18.757,
+          "skipped": 0,
+          "tests": 205
+        },
+        "preserved-physical-graph-reference": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "a52fc325e49fd8feec8c6e2a54b97def779cb248414dd75bdc70cedaa733e22b",
+          "log_sha256": "879ae87d73ae2563dfd55e4869412d0f6a85bca9509f0c7dcc3015b257b8cacf",
+          "seconds": 15.361,
+          "skipped": 0,
+          "tests": 213
+        },
+        "preserved-reference": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "46472ce26c2588845c62c0344732007d8ff65c2696f2c9b86f37c3d16e1f389e",
+          "log_sha256": "6be2f46a7fc4fca36599689d65402011798fb66fc5a5511465a333470dff304a",
+          "seconds": 154.703,
+          "skipped": 0,
+          "tests": 971
+        }
+      },
+      "current_pytest_addopts": "--ignore=tests/unit/test_finite_extracellular_artifact_audit.py",
+      "driver_sha256": "69fcfe9e01b500bfe9a7afeb52109d89f01d874a085783362e332ccaf1605b2e",
+      "historical_pytest_addopts": null,
+      "schema": "cells.finite_extracellular_build_matrix@1",
+      "status": "pass",
+      "total_tests": 3466,
+      "underlying_driver_sha256": "4102a34c4d31e2599ee40b684e31af4f5598a5b6f61b13fc8b39189169d15b99",
+      "unexecuted_prospective_suite": {
+        "file": "tests/unit/test_finite_extracellular_artifact_audit.py",
+        "maintained_replacement": "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+        "reason": "V1 stopped unqualified and has no complete session; not passing coverage.",
+        "sha256": "43c3726befed5985cc763fa6d4519b6e6bf23d2c3dd1ee15126dc9e593d2858f",
+        "tests": 13
+      }
+    },
+    "evidence_files_sha256": {
+      "reports/NUM009_REFERENCE_V2.md": "9d25d736d689b8df822f9f370ecefa1d106f3232895600b4a767977334af95bd",
+      "reports/num-009-v2-artifact-audit.json": "9f4cc65c4acd4865b721907024ed56991aa8cb1d764d0f8a1a1534d057242c9e",
+      "reports/num-009-v2-core008-audit.json": "e912fe9e94454163d4dce779af73992ba6b0b1501f406dac9256bf64cccb6128",
+      "reports/num-009-v2-preflight-01.xml": "5fd50ee47fca20e43c1e21f3f629126be524cf7e4a1c6a62c4653e5daf8d835e",
+      "reports/num-009-v2-preflight-02.xml": "6dbf8d18fad507a05e04c6b952ee8411abd64e339f9b3d98677bfbd5f35bc105",
+      "reports/num-009-v2-preflight-03.xml": "1f299bae19063fcea49691fd4565bcc8a8237e2245408d6b228cc7c94c90d4f7",
+      "reports/num-009-v2-prior-attempt-audit.json": "4f11808f9dc699012d0c5cc33533ebf297358cb893c7ae27573fddc85b6dc20d",
+      "reports/num-009-v2-registration.json": "bdac7302441873801d4f06e3f1e014cf6547502ef36b300cd0b2dd2b72b75865",
+      "reports/num-009-v2-regression-01/current/current-production.log": "5914cac32b43f0c4851f0a8102fa8a6b54dc3bcf09dc86b9866aa9be84ac0a70",
+      "reports/num-009-v2-regression-01/current/current-production.xml": "f5aac21e1ea18924b9d7a4819bba6591f1c20b549342c33ae3a7d1dd33047188",
+      "reports/num-009-v2-regression-01/current/verification.json": "2c8a12852c90c00e5982bc48f931884ee225ff17140b82dcefa6ee0dc367ac59",
+      "reports/num-009-v2-regression-01/historical/preserved-channel-reference.log": "41dbdd4fa96dac5ba073758fa950b05a3cc9bffb20f1a61a05a2c23d4a0fdf09",
+      "reports/num-009-v2-regression-01/historical/preserved-channel-reference.xml": "f49133c33810685e2a97f8d04ce3c205482abf220368fe22d27dda42d065d1d0",
+      "reports/num-009-v2-regression-01/historical/preserved-physical-graph-reference.log": "879ae87d73ae2563dfd55e4869412d0f6a85bca9509f0c7dcc3015b257b8cacf",
+      "reports/num-009-v2-regression-01/historical/preserved-physical-graph-reference.xml": "a52fc325e49fd8feec8c6e2a54b97def779cb248414dd75bdc70cedaa733e22b",
+      "reports/num-009-v2-regression-01/historical/preserved-reference.log": "6be2f46a7fc4fca36599689d65402011798fb66fc5a5511465a333470dff304a",
+      "reports/num-009-v2-regression-01/historical/preserved-reference.xml": "46472ce26c2588845c62c0344732007d8ff65c2696f2c9b86f37c3d16e1f389e",
+      "reports/num-009-v2-regression-01/historical/verification.json": "911aa50f3fd61ce8c5cdc60caabf7d034efdede92d6fabbb3e904f7adee46195",
+      "reports/num-009-v2-regression-01/verification.json": "f4ab7cbdcea93942622b0507dcceadcbac9464f8df0ceac238a079efd04da1dd",
+      "reports/num-009-v2-targeted-01.xml": "988ad69cec015fda71aff01dbaabe27e3f6f6d179a708cedbca045195830a2a2",
+      "reports/num-009-v2-trajectory-review.json": "831de2576372e450a600cbb9ff01a2e890b91e8c8a9327f94bdf0e02b1ad7149",
+      "reports/num-009-v2-workspace-baseline.json": "cab6b2d22591249edc04aa85dc64be77ecf561228068492e68d77e4c8bb10fa0"
+    }
+  },
+  "documentation_check": {
+    "status": "pass",
+    "markdown_files": 11,
+    "local_links": 870,
+    "structure_checks": "pass"
+  },
+  "next": "CORE-009: separately versioned CPU/JAX explicit finite-outside inventories, complete state and restart/branch/window/cohort acceptance",
+  "closed_utc": "2026-09-10 20:40:15 UTC",
+  "static_checks": {
+    "lint": "All checks passed!",
+    "format": "239 files already formatted",
+    "dependencies": "No broken requirements found.",
+    "git_diff_check": "pass",
+    "python_files": 239
+  },
+  "test_context_seconds": 926.4209999999999
+}

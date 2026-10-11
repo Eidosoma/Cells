@@ -1,0 +1,15 @@
+# CPU development environment verified with Python 3.13.5 on Linux x86_64.
+# Re-resolve deliberately for another supported Python/platform; no GPU extras.
+iniconfig==2.3.0
+jax==0.11.1
+jaxlib==0.11.1
+ml_dtypes==0.6.0
+numpy==2.5.3
+opt_einsum==3.4.0
+packaging==26.3
+pluggy==1.6.0
+Pygments==2.21.0
+pytest==9.1.1
+ruff==0.16.6
+scipy==1.18.1
+setuptools==84.0.0

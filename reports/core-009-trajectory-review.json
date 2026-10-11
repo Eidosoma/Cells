@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "maxima": {
+    "voltage_V": 1.9102077211674562e-8,
+    "membrane_gate": 1.201560384522793e-7,
+    "junction_gate": 1.6828453075490302e-9,
+    "outside_concentration_mM": 0.00005939372375645888,
+    "charge_residual_V": 1.161330086892438e-16,
+    "global_charge_residual_C": 6.3288812054152285e-28,
+    "energy_residual_pJ": 6.4987412638772835e-9,
+    "dissipation_decrease_pJ": 0,
+    "cubic_countercharge_C": 5.858145013936635e-28
+  },
+  "depletion_fraction": 0.8080565755647833,
+  "internal_exchange_outside_exactly_frozen": true,
+  "old_regression": {
+    "scalar_cases": 78,
+    "scalar_arrays": 3511,
+    "windows": 1777,
+    "batches": 10,
+    "worlds": 44,
+    "batch_arrays": 2042,
+    "later_reference_cases": 40,
+    "later_exact_arrays": 2868
+  }
+}

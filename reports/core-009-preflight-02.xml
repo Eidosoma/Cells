@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="10" time="20.826" timestamp="2026-09-10T21:43:06.379312+00:00" hostname="eidosoma-vm-2"><testcase classname="tests.unit.test_finite_extracellular_production" name="test_internal_transfer_never_touches_outside_and_weighted_charge" time="6.214" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_outside_is_shared_even_for_disconnected_cells" time="0.005" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_countercharge_at_actual_stages_not_only_endpoints[False]" time="6.358" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_countercharge_at_actual_stages_not_only_endpoints[True]" time="0.036" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_whole_cubic_outside_domains_catch_hidden_excursions[outside_depletion]" time="0.003" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_whole_cubic_outside_domains_catch_hidden_excursions[outside_charge]" time="0.005" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_explicit_outside_budget_and_independent_world_inventory" time="6.922" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_increment_voltage_does_not_subtract_large_absolute_inventories" time="0.002" /><testcase classname="tests.unit.test_finite_extracellular_production" name="test_hidden_cycle_ledger_and_outside_state_survive_checkpoint" time="0.004"><failure message="ValueError: Duplicate physical edge, including reversed duplicate">tmp_path = PosixPath('/tmp/pytest-of-robert/pytest-417/test_hidden_cycle_ledger_and_o0')
+
+    def test_hidden_cycle_ledger_and_outside_state_survive_checkpoint(tmp_path):
+        case = short("star_mono")
+        w = case.world
+        edge = replace(w.junctions[0], id="cycle_tail", from_cell=w.cells[1].id, to_cell=w.cells[2].id)
+&gt;       world = replace(w, junctions=(*w.junctions, edge))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_finite_extracellular_production.py:459: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/dataclasses.py:1596: in replace
+    return _replace(obj, **changes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/dataclasses.py:1630: in _replace
+    return self.__class__(**changes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;string&gt;:11: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = World(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), temperature_K=298.15, extracellular=Compartment(id='bath_shar... 0), law='symmetric_opposing_relaxation@1', sensitivity_per_V=100, half_voltage_V=0.04, tau_s=0.2, initial_gate=0.25)))
+
+    def __post_init__(self):
+        for name in ("species_ids", "valence", "cells", "membranes", "channels", "junctions"):
+            if type(getattr(self, name)) is not tuple:
+                raise ValueError("World collections must be immutable tuples")
+        size = len(self.species_ids)
+        if not size or len(set(self.species_ids)) != size:
+            raise ValueError("Species IDs must be nonempty and unique")
+        for s in self.species_ids:
+            ion.identifier(s)
+        if len(self.valence) != size or any(
+            type(z) is not int or z not in ion.VALENCES for z in self.valence
+        ):
+            raise ValueError("Unsupported valence table")
+        ion.number(self.temperature_K, "temperature", positive=True)
+        ion.number(ion.R * self.temperature_K, "thermal energy", positive=True)
+        ion.number(2 * ion.R * self.temperature_K, "pump thermal scale", positive=True)
+        if not self.cells or len(self.cells) != len(self.membranes):
+            raise ValueError("Require one membrane for each cell")
+        compartments = (*self.cells, self.extracellular)
+        if any(
+            type(c) is not Compartment or len(c.initial_amount_fmol) != size for c in compartments
+        ):
+            raise ValueError("Every compartment must bind all species")
+        owners = [c.id for c in compartments]
+        for c, m in zip(self.cells, self.membranes, strict=True):
+            if type(m) is not Membrane or m.inside != c.id or m.outside != self.extracellular.id:
+                raise ValueError(
+                    "Membrane must face its cell and the sole extracellular compartment"
+                )
+            if len(m.permeability_m_per_s) != size:
+                raise ValueError("Membrane must bind all species")
+            owners.append(m.id)
+            if (
+                abs(
+                    c.charge(self.valence, c.initial_amount_fmol) / m.capacitance_F
+                    - m.initial_voltage_V
+                )
+                &gt; ion.ANCHOR_TOLERANCE_V
+            ):
+                raise ValueError("Cell charge and voltage anchor are inconsistent")
+            for z in self.valence:
+                ion.dimensionless_voltage(z, m.initial_voltage_V, self.temperature_K)
+            p = m.pump
+            if p is not None:
+                if p.roles[0] == p.roles[1] or any(s not in self.species_ids for s in p.roles):
+                    raise ValueError("Pump requires distinct existing roles")
+                if any(self.valence[self.species_ids.index(s)] != 1 for s in p.roles):
+                    raise ValueError("Pump roles must be monovalent positive species")
+                expected = tuple(
+                    -3 if s == p.roles[0] else 2 if s == p.roles[1] else 0 for s in self.species_ids
+                )
+                if p.stoichiometry != expected:
+                    raise ValueError("Pump stoichiometry must be -3 sodium / +2 potassium")
+                owners.append(p.id)
+        bound = set()
+        for c in self.channels:
+            if (
+                type(c) is not channel.Channel
+                or c.membrane_id not in self.membrane_ids
+                or c.membrane_id in bound
+            ):
+                raise ValueError("At most one resolved channel per declared membrane")
+            if (
+                c.species_id not in self.species_ids
+                or self.valence[self.species_ids.index(c.species_id)] != 1
+            ):
+                raise ValueError("Channel must bind a monovalent positive species")
+            if self.temperature_K != channel.TEMPERATURE_K:
+                raise ValueError("Kv1p5 reference requires 298.15 K")
+            m = self.membranes[self.membrane_ids.index(c.membrane_id)]
+            channel.voltage(m.initial_voltage_V)
+            ion.number(
+                m.area_m2 * c.max_permeability_m_per_s * c.abundance / ion.MOL_PER_FMOL,
+                "channel flux coefficient",
+                nonnegative=True,
+            )
+            bound.add(c.membrane_id)
+            owners.append(c.id)
+        pairs = set()
+        for e in self.junctions:
+            if (
+                type(e) is not graph.Junction
+                or e.from_cell not in self.cell_ids
+                or e.to_cell not in self.cell_ids
+            ):
+                raise ValueError("Junction must bind two intracellular endpoints")
+            pair = frozenset((e.from_cell, e.to_cell))
+            if pair in pairs:
+&gt;               raise ValueError("Duplicate physical edge, including reversed duplicate")
+E               ValueError: Duplicate physical edge, including reversed duplicate
+
+tests/reference_finite_extracellular.py:214: ValueError</failure></testcase><testcase classname="tests.unit.test_finite_extracellular_production" name="test_python_objects_cannot_drop_owners_or_mutable_collections" time="0.003" /></testsuite></testsuites>

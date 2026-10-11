@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "protocol_id": "E02-SW1",
+  "status": "prospective_design_only",
+  "model_contract": "bitsey_emt_graph@1-design",
+  "source_revision": "b2cb370aaecbc8299f259bc4251d5396c81f19a6",
+  "clock": "source_nominal_time",
+  "equations": {
+    "panel": "configs/reference/source_emt_pair_panel_v1.json",
+    "panel_sha256": "b67efad941db1b4c407aeddcac3836acf4a31653f3a1baa513ece6f5ce2e915d",
+    "inherit": ["parameters", "bath_ions", "primary_rows", "context_rows"],
+    "membrane_diffusion_per_cell": [1e-18, 1e-18, 1e-18],
+    "ionic_diffusion_per_edge": [1e-18, 1e-18, 1e-18],
+    "mirna_diffusion_per_edge": 2e-15,
+    "gate": "none",
+    "iterate_binding": false,
+    "mirna_transport_valence": -1,
+    "regulatory_charge_in_voltage": false,
+    "endogenous_expression": false,
+    "donor_clamp": false,
+    "edge_normalization": "source_whole_cell_membrane_area_no_degree_rescaling"
+  },
+  "preparation": {
+    "method": "fresh_isolated_full_model_exact_duration",
+    "duration": 500.0,
+    "initial_ions": [10.0, 125.0, 55.0],
+    "initial_regulation": {"E": [100.0, 0.0, 0.0], "M": [0.0, 100.0, 100.0]},
+    "context": {"P": 80.0, "snail": 72.0, "ST": 0.0},
+    "ion_contact": 0.0,
+    "mirna_contact": 0.0,
+    "leak_control": 1.0,
+    "pump_control": 1.0,
+    "qualification_window": [400.0, 500.0],
+    "minimum_signed_u_minus_m_margin": 10.0,
+    "minimum_per_coordinate_anchor_separation": 1.0,
+    "equilibrium_required": false,
+    "reference_anchor": "refined_Radau_exact_endpoint_after_reference_agreement",
+    "packet_status": "not_generated",
+    "transfer": "copy_complete_primary_and_context_new_world_zero_ledgers_with_parent_receipt"
+  },
+  "experiment": {
+    "start_time": 0.0,
+    "end_time": 1000.0,
+    "contact_start_time": 0.0,
+    "events": [],
+    "recipient_id": 100,
+    "donor_ids": [200, 300],
+    "edge_ids": [10, 20],
+    "edge_direction": "recipient_to_donor",
+    "directions": [
+      {"id": "E_to_M", "recipient": "E", "target": "M"},
+      {"id": "M_to_E", "recipient": "M", "target": "E"}
+    ],
+    "conditions": [
+      {"id": "active", "donors": 2, "donor_state": "target", "ion_contact": 1.0, "mirna_contact": 1.0, "role": "primary"},
+      {"id": "blocked", "donors": 2, "donor_state": "target", "ion_contact": 0.0, "mirna_contact": 0.0, "role": "control"},
+      {"id": "ionic_only", "donors": 2, "donor_state": "target", "ion_contact": 1.0, "mirna_contact": 0.0, "role": "control"},
+      {"id": "mirna_only", "donors": 2, "donor_state": "target", "ion_contact": 0.0, "mirna_contact": 1.0, "role": "control"},
+      {"id": "same_state", "donors": 2, "donor_state": "recipient", "ion_contact": 1.0, "mirna_contact": 1.0, "role": "control"},
+      {"id": "one_neighbor", "donors": 1, "donor_state": "target", "ion_contact": 1.0, "mirna_contact": 1.0, "role": "control"},
+      {"id": "isolated", "donors": 0, "donor_state": "target", "ion_contact": 0.0, "mirna_contact": 0.0, "role": "control"}
+    ],
+    "rng": "none",
+    "replicate_semantics": "14_deterministic_conditions_not_biological_replicates",
+    "early_biological_stopping": false,
+    "donor_removal": false
+  },
+  "observer": {
+    "revision": "e02_switching_observer@1-design",
+    "label_rule": "E_if_u_gt_m_plus_2_M_if_m_gt_u_plus_2_else_X",
+    "label_threshold": 2.0,
+    "regular_interval": 1.0,
+    "irregular_times": [0.113, 0.613, 10.137, 100.274, 500.137, 999.613],
+    "terminal_window": [900.0, 1000.0],
+    "primary_outcome": "recipient_target_label_at_all_observations_in_terminal_window",
+    "secondary_outcomes": ["recipient_endpoint_label", "all_cell_terminal_labels", "donor_changes", "first_sampled_target_time", "last_non_target_bracket", "per_coordinate_anchor_distance", "full_state_drift_and_rhs", "typed_exchange_and_local_ledgers", "native_style_goal_distance_diagnostic"],
+    "distance_scale": "absolute_prepared_E_minus_M_per_regulatory_coordinate",
+    "native_style_goal_threshold": 2.0,
+    "native_style_goal_rows": ["snail", "miR200_total", "Zeb_mRNA_total", "ZEB_prot", "miR200_free", "bound0", "bound1", "bound2", "bound3", "bound4", "bound5", "bound6", "ST"],
+    "label_uncertainty": "unresolved_if_independent_methods_disagree_or_error_envelope_touches_label_boundary"
+  },
+  "numerics": {
+    "reference_methods": ["Radau", "BDF", "Radau_refined"],
+    "rtol": 1e-10,
+    "atol": 1e-11,
+    "refinement_factor": 0.1,
+    "reference_max_step": 0.1,
+    "reference_agreement_fraction": 0.1,
+    "rk4_study_steps": [0.01, 0.005, 0.0025],
+    "study_cases": ["prepare_E", "prepare_M", "E_to_M/active", "M_to_E/active", "E_to_M/one_neighbor", "M_to_E/one_neighbor"],
+    "all_cases_at_selected_step_and_half": true,
+    "targets": {
+      "ionic_state_and_ledger": {"atol": 5e-8, "rtol": 5e-10},
+      "regulatory_state_and_ledger": {"atol": 5e-6, "rtol": 5e-8},
+      "voltage": {"atol": 5e-7, "rtol": 0.0},
+      "gate_scale": {"atol": 5e-6, "rtol": 5e-8},
+      "membrane_and_junction_flux": {"atol": 1e-13, "rtol": 1e-5}
+    },
+    "accounting_atol": 2e-9,
+    "domain": {"ions": [1e-6, 1000.0], "regulation": [0.0, 1000.0], "absolute_voltage_max": 0.2, "electrical_exponent_max": 50.0},
+    "comparison_grid": "accepted_endpoints_midpoints_observer_times_and_phase_boundaries",
+    "dense_domain_checks": "all_polynomial_extrema_not_only_samples",
+    "native_long_trajectory_campaign": "not_in_this_gate",
+    "production_candidate": "not_selected"
+  },
+  "resources": {
+    "backend": "cpu_float64",
+    "cpu_affinity": [0, 1, 2, 3],
+    "concurrent_workers": 1,
+    "window_steps": 256,
+    "max_steps_per_trajectory": 1000000,
+    "rhs_calls_per_reference_trajectory": 2000000,
+    "worker_timeout_seconds": 900,
+    "session_wall_budget_seconds": 3600,
+    "estimated_array_budget_bytes": 268435456,
+    "artifact_budget_bytes": 1073741824,
+    "budget_outcome": "incomplete_retain_receipts_no_automatic_budget_extension"
+  },
+  "provenance": {
+    "production_version_at_freeze": "0.10.0",
+    "production_audit": "runs/core-005b-2026-09-08/release-audit.json",
+    "production_audit_sha256": "94d8ee4500f91fb6fb5506085c515944ad235e7d42318430d11d85e41b74da4e",
+    "native_fixture": "tests/fixtures/source_pair_probes.json",
+    "native_fixture_sha256": "c71d0ede05060c84e466a7cc9e3a5f4ea7aa4eb2d3c1b77518c415f91a2b5f6b",
+    "reviewed_exploration_root": "../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration",
+    "reviewed_documents": {
+      "PILOT_PROTOCOL.md": "2f7e8776d5ff746d2732d41191fdddb11a34498802f7207ce8b1328206d522ec",
+      "PILOT_RESULTS.md": "4f5d4de96832e2de89cc0f4ce0246e4e7817446f7da953d9f32f0410d441ffda",
+      "MEMORY_PROBE_PROTOCOL.md": "9ea68ba62dbd93e2943db12ede7602bca97ec7a4583cc25ede7266c8a0ae676d",
+      "MEMORY_PROBE_RESULTS.md": "076dd46aeb92196628928bc7a65f9bdd73f56c8d4ea8fc87fa8d1fc9ddfd0f79"
+    }
+  }
+}

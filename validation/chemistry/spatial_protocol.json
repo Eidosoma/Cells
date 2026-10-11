@@ -1,0 +1,58 @@
+{
+  "kind": "spatial_calcium_assembly_qualification@1",
+  "physical_scope": "Two cell-owned cytosol/ER pairs with finite buffers, plasma calcium and other ions, Na/K pumps, potassium channels, junctions, three extracellular regions and assembly-controlled channel availability",
+  "duration_s": 0.02,
+  "steps_s": [
+    2.5e-05,
+    1.25e-05,
+    6.25e-06
+  ],
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_sources_sha256": {
+    "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8"
+  },
+  "checks": [
+    "Strict shared cytosol identity and volume, global ionic moieties, locally retained charged buffers and complete store ownership",
+    "Stage-consistent ER/reaction/plasma/junction/field solve; internal ER exchange cannot charge the outer capacitor",
+    "Independent scalar spatial and ER DOP853/Radau trajectories, all-state comparison and timestep refinement with off-grid observations",
+    "Full chemical and nested capacitor energies, both maintained metabolic work conventions, all-route dissipation and current continuity",
+    "Plasma-calcium blocker and timed ER release interventions; reductions to prior ER and spatial ionic components",
+    "Exact complete checkpoints, future interventions, window changes, heterogeneous independent-world partitions 1/2/3 and real CPU/L4 placement",
+    "Assembly event-union reference from independently reconstructed pool histories, channel-to-voltage-to-calcium response, unchanged protein paths and complete restart/partition replay",
+    "Existing ensemble planner retains model and world identities through 4-node/16-GPU plans; no remote execution or throughput claim",
+    "Earlier ER/native-function, closed chemistry, reaction, checkpoint and selected prior assembly-cluster regressions"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-09,
+    "independent_state_atol": 3e-12,
+    "reference_agreement_rtol": 2e-10,
+    "reference_agreement_atol": 5e-14,
+    "reference_solver_rtol": 2e-13,
+    "reference_solver_atol": 2e-17,
+    "reference_max_step_s": 5e-05,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "native_pump_rtol": 3e-12,
+    "native_pump_atol_fmol_per_s": 3e-14,
+    "energy_atol_pJ": 1e-09,
+    "minimum_refinement_improvement": 6,
+    "max_abs_voltage_V": 0.15,
+    "max_abs_pump_affinity_RT": 80,
+    "max_actual_step_times_inventory_loss_bound": 0.25
+  },
+  "resources": {
+    "max_wall_seconds": 2700,
+    "artifact_and_cache_bytes": 1610612736,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "Measured calcium or assembly feedback, biological calibration, protein chemistry consuming ions or energy, calcium-driven assembly rates",
+    "Native BETSE initialization and full trajectories, two-calcium SERCA, protons, finite ATP or IP3 release",
+    "Cross-region junctions, variable volume, mechanics or lifecycle",
+    "Sustained utilization/speedup, distributed single-world integration or JUPITER execution"
+  ],
+  "automatic_followup": false
+}

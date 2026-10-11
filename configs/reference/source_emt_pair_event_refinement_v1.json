@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "purpose": "Post-baseline S12 native clock refinement; retain the original failed timing-state check, equations, inputs and all tolerances",
+  "panel_sha256": "b67efad941db1b4c407aeddcac3836acf4a31653f3a1baa513ece6f5ce2e915d",
+  "base_protocol_sha256": "226cd48ee1d564411d3ecce929b79dcbc323f92e320e51cdb1415742cd510924",
+  "baseline_comparison_sha256": "57cb7306cca513ebf8f4ba7ecc821186b633dfe27ab6164204308146e111a53d",
+  "case_ids": ["S12"],
+  "native_refinements": [
+    {"name": "event_finer", "scale_from_fine": 0.5},
+    {"name": "event_finest", "scale_from_fine": 0.25}
+  ],
+  "notes": "Run both refinements. Each scales the legacy base-time quantum, voltage-change bound and fractional-concentration bound equally. Reuse fine as the new coarse comparison. The finest run must meet every unchanged native state, timing-state, event-clock and contraction gate. Not a replacement baseline or a physical parameter change."
+}

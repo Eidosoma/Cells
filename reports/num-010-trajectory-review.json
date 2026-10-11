@@ -1,0 +1,190 @@
+{
+  "all_fourteen_restarts_bitwise": true,
+  "analytic": {
+    "blocked_cell": {
+      "contrast_fraction_decrease": 0.22119921692859512,
+      "maximum_normalized_error": 4.4053649617126205e-8,
+      "pass": true,
+      "potential_error_V": 5.551115123125783e-17,
+      "required": true,
+      "semidiscrete_or_two_volume_error_mM": 4.405364961712621e-13
+    },
+    "line_16": {
+      "continuum_error_mM": 0.023491588893364224,
+      "maximum_normalized_error": 1.0800249583553522e-7,
+      "pass": true,
+      "potential_error_V": 1.9103642279194588e-16,
+      "required": true,
+      "semidiscrete_or_two_volume_error_mM": 1.0800249583553523e-12
+    },
+    "line_32": {
+      "continuum_error_mM": 0.005899993180563001,
+      "maximum_normalized_error": 1.6484591469634322e-7,
+      "pass": true,
+      "potential_error_V": 3.0661237437890065e-16,
+      "required": true,
+      "semidiscrete_or_two_volume_error_mM": 1.6484591469634324e-12
+    },
+    "line_8": {
+      "continuum_error_mM": 0.09224173607674402,
+      "maximum_normalized_error": 7.247535904753022e-8,
+      "pass": true,
+      "potential_error_V": 1.3075478200175183e-16,
+      "required": true,
+      "semidiscrete_or_two_volume_error_mM": 7.247535904753022e-13
+    },
+    "pure_bulk": {
+      "contrast_fraction_decrease": 0.22119921692859512,
+      "maximum_normalized_error": 3.979039320256561e-8,
+      "pass": true,
+      "potential_error_V": 4.85722573273506e-17,
+      "required": true,
+      "semidiscrete_or_two_volume_error_mM": 3.979039320256561e-13
+    }
+  },
+  "artifact_bytes": 42701619,
+  "biology_validated": false,
+  "completed_candidate_failures": [
+    {
+      "attempt": "rk4_0.001",
+      "case": "line_16",
+      "native_normalized_error": 5.179607467295771,
+      "observed_normalized_error": 6.753410091769538
+    },
+    {
+      "attempt": "rk4_0.004",
+      "case": "line_8",
+      "native_normalized_error": 1.2337463652090097,
+      "observed_normalized_error": 1.2335929004680946
+    }
+  ],
+  "gates": {
+    "salt_relaxation": {
+      "contrast_fraction_decrease": 0.22119921692859512,
+      "pass": true
+    },
+    "spatial": {
+      "errors_mM": [
+        0.09224173607674402,
+        0.023491588893364224,
+        0.005899993180563001
+      ],
+      "pass": true,
+      "ratios": [
+        0.25467418429570216,
+        0.25115343229208303
+      ]
+    }
+  },
+  "gpu_tested": false,
+  "jacobian_work": {
+    "central_columns": 1034,
+    "jacobian_evaluations": 94,
+    "jacobian_rhs_calls": 2162,
+    "one_sided_columns": 0,
+    "zero_tangent_columns": 0
+  },
+  "panel_sha256": "642528abeba897ea25d6650074fa979721d95bf8f7519466a16270e41914f194",
+  "payload_count": 339,
+  "production_changed": false,
+  "registered_utc": "2026-09-11T13:57:46.384473+00:00",
+  "rejected_candidates": [
+    {
+      "attempt": "rk4_0.004",
+      "case": "line_16",
+      "completed_steps": 5,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k3",
+      "time_s": 0.022
+    },
+    {
+      "attempt": "rk4_0.002",
+      "case": "line_16",
+      "completed_steps": 9,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k4",
+      "time_s": 0.02
+    },
+    {
+      "attempt": "rk4_0.001",
+      "case": "line_32",
+      "completed_steps": 5,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k3",
+      "time_s": 0.0055
+    },
+    {
+      "attempt": "rk4_0.004",
+      "case": "line_32",
+      "completed_steps": 2,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "endpoint",
+      "time_s": 0.012
+    },
+    {
+      "attempt": "rk4_0.0005",
+      "case": "line_32",
+      "completed_steps": 9,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k3",
+      "time_s": 0.004750000000000001
+    },
+    {
+      "attempt": "rk4_0.002",
+      "case": "line_32",
+      "completed_steps": 3,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k4",
+      "time_s": 0.008
+    },
+    {
+      "attempt": "rk4_0.00025",
+      "case": "line_32",
+      "completed_steps": 42,
+      "reason": "Nonpositive or nonfinite spatial inventory/concentration",
+      "stage": "k4",
+      "time_s": 0.010750000000000001
+    }
+  ],
+  "schema": "cells.num010.trajectory_review@1",
+  "seconds": 523.13833973906,
+  "selected_dt_s": 0.000125,
+  "selected_errors": {
+    "native": {
+      "amount_and_transfer_fmol": 1.1757261830780408e-13,
+      "concentration_mM": 1.846023334195479e-11,
+      "dissipation_pJ": 1.737276988933445e-12,
+      "potential_V": 4.009639842372792e-14
+    },
+    "observed": {
+      "amount_and_transfer_fmol": 1.1447787162666145e-13,
+      "concentration_mM": 1.797867410502363e-11,
+      "dissipation_pJ": 1.7363888105137448e-12,
+      "potential_V": 3.966271755473372e-14
+    }
+  },
+  "selected_maximum_normalized": {
+    "native": 0.000001737276988933445,
+    "observed": 0.0000017363888105137448
+  },
+  "source_count": 21,
+  "totals": {
+    "complete_attempts": 133,
+    "main_accepted_steps": 88411,
+    "main_attempts": 140,
+    "main_rhs_calls": 454155,
+    "rejected_attempts": 7
+  },
+  "trial_extrema": {
+    "max_attempt_accepted_steps": 4802,
+    "max_attempt_rhs_calls": 24010,
+    "maximum_charge_C": 4.552822244989512e-24,
+    "maximum_current_normalized": 0.22046050660753522,
+    "maximum_current_residual_A": 2.1938224591237946e-23,
+    "maximum_membrane_abs_x": 2.9947187281969008,
+    "minimum_amount_fmol": 0.004047482810890679
+  },
+  "verification_sha256": "abf25d88ebd64bf2c922f189bdf0669ae100c46eef3101d0d8eda98f15a66046",
+  "trial_summary_scope": "Extrema are over admissible RHS evaluations returning diagnostics, including Jacobian probes. Seven rejected offending stages are retained separately and are not counted as passing domain checks.",
+  "timing_scope": "Single-CPU reference qualification including analysis and restart evidence; not a production or GPU performance benchmark."
+}

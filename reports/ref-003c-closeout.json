@@ -1,0 +1,137 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "baseline_files": 815,
+  "biology_validated": false,
+  "capture_rerun": false,
+  "changed_baseline_files": {
+    "PROGRESS.md": {
+      "after": "cb3d11fde443ff7256e0427a553c7f073ec606c188f3d582eee0b74a35a75d8a",
+      "before": "8efa9d9f2d65f10306bb43a2e68287bfe80c4fce87206f0232e36dfdad76a3c1"
+    },
+    "README.md": {
+      "after": "ed10da3361a488ab52c5b55f9d2c974719b3e784227dd538330c2a895aa37e34",
+      "before": "11ebb999188e5406f1a9e6813b28c94663ef80d7a6baa8d8998b238cb36464e5"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "c52025ce9b7630f43f525d6e6888418719f3f7ea06e117502e4320cbc50c0156",
+      "before": "4db90fe99790cc92919571fce29ad755707ee86b28b4e542c2991eef9a4d7926"
+    },
+    "docs/BETSE_INITIALIZATION_ALIGNMENT.md": {
+      "after": "2b15541985b06334c6f1fbcfbe784b84a9a14abc63c0fcd903a8f8846a55891c",
+      "before": "1e9dcdbf3d6df6c937d668321dd69ee451156671048e30f57707fcaf3c75c6e6"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "e8c08b5d6fb3b00f787fe5f1f86e80ee895460e3c60e945a50399bfdbe43785e",
+      "before": "b1f706fbd965682dd8dcf4495e6791f78c6d0a8d89958a76a5607e916c5aa6bb"
+    },
+    "docs/DECISIONS.md": {
+      "after": "35379e948f6029fad77a45fe104909fb5d8084c199fc29e8b9fe2972f48abcfc",
+      "before": "372df713dce8ec4401cd35ab7fe56b8a8e4316113af5668fa1da7001df04be56"
+    },
+    "reports/REF003C_CLUSTER_ALIGNMENT.md": {
+      "after": "1a55cad6819a2b912175bf1747bd377b5ae6b520b1b31c7e790ce08999b3ecde",
+      "before": "22184ffbff8c508076155d24f92e6e0c476f3d191433715616b45f8f6b73d01f"
+    },
+    "validation/betse/README.md": {
+      "after": "c217747a66c54a15726046155527bc2bfdd1acfc653169cc43d6eefccb1cc889",
+      "before": "7015847c936c499d2779121e4ae77a88cca5d70f1da1b9aefa8d96e6f91fe813"
+    }
+  },
+  "development_version": "0.15.0.dev0",
+  "driver_sha256": "5b6ab55944ac4d96b5876f09f919bdc4c6fd4d462e26c11871bcefbd2dca6e6c",
+  "evidence_audit_sha256": "1f8fb5c7626408064ec50ac0fc0eec38eceb790b466ba6a84580e474303d329d",
+  "finished_utc": "2026-09-12T15:54:32.660736+00:00",
+  "geometry_audit_sha256": "4908a52d835d6ddfdb61bd9b4df38e1d92cd69b30778fdea5f2b57e862d84b65",
+  "gpu_tested": false,
+  "independent_audit": {
+    "accepted_implementation_files": 352,
+    "biology_validated": false,
+    "cells": 7,
+    "comparisons": 19691,
+    "geometry_diagnostic": {
+      "alignment_qualified": false,
+      "completion_sha256": "7c37798dc3700419fb690e7c9857a493cccfd09c95522ec0d360ac95ef2b3b28",
+      "explicit_svg_centres": 1,
+      "installed_python_files": 332,
+      "native_exception_type": "QhullError",
+      "one_cell_seed_succeeded": false,
+      "production_calls": 0,
+      "schema": "cells.betse_svg_negative_evidence_audit@1",
+      "status": "native_one_centre_rejection_confirmed",
+      "trajectory_calls": 0,
+      "upstream_calls": 0
+    },
+    "native_faces": 30,
+    "payloads": 14,
+    "production_calls": 0,
+    "schema": "cells.betse_cluster_evidence_audit@1",
+    "scope": "Initialization, instantaneous RHS and prescribed updates; no trajectory",
+    "status": "pass",
+    "trajectory_calls": 0,
+    "trajectory_run": false,
+    "upstream_calls": 0,
+    "verification_sha256": "ca064838d5177543b7b51f8a226f89df18ecfea5d0e51cbf5e04243da42e91c8"
+  },
+  "new_files_sha256_before_closeout": {
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": "30a229ed0e717aeb76a29289227564be4e163f23c10a9c41bba163a99d94c6cf",
+    "reports/REF003C_CLOSEOUT.md": "25eb18843a688d844360d205be23821a1a9319e4a05d4074b290f80076e70e91",
+    "reports/ref-003c-preservation.json": "11234c704bd3ce7a3b947c12ec11d4daf9b050fff09c43c603876cf3599deaca"
+  },
+  "next_step": "REF-003d short trajectory adapter/preflight and prospective registration; not launched",
+  "one_cell_alignment_qualified": false,
+  "pre_probe_baseline_files": 800,
+  "pre_probe_changed_files": {
+    "PROGRESS.md": {
+      "after": "cb3d11fde443ff7256e0427a553c7f073ec606c188f3d582eee0b74a35a75d8a",
+      "before": "39bc351c5c6db1505dfcd6e24c1afab2e575dfe9216e72fe0c331e309a8ffd72"
+    },
+    "README.md": {
+      "after": "ed10da3361a488ab52c5b55f9d2c974719b3e784227dd538330c2a895aa37e34",
+      "before": "2f366922e450da260caeef4d922a7a6cbc516b354de878d451dd6b5665da1856"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "c52025ce9b7630f43f525d6e6888418719f3f7ea06e117502e4320cbc50c0156",
+      "before": "92cdca93a8679d7d2e4155f30bcfc69960c42b620c13b5bc66746a213f5c3415"
+    },
+    "docs/BETSE_INITIALIZATION_ALIGNMENT.md": {
+      "after": "2b15541985b06334c6f1fbcfbe784b84a9a14abc63c0fcd903a8f8846a55891c",
+      "before": "19eca4baec2bcd543ce528fc622c33caaf8f436bf9adbf75e6b434aab66b9d5e"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "e8c08b5d6fb3b00f787fe5f1f86e80ee895460e3c60e945a50399bfdbe43785e",
+      "before": "653c9a218a09c625d8c5e7d20ca1f27769e0378f6fdbf86051f862734ecfd90c"
+    },
+    "docs/DECISIONS.md": {
+      "after": "35379e948f6029fad77a45fe104909fb5d8084c199fc29e8b9fe2972f48abcfc",
+      "before": "213062e99331880b50826a5b936842f70ab3fa5f743cf916d7f10d2742e249b5"
+    },
+    "validation/betse/README.md": {
+      "after": "c217747a66c54a15726046155527bc2bfdd1acfc653169cc43d6eefccb1cc889",
+      "before": "fe3eed6088f81fd77e8de94f267a089a574ec31df50cb3192fd2178f6f3509f6"
+    }
+  },
+  "pre_probe_unchanged_files": 793,
+  "preservation_sha256": "11234c704bd3ce7a3b947c12ec11d4daf9b050fff09c43c603876cf3599deaca",
+  "prior_production_matrix_tests": 4190,
+  "production_changed": false,
+  "production_matrix_rerun": false,
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "302 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "schema": "cells.betse_cluster_closeout@1",
+  "scope": "Seven-cell initialization, instantaneous RHS and prescribed updates only",
+  "stable_promotion": false,
+  "stable_version": "0.14.0",
+  "status": "pass",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "511005d0c0aa9e98bcfdb9897cb5397b6834d00655aee13f9a0ec274fdb22ead",
+    "skipped": 0,
+    "tests": 171
+  },
+  "trajectory_qualified": false,
+  "unchanged_baseline_files": 807
+}

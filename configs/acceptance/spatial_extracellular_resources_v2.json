@@ -1,0 +1,22 @@
+{
+  "schema": "cells.core010_acceptance_resources@2",
+  "id": "v2",
+  "max_seconds": 7200,
+  "max_artifact_bytes": 2147483648,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "scientific_protocol_sha256": "55a8a5aec1968793b598c728275950cf4b92fbc30beb75043984fe39421c8d45",
+  "prior_stop_receipt_sha256": "7a35c6e8174002a2d4d082a26cc7b96e5f65e4fd153a8c3f38fbcd43c14583b1",
+  "runtime_projection_sha256": "7e493f6ce2cc38478975f99c71fa5e131ba7f9ead94008bf53def41e58317bd1",
+  "workspace_baseline_sha256": "a97c5145347ae45d69dbc0d7420890b6fdf4267fddcac20b1d8b6b3a19a7c1e8"
+}

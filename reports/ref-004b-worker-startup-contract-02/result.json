@@ -1,0 +1,23 @@
+{
+  "amendment_sha256": "7f16b3e73bcf241c0228afa69c1ccc9fe3c835732b843dacd12757650f408108",
+  "automatic_retry": false,
+  "elapsed_seconds": 4.587120846030302,
+  "previous_registration_sha256": "7b10286e2994965847fbf700ea8e5e33078a224391fd5062f62b6df63fe631e8",
+  "rows_sha256": {
+    "disabled_jit": "53e72bd0a547bc0c114c11b3e207f0346c5fd739bc7bc2ef0f67c841b52fe86a",
+    "empty_xla": "759f7496c76a0e237db3864e2b8ea90d28f63cb22f174968cd6c226f0867dda6",
+    "explicit_false": "07c7b19c18c8d092bcf18dc9ca16d5abb3473684324011d8acee5bd95ce8d246",
+    "registered": "2e289b465213ddb2617ca0b76bf5aae154a5252682eebf9f44a83e9456f5fe7a",
+    "wrong_package": "b5ab82692bed7461aa189b3f6f7798860cabfab5e849bc76ead75c08f5f1e901"
+  },
+  "schema": "cells.betse_channel_worker_startup_contract@1",
+  "scope": {
+    "gpu_tested": false,
+    "native_simulator_run": false,
+    "production_integrator_run": false,
+    "real_cells_worker_entered": true,
+    "runtime_check_modified": false,
+    "transport_executed": false
+  },
+  "status": "pass"
+}

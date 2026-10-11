@@ -1,0 +1,15 @@
+{
+  "project": "NumPy",
+  "installed_version": "2.5.3",
+  "git_revision": "dd88c0c19b54ad9ed3533224221285bf0873249a",
+  "source_url": "https://raw.githubusercontent.com/numpy/numpy/dd88c0c19b54ad9ed3533224221285bf0873249a/numpy/_core/src/umath/loops_utils.h.src",
+  "source_sha256": "ed85d5b99f0b457cb7a316bf8c4acb884034bbbb81a89c5cedb62be80bf7c4f8",
+  "license_url": "https://raw.githubusercontent.com/numpy/numpy/dd88c0c19b54ad9ed3533224221285bf0873249a/LICENSE.txt",
+  "license_sha256": "1be1df33863f97a7bc1c4d67980bd6c69c9a6fef0a5ee76e6ad6cb91e56e8491",
+  "runtime_files_sha256": {
+    "upstream/betse-venv/lib/python3.13/site-packages/numpy/version.py": "c1357b603c81e0fcbf935e7ccfc9202cafba0b30e38c625b568004002e372205",
+    "upstream/betse-venv/lib/python3.13/site-packages/numpy/_core/_methods.py": "724facf7e63c5b8fcc2fac14bf31a02cb048d9e28f516d86502ba5077a425476",
+    "upstream/betse-venv/lib/python3.13/site-packages/numpy/_core/_multiarray_umath.cpython-313-x86_64-linux-gnu.so": "097e10f2baaf99d5a4655e549a6c76b139e3931681af39068f79c7b3abddadac"
+  },
+  "scope": "Positive finite contiguous float64 arrays of length 30 only; source-order reconstruction is cross-checked against the pinned installed binary in software tests. Not a portable general NumPy reduction implementation."
+}

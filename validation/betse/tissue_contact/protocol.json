@@ -1,0 +1,64 @@
+{
+  "kind": "native_betse_spatial_transport_contact@1",
+  "scope": "Pinned unmodified BETSE 1.5 FULL INIT spatial driver: native geometry, membrane/junction GHK laws, finite-difference extracellular transport, reservoir accounting and field/update semantics. Shared GHK laws compared on CPU/L4; no equivalence of different field closures or complete trajectories.",
+  "tests": ["tests/unit/test_betse_tissue_contact.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_betse_tissue_contact.py::test_cpu_gpu_saved_fluxes"],
+  "required_evidence": ["native-spatial-contact", "native-spatial-shared-laws"],
+  "required_gpu_evidence": ["native-spatial-cpu-gpu"],
+  "species": ["Na", "K", "Cl"],
+  "duration_s": 0.000008,
+  "native_steps_s": [0.000001, 0.0000005],
+  "gj_surface_fraction": 1e-8,
+  "initial_voltage_extent_V": 0.02,
+  "base_concentration_mM": [12.0, 140.0, 10.0],
+  "concentration_gradient_mM": [4.0, -8.0, 2.0],
+  "outside_mM": [145.0, 4.0, 120.0],
+  "cases": [
+    {"id": "uniform", "fixture": "equal", "topology": "disconnected", "outside_pulse_mM": {}, "membrane_permeability_m_s": [0.0, 0.0, 0.0], "boundary_voltage_V": {"L": 0.0, "R": 0.0, "T": 0.0, "B": 0.0}},
+    {"id": "diffusion", "fixture": "equal", "topology": "disconnected", "outside_pulse_mM": {"Na": 0.5, "Cl": 0.5}, "membrane_permeability_m_s": [0.0, 0.0, 0.0], "boundary_voltage_V": {"L": 0.0, "R": 0.0, "T": 0.0, "B": 0.0}},
+    {"id": "junction", "fixture": "mixed", "topology": "all", "outside_pulse_mM": {}, "membrane_permeability_m_s": [0.0, 0.0, 0.0], "boundary_voltage_V": {"L": 0.0, "R": 0.0, "T": 0.0, "B": 0.0}},
+    {"id": "combined", "fixture": "mixed", "topology": "all", "outside_pulse_mM": {"Na": 0.001}, "membrane_permeability_m_s": [1e-10, 2e-10, 8e-11], "boundary_voltage_V": {"L": -0.001, "R": 0.001, "T": 0.0, "B": 0.0}}
+  ],
+  "checks": [
+    "Authenticate pinned native sources/package lock, actual cell/membrane/grid ownership and native checkpoints",
+    "Eight observed/bare pairs agree exactly on final arrays and retained histories; hook restored",
+    "Measure all native per-ion junction/ECM/ordinary/voltage calls and completed-update clocks",
+    "Independently replay boundary reset, drift/diffusion, native boundary derivative signs, Euler ECM update and membrane/junction inventory transfers",
+    "Separate reservoir resets and discrete-stencil exchange from intracellular/extracellular membrane exchange; finite domains and fixed immobile species",
+    "Reconstruct native charge-based membrane voltage and screened/smoothed exterior field; report distinct face owners and voltage closure differences",
+    "Compare actual native membrane/junction GHK inputs to production Cells float64 laws on CPU/L4, independent scalar reference and saved CPU/GPU values",
+    "Deliberately corrupt owner mapping, field/transport values and species clock; require check failures"
+  ],
+  "tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-8,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "resources": {
+    "max_wall_seconds": 1800,
+    "native_timeout_seconds": 300,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "8-microsecond synthetic contact panel, not a qualified duration/refinement ladder or biological trajectory",
+    "Native fixed reservoir boundaries, repeated membrane faces and screened field are not the closed, single-membrane-per-cell Cells tissue law",
+    "No change to production physics, numerical tolerances or earlier evidence",
+    "Native finite-difference boundary conventions are isolated compatibility semantics, not adopted as physical laws",
+    "No pumps, channels, calcium chemistry, assembly regulation, native full-tissue equivalence or multi-GPU scaling claim",
+    "GPU busy and SM-active with coverage are descriptive correctness-run measurements; no throughput gate or single warmed interval",
+    "No automatic followup audit, benchmark or regression"
+  ],
+  "automatic_followup": false
+}

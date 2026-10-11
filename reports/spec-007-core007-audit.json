@@ -1,0 +1,14 @@
+{
+  "cohort_runs": 4,
+  "fresh_process_restarts": 14,
+  "maximum_gate_error": 0.0000777161380275393,
+  "maximum_observed_normalized_error": 0.7771613802753929,
+  "payload_hashes": 1580,
+  "production_sources": 44,
+  "reference_cases": 14,
+  "scalar_runs": 43,
+  "solver_rerun": false,
+  "status": "pass",
+  "verification_sha256": "b6c35e258fff90da5a05b232b1da774d7e2082fe7e357aec1cbc5ce80438e6cf",
+  "window_runs": 2
+}

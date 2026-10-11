@@ -1,0 +1,778 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "physical_ionic_graph@1",
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      }
+    ],
+    "bath": {
+      "id": "bath_shared",
+      "temperature_K": 298.15,
+      "concentration_mM": {
+        "Na": 145,
+        "K": 5,
+        "Cl": 150
+      },
+      "background_charge_mM": 0
+    },
+    "cells": [
+      {
+        "cell": {
+          "id": "cell_0",
+          "volume_pL": 1,
+          "initial_amount_fmol": {
+            "Na": 12,
+            "K": 140,
+            "Cl": 10
+          },
+          "fixed_charge_equivalent_fmol": -142.00673677527658,
+          "initial_voltage_V": -0.065
+        },
+        "membrane": {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "bath_shared",
+          "area_m2": 1e-9,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Na": 1e-10,
+              "K": 1e-9,
+              "Cl": 1e-10
+            }
+          },
+          "pump": {
+            "id": "pump_0",
+            "law": "nak_atp_affinity_tanh@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.02,
+            "drive_J_per_mol": -50000
+          }
+        },
+        "channel": {
+          "id": "channel_0",
+          "membrane_id": "membrane_0",
+          "species_id": "K",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-8,
+          "abundance": 1,
+          "initial_gate": {
+            "m": 0.2,
+            "h": 0.8
+          }
+        }
+      },
+      {
+        "cell": {
+          "id": "cell_1",
+          "volume_pL": 2,
+          "initial_amount_fmol": {
+            "Na": 36,
+            "K": 260,
+            "Cl": 30
+          },
+          "fixed_charge_equivalent_fmol": -266.00932784269065,
+          "initial_voltage_V": -0.045
+        },
+        "membrane": {
+          "id": "membrane_1",
+          "inside": "cell_1",
+          "outside": "bath_shared",
+          "area_m2": 2e-9,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Na": 1e-10,
+              "K": 1e-9,
+              "Cl": 1e-10
+            }
+          },
+          "pump": {
+            "id": "pump_1",
+            "law": "nak_atp_affinity_tanh@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.02,
+            "drive_J_per_mol": -50000
+          }
+        },
+        "channel": {
+          "id": "channel_1",
+          "membrane_id": "membrane_1",
+          "species_id": "K",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-8,
+          "abundance": 1,
+          "initial_gate": {
+            "m": 0.8,
+            "h": 0.2
+          }
+        }
+      },
+      {
+        "cell": {
+          "id": "cell_2",
+          "volume_pL": 0.5,
+          "initial_amount_fmol": {
+            "Na": 12.5,
+            "K": 60,
+            "Cl": 10
+          },
+          "fixed_charge_equivalent_fmol": -62.501658283145005,
+          "initial_voltage_V": -0.02
+        },
+        "membrane": {
+          "id": "membrane_2",
+          "inside": "cell_2",
+          "outside": "bath_shared",
+          "area_m2": 8e-10,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Na": 1e-10,
+              "K": 1e-9,
+              "Cl": 1e-10
+            }
+          },
+          "pump": {
+            "id": "pump_2",
+            "law": "nak_atp_affinity_tanh@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.013,
+            "drive_J_per_mol": -47000
+          }
+        },
+        "channel": null
+      }
+    ],
+    "junctions": [
+      {
+        "id": "junction_0",
+        "from_cell": "cell_0",
+        "to_cell": "cell_2",
+        "area_m2": 1e-11,
+        "permeability_m_per_s": {
+          "Na": 1e-8,
+          "K": 5e-9,
+          "Cl": 2e-9
+        },
+        "residual_fraction": {
+          "Na": 0.1,
+          "K": 0.1,
+          "Cl": 0
+        },
+        "gate": {
+          "law": "symmetric_opposing_relaxation@1",
+          "sensitivity_per_V": 100,
+          "half_voltage_V": 0.04,
+          "tau_s": 0.2,
+          "initial_gate": 0.25
+        }
+      },
+      {
+        "id": "junction_1",
+        "from_cell": "cell_1",
+        "to_cell": "cell_2",
+        "area_m2": 7e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-8,
+          "K": 5e-9,
+          "Cl": 2e-9
+        },
+        "residual_fraction": {
+          "Na": 0.1,
+          "K": 0.1,
+          "Cl": 0
+        },
+        "gate": {
+          "law": "symmetric_opposing_relaxation@1",
+          "sensitivity_per_V": 80,
+          "half_voltage_V": 0.03,
+          "tau_s": 0.35,
+          "initial_gate": 0.65
+        }
+      }
+    ]
+  },
+  "experiment": {
+    "end_time": 0.3,
+    "observation_times": [
+      0,
+      0.0137,
+      0.0271,
+      0.0433,
+      0.0679,
+      0.113,
+      0.177,
+      0.231,
+      0.3
+    ],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "leak": [
+          {
+            "time": 0,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0137,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0271,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0433,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0679,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          },
+          {
+            "time": 0.113,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.177,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.231,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.3,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          }
+        ],
+        "pump": [
+          {
+            "time": 0,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0137,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0271,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0433,
+            "multiplier": 0
+          },
+          {
+            "time": 0.0679,
+            "multiplier": 0
+          },
+          {
+            "time": 0.113,
+            "multiplier": 1
+          },
+          {
+            "time": 0.177,
+            "multiplier": 1
+          },
+          {
+            "time": 0.231,
+            "multiplier": 1
+          },
+          {
+            "time": 0.3,
+            "multiplier": 0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1",
+        "leak": [
+          {
+            "time": 0,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0137,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0271,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0433,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0679,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          },
+          {
+            "time": 0.113,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.177,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.231,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.3,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          }
+        ],
+        "pump": [
+          {
+            "time": 0,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0137,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0271,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0433,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0679,
+            "multiplier": 0
+          },
+          {
+            "time": 0.113,
+            "multiplier": 1
+          },
+          {
+            "time": 0.177,
+            "multiplier": 1
+          },
+          {
+            "time": 0.231,
+            "multiplier": 1
+          },
+          {
+            "time": 0.3,
+            "multiplier": 0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_2",
+        "leak": [
+          {
+            "time": 0,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0137,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0271,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0433,
+            "multipliers": {
+              "Na": 0,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.0679,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          },
+          {
+            "time": 0.113,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.177,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.231,
+            "multipliers": {
+              "Na": 1,
+              "K": 1,
+              "Cl": 1
+            }
+          },
+          {
+            "time": 0.3,
+            "multipliers": {
+              "Na": 0,
+              "K": 0,
+              "Cl": 0
+            }
+          }
+        ],
+        "pump": [
+          {
+            "time": 0,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0137,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0271,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0433,
+            "multiplier": 1
+          },
+          {
+            "time": 0.0679,
+            "multiplier": 0
+          },
+          {
+            "time": 0.113,
+            "multiplier": 1
+          },
+          {
+            "time": 0.177,
+            "multiplier": 1
+          },
+          {
+            "time": 0.231,
+            "multiplier": 1
+          },
+          {
+            "time": 0.3,
+            "multiplier": 0
+          }
+        ]
+      }
+    ],
+    "channel_controls": [
+      {
+        "channel_id": "channel_0",
+        "schedule": [
+          {
+            "time": 0,
+            "availability": 1
+          },
+          {
+            "time": 0.0137,
+            "availability": 1
+          },
+          {
+            "time": 0.0271,
+            "availability": 1
+          },
+          {
+            "time": 0.0433,
+            "availability": 1
+          },
+          {
+            "time": 0.0679,
+            "availability": 0
+          },
+          {
+            "time": 0.113,
+            "availability": 1
+          },
+          {
+            "time": 0.177,
+            "availability": 1
+          },
+          {
+            "time": 0.231,
+            "availability": 1
+          },
+          {
+            "time": 0.3,
+            "availability": 0
+          }
+        ]
+      },
+      {
+        "channel_id": "channel_1",
+        "schedule": [
+          {
+            "time": 0,
+            "availability": 1
+          },
+          {
+            "time": 0.0137,
+            "availability": 1
+          },
+          {
+            "time": 0.0271,
+            "availability": 0
+          },
+          {
+            "time": 0.0433,
+            "availability": 1
+          },
+          {
+            "time": 0.0679,
+            "availability": 0
+          },
+          {
+            "time": 0.113,
+            "availability": 1
+          },
+          {
+            "time": 0.177,
+            "availability": 1
+          },
+          {
+            "time": 0.231,
+            "availability": 1
+          },
+          {
+            "time": 0.3,
+            "availability": 0
+          }
+        ]
+      }
+    ],
+    "junction_controls": [
+      {
+        "junction_id": "junction_0",
+        "schedule": [
+          {
+            "time": 0,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.0137,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.0271,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.0433,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.0679,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.113,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.177,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.231,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.3,
+            "open_fraction": 0
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_1",
+        "schedule": [
+          {
+            "time": 0,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.0137,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.0271,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.0433,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.0679,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.113,
+            "open_fraction": 0
+          },
+          {
+            "time": 0.177,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.231,
+            "open_fraction": 1
+          },
+          {
+            "time": 0.3,
+            "open_fraction": 0
+          }
+        ]
+      }
+    ]
+  },
+  "execution": {
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "dt": 0.002,
+    "capacity": 4,
+    "membrane_capacity": 5,
+    "jit": true,
+    "max_steps": 100000,
+    "max_trace_bytes": 268435456,
+    "material_balance_atol_fmol": {
+      "Na": 1e-10,
+      "K": 1e-10,
+      "Cl": 1e-10
+    },
+    "channel_capacity": 3,
+    "edge_capacity": 4
+  }
+}

@@ -1,0 +1,5247 @@
+{
+  "captured_utc": "2026-09-11T11:25:58.912768+00:00",
+  "case_count": 8,
+  "evaluations": 44,
+  "files_sha256": {
+    "configs/reference/spatial_extracellular_v1.json": "8b644559899961d0d54233e13eb9b1c867fc4ab5454e48b3b3e2c63e0791273d",
+    "docs/SPATIAL_EXTRACELLULAR_SPEC.md": "a45052bff09400cd7b26c065e198b33ba71617a88fce4c25817535b2b04a5a9d",
+    "scripts/check_spatial_extracellular.py": "a991cf521430339d088bc9659b84b44d13ab8ab443eaec53df28ceea6357457c",
+    "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+    "tests/reference_spatial_extracellular.py": "9a688b7a266f7376c758de4f999e396f647501f56dc4fe51f3e35b79700cc886",
+    "tests/unit/test_spatial_extracellular_reference.py": "5f491497b8c285c5c978e3b3bce67b963643ebccfb553823bb9a08c7eb4e24ab"
+  },
+  "maximum_normalized_error": 0.16282276063809414,
+  "records": [
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            120,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13
+        ],
+        "charge_rate_A": [
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 0,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0
+        ],
+        "stored_energy_rate_W": 0
+      },
+      "state": "initial"
+    },
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 6.774921197350048e-8,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 6.774921197350048e-8,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.0000024551290504602092
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            120,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011120619546008969,
+            0.00009906983751189197
+          ],
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13
+        ],
+        "charge_rate_A": [
+          1.0634178841379112e-12,
+          -1.0634178841379112e-12
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 1.409820926400033e-13,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0
+        ],
+        "stored_energy_rate_W": -1.4098209264000328e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 1.6253831076404366e-7,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 1.6253831076404366e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.000004672303441086761
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            120,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03177319870288277,
+            0.00028305667860540566
+          ],
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13
+        ],
+        "charge_rate_A": [
+          3.0383368118226036e-12,
+          -3.0383368118226036e-12
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 4.0280597897143804e-13,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0
+        ],
+        "stored_energy_rate_W": -4.02805978971438e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.000001,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            119.999999,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678766e-13
+        ],
+        "charge_rate_A": [
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 0,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678767
+        ],
+        "potential_V": [
+          -0.06499035146678767,
+          0
+        ],
+        "stored_energy_rate_W": 0
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.000001,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 2.9809611607123234e-7,
+        "charge_rate_A": 0,
+        "dissipation_W": 0.000002455141740243906,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 2.9809611607123234e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.000002455141740243906
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            119.999999,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011119325527434257,
+            0.00009976876429201432
+          ],
+          [
+            -0.011119325527434257,
+            -0.00009976876429201432
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678766e-13
+        ],
+        "charge_rate_A": [
+          1.0632255941434463e-12,
+          -1.0632255941434463e-12
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 1.409555206707862e-13,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011119325527434257,
+            -0.00009976876429201432
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678767
+        ],
+        "potential_V": [
+          -0.06499035146678767,
+          0
+        ],
+        "stored_energy_rate_W": -1.409555206707862e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "single_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.000001,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000006524343615272635,
+        "charge_rate_A": 0.000050249746948803414,
+        "dissipation_W": 0.000009344738193885357,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 0.000006524343615272635,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.000009344738193885357
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            119.999999,
+            120
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.031769501506955025,
+            0.0002850536122628981
+          ],
+          [
+            -0.031769501506955025,
+            -0.0002850536122628981
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678766e-13
+        ],
+        "charge_rate_A": [
+          3.037787411838419e-12,
+          -3.037787411838419e-12
+        ],
+        "component_charge_residual_C": [
+          0
+        ],
+        "component_current_residual_A": [
+          0
+        ],
+        "dissipation_W": 4.0273005905938927e-13,
+        "face_conductance_S": [],
+        "face_current_A": [],
+        "face_flux_fmol_per_s": [],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.031769501506955025,
+            -0.0002850536122628981
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678767
+        ],
+        "potential_V": [
+          -0.06499035146678767,
+          0
+        ],
+        "stored_energy_rate_W": -4.0273005905938927e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000052245789394125024,
+        "charge_rate_A": 0,
+        "dissipation_W": 0.00004810413089802424,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0.000052245789394125024,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672546808976598e-9,
+        "stored_energy_rate_W": 0.00004810413089802424
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -7.999999999999998,
+            -7.999999999999998
+          ],
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.858520575535413e-11,
+        "face_conductance_S": [
+          9.379371922841948e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          0.006172182929754744,
+          0
+        ],
+        "stored_energy_rate_W": -2.8585205755354138e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000052245789394125024,
+        "charge_rate_A": 0.0014654654200322924,
+        "dissipation_W": 0.00004790304617806721,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0.000052245789394125024,
+        "membrane_flux_fmol_per_s": 4.064952718410029e-8,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672546808976598e-9,
+        "stored_energy_rate_W": 0.00004790304617806721
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011120619546008969,
+            0.00009906983751189197
+          ],
+          [
+            -8.011120619546007,
+            -8.00009906983751
+          ],
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0634178841379112e-12,
+          -1.0634178841378934e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.8726187847994134e-11,
+        "face_conductance_S": [
+          9.379371922841948e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          0.006172182929754744,
+          0
+        ],
+        "stored_energy_rate_W": -2.872618784799414e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00010410244142860692,
+        "charge_rate_A": 0.004698030219285826,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0.000052245789394125024,
+        "membrane_flux_fmol_per_s": 1.0835887384269578e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672546808976598e-9,
+        "stored_energy_rate_W": 0.00009506805790943043
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03177319870288277,
+            0.00028305667860540566
+          ],
+          [
+            -8.031773198702881,
+            -8.000283056678605
+          ],
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.0383368118226036e-12,
+          -3.038336811822528e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.8988011734325573e-11,
+        "face_conductance_S": [
+          9.379371922841948e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          0.006172182929754744,
+          0
+        ],
+        "stored_energy_rate_W": -2.898801173432558e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0003135054856328748,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0.00009622418310636642,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.0003135054856328748,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.070782833779936e-8,
+        "stored_energy_rate_W": 0.00014433627465954964
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -7.999166302374163,
+            -7.999166302374156
+          ],
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          -6.855695184761858e-25,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.8579648727321673e-11,
+        "face_conductance_S": [
+          9.379240552638326e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.05881872451680907,
+          0.006171626949978609,
+          0
+        ],
+        "stored_energy_rate_W": -2.8579648727321676e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0003135054856328748,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0.0000479109883076422,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.0003135054856328748,
+        "membrane_flux_fmol_per_s": 3.9294494466153354e-7,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.070782833779936e-8,
+        "stored_energy_rate_W": 0.0003832879064611376
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011118858434506412,
+            0.00009968682066813492
+          ],
+          [
+            -8.01028516080867,
+            -7.999265989194824
+          ],
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0631884328849362e-12,
+          -1.0631884328855872e-12,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.8720597110599215e-11,
+        "face_conductance_S": [
+          9.379240552638326e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011118858434506412,
+            -0.00009968682066813492
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.05881872451680907,
+          0.006171626949978609,
+          0
+        ],
+        "stored_energy_rate_W": -2.8720597110599238e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_unequal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0003135054856328748,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0.00004754193676522512,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.0003135054856328748,
+        "membrane_flux_fmol_per_s": 0.000006524359989082293,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.070782833779936e-8,
+        "stored_energy_rate_W": 0.0002377096838261256
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03176816695573261,
+            0.0002848194876232427
+          ],
+          [
+            -8.030934469329896,
+            -7.999451121861779
+          ],
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.037681236814104e-12,
+          -3.0376812368148496e-12,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.898235839382894e-11,
+        "face_conductance_S": [
+          9.379240552638326e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999166302374163,
+            7.999166302374156
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03176816695573261,
+            -0.0002848194876232427
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.05881872451680907,
+          0.006171626949978609,
+          0
+        ],
+        "stored_energy_rate_W": -2.898235839382892e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0,
+        "charge_rate_A": 0,
+        "dissipation_W": 0.00006110643295015153,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.00012221286590030305
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -5.999999999999999,
+            -5.999999999999999
+          ],
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.1438904316515598e-11,
+        "face_conductance_S": [
+          6.252914615227965e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": -2.1438904316515595e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 4.064952718410029e-8,
+        "charge_rate_A": 0.0014654654200322924,
+        "dissipation_W": 0.00006078231896943448,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 4.064952718410029e-8,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.0005470408707249103
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011120619546008969,
+            0.00009906983751189197
+          ],
+          [
+            -6.011120619546008,
+            -6.000099069837511
+          ],
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0634178841379112e-12,
+          -1.0634178841378934e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.15798864091556e-11,
+        "face_conductance_S": [
+          6.252914615227965e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": -2.1579886409155633e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 1.0835887384269578e-7,
+        "charge_rate_A": 0.0006280789063216345,
+        "dissipation_W": 0.00006018942593849039,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 1.0835887384269578e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.00006018942593849039
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03177319870288277,
+            0.00028305667860540566
+          ],
+          [
+            -6.031773198702882,
+            -6.0002830566786045
+          ],
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.0383368118226036e-12,
+          -3.0383368118226137e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.1841710295487036e-11,
+        "face_conductance_S": [
+          6.252914615227965e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.999999999999999,
+            5.999999999999999
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": -2.1841710295487036e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000273311958108009,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0.00006111606696144929,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.000273311958108009,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 8.633195441359614e-8,
+        "stored_energy_rate_W": 0.00018334820088434787
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -5.99937475,
+            -5.999374749999993
+          ],
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          -6.855695184761858e-25,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.14347366284501e-11,
+        "face_conductance_S": [
+          6.252827010891904e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.064990350695254,
+          7.715336841629394e-10,
+          0
+        ],
+        "stored_energy_rate_W": -2.1434736628450087e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000273311958108009,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.000273311958108009,
+        "membrane_flux_fmol_per_s": 3.9294494466153354e-7,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 8.633195441359614e-8,
+        "stored_energy_rate_W": 0.00006079192815461525
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011118858434506412,
+            0.00009968682066813492
+          ],
+          [
+            -6.010493608434507,
+            -5.999474436820662
+          ],
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0631884328849362e-12,
+          -1.0631884328855872e-12,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.1575685011727642e-11,
+        "face_conductance_S": [
+          6.252827010891904e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011118858434506412,
+            -0.00009968682066813492
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.064990350695254,
+          7.715336841629394e-10,
+          0
+        ],
+        "stored_energy_rate_W": -2.1575685011727646e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "binary_equal",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000273311958108009,
+        "charge_rate_A": 0.06855695184761858,
+        "dissipation_W": 0,
+        "face_current_A": 0.06855695184761858,
+        "face_flux_fmol_per_s": 0.000273311958108009,
+        "membrane_flux_fmol_per_s": 0.000006524359989082293,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 8.633195441359614e-8,
+        "stored_energy_rate_W": 0.00006019898898488689
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03176816695573261,
+            0.0002848194876232427
+          ],
+          [
+            -6.031142916955733,
+            -5.9996595694876165
+          ],
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.037681236814104e-12,
+          -3.037681236814764e-12,
+          6.855695184761858e-25
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          6.855695184761858e-25,
+          -6.855695184761858e-25
+        ],
+        "dissipation_W": 2.1837446294957366e-11,
+        "face_conductance_S": [
+          6.252827010891904e-8
+        ],
+        "face_current_A": [
+          6.855695184761858e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            5.99937475,
+            5.999374749999993
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03176816695573261,
+            -0.0002848194876232427
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.064990350695254,
+          7.715336841629394e-10,
+          0
+        ],
+        "stored_energy_rate_W": -2.1837446294957363e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            96,
+            96
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 0,
+        "face_conductance_S": [
+          1.3002570407482018e-7
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": 0
+      },
+      "state": "initial"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 4.064952718410029e-8,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 4.064952718410029e-8,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.0000024551290504602092
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            96,
+            96
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011120619546008969,
+            0.00009906983751189197
+          ],
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0634178841379112e-12,
+          -1.0634178841379112e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 1.409820926400033e-13,
+        "face_conductance_S": [
+          1.3002570407482018e-7
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": -1.4098209264000328e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 1.0835887384269578e-7,
+        "charge_rate_A": 0,
+        "dissipation_W": 0,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0,
+        "membrane_flux_fmol_per_s": 1.0835887384269578e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.000004672303441086761
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            96,
+            96
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03177319870288277,
+            0.00028305667860540566
+          ],
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.0383368118226036e-12,
+          -3.0383368118226036e-12,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 4.0280597897143804e-13,
+        "face_conductance_S": [
+          1.3002570407482018e-7
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.065,
+          0,
+          0
+        ],
+        "stored_energy_rate_W": -4.02805978971438e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.011325557532058533,
+        "charge_rate_A": 0.15991252137967016,
+        "dissipation_W": 1.58648472063909e-8,
+        "face_current_A": 0.15991252137967016,
+        "face_flux_fmol_per_s": 0.011325557532058533,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.0729101545633392e-7,
+        "stored_energy_rate_W": 3.334073473911212e-7
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            96.001,
+            96.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0.0008336666637701382,
+            0.000833666663786712
+          ],
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          -1.5991252137967014e-24,
+          1.5991252137967014e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          1.5991252137967014e-24,
+          -1.5991252137967014e-24
+        ],
+        "dissipation_W": 2.239224075788261e-19,
+        "face_conductance_S": [
+          1.3002367149082849e-7
+        ],
+        "face_current_A": [
+          1.5991252137967014e-24
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.06499081488309656,
+          -4.634163088823584e-7,
+          0
+        ],
+        "stored_energy_rate_W": -2.2392240757533337e-19
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.011328245285059805,
+        "charge_rate_A": 0.15991252137967016,
+        "dissipation_W": 0.000004910290083763632,
+        "face_current_A": 0.15991252137967016,
+        "face_flux_fmol_per_s": 0.011325557532058533,
+        "membrane_flux_fmol_per_s": 3.9294494466153354e-7,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.0729101545633392e-7,
+        "stored_energy_rate_W": 0.000002455145041881816
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            96.001,
+            96.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011118858434506412,
+            0.00009968682066813492
+          ],
+          [
+            -0.010285191770736274,
+            0.0007339798431185771
+          ],
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.0631884328849362e-12,
+          -1.0631884328865356e-12,
+          1.5991252137967014e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          1.5991252137967014e-24,
+          -1.5991252137967014e-24
+        ],
+        "dissipation_W": 1.4094860719995125e-13,
+        "face_conductance_S": [
+          1.3002367149082849e-7
+        ],
+        "face_current_A": [
+          1.5991252137967014e-24
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011118858434506412,
+            -0.00009968682066813492
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.06499081488309656,
+          -4.634163088823584e-7,
+          0
+        ],
+        "stored_energy_rate_W": -1.4094860719995122e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "uniform_outside",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.011333193251748546,
+        "charge_rate_A": 0.15991252137967016,
+        "dissipation_W": 0.000014017159617503413,
+        "face_current_A": 0.15991252137967016,
+        "face_flux_fmol_per_s": 0.011325557532058533,
+        "membrane_flux_fmol_per_s": 0.000006524359989082293,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.0729101545633392e-7,
+        "stored_energy_rate_W": 0.000004672386539167804
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            96.001,
+            96.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03176816695573261,
+            0.0002848194876232427
+          ],
+          [
+            -0.030934500291962472,
+            0.0005488471761634693
+          ],
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "capacitor_residual_C": [
+          -2.0194839173657902e-28,
+          1.0097419586828951e-28,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0
+        ],
+        "charge_rate_A": [
+          3.037681236814104e-12,
+          -3.0376812368157035e-12,
+          1.5991252137967014e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0
+        ],
+        "component_current_residual_A": [
+          1.5991252137967014e-24,
+          -1.5991252137967014e-24
+        ],
+        "dissipation_W": 4.0270989042967526e-13,
+        "face_conductance_S": [
+          1.3002367149082849e-7
+        ],
+        "face_current_A": [
+          1.5991252137967014e-24
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            -0.0008336666637701382,
+            -0.000833666663786712
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03176816695573261,
+            -0.0002848194876232427
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.06499081488309656,
+          -4.634163088823584e-7,
+          0
+        ],
+        "stored_energy_rate_W": -4.0270989042967516e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0018354489199247862,
+        "charge_rate_A": 0.16282276063809414,
+        "dissipation_W": 0,
+        "face_current_A": 0.08528715595414962,
+        "face_flux_fmol_per_s": 0.0013950674994604143,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 4.1198947402591554e-8,
+        "stored_energy_rate_W": 0.0000931563086150012
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            130,
+            140
+          ],
+          [
+            29,
+            1,
+            30
+          ],
+          [
+            30,
+            6,
+            36
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            -17.171295014277852,
+            7.422927358043697,
+            -9.74836765623417
+          ],
+          [
+            4.007466640631929,
+            -0.9991731256646084,
+            3.0082935149673373
+          ],
+          [
+            13.163828373645925,
+            -6.423754232379089,
+            6.740074141266831
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          1.3711390369523716e-24,
+          -1.6282276063809412e-24,
+          5.141771388571394e-25
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -1.199775395307016e-24,
+          1.6496154379002457e-24,
+          -4.498400425932298e-25
+        ],
+        "dissipation_W": 6.437102415981605e-11,
+        "face_conductance_S": [
+          1.6441106624119584e-7,
+          1.447793405058762e-7,
+          1.569402076634362e-7
+        ],
+        "face_current_A": [
+          8.4625637494093e-13,
+          8.462563749425796e-13,
+          8.462563749421298e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.065595496893559,
+            -2.797726510502661,
+            4.259098157122679
+          ],
+          [
+            3.05812885626163,
+            -1.7985533848380526,
+            1.2508046421553416
+          ],
+          [
+            -10.105699517384295,
+            4.625200847541037,
+            -5.489269499111489
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.06231568424729001,
+          0.002684315752709991,
+          0.000892197378766911,
+          0
+        ],
+        "stored_energy_rate_W": -6.437102415981607e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0018354489199247862,
+        "charge_rate_A": 0.16282276063809414,
+        "dissipation_W": 0,
+        "face_current_A": 0.08528715595414962,
+        "face_flux_fmol_per_s": 0.0013950674994604143,
+        "membrane_flux_fmol_per_s": 2.1632279059843092e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 4.1198947402591554e-8,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            130,
+            140
+          ],
+          [
+            29,
+            1,
+            30
+          ],
+          [
+            30,
+            6,
+            36
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.013454482648646444,
+            -0.0011964617718687046,
+            -0.03552234952501857
+          ],
+          [
+            -17.1847494969265,
+            7.424123819815566,
+            -9.71284530670915
+          ],
+          [
+            4.007466640631929,
+            -0.9991731256646084,
+            3.0082935149673373
+          ],
+          [
+            13.163828373645925,
+            -6.423754232379089,
+            6.740074141266831
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          4.610104907192089e-12,
+          -4.610104907190843e-12,
+          -1.6282276063809412e-24,
+          5.141771388571394e-25
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -1.199775395307016e-24,
+          1.6496154379002457e-24,
+          -4.498400425932298e-25
+        ],
+        "dissipation_W": 6.476714764023654e-11,
+        "face_conductance_S": [
+          1.6441106624119584e-7,
+          1.447793405058762e-7,
+          1.569402076634362e-7
+        ],
+        "face_current_A": [
+          8.4625637494093e-13,
+          8.462563749425796e-13,
+          8.462563749421298e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.065595496893559,
+            -2.797726510502661,
+            4.259098157122679
+          ],
+          [
+            3.05812885626163,
+            -1.7985533848380526,
+            1.2508046421553416
+          ],
+          [
+            -10.105699517384295,
+            4.625200847541037,
+            -5.489269499111489
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.013454482648646444,
+            0.0011964617718687046,
+            0.03552234952501857
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.06231568424729001,
+          0.002684315752709991,
+          0.000892197378766911,
+          0
+        ],
+        "stored_energy_rate_W": -6.476714764023654e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0018354489199247862,
+        "charge_rate_A": 0.16282276063809414,
+        "dissipation_W": 0,
+        "face_current_A": 0.08528715595414962,
+        "face_flux_fmol_per_s": 0.0013950674994604143,
+        "membrane_flux_fmol_per_s": 0.000011536128453092875,
+        "membrane_voltage_V": 0,
+        "potential_V": 4.1198947402591554e-8,
+        "stored_energy_rate_W": 0.0003666434824410781
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            130,
+            140
+          ],
+          [
+            29,
+            1,
+            30
+          ],
+          [
+            30,
+            6,
+            36
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.0384413789961327,
+            -0.0034184622053391564,
+            -0.10149242721433879
+          ],
+          [
+            -17.209736393273985,
+            7.426345820249036,
+            -9.64687522901983
+          ],
+          [
+            4.007466640631929,
+            -0.9991731256646084,
+            3.0082935149673373
+          ],
+          [
+            13.163828373645925,
+            -6.423754232379089,
+            6.740074141266831
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          6.5e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          1.3171728306263112e-11,
+          -1.3171728306261805e-11,
+          -1.6282276063809412e-24,
+          5.141771388571394e-25
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -1.199775395307016e-24,
+          1.6496154379002457e-24,
+          -4.498400425932298e-25
+        ],
+        "dissipation_W": 6.550280553244603e-11,
+        "face_conductance_S": [
+          1.6441106624119584e-7,
+          1.447793405058762e-7,
+          1.569402076634362e-7
+        ],
+        "face_current_A": [
+          8.4625637494093e-13,
+          8.462563749425796e-13,
+          8.462563749421298e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.065595496893559,
+            -2.797726510502661,
+            4.259098157122679
+          ],
+          [
+            3.05812885626163,
+            -1.7985533848380526,
+            1.2508046421553416
+          ],
+          [
+            -10.105699517384295,
+            4.625200847541037,
+            -5.489269499111489
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.0384413789961327,
+            0.0034184622053391564,
+            0.10149242721433879
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065
+        ],
+        "potential_V": [
+          -0.06231568424729001,
+          0.002684315752709991,
+          0.000892197378766911,
+          0
+        ],
+        "stored_energy_rate_W": -6.550280553244598e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0.000001,
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          0,
+          -0.001
+        ],
+        [
+          0.001,
+          0,
+          0.001
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0010132049109056413,
+        "charge_rate_A": 0.11140504675238021,
+        "dissipation_W": 0,
+        "face_current_A": 0.0600583966461427,
+        "face_flux_fmol_per_s": 0.001077678563691922,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.3860515882801542e-7,
+        "stored_energy_rate_W": 0.00009316468257053304
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            130,
+            140
+          ],
+          [
+            28.998999,
+            1,
+            29.999
+          ],
+          [
+            30.001,
+            6,
+            36.001
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            -17.16919519491626,
+            7.422971578382809,
+            -9.746223616533452
+          ],
+          [
+            4.005638522686217,
+            -0.9992266996079475,
+            3.006411823078259
+          ],
+          [
+            13.163556672230042,
+            -6.423744878774861,
+            6.739811793455193
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          1.7139237961904645e-25,
+          1.0283542777142788e-24,
+          -1.114050467523802e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -8.57270922921778e-26,
+          -1.0497277402467378e-24,
+          1.1354548325389156e-24
+        ],
+        "dissipation_W": 6.43647888584606e-11,
+        "face_conductance_S": [
+          1.6441052406525399e-7,
+          1.4478127206167486e-7,
+          1.5693755489728105e-7
+        ],
+        "face_current_A": [
+          8.474463662274127e-13,
+          8.474463662263629e-13,
+          8.474463662274984e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.064285340300337,
+            -2.797752613004266,
+            4.257749564637271
+          ],
+          [
+            3.05864681761412,
+            -1.7985259133963185,
+            1.251337741559012
+          ],
+          [
+            -10.104909854615922,
+            4.625218965378543,
+            -5.488474051896181
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.062306212694232775,
+          0.0026841387725549046,
+          0.0008923491933359659,
+          0
+        ],
+        "stored_energy_rate_W": -6.436478885846059e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0.000001,
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          0,
+          -0.001
+        ],
+        [
+          0.001,
+          0,
+          0.001
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0010132049109056413,
+        "charge_rate_A": 0.11140504675238021,
+        "dissipation_W": 0,
+        "face_current_A": 0.0600583966461427,
+        "face_flux_fmol_per_s": 0.001077678563691922,
+        "membrane_flux_fmol_per_s": 0.000006478685624666349,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.3860515882801542e-7,
+        "stored_energy_rate_W": 0.00018527159625015307
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            130,
+            140
+          ],
+          [
+            28.998999,
+            1,
+            29.999
+          ],
+          [
+            30.001,
+            6,
+            36.001
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.013452456195517186,
+            -0.0011970951164547105,
+            -0.035517102225853164
+          ],
+          [
+            -17.182647651111775,
+            7.424168673499263,
+            -9.7107065143076
+          ],
+          [
+            4.005638522686217,
+            -0.9992266996079475,
+            3.006411823078259
+          ],
+          [
+            13.163556672230042,
+            -6.423744878774861,
+            6.739811793455193
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          4.609341988323426e-12,
+          -4.609341988323153e-12,
+          1.0283542777142788e-24,
+          -1.114050467523802e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -8.57270922921778e-26,
+          -1.0497277402467378e-24,
+          1.1354548325389156e-24
+        ],
+        "dissipation_W": 6.47608124112569e-11,
+        "face_conductance_S": [
+          1.6441052406525399e-7,
+          1.4478127206167486e-7,
+          1.5693755489728105e-7
+        ],
+        "face_current_A": [
+          8.474463662274127e-13,
+          8.474463662263629e-13,
+          8.474463662274984e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.064285340300337,
+            -2.797752613004266,
+            4.257749564637271
+          ],
+          [
+            3.05864681761412,
+            -1.7985259133963185,
+            1.251337741559012
+          ],
+          [
+            -10.104909854615922,
+            4.625218965378543,
+            -5.488474051896181
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.013452456195517186,
+            0.0011970951164547105,
+            0.035517102225853164
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.062306212694232775,
+          0.0026841387725549046,
+          0.0008923491933359659,
+          0
+        ],
+        "stored_energy_rate_W": -6.476081241125688e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "ternary_loop",
+      "increment_fmol": [
+        [
+          0.000001,
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          0,
+          -0.001
+        ],
+        [
+          0.001,
+          0,
+          0.001
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.0010132049109056413,
+        "charge_rate_A": 0.11140504675238021,
+        "dissipation_W": 0,
+        "face_current_A": 0.0600583966461427,
+        "face_flux_fmol_per_s": 0.001077678563691922,
+        "membrane_flux_fmol_per_s": 0.00002307283199976783,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 1.3860515882801542e-7,
+        "stored_energy_rate_W": 0.0001833386982281006
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            130,
+            140
+          ],
+          [
+            28.998999,
+            1,
+            29.999
+          ],
+          [
+            30.001,
+            6,
+            36.001
+          ],
+          [
+            40,
+            15,
+            55
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03843558913004911,
+            -0.0034202717612991733,
+            -0.10147743493100905
+          ],
+          [
+            -17.20763078404631,
+            7.426391850144108,
+            -9.644746181602443
+          ],
+          [
+            4.005638522686217,
+            -0.9992266996079475,
+            3.006411823078259
+          ],
+          [
+            13.163556672230042,
+            -6.423744878774861,
+            6.739811793455193
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          6.499035146678767e-13,
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          1.3169548538066935e-11,
+          -1.3169548538066935e-11,
+          1.0283542777142788e-24,
+          -1.114050467523802e-24
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -8.57270922921778e-26,
+          -1.0497277402467378e-24,
+          1.1354548325389156e-24
+        ],
+        "dissipation_W": 6.549628472359291e-11,
+        "face_conductance_S": [
+          1.6441052406525399e-7,
+          1.4478127206167486e-7,
+          1.5693755489728105e-7
+        ],
+        "face_current_A": [
+          8.474463662274127e-13,
+          8.474463662263629e-13,
+          8.474463662274984e-13
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.064285340300337,
+            -2.797752613004266,
+            4.257749564637271
+          ],
+          [
+            3.05864681761412,
+            -1.7985259133963185,
+            1.251337741559012
+          ],
+          [
+            -10.104909854615922,
+            4.625218965378543,
+            -5.488474051896181
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03843558913004911,
+            0.0034202717612991733,
+            0.10147743493100905
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768
+        ],
+        "potential_V": [
+          -0.062306212694232775,
+          0.0026841387725549046,
+          0.0008923491933359659,
+          0
+        ],
+        "stored_energy_rate_W": -6.549628472359288e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.003996802888650549,
+        "charge_rate_A": 0.07284176133809474,
+        "dissipation_W": 0.00008374127348891752,
+        "face_current_A": 0.038563285414285456,
+        "face_flux_fmol_per_s": 0.0002960594732333751,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 3.4673665320343936e-8,
+        "potential_V": 4.7701451071814755e-8,
+        "stored_energy_rate_W": 0.00033496509395567007
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            27,
+            27
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            -4.000000000000001,
+            -3.9999999999999973
+          ],
+          [
+            2.220446049250313e-15,
+            -5.329070518200751e-15
+          ],
+          [
+            3.9999999999999987,
+            4.000000000000003
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          -3e-13,
+          6.5e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          -3.427847592380929e-25,
+          7.284176133809474e-25,
+          -3.856328541428545e-25
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          3.427847592380929e-25,
+          3.856328541428545e-25,
+          -7.284176133809474e-25
+        ],
+        "dissipation_W": 1.4292602877677069e-11,
+        "face_conductance_S": [
+          1.129942708687679e-7,
+          8.017071103941557e-8
+        ],
+        "face_current_A": [
+          3.427847592380929e-25,
+          -3.856328541428545e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            4.000000000000001,
+            3.9999999999999973
+          ],
+          [
+            3.9999999999999987,
+            4.000000000000003
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065,
+          -0.030000000000000002
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          -0.030000000000000002,
+          0.006172182929754744,
+          0.0036104955614977632,
+          0
+        ],
+        "stored_energy_rate_W": -1.4292602877677079e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.003996802888650549,
+        "charge_rate_A": 0.07284176133809474,
+        "dissipation_W": 0.00004152874230358129,
+        "face_current_A": 0.038563285414285456,
+        "face_flux_fmol_per_s": 0.0002960594732333751,
+        "membrane_flux_fmol_per_s": 8.619892028212664e-7,
+        "membrane_voltage_V": 3.4673665320343936e-8,
+        "potential_V": 4.7701451071814755e-8,
+        "stored_energy_rate_W": 0.0004983449076429755
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            27,
+            27
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011120619546008969,
+            0.00009906983751189197
+          ],
+          [
+            0.0031163587371820078,
+            -0.00005618266892764026
+          ],
+          [
+            -4.01112061954601,
+            -4.00009906983751
+          ],
+          [
+            2.220446049250313e-15,
+            -5.329070518200751e-15
+          ],
+          [
+            3.9968836412628166,
+            4.0000561826689305
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          -3e-13,
+          6.5e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          1.0634178841379112e-12,
+          3.0610371124344237e-13,
+          -1.0634178841382361e-12,
+          7.284176133809474e-25,
+          -3.06103711243852e-13
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          3.427847592380929e-25,
+          3.856328541428545e-25,
+          -7.284176133809474e-25
+        ],
+        "dissipation_W": 1.4451433444365467e-11,
+        "face_conductance_S": [
+          1.129942708687679e-7,
+          8.017071103941557e-8
+        ],
+        "face_current_A": [
+          3.427847592380929e-25,
+          -3.856328541428545e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            4.000000000000001,
+            3.9999999999999973
+          ],
+          [
+            3.9999999999999987,
+            4.000000000000003
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011120619546008969,
+            -0.00009906983751189197
+          ],
+          [
+            -0.0031163587371820078,
+            0.00005618266892764026
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065,
+          -0.030000000000000002
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          -0.030000000000000002,
+          0.006172182929754744,
+          0.0036104955614977632,
+          0
+        ],
+        "stored_energy_rate_W": -1.4451433444365484e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.003996802888650549,
+        "charge_rate_A": 0.07284176133809474,
+        "dissipation_W": 0.0000818167750060791,
+        "face_current_A": 0.038563285414285456,
+        "face_flux_fmol_per_s": 0.0002960594732333751,
+        "membrane_flux_fmol_per_s": 0.0000017043724138998426,
+        "membrane_voltage_V": 3.4673665320343936e-8,
+        "potential_V": 4.7701451071814755e-8,
+        "stored_energy_rate_W": 0.0001636335500121582
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            27,
+            27
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03177319870288277,
+            0.00028305667860540566
+          ],
+          [
+            0.00890388210623431,
+            -0.00016052191122182933
+          ],
+          [
+            -4.031773198702884,
+            -4.000283056678603
+          ],
+          [
+            2.220446049250313e-15,
+            -5.329070518200751e-15
+          ],
+          [
+            3.9910961178937643,
+            4.000160521911225
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.5e-13,
+          -3e-13,
+          6.5e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          3.0383368118226036e-12,
+          8.745820321241213e-13,
+          -3.0383368118229566e-12,
+          7.284176133809474e-25,
+          -8.745820321245263e-13
+        ],
+        "component_charge_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          3.427847592380929e-25,
+          3.856328541428545e-25,
+          -7.284176133809474e-25
+        ],
+        "dissipation_W": 1.4746404496786778e-11,
+        "face_conductance_S": [
+          1.129942708687679e-7,
+          8.017071103941557e-8
+        ],
+        "face_current_A": [
+          3.427847592380929e-25,
+          -3.856328541428545e-25
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            4.000000000000001,
+            3.9999999999999973
+          ],
+          [
+            3.9999999999999987,
+            4.000000000000003
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03177319870288277,
+            -0.00028305667860540566
+          ],
+          [
+            -0.00890388210623431,
+            0.00016052191122182933
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.065,
+          -0.030000000000000002
+        ],
+        "potential_V": [
+          -0.05882781707024526,
+          -0.030000000000000002,
+          0.006172182929754744,
+          0.0036104955614977632,
+          0
+        ],
+        "stored_energy_rate_W": -1.4746404496786768e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00535425930113691,
+        "charge_rate_A": 0.05141771388571394,
+        "dissipation_W": 0.00004187406261244211,
+        "face_current_A": 0.042848094904761616,
+        "face_flux_fmol_per_s": 0.0003948434870545443,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.930740782949328e-8,
+        "stored_energy_rate_W": 0.00020937031306221055
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            27.001,
+            27.001
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            -3.9988885410052672,
+            -3.998888541005263
+          ],
+          [
+            -0.00155590343917833,
+            -0.001555903439183659
+          ],
+          [
+            4.000444444444446,
+            4.0004444444444465
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          -3e-13,
+          6.499035146678767e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          -4.284809490476161e-25,
+          5.141771388571394e-25,
+          -8.569618980952323e-26
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          4.284809490476161e-25,
+          8.569618980952323e-26,
+          -5.141771388571393e-25
+        ],
+        "dissipation_W": 1.429102448030192e-11,
+        "face_conductance_S": [
+          1.1299379552292123e-7,
+          8.017229572771708e-8
+        ],
+        "face_current_A": [
+          4.284809490476161e-25,
+          -8.569618980952323e-26
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            3.9988885410052672,
+            3.998888541005263
+          ],
+          [
+            4.000444444444446,
+            4.0004444444444465
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768,
+          -0.03
+        ],
+        "potential_V": [
+          -0.058818539123247415,
+          -0.03,
+          0.006171812343540264,
+          0.0036108253545647576,
+          0
+        ],
+        "stored_energy_rate_W": -1.429102448030193e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00535425930113691,
+        "charge_rate_A": 0.05141771388571394,
+        "dissipation_W": 0.00004153218443110061,
+        "face_current_A": 0.042848094904761616,
+        "face_flux_fmol_per_s": 0.0003948434870545443,
+        "membrane_flux_fmol_per_s": 8.619892028212664e-7,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.930740782949328e-8,
+        "stored_energy_rate_W": 0.0004983862131732072
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            27.001,
+            27.001
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.011118858434506412,
+            0.00009968682066813492
+          ],
+          [
+            0.0031163587371820078,
+            -0.00005618266892764026
+          ],
+          [
+            -4.010007399439774,
+            -3.9989882278259308
+          ],
+          [
+            -0.00155590343917833,
+            -0.001555903439183659
+          ],
+          [
+            3.9973280857072635,
+            4.000500627113374
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          -3e-13,
+          6.499035146678767e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          1.0631884328849362e-12,
+          3.0610371124344237e-13,
+          -1.0631884328853732e-12,
+          5.141771388571394e-25,
+          -3.061037112435521e-13
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          4.284809490476161e-25,
+          8.569618980952323e-26,
+          -5.141771388571393e-25
+        ],
+        "dissipation_W": 1.4449821337627859e-11,
+        "face_conductance_S": [
+          1.1299379552292123e-7,
+          8.017229572771708e-8
+        ],
+        "face_current_A": [
+          4.284809490476161e-25,
+          -8.569618980952323e-26
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            3.9988885410052672,
+            3.998888541005263
+          ],
+          [
+            4.000444444444446,
+            4.0004444444444465
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.011118858434506412,
+            -0.00009968682066813492
+          ],
+          [
+            -0.0031163587371820078,
+            0.00005618266892764026
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768,
+          -0.03
+        ],
+        "potential_V": [
+          -0.058818539123247415,
+          -0.03,
+          0.006171812343540264,
+          0.0036108253545647576,
+          0
+        ],
+        "stored_energy_rate_W": -1.4449821337627841e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "two_cells_chain",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          -0.001001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00535425930113691,
+        "charge_rate_A": 0.05141771388571394,
+        "dissipation_W": 0,
+        "face_current_A": 0.042848094904761616,
+        "face_flux_fmol_per_s": 0.0003948434870545443,
+        "membrane_flux_fmol_per_s": 0.000006524359989082293,
+        "membrane_voltage_V": 1.3859772777732962e-7,
+        "potential_V": 6.930740782949328e-8,
+        "stored_energy_rate_W": 0.00032729485818755336
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            10.000001,
+            10
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            23.998999,
+            23.999
+          ],
+          [
+            27.001,
+            27.001
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.03176816695573261,
+            0.0002848194876232427
+          ],
+          [
+            0.00890388210623431,
+            -0.00016052191122182933
+          ],
+          [
+            -4.030656707961,
+            -3.999173360492886
+          ],
+          [
+            -0.00155590343917833,
+            -0.001555903439183659
+          ],
+          [
+            3.991540562338211,
+            4.000604966355668
+          ]
+        ],
+        "capacitor_residual_C": [
+          -1.0097419586828951e-28,
+          0,
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -6.499035146678766e-13,
+          -3e-13,
+          6.499035146678767e-13,
+          0,
+          3e-13
+        ],
+        "charge_rate_A": [
+          3.037681236814104e-12,
+          8.745820321241213e-13,
+          -3.037681236814507e-12,
+          5.141771388571394e-25,
+          -8.745820321242264e-13
+        ],
+        "component_charge_residual_C": [
+          1.0097419586828951e-28,
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          4.284809490476161e-25,
+          8.569618980952323e-26,
+          -5.141771388571393e-25
+        ],
+        "dissipation_W": 1.474472978694746e-11,
+        "face_conductance_S": [
+          1.1299379552292123e-7,
+          8.017229572771708e-8
+        ],
+        "face_current_A": [
+          4.284809490476161e-25,
+          -8.569618980952323e-26
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            3.9988885410052672,
+            3.998888541005263
+          ],
+          [
+            4.000444444444446,
+            4.0004444444444465
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.03176816695573261,
+            -0.0002848194876232427
+          ],
+          [
+            -0.00890388210623431,
+            0.00016052191122182933
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.06499035146678768,
+          -0.03
+        ],
+        "potential_V": [
+          -0.058818539123247415,
+          -0.03,
+          0.006171812343540264,
+          0.0036108253545647576,
+          0
+        ],
+        "stored_energy_rate_W": -1.4744729786947473e-11
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000021350442781253012,
+        "charge_rate_A": 0.0005356011863095201,
+        "dissipation_W": 0,
+        "face_current_A": 0.0005356011863095201,
+        "face_flux_fmol_per_s": 0.000021350442781253012,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672814426926653e-9,
+        "stored_energy_rate_W": 0.000017397469107128434
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            1,
+            2
+          ],
+          [
+            0.4,
+            0.8
+          ],
+          [
+            0.8,
+            1.6
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -0.14999999999999997,
+            -0.3
+          ],
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9999999999999996e-13,
+          3.9999999999999996e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          5.356011863095202e-27,
+          -5.356011863095202e-27
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -5.356011863095202e-27,
+          5.356011863095202e-27
+        ],
+        "dissipation_W": 8.039589118693351e-13,
+        "face_conductance_S": [
+          4.1686097434853104e-9
+        ],
+        "face_current_A": [
+          -5.356011863095202e-27
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.04
+        ],
+        "potential_V": [
+          -0.03537086280268394,
+          0.004629137197316058,
+          0
+        ],
+        "stored_energy_rate_W": -8.039589118693349e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000021350442781253012,
+        "charge_rate_A": 0.0005356011863095201,
+        "dissipation_W": 0,
+        "face_current_A": 0.0005356011863095201,
+        "face_flux_fmol_per_s": 0.000021350442781253012,
+        "membrane_flux_fmol_per_s": 5.4193935477267495e-8,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672814426926653e-9,
+        "stored_energy_rate_W": 0.000043476036455037944
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            1,
+            2
+          ],
+          [
+            0.4,
+            0.8
+          ],
+          [
+            0.8,
+            1.6
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.00021515249815909587,
+            -0.00014921546908618424
+          ],
+          [
+            -0.15021515249815906,
+            -0.2998507845309138
+          ],
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9999999999999996e-13,
+          3.9999999999999996e-13,
+          0
+        ],
+        "charge_rate_A": [
+          5.591522457679641e-14,
+          -5.5915224576791616e-14,
+          -5.356011863095202e-27
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -5.356011863095202e-27,
+          5.356011863095202e-27
+        ],
+        "dissipation_W": 8.063133223238411e-13,
+        "face_conductance_S": [
+          4.1686097434853104e-9
+        ],
+        "face_current_A": [
+          -5.356011863095202e-27
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.00021515249815909587,
+            0.00014921546908618424
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.04
+        ],
+        "potential_V": [
+          -0.03537086280268394,
+          0.004629137197316058,
+          0
+        ],
+        "stored_energy_rate_W": -8.063133223238406e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000021350442781253012,
+        "charge_rate_A": 0.0006653650816384419,
+        "dissipation_W": 0,
+        "face_current_A": 0.0005356011863095201,
+        "face_flux_fmol_per_s": 0.000021350442781253012,
+        "membrane_flux_fmol_per_s": 1.0832785044272811e-7,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672814426926653e-9,
+        "stored_energy_rate_W": 0.0000173773284880958
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            1,
+            2
+          ],
+          [
+            0.4,
+            0.8
+          ],
+          [
+            0.8,
+            1.6
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.0006147214233117026,
+            -0.00042632991167481217
+          ],
+          [
+            -0.15061472142331167,
+            -0.2995736700883252
+          ],
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9999999999999996e-13,
+          3.9999999999999996e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.5975778450513264e-13,
+          -1.5975778450512578e-13,
+          -5.356011863095202e-27
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          -5.356011863095202e-27,
+          5.356011863095202e-27
+        ],
+        "dissipation_W": 8.106857988822093e-13,
+        "face_conductance_S": [
+          4.1686097434853104e-9
+        ],
+        "face_current_A": [
+          -5.356011863095202e-27
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14999999999999997,
+            0.3
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.0006147214233117026,
+            0.00042632991167481217
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.04
+        ],
+        "potential_V": [
+          -0.03537086280268394,
+          0.004629137197316058,
+          0
+        ],
+        "stored_energy_rate_W": -8.106857988822091e-13
+      },
+      "state": "initial"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.002
+        ],
+        [
+          0.001,
+          0.002
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00003477600052099436,
+        "charge_rate_A": 9.648533212331001e-58,
+        "dissipation_W": 0.000026138321832746054,
+        "face_current_A": 9.648533212331001e-58,
+        "face_flux_fmol_per_s": 0.00003477600052099436,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 6.933349899853617e-8,
+        "potential_V": 6.933987885705027e-8,
+        "stored_energy_rate_W": 0.000008712773944248684
+      },
+      "membrane_availability": 0,
+      "reference": {
+        "amount_fmol": [
+          [
+            1.000001,
+            2
+          ],
+          [
+            0.39899900000000005,
+            0.798
+          ],
+          [
+            0.801,
+            1.602
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0,
+            0
+          ],
+          [
+            -0.14906221531818767,
+            -0.29812443063637534
+          ],
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9980702933575335e-13,
+          3.9980702933575335e-13,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 7.946066611163914e-13,
+        "face_conductance_S": [
+          4.165100798394207e-9
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            0,
+            0
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.039980702933575335
+        ],
+        "potential_V": [
+          -0.03537659917401369,
+          0.004604103759561648,
+          0
+        ],
+        "stored_energy_rate_W": -7.946066611163912e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.002
+        ],
+        [
+          0.001,
+          0.002
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000034782510960486426,
+        "charge_rate_A": 0.0003931972579858725,
+        "dissipation_W": 0.000026127738734437933,
+        "face_current_A": 9.648533212331001e-58,
+        "face_flux_fmol_per_s": 0.00003477600052099436,
+        "membrane_flux_fmol_per_s": 5.418686190953668e-8,
+        "membrane_voltage_V": 6.933349899853617e-8,
+        "potential_V": 6.933987885705027e-8,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 0.35,
+      "reference": {
+        "amount_fmol": [
+          [
+            1.000001,
+            2
+          ],
+          [
+            0.39899900000000005,
+            0.798
+          ],
+          [
+            0.801,
+            1.602
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.00021450508406771262,
+            -0.00014938946813521488
+          ],
+          [
+            -0.14927672040225537,
+            -0.29797504116824014
+          ],
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9980702933575335e-13,
+          3.9980702933575335e-13,
+          0
+        ],
+        "charge_rate_A": [
+          5.580708100557443e-14,
+          -5.5807081005570456e-14,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 7.969537793486572e-13,
+        "face_conductance_S": [
+          4.165100798394207e-9
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.00021450508406771262,
+            0.00014938946813521488
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.039980702933575335
+        ],
+        "potential_V": [
+          -0.03537659917401369,
+          0.004604103759561648,
+          0
+        ],
+        "stored_energy_rate_W": -7.969537793486569e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "divalent",
+      "increment_fmol": [
+        [
+          0.000001,
+          0
+        ],
+        [
+          -0.001001,
+          -0.002
+        ],
+        [
+          0.001,
+          0.002
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.00003477600052099436,
+        "charge_rate_A": 0.000009785366589165633,
+        "dissipation_W": 0.00001740540475233973,
+        "face_current_A": 9.648533212331001e-58,
+        "face_flux_fmol_per_s": 0.00003477600052099436,
+        "membrane_flux_fmol_per_s": 1.0828748458578156e-7,
+        "membrane_voltage_V": 6.933349899853617e-8,
+        "potential_V": 6.933987885705027e-8,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            1.000001,
+            2
+          ],
+          [
+            0.39899900000000005,
+            0.798
+          ],
+          [
+            0.801,
+            1.602
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            0.0006128716687648933,
+            -0.0004268270518148997
+          ],
+          [
+            -0.14967508698695256,
+            -0.29769760358456043
+          ],
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0,
+          0
+        ],
+        "charge_C": [
+          -3.9980702933575335e-13,
+          3.9980702933575335e-13,
+          0
+        ],
+        "charge_rate_A": [
+          1.594488028730698e-13,
+          -1.5944880287306992e-13,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 8.013127132085795e-13,
+        "face_conductance_S": [
+          4.165100798394207e-9
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            0.14906221531818767,
+            0.29812443063637534
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [
+          [
+            -0.0006128716687648933,
+            0.0004268270518148997
+          ]
+        ],
+        "membrane_voltage_V": [
+          -0.039980702933575335
+        ],
+        "potential_V": [
+          -0.03537659917401369,
+          0.004604103759561648,
+          0
+        ],
+        "stored_energy_rate_W": -8.013127132085793e-13
+      },
+      "state": "owned_shift"
+    },
+    {
+      "case": "pure_bulk",
+      "increment_fmol": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000052245789394125024,
+        "charge_rate_A": 0,
+        "dissipation_W": 0.00004810413089802424,
+        "face_current_A": 0,
+        "face_flux_fmol_per_s": 0.000052245789394125024,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 0,
+        "stored_energy_rate_W": 0.00004810413089802424
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            24,
+            24
+          ],
+          [
+            48,
+            48
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            -7.999999999999998,
+            -7.999999999999998
+          ],
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.858520575535413e-11,
+        "face_conductance_S": [
+          9.379371922841948e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.999999999999998,
+            7.999999999999998
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [],
+        "membrane_voltage_V": [],
+        "potential_V": [
+          0.0061721829297547446,
+          0
+        ],
+        "stored_energy_rate_W": -2.8585205755354138e-11
+      },
+      "state": "initial"
+    },
+    {
+      "case": "pure_bulk",
+      "increment_fmol": [
+        [
+          -0.001,
+          -0.001
+        ],
+        [
+          0.001,
+          0.001
+        ]
+      ],
+      "maximum_normalized_errors": {
+        "amount_rate_fmol_per_s": 0.000052250912032559585,
+        "charge_rate_A": 3.8594132849324007e-56,
+        "dissipation_W": 0.00004811208845744015,
+        "face_current_A": 3.8594132849324007e-56,
+        "face_flux_fmol_per_s": 0.000052250912032559585,
+        "membrane_flux_fmol_per_s": 0,
+        "membrane_voltage_V": 0,
+        "potential_V": 8.672546905497398e-9,
+        "stored_energy_rate_W": 0
+      },
+      "membrane_availability": 1,
+      "reference": {
+        "amount_fmol": [
+          [
+            23.999,
+            23.999
+          ],
+          [
+            48.001,
+            48.001
+          ]
+        ],
+        "amount_rate_fmol_per_s": [
+          [
+            -7.9991666666666665,
+            -7.9991666666666665
+          ],
+          [
+            7.9991666666666665,
+            7.9991666666666665
+          ]
+        ],
+        "capacitor_residual_C": [
+          0,
+          0
+        ],
+        "charge_C": [
+          0,
+          0
+        ],
+        "charge_rate_A": [
+          0,
+          0
+        ],
+        "component_charge_residual_C": [
+          0,
+          0
+        ],
+        "component_current_residual_A": [
+          0,
+          0
+        ],
+        "dissipation_W": 2.8579650887983743e-11,
+        "face_conductance_S": [
+          9.379240625239264e-8
+        ],
+        "face_current_A": [
+          0
+        ],
+        "face_flux_fmol_per_s": [
+          [
+            7.9991666666666665,
+            7.9991666666666665
+          ]
+        ],
+        "membrane_flux_fmol_per_s": [],
+        "membrane_voltage_V": [],
+        "potential_V": [
+          0.006171626387850738,
+          0
+        ],
+        "stored_energy_rate_W": -2.857965088798374e-11
+      },
+      "state": "owned_shift"
+    }
+  ],
+  "runtime": {
+    "decimal_digits": 70,
+    "numpy": "2.5.3",
+    "python": "3.13.5"
+  },
+  "scalar_oracle_comparisons": 1016,
+  "schema": "cells.spatial_extracellular_design_check@1",
+  "scope": "Instantaneous arithmetic only; not trajectory, mesh, biology or production acceptance",
+  "status": "pass"
+}

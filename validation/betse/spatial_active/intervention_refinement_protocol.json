@@ -1,0 +1,495 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "resources": {
+    "max_wall_seconds": 5400,
+    "native_timeout_seconds": 2400,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2,
+    "batch_max_working_bytes": 6442450944
+  },
+  "kind": "betse_spatial_scheduled_intervention_refinement@1",
+  "scope": "Unchanged configured BETSE model: six prescribed pump/channel schedules through 256 us on CPU/L4, three timesteps, native and Cells temporal self-refinement, original 64-us prefixes, complete ordinary restart/window/world replay.",
+  "duration_s": 0.000256,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
+  ],
+  "temperature_K": 298.15,
+  "initial_gate": [
+    0.2,
+    0.6
+  ],
+  "pump_parameters": {
+    "cATP": 1.5,
+    "cADP": 0.1,
+    "cPi": 0.1,
+    "KmNK_Na": 12.0,
+    "KmNK_K": 0.2,
+    "KmNK_ATP": 0.5,
+    "deltaGATP": -37000.0
+  },
+  "cases": [
+    {
+      "id": "sham",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    },
+    {
+      "id": "pump_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 0,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    },
+    {
+      "id": "channel_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 0,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    },
+    {
+      "id": "coupled_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    },
+    {
+      "id": "regional",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 0.25,
+          "channel_fraction": 0,
+          "target_cells": [
+            0,
+            2,
+            4
+          ]
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    },
+    {
+      "id": "staggered",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "interventions": [
+        {
+          "time_s": 0,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 1.6e-05,
+          "pump_fraction": 0,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 2.4e-05,
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 3.2e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 0,
+          "target_cells": "all"
+        },
+        {
+          "time_s": 4e-05,
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "target_cells": "all"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    "tests/unit/test_betse_spatial_intervention_refinement.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_intervention_refinement.py::test_long_intervention_cpu_gpu"
+  ],
+  "required_evidence": [
+    "long-intervention-prerequisite",
+    "long-intervention-resource-plan",
+    "long-intervention-native-sham-0",
+    "long-intervention-native-sham-1",
+    "long-intervention-native-sham-2",
+    "long-intervention-native-pump_block-0",
+    "long-intervention-native-pump_block-1",
+    "long-intervention-native-pump_block-2",
+    "long-intervention-native-channel_block-0",
+    "long-intervention-native-channel_block-1",
+    "long-intervention-native-channel_block-2",
+    "long-intervention-native-coupled_block-0",
+    "long-intervention-native-coupled_block-1",
+    "long-intervention-native-coupled_block-2",
+    "long-intervention-native-regional-0",
+    "long-intervention-native-regional-1",
+    "long-intervention-native-regional-2",
+    "long-intervention-native-staggered-0",
+    "long-intervention-native-staggered-1",
+    "long-intervention-native-staggered-2",
+    "long-intervention-prefix",
+    "long-intervention-refinement-sham",
+    "long-intervention-refinement-pump_block",
+    "long-intervention-refinement-channel_block",
+    "long-intervention-refinement-coupled_block",
+    "long-intervention-refinement-regional",
+    "long-intervention-refinement-staggered",
+    "long-intervention-replay",
+    "long-intervention-worlds",
+    "long-intervention-horizon",
+    "long-intervention-effects",
+    "long-intervention-negative-controls"
+  ],
+  "required_gpu_evidence": [
+    "long-intervention-cpu-gpu"
+  ],
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-interventions-20261011-02",
+    "registration_sha256": "b03ea1d42aae9f03e352d68672cbaa6bbfdad946208f82226916292ca3933062",
+    "completion_sha256": "7a4763d8b5267f826967776203a72fb059a9f77b17e96b49b2aeb002909a2b3d",
+    "require_completed_cpu_and_gpu": true
+  },
+  "checks": [
+    "Authenticate the completed 419-test CPU/L4 predecessor, all frozen source/evidence and all unchanged prior production, test and validation files before any native capture",
+    "Six unchanged intervention schedules, fourfold horizon and native observed/bare pairs at 1, 0.5 and 0.25 us; independently reconstruct completed-step input clocks and regional owners",
+    "Compare complete concentrations, fields, gates, fluxes and thirteen state arrays against native updates with unchanged physical, material-roundoff and clock budgets",
+    "Native and Cells temporal self-refinement at declared common completed times, including intervention boundaries; fluxes belong to the interval ending there, before the next event takes effect",
+    "Require resolved first-order membrane voltage and activation-gate differences at the final time for each case; preserve the already qualified refinement thresholds",
+    "Bitwise original 64-us native and Cells state/rate prefixes at both old timesteps; derived readouts retain registered tolerances, and raw endpoint-labelled native times are excluded",
+    "Complete fine-step disk/restart before, at and after every staggered event; window changes, horizon extension, mixed-timestep world reordering and partitions",
+    "Zero blocked transport, continuing intrinsic gates and restored transport, static-prefix consistency, rejected late material and native-control corruption, complete CPU/L4 histories",
+    "Reuse the unchanged refinement-oracle positive/negative checks, with GPU-busy and measured SM-active coverage recorded; no utilization acceptance threshold"
+  ],
+  "scope_exclusions": [
+    "Prescribed FULL INIT inputs through 256 us; no built-in SIM events, inhibitor chemistry, biological recovery or longer-term stability claim",
+    "Temporal self-refinement is claimed only for resolved fields; no continuum accuracy or spatial convergence claim",
+    "Fixed geometry and maintained ATP/ADP/Pi, one Kv1p5 population; no finite-energy, new mechanisms, assembly or biological calibration claim",
+    "Prior 419-test CPU/L4 qualification is authenticated unchanged; this job adds the long scheduled panel and reuses refinement-oracle tests, without rerunning every prior test",
+    "Whole qualification GPU metrics include compilation and host checks; no warmed-throughput or multi-GPU qualification"
+  ],
+  "automatic_followup": false,
+  "allowed_prior_source_changes": [],
+  "refinement": {
+    "common_completed_times_s": [
+      1.6e-05,
+      2.4e-05,
+      3.2e-05,
+      4e-05,
+      6.4e-05,
+      0.000128,
+      0.000256
+    ],
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "required_resolved_final_fields": {
+      "sham": [
+        "vm",
+        "m_gate"
+      ],
+      "pump_block": [
+        "vm",
+        "m_gate"
+      ],
+      "channel_block": [
+        "vm",
+        "m_gate"
+      ],
+      "coupled_block": [
+        "vm",
+        "m_gate"
+      ],
+      "regional": [
+        "vm",
+        "m_gate"
+      ],
+      "staggered": [
+        "vm",
+        "m_gate"
+      ]
+    }
+  }
+}

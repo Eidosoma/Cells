@@ -1,0 +1,135 @@
+{
+  "status": "pass",
+  "production_version": "0.14.0",
+  "preexisting_files": 625,
+  "unchanged_files": 615,
+  "missing_files": [],
+  "expected_documentation_changes": {
+    "PROGRESS.md": {
+      "before": "61b85ca63386faaa330f3668b234892aa350e0fcb3e0b4448b8c6a45b2b5a075",
+      "after": "c1f6dfb28847f11c3a2cee72f7d756f30d70836e19a959e61884aa1cf80bd326"
+    },
+    "README.md": {
+      "before": "6baba9050b798ad9c77e000ee8dd7d8e4d0d0f2b5b0b90da98a24b8c889340dc",
+      "after": "b21a1f4d90ff7fea741819bdce3c7c214148a7d0232bb67c294f8e9def5ed124"
+    },
+    "docs/ARCHITECTURE.md": {
+      "before": "829c2ba5616fd5662bc9ae39da0b7a16360edeb3cbd894a5c54a03402c4c9f54",
+      "after": "c267f0418b0113d456504b0500de0ba4d82bd6e01acf61b00310298439691820"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "before": "4bcf6000884e6e2d39f30409a3d30b6b238cba67094434bfad4f7c651ae17bcd",
+      "after": "602a56e5917558dca242ddcae6b869b78738f5dabb872bf5bfc984aa6dfbd24c"
+    },
+    "docs/DECISIONS.md": {
+      "before": "2e4fc0a80be877863b948ed3d367c098589b897ea2a67e72e243fbfab29f6f86",
+      "after": "0145817b044dda111a434cc2f7c131f9af5f43376218e82a7fe218812889bc70"
+    },
+    "docs/EXPERIMENTS.md": {
+      "before": "9b5dfadeddbb9941f058b5173719b9766fe8dd841db0189e58408f0d2985b301",
+      "after": "f1cc19d512685ff0a8a19140ae790991a22e05c9750a390eb298f66a7115d19f"
+    },
+    "docs/MULTISCALE_DESIGN.md": {
+      "before": "2bcfbef66c0ccef34ce1a6245e3e6ca7a35cca19968b00b963745d673ea9dd0e",
+      "after": "81a3acda6f2c3aaa26b4b321fe4a67811ea1b7db62e8199ad4e537db6b8ccbf4"
+    },
+    "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md": {
+      "before": "f676c2e5d058a44855390d17d1b0733b528371cdd7453e436967cbb960550b64",
+      "after": "e2f06d7a2aa214065885f4a761108679b7016ef26a6b0e82161abc5882088ec2"
+    },
+    "docs/ROADMAP.md": {
+      "before": "505e645f6db9d16e8bb2fbe7154e9e34e04ce58f37e03b0d051517f127e92719",
+      "after": "90d976b35480d933ebff18a698020dc540e523815a39e23464ff406cfeb1bd3d"
+    },
+    "docs/SCIENTIFIC_BASIS.md": {
+      "before": "430d89c5be9d37cf6a5106d604be2f02cd806ff98f785ab146136f38ff2273ce",
+      "after": "0b2deafa12e53da63bb1e4c2e0b1d59938352ab31a9f484eeaff8734c6e14485"
+    }
+  },
+  "production_sources_sha256": {
+    "src/cells/__init__.py": "ad218a9919318d31bf80127ff975904ef2f3977f01ac4ceb019bcb4afa4afe7a",
+    "src/cells/__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "src/cells/batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "src/cells/batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "src/cells/core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "src/cells/core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "src/cells/core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "src/cells/core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "src/cells/core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "src/cells/core/schedule.py": "abde97947a4b3e210829acd3a41cbbf5a41a2530273909d710f96315e1e72a52",
+    "src/cells/core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "src/cells/core/specs.py": "5bdd8ea61f330947b5854d1ab6d720b56a312a3607d547fe40a04c7a4517803d",
+    "src/cells/core/state.py": "04f606bd1c8c86816234b32c7e9b5fad973af2e6ec49765fa01187db2575966e",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "src/cells/coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "src/cells/coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "src/cells/models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "src/cells/models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "src/cells/models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "src/cells/models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "src/cells/models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "src/cells/models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "src/cells/models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "src/cells/models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "src/cells/models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "src/cells/models/registry.py": "95219ea1f814e60e9722fbdbd89c4e7bae9c36955d324878477806b6fddb00c4",
+    "src/cells/models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "src/cells/models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "src/cells/models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "src/cells/numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "src/cells/observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "src/cells/processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "src/cells/processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "src/cells/window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "critical_prior_evidence_sha256": {
+    "runs/core-009-2026-09-10/acceptance-02/verification.json": "247e2bd8f00cb58736e2b6e7ef2bf0c0855742fa8e929e6067ef861bc2ad3b92",
+    "runs/core-009-2026-09-10/release-audit.json": "940c2289d15f2df6e04ca4a1abaece05e5a0ef7c0e4fedccc73af073d0b9133a",
+    "runs/num-009-2026-09-10/reference-02/verification.json": "a628ee5eb7cbecb438728012ffe2a2ba6fb28b7a9ab20a7c4f429318f5b0c45b",
+    "runs/num-009-2026-09-10/reference-01/failure.json": "7dd501991ab3c61144d3f8862f91a8b76c146619e5c554b2b9fd46a5c87f3e67",
+    "reports/core-009-regression-02/verification.json": "e64950a3e14518562404bf72a7ddefa043992b1b2a8a51a751346636a91d2916"
+  },
+  "targeted_tests": {
+    "tests": 229,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "targeted_junit_time_s": 104.93,
+  "full_matrix_rerun": false,
+  "new_evidence_sha256": {
+    "reports/spec-009-design-check.json": "116942ff1a27bf2d80690a85536409d94588f11fd28c347cfb9352eebdb188a5",
+    "reports/spec-009-core009-audit.json": "aca1e766d3f8ac951f1a7981da380a996a39c81fb23281929f3442e40644dd93",
+    "reports/spec-009-reference-replay.json": "0532c6b5710da67596b2caa8e451621a9a08e8b1bbd6f393db2fcee56cb78cb4",
+    "reports/spec-009-targeted-01.xml": "fd2e1b2a80ce6dc88b2a5a1b1588016c49d66986f8e309e7dcbf7dcef5ac5a73",
+    "reports/spec-009-preflight-01.xml": "cc546d8690a776ba1ea8dec6f006ee82817dea51f458d84290701ccb23c5d1e9"
+  },
+  "scope": "D059/SPEC-009 design and instantaneous independent arithmetic only",
+  "baseline_file": "reports/spec-009-workspace-baseline.json",
+  "checks": {
+    "new_unit_tests": 85,
+    "targeted_tests": 229,
+    "independent_cases": 8,
+    "instantaneous_evaluations": 44,
+    "scalar_oracle_comparisons": 1016,
+    "maximum_normalized_error": 0.16282276063809414,
+    "exact_arithmetic_replay": true,
+    "ruff_check": "pass",
+    "ruff_format_check": "pass"
+  },
+  "next_gate": "NUM-010: separately freeze and qualify short coupled spatial trajectories before CORE-010 production"
+}

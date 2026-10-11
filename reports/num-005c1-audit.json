@@ -1,0 +1,228 @@
+{
+  "NUM005c1_complete": false,
+  "audit_wall_budget_seconds": 3600,
+  "candidate_selected": false,
+  "case_audits": {
+    "E_to_M/active": {
+      "comparison_grid": {
+        "chunks": 265,
+        "samples": 67744
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/blocked": {
+      "comparison_grid": {
+        "chunks": 244,
+        "samples": 62420
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/ionic_only": {
+      "comparison_grid": {
+        "chunks": 244,
+        "samples": 62414
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/isolated": {
+      "comparison_grid": {
+        "chunks": 242,
+        "samples": 61868
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/mirna_only": {
+      "comparison_grid": {
+        "chunks": 263,
+        "samples": 67146
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/one_neighbor": {
+      "comparison_grid": {
+        "chunks": 246,
+        "samples": 62810
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "E_to_M/same_state": {
+      "comparison_grid": {
+        "chunks": 242,
+        "samples": 61814
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "M_to_E/active": {
+      "comparison_grid": {
+        "chunks": 275,
+        "samples": 70190
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    }
+  },
+  "complete_trajectory_audits": {
+    "E_to_M/active/bdf": {
+      "chunks": 51,
+      "maximum_accounting_residual": 8.142819751810748e-12,
+      "steps": 12857
+    },
+    "E_to_M/active/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 1.6200374375330284e-12,
+      "steps": 10151
+    },
+    "E_to_M/active/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 1.9895196601282805e-12,
+      "steps": 10365
+    },
+    "E_to_M/blocked/bdf": {
+      "chunks": 40,
+      "maximum_accounting_residual": 7.790990075307036e-14,
+      "steps": 10091
+    },
+    "E_to_M/blocked/radau": {
+      "chunks": 41,
+      "maximum_accounting_residual": 6.039618899179858e-14,
+      "steps": 10308
+    },
+    "E_to_M/blocked/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 5.578939251941707e-14,
+      "steps": 10312
+    },
+    "E_to_M/ionic_only/bdf": {
+      "chunks": 40,
+      "maximum_accounting_residual": 9.423017922935768e-14,
+      "steps": 10089
+    },
+    "E_to_M/ionic_only/radau": {
+      "chunks": 41,
+      "maximum_accounting_residual": 6.039619318825679e-14,
+      "steps": 10308
+    },
+    "E_to_M/ionic_only/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 1.1313327237152654e-13,
+      "steps": 10311
+    },
+    "E_to_M/isolated/bdf": {
+      "chunks": 40,
+      "maximum_accounting_residual": 1.1504686092678185e-13,
+      "steps": 10139
+    },
+    "E_to_M/isolated/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 5.17091034517959e-14,
+      "steps": 10142
+    },
+    "E_to_M/isolated/refined": {
+      "chunks": 40,
+      "maximum_accounting_residual": 1.4971462406220124e-13,
+      "steps": 10154
+    },
+    "E_to_M/mirna_only/bdf": {
+      "chunks": 50,
+      "maximum_accounting_residual": 5.172751116333529e-12,
+      "steps": 12569
+    },
+    "E_to_M/mirna_only/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 2.8421709430404007e-12,
+      "steps": 10151
+    },
+    "E_to_M/mirna_only/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 1.2221335055073723e-12,
+      "steps": 10354
+    },
+    "E_to_M/one_neighbor/bdf": {
+      "chunks": 41,
+      "maximum_accounting_residual": 3.410605131648481e-12,
+      "steps": 10323
+    },
+    "E_to_M/one_neighbor/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 3.637983383694551e-12,
+      "steps": 10193
+    },
+    "E_to_M/one_neighbor/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 3.524333730551675e-12,
+      "steps": 10390
+    },
+    "E_to_M/same_state/bdf": {
+      "chunks": 40,
+      "maximum_accounting_residual": 8.720801862438645e-14,
+      "steps": 10135
+    },
+    "E_to_M/same_state/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 8.762435233468518e-14,
+      "steps": 10131
+    },
+    "E_to_M/same_state/refined": {
+      "chunks": 40,
+      "maximum_accounting_residual": 2.931002832189365e-14,
+      "steps": 10142
+    },
+    "M_to_E/active/bdf": {
+      "chunks": 55,
+      "maximum_accounting_residual": 5.25091081726714e-12,
+      "steps": 14012
+    },
+    "M_to_E/active/radau": {
+      "chunks": 40,
+      "maximum_accounting_residual": 7.901235221652314e-12,
+      "steps": 10189
+    },
+    "M_to_E/active/refined": {
+      "chunks": 41,
+      "maximum_accounting_residual": 7.432277016050648e-12,
+      "steps": 10394
+    }
+  },
+  "incomplete_attempts_not_numerically_promoted": true,
+  "integrity": {
+    "artifact_bytes": 387154280,
+    "campaign_status": "incomplete",
+    "candidate_selected": false,
+    "comparison_flux_scores": "online_recorded_not_independently_recomputed_by_this_audit",
+    "comparison_grids": {},
+    "observations": {},
+    "payloads": 3218,
+    "production_changed": false,
+    "receipt_sha256": "fdebf3a244e185ad3bc45d32fa9f4e7f322c6a2373fcf358e2b210147cb9bac4",
+    "scope": "failed_or_incomplete_campaign_integrity_only_no_numerical_promotion",
+    "source_capsule_files": 25,
+    "status": "pass",
+    "trajectories": {}
+  },
+  "scope": "post_run_integrity_and_complete_subset_domain_accounting_grid_observer_audit_not_full_panel",
+  "seconds": 1202.5730220539845,
+  "status": "pass"
+}

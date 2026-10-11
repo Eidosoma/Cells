@@ -1,0 +1,1219 @@
+{
+  "assemblies": [
+    {
+      "id": "nakcl_reduction_kv1p5",
+      "open_probe": {
+        "amount_rate_fmol_per_s": [
+          -0.01688605895223739,
+          -0.019854884620576014,
+          0.0005360061901298455
+        ],
+        "baseline": {
+          "amount_rate_fmol_per_s": [
+            -0.01688605895223739,
+            0.020740293578981984,
+            0.0005360061901298455
+          ],
+          "bath_rate_fmol_per_s": [
+            0.01688605895223739,
+            -0.020740293578981984,
+            -0.0005360061901298455
+          ],
+          "chemical_power_W": 9.413737790532787e-13,
+          "concentration_mM": [
+            12.0,
+            140.0,
+            10.0
+          ],
+          "cycle_energy_J_per_mol": -8676.272959336042,
+          "inward_current_A": 3.2016037276778595e-13,
+          "passive_dissipation_W": [
+            4.929224672797167e-13,
+            3.364063565478994e-14,
+            2.3669684658557606e-16
+          ],
+          "passive_fmol_per_s": [
+            0.03959636779095933,
+            -0.016914657583149164,
+            0.0005360061901298455
+          ],
+          "potential_J_per_mol": [
+            -12448.678875850352,
+            1988.8452065564506,
+            -441.5934945233321
+          ],
+          "pump_cycles_fmol_per_s": 0.018827475581065574,
+          "pump_dissipation_W": 1.633523172765589e-13,
+          "pump_species_fmol_per_s": [
+            -0.05648242674319672,
+            0.03765495116213115,
+            0.0
+          ],
+          "stored_energy_rate_W": 2.512216619956276e-13,
+          "voltage_V": -0.065,
+          "voltage_rate_V_per_s": 0.03201603727677859
+        },
+        "bath_rate_fmol_per_s": [
+          0.01688605895223739,
+          0.019854884620576014,
+          -0.0005360061901298455
+        ],
+        "channel_availability": 1.0,
+        "channel_dissipation_W": 8.073752557149585e-14,
+        "channel_flux_fmol_per_s": -0.040595178199558,
+        "channel_species_rate_fmol_per_s": [
+          0.0,
+          -0.040595178199558,
+          0.0
+        ],
+        "effective_permeability_m_per_s": 2.4e-09,
+        "gate_rate_per_s": [
+          -25.167616807881988,
+          0.15223145434144472
+        ],
+        "inward_current_A": -3.596678878421522e-12,
+        "ionic_dissipation_rate_pJ_per_s": 0.770889642629147,
+        "open_probability": 0.24,
+        "stored_ionic_capacitor_energy_rate_W": 1.7048413642413172e-13,
+        "voltage_rate_V_per_s": -0.35966788784215215
+      },
+      "resolved": {
+        "assembly": {
+          "area_m2": 1e-09,
+          "bath_background_charge_mM": 0,
+          "bath_id": "bath_0",
+          "bath_mM": [
+            145,
+            5,
+            150
+          ],
+          "capacity_fmol_per_s": 0.02,
+          "cell_id": "cell_0",
+          "drive_J_per_mol": -50000,
+          "fixed_charge_equivalent_fmol": -142.00673677527658,
+          "initial_amount_fmol": [
+            12,
+            140,
+            10
+          ],
+          "initial_voltage_V": -0.065,
+          "membrane_id": "membrane_0",
+          "permeability_m_per_s": [
+            1e-10,
+            1e-09,
+            1e-10
+          ],
+          "pump_id": "nak_0",
+          "pump_roles": [
+            "Na",
+            "K"
+          ],
+          "species_ids": [
+            "Na",
+            "K",
+            "Cl"
+          ],
+          "specific_capacitance_F_per_m2": 0.01,
+          "stoichiometry": [
+            -3,
+            2,
+            0
+          ],
+          "temperature_K": 298.15,
+          "valence": [
+            1,
+            1,
+            -1
+          ],
+          "volume_pL": 1
+        },
+        "channel": {
+          "abundance": 1,
+          "id": "channel_kv1p5",
+          "initial_gate": {
+            "h": 1,
+            "m": 0
+          },
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-08,
+          "membrane_id": "membrane_0",
+          "species_id": "K"
+        }
+      }
+    },
+    {
+      "id": "divalent_with_background_kv1p5",
+      "open_probe": {
+        "amount_rate_fmol_per_s": [
+          -0.01688605895223739,
+          -0.019854884620576014,
+          0.0006674027436606142,
+          0.00010184257462838305
+        ],
+        "baseline": {
+          "amount_rate_fmol_per_s": [
+            -0.01688605895223739,
+            0.020740293578981984,
+            0.0006674027436606142,
+            0.00010184257462838305
+          ],
+          "bath_rate_fmol_per_s": [
+            0.01688605895223739,
+            -0.020740293578981984,
+            -0.0006674027436606142,
+            -0.00010184257462838305
+          ],
+          "chemical_power_W": 9.413737790532787e-13,
+          "concentration_mM": [
+            12.0,
+            140.0,
+            10.0,
+            0.001
+          ],
+          "cycle_energy_J_per_mol": -8676.272959336042,
+          "inward_current_A": 3.2713516193513646e-13,
+          "passive_dissipation_W": [
+            4.929224672797167e-13,
+            3.364063565478994e-14,
+            3.5960991770808697e-16,
+            3.1963703246121146e-15
+          ],
+          "passive_fmol_per_s": [
+            0.03959636779095933,
+            -0.016914657583149164,
+            0.0006674027436606142,
+            0.00010184257462838305
+          ],
+          "potential_J_per_mol": [
+            -12448.678875850352,
+            1988.8452065564506,
+            -538.819957100678,
+            -31385.40375943423
+          ],
+          "pump_cycles_fmol_per_s": 0.018827475581065574,
+          "pump_dissipation_W": 1.633523172765589e-13,
+          "pump_species_fmol_per_s": [
+            -0.05648242674319672,
+            0.03765495116213115,
+            0.0,
+            0.0
+          ],
+          "stored_energy_rate_W": 2.47902378599893e-13,
+          "voltage_V": -0.065,
+          "voltage_rate_V_per_s": 0.03271351619351364
+        },
+        "bath_rate_fmol_per_s": [
+          0.01688605895223739,
+          0.019854884620576014,
+          -0.0006674027436606142,
+          -0.00010184257462838305
+        ],
+        "channel_availability": 1.0,
+        "channel_dissipation_W": 8.073752557149585e-14,
+        "channel_flux_fmol_per_s": -0.040595178199558,
+        "channel_species_rate_fmol_per_s": [
+          0.0,
+          -0.040595178199558,
+          0.0,
+          0.0
+        ],
+        "effective_permeability_m_per_s": 2.4e-09,
+        "gate_rate_per_s": [
+          -25.167616807881988,
+          0.15223145434144472
+        ],
+        "inward_current_A": -3.589704089254172e-12,
+        "ionic_dissipation_rate_pJ_per_s": 0.7742089260248816,
+        "open_probability": 0.24,
+        "stored_ionic_capacitor_energy_rate_W": 1.6716485302839712e-13,
+        "voltage_rate_V_per_s": -0.35897040892541715
+      },
+      "resolved": {
+        "assembly": {
+          "area_m2": 1e-09,
+          "bath_background_charge_mM": 2,
+          "bath_id": "bath_0",
+          "bath_mM": [
+            145,
+            5,
+            156,
+            2
+          ],
+          "capacity_fmol_per_s": 0.02,
+          "cell_id": "cell_0",
+          "drive_J_per_mol": -50000,
+          "fixed_charge_equivalent_fmol": -142.0087367752766,
+          "initial_amount_fmol": [
+            12,
+            140,
+            10,
+            0.001
+          ],
+          "initial_voltage_V": -0.065,
+          "membrane_id": "membrane_0",
+          "permeability_m_per_s": [
+            1e-10,
+            1e-09,
+            1e-10,
+            1e-11
+          ],
+          "pump_id": "nak_0",
+          "pump_roles": [
+            "Na",
+            "K"
+          ],
+          "species_ids": [
+            "Na",
+            "K",
+            "Cl",
+            "Ca"
+          ],
+          "specific_capacitance_F_per_m2": 0.01,
+          "stoichiometry": [
+            -3,
+            2,
+            0,
+            0
+          ],
+          "temperature_K": 298.15,
+          "valence": [
+            1,
+            1,
+            -1,
+            2
+          ],
+          "volume_pL": 1
+        },
+        "channel": {
+          "abundance": 1,
+          "id": "channel_kv1p5",
+          "initial_gate": {
+            "h": 1,
+            "m": 0
+          },
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-08,
+          "membrane_id": "membrane_0",
+          "species_id": "K"
+        }
+      }
+    }
+  ],
+  "biological_acceptance": "not_assessable",
+  "checks": 7528,
+  "checks_failed": 0,
+  "coupled_trajectory_qualification": "not_performed",
+  "diagnostic_10ms_RK4_fast_gate_amplification": 78.22157320017519,
+  "failures": [],
+  "gate_protocols": {
+    "activation": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0,
+        "dh_per_s": -5.7046836330157014e-08,
+        "dm_per_s": 0.0005396536063382545,
+        "h": 1,
+        "m": 0,
+        "open_probability": 0,
+        "time_s": 0,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 5.246372856500423e-07,
+        "dh_per_s": -5.7026893386201874e-08,
+        "dm_per_s": 0.0005099021440676429,
+        "h": 0.9999999999429632,
+        "m": 5.246372856799659e-07,
+        "open_probability": 5.246372856500423e-07,
+        "time_s": 0.001,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 6.454986101016916e-06,
+        "dh_per_s": -0.9999999909688854,
+        "dm_per_s": 271.6797551335405,
+        "h": 0.9999999988630432,
+        "m": 6.454986108355956e-06,
+        "open_probability": 6.454986101016916e-06,
+        "time_s": 0.02,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.00027809753309275667,
+        "dh_per_s": -0.9999989909693944,
+        "dm_per_s": 271.60589900917995,
+        "h": 0.9999989988635523,
+        "m": 0.0002780978115066118,
+        "open_probability": 0.00027809753309275667,
+        "time_s": 0.020001,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.23764688531201875,
+        "dh_per_s": -0.999000490811287,
+        "dm_per_s": 207.00379092938923,
+        "h": 0.9990004987054448,
+        "m": 0.23788465132897688,
+        "open_probability": 0.23764688531201875,
+        "time_s": 0.021,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.7389303739680639,
+        "dh_per_s": -0.9950124702066105,
+        "dm_per_s": 69.76898196603842,
+        "h": 0.9950124781007684,
+        "m": 0.7426342786961811,
+        "open_probability": 0.7389303739680639,
+        "time_s": 0.025,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9240585901461624,
+        "dh_per_s": -0.9900498248079145,
+        "dm_per_s": 17.91709081224966,
+        "h": 0.9900498327020724,
+        "m": 0.9333455343598163,
+        "open_probability": 0.9240585901461624,
+        "time_s": 0.03,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9694343079366079,
+        "dh_per_s": -0.9704455247843033,
+        "dm_per_s": 0.07792699518582144,
+        "h": 0.9704455326784612,
+        "m": 0.9989579788789771,
+        "open_probability": 0.9694343079366079,
+        "time_s": 0.05,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9224190183265626,
+        "dh_per_s": -0.9231163380498663,
+        "dm_per_s": 9.721626560982716e-08,
+        "h": 0.9231163459440241,
+        "m": 0.9992445940097091,
+        "open_probability": 0.9224190183265626,
+        "time_s": 0.1,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.8346392439391928,
+        "dh_per_s": -0.835270203867851,
+        "dm_per_s": 0.0,
+        "h": 0.8352702117620089,
+        "m": 0.9992445943672705,
+        "open_probability": 0.8346392439391928,
+        "time_s": 0.2,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.7939334080627012,
+        "dh_per_s": 0.07184134042800007,
+        "dm_per_s": -56.66525338071772,
+        "h": 0.7945336032219679,
+        "m": 0.9992445943672705,
+        "open_probability": 0.7939334080627012,
+        "time_s": 0.25,
+        "voltage_V": -0.08
+      }
+    ],
+    "block_release": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0.009000000000000001,
+        "dh_per_s": 0.03496497791819862,
+        "dm_per_s": -0.5665466569301254,
+        "h": 0.9,
+        "m": 0.01,
+        "open_probability": 0.009000000000000001,
+        "time_s": 0,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.005110268545959264,
+        "dh_per_s": 0.034842936234574635,
+        "dm_per_s": -0.32133144408536757,
+        "h": 0.9003490392151646,
+        "m": 0.0056758749366955415,
+        "open_probability": 0.005110268545959264,
+        "time_s": 0.01,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": 0.03475776059915175,
+        "dm_per_s": -0.21605061504538328,
+        "h": 0.9005926415324741,
+        "m": 0.0038193527974044574,
+        "open_probability": 0.0034396810247589245,
+        "time_s": 0.017,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": -0.687632500951776,
+        "dm_per_s": 163.2852306102571,
+        "h": 0.9008009694938278,
+        "m": 0.0027205621492897457,
+        "open_probability": 0.002450685021648415,
+        "time_s": 0.023,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": -0.6865834813217397,
+        "dm_per_s": 117.02496562350271,
+        "h": 0.8994267537784804,
+        "m": 0.2804671931297631,
+        "open_probability": 0.25225969705806495,
+        "time_s": 0.025,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.8300248071227327,
+        "dh_per_s": -0.6782487317237169,
+        "dm_per_s": 8.145757341784467,
+        "h": 0.8885082318050704,
+        "m": 0.9341779596531995,
+        "open_probability": 0.8300248071227327,
+        "time_s": 0.041,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.857859546425095,
+        "dh_per_s": -0.6736049777048565,
+        "dm_per_s": 1.8193814013146374,
+        "h": 0.8824249140403633,
+        "m": 0.9721615207997804,
+        "open_probability": 0.857859546425095,
+        "time_s": 0.05,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": -0.6468961925441491,
+        "dm_per_s": 0.0002668158564213273,
+        "h": 0.8474364054798366,
+        "m": 0.9830834847708715,
+        "open_probability": 0.833100734620819,
+        "time_s": 0.103,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": -0.6459093183000795,
+        "dm_per_s": 0.000191224376551024,
+        "h": 0.8461436002201054,
+        "m": 0.9830839386221166,
+        "open_probability": 0.8318301831442788,
+        "time_s": 0.105,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.8305614607436516,
+        "dh_per_s": -0.6449239495846941,
+        "dm_per_s": 0.0001370486847480552,
+        "h": 0.8448527672029505,
+        "m": 0.9830842638929702,
+        "open_probability": 0.8305614607436516,
+        "time_s": 0.107,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.7736430641709134,
+        "dh_per_s": -0.6007266680408123,
+        "dm_per_s": 2.5684539993410097e-11,
+        "h": 0.7869543283804654,
+        "m": 0.9830850867331192,
+        "open_probability": 0.7736430641709134,
+        "time_s": 0.2,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.7671740424818024,
+        "dh_per_s": 0.07679225028716224,
+        "dm_per_s": -55.7488698242914,
+        "h": 0.7803740010247641,
+        "m": 0.9830850867332487,
+        "open_probability": 0.7671740424818024,
+        "time_s": 0.211,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.08434877257537556,
+        "dh_per_s": 0.07575219066994016,
+        "dm_per_s": -6.105686358221645,
+        "h": 0.7833485715300192,
+        "m": 0.10767718949257465,
+        "open_probability": 0.08434877257537556,
+        "time_s": 0.25,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 0,
+        "available_open_fraction": 0.0,
+        "dh_per_s": -0.7944185577428113,
+        "dm_per_s": 271.6730039732104,
+        "h": 0.7944185656369692,
+        "m": 3.128575380229037e-05,
+        "open_probability": 2.4853983660486873e-05,
+        "time_s": 0.4,
+        "voltage_V": 0.04
+      }
+    ],
+    "equal_open_a": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0.16000000000000003,
+        "dh_per_s": -0.49337961075193454,
+        "dm_per_s": 62.256229600342856,
+        "h": 0.8,
+        "m": 0.2,
+        "open_probability": 0.16000000000000003,
+        "time_s": 0,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.2068040303289716,
+        "dh_per_s": -0.4930751494158714,
+        "dm_per_s": 55.21367096510862,
+        "h": 0.7995067726355777,
+        "m": 0.25866451343150126,
+        "open_probability": 0.2068040303289716,
+        "time_s": 0.001,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.34617255343670683,
+        "dh_per_s": -0.49185918172359816,
+        "dm_per_s": 34.15874086101352,
+        "h": 0.7975369049740951,
+        "m": 0.4340520811986135,
+        "open_probability": 0.34617255343670683,
+        "time_s": 0.005,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.4472108267059147,
+        "dh_per_s": -0.4903434381430992,
+        "dm_per_s": 18.74221398726415,
+        "h": 0.7950814003736868,
+        "m": 0.5624717500569457,
+        "open_probability": 0.4472108267059147,
+        "time_s": 0.01,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.5564245392216959,
+        "dh_per_s": -0.4783844422551552,
+        "dm_per_s": 0.15394769822860493,
+        "h": 0.7757078270352175,
+        "m": 0.7173120082446118,
+        "open_probability": 0.5564245392216959,
+        "time_s": 0.05,
+        "voltage_V": 0
+      }
+    ],
+    "equal_open_b": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0.16000000000000003,
+        "dh_per_s": -0.12300924038156419,
+        "dm_per_s": -9.772581924266978,
+        "h": 0.2,
+        "m": 0.8,
+        "open_probability": 0.16000000000000003,
+        "time_s": 0,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.15806099989833622,
+        "dh_per_s": -0.12293333218256584,
+        "dm_per_s": -8.667086431509066,
+        "h": 0.1998770287176227,
+        "m": 0.7907912225453266,
+        "open_probability": 0.15806099989833622,
+        "time_s": 0.001,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.15218328589772218,
+        "dh_per_s": -0.12263016752213916,
+        "dm_per_s": -5.362019120608969,
+        "h": 0.19938590196773148,
+        "m": 0.7632600118455288,
+        "open_probability": 0.15218328589772218,
+        "time_s": 0.005,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.14770903579345465,
+        "dh_per_s": -0.1222522628370099,
+        "dm_per_s": -2.9420320313081136,
+        "h": 0.19877369637782208,
+        "m": 0.7431015193916527,
+        "open_probability": 0.14770903579345465,
+        "time_s": 0.01,
+        "voltage_V": 0
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.13940574063977154,
+        "dh_per_s": -0.11927064996156038,
+        "dm_per_s": -0.02416571807591888,
+        "h": 0.19394348351959384,
+        "m": 0.7187956930024285,
+        "open_probability": 0.13940574063977154,
+        "time_s": 0.05,
+        "voltage_V": 0
+      }
+    ],
+    "inactivation": [
+      {
+        "availability": 1,
+        "available_open_fraction": 1,
+        "dh_per_s": -0.7633569517198463,
+        "dm_per_s": -2.8172740284354694,
+        "h": 1,
+        "m": 1,
+        "open_probability": 1,
+        "time_s": 0,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9966437562352864,
+        "dh_per_s": -0.7627744588433369,
+        "dm_per_s": -2.385035791802551,
+        "h": 0.9992369343317726,
+        "m": 0.997404841627256,
+        "open_probability": 0.9966437562352864,
+        "time_s": 0.001,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9787832504277788,
+        "dh_per_s": -0.7575519839708285,
+        "dm_per_s": -0.5327055028777233,
+        "h": 0.9923954922487865,
+        "m": 0.9862834505725513,
+        "open_probability": 0.9787832504277788,
+        "time_s": 0.01,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9462738295756773,
+        "dh_per_s": -0.7347702090541766,
+        "dm_per_s": -0.0006809567807846587,
+        "h": 0.9625513671079725,
+        "m": 0.9830891751977853,
+        "open_probability": 0.9462738295756773,
+        "time_s": 0.05,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.9108333845483142,
+        "dh_per_s": -0.7072540033822317,
+        "dm_per_s": -1.645924865051858e-07,
+        "h": 0.9265051376777248,
+        "m": 0.9830850877214867,
+        "open_probability": 0.9108333845483142,
+        "time_s": 0.1,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.6711666035304511,
+        "dh_per_s": -0.5211544042681541,
+        "dm_per_s": 0.0,
+        "h": 0.6827146628382831,
+        "m": 0.9830850867332734,
+        "open_probability": 0.6711666035304511,
+        "time_s": 0.5,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.45821551829103585,
+        "dh_per_s": -0.35579935766114956,
+        "dm_per_s": 0.0,
+        "h": 0.46609955178310725,
+        "m": 0.9830850867332734,
+        "open_probability": 0.45821551829103585,
+        "time_s": 1,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.2135747183521759,
+        "dh_per_s": -0.1658374665048529,
+        "dm_per_s": 0.0,
+        "h": 0.21724947436835862,
+        "m": 0.9830850867332734,
+        "open_probability": 0.2135747183521759,
+        "time_s": 2,
+        "voltage_V": 0.02
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.02162841967035624,
+        "dh_per_s": -0.016792491557246263,
+        "dm_per_s": 0.0,
+        "h": 0.022000557186993897,
+        "m": 0.9830850867332734,
+        "open_probability": 0.02162841967035624,
+        "time_s": 5,
+        "voltage_V": 0.02
+      }
+    ],
+    "recovery": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0,
+        "dh_per_s": 0.34965029260351327,
+        "dm_per_s": -56.708091400040026,
+        "h": 0,
+        "m": 1,
+        "open_probability": 0,
+        "time_s": 0,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.00033031627187507057,
+        "dh_per_s": 0.3495280586272707,
+        "dm_per_s": -53.581736601496935,
+        "h": 0.00034958917205379594,
+        "m": 0.9448698594824911,
+        "open_probability": 0.00033031627187507057,
+        "time_s": 0.001,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.0019796825709636904,
+        "dh_per_s": 0.3484298739752279,
+        "dm_per_s": -32.163446166353935,
+        "h": 0.0034903972768960964,
+        "m": 0.5671797259491795,
+        "open_probability": 0.0019796825709636904,
+        "time_s": 0.01,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.0022417649155536045,
+        "dh_per_s": 0.3472137150934944,
+        "dm_per_s": -18.242322105293383,
+        "h": 0.006968611678653945,
+        "m": 0.3216946242564377,
+        "open_probability": 0.0022417649155536045,
+        "time_s": 0.02,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.00011869511180185297,
+        "dh_per_s": 0.3376360215829088,
+        "dm_per_s": -0.19535317605283245,
+        "h": 0.03436081511892885,
+        "m": 0.0034543741582098164,
+        "open_probability": 0.00011869511180185297,
+        "time_s": 0.1,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 1.5263705166337095e-06,
+        "dh_per_s": 0.2935677114804924,
+        "dm_per_s": -2.7515419247099316e-11,
+        "h": 0.1603961820118398,
+        "m": 9.516252179375684e-06,
+        "open_probability": 1.5263705166337095e-06,
+        "time_s": 0.5,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 2.8079168469637792e-06,
+        "dh_per_s": 0.24648056371461377,
+        "dm_per_s": -2.2366588497192493e-15,
+        "h": 0.29506542462225255,
+        "m": 9.516251694208222e-06,
+        "open_probability": 2.8079168469637792e-06,
+        "time_s": 1,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 4.787314381998015e-06,
+        "dh_per_s": 0.17375265965518413,
+        "dm_per_s": -2.2366588497192493e-15,
+        "h": 0.5030672302322214,
+        "m": 9.516251694208222e-06,
+        "open_probability": 4.787314381998015e-06,
+        "time_s": 2,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 7.859680256513153e-06,
+        "dh_per_s": 0.060866427050404216,
+        "dm_per_s": -2.2366588497192493e-15,
+        "h": 0.825921855481892,
+        "m": 9.516251694208222e-06,
+        "open_probability": 7.859680256513153e-06,
+        "time_s": 5,
+        "voltage_V": -0.08
+      }
+    ],
+    "substep_pulse": [
+      {
+        "availability": 1,
+        "available_open_fraction": 0,
+        "dh_per_s": -5.7046836330157014e-08,
+        "dm_per_s": 0.0005396536063382545,
+        "h": 1,
+        "m": 0,
+        "open_probability": 0,
+        "time_s": 0,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 6.454986101016916e-06,
+        "dh_per_s": -5.664929900464341e-08,
+        "dm_per_s": 0.00017360018066308407,
+        "h": 0.9999999988630432,
+        "m": 6.454986108355956e-06,
+        "open_probability": 6.454986101016916e-06,
+        "time_s": 0.02,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 6.506625648350412e-06,
+        "dh_per_s": -0.9999999909518915,
+        "dm_per_s": 271.6797410934243,
+        "h": 0.9999999988460494,
+        "m": 6.5066256558587365e-06,
+        "open_probability": 6.506625648350412e-06,
+        "time_s": 0.0203,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.0027195868743183603,
+        "dh_per_s": -0.9999899910019818,
+        "dm_per_s": 270.9420827334989,
+        "h": 0.9999899988961397,
+        "m": 0.002719614073461169,
+        "open_probability": 0.0027195868743183603,
+        "time_s": 0.02031,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.013497903033908874,
+        "dh_per_s": -0.9999499922023231,
+        "dm_per_s": 268.0114237101049,
+        "h": 0.9999500000964809,
+        "m": 0.013498577961504594,
+        "open_probability": 0.013497903033908874,
+        "time_s": 0.02035,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.02415877621469501,
+        "dh_per_s": -0.9999099950025843,
+        "dm_per_s": 265.1124643113123,
+        "h": 0.9999100028967421,
+        "m": 0.024160950630263692,
+        "open_probability": 0.02415877621469501,
+        "time_s": 0.02039,
+        "voltage_V": 0.04
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.026805793762891706,
+        "dh_per_s": 3.4906643098126077e-05,
+        "dm_per_s": -1.5197322363344536,
+        "h": 0.9999000038467875,
+        "m": 0.026808474507215924,
+        "open_probability": 0.026805793762891706,
+        "time_s": 0.0204,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.020653076659892838,
+        "dh_per_s": 3.485054467249322e-05,
+        "dm_per_s": -1.1707849908517287,
+        "h": 0.9999001642882848,
+        "m": 0.020655138780373554,
+        "open_probability": 0.020653076659892838,
+        "time_s": 0.025,
+        "voltage_V": -0.08
+      },
+      {
+        "availability": 1,
+        "available_open_fraction": 0.00030305535142788613,
+        "dh_per_s": -1.449134411708677,
+        "dm_per_s": 739.3962285331638,
+        "h": 0.9999027441050263,
+        "m": 0.000303084828214107,
+        "open_probability": 0.00030305535142788613,
+        "time_s": 0.1,
+        "voltage_V": 0.06
+      }
+    ]
+  },
+  "gate_reference": "analytic prescribed-voltage responses",
+  "gpu_qualification": "not_performed",
+  "groups": {
+    "area_not_gate_kinetics": {
+      "checks": 4,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "availability_separation": {
+      "checks": 62,
+      "failed": 0
+    },
+    "bath_rate": {
+      "checks": 294,
+      "failed": 0
+    },
+    "bound_species_only": {
+      "checks": 294,
+      "failed": 0
+    },
+    "channel_dissipation": {
+      "checks": 84,
+      "failed": 0
+    },
+    "charge_rate": {
+      "checks": 84,
+      "failed": 0,
+      "max_normalized_error": 5.38638887601871e-05
+    },
+    "decimal_channel_flux": {
+      "checks": 84,
+      "failed": 0,
+      "max_normalized_error": 0.00010369766736510386
+    },
+    "decimal_protocol": {
+      "checks": 124,
+      "failed": 0,
+      "max_normalized_error": 0.0040362195136554434
+    },
+    "decimal_relaxation": {
+      "checks": 2548,
+      "failed": 0,
+      "max_normalized_error": 0.0005316992649656906
+    },
+    "equilibrium": {
+      "checks": 13,
+      "failed": 0
+    },
+    "final_event_no_duration": {
+      "checks": 3,
+      "failed": 0
+    },
+    "gate_derivatives": {
+      "checks": 182,
+      "failed": 0,
+      "max_normalized_error": 0.0006348397349923918
+    },
+    "held_voltage_semigroup": {
+      "checks": 182,
+      "failed": 0,
+      "max_normalized_error": 0.00028733263600448514
+    },
+    "hidden_gate_history": {
+      "checks": 2,
+      "failed": 0
+    },
+    "independent_abundance_permeability": {
+      "checks": 4,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "inward_gate_domain": {
+      "checks": 182,
+      "failed": 0
+    },
+    "ionic_energy_rate": {
+      "checks": 84,
+      "failed": 0,
+      "max_normalized_error": 5.9497838838913176e-05
+    },
+    "material_rate": {
+      "checks": 294,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "monotone_relaxation": {
+      "checks": 2548,
+      "failed": 0
+    },
+    "nernst_channel": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 8.526512829121204e-06
+    },
+    "off_reduction": {
+      "checks": 52,
+      "failed": 0
+    },
+    "old_step_not_inherited": {
+      "checks": 1,
+      "failed": 0
+    },
+    "open_fraction": {
+      "checks": 62,
+      "failed": 0,
+      "max_normalized_error": 0.0040362205824069275
+    },
+    "right_continuous_readout": {
+      "checks": 62,
+      "failed": 0
+    },
+    "sampling_independence": {
+      "checks": 7,
+      "failed": 0
+    },
+    "source_unit_rates": {
+      "checks": 52,
+      "failed": 0,
+      "max_normalized_error": 0.0001597443200899506
+    },
+    "species_permutation": {
+      "checks": 30,
+      "failed": 0
+    },
+    "zero_elapsed": {
+      "checks": 182,
+      "failed": 0
+    },
+    "zero_parameter_keeps_gates": {
+      "checks": 4,
+      "failed": 0
+    },
+    "zero_voltage_diffusion": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    }
+  },
+  "method_selection": "not_performed",
+  "native_betse_execution": false,
+  "production_change": false,
+  "production_release_sha256": "ec084d0f626fbb3793714bbb7ea346688d1f1244078869507396a57aec1f5005",
+  "production_source_sha256": {
+    "__init__.py": "780f51512cdeb7fa3b4e29874278d13a7f7966e74816cd08a02120b8a16452cb",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "41681d9b9dd879d663fdfc64ea0aa209d2bdf65e0c8e6c2edc1fda68efb69909",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/resources.py": "094bf53cc731b89f651343c9f23e34099049af97ecd43827cad8996318a14c14",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "b4940be4b42e7b598b25342e6cb62030877f59b034e4aadbd787c23aadf1928a",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/specs.py": "281d65b1fb5a795d4948827568274b8a545417ba7823596c884dd807095bb74e",
+    "core/state.py": "f517a0636805918758c87bb6181e818d9374b55085c68cd6d151be39aa9c2c4a",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "9104d76c8bc9550020ed72fc088ce802f90374b905e7d9b1df96e8fc92dec2a7",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "protocol_sha256": "16b6e245ba2cef921fc48e1a4c7f8ebd03481724e7de5d1062fcf0d8fdeed09c",
+  "python": "3.13.5",
+  "scope": "SPEC-006 continuous gate arithmetic, exact prescribed-voltage gate responses and instantaneous ionic coupling; no coupled trajectories or production change",
+  "source_sha256": {
+    "configs/reference/multispecies_membrane_v1.json": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34",
+    "configs/reference/voltage_gated_channel_v1.json": "16b6e245ba2cef921fc48e1a4c7f8ebd03481724e7de5d1062fcf0d8fdeed09c",
+    "docs/VOLTAGE_GATED_CHANNEL_SPEC.md": "a66fb7027ece28a25d380f67f8c673f61f9e40b6aca3541ced2c5ebfe34deecd",
+    "pyproject.toml": "afcb25a51363700887bfd477e41c1fc3d3d001f71695064adae7ee66a095dae2",
+    "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+    "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+    "scripts/check_voltage_gated_channel.py": "4c596910282cbd9bca0e3d057f4f470f7f33fa505d19f24634329321d355474c",
+    "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+    "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+    "tests/unit/test_voltage_gated_channel_reference.py": "175a927c76b8b8b25015396367bc2ad180df36a82849d9e6cbcd0b9c1cd17162"
+  },
+  "status": "pass",
+  "tolerances": {
+    "flux_fmol_per_s": 1e-12,
+    "gate": 2e-13,
+    "negative_dissipation_W": 1e-24,
+    "permeability_m_per_s": 1e-23,
+    "power_W": 1e-23,
+    "rate_per_s": 1e-10,
+    "rtol": 2e-12,
+    "time_constant_s": 1e-14,
+    "voltage_rate_V_per_s": 1e-12
+  },
+  "verified_utc": "2026-09-09T20:40:42.909436+00:00"
+}

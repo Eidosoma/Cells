@@ -1,0 +1,999 @@
+{
+  "complete_scalar_runs": 43,
+  "complete_stream_runs": 12,
+  "note": "First audit completed successfully but tool output was truncated. This is a compact read-only repeat, not a new trajectory run.",
+  "registration_sha256": "c638e28630fa17fa0a57b9c78accccb3fe9b59de55e44490742c72ab99539992",
+  "runs": {
+    "branch/membrane_block_release": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "bb3e695b945d3b09472e1085a858938a95cc321a0c23a891994372f8499dfd46",
+      "native_accounting": 0.00037412335789972334,
+      "native_error": 0.0000013939960297193466,
+      "native_rows": 1832,
+      "observation_rows": 161,
+      "observed_accounting": 0.00027774690905945124,
+      "observed_error": 0.0000013717915692268434,
+      "snapshots": 1
+    },
+    "jit/binary_equal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "94daa8f9669d417c88fd27000fda39265612c597dcf0d84c927c197ad9dcd60b",
+      "native_accounting": 0.025685650689612025,
+      "native_error": 6.88338275267597e-8,
+      "native_rows": 2401,
+      "observation_rows": 202,
+      "observed_accounting": 0.025685650689612025,
+      "observed_error": 6.661338147750939e-8,
+      "snapshots": 2
+    },
+    "jit/binary_unequal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "fb0d8accf395eacca01792247d4678292571abde528480e4dae2797d61112e54",
+      "native_accounting": 0.0005043155308290515,
+      "native_error": 1.3322676295501878e-7,
+      "native_rows": 2401,
+      "observation_rows": 202,
+      "observed_accounting": 0.0003248354186065329,
+      "observed_error": 1.305622276959184e-7,
+      "snapshots": 2
+    },
+    "jit/blocked_cell": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "430d573bd79bf3f214ee7b5992d0e59d334cb13c41facf990b6272b387d4349d",
+      "native_accounting": 0.00041114990673708974,
+      "native_error": 0.000001737276988933445,
+      "native_rows": 2401,
+      "observation_rows": 202,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.0000017363888105137448,
+      "snapshots": 2
+    },
+    "jit/divalent": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "54b5a4e29ac360d37d8af34f6eef3be1e6d29ce0192e09f81eb64abca4e47358",
+      "native_accounting": 0.00034958383243695275,
+      "native_error": 3.2210345501937354e-8,
+      "native_rows": 1201,
+      "observation_rows": 202,
+      "observed_accounting": 0.00034958383243695275,
+      "observed_error": 3.096134459923405e-8,
+      "snapshots": 2
+    },
+    "jit/line_16": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "5c9961a97b9240a23c2c7c68ebb164af7cf21059cf79d349c3491f2ec1b002dd",
+      "native_accounting": 0.004177610328984275,
+      "native_error": 0.000001149080830487037,
+      "native_rows": 241,
+      "observation_rows": 201,
+      "observed_accounting": 0.005008637520081874,
+      "observed_error": 0.0000011406153799242702,
+      "snapshots": 2
+    },
+    "jit/line_32": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "e3cfbac53c735818b377091d5036abbd7316e6c1db2b667f6085216d49b67325",
+      "native_accounting": 0.014931465774175517,
+      "native_error": 0.0000011764200724684315,
+      "native_rows": 241,
+      "observation_rows": 201,
+      "observed_accounting": 0.013232024470470564,
+      "observed_error": 0.0000011454726056570053,
+      "snapshots": 2
+    },
+    "jit/line_8": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "7766cabfb3cfa88f4ce3472d8fe0951e4dc3be562f965c796e3887c5276f4a5a",
+      "native_accounting": 0.0013860009657449977,
+      "native_error": 0.0000011168843627729075,
+      "native_rows": 241,
+      "observation_rows": 201,
+      "observed_accounting": 0.0016472420770644518,
+      "observed_error": 0.0000010759448887398548,
+      "snapshots": 2
+    },
+    "jit/membrane_block_release": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "f4748f733f71e46c06d8ce47dde8ade933ab33e6a8025ea0029c04b5aacd20c5",
+      "native_accounting": 0.00038852784704125517,
+      "native_error": 0.0000013939960297193466,
+      "native_rows": 2403,
+      "observation_rows": 212,
+      "observed_accounting": 0.00030385785660169207,
+      "observed_error": 0.0000013717915692268434,
+      "snapshots": 2
+    },
+    "jit/membrane_short_pulse": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "0cbdc514f1d177e7f0e2cea2815c4b339d5545647a9a31e743a9e1c816ac17f2",
+      "native_accounting": 0.0003838004317483876,
+      "native_error": 4.665157149474908e-7,
+      "native_rows": 483,
+      "observation_rows": 210,
+      "observed_accounting": 0.0003758325395062504,
+      "observed_error": 4.665157149474908e-7,
+      "snapshots": 2
+    },
+    "jit/pure_bulk": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "9138da81dfb79a5c9865188a78f2f3c20a632e85b2aaa7889ef2bc1979c836cc",
+      "native_accounting": 0.00041114990673708974,
+      "native_error": 0.0000015996093338799255,
+      "native_rows": 2401,
+      "observation_rows": 202,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.000001573852159708622,
+      "snapshots": 2
+    },
+    "jit/single_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "74c6de595c9669c7fbb29c9c79cbe2ff61cc2fd38913153a4af03da9277811ec",
+      "native_accounting": 1.0097419586828951e-8,
+      "native_error": 1.3766765505351941e-8,
+      "native_rows": 1601,
+      "observation_rows": 209,
+      "observed_accounting": 1.0097419586828951e-8,
+      "observed_error": 1.3766765505351941e-8,
+      "snapshots": 2
+    },
+    "jit/ternary_loop": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "5f3937fc4819597056a241e19768affb7f53bbd5621cde228cb3cb11a7dd45d3",
+      "native_accounting": 0.0007482677186057178,
+      "native_error": 7.993605777301127e-8,
+      "native_rows": 801,
+      "observation_rows": 202,
+      "observed_accounting": 0.0007482677186057178,
+      "observed_error": 7.460698725481052e-8,
+      "snapshots": 2
+    },
+    "jit/two_cells_chain": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "bac86042ddf9f125cce165fe751f11f475910cd40c66bf7c2bd0b7d2ebb41706",
+      "native_accounting": 0.0005990338972993879,
+      "native_error": 3.144706717250756e-8,
+      "native_rows": 1601,
+      "observation_rows": 202,
+      "observed_accounting": 0.0005101115333316286,
+      "observed_error": 3.108624468950438e-8,
+      "snapshots": 2
+    },
+    "jit/uniform_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "af83785db2d568e627770bca2ff2ff391c80c09aa38101a3178323e65219aef4",
+      "native_accounting": 0.000010188557163972687,
+      "native_error": 2.3175905639050143e-8,
+      "native_rows": 1601,
+      "observation_rows": 202,
+      "observed_accounting": 0.000008159018713828892,
+      "observed_error": 2.1198320876436583e-8,
+      "snapshots": 2
+    },
+    "refined/binary_equal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "623d6f93a8ffc939a3b12557bee0b89b13ce4f1f71de216fa7e0556e20146eba",
+      "native_accounting": 0.03389916382185629,
+      "native_error": 9.769962616701378e-8,
+      "native_rows": 4801,
+      "observation_rows": 202,
+      "observed_accounting": 0.025685650689612025,
+      "observed_error": 9.769962616701378e-8,
+      "snapshots": 2
+    },
+    "refined/binary_unequal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "e8f40e81a83fca9cafd649c153de8511dd105be3fbfb39806f90d38449b823a2",
+      "native_accounting": 0.00043281157514217755,
+      "native_error": 1.341149413747189e-7,
+      "native_rows": 4801,
+      "observation_rows": 202,
+      "observed_accounting": 0.00034299966432847973,
+      "observed_error": 1.2967404927621828e-7,
+      "snapshots": 2
+    },
+    "refined/blocked_cell": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "a29c63209e020db16edc23b8dddad331607a09026936eb6f421e14023ccd697c",
+      "native_accounting": 0.00041114990673708974,
+      "native_error": 0.0000017577050925865478,
+      "native_rows": 4801,
+      "observation_rows": 202,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.0000017426060594516457,
+      "snapshots": 2
+    },
+    "refined/divalent": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "52aed958697b4eb84e342b94517fcd0df529e0a90b8e866f9273ba9e072156e4",
+      "native_accounting": 0.00036855578235360146,
+      "native_error": 3.222422328974517e-8,
+      "native_rows": 2401,
+      "observation_rows": 202,
+      "observed_accounting": 0.0003676804576804026,
+      "observed_error": 3.101685575046531e-8,
+      "snapshots": 2
+    },
+    "refined/line_16": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "09ee70cac4edbf86dc45cbd1c218167f48263938e61d4037992c227593f430a7",
+      "native_accounting": 0.0052858822917529824,
+      "native_error": 1.2254086634300165e-7,
+      "native_rows": 481,
+      "observation_rows": 201,
+      "observed_accounting": 0.005225880466985762,
+      "observed_error": 1.199040866595169e-7,
+      "snapshots": 2
+    },
+    "refined/line_32": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "38fe93736aaf386c913584a3db6809a2964954f2fdc72d35726db0959db6e159",
+      "native_accounting": 0.014711353222281457,
+      "native_error": 1.419697692739419e-7,
+      "native_rows": 481,
+      "observation_rows": 201,
+      "observed_accounting": 0.01548766564415206,
+      "observed_error": 1.3336554083309693e-7,
+      "snapshots": 2
+    },
+    "refined/line_8": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "653a7cd62f03ed463cae2d0cec11171ca67a3749ac02c9fcf70419f88360b911",
+      "native_accounting": 0.001704807196074626,
+      "native_error": 1.2087553180606392e-7,
+      "native_rows": 481,
+      "observation_rows": 201,
+      "observed_accounting": 0.0016571580601704705,
+      "observed_error": 9.194034422677078e-8,
+      "snapshots": 2
+    },
+    "refined/membrane_block_release": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "e06d876360436aa5675e9d0b34a11e37a807380400836357fc60b5221dcbfe88",
+      "native_accounting": 0.00048106350366566684,
+      "native_error": 0.0000013962164757685969,
+      "native_rows": 4803,
+      "observation_rows": 212,
+      "observed_accounting": 0.0003383919298889482,
+      "observed_error": 0.0000013713474800169934,
+      "snapshots": 2
+    },
+    "refined/membrane_short_pulse": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "70d34507425a6e0126282d49176f166390a2ec5805bbd57335904bd61381ec0f",
+      "native_accounting": 0.0003825741234745312,
+      "native_error": 4.674038933671909e-7,
+      "native_rows": 963,
+      "observation_rows": 210,
+      "observed_accounting": 0.0003758325395062504,
+      "observed_error": 4.674038933671909e-7,
+      "snapshots": 2
+    },
+    "refined/pure_bulk": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "9402d2aef75e98fd507fe8eda9cbbde9fb77fa7b8c8600c320435e4393d12534",
+      "native_accounting": 0.00041114990673708974,
+      "native_error": 0.0000015898393712632242,
+      "native_rows": 4801,
+      "observation_rows": 202,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.0000015649703755116207,
+      "snapshots": 2
+    },
+    "refined/single_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "04d619d52b14c91f5e2ee2e9024114f30743b366744b35887cb4239dbc265d2b",
+      "native_accounting": 1.0097419586828951e-8,
+      "native_error": 1.3739009929736312e-8,
+      "native_rows": 3201,
+      "observation_rows": 209,
+      "observed_accounting": 1.0097419586828951e-8,
+      "observed_error": 1.3739009929736312e-8,
+      "snapshots": 2
+    },
+    "refined/ternary_loop": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "ea9227af40b363c1bbe9aaee66ff3fe2db759abd2731ad81f0103f853413d71a",
+      "native_accounting": 0.0008669513862468033,
+      "native_error": 8.393286066166183e-8,
+      "native_rows": 1601,
+      "observation_rows": 202,
+      "observed_accounting": 0.0007484832450603715,
+      "observed_error": 7.72715225139109e-8,
+      "snapshots": 2
+    },
+    "refined/two_cells_chain": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "a39fd8bf1cfc4ca34b5324cdd4536834da640a569544c9b5ba88ddbe0e151d5d",
+      "native_accounting": 0.000588055805951712,
+      "native_error": 3.3306690738754696e-8,
+      "native_rows": 3201,
+      "observation_rows": 202,
+      "observed_accounting": 0.0005101115333316286,
+      "observed_error": 3.108624468950438e-8,
+      "snapshots": 2
+    },
+    "refined/uniform_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "a87c063a41c77d0706f577c45b2c5fae06e72ea8013964cc2af8d7855f15f8d8",
+      "native_accounting": 0.000010194975517849276,
+      "native_error": 2.425837308805967e-8,
+      "native_rows": 3201,
+      "observation_rows": 202,
+      "observed_accounting": 0.000008159018713828892,
+      "observed_error": 2.1239954239860026e-8,
+      "snapshots": 2
+    },
+    "resumed/binary_equal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "d5da6a7dc446b31e2bf136c0cb2863f361d8e91771402b5280db5f18ca74dbea",
+      "native_accounting": 0.024921505368493017,
+      "native_error": 6.88338275267597e-8,
+      "native_rows": 1201,
+      "observation_rows": 102,
+      "observed_accounting": 0.024921505368493017,
+      "observed_error": 6.661338147750939e-8,
+      "snapshots": 1
+    },
+    "resumed/binary_unequal": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "e0d57adbfacfe58e0e59431046ebadc900ee5c0ece89e0adf11719b0d0b3c9eb",
+      "native_accounting": 0.0005043155308290515,
+      "native_error": 1.3322676295501878e-7,
+      "native_rows": 1201,
+      "observation_rows": 102,
+      "observed_accounting": 0.0002729815542777801,
+      "observed_error": 1.305622276959184e-7,
+      "snapshots": 1
+    },
+    "resumed/blocked_cell": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "fa669d85ea0645693964aaac159e1a3a9b42b0faeed7991a0ec181764e548912",
+      "native_accounting": 0.0002717988618981936,
+      "native_error": 0.000001737276988933445,
+      "native_rows": 1201,
+      "observation_rows": 102,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.0000017363888105137448,
+      "snapshots": 1
+    },
+    "resumed/divalent": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "5bc614a1c3cec531ef3fb0e6ab7478f1d260f7669c74574d4c428e28f96ea891",
+      "native_accounting": 0.00034958383243695275,
+      "native_error": 3.2210345501937354e-8,
+      "native_rows": 601,
+      "observation_rows": 102,
+      "observed_accounting": 0.00034958383243695275,
+      "observed_error": 3.096134459923405e-8,
+      "snapshots": 1
+    },
+    "resumed/line_16": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "77e9255fbcca093d62ae8b6034929e1aa4018e773fe293e9cd620fdef8150612",
+      "native_accounting": 0.0037985239110354496,
+      "native_error": 0.000001149080830487037,
+      "native_rows": 121,
+      "observation_rows": 101,
+      "observed_accounting": 0.0034792126651582438,
+      "observed_error": 0.0000011406153799242702,
+      "snapshots": 1
+    },
+    "resumed/line_32": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "16fd10fe3a653660130e96070e65b8d60546a7f268c1151cba78dca6f235b565",
+      "native_accounting": 0.014931465774175517,
+      "native_error": 0.0000011764200724684315,
+      "native_rows": 121,
+      "observation_rows": 101,
+      "observed_accounting": 0.011737002775387756,
+      "observed_error": 0.0000011454726056570053,
+      "snapshots": 1
+    },
+    "resumed/line_8": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "5b093a8d03e35ffa4e5bd61bed5c6f47e4ccc4745034e1f75e617e6f22b55442",
+      "native_accounting": 0.0013860009657449977,
+      "native_error": 0.0000011168843627729075,
+      "native_rows": 121,
+      "observation_rows": 101,
+      "observed_accounting": 0.0016472420770644518,
+      "observed_error": 0.0000010759448887398548,
+      "snapshots": 1
+    },
+    "resumed/membrane_block_release": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "6c606c633a98ee02063cdaf5998f031cdc57707749d65349b487837da8592fee",
+      "native_accounting": 0.00037412335789972334,
+      "native_error": 0.0000013744561044859438,
+      "native_rows": 1202,
+      "observation_rows": 105,
+      "observed_accounting": 0.00027774690905945124,
+      "observed_error": 0.0000013717915692268434,
+      "snapshots": 1
+    },
+    "resumed/membrane_short_pulse": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "72fe9d78cc7e9cfdd5eb5c2c17a037e6801594108b80ffd0d35f277d698c9c3d",
+      "native_accounting": 0.0003838004317483876,
+      "native_error": 4.665157149474908e-7,
+      "native_rows": 242,
+      "observation_rows": 102,
+      "observed_accounting": 0.0003079799947806697,
+      "observed_error": 4.665157149474908e-7,
+      "snapshots": 1
+    },
+    "resumed/pure_bulk": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "a9e6a54c556c86f37473d8fc5a580fd1568de527cc564b6ee0a40f449f599ab7",
+      "native_accounting": 0.0002717988618981936,
+      "native_error": 0.0000015996093338799255,
+      "native_rows": 1201,
+      "observation_rows": 102,
+      "observed_accounting": 0.0002570013596602826,
+      "observed_error": 0.000001573852159708622,
+      "snapshots": 1
+    },
+    "resumed/single_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "c384c9abd6d951502eaf6c786ef104756e7b1c8cb529bc7fe1f0d958c9d39ef5",
+      "native_accounting": 1.0097419586828951e-8,
+      "native_error": 1.3766765505351941e-8,
+      "native_rows": 801,
+      "observation_rows": 105,
+      "observed_accounting": 1.0097419586828951e-8,
+      "observed_error": 1.3766765505351941e-8,
+      "snapshots": 1
+    },
+    "resumed/ternary_loop": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "d558074a3665be7bc7583b70d267353c91ba5f023668dedd5510267c66a4b58b",
+      "native_accounting": 0.0006795776504287544,
+      "native_error": 7.993605777301127e-8,
+      "native_rows": 401,
+      "observation_rows": 102,
+      "observed_accounting": 0.0005830199610728404,
+      "observed_error": 7.460698725481052e-8,
+      "snapshots": 1
+    },
+    "resumed/two_cells_chain": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "ebdd7c8c270452a8491231edc035fc3317066d3bdbd8631bd3ab99269df6cacb",
+      "native_accounting": 0.0005990338972993879,
+      "native_error": 3.144706717250756e-8,
+      "native_rows": 801,
+      "observation_rows": 102,
+      "observed_accounting": 0.0004586051931077567,
+      "observed_error": 3.108624468950438e-8,
+      "snapshots": 1
+    },
+    "resumed/uniform_outside": {
+      "dense_domain_pass": true,
+      "independent_readout_fields": 26,
+      "manifest_sha256": "4c38971df357abcaa938e63e3e991fd69b456da2b31a901637abf0524dc34229",
+      "native_accounting": 0.000010188557163972687,
+      "native_error": 2.3175905639050143e-8,
+      "native_rows": 801,
+      "observation_rows": 102,
+      "observed_accounting": 0.000008159018713828892,
+      "observed_error": 2.1198320876436583e-8,
+      "snapshots": 1
+    }
+  },
+  "scope": "Supplemental read-only audit of completed non-eager subset only; not full acceptance or release",
+  "session": "runs/core-010-2026-09-11/acceptance-01",
+  "source_hashes": {
+    "__init__.py": "dbd3c441da86faa24d68684318e19b07b44d789dc915cad7890e932c940a5cf5",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "da7cfaa5c553977caae3aa7572cf074d069db5bb2f48b175ebb4d8e96ce2f0b9",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "core/specs.py": "6c06418d8dbfe23ea8044fa5a61a8386d079099b9489fa2d7e4d69658299dadf",
+    "core/state.py": "4f1c4b7456109a6acf7f47a1b2c3cda80c9bd125c58e302392b4496d907fef37",
+    "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "ad830d54bf5c5b4f77c66b5ca451d0103c06a345406e0e8f1c06e37a5ed17677",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/extracellular_field.py": "3edc539c2141930bb26a402802c2750b06c4891e87f3bf02cad7ced2559601a4",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "status": "pass",
+  "streams": {
+    "cohort-resumed/divalent": {
+      "structure": {
+        "accepted_records": 689,
+        "cohort_snapshots": 2,
+        "exact_payload_arrays": 400,
+        "manifest_sha256": "80deb01767773bdc3c2ec5298521297a27b433b1de2a9a95902aed73996eae81",
+        "observation_records": 116,
+        "payload_hashes": 19,
+        "rounds": 10,
+        "scalar_snapshots": 2,
+        "windows": 10,
+        "worlds": 1
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00034958383243695275,
+          "native_error": 3.2210345501937354e-8,
+          "native_rows": 689,
+          "observation_rows": 116,
+          "observed_accounting": 0.00034958383243695275,
+          "observed_error": 3.096134459923405e-8
+        }
+      }
+    },
+    "cohort-resumed/membrane": {
+      "structure": {
+        "accepted_records": 5959,
+        "cohort_snapshots": 2,
+        "exact_payload_arrays": 3320,
+        "manifest_sha256": "d3e5604047e3b0a5857c158f6cbb1946a16bc9e46cdd8640877d3b00d405ed44",
+        "observation_records": 606,
+        "payload_hashes": 108,
+        "rounds": 26,
+        "scalar_snapshots": 10,
+        "windows": 83,
+        "worlds": 5
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 1.0097419586828951e-8,
+          "native_error": 1.3766765505351941e-8,
+          "native_rows": 1089,
+          "observation_rows": 142,
+          "observed_accounting": 1.0097419586828951e-8,
+          "observed_error": 1.3766765505351941e-8
+        },
+        "2": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0005990338972993879,
+          "native_error": 3.144706717250756e-8,
+          "native_rows": 1089,
+          "observation_rows": 138,
+          "observed_accounting": 0.0004586051931077567,
+          "observed_error": 3.108624468950438e-8
+        },
+        "3": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00038852784704125517,
+          "native_error": 0.0000013939960297193466,
+          "native_rows": 1891,
+          "observation_rows": 166,
+          "observed_accounting": 0.00027774690905945124,
+          "observed_error": 0.0000013717915692268434
+        },
+        "4": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00015421907564932362,
+          "native_error": 8.326672684688674e-9,
+          "native_rows": 1,
+          "observation_rows": 1,
+          "observed_accounting": 0.00015421907564932362,
+          "observed_error": 8.326672684688674e-9
+        },
+        "5": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00041114990673708974,
+          "native_error": 0.0000015996093338799255,
+          "native_rows": 1889,
+          "observation_rows": 159,
+          "observed_accounting": 0.0002570013596602826,
+          "observed_error": 0.000001573852159708622
+        }
+      }
+    },
+    "cohort-resumed/mesh": {
+      "structure": {
+        "accepted_records": 339,
+        "cohort_snapshots": 2,
+        "exact_payload_arrays": 240,
+        "manifest_sha256": "14987f2fd4d3b6a2fe3731d34aee0433cff26f0905911914bcfbd90028753cc2",
+        "observation_records": 282,
+        "payload_hashes": 23,
+        "rounds": 2,
+        "scalar_snapshots": 6,
+        "windows": 6,
+        "worlds": 3
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0013860009657449977,
+          "native_error": 0.0000011168843627729075,
+          "native_rows": 113,
+          "observation_rows": 94,
+          "observed_accounting": 0.0016472420770644518,
+          "observed_error": 0.0000010759448887398548
+        },
+        "2": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0037985239110354496,
+          "native_error": 0.000001149080830487037,
+          "native_rows": 113,
+          "observation_rows": 94,
+          "observed_accounting": 0.0034792126651582438,
+          "observed_error": 0.0000011406153799242702
+        },
+        "3": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.014931465774175517,
+          "native_error": 0.0000011764200724684315,
+          "native_rows": 113,
+          "observation_rows": 94,
+          "observed_accounting": 0.011737002775387756,
+          "observed_error": 0.0000011454726056570053
+        }
+      }
+    },
+    "cohort-resumed/ternary": {
+      "structure": {
+        "accepted_records": 289,
+        "cohort_snapshots": 2,
+        "exact_payload_arrays": 160,
+        "manifest_sha256": "87d174f14991256a759d1d3efddf59618f7f23c47f168954cdd104d012e35aeb",
+        "observation_records": 74,
+        "payload_hashes": 13,
+        "rounds": 4,
+        "scalar_snapshots": 2,
+        "windows": 4,
+        "worlds": 1
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0006795776504287544,
+          "native_error": 7.993605777301127e-8,
+          "native_rows": 289,
+          "observation_rows": 74,
+          "observed_accounting": 0.0005830199610728404,
+          "observed_error": 7.460698725481052e-8
+        }
+      }
+    },
+    "cohorts/divalent": {
+      "structure": {
+        "accepted_records": 1201,
+        "cohort_snapshots": 4,
+        "exact_payload_arrays": 400,
+        "manifest_sha256": "c89fbf71f6e4e8903bcfc647270d10e6968c0398bf53ef5f8f418e2e0cb4c300",
+        "observation_records": 202,
+        "payload_hashes": 21,
+        "rounds": 10,
+        "scalar_snapshots": 4,
+        "windows": 10,
+        "worlds": 1
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00034958383243695275,
+          "native_error": 3.2210345501937354e-8,
+          "native_rows": 1201,
+          "observation_rows": 202,
+          "observed_accounting": 0.00034958383243695275,
+          "observed_error": 3.096134459923405e-8
+        }
+      }
+    },
+    "cohorts/membrane": {
+      "structure": {
+        "accepted_records": 8489,
+        "cohort_snapshots": 6,
+        "exact_payload_arrays": 2720,
+        "manifest_sha256": "1b24a89db223ea8b0d6c9a3267125a79b95cdb4af092964d42084179cb46f91f",
+        "observation_records": 1035,
+        "payload_hashes": 97,
+        "rounds": 19,
+        "scalar_snapshots": 30,
+        "windows": 68,
+        "worlds": 5
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 1.0097419586828951e-8,
+          "native_error": 1.3766765505351941e-8,
+          "native_rows": 1601,
+          "observation_rows": 209,
+          "observed_accounting": 1.0097419586828951e-8,
+          "observed_error": 1.3766765505351941e-8
+        },
+        "2": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0005990338972993879,
+          "native_error": 3.144706717250756e-8,
+          "native_rows": 1601,
+          "observation_rows": 202,
+          "observed_accounting": 0.0005101115333316286,
+          "observed_error": 3.108624468950438e-8
+        },
+        "3": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00038852784704125517,
+          "native_error": 0.0000013939960297193466,
+          "native_rows": 2403,
+          "observation_rows": 212,
+          "observed_accounting": 0.00030385785660169207,
+          "observed_error": 0.0000013717915692268434
+        },
+        "4": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0003838004317483876,
+          "native_error": 4.665157149474908e-7,
+          "native_rows": 483,
+          "observation_rows": 210,
+          "observed_accounting": 0.0003758325395062504,
+          "observed_error": 4.665157149474908e-7
+        },
+        "5": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00041114990673708974,
+          "native_error": 0.0000015996093338799255,
+          "native_rows": 2401,
+          "observation_rows": 202,
+          "observed_accounting": 0.0002570013596602826,
+          "observed_error": 0.000001573852159708622
+        }
+      }
+    },
+    "cohorts/mesh": {
+      "structure": {
+        "accepted_records": 723,
+        "cohort_snapshots": 3,
+        "exact_payload_arrays": 960,
+        "manifest_sha256": "e553f9adab82b58503ed456d1f500406ee11ec1e4ac17a02e94d3151bbfd83b3",
+        "observation_records": 603,
+        "payload_hashes": 42,
+        "rounds": 8,
+        "scalar_snapshots": 9,
+        "windows": 24,
+        "worlds": 3
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0013860009657449977,
+          "native_error": 0.0000011168843627729075,
+          "native_rows": 241,
+          "observation_rows": 201,
+          "observed_accounting": 0.0016472420770644518,
+          "observed_error": 0.0000010759448887398548
+        },
+        "2": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.004177610328984275,
+          "native_error": 0.000001149080830487037,
+          "native_rows": 241,
+          "observation_rows": 201,
+          "observed_accounting": 0.005008637520081874,
+          "observed_error": 0.0000011406153799242702
+        },
+        "3": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.014931465774175517,
+          "native_error": 0.0000011764200724684315,
+          "native_rows": 241,
+          "observation_rows": 201,
+          "observed_accounting": 0.013232024470470564,
+          "observed_error": 0.0000011454726056570053
+        }
+      }
+    },
+    "cohorts/ternary": {
+      "structure": {
+        "accepted_records": 801,
+        "cohort_snapshots": 3,
+        "exact_payload_arrays": 280,
+        "manifest_sha256": "e095e53a1cb5f5cc33f8cc64b0de591e1131aa240c8d629d8db24e6d66bac232",
+        "observation_records": 202,
+        "payload_hashes": 17,
+        "rounds": 7,
+        "scalar_snapshots": 3,
+        "windows": 7,
+        "worlds": 1
+      },
+      "worlds": {
+        "1": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0007482677186057178,
+          "native_error": 7.993605777301127e-8,
+          "native_rows": 801,
+          "observation_rows": 202,
+          "observed_accounting": 0.0007482677186057178,
+          "observed_error": 7.460698725481052e-8
+        }
+      }
+    },
+    "windows/divalent": {
+      "structure": {
+        "accepted_records": 1201,
+        "manifest_sha256": "b151287a75949d935ca29c86fb76c9fe545ef721acaed8f1ed1163d134e6d4c1",
+        "observation_records": 202,
+        "payload_hashes": 17,
+        "snapshots": 2,
+        "windows": 10
+      },
+      "worlds": {
+        "0": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00034958383243695275,
+          "native_error": 3.2210345501937354e-8,
+          "native_rows": 1201,
+          "observation_rows": 202,
+          "observed_accounting": 0.00034958383243695275,
+          "observed_error": 3.096134459923405e-8
+        }
+      }
+    },
+    "windows/membrane": {
+      "structure": {
+        "accepted_records": 2403,
+        "manifest_sha256": "b1ae6d072a92023696344314e5116c0543b57572f6c898104043ac963d24382d",
+        "observation_records": 212,
+        "payload_hashes": 26,
+        "snapshots": 2,
+        "windows": 19
+      },
+      "worlds": {
+        "0": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.00038852784704125517,
+          "native_error": 0.0000013939960297193466,
+          "native_rows": 2403,
+          "observation_rows": 212,
+          "observed_accounting": 0.00030385785660169207,
+          "observed_error": 0.0000013717915692268434
+        }
+      }
+    },
+    "windows/mesh": {
+      "structure": {
+        "accepted_records": 241,
+        "manifest_sha256": "49169d54632ed0b4210daee04118bf15dd3ec78b49ceb211ed392581f3e33e6b",
+        "observation_records": 201,
+        "payload_hashes": 9,
+        "snapshots": 2,
+        "windows": 2
+      },
+      "worlds": {
+        "0": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.014931465774175517,
+          "native_error": 0.0000011764200724684315,
+          "native_rows": 241,
+          "observation_rows": 201,
+          "observed_accounting": 0.013232024470470564,
+          "observed_error": 0.0000011454726056570053
+        }
+      }
+    },
+    "windows/ternary": {
+      "structure": {
+        "accepted_records": 801,
+        "manifest_sha256": "aab762c8cb6dbb7d99e7210d7483255ad7a950467ebb857a3ef56e24e30ee674",
+        "observation_records": 202,
+        "payload_hashes": 14,
+        "snapshots": 2,
+        "windows": 7
+      },
+      "worlds": {
+        "0": {
+          "dense_domain_pass": true,
+          "independent_readout_fields": 26,
+          "native_accounting": 0.0007482677186057178,
+          "native_error": 7.993605777301127e-8,
+          "native_rows": 801,
+          "observation_rows": 202,
+          "observed_accounting": 0.0007482677186057178,
+          "observed_error": 7.460698725481052e-8
+        }
+      }
+    }
+  },
+  "trajectory_solver_calls": 0
+}

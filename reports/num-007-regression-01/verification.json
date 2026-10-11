@@ -1,0 +1,52 @@
+{
+  "contexts": {
+    "current-production": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "09ae7d7fd4a66af1869e19f5e920bd62a7b07217904ce87b1142bc6362d48142",
+      "log_sha256": "69fa71137a08fe31fcebb4a0f395a1074086712d3f312739c684247edb3b9823",
+      "seconds": 566.839,
+      "skipped": 0,
+      "tests": 1799
+    },
+    "preserved-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "33e4280a317ca973e7a58599a0af60f379b649e9b4f077f50ced6171adbc6d68",
+      "log_sha256": "c002d9b248ab5775f7530db8cb86326196a34790e55dbfdcd3037296f9d8b886",
+      "seconds": 155.34,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "driver_sha256": "7b5d63d8ab3042a5b4672d83e5e4e51919b3eeacb54a4e5086b46c99f24bd8b9",
+  "historical_test_files": [
+    "tests/unit/test_comparison_evidence.py",
+    "tests/unit/test_graph_candidate.py",
+    "tests/unit/test_graph_diagnostics.py",
+    "tests/unit/test_graph_evaluation.py",
+    "tests/unit/test_graph_evidence.py",
+    "tests/unit/test_graph_reference_panel.py",
+    "tests/unit/test_graph_refinement.py",
+    "tests/unit/test_source_graph_continuation.py",
+    "tests/unit/test_source_graph_paths.py",
+    "tests/unit/test_source_preparations.py"
+  ],
+  "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+  "status": "pass",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "total_tests": 2770
+}

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="15" skipped="0" tests="79" time="59.957" timestamp="2026-09-10T15:45:35.877223+00:00" hostname="eidosoma-vm-2"><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[single_mono]" time="0.015"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='single_mono', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='cell_0'...l(time_s=0, value=Control(leak=((1, 1, 1),), pump=(1,), channel=(1,), junction=())),), independent_cell_reduction=True)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[single_divalent]" time="0.005"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='single_divalent', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl', 'Ca'), valence=(1, 1, -1, 2), cel...ime_s=0, value=Control(leak=((1, 1, 1, 1),), pump=(1,), channel=(1,), junction=())),), independent_cell_reduction=True)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[disconnected_mono]" time="0.007"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='disconnected_mono', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='c...ak=((1, 1, 1), (1, 1, 1), (1, 1, 1)), pump=(1, 1, 1), channel=(1, 1), junction=())),), independent_cell_reduction=True)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[pair_mono]" time="0.006"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='pair_mono', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='cell_0', ...=Control(leak=((1, 1, 1), (1, 1, 1)), pump=(1, 1), channel=(1, 1), junction=(1,))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[pair_divalent]" time="0.006"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='pair_divalent', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl', 'Ca'), valence=(1, 1, -1, 2), cell_...ol(leak=((1, 1, 1, 1), (1, 1, 1, 1)), pump=(1, 1), channel=(1, 1), junction=(1,))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_mono]" time="0.007"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_mono', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='cell_0', ...1, 1, 1), (1, 1, 1), (1, 1, 1)), pump=(1, 1, 1), channel=(1, 1), junction=(1, 1))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_divalent]" time="0.007"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_divalent', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl', 'Ca'), valence=(1, 1, -1, 2), cell_...1), (1, 1, 1, 1), (1, 1, 1, 1)), pump=(1, 1, 1), channel=(1, 1), junction=(1, 1))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[pair_mono_internal]" time="0.006"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='pair_mono_internal', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='...=Control(leak=((0, 0, 0), (0, 0, 0)), pump=(0, 0), channel=(0, 0), junction=(1,))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_mono_internal]" time="0.007"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_mono_internal', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_id='...0, 0, 0), (0, 0, 0), (0, 0, 0)), pump=(0, 0, 0), channel=(0, 0), junction=(1, 1))),), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_mono_block_release]" time="0.008"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_mono_block_release', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell...(0, 0, 0), (0, 0, 0), (0, 0, 0)), pump=(0, 0, 0), channel=(0, 0), junction=(0, 0)))), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_divalent_block_release]" time="0.009"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_divalent_block_release', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl', 'Ca'), valence=(1, 1,... 0), (0, 0, 0, 0), (0, 0, 0, 0)), pump=(0, 0, 0), channel=(0, 0), junction=(0, 0)))), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_strict_roundtrip_and_independent_complete_stage[star_mono_short_pulse]" time="0.008"><failure message="AttributeError: 'Instantaneous' object has no attribute 'derivative'">case = Case(id='star_mono_short_pulse', graph=Graph(cells=(Resolved(species_ids=('Na', 'K', 'Cl'), valence=(1, 1, -1), cell_i...(0, 0, 0), (0, 0, 0), (0, 0, 0)), pump=(0, 0, 0), channel=(0, 0), junction=(0, 0)))), independent_cell_reduction=False)
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+    def test_strict_roundtrip_and_independent_complete_stage(case):
+        spec = spec_for(case)
+        assert parse_spec(spec.to_dict()) == spec
+        state, layout = model.initial_values(spec)
+        assert len(state) == 9 and all(v.dtype == np.float64 for v in state)
+        assert len(set(state._fields + layout._fields)) == len(state) + len(layout)
+        assert state.amount.shape == (len(case.graph.species_ids), 4)
+        assert state.leak_transferred.shape[-1] == 5
+        assert state.gate.shape == (2, 3) and state.junction_gate.shape == (4,)
+        initialise(spec)
+        control = PhysicalIonicGraphControl(*(v[0] for v in control_values(spec, [0])))
+        expected = case.layout.pack(
+            reference.evaluate(
+                case.graph, reference.initial_state(case.graph), case.controls[0].value
+&gt;           ).derivative
+              ^^^^^^^^^^
+        )
+E       AttributeError: 'Instantaneous' object has no attribute 'derivative'
+
+tests/unit/test_physical_ionic_graph.py:58: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[single_mono]" time="3.200" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[single_divalent]" time="3.154" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[disconnected_mono]" time="0.087" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[pair_mono]" time="3.322" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[pair_divalent]" time="3.274" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_mono]" time="0.149" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_divalent]" time="0.158" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[pair_mono_internal]" time="0.122" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_mono_internal]" time="0.129" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_mono_block_release]" time="3.448" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_divalent_block_release]" time="3.429" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_frozen_full_trajectories_match_saved_reference[star_mono_short_pulse]" time="3.252" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path0-voltage_gated_membrane@1]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path1-value1]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path2-cell_0]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path3-membrane_0]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path4-value4]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path5-channel_0]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path6-missing]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path7-cell_0]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path8-0]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path9-1e+308]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path10--1]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path11-1.01]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path12-True]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path13-other]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path14-0]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path15-1e-320]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path16-1e+308]" time="0.002"><failure message="Failed: DID NOT RAISE ConfigError">path = ('model', 'junctions', 0, 'gate', 'sensitivity_per_V'), value = 1e+308
+
+    @pytest.mark.parametrize(
+        "path,value",
+        [
+            (("model", "id"), "voltage_gated_membrane@1"),
+            (("model", "cells"), []),
+            (("model", "cells", 1, "cell", "id"), "cell_0"),
+            (("model", "cells", 1, "membrane", "id"), "membrane_0"),
+            (("model", "cells", 2, "channel"), {}),
+            (("model", "junctions", 0, "id"), "channel_0"),
+            (("model", "junctions", 0, "from_cell"), "missing"),
+            (("model", "junctions", 0, "to_cell"), "cell_0"),
+            (("model", "junctions", 0, "area_m2"), 0),
+            (("model", "junctions", 0, "area_m2"), 1e308),
+            (("model", "junctions", 0, "permeability_m_per_s", "Ca"), -1),
+            (("model", "junctions", 0, "residual_fraction", "Ca"), 1.01),
+            (("model", "junctions", 0, "residual_fraction", "K"), True),
+            (("model", "junctions", 0, "gate", "law"), "other"),
+            (("model", "junctions", 0, "gate", "tau_s"), 0),
+            (("model", "junctions", 0, "gate", "tau_s"), 1e-320),
+            (("model", "junctions", 0, "gate", "sensitivity_per_V"), 1e308),
+            (("model", "junctions", 0, "gate", "initial_gate"), 1.01),
+            (("model", "junctions", 0, "gate", "initial_gate"), float("nan")),
+            (("model", "junctions", 0, "gate", "repair"), True),
+            (("execution", "capacity"), 2),
+            (("execution", "membrane_capacity"), 2),
+            (("execution", "channel_capacity"), 1),
+            (("execution", "edge_capacity"), 1),
+            (("execution", "edge_capacity"), True),
+            (("execution", "backend"), "gpu"),
+            (("experiment", "junction_controls"), []),
+            (("experiment", "channel_controls"), []),
+            (("experiment", "membrane_controls"), []),
+            (("experiment", "junction_controls", 0, "junction_id"), "missing"),
+            (("experiment", "junction_controls", 0, "schedule"), []),
+            (("experiment", "junction_controls", 0, "schedule", 0, "time"), 0.001),
+            (("experiment", "junction_controls", 0, "schedule", 0, "open_fraction"), 1.1),
+            (("experiment", "junction_controls", 0, "schedule", 0, "open_fraction"), False),
+        ],
+    )
+    def test_invalid_definition_refused(path, value):
+        raw = definition(short())
+        node = raw
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = value
+&gt;       with pytest.raises(ConfigError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ConfigError
+
+tests/unit/test_physical_ionic_graph.py:133: Failed</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path17-1.01]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path18-nan]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path19-True]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path20-2]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path21-2]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path22-1]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path23-1]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path24-True]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path25-gpu]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path26-value26]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path27-value27]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path28-value28]" time="0.001" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path29-missing]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path30-value30]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path31-0.001]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path32-1.1]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_definition_refused[path33-False]" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_duplicate_edges_and_schedules_refused" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_python_spec_does_not_drop_inconsistent_bath_or_axes" time="0.002" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_absent_channels_edges_and_pumps_are_supported[False]" time="2.065" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_absent_channels_edges_and_pumps_are_supported[True]" time="3.244" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_edge_orientation_and_order_preserve_amount_rates" time="0.011" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[amount]" time="0.004" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[leak_transferred]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[pump_cycles]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[dissipated_energy_pJ]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[gate]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[channel_transferred]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[junction_gate]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[junction_transferred]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_every_padding_state_leaf_is_guarded[junction_dissipated_energy_pJ]" time="0.003" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_real_state_cannot_be_accepted[gate]" time="0.012" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_real_state_cannot_be_accepted[junction_gate]" time="0.013" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_invalid_real_state_cannot_be_accepted[amount]" time="0.012" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_independent_controls_and_all_off_gates" time="0.004" /><testcase classname="tests.unit.test_physical_ionic_graph" name="test_full_state_restart_branch_windows_and_eager" time="18.250"><failure message="AttributeError: 'WindowPlan' object has no attribute 'to_dict'">tmp_path = PosixPath('/tmp/pytest-of-robert/pytest-357/test_full_state_restart_branch0')
+
+    def test_full_state_restart_branch_windows_and_eager(tmp_path):
+        case = short("star_mono", end=0.008)
+        spec = spec_for(case, samples=[0, 0.0013, 0.002, 0.0051, 0.008])
+        result = run(spec)
+        cp = result.checkpoint_at(0.002)
+        write_snapshot(tmp_path / "snapshot", spec, cp)
+        saved = load_snapshot(tmp_path / "snapshot")
+        resumed = run(saved.spec, saved.checkpoint)
+        for a, b in zip(result.history, resumed.history, strict=True):
+            np.testing.assert_array_equal(a[1:], b)
+        future = (ContactChange(0, 1), ContactChange(0.002, 0))
+        changed = replace(
+            spec, experiment=replace(spec.experiment, junctions=(future, spec.experiment.junctions[1]))
+        )
+        branched = run(changed, branch_checkpoint(spec, cp, changed))
+        for a, b in zip(cp.state, branched.history, strict=True):
+            np.testing.assert_array_equal(a, b[0])
+        assert not np.array_equal(branched.history.amount[-1], result.history.amount[-1])
+        eager = run(replace(spec, execution=replace(spec.execution, jit=False)))
+        for a, b in zip(result.history, eager.history, strict=True):
+            np.testing.assert_allclose(a, b, atol=1e-12, rtol=1e-11)
+&gt;       windows = list(iter_windows(plan_windows(spec, WindowPolicy(2, "full"))))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_physical_ionic_graph.py:266: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/cells/core/windows.py:139: in iter_windows
+    return _iter_windows(plan_windows(spec, policy, checkpoint), checkpoint)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/cells/core/windows.py:93: in plan_windows
+    plan = _plan_windows_metadata(spec, policy, checkpoint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec = WindowPlan(spec=SimulationSpec(model=PhysicalIonicGraphSpec(cells=(MultispeciesSpec(species_ids=('Na', 'K', 'Cl'), val...inal=3, extras=(), extra_indices=()), start_step=0, window_count=2, max_observations=3, estimated_working_bytes=437504)
+policy = WindowPolicy(window_steps=256, recording='observations')
+checkpoint = None
+
+    def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
+&gt;       spec = parse_spec(spec.to_dict())
+                          ^^^^^^^^^^^^
+E       AttributeError: 'WindowPlan' object has no attribute 'to_dict'
+
+src/cells/core/windows.py:50: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_heterogeneous_worlds_equal_capacity_and_resources" time="3.653"><failure message="AttributeError: 'int' object has no attribute 'spec'">def test_heterogeneous_worlds_equal_capacity_and_resources():
+        specs = [spec_for(short(name)) for name in ("single_mono", "disconnected_mono", "star_mono")]
+        batch = BatchSpec(tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs)), 3, 1000, 2**28)
+        result = run_batch(batch)
+        for w in result.worlds:
+&gt;           scalar = run(w.spec)
+                         ^^^^^^
+E           AttributeError: 'int' object has no attribute 'spec'
+
+tests/unit/test_physical_ionic_graph.py:279: AttributeError</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph" name="test_trial_and_cubic_gate_rejection" time="7.870" /></testsuite></testsuites>

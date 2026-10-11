@@ -1,0 +1,74 @@
+{
+  "child_receipts_sha256": {
+    "current": "f0c1d5c2812c7040f17e5f7b278d4016d3dc10ed5bcaf79547d1c7e9932fe4b5",
+    "finite-reference": "e7b507bfd56a2ddab1d85fd46682f2b59a0f01c15924c469a1738b5d04ada66c",
+    "historical": "133a8338a3e8ef8c15dd4082e0b8fbb0690eaa9704413adcb90edc6514344336"
+  },
+  "contexts": {
+    "current-production": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "f521d7523d78944d7d0fe38cab678746b48ddcfc09b7abcbf703cd0e6586263b",
+      "log_sha256": "160abdeb191a791d920975e051c03f8130d9f78ae1c59f9328ab7db83ae55de6",
+      "seconds": 950.038,
+      "skipped": 0,
+      "tests": 1969
+    },
+    "preserved-channel-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "9b445c4e061e980b40736a0907e2e8133b09870077e4c61c66afd3d99ced365e",
+      "log_sha256": "0f37e211bf82ca488305e0aa2cd98116945d2aa3e31b854a8f28cd3b8e2ee8dc",
+      "seconds": 19.43,
+      "skipped": 0,
+      "tests": 205
+    },
+    "preserved-finite-reference": {
+      "errors": 0,
+      "exit_code": 1,
+      "failures": 2,
+      "junit_sha256": "64a911a32a4dac632382f5e376f031e51c40fd572f078615a1c9964071e7666e",
+      "log_sha256": "e0660750c6d9d8a177012a6dde790e96d1d5f27c31553699867fd671285be6f2",
+      "seconds": 59.514,
+      "skipped": 0,
+      "tests": 256
+    },
+    "preserved-physical-graph-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "fb3cc22bf60babc7b39418e67fe059a9d07e02b34004811d3bf1f0ee259d414a",
+      "log_sha256": "7e369c4a484962e5aae6f1cc7d8dcdb0478df52efc497df70b27652e970401c3",
+      "seconds": 16.39,
+      "skipped": 0,
+      "tests": 213
+    },
+    "preserved-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "c9ddbba38acf6a953c2167451cb0b1254a104fe8fdb31d6274888e361e0aa55c",
+      "log_sha256": "fe1d5b0742b8dd69d6f5da8aa758b4e898fe547b07027ad7a44d9ea8cae87ec8",
+      "seconds": 168.715,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "current_pytest_addopts": "--ignore=tests/unit/test_finite_extracellular_reference.py --ignore=tests/unit/test_finite_extracellular_dynamics.py --ignore=tests/unit/test_finite_extracellular_attempt_audit.py --ignore=tests/unit/test_finite_extracellular_tangent.py --ignore=tests/unit/test_finite_extracellular_artifact_audit_v2.py --ignore=tests/unit/test_finite_extracellular_test_context.py --ignore=tests/unit/test_finite_extracellular_artifact_audit.py",
+  "driver_sha256": "bf69c8a93e1c629acdb853fded69e07779b006c340e27ddc4cd4f109de512235",
+  "historical_pytest_addopts": null,
+  "preserved_finite_source_sha256": "73b152cfbeb016c9d842753fda21620f53fe8449a5fceb01f6cd6bac30dd9a15",
+  "schema": "cells.finite_extracellular_production_build_matrix@1",
+  "status": "failed",
+  "total_tests": 3614,
+  "underlying_driver_sha256": "4102a34c4d31e2599ee40b684e31af4f5598a5b6f61b13fc8b39189169d15b99",
+  "unexecuted_prospective_suite": {
+    "file": "tests/unit/test_finite_extracellular_artifact_audit.py",
+    "maintained_replacement": "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+    "reason": "V1 stopped without complete evidence; these are not passing coverage.",
+    "sha256": "43c3726befed5985cc763fa6d4519b6e6bf23d2c3dd1ee15126dc9e593d2858f",
+    "tests": 13
+  }
+}

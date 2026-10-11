@@ -1,0 +1,47 @@
+{
+  "accounting": {
+    "charge_residual_C": 2.6016001565464793e-25,
+    "dissipation_decrease_pJ": 0,
+    "energy_residual_pJ": 5.240252676230739e-14,
+    "material_residual_fmol": 3.1086244689504383e-15,
+    "maximum_current_normalized": 0.0005043155308290515,
+    "maximum_normalized_residual": 0.0005043155308290515,
+    "minimum_amount_fmol": 10,
+    "pass": true
+  },
+  "all_suffix_and_static_arrays_byte_identical": true,
+  "full_native_rows": 2401,
+  "manifests_sha256": [
+    "0a2799357742545207a4ffc5212eb966a41d039bd04bd80c85d7192738773fb9",
+    "6df1735323971287fb5c4900cec5d0d74464076f83830240d0000d347ecb6aff"
+  ],
+  "native_reference_comparison": {
+    "errors": {
+      "amount_and_transfer_fmol": 1.021405182655144e-14,
+      "concentration_mM": 4.884981308350689e-14,
+      "dissipation_pJ": 1.3322676295501878e-13,
+      "potential_V": 2.821354261328679e-14
+    },
+    "maximum_normalized_error": 1.3322676295501878e-7,
+    "pass": true
+  },
+  "numeric_arrays_compared": 73,
+  "observed_reference_comparison": {
+    "errors": {
+      "amount_and_transfer_fmol": 3.3306690738754696e-15,
+      "concentration_mM": 9.992007221626409e-15,
+      "dissipation_pJ": 3.019806626980426e-14,
+      "potential_V": 8.389122729823839e-15
+    },
+    "maximum_normalized_error": 3.3306690738754696e-8,
+    "pass": true
+  },
+  "restart_time_s": 0.15,
+  "resumed_native_rows": 1201,
+  "runs": [
+    "runs/core-010-2026-09-11/development-example-01",
+    "runs/core-010-2026-09-11/development-example-resume-01"
+  ],
+  "scope": "Development CLI example and fresh-process suffix replay; not full release acceptance",
+  "status": "pass"
+}

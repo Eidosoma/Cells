@@ -1,0 +1,149 @@
+{
+  "status": "pass",
+  "preflight_receipts": {
+    "reports/core-009-preflight-01.xml": {
+      "sha256": "12b90d7d287aab52877b563751f551afbc9f26c9dd1142443be8755a150a73e0",
+      "tests": 93,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports/core-009-preflight-02.xml": {
+      "sha256": "e3e663a9307f0b89f81aa95cc89b6bba7bb0eaf2ba4d01f9851ad868295baa0d",
+      "tests": 10,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports/core-009-audit-preflight-01.xml": {
+      "sha256": "c1447332a226ec22290041469da26978600624ad780f6e96df6426f0fd87c016",
+      "tests": 34,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports/core-009-targeted-01.xml": {
+      "sha256": "715d7ef2b52758507eb176193bb810cded41e8689a21fdb9f82981c38f89f8d7",
+      "tests": 142,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports/core-009-ownership-preflight-01.xml": {
+      "sha256": "d98dbe7a360bdbad4712a3206aab947a15a4450fa0dde895eb43ebd2a0215fa6",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "reports/core-009-targeted-02.xml": {
+      "sha256": "da51be0e205bd62ff470fbaf1b216824582db0ab5a2a39169a2bcd23c56301b5",
+      "tests": 148,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "source_hashes": {
+    "__init__.py": "ad218a9919318d31bf80127ff975904ef2f3977f01ac4ceb019bcb4afa4afe7a",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "abde97947a4b3e210829acd3a41cbbf5a41a2530273909d710f96315e1e72a52",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/specs.py": "5bdd8ea61f330947b5854d1ab6d720b56a312a3607d547fe40a04c7a4517803d",
+    "core/state.py": "04f606bd1c8c86816234b32c7e9b5fad973af2e6ec49765fa01187db2575966e",
+    "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "95219ea1f814e60e9722fbdbd89c4e7bae9c36955d324878477806b6fddb00c4",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "runtime": {
+    "cells_version": "0.14.0",
+    "python": "3.13.5",
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "ml_dtypes": "0.6.0",
+      "opt_einsum": "3.4.0"
+    },
+    "platform": "Linux",
+    "machine": "x86_64",
+    "numerical_environment": {
+      "XLA_FLAGS": null,
+      "JAX_DISABLE_JIT": null
+    }
+  },
+  "corrections": [
+    {
+      "receipt": "reports/core-009-preflight-02.xml",
+      "cause": "Cycle-ledger test accidentally duplicated an existing star edge; strict reference refused it.",
+      "change": "Use the missing 0-to-1 edge to form the intended cycle.",
+      "scientific_changes": false
+    },
+    {
+      "receipt": "reports/core-009-audit-preflight-01.xml",
+      "cause": "Test expected 43 derived readouts; exhaustive independent field-set check correctly finds 42.",
+      "change": "Correct the test count to 42; every readout already passed and all 33 corruptions were refused.",
+      "scientific_changes": false
+    },
+    {
+      "operation": "read-only prospective scalar resource query",
+      "cause": "Ad hoc inspection treated timeline()'s ndarray as an object with .steps.",
+      "change": "Count intervals as len(timeline)-1; corrected plan recorded separately.",
+      "solver_run": false
+    }
+  ],
+  "cohort_plans": [
+    {
+      "group": "mono",
+      "worlds": 11,
+      "estimated_working_bytes": 482825536,
+      "bound": 536870912
+    },
+    {
+      "group": "divalent",
+      "worlds": 3,
+      "estimated_working_bytes": 154290240,
+      "bound": 536870912
+    }
+  ]
+}

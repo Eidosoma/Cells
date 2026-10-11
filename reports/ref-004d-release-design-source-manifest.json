@@ -1,0 +1,50 @@
+{
+  "schema": "cells.betse_channel_release_design_software_manifest@1",
+  "decision": "D101",
+  "status": "software_checks_pass_not_native_or_dynamic_capture",
+  "design_inputs_sha256": {
+    "docs/BETSE_CHANNEL_RELEASE_DESIGN.md": "386a6f96efa18958a6769517fcd227d71acfba4f26f59cd671bc362336dbdc02",
+    "validation/betse/channel_release_design/plan.json": "f5be83107aa9739e6c7f7ef02f007e597ab96d3c76a79f667b616a94a06ac2cc",
+    "validation/betse/channel_release_design/release_design.py": "63e52172aea0ee1968c93f3d3583ada0f79721e7e17773e9ea0b3478d006784c",
+    "validation/betse/channel_release_design/release_probes.py": "0710962ea9f89d767be6b067d352c5585e45392b7151efa5dc1551fbd2248835",
+    "validation/betse/channel_release_design/test_release_design.py": "c37d898d1c1c023ad68b6fb21af38edc9da71de5758741c89d58efa599b196cb"
+  },
+  "tests": {
+    "path": "reports/ref-004d-release-design-checks-01.xml",
+    "sha256": "8f92924bb8327c30d90e9e12e6714529b5f054508e4e5bbc2ed6456c20cdfad5",
+    "passed": 107,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 11.875,
+    "cpu_affinity": [0, 1, 2, 3],
+    "foreground_timeout_seconds": 45
+  },
+  "prerequisite": {
+    "path": "runs/ref-004c-paired-history-audit-2026-09-15/audit-01/completion.json",
+    "sha256": "e152d806f72f2571b150eb6751c59e1a3fc34ac8accf4bfeaaf4502d30348135",
+    "report": "reports/REF004C_PAIRED_HISTORY_CLOSEOUT.md",
+    "report_sha256": "7cfd846c52177b039a1a85de6c28cff2efa48c572deeb46950dc165901430aaa",
+    "audit_files_authenticated": 10,
+    "audit_source_inputs_authenticated": 152,
+    "capture_files_authenticated": 291,
+    "capture_source_inputs_authenticated": 143,
+    "accepted_implementation_files_unchanged": 352,
+    "production_modules_unchanged": 51,
+    "numerical_audit_rerun": false
+  },
+  "real_cells_rhs_evaluations": 54,
+  "saved_active_states_probed": 6,
+  "candidate_cells_grids": 24,
+  "saved_states_are_release_trajectories": false,
+  "production_changed": false,
+  "native_dispatch_executed": false,
+  "new_trajectory_executed": false,
+  "reference_integration_executed": false,
+  "new_checkpoint_qualified": false,
+  "release_response_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false,
+  "detached_job_launched": false,
+  "automatic_followup": false
+}

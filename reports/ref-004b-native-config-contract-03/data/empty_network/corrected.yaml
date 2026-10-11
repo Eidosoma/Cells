@@ -1,0 +1,384 @@
+%YAML 1.2
+---
+apply external voltage:
+  change finish: 1.0
+  change rate: 0.1
+  change start: 0.5
+  event happens: false
+  negative voltage boundary: bottom
+  peak voltage: 0.001
+  positive voltage boundary: top
+apply pressure:
+  apply to:
+  - Spot
+  change finish: 1.0
+  change rate: 0.05
+  change start: 0.0
+  event happens: false
+  modulator function: periodic
+  multiplier: 100
+automatically run initialization: true
+block NaKATP pump:
+  change finish: 25
+  change rate: 1.0
+  change start: 5
+  event happens: false
+block gap junctions:
+  change finish: 6.0
+  change rate: 1.5
+  change start: 2.0
+  event happens: false
+  random fraction: 100
+break ecm junctions:
+  apply to:
+  - Spot
+  change finish: 7.0
+  change rate: 0.5
+  change start: 2.0
+  event happens: false
+  multiplier: 0.0
+change Ca mem:
+  apply to:
+  - Base
+  change finish: 8.0
+  change rate: 1
+  change start: 2.0
+  event happens: false
+  modulator function: None
+  multiplier: 10
+change Cl env:
+  change finish: 25.0
+  change rate: 2.0
+  change start: 5.0
+  event happens: false
+  multiplier: 10
+change Cl mem:
+  apply to:
+  - Spot
+  change finish: 4.0
+  change rate: 0.5
+  change start: 1.0
+  event happens: false
+  modulator function: None
+  multiplier: 10
+change K env:
+  change finish: 12.0
+  change rate: 1.0
+  change start: 1.0
+  event happens: false
+  multiplier: 20
+change K mem:
+  apply to:
+  - Spot
+  change finish: 2.0
+  change rate: 0.5
+  change start: 1.0
+  event happens: false
+  modulator function: None
+  multiplier: 50.0
+change Na env:
+  change finish: 9
+  change rate: 1
+  change start: 1
+  event happens: false
+  multiplier: 5
+change Na mem:
+  apply to:
+  - Spot
+  change finish: 4.0
+  change rate: 1.0
+  change start: 1.0
+  event happens: false
+  modulator function: None
+  multiplier: 10.0
+change temperature:
+  change finish: 9
+  change rate: 0.5
+  change start: 1
+  event happens: false
+  multiplier: 0.5
+cutting event:
+  apply to:
+  - surgery
+  break TJ: true
+  event happens: true
+  wound TJ: 0.1
+gene regulatory network settings:
+  gene regulatory network config: 
+    ../../../../upstream/betse-v1.5.0/betse/data/yaml/extra_configs/grn_basic.yaml
+  gene regulatory network simulated: false
+  sim-grn settings:
+    load from: null
+    run as sim: false
+    run network on: seed
+    sampling rate: 18.0
+    save to directory: RESULTS/GRN
+    save to file: GRN_1.betse.gz
+    time step: 0.1
+    total time: 180.0
+general network:
+  biomolecules: []
+  channels: null
+  implement network: true
+  modulators: null
+  reactions: null
+  transporters: null
+general options:
+  comp grid size: 10
+  customized ion profile:
+    cytosolic Ca2+ concentration: 2e-05
+    cytosolic Cl- concentration: 10.0
+    cytosolic K+ concentration: 140.0
+    cytosolic Na+ concentration: 12.0
+    cytosolic protein- concentration: 100.0
+    extracellular Ca2+ concentration: 2.0
+    extracellular Cl- concentration: 120.0
+    extracellular K+ concentration: 4.0
+    extracellular Na+ concentration: 145.0
+    extracellular protein- concentration: 10.0
+  ion profile: custom
+  simulate extracellular spaces: false
+init file saving:
+  directory: INITS
+  file: init_1.betse.gz
+  worldfile: world_1.betse.gz
+init time settings:
+  sampling rate: 2.5e-05
+  time step: 2.5e-05
+  total time: 2.5e-05
+internal parameters:
+  Do_Ca: 1e-10
+  Do_Cl: 2.03e-09
+  Do_K: 1.96e-09
+  Do_M: 1e-09
+  Do_Na: 1.33e-09
+  Do_P: 0.0
+  alpha_Ca: 0.0
+  alpha_NaK: 0.0
+  cell polarizability: 0.0
+  dielectric constant: 6.0
+  environment volume multiplier: 0.001
+  fast update ecm: false
+  membrane capacitance: 0.01
+  sharpness cell: 0.5
+  sharpness env: 1.0
+  substances affect Vmem: true
+  true cell size: 1e-05
+modulator function properties:
+  f_sweep:
+    end frequency: 1000.0
+    start frequency: 100.0
+  gradient_bitmap:
+    file: 
+      ../../../../upstream/betse-v1.5.0/betse/data/yaml/geo/ellipse/gradient.png
+    z-offset: 0.0
+  gradient_r:
+    exponent: 1
+    slope: 1.0
+    x-offset: 0
+    z-offset: 0
+  gradient_x:
+    exponent: 1
+    slope: 1.0
+    x-offset: 0
+    z-offset: 0
+  gradient_y:
+    exponent: 1
+    slope: 1.0
+    x-offset: 0
+    z-offset: 0
+  periodic:
+    frequency: 10
+    phase: 0
+  single_cell:
+    z-offset: 0.0
+results file saving:
+  init directory: RESULTS/init_1
+  sim directory: RESULTS/sim_1
+results options:
+  after solving:
+    animations:
+      pipeline:
+      - colorbar:
+          autoscale: true
+          maximum: 10.0
+          minimum: -70.0
+        enabled: true
+        name: Transmembrane Voltage Animation
+        type: voltage_membrane
+      - colorbar:
+          autoscale: true
+          maximum: 10.0
+          minimum: -70.0
+        enabled: true
+        name: Intracellular Electric Field Animation
+        type: electric_intra
+      save: false
+      show: false
+    csvs:
+      pipeline:
+      - enabled: true
+        name: Cell Series CSV
+        type: cell_series
+      - enabled: true
+        name: Transmembrane Voltage CSV
+        type: cells_vmem
+      save: true
+    plots:
+      cell cluster pipeline:
+      - colorbar:
+          autoscale: true
+          maximum: 10.0
+          minimum: -70.0
+        enabled: true
+        name: Transmembrane Voltage Cells Plot
+        type: voltage_membrane
+      - colorbar:
+          autoscale: true
+          maximum: 10.0
+          minimum: -70.0
+        enabled: true
+        name: Intracellular Electric Field Plot
+        type: electric_intra
+      save: true
+      show: false
+      single cell pipeline:
+      - enabled: true
+        name: Transmembrane Voltage Cell Plot
+        type: voltage_membrane
+      - enabled: true
+        name: Transmembrane Current Density Plot
+        type: currents_membrane
+  background colormap: RdBu_r
+  default colormap: RdBu_r
+  gj colormap: bone_r
+  network colormap: rainbow
+  overlay currents: false
+  plot cluster mask: true
+  plot cutlines: true
+  plot masked geometry: true
+  plot networks: true
+  plot networks single cell: true
+  plot total current: true
+  save:
+    animations:
+      images:
+        dpi: 300
+        enabled: true
+        filetype: png
+      video:
+        bitrate: 6000
+        codecs:
+        - auto
+        dpi: 150
+        enabled: false
+        filetype: mp4
+        framerate: 15
+        metadata:
+          artist: BETSE
+          comment: Produced by BETSE.
+          genre: Bioelectricity
+          subject: Bioelectricity
+        writers:
+        - ffmpeg
+        - avconv
+        - mencoder
+        - imagemagick
+    csvs:
+      filetype: csv
+    plots:
+      dpi: 300
+      filetype: png
+  show cells: true
+  streamline density: 2.0
+  vector and stream color: k
+  visuals:
+    cell indices:
+      show: false
+      single cell: 0
+  while solving:
+    animations:
+      colorbar:
+        autoscale: true
+        colormap: None
+        maximum: 20.0
+        minimum: -70.0
+      save: false
+      show: false
+sim file saving:
+  directory: SIMS
+  file: sim_1.betse.gz
+sim time settings:
+  sampling rate: 2.5e-05
+  time step: 2.5e-05
+  total time: 2.5e-05
+solver options:
+  type: full
+tissue profile definition:
+  cut profiles: []
+  profiles enabled: false
+  tissue:
+    default:
+      diffusion constants:
+        Dm_Ca: 0.0
+        Dm_Cl: 0.0
+        Dm_K: 0.0
+        Dm_M: 0.0
+        Dm_Na: 0.0
+        Dm_P: 0.0
+      image: 
+        ../../../../upstream/betse-v1.5.0/betse/data/yaml/geo/circle/circle_base.png
+      name: Base
+    profiles: []
+variable settings:
+  adherens junction scaling: 1.0
+  deformation:
+    fixed cluster boundary: true
+    galvanotropism: 1e-09
+    turn on: false
+    viscous damping: 0.01
+    young modulus: 1000.0
+  env boundary concentrations: null
+  gap junctions:
+    gap junction surface area: 0.0
+    gj minimum: 0.1
+    gj voltage threshold: 15
+    gj voltage window: 15
+    voltage sensitive gj: false
+  noise:
+    dynamic noise: false
+    dynamic noise level: 1e-06
+    static noise level: 0
+  pressures:
+    include osmotic pressure: false
+    membrane water conductivity: 0.01
+  temperature: 298.15
+  tight junction relative diffusion:
+    Ca: 1
+    Cl: 1
+    K: 1
+    M: 1
+    Na: 1
+    P: 1
+  tight junction scaling: 1.0
+  use Goldman calculator: false
+version: '1.0'
+world options:
+  alpha shape: 0.01
+  cell height: 1e-05
+  cell radius: 5e-06
+  cell spacing: 2.6e-08
+  import from svg:
+    cells from svg: 
+      ../../../../upstream/betse-v1.5.0/betse/data/yaml/geo/root/root_cells.svg
+    svg override: false
+    svg size: 500
+  lattice disorder: 0.0
+  lattice type: hex
+  mesh refinement:
+    convergence threshold: 1.5
+    maximum steps: 10
+    refine mesh: false
+  simulate single cell: true
+  use centers: false
+  world size: 0.00015

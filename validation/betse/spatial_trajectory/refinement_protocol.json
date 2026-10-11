@@ -1,0 +1,241 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "cases": [
+    {
+      "id": "uniform",
+      "fixture": "equal",
+      "topology": "disconnected",
+      "outside_pulse_mM": {},
+      "membrane_permeability_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "boundary_voltage_V": {
+        "L": 0.0,
+        "R": 0.0,
+        "T": 0.0,
+        "B": 0.0
+      }
+    },
+    {
+      "id": "diffusion",
+      "fixture": "equal",
+      "topology": "disconnected",
+      "outside_pulse_mM": {
+        "Na": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "boundary_voltage_V": {
+        "L": 0.0,
+        "R": 0.0,
+        "T": 0.0,
+        "B": 0.0
+      }
+    },
+    {
+      "id": "junction",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {},
+      "membrane_permeability_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "boundary_voltage_V": {
+        "L": 0.0,
+        "R": 0.0,
+        "T": 0.0,
+        "B": 0.0
+      }
+    },
+    {
+      "id": "combined",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      }
+    }
+  ],
+  "kind": "native_betse_passive_spatial_refinement@1",
+  "scope": "Unchanged betse_spatial_passive@1 freely evolving native-matched passive trajectories through 256 us, three native timesteps, complete per-step evidence and common-time first-order refinement diagnostics; includes the qualified short panel regressions.",
+  "tests": [
+    "tests/unit/test_betse_spatial_trajectory.py",
+    "tests/unit/test_betse_spatial_refinement.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_trajectory.py::test_cpu_gpu_complete_trajectories",
+    "tests/unit/test_betse_spatial_refinement.py::test_extended_cpu_gpu"
+  ],
+  "duration_s": 0.000256,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
+  ],
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17
+  },
+  "refinement": {
+    "common_completed_times_s": [
+      6.4e-05,
+      0.000128,
+      0.000256
+    ],
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "required_resolved_final_fields": {
+      "uniform": [],
+      "diffusion": [
+        "cc_env"
+      ],
+      "junction": [
+        "cc_at_mem",
+        "vm"
+      ],
+      "combined": [
+        "cc_at_mem",
+        "cc_env",
+        "vm"
+      ]
+    }
+  },
+  "required_evidence": [
+    "native-spatial-trajectory-uniform-0",
+    "native-spatial-trajectory-uniform-1",
+    "native-spatial-trajectory-diffusion-0",
+    "native-spatial-trajectory-diffusion-1",
+    "native-spatial-trajectory-junction-0",
+    "native-spatial-trajectory-junction-1",
+    "native-spatial-trajectory-combined-0",
+    "native-spatial-trajectory-combined-1",
+    "native-spatial-boundary-field",
+    "native-spatial-replay",
+    "native-spatial-negative-controls",
+    "extended-native-trajectory-uniform-0",
+    "extended-native-trajectory-uniform-1",
+    "extended-native-trajectory-uniform-2",
+    "extended-native-trajectory-diffusion-0",
+    "extended-native-trajectory-diffusion-1",
+    "extended-native-trajectory-diffusion-2",
+    "extended-native-trajectory-junction-0",
+    "extended-native-trajectory-junction-1",
+    "extended-native-trajectory-junction-2",
+    "extended-native-trajectory-combined-0",
+    "extended-native-trajectory-combined-1",
+    "extended-native-trajectory-combined-2",
+    "extended-native-refinement-uniform",
+    "extended-native-refinement-diffusion",
+    "extended-native-refinement-junction",
+    "extended-native-refinement-combined",
+    "extended-native-prefix",
+    "extended-native-replay",
+    "extended-native-roundoff-controls"
+  ],
+  "required_gpu_evidence": [
+    "native-spatial-trajectory-cpu-gpu",
+    "extended-native-cpu-gpu"
+  ],
+  "resources": {
+    "max_wall_seconds": 3600,
+    "native_timeout_seconds": 1800,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2
+  },
+  "checks": [
+    "Authenticate pinned native source/package and neutral observed/bare captures; independent native per-update accounting at original physical tolerances",
+    "Full freely evolving concentrations, lagged membrane state, fields and fluxes compared at every completed step; existing physical tolerances retained",
+    "Separate 32-operation-per-step inventory-scaled gamma_n rounding allowance for accumulated material bookkeeping; unchanged 2e-11 fmol physical floor; saved allowances and actual discrepancies",
+    "Clock tolerance 6e-17 s bounds sequential float64 additions through 1024 steps at 256 us; exact integer completed-step counts",
+    "Match original 8-us native prefixes by completed step, independently of native raw clock labels",
+    "Native and Cells self-refinement at 64,128,256 us; only resolved differences support first-order claims, with required nontrivial fields in each active passive case",
+    "Complete long-horizon disk/window/mapped replay and CPU/L4 saved values",
+    "Corrupted ledgers exceed separately computed rounding allowances and must fail; artificial nonconvergence/invalid refinement inputs are rejected"
+  ],
+  "scope_exclusions": [
+    "Passive seven-cell/30-patch/10x10-grid synthetic panel only; 256 us maximum, no biological calibration",
+    "Temporal self-refinement is separate from matched-step native agreement; no continuum, spatial-refinement or thermodynamic energy-balance claim",
+    "No production-physics change; native grid-stencil exchange is separate from reservoir material",
+    "No pumps, intrinsic channel kinetics, calcium chemistry, assembly or ordinary model-registry integration in this compatibility component",
+    "No sparse/distributed tissue or remote multi-GPU execution qualification",
+    "GPU phase includes host reference checks and compilation; no single warmed throughput interval"
+  ],
+  "automatic_followup": false,
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-trajectory-20261010-02",
+    "completion_sha256": "6b2173aeea29969fdcaa040b5b4cc72092608fb744583ae0fccd105c921aa999"
+  }
+}

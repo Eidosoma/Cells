@@ -1,0 +1,523 @@
+{
+  "schema": "cells.finite_extracellular_trajectory_panel@2",
+  "task": "NUM-009",
+  "definitions_source": "reports/spec-008-design-check-v2.json",
+  "definitions_source_sha256": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+  "inherited_sources_sha256": {
+    "docs/FINITE_EXTRACELLULAR_SPEC.md": "f8e3a4798c0d9fa7ba7c82478aaede0c15a3bc8abadccceca3ae9d369ce34af1",
+    "tests/reference_finite_extracellular.py": "ce06463420fa29cd0d3fe9b49584644348e5467e7b9a2cbc1bcc21224a0f99bd",
+    "reports/spec-008-design-check-v2.json": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+    "configs/reference/finite_extracellular_v1.json": "5169c84abd14fe9d9963bd55bd6bb5b2614c8541031d1378367eba81b37b1e2a",
+    "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+    "tests/physical_ionic_graph_numerical_data.py": "fb210feb2326963e58baa8988c3ca9631bb750deef805fce7e225925ab0d0ed8",
+    "tests/physical_ionic_graph_numerical_checks.py": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+    "tests/reference_multispecies_dynamics.py": "a8ece60a2c2267d692ab2c48d0a204813746558e8aaeb3db8109ada6a0afe650",
+    "scripts/audit_physical_ionic_graph_reference.py": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+    "scripts/qualify_voltage_gated_reference.py": "a12cea1122ec1e4148e82f60ebbf3d64862d2569d00219f827e9f6719e309f0b",
+    "runs/core-008-2026-09-10/release-audit.json": "e03a211726888d3962825db544bba6742aa09603031d68ebbbc4745542393f08"
+  },
+  "scope": "short synthetic finite shared-outside CPU reference qualification; not production, biological validation, arbitrary-volume timesteps or GPU acceptance",
+  "references": [
+    {
+      "id": "radau",
+      "method": "Radau",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "bdf",
+      "method": "BDF",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "refined",
+      "method": "Radau",
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "max_step_s": 0.0025
+    }
+  ],
+  "candidate": {
+    "method": "independent_full_increment_RK4",
+    "steps_s": [
+      0.004,
+      0.002,
+      0.001,
+      0.0005,
+      0.00025
+    ],
+    "observation": "interval_control_cubic_hermite",
+    "comparison_fractions": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "selection": "coarsest all-case passing step with passing next-finer step and voltage, membrane/junction gate and outside concentration refinement",
+    "voltage_refinement_floor_V": 1e-10,
+    "gate_refinement_floor": 1e-8,
+    "maximum_refined_error_ratio": 0.8,
+    "domain_rejection": "retain rejected trial and completed prefix; continue only the declared candidate ladder",
+    "outside_concentration_refinement_floor_mM": 1e-8
+  },
+  "trajectory_limits": {
+    "amount_fmol": 1e-7,
+    "leak_fmol": 1e-7,
+    "junction_fmol": 1e-7,
+    "species_overrides": {
+      "Ca": {
+        "amount_fmol": 1e-9,
+        "leak_fmol": 1e-9,
+        "junction_fmol": 1e-9,
+        "outside_amount_fmol": 1e-9,
+        "outside_concentration_mM": 0.000001
+      }
+    },
+    "pump_cycles_fmol": 1e-7,
+    "membrane_dissipation_pJ": 0.000001,
+    "junction_dissipation_pJ": 0.000001,
+    "voltage_V": 0.000001,
+    "membrane_gate": 0.0001,
+    "junction_gate": 0.0001,
+    "open_fraction": 0.0001,
+    "channel_fmol": 1e-7,
+    "reference_factor": 0.1,
+    "outside_amount_fmol": 1e-7,
+    "outside_concentration_mM": 0.0001
+  },
+  "accounting_limits": {
+    "material_fmol": 1e-10,
+    "species_material_overrides_fmol": {
+      "Ca": 1e-12
+    },
+    "charge_as_voltage_V": 1e-8,
+    "global_charge_C": 1e-19,
+    "energy_pJ": 0.000001,
+    "dissipation_decrease_pJ": 1e-10,
+    "countercharge_C": 1e-20
+  },
+  "resources": {
+    "max_horizon_s": 0.3,
+    "max_cases": 14,
+    "max_attempts": 112,
+    "max_steps_per_attempt": 100000,
+    "max_rhs_calls_per_attempt": 100000,
+    "max_samples_per_case": 100000,
+    "session_wall_seconds": 1800,
+    "artifact_bytes": 536870912,
+    "workers": 1
+  },
+  "profiles": {
+    "single": {
+      "horizon_s": 0.1,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "baseline": {
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "internal": {
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "block_release": {
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.0137,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0271,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {
+              "channel_1": 0
+            },
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0433,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {
+              "cell_2": {
+                "Na": 0
+              }
+            },
+            "pump": {
+              "cell_0": 0
+            },
+            "channel": {},
+            "junction": {
+              "junction_1": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0679,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.113,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.177,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.231,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.3,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "short_pulse": {
+      "horizon_s": 0.05,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0203,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.0204,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.05,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "pump_only": {
+      "horizon_s": 0.05,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 0,
+          "pump": 1,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    }
+  },
+  "outside_overrides": {
+    "single_mono_tiny": {
+      "id": "bath_shared",
+      "volume_pL": 0.0001,
+      "initial_amount_fmol": {
+        "Cl": 0.015,
+        "K": 0.0005,
+        "Na": 0.0145
+      },
+      "fixed_charge_equivalent_fmol": 0.006736775276570413
+    },
+    "single_divalent_tiny": {
+      "id": "bath_shared",
+      "volume_pL": 0.0001,
+      "initial_amount_fmol": {
+        "Ca": 0.0002,
+        "Cl": 0.0156,
+        "K": 0.0005,
+        "Na": 0.0145
+      },
+      "fixed_charge_equivalent_fmol": 0.006936775276570413
+    }
+  },
+  "cases": [
+    {
+      "id": "single_mono_small",
+      "assembly": "single_mono_small",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "single_mono",
+      "assembly": "single_mono",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "single_mono_large",
+      "assembly": "single_mono_large",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "single_mono_very_large",
+      "assembly": "single_mono_very_large",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "single_divalent",
+      "assembly": "single_divalent",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "disconnected_mono",
+      "assembly": "disconnected_mono",
+      "profile": "single",
+      "outside_override": null
+    },
+    {
+      "id": "pair_mono",
+      "assembly": "pair_mono",
+      "profile": "baseline",
+      "outside_override": null
+    },
+    {
+      "id": "star_mono",
+      "assembly": "star_mono",
+      "profile": "baseline",
+      "outside_override": null
+    },
+    {
+      "id": "star_divalent",
+      "assembly": "star_divalent",
+      "profile": "baseline",
+      "outside_override": null
+    },
+    {
+      "id": "star_mono_internal",
+      "assembly": "star_mono",
+      "profile": "internal",
+      "outside_override": null
+    },
+    {
+      "id": "star_mono_block_release",
+      "assembly": "star_mono",
+      "profile": "block_release",
+      "outside_override": null
+    },
+    {
+      "id": "star_mono_short_pulse",
+      "assembly": "star_mono",
+      "profile": "short_pulse",
+      "outside_override": null
+    },
+    {
+      "id": "single_mono_depletion",
+      "assembly": "single_mono",
+      "profile": "pump_only",
+      "outside_override": "single_mono_tiny"
+    },
+    {
+      "id": "single_divalent_tiny",
+      "assembly": "single_divalent",
+      "profile": "single",
+      "outside_override": "single_divalent_tiny"
+    }
+  ],
+  "stress_witness": {
+    "case": "single_mono_depletion",
+    "species": "K",
+    "minimum_fractional_outside_drop": 0.05,
+    "claim": "synthetic reservoir depletion witness only; failure does not permit fitting the case"
+  },
+  "coordinate_contract": {
+    "Radau": "all ten fields, inside and outside increments explicitly integrated; conservation-tangent Jacobian probes only",
+    "BDF": "same full coordinates and conservation-tangent Jacobian",
+    "RK4": "all ten fields, inside and outside amount increments independently evolved",
+    "saved": "all ten canonical fields in all native and dense records; immutable initial anchors; no projection, reanchoring or use of transfer histories as amount"
+  },
+  "supersedes": {
+    "panel_sha256": "81e7e68a1821a57dc9e8b96889dfcc0d9b4eca514785f4aac9dce32a77aff397",
+    "failed_attempt": "runs/num-009-2026-09-10/reference-01/failure.json",
+    "failure_sha256": "7dd501991ab3c61144d3f8862f91a8b76c146619e5c554b2b9fd46a5c87f3e67"
+  },
+  "jacobian": {
+    "amount_projector": "per-species Euclidean tangent I - 11^T/(N+1), all inside and outside owners",
+    "history_columns": "exact zero: physical RHS does not consume histories",
+    "gate_columns": "unit directions",
+    "difference": "second-order central; second-order one-sided near a linear domain boundary",
+    "relative_step": "cbrt(float64 epsilon)",
+    "amount_scale_fmol": 0.001,
+    "gate_scale": 1,
+    "bound_fraction": 0.25,
+    "central_minimum_nominal_fraction": 0.1,
+    "state_projection": false
+  }
+}

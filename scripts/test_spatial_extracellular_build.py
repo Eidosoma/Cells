@@ -1,0 +1,165 @@
+"""Current development build and five explicitly pinned historical test contexts."""
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts import test_finite_extracellular_production_build as previous  # noqa: E402
+from scripts.audit_preserved_spatial_extracellular_reference import (  # noqa: E402
+    ARCHIVE_SHA,
+    extract_sources,
+)
+
+DRIVER_SHA = "88b691f1e38a40af84585570c0b310172e75fc7b5531ac9774a8b4f9987de53e"
+HISTORICAL = (
+    "tests/unit/test_spatial_extracellular_dynamics.py",
+    "tests/unit/test_spatial_extracellular_artifact_audit.py",
+)
+sha = previous.previous.sha
+
+
+def implementation_hashes():
+    names = {
+        str(p.relative_to(ROOT))
+        for folder in ("src", "tests", "scripts", "configs")
+        for p in (ROOT / folder).rglob("*")
+        if p.is_file() and p.suffix in (".py", ".json") and "__pycache__" not in p.parts
+    } | {"pyproject.toml", "requirements-lock.txt", "requirements-reference.txt"}
+    return {name: sha(ROOT / name) for name in sorted(names)}
+
+
+def execute_preserved(output):
+    output.mkdir()
+    report = output / "preserved-spatial-reference.xml"
+    with tempfile.TemporaryDirectory(prefix="cells-spatial-reference-tests-") as temporary:
+        workspace = previous.previous.reference_workspace(
+            Path(temporary) / "Cells", extract=extract_sources
+        )
+        (workspace / ".venv").symlink_to(Path(sys.prefix), target_is_directory=True)
+        worker = subprocess.run(
+            [
+                "taskset",
+                "-c",
+                "0-3",
+                sys.executable,
+                "-m",
+                "pytest",
+                "-q",
+                "-W",
+                "error",
+                f"--junitxml={report}",
+                *HISTORICAL,
+            ],
+            cwd=workspace,
+            env=os.environ
+            | dict.fromkeys(previous.THREADS, "1")
+            | {"PYTHONPATH": str(workspace / "src")},
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+    log = output / "preserved-spatial-reference.log"
+    with log.open("x") as handle:
+        handle.write(worker.stdout)
+    print(worker.stdout[-2500:], flush=True)
+    suites = ET.parse(report).getroot().findall("testsuite")
+    record = {
+        "exit_code": worker.returncode,
+        "junit_sha256": sha(report),
+        "log_sha256": sha(log),
+        **{
+            k: sum(int(s.get(k, 0)) for s in suites)
+            for k in ("tests", "failures", "errors", "skipped")
+        },
+        "seconds": sum(float(s.get("time", 0)) for s in suites),
+    }
+    result = {
+        "status": "pass"
+        if all(record[k] == 0 for k in ("exit_code", "failures", "errors", "skipped"))
+        else "failed",
+        "contexts": {"preserved-spatial-reference": record},
+        "total_tests": record["tests"],
+        "archive_sha256": ARCHIVE_SHA,
+        "test_files": list(HISTORICAL),
+    }
+    with (output / "verification.json").open("x") as handle:
+        json.dump(result, handle, indent=2, sort_keys=True, allow_nan=False)
+        handle.write("\n")
+    return result
+
+
+def run_tests(output):
+    if os.environ.get("PYTEST_ADDOPTS") or os.environ.get("PYTEST_PLUGINS"):
+        raise ValueError("Require explicit routing without inherited pytest overrides")
+    if (
+        sha(ROOT / "scripts/test_finite_extracellular_production_build.py") != DRIVER_SHA
+        or sha(ROOT / "scripts/test_cells_build.py") != previous.DRIVER_SHA
+    ):
+        raise ValueError("Preserved underlying test drivers changed")
+    if sha(ROOT / "runs/num-009-2026-09-10/reference-01/failure.json") != (
+        "7dd501991ab3c61144d3f8862f91a8b76c146619e5c554b2b9fd46a5c87f3e67"
+    ):
+        raise ValueError("Historical NUM-009 v1 stopped evidence changed")
+    output = Path(output).resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    captured = implementation_hashes()
+    ignored = (*previous.FINITE_HISTORICAL, previous.V1_PROSPECTIVE, *HISTORICAL)
+    options = " ".join(f"--ignore={name}" for name in ignored)
+    try:
+        os.environ["PYTEST_ADDOPTS"] = options
+        current = previous.previous.run_tests(output / "current", only="current")
+    finally:
+        os.environ.pop("PYTEST_ADDOPTS", None)
+    children = {
+        "current": current,
+        "historical": previous.previous.run_tests(output / "historical", only="reference"),
+        "finite-reference": previous.execute_preserved(output / "finite-reference"),
+        "spatial-reference": execute_preserved(output / "spatial-reference"),
+    }
+    if captured != implementation_hashes():
+        raise ValueError("Implementation, tests or definitions changed during the matrix")
+    result = {
+        "schema": "cells.spatial_extracellular_build_matrix@1",
+        "status": "pass" if all(c["status"] == "pass" for c in children.values()) else "failed",
+        "contexts": {k: v for c in children.values() for k, v in c["contexts"].items()},
+        "total_tests": sum(c["total_tests"] for c in children.values()),
+        "current_pytest_addopts": options,
+        "historical_pytest_addopts": None,
+        "unexecuted_prospective_suite": {
+            "file": previous.V1_PROSPECTIVE,
+            "tests": 13,
+            "sha256": sha(ROOT / previous.V1_PROSPECTIVE),
+            "reason": (
+                "NUM-009 v1 stopped without complete evidence; these are not passing coverage."
+            ),
+            "maintained_replacement": "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+        },
+        "preserved_spatial_source_sha256": ARCHIVE_SHA,
+        "underlying_driver_sha256": DRIVER_SHA,
+        "implementation_sha256": captured,
+        "driver_sha256": sha(__file__),
+        "child_receipts_sha256": {
+            name: sha(output / name / "verification.json") for name in children
+        },
+    }
+    with (output / "verification.json").open("x") as handle:
+        json.dump(result, handle, indent=2, sort_keys=True, allow_nan=False)
+        handle.write("\n")
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    receipt = run_tests(args.output)
+    print(json.dumps(receipt, indent=2, sort_keys=True))
+    raise SystemExit(0 if receipt["status"] == "pass" else 1)

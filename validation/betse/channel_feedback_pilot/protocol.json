@@ -1,0 +1,76 @@
+{
+  "schema": "cells.betse_channel_feedback_protocol@1",
+  "decision": "D095",
+  "scope": "A gated independent continuous reference followed by a 2 ms channel-only native/Cells trajectory pilot; capture success still requires a later independent saved-data audit.",
+  "prior_completion_sha256": "8ec513d8171ebf3a6670ae270f66fed1821ff4caf66670076c3e4bc03ef5c391",
+  "variants": ["network_off", "empty_network", "blocked_channel", "active_channel"],
+  "duration_s": 0.002,
+  "common_times_s": [0.0, 0.00025, 0.0005, 0.001, 0.002],
+  "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+  "cells_steps_s": [0.00005, 0.000025, 0.0000125],
+  "cells_eager_step_s": 0.00005,
+  "restart_step_s": 0.000025,
+  "restart_time_s": 0.001,
+  "native_pairs": 12,
+  "native_runs": 24,
+  "native_updates": 4480,
+  "cells_trajectories": 16,
+  "cells_resumed_segments": 4,
+  "initial_gate": [0.2, 0.6],
+  "reference": {
+    "primary": "dop853_tight",
+    "sample_dt_s": 0.00000625,
+    "rhs_precision_digits": 80,
+    "integration_precision": "float64",
+    "solves": [
+      {"id": "dop853_base", "method": "DOP853", "rtol": 1e-10, "atol_q_fmol": 1e-14, "atol_gate": 1e-13, "atol_energy_pJ": 1e-13, "max_step_s": 0.00025},
+      {"id": "dop853_tight", "method": "DOP853", "rtol": 1e-12, "atol_q_fmol": 1e-16, "atol_gate": 1e-15, "atol_energy_pJ": 1e-15, "max_step_s": 0.000125},
+      {"id": "radau_check", "method": "Radau", "rtol": 1e-11, "atol_q_fmol": 1e-15, "atol_gate": 1e-14, "atol_energy_pJ": 1e-14, "max_step_s": 0.000125}
+    ],
+    "max_rhs_calls_per_solve": 30000,
+    "max_accepted_steps_per_solve": 4096,
+    "comparison_absolute": {
+      "gate": 1e-8, "voltage_V": 1e-8, "cell_K_fmol": 5e-10,
+      "bath_K_fmol": 3.5e-9, "transfer_fmol": 5e-10, "interval_transfer_fmol": 1e-9,
+      "flux_fmol_per_s": 5e-8, "permeability_m_per_s": 1e-15,
+      "inward_current_A": 4.8242666061655e-18, "energy_pJ": 1e-10
+    }
+  },
+  "trajectory_absolute": {
+    "gate": 1e-4, "voltage_V": 1e-5, "cell_K_fmol": 5e-7,
+    "bath_K_fmol": 3.5e-6, "transfer_fmol": 5e-7, "interval_transfer_fmol": 1e-6,
+    "flux_fmol_per_s": 5e-5, "permeability_m_per_s": 1e-12,
+    "inward_current_A": 4.8242666061655e-15, "energy_pJ": 1e-9
+  },
+  "comparison_relative": 2e-11,
+  "cross_engine_budget_multiplier": 2,
+  "refinement": {
+    "required_error_ratio_max": 0.8,
+    "roundoff_fraction_of_budget": 0.0001,
+    "reference_error_floor_multiplier": 5,
+    "required_fields": ["gate", "voltage_V", "transfer_fmol", "bath_K_fmol"],
+    "policy": "Per variant and field, reference error must shrink across both halvings unless already below the separately registered reference/roundoff floor; finest trajectory and every common observation must meet the absolute budget. Preserve all coarse errors."
+  },
+  "native_conservation": {
+    "base_atol_fmol": 2e-12,
+    "roundoff_multiplier": 8,
+    "formula": "base + roundoff_multiplier * float64_epsilon * update_count * max(initial total inventory across six species); applies only to accumulation/conservation rows, not gate/flux/current laws"
+  },
+  "restart_absolute": {"state": 2e-12, "gate": 2e-13},
+  "backend_absolute": {"state": 2e-12, "gate": 2e-13},
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "total_timeout_seconds": 900,
+    "worker_timeout_seconds": {"reference": 180, "betse": 240, "cells": 360},
+    "max_file_bytes": 134217728,
+    "max_uncompressed_record_bytes": 134217728,
+    "max_artifact_bytes": 536870912,
+    "max_cells_steps": 1024,
+    "max_cells_trace_bytes": 67108864
+  },
+  "reference_gate_before_simulators": true,
+  "production_changed": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

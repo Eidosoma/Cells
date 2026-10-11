@@ -1,0 +1,24 @@
+{
+  "actual_cells": 7,
+  "actual_membranes": 30,
+  "alignment_qualified": false,
+  "files_sha256": {
+    "INITS/world_1.betse.gz": "0d630eb74b7a1a3d0a020cecdd58fe332aad6d9de51026dd346b413020a995cf",
+    "adapter_sources.zip": "c950398b8977edc93f9103213d808ca1076fc66d5454660622818f3f88b8a594",
+    "betse.stderr.log": "103e5a684a512751a38cf353ab5814a3f631f79d779466f0fa181a09c14d4c3c",
+    "betse.stdout.log": "e7efd0a2edca0eea7c209259c03e37122193bf531327faad09fbb8dce9780a6c",
+    "failure.json": "bd8f044cf124648564ffc90bfe42555534464f6fc66b8e8a59f0c4dc63c4613a",
+    "matplotlib-cache/fontlist-v3.11.0.json": "fa89c3bbdfa4c534a12aff7e03402ac94453f277df217b2ab4b46be4bbea3e96",
+    "native.yaml": "0b28f3819037ada4395379e55c3f4390f85da55330f0a8651ad4c1ef6037a833",
+    "native_preparation.json": "1e78472bfeb2f19648f2ee0218b589a63cdcfc5064c28a4bb2d00ccf39d61be8",
+    "registration.json": "b980c1c69db25799389eff3e07becbc1370b34733d6cf0330ee47461d6d619a8"
+  },
+  "installed_python_files_authenticated": 332,
+  "network_disabled": true,
+  "production_calls": 0,
+  "requested_cells": 1,
+  "schema": "cells.betse_preparation_diagnostic_audit@1",
+  "status": "mismatch_confirmed",
+  "trajectory_calls": 0,
+  "upstream_calls": 0
+}

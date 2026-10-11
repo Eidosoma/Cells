@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "finite_extracellular@2",
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      }
+    ],
+    "temperature_K": 298.15,
+    "extracellular": {
+      "id": "outside",
+      "volume_pL": 1.0,
+      "initial_amount_fmol": {
+        "Na": 140.0,
+        "K": 4.0,
+        "Cl": 120.0
+      },
+      "fixed_charge_equivalent_fmol": -23.991708584274992
+    },
+    "cells": [
+      {
+        "cell": {
+          "id": "cell_0",
+          "volume_pL": 1.0,
+          "initial_amount_fmol": {
+            "Na": 12.0,
+            "K": 140.0,
+            "Cl": 10.0
+          },
+          "initial_voltage_V": -0.08,
+          "fixed_charge_equivalent_fmol": -142.008291415725
+        },
+        "membrane": {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "outside",
+          "area_m2": 1e-09,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Na": 5e-10,
+              "K": 1.8e-09,
+              "Cl": 1.4e-10
+            }
+          },
+          "pump": {
+            "id": "pump_0",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.09999999999999999,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          }
+        },
+        "channel": null
+      }
+    ],
+    "junctions": []
+  },
+  "experiment": {
+    "end_time": 0.01,
+    "observation_times": [
+      0.0,
+      0.001,
+      0.002,
+      0.004,
+      0.006,
+      0.008,
+      0.01
+    ],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "leak": [
+          {
+            "time": 0.0,
+            "multipliers": {
+              "Na": 1.0,
+              "K": 1.0,
+              "Cl": 1.0
+            }
+          }
+        ],
+        "pump": [
+          {
+            "time": 0.0,
+            "multiplier": 1.0
+          }
+        ]
+      }
+    ],
+    "channel_controls": [],
+    "junction_controls": []
+  },
+  "execution": {
+    "dt": 0.0001,
+    "jit": true,
+    "capacity": 3,
+    "membrane_capacity": 4,
+    "channel_capacity": 2,
+    "edge_capacity": 2,
+    "extracellular_capacity": 2,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "max_steps": 10000,
+    "max_trace_bytes": 268435456,
+    "material_balance_atol_fmol": {
+      "Na": 2e-11,
+      "K": 2e-11,
+      "Cl": 2e-11
+    }
+  }
+}

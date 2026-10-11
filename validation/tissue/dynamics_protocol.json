@@ -1,0 +1,68 @@
+{
+  "kind": "cross_region_tissue_trajectory_qualification@1",
+  "scope": "Registered spatial_extracellular@3 on a synthetic two-cell, three-outside, 2-ms mesh: finite inventories, kinetic Na/K pumps, Kv1.5 channels, evolving junction conductance and same-stage nonlinear extracellular return currents. Numerical qualification, not native BETSE or biological validation.",
+  "tests": [
+    "tests/unit/test_tissue.py",
+    "tests/unit/test_tissue_field.py",
+    "validation/betse/spatial_cluster/test_spatial.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_tissue.py::test_cpu_gpu_complete_saved_trajectories",
+    "tests/unit/test_tissue_field.py::test_cpu_gpu_saved_physical_fields"
+  ],
+  "required_evidence": [
+    "trajectory-baseline", "trajectory-blocked", "trajectory-release", "trajectory-same_region",
+    "trajectory-refinement", "trajectory-restart", "trajectory-partition", "trajectory-legacy",
+    "gradient", "equal", "zero_drive", "reverse", "blocked", "same_region",
+    "narrow_return", "wide_return", "triangle", "triangle_padded", "divalent"
+  ],
+  "required_gpu_evidence": ["trajectory-cpu-gpu", "cpu-gpu"],
+  "checks": [
+    "Strict versioned serialization, identified outside owners, per-region capacitor anchors and ordinary ensemble registration",
+    "Full initial rates versus independent scalar process laws and independent nonlinear field roots, with and without padding",
+    "Fresh float64 CPU/L4 trajectories versus segmented adaptive DOP853 with independent field roots at every reference rate evaluation",
+    "All 12 state fields, per-owner and global material, capacitor charge and chemical/electrical/dissipated-energy accounting",
+    "Junction blocking changes flux without resetting intrinsic gate; gate kinetics use absolute intracellular voltage differences",
+    "Control-dependent RK4 stage and endpoint rejection; unconverged roots cannot produce acceptable finite rates",
+    "Three timesteps, complete disk and fresh-process restart, future-control branch, terminal restart, changed window widths, independent clocks and world partitioning",
+    "Same-region reduction and self-contained prior spatial family regressions",
+    "Complete saved CPU/L4 state histories plus membrane voltages; GPU execution explicitly verified"
+  ],
+  "tolerances": {
+    "reference_state_atol": 2e-11,
+    "reference_state_rtol": 3e-9,
+    "reference_voltage_atol_V": 2e-8,
+    "cpu_gpu_state_atol": 3e-13,
+    "cpu_gpu_state_rtol": 3e-10,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": 2e-11,
+    "component_charge_atol_C": 1e-20,
+    "qualified_energy_atol_pJ": 2e-8,
+    "independent_stage_charge_rate_atol_A": 2e-23,
+    "same_backend_complete_replay": "bitwise",
+    "refinement_dt_s": [0.0001, 0.00005, 0.000025],
+    "refinement_error_ratio_or_roundoff_floor": [0.2, 3e-13],
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "field_newton_target_fraction": 0.01
+  },
+  "resources": {
+    "max_wall_seconds": 3600,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "Accepted integration boundary observations only; no nonlinear-field interpolation or continuous observer enclosure claim",
+    "No cross-region calcium/IP3/assembly composition yet; previously qualified same-region models retain their identities",
+    "No native BETSE tissue trajectories or general biological equivalence",
+    "No measured biological fixture parameters, variable water/volume, mechanics or lifecycle",
+    "Connected dense outside field, one capacitor per cell; no distributed single-world solve or multi-GPU scaling claim",
+    "Legacy Vm-based definition/domain bounds remain conservative guards in addition to the actual coupled junction-voltage checks",
+    "GPU metrics are descriptive across correctness/compilation phases; no utilization or throughput gate and no inferred fully warmed interval",
+    "Historical kinetic-family tests tied to missing retired-VM runs are unavailable; retain their collection failure and separate frozen-source compatibility preflight"
+  ],
+  "automatic_followup": false
+}

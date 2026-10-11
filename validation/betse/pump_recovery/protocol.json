@@ -1,0 +1,30 @@
+{
+  "version": "matched_pump_availability_cpu_gpu@1",
+  "duration_s": 0.1,
+  "block_time_s": 0.025,
+  "release_time_s": 0.05,
+  "sample_dt_s": 0.001,
+  "arms": ["baseline", "no_op", "held_block", "block_release", "half_release"],
+  "cells_steps_s": [0.00005, 0.000025, 0.0000125],
+  "backends": ["cpu", "gpu"],
+  "reference_step_divisors": [1000, 2000, 2000],
+  "reference_rhs_cap": 200000,
+  "reference_accepted_step_cap": 20000,
+  "cpu_gpu_atol": 5e-11,
+  "minimum_response_V": 1e-6,
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "phase_seconds": {"reference": 300, "cpu": 900, "gpu": 900, "compare": 120},
+    "max_cells_steps": 8192,
+    "max_trace_bytes": 536870912,
+    "max_worker_rss_bytes": 2147483648,
+    "per_file_bytes": 134217728,
+    "artifact_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296
+  },
+  "scope": "Transient pump-availability suppression/release from the authenticated seven-cell preparation. Normal, no-op, held-off, full release and half-suppression/release controls share the same initial physical state. Ordinary Cells CPU/L4 trajectories versus separately executed independent equations. Finite bath and maintained ATP/ADP/Pi assumptions remain unchanged. No equilibrium preparation, native SIM dispatch correspondence or biological recovery claim.",
+  "steady_state_qualified": false,
+  "native_recovery_qualified": false,
+  "full_betse_parity": false,
+  "automatic_followup": false
+}

@@ -1,0 +1,43 @@
+{
+  "kind": "closed_compartment_chemistry_qualification@1",
+  "physical_scope": "Independent fixed-volume closed compartments with reversible detailed-balance mass action, finite conserved moieties and charge; synthetic two-site calcium buffering example",
+  "duration_s": 0.1,
+  "steps_s": [0.0005, 0.00025, 0.000125],
+  "checks": [
+    "Strict named species, compartments, reactions, complete controls, material stoichiometry and charge; no independent inconsistent reverse constants",
+    "Independent scalar polynomial DOP853 and Radau references with material, extent and dissipation trajectories",
+    "Timestep refinement including off-grid observations; analytic one-site binding equilibrium and multimerization with a conserved catalyst",
+    "Per-compartment material, charge, reaction-ledger and free-energy balance; positive amounts at every RK4 trial and complete cubic observation domain",
+    "Blocked reactions, zero rates, no reactions, piecewise release, independent compartment ownership, renamed species and changed padding",
+    "Exact complete checkpoint restart, terminal continuation, future control branches, changed windows and world partitions 1/2/3 with nonzero IDs",
+    "Actual float64 CPU and L4 states, CPU/GPU correspondence, ordinary public CLI and corrupt-checkpoint refusal",
+    "Existing reaction_transport and shared scalar/cohort identity regression suites"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-9,
+    "independent_state_atol": 3e-12,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "reference_agreement_rtol": 2e-11,
+    "reference_agreement_atol": 3e-14,
+    "minimum_refinement_improvement": 8,
+    "energy_atol_pJ": 1e-9,
+    "conservation_roundoff_multiplier": 4096,
+    "max_actual_step_times_inventory_loss_bound": 0.25
+  },
+  "resources": {
+    "max_wall_seconds": 2700,
+    "artifact_and_cache_bytes": 1610612736,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "Measured calcium-buffer parameters or biological validation",
+    "Intercompartment exchange, ER membrane, SERCA, calcium channels or voltage feedback",
+    "Open driven chemistry, chemostats, changing volumes or zero initial species amounts",
+    "Native BETSE calcium comparison or full BETSE equivalence",
+    "Shared ensemble queue adapter, sustained GPU utilization, JUPITER deployment or multi-GPU scaling"
+  ],
+  "automatic_followup": false
+}

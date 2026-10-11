@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plastic-heredity-cells"
+version = "0.16.0.dev0"
+description = "A modular, CPU-first foundation for multiscale cell simulation"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = ["jax==0.11.1", "jaxlib==0.11.1", "numpy==2.5.3"]
+
+[project.optional-dependencies]
+gpu = ["jax[cuda13]==0.11.1"]
+dev = ["pytest==9.1.1", "ruff==0.16.6"]
+
+[project.scripts]
+cells = "cells.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]

@@ -1,0 +1,104 @@
+{
+  "status": "pass",
+  "scope": "prospective plan only; no ODE solve",
+  "cases": [
+    {
+      "case": "single_mono_small",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 57880992,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_mono",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 57880992,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_mono_large",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 57880992,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_mono_very_large",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 57880992,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_divalent",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 68107936,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "disconnected_mono",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 57880992,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "pair_mono",
+      "steps": 200,
+      "observations": 3275,
+      "estimated_working_array_bytes": 114575392,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "star_mono",
+      "steps": 200,
+      "observations": 3275,
+      "estimated_working_array_bytes": 114575392,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "star_divalent",
+      "steps": 200,
+      "observations": 3275,
+      "estimated_working_array_bytes": 134819616,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "star_mono_internal",
+      "steps": 200,
+      "observations": 3275,
+      "estimated_working_array_bytes": 114575392,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "star_mono_block_release",
+      "steps": 304,
+      "observations": 5047,
+      "estimated_working_array_bytes": 176411680,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "star_mono_short_pulse",
+      "steps": 52,
+      "observations": 856,
+      "estimated_working_array_bytes": 29962336,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_mono_depletion",
+      "steps": 50,
+      "observations": 837,
+      "estimated_working_array_bytes": 29270112,
+      "declared_trace_bytes": 268435456
+    },
+    {
+      "case": "single_divalent_tiny",
+      "steps": 100,
+      "observations": 1655,
+      "estimated_working_array_bytes": 68107936,
+      "declared_trace_bytes": 268435456
+    }
+  ]
+}

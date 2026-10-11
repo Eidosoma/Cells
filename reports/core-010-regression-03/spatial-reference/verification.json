@@ -1,0 +1,21 @@
+{
+  "archive_sha256": "843f25671910f008a4c6c955c780e04dcbe66a1573abc96f66b85312e0708456",
+  "contexts": {
+    "preserved-spatial-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "9344217a852619d26ff18b8d336261d405713b1ce894f5a973a99994ce8c0dff",
+      "log_sha256": "b0a0546be6aa78c3d765989e91ea6e12fc568c9863b4e0b859763dd34f50cee6",
+      "seconds": 8.836,
+      "skipped": 0,
+      "tests": 105
+    }
+  },
+  "status": "pass",
+  "test_files": [
+    "tests/unit/test_spatial_extracellular_dynamics.py",
+    "tests/unit/test_spatial_extracellular_artifact_audit.py"
+  ],
+  "total_tests": 105
+}

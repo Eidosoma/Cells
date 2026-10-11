@@ -1,0 +1,13 @@
+{
+  "status": "failed_harness_comparison_not_accepted",
+  "scope": "First ad hoc saved-receipt replay comparison",
+  "recorded_utc": "2026-09-10 17:42:41 UTC",
+  "reference_receipt": "reports/spec-008-design-check-v2.json",
+  "reference_receipt_sha256": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+  "reference_checks_status": "pass",
+  "failure": "The in-memory dataclass result retains tuples, while the saved JSON contains arrays loaded as lists. Direct Python object equality failed after removing timestamps.",
+  "correction": "Compare after the same JSON serialization roundtrip used to save the receipt; require exact equality of every field except timestamp, with unchanged source and payload hashes.",
+  "reference_code_or_scientific_inputs_changed": false,
+  "saved_receipt_changed": false,
+  "production_changed": false
+}

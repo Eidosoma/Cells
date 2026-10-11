@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "scalar_snapshots": 162,
+  "cohort_snapshots": 16,
+  "complete_state_and_layout_loaded": true,
+  "current_source_and_runtime_matched": true,
+  "cpu_affinity": [
+    4
+  ],
+  "verification_sha256": "6d60fd732bfd0f8a068fb0a0b342f9487f9b0b74326f73d8af84aefc7f6a9b43"
+}

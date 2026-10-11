@@ -1,0 +1,41 @@
+{
+  "revision": "e02_comparison_profiles@1",
+  "decision": "D040",
+  "date": "2026-09-09",
+  "scope": "short_lossless_reference_backed_comparison_recording_and_dependency_audit",
+  "cases": [
+    "prepare_E",
+    "prepare_M",
+    "E_to_M/active",
+    "M_to_E/active",
+    "E_to_M/one_neighbor",
+    "M_to_E/one_neighbor"
+  ],
+  "policies": [
+    "full_samples",
+    "trajectory_backed"
+  ],
+  "trajectory_policy": "rk4_basis",
+  "readout_policy": "batched_cached",
+  "order": "case_then_comparison_policy",
+  "duration": 5.12,
+  "step": 0.01,
+  "window_steps": 256,
+  "steps_per_profile": 512,
+  "planned_profiles": 12,
+  "candidate_accuracy_limit": 1,
+  "integration_and_sample_identity": "exact_ordered_arrays_against_D039_rk4_basis",
+  "reconstruction_identity": "bitwise_all_logical_comparison_arrays_no_RHS_replay",
+  "comparison_evidence": "all_D039_samples_flags_state_and_readout_digests_and_scores",
+  "commit_policy": "unchanged_D039_candidate_payload_then_comparison_then_hash_linked_commit",
+  "recovery_policy": "dependency_aware_closed_committed_prefix_only",
+  "performance": "one_current_full_and_one_backed_profile_per_case_not_statistical_benchmark",
+  "resource_policy": "all_prior_preparation_reference_and_engineering_roots_plus_one_new_root_under_original_caps",
+  "automatic_retry_or_refinement": false,
+  "equations_changed": false,
+  "integration_kernel_changed": false,
+  "production_changed": false,
+  "long_study_run": false,
+  "timestep_selected": false,
+  "compact_long_policy_adopted": false
+}

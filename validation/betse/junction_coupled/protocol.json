@@ -1,0 +1,31 @@
+{
+  "version": "physical_time_junction_coupled@1",
+  "model": "finite_extracellular@3",
+  "law": "betse_rate_junction_relaxation@1",
+  "cases": ["single_mixed", "network_mixed", "disconnected_mixed"],
+  "duration_s": 1.0,
+  "cells_steps_s": [0.0001, 0.00005],
+  "observation_step_s": 0.005,
+  "off_grid_observation_s": 0.123457,
+  "restart_time_s": 0.5,
+  "junction_permeability_scale": 0.01,
+  "thresholds_V": [0.01, 0.015, 0.02],
+  "minimums": [0.05, 0.1, 0.2],
+  "initial_fractions": [0.2, 0.6, 0.95],
+  "availability": [[0.0, 1.0], [0.25, 0.5], [0.5, 0.0], [0.75, 1.0]],
+  "reference": {"rtol": 2e-11, "atol": 2e-13, "max_step_s": 0.002},
+  "tolerances": {
+    "voltage_V": 2e-8, "amount_fmol": 5e-10, "gate": 2e-8,
+    "energy_pJ": 2e-8, "material_fmol": 2e-11,
+    "cpu_gpu_atol": 5e-11, "refinement_ratio_max": 0.25,
+    "refinement_floor_V": 2e-10
+  },
+  "resources": {
+    "cpu_affinity": [4, 5], "comparison_timeout_seconds": 1200,
+    "max_trace_bytes": 2147483648,
+    "artifact_bytes": 2147483648, "per_file_bytes": 268435456,
+    "free_disk_reserve_bytes": 4294967296
+  },
+  "scope": "One second of coupled free-voltage junction transport on the previously mapped seven-cell / twelve-edge native geometry, using a declared 0.01 permeability scaling to resolve gate and transport interaction. Membranes are impermeable and pumps/channels disabled in the independent-reference panel. Native clock/blocking quirks remain in the separate compatibility adapter. This is production CPU/L4 numerical integration qualification, not a new timed native FULL-driver comparison, biological validation or GPU throughput/multi-GPU scaling claim.",
+  "automatic_followup": false
+}

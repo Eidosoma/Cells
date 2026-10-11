@@ -1,0 +1,115 @@
+{
+  "status": "pass",
+  "scope": "post_hoc_retained_regulatory_disagreement_localization_only",
+  "case": "M_to_E/mirna_only",
+  "campaign_status": "unqualified",
+  "receipt_sha256": "4a432c2f8341b5cd949abf51b776f165cf98951cdd6bf2167168d8853965b194",
+  "registration_sha256": "354269b779a029c74106672f45c8932cee6730d13c5862a4da5c5e68da539e63",
+  "comparison_sha256": "ca9671d8f8e1f2fc2d41321fc0964aad305807b0510b494430cb3d81f379caa1",
+  "diagnostic_source_sha256": "e82b9501680a30c0ee6b7048e7bdb443cb2705b0b193ddd567a151bf2dc36c44",
+  "samples": 67836,
+  "chunks": 265,
+  "maxima": {
+    "radau_vs_bdf": {
+      "regulatory_state": {
+        "score": 0.22626789470158734,
+        "time": 404.4905051573776,
+        "column": 3,
+        "actual": 6.359167592332305,
+        "expected": 6.359166389049072,
+        "absolute_difference": 0.0000012032832330532983,
+        "candidate_budget_at_expected": 0.000005317958319452454,
+        "coordinate": "Zeb_mRNA_total",
+        "kind": "primary",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000108.npz",
+        "reference_allowance_at_expected": 5.317958319452454e-7
+      },
+      "regulatory_history": {
+        "score": 0.14831628439082498,
+        "time": 404,
+        "column": 3,
+        "actual": -62.25520374805495,
+        "expected": -62.25520495130941,
+        "absolute_difference": 0.0000012032544560725,
+        "candidate_budget_at_expected": 0.00000811276024756547,
+        "coordinate": "Zeb_mRNA_total",
+        "kind": "local_regulatory_history",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000108.npz",
+        "reference_allowance_at_expected": 8.112760247565471e-7
+      }
+    },
+    "radau_vs_refined": {
+      "regulatory_state": {
+        "score": 0.00007309000677005044,
+        "time": 9,
+        "column": 6,
+        "actual": 50.430117316898716,
+        "expected": 50.43011731744846,
+        "absolute_difference": 5.497469146575895e-10,
+        "candidate_budget_at_expected": 0.000007521505865872423,
+        "coordinate": "ZEB_prot",
+        "kind": "primary",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000005.npz",
+        "reference_allowance_at_expected": 7.521505865872423e-7
+      },
+      "regulatory_history": {
+        "score": 0.00009791451918650563,
+        "time": 9,
+        "column": 6,
+        "actual": -12.291194243242696,
+        "expected": -12.29119424269295,
+        "absolute_difference": 5.497469146575895e-10,
+        "candidate_budget_at_expected": 0.000005614559712134648,
+        "coordinate": "ZEB_prot",
+        "kind": "local_regulatory_history",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000005.npz",
+        "reference_allowance_at_expected": 5.614559712134648e-7
+      }
+    },
+    "bdf_vs_refined": {
+      "regulatory_state": {
+        "score": 0.22626785072202846,
+        "time": 404.4905051573776,
+        "column": 3,
+        "actual": 6.359166389049072,
+        "expected": 6.359167592332085,
+        "absolute_difference": 0.0000012032830127850502,
+        "candidate_budget_at_expected": 0.000005317958379616605,
+        "coordinate": "Zeb_mRNA_total",
+        "kind": "primary",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000108.npz",
+        "reference_allowance_at_expected": 5.317958379616605e-7
+      },
+      "regulatory_history": {
+        "score": 0.1483162828632104,
+        "time": 404,
+        "column": 3,
+        "actual": -62.25520495130941,
+        "expected": -62.255203748054974,
+        "absolute_difference": 0.000001203254434756218,
+        "candidate_budget_at_expected": 0.000008112760187402748,
+        "coordinate": "Zeb_mRNA_total",
+        "kind": "local_regulatory_history",
+        "cell_id": 100,
+        "comparison_chunk": "chunk-000108.npz",
+        "reference_allowance_at_expected": 8.112760187402748e-7
+      }
+    }
+  },
+  "reference_agreement_fraction": 0.1,
+  "seconds": 0.7114776970120147,
+  "wall_budget_seconds": 60,
+  "new_integration": false,
+  "scientific_gate_changed": false,
+  "method_at_fault_established": false,
+  "independent_failed_comparison_grid_audit": {
+    "samples": 67836,
+    "chunks": 265
+  },
+  "total_read_only_seconds": 1.0271282580215484
+}

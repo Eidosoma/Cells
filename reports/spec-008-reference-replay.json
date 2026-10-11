@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "receipt": "reports/spec-008-design-check-v2.json",
+  "receipt_sha256": "ebb0e660dd5c1f980968d631f6539441fed94e4e9ec995aba26401510cf4e44b",
+  "checks_replayed": 10671,
+  "source_files_rehashed": 17,
+  "production_files_rehashed": 46,
+  "exact_serialized_result_except_timestamp": true,
+  "seconds": 1.1252973029622808,
+  "ode_solver_run": false,
+  "old_checker_source_members_verified": 3,
+  "pre_existing_files": 493,
+  "unchanged_pre_existing_files": 484,
+  "missing_files": []
+}

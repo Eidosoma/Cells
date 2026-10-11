@@ -1,0 +1,42 @@
+{
+  "kind": "assembly_spatial_cluster_qualification@1",
+  "physical_scope": "Two cell-owned finite neutral assembly pools regulating channels in the qualified spatial_extracellular@2 cluster; one shared local bath and three extracellular regions",
+  "hypothesis": "The presence of a cycle in the retained assembly controls its owner's channel availability; no chemical feedback or protein energetics",
+  "duration_s": 0.02,
+  "worlds_per_numerical_case": 2,
+  "steps_s": [0.0001, 0.00005, 0.000025],
+  "checks": [
+    "Separate material balances and independent cell random streams",
+    "Union of assembly event clocks, including simultaneous events on an ionic grid boundary",
+    "Independent scalar pool histories plus independently implemented spatial DOP853 and Radau references",
+    "Timestep refinement, exact same-backend disk restart, window and world partition invariance at widths 1, 2 and 3, including nonzero world IDs; preserve all partition endpoints",
+    "Ring/open same-material controls with connected, junction-off, fully isolated receiver and disabled assembly coupling",
+    "One-cell/no-face reduction to the existing assembly_regulated_cell@1 model",
+    "CPU/L4 agreement, complete public CLI checkpoints and observations",
+    "Real two-worker L4 ensemble queue; per-cell outcomes without double-counting independent worlds",
+    "Existing finite-pool and one-cell coupled regression suites"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-9,
+    "independent_state_atol": 3e-12,
+    "availability_exposure_atol_s": 2e-14,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "refinement_floor": 1e-13,
+    "ionic_conservation_and_domain": "unchanged spatial model checks at every RK4 trial and endpoint; accounting at saved observations and endpoints"
+  },
+  "resources": {
+    "max_wall_seconds": 3600,
+    "artifact_and_cache_bytes": 1610612736,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "Experimental validation or biological calibration",
+    "Native BETSE spatial parity or full BETSE equivalence",
+    "Cross-region junctions, shared protein pools, protein energy or feedback to assembly rates",
+    "Minimum GPU utilization, GH200 deployment or multi-GPU scaling"
+  ],
+  "automatic_followup": false
+}

@@ -1,0 +1,84 @@
+{
+  "channel_historical_test_files": [
+    "tests/unit/test_voltage_gated_channel_reference.py",
+    "tests/unit/test_voltage_gated_dynamics.py",
+    "tests/unit/test_voltage_gated_artifact_audit.py"
+  ],
+  "contexts": {
+    "current-production": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "b29d2eeba24b589ced6efcb6866897871c0269923cd1403fb4e984a4fe376f83",
+      "log_sha256": "4d1e6822326c160eedee733a6b3127ba6d22f6e55c769c277ed859f5b4b76053",
+      "seconds": 694.858,
+      "skipped": 0,
+      "tests": 1909
+    },
+    "preserved-channel-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "a4b542cb1c1373ac9c57045fdc2dd709bc1a6e246aa3badb49eca3d4b588b86b",
+      "log_sha256": "2065cc91b34aa0acd356ca4a99c0434cca264b7caefae0fdc7752670e53a96fc",
+      "seconds": 18.687,
+      "skipped": 0,
+      "tests": 205
+    },
+    "preserved-physical-graph-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "d80d68eaa1ce2e84862bf4b98342c7f3f5bfeea26080d393023501b612f2efd1",
+      "log_sha256": "e24be6c13812a424ea614b7d22caf179335cbd79cd7918fe5df793884bdac6fe",
+      "seconds": 15.201,
+      "skipped": 0,
+      "tests": 213
+    },
+    "preserved-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "2636bb4570f2e3d7663caf0112f9de1127c7a5fe1b9c761ea11491ca62c55dab",
+      "log_sha256": "f2cedb13fa8c840ae54356ce14a03c5cd701846404c928c278f3e7fce0d296f0",
+      "seconds": 156.682,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "driver_sha256": "4102a34c4d31e2599ee40b684e31af4f5598a5b6f61b13fc8b39189169d15b99",
+  "historical_test_files": [
+    "tests/unit/test_comparison_evidence.py",
+    "tests/unit/test_graph_candidate.py",
+    "tests/unit/test_graph_diagnostics.py",
+    "tests/unit/test_graph_evaluation.py",
+    "tests/unit/test_graph_evidence.py",
+    "tests/unit/test_graph_reference_panel.py",
+    "tests/unit/test_graph_refinement.py",
+    "tests/unit/test_source_graph_continuation.py",
+    "tests/unit/test_source_graph_paths.py",
+    "tests/unit/test_source_preparations.py"
+  ],
+  "physical_graph_historical_test_files": [
+    "tests/unit/test_physical_ionic_graph_reference.py",
+    "tests/unit/test_physical_ionic_graph_dynamics.py",
+    "tests/unit/test_physical_ionic_graph_artifact_audit.py"
+  ],
+  "preserved_channel_source_sha256": "59d4c371f57b5a758a1c6f03c77d3385b97eb079c2fc05cfaeb708e155acdda4",
+  "preserved_physical_graph_source_sha256": "432fa9ec599c056f145f5e97ec6007a5b94e631e08ce3995df832367985ef5c6",
+  "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+  "status": "pass",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "total_tests": 3298
+}

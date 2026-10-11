@@ -1,0 +1,39 @@
+{
+  "schema": "cells.betse_release_reference_plan@1",
+  "decision": "D104",
+  "prerequisite_completion_sha256": "a3660e211dbd5cd2e2e6389d8a0ff46d15019842dd620a4114016157af5152ad",
+  "histories": {"a": [0.2, 0.6], "b": [0.6, 0.2]},
+  "conditions": ["baseline", "no_op", "static_blocked", "suppression_release"],
+  "duration_s": 0.002,
+  "block_time_s": 0.0005,
+  "release_time_s": 0.001,
+  "sample_dt_s": 0.00000625,
+  "reference_paths": 24,
+  "segment_integrations": 48,
+  "dense_probe_fractions": [0.25, 0.5, 0.75],
+  "signal": {
+    "budget_multiplier": 4,
+    "reference_uncertainty_multiplier": 2,
+    "minimum_block_effect_V": 0.00004,
+    "minimum_post_release_voltage_change_V": 0.00004,
+    "minimum_release_flux_fmol_per_s": 0.0002,
+    "minimum_block_gate_change": 0.0004,
+    "require_positive_history_contrast": false,
+    "extend_window_on_failure": false
+  },
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "total_timeout_seconds": 900,
+    "worker_timeout_seconds": 480,
+    "max_file_bytes": 134217728,
+    "max_artifact_bytes": 268435456
+  },
+  "simulator_execution_allowed": false,
+  "production_changed": false,
+  "release_response_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

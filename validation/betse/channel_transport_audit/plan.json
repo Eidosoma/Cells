@@ -1,0 +1,19 @@
+{
+  "schema": "cells.betse_channel_transport_audit_plan@1",
+  "decision": "D092",
+  "capture": "runs/ref-004b-runtime-fix-2026-09-14/capture-01",
+  "completion_sha256": "e2bbd1e45f0b04845603f29f6fb932f239a22045650128989f2aa93dc0f57f09",
+  "registration_sha256": "90dc854e2a8b32a350127325d8a49a9c8a7159deb9c08e71fdd85c02b285a322",
+  "comparison_sha256": "4d5d491dacca611da7d3d44a89a8de63795046705790c5aaee05b8ab4772918d",
+  "expected_comparisons": 37068,
+  "precision_digits": 80,
+  "cpu_affinity": [0, 1, 2, 3],
+  "total_timeout_seconds": 120,
+  "max_artifact_bytes": 67108864,
+  "max_file_bytes": 33554432,
+  "scope": "Independent saved-data closeout of twelve native single updates and twelve matched prescribed Cells transfers on each CPU backend. Not a full-loop or production-integrator comparison.",
+  "simulators_rerun": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

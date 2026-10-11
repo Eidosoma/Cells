@@ -1,0 +1,16 @@
+{
+  "version": "betse_dynamic_junction_lifecycle@1",
+  "orders": [["Na"], ["Na", "K", "Cl"], ["Cl", "K", "Na"]],
+  "blocks": [0.0, 0.5, 1.0],
+  "probe_voltage_V": [-0.12, -0.08, -0.04, 0.0, 0.04, 0.08, 0.12],
+  "probe_dt_s": [0.00001, 0.0001, 0.001],
+  "probe_initial_gates": [0.0, 0.2, 1.0],
+  "probe_block_schedule": [1.0, 0.5, 0.0, 0.0, 1.0, 1.0],
+  "gj_min": 0.1,
+  "gj_vthresh_mV": 15.0,
+  "gj_vgrad_mV": 5.0,
+  "gj_surface_fraction": 0.000001,
+  "max_wall_seconds": 300,
+  "tolerances": {"gate_atol": 5e-14, "gate_rtol": 2e-13},
+  "scope": "Native dynamic and instantaneous laws; actual FULL-driver call count/order and observer neutrality; no biological fit"
+}

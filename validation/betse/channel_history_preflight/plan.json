@@ -1,0 +1,37 @@
+{
+  "schema": "cells.betse_channel_history_preflight_plan@1",
+  "decision": "D097",
+  "reference": "REF-004c",
+  "prerequisite_completion_sha256": "61e700cbddda5141f92443ba684bf344d14d09e1b3c9db12110d1a0a923a28b9",
+  "histories": {"a": [0.2, 0.6], "b": [0.6, 0.2]},
+  "variants": ["active_channel", "blocked_channel"],
+  "backends": ["numpy", "jax_eager", "jax_jit"],
+  "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+  "candidate_cells_steps_s": [0.00005, 0.000025, 0.0000125],
+  "candidate_duration_s": 0.002,
+  "absolute": {
+    "gate": 2e-12,
+    "tau_s": 2e-12,
+    "gate_rate_per_s": 2e-9,
+    "open_rate_per_s": 2e-9,
+    "voltage_V": 2e-10,
+    "flux_fmol_per_s": 2e-9,
+    "permeability_m_per_s": 2e-19,
+    "power_pJ_per_s": 2e-7
+  },
+  "relative": 2e-11,
+  "minimum_open_rate_separation_per_s": 1.0,
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "total_timeout_seconds": 240,
+    "worker_timeout_seconds": 90,
+    "max_artifact_bytes": 67108864,
+    "max_file_bytes": 33554432
+  },
+  "production_changed": false,
+  "coupled_trajectories_run": false,
+  "reference_integration_run": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

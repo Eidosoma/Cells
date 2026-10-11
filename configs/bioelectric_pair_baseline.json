@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "bioelectric_pair@1",
+    "species": ["Na", "K", "Cl"],
+    "units": {
+      "amount": "fmol", "volume": "pL", "time": "s", "concentration": "mM",
+      "voltage": "V", "area": "m2", "permeability": "m/s",
+      "specific_capacitance": "F/m2", "temperature": "K",
+      "chemical_drive": "J/mol_cycles", "pump_capacity": "fmol_cycles/s",
+      "gate": "fraction", "gate_sensitivity": "1/V", "energy": "pJ"
+    },
+    "population": {"count": 2, "cell_ids": [101, 202]},
+    "initial_state": {
+      "amount_fmol": [[12, 18], [140, 130], [10, 15]],
+      "volume_pL": [1, 1], "voltage_V": [-0.065, -0.045]
+    },
+    "parameters": {
+      "membranes": [
+        {
+          "membrane_id": 501, "owner_cell_id": 101, "bath_id": 701,
+          "area_m2": 1e-9, "specific_capacitance_F_per_m2": 0.01,
+          "permeability_m_per_s": [1e-10, 1e-9, 1e-10],
+          "pump_capacity_fmol_per_s": 0.02
+        },
+        {
+          "membrane_id": 502, "owner_cell_id": 202, "bath_id": 701,
+          "area_m2": 1e-9, "specific_capacitance_F_per_m2": 0.01,
+          "permeability_m_per_s": [1e-10, 1e-9, 1e-10],
+          "pump_capacity_fmol_per_s": 0.02
+        }
+      ],
+      "bath": {
+        "kind": "clamped", "bath_id": 701, "concentration_mM": [145, 5, 150],
+        "potential_V": 0, "temperature_K": 298.15, "atp_free_energy_J_per_mol": -50000
+      },
+      "contact": {
+        "contact_id": 901, "from_cell_id": 101, "to_cell_id": 202,
+        "area_m2": 1e-11, "permeability_m_per_s": [1e-8, 5e-9, 2e-9],
+        "residual": [0.1, 0.1, 0], "sensitivity_per_V": 100,
+        "half_voltage_V": 0.04, "tau_s": 0.2, "initial_gate": 0.25
+      }
+    }
+  },
+  "experiment": {
+    "end_time": 10, "source": {"kind": "none"},
+    "observation_times": [0, 0.0005, 0.1, 1, 2, 4, 6, 8, 10],
+    "membrane_controls": [
+      {
+        "leak": {
+          "kind": "prescribed_leak_multipliers", "membrane_id": 501,
+          "species": ["Na", "K", "Cl"],
+          "schedule": [{"time": 0, "multipliers": [1, 1, 1]}]
+        },
+        "pump": {
+          "kind": "prescribed_pump_multiplier", "membrane_id": 501,
+          "schedule": [{"time": 0, "multiplier": 1}]
+        }
+      },
+      {
+        "leak": {
+          "kind": "prescribed_leak_multipliers", "membrane_id": 502,
+          "species": ["Na", "K", "Cl"],
+          "schedule": [{"time": 0, "multipliers": [1, 1, 1]}]
+        },
+        "pump": {
+          "kind": "prescribed_pump_multiplier", "membrane_id": 502,
+          "schedule": [{"time": 0, "multiplier": 1}]
+        }
+      }
+    ],
+    "contact": {
+      "kind": "prescribed_contact_multiplier", "contact_id": 901,
+      "schedule": [{"time": 0, "multiplier": 1}]
+    }
+  },
+  "execution": {
+    "backend": "cpu", "precision": "float64", "solver": "rk4", "dt": 0.001,
+    "capacity": 2, "membrane_capacity": 2, "edge_capacity": 1,
+    "jit": true, "max_steps": 100000, "max_trace_bytes": 536870912
+  }
+}

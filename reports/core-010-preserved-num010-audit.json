@@ -1,0 +1,29 @@
+{
+  "captured_sources": 21,
+  "case_count": 14,
+  "gates": {
+    "salt_relaxation": {"contrast_fraction_decrease": 0.22119921692859512, "pass": true},
+    "spatial": {
+      "errors_mM": [0.09224173607674402, 0.023491588893364224, 0.005899993180563001],
+      "pass": true,
+      "ratios": [0.25467418429570216, 0.25115343229208303]
+    }
+  },
+  "gpu_tested": false,
+  "ode_calls": 0,
+  "payloads": 339,
+  "preserved_source_sha256": "843f25671910f008a4c6c955c780e04dcbe66a1573abc96f66b85312e0708456",
+  "production_imported": false,
+  "restart_count": 14,
+  "schema": "cells.num010.readonly_audit@1",
+  "selected_dt_s": 0.000125,
+  "status": "verified",
+  "totals": {
+    "complete_attempts": 133,
+    "main_accepted_steps": 88411,
+    "main_attempts": 140,
+    "main_rhs_calls": 454155,
+    "rejected_attempts": 7
+  },
+  "verification_sha256": "abf25d88ebd64bf2c922f189bdf0669ae100c46eef3101d0d8eda98f15a66046"
+}

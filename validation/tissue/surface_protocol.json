@@ -1,0 +1,56 @@
+{
+  "kind": "resolved_membrane_surface_reservoir_component@1",
+  "scope": "GPU-compatible resolved membrane surfaces, charge-to-patch voltage mapping, GHK membrane/junction and logmean outside transport, explicit reservoir resets and continuous exchange. Supplied-field component; no new field closure or evolving model registration.",
+  "tests": ["tests/unit/test_surface_transport.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_surface_transport.py::test_cpu_gpu_saved_physical_values"],
+  "required_evidence": ["gradient", "closed", "blocked", "equilibrium", "neutral", "reversed", "split", "padded", "isolated", "reservoir", "native-surfaces", "batch-partitions", "negative-controls"],
+  "required_gpu_evidence": ["surface-cpu-gpu"],
+  "native_binding": {
+    "root": "/mnt/workspaces/Cells/betse-tissue-contact-20261008-01",
+    "completion_sha256": "667d808ccd7f18204ffb604453f0bb2da88e57eb74721e9dde783b8e5f9c1224",
+    "row": "combined/step-0/observed"
+  },
+  "checks": [
+    "Independent scalar capacitor sums and 70-digit Decimal membrane/junction transport; independent outside logarithmic means and ownership loops",
+    "Separate finite inventories and reservoir exchange with species balance and an instantaneous electrochemical port-power identity",
+    "Explicit reservoir reset returns every injected or removed fmol and never repairs invalid concentrations",
+    "Analytic two-patch capacitor divider, gauge invariance, one-surface reduction, patch subdivision, route reversal and neutral padding",
+    "Blocking, equilibrium, neutral-species transport, malformed owners/coefficient rejection and runtime domain rejection",
+    "Actual completed native seven-cell, thirty-membrane, 10x10 grid capture: authenticate original receipt/row/trace; compare native membrane/junction transfers without averaged patch voltages",
+    "Measure native ionic-charge versus summed patch-capacitor mismatch and its exact weighted boundary-potential correction, rather than assert equivalence of distinct field closures",
+    "Native outside grid topology uses explicitly synthetic conservative face coefficients, not a purported reproduction of native finite-difference transport",
+    "Selected-device float64 placement, jit/vmap world batching, partition replay and saved CPU/L4 physical values",
+    "Corrupted owner accounting, reservoir ledger and capacitor charge fail independent checks"
+  ],
+  "tolerances": {
+    "physical_rtol": 3e-10,
+    "voltage_atol_V": 3e-13,
+    "charge_atol_C": 3e-25,
+    "flux_atol_fmol_s": 3e-12,
+    "chemical_potential_atol_J_mol": 3e-8,
+    "current_atol_A": 3e-23,
+    "energy_atol_pJ": 3e-12,
+    "power_atol_pJ_s": 3e-12,
+    "material_rate_atol_fmol_s": 3e-14,
+    "port_power_atol_pJ_s": 1e-10,
+    "native_flux_atol_fmol_s": 2e-11,
+    "native_flux_rtol": 2e-12
+  },
+  "resources": {
+    "max_wall_seconds": 1800,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "No time integration, timestep convergence, checkpoints or registered production tissue model in this component gate",
+    "Absolute outside potentials are supplied; outside ionic charge versus patch capacitor countercharge remains a constraint for the future coupled field solver",
+    "No native full-tissue equivalence, biological calibration, pumps, calcium/IP3 or assembly composition claim",
+    "Finite reservoir concentrations are not a complete electrical boundary condition; electrode work/charge must be declared when composing the field model",
+    "No native boundary derivative conventions adopted in the conservative graph transport law",
+    "GPU busy and measured SM-active with coverage are descriptive; no warmed throughput, multi-GPU scaling or saturation claim"
+  ],
+  "automatic_followup": false
+}

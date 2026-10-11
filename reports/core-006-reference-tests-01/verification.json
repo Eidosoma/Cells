@@ -1,0 +1,42 @@
+{
+  "contexts": {
+    "preserved-reference": {
+      "errors": 6,
+      "exit_code": 1,
+      "failures": 6,
+      "junit_sha256": "312779d481fc5645aa27d6c659c1fefd79819bb36b38a44444b80ed0db9709a1",
+      "log_sha256": "c3f91e65d8d28abca18ece462bd2ffec5315c7d3e52563df448f59e3f01c7b40",
+      "seconds": 138.426,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "driver_sha256": "44d716decebdf2026bb6e81a69a5daa63c1c8aec8f1ab7ae0e55ac3150591b89",
+  "historical_test_files": [
+    "tests/unit/test_comparison_evidence.py",
+    "tests/unit/test_graph_candidate.py",
+    "tests/unit/test_graph_diagnostics.py",
+    "tests/unit/test_graph_evaluation.py",
+    "tests/unit/test_graph_evidence.py",
+    "tests/unit/test_graph_reference_panel.py",
+    "tests/unit/test_graph_refinement.py",
+    "tests/unit/test_source_graph_continuation.py",
+    "tests/unit/test_source_graph_paths.py",
+    "tests/unit/test_source_preparations.py"
+  ],
+  "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+  "status": "failed",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "total_tests": 971
+}

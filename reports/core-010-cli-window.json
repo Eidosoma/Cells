@@ -1,0 +1,25 @@
+{
+  "all_arrays_byte_identical": true,
+  "checkpoints_verified": 3,
+  "joined_native_and_observed_arrays": 40,
+  "manifest_sha256": "b25a9391d34b20c61a148803ec7c0f95922b100bfbe521cd9d316ddccabd921c",
+  "resources": {
+    "chunk_payload_bytes": 357532,
+    "estimated_working_bytes": 1968256,
+    "executed_steps": 2400,
+    "max_observations_per_window": 1,
+    "peak_host_history_bytes": 13416,
+    "peak_host_observation_bytes": 472,
+    "requested_snapshots": 1,
+    "resident_off_nominal_events": 0,
+    "saved_accepted_records": 2401,
+    "saved_observation_records": 7,
+    "validated_observations": 7,
+    "windows": 19
+  },
+  "scalar_run": "runs/core-010-2026-09-11/development-example-01",
+  "scope": "Development full-window CLI example; not full production acceptance",
+  "status": "pass",
+  "window_count": 19,
+  "window_run": "runs/core-010-2026-09-11/development-window-01"
+}

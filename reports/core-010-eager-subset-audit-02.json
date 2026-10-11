@@ -1,0 +1,419 @@
+{
+  "failure_sha256": "b01c968d283977a961c58f6e827c91a4e02a17e3f31ccc708c8b33376e92807e",
+  "full_acceptance": false,
+  "newly_audited_cases": 6,
+  "previous_subset_sha256": "e1ddd97fb48474e269f4bfdf2fa4b8fe1924e25a2a247c3d2e66fa902e007648",
+  "results": {
+    "line_16": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 6.245004513516506e-17,
+            "concentration_mM": 9.71445146547012e-15,
+            "dissipation_pJ": 6.938893903907228e-18,
+            "potential_V": 2.168404344971009e-17
+          },
+          "maximum_normalized_error": 6.245004513516506e-7,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 6.245004513516506e-17,
+            "concentration_mM": 9.71445146547012e-15,
+            "dissipation_pJ": 6.938893903907228e-18,
+            "potential_V": 1.5395670849294163e-17
+          },
+          "maximum_normalized_error": 6.245004513516506e-7,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 28260,
+        "intervals": 240,
+        "maximum_abs_x": 0,
+        "maximum_component_charge_C": 3.1848587418857005e-27,
+        "minimum_amount_fmol": 0.10016032872139487,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "94afe491f33b77c05d50494e1572cd08751073a6b29b8dd426f427ac08e4f763",
+      "native_accounting": {
+        "charge_residual_C": 3.180132043712776e-27,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 5.530437219292139e-13,
+        "material_residual_fmol": 1.0408340855860843e-16,
+        "maximum_current_normalized": 0.004216169859435852,
+        "maximum_normalized_residual": 0.004216169859435852,
+        "minimum_amount_fmol": 0.10016032872139487,
+        "pass": true
+      },
+      "native_error": 0.0000011488032747308807,
+      "observed_accounting": {
+        "charge_residual_C": 3.180132043712776e-27,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 1.057974020890473e-12,
+        "material_residual_fmol": 1.0755285551056204e-16,
+        "maximum_current_normalized": 0.004268060766139807,
+        "maximum_normalized_residual": 0.004268060766139807,
+        "minimum_amount_fmol": 0.10016032872139487,
+        "pass": true
+      },
+      "observed_error": 0.000001140337824168114
+    },
+    "membrane_short_pulse": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 1.6653345369377348e-16,
+            "concentration_mM": 8.326672684688674e-16,
+            "dissipation_pJ": 6.661338147750939e-16,
+            "potential_V": 6.938893903907228e-18
+          },
+          "maximum_normalized_error": 0.0000016653345369377348,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 1.6653345369377348e-16,
+            "concentration_mM": 8.326672684688674e-16,
+            "dissipation_pJ": 6.661338147750939e-16,
+            "potential_V": 6.938893903907228e-18
+          },
+          "maximum_normalized_error": 0.0000016653345369377348,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 9162,
+        "intervals": 482,
+        "maximum_abs_x": 2.433205412583082,
+        "maximum_component_charge_C": 5.418777627115849e-27,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "5113cce6ee2d3c36604f7f09de30c3108ccff10d4adbfdc224c71ec3ff15d3b3",
+      "native_accounting": {
+        "charge_residual_C": 5.356011863095202e-27,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 5.329070518200751e-15,
+        "material_residual_fmol": 2.7755575615628914e-17,
+        "maximum_current_normalized": 0.0003838004317483876,
+        "maximum_normalized_residual": 0.0003838004317483876,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "native_error": 4.6695980415734084e-7,
+      "observed_accounting": {
+        "charge_residual_C": 5.356011863095202e-27,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 3.9968028886505635e-15,
+        "material_residual_fmol": 2.7755575615628914e-17,
+        "maximum_current_normalized": 0.0003758325395062504,
+        "maximum_normalized_residual": 0.0003758325395062504,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "observed_error": 4.6695980415734084e-7
+    },
+    "single_outside": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 4.336808689942018e-19,
+            "concentration_mM": 4.336808689942018e-19,
+            "dissipation_pJ": 3.469446951953614e-18,
+            "potential_V": 1.3877787807814457e-17
+          },
+          "maximum_normalized_error": 1.3877787807814455e-8,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 4.336808689942018e-19,
+            "concentration_mM": 4.336808689942018e-19,
+            "dissipation_pJ": 3.469446951953614e-18,
+            "potential_V": 6.938893903907228e-18
+          },
+          "maximum_normalized_error": 6.9388939039072276e-9,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 19200,
+        "intervals": 1600,
+        "maximum_abs_x": 2.433205412583082,
+        "maximum_component_charge_C": 2.0942352904024437e-29,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "48b2d91bc1cc729faff5ac29b1953b646bf0c61d39c9584891abc4e22a6bf652",
+      "native_accounting": {
+        "charge_residual_C": 1.0097419586828951e-28,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 9.71445146547012e-17,
+        "material_residual_fmol": 0,
+        "maximum_current_normalized": 0,
+        "maximum_normalized_residual": 1.0097419586828951e-8,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "native_error": 1.3766765505351941e-8,
+      "observed_accounting": {
+        "charge_residual_C": 1.0097419586828951e-28,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 9.71445146547012e-17,
+        "material_residual_fmol": 0,
+        "maximum_current_normalized": 0,
+        "maximum_normalized_residual": 1.0097419586828951e-8,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "observed_error": 1.3766765505351941e-8
+    },
+    "ternary_loop": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 3.3306690738754696e-16,
+            "concentration_mM": 1.6653345369377348e-15,
+            "dissipation_pJ": 3.3306690738754696e-16,
+            "potential_V": 1.734723475976807e-17
+          },
+          "maximum_normalized_error": 0.0000033306690738754696,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 3.3306690738754696e-16,
+            "concentration_mM": 1.6653345369377348e-15,
+            "dissipation_pJ": 3.3306690738754696e-16,
+            "potential_V": 1.3877787807814457e-17
+          },
+          "maximum_normalized_error": 0.0000033306690738754696,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 27593,
+        "intervals": 800,
+        "maximum_abs_x": 2.433205412583082,
+        "maximum_component_charge_C": 1.6381260875590082e-25,
+        "minimum_amount_fmol": 1,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "3428e2cdcba85878269554322f05501a0fe0d3d2c5852aa5578ea44ddd1af17b",
+      "native_accounting": {
+        "charge_residual_C": 1.6236650695620953e-25,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 4.707345624410664e-14,
+        "material_residual_fmol": 1.9984014443252818e-15,
+        "maximum_current_normalized": 0.0007482677186057178,
+        "maximum_normalized_residual": 0.0007482677186057178,
+        "minimum_amount_fmol": 1,
+        "pass": true
+      },
+      "native_error": 7.993605777301127e-8,
+      "observed_accounting": {
+        "charge_residual_C": 1.6236650695620953e-25,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 4.618527782440651e-14,
+        "material_residual_fmol": 1.7763568394002505e-15,
+        "maximum_current_normalized": 0.0007482677186057178,
+        "maximum_normalized_residual": 0.0007482677186057178,
+        "minimum_amount_fmol": 1,
+        "pass": true
+      },
+      "observed_error": 7.460698725481052e-8
+    },
+    "two_cells_chain": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 2.220446049250313e-16,
+            "concentration_mM": 5.551115123125783e-16,
+            "dissipation_pJ": 2.220446049250313e-16,
+            "potential_V": 2.0816681711721685e-17
+          },
+          "maximum_normalized_error": 0.000002220446049250313,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 2.220446049250313e-16,
+            "concentration_mM": 5.551115123125783e-16,
+            "dissipation_pJ": 2.220446049250313e-16,
+            "potential_V": 1.3877787807814457e-17
+          },
+          "maximum_normalized_error": 0.000002220446049250313,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 52830,
+        "intervals": 1600,
+        "maximum_abs_x": 2.433205412583082,
+        "maximum_component_charge_C": 1.0275116187281121e-25,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "63935fe009e57ba9e1555e3d5a2680e0a0b40fef649d2716995ca578d4277865",
+      "native_accounting": {
+        "charge_residual_C": 1.0011591520340905e-25,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 1.687538997430238e-14,
+        "material_residual_fmol": 1.717376241217039e-15,
+        "maximum_current_normalized": 0.0005990338972993879,
+        "maximum_normalized_residual": 0.0005990338972993879,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "native_error": 3.144012827860365e-8,
+      "observed_accounting": {
+        "charge_residual_C": 9.918190389162737e-26,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 1.554312234475219e-14,
+        "material_residual_fmol": 1.6653345369377348e-15,
+        "maximum_current_normalized": 0.0005101115333316286,
+        "maximum_normalized_residual": 0.0005101115333316286,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "observed_error": 3.108624468950438e-8
+    },
+    "uniform_outside": {
+      "compiled_comparison": {
+        "bitwise_required": false,
+        "comparison_factor": 0.001,
+        "native": {
+          "errors": {
+            "amount_and_transfer_fmol": 4.336808689942018e-19,
+            "concentration_mM": 5.421010862427522e-19,
+            "dissipation_pJ": 1.734723475976807e-18,
+            "potential_V": 1.3877787807814457e-17
+          },
+          "maximum_normalized_error": 1.3877787807814455e-8,
+          "pass": true
+        },
+        "observed": {
+          "errors": {
+            "amount_and_transfer_fmol": 4.336808689942018e-19,
+            "concentration_mM": 5.421010862427522e-19,
+            "dissipation_pJ": 1.734723475976807e-18,
+            "potential_V": 1.3877787807814457e-17
+          },
+          "maximum_normalized_error": 1.3877787807814455e-8,
+          "pass": true
+        }
+      },
+      "dense_domain": {
+        "blocked_polynomials_constant": true,
+        "extrema_checked": 31051,
+        "intervals": 1600,
+        "maximum_abs_x": 2.433205412583082,
+        "maximum_component_charge_C": 9.624102734613828e-28,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "independent_readout_fields": 26,
+      "manifest_sha256": "e56927964b00c8aeab271093bcee2b22206d139e896aa4dba7e21d0256457acd",
+      "native_accounting": {
+        "charge_residual_C": 9.592548607487504e-28,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 1.3877787807814457e-16,
+        "material_residual_fmol": 8.673617379884035e-18,
+        "maximum_current_normalized": 0.000010188557163972687,
+        "maximum_normalized_residual": 0.000010188557163972687,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "native_error": 2.3175905639050143e-8,
+      "observed_accounting": {
+        "charge_residual_C": 9.592548607487504e-28,
+        "dissipation_decrease_pJ": 0,
+        "energy_residual_pJ": 1.249000902703301e-16,
+        "material_residual_fmol": 8.673617379884035e-18,
+        "maximum_current_normalized": 0.000008159018713828892,
+        "maximum_normalized_residual": 0.000008159018713828892,
+        "minimum_amount_fmol": 10,
+        "pass": true
+      },
+      "observed_error": 2.1198320876436583e-8
+    }
+  },
+  "scope": "Additional completed eager cases only; original full session stopped on runtime budget",
+  "source_hashes": {
+    "__init__.py": "dbd3c441da86faa24d68684318e19b07b44d789dc915cad7890e932c940a5cf5",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "da7cfaa5c553977caae3aa7572cf074d069db5bb2f48b175ebb4d8e96ce2f0b9",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "core/specs.py": "6c06418d8dbfe23ea8044fa5a61a8386d079099b9489fa2d7e4d69658299dadf",
+    "core/state.py": "4f1c4b7456109a6acf7f47a1b2c3cda80c9bd125c58e302392b4496d907fef37",
+    "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "ad830d54bf5c5b4f77c66b5ca451d0103c06a345406e0e8f1c06e37a5ed17677",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/extracellular_field.py": "3edc539c2141930bb26a402802c2750b06c4891e87f3bf02cad7ced2559601a4",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "status": "pass",
+  "total_audited_eager_cases": 10,
+  "trajectory_solver_calls": 0
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "passive_pair@1",
+    "units": {"amount": "fmol", "volume": "pL", "time": "s"},
+    "population": {"count": 2, "cell_ids": [101, 202]},
+    "initial_state": {"amount": [8, 0], "volume": [1, 3]},
+    "parameters": {
+      "contact": {"contact_id": 7, "from_cell_id": 101, "to_cell_id": 202, "permeability": 0.4}
+    }
+  },
+  "experiment": {
+    "end_time": 12,
+    "source": {"kind": "none"},
+    "contact": {"kind": "prescribed_open_fraction", "schedule": [{"time": 0, "open_fraction": 1}]},
+    "observation_times": [0, 1, 2, 3, 4, 5, 6, 8, 10, 12]
+  },
+  "execution": {
+    "backend": "cpu", "precision": "float64", "solver": "rk4",
+    "dt": 0.05, "capacity": 2, "edge_capacity": 1, "jit": true,
+    "max_steps": 100000, "max_trace_bytes": 67108864
+  }
+}

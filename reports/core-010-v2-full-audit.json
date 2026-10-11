@@ -1,0 +1,20 @@
+{
+  "cohort_runs": 8,
+  "implementation_sources": 352,
+  "maximum_observed_normalized_error": 1.7426060594516457e-06,
+  "payload_hashes": 912,
+  "prior_stopped_evidence": {
+    "files": 880,
+    "receipt_sha256": "7a35c6e8174002a2d4d082a26cc7b96e5f65e4fd153a8c3f38fbcd43c14583b1"
+  },
+  "production_dynamics_as_oracle": false,
+  "production_sources": 51,
+  "reference_cases": 14,
+  "resource_plan": "v2",
+  "scalar_runs": 57,
+  "stable_release_accepted": false,
+  "status": "pass",
+  "trajectory_solver_calls": 0,
+  "verification_sha256": "6804ab8cd4fbdd8e4f9078bd9e247ada4798e02a43c95a29767be47034750ca0",
+  "window_runs": 4
+}

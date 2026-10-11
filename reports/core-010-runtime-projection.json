@@ -1,0 +1,123 @@
+{
+  "additional_wall_allowance_seconds": 900,
+  "completed_eager_costs": {
+    "binary_equal": {
+      "execute_seconds": 2002.1405937089585,
+      "manifest_sha256": "db489e864cce0c7b5e4f59b70adc2c6af866f0ec7ecd08efdf2531ad3fb8bc9f",
+      "native_steps": 2400,
+      "seconds_per_step": 0.8342252473787327
+    },
+    "binary_unequal": {
+      "execute_seconds": 1821.5676151170628,
+      "manifest_sha256": "357eb4d9cc8b93a167eb000563ba3d70e28ec891fa7446cb218b8d08126ebe5d",
+      "native_steps": 2400,
+      "seconds_per_step": 0.7589865062987762
+    },
+    "blocked_cell": {
+      "execute_seconds": 1796.2592664639233,
+      "manifest_sha256": "08eb2600f6a8691644480cf50ee242bd1fba734160bd41f47dabcfea294d265a",
+      "native_steps": 2400,
+      "seconds_per_step": 0.7484413610266347
+    },
+    "line_16": {
+      "execute_seconds": 170.18075960699935,
+      "manifest_sha256": "94afe491f33b77c05d50494e1572cd08751073a6b29b8dd426f427ac08e4f763",
+      "native_steps": 240,
+      "seconds_per_step": 0.7090864983624973
+    },
+    "membrane_block_release": {
+      "execute_seconds": 1782.5204731399426,
+      "manifest_sha256": "79d7a1a04d857284cf908232dccc8dcdbe690aaac097e37b4207f78ec84f092d",
+      "native_steps": 2402,
+      "seconds_per_step": 0.7420984484346139
+    },
+    "membrane_short_pulse": {
+      "execute_seconds": 322.52150104404427,
+      "manifest_sha256": "5113cce6ee2d3c36604f7f09de30c3108ccff10d4adbfdc224c71ec3ff15d3b3",
+      "native_steps": 482,
+      "seconds_per_step": 0.6691317449046562
+    },
+    "single_outside": {
+      "execute_seconds": 1083.4230237490265,
+      "manifest_sha256": "48b2d91bc1cc729faff5ac29b1953b646bf0c61d39c9584891abc4e22a6bf652",
+      "native_steps": 1600,
+      "seconds_per_step": 0.6771393898431416
+    },
+    "ternary_loop": {
+      "execute_seconds": 523.6721454670187,
+      "manifest_sha256": "3428e2cdcba85878269554322f05501a0fe0d3d2c5852aa5578ea44ddd1af17b",
+      "native_steps": 800,
+      "seconds_per_step": 0.6545901818337734
+    },
+    "two_cells_chain": {
+      "execute_seconds": 1075.3333467079792,
+      "manifest_sha256": "63935fe009e57ba9e1555e3d5a2680e0a0b40fef649d2716995ca578d4277865",
+      "native_steps": 1600,
+      "seconds_per_step": 0.672083341692487
+    },
+    "uniform_outside": {
+      "execute_seconds": 1053.5798244649777,
+      "manifest_sha256": "e56927964b00c8aeab271093bcee2b22206d139e896aa4dba7e21d0256457acd",
+      "native_steps": 1600,
+      "seconds_per_step": 0.6584873902906111
+    }
+  },
+  "conservative_seconds_per_step": 0.8342252473787327,
+  "headroom_factor": 1.374577981887054,
+  "max_artifact_bytes": 2147483648,
+  "prior_failure_sha256": "b01c968d283977a961c58f6e827c91a4e02a17e3f31ccc708c8b33376e92807e",
+  "prior_preservation_sha256": "7a35c6e8174002a2d4d082a26cc7b96e5f65e4fd153a8c3f38fbcd43c14583b1",
+  "prior_registration_sha256": "c638e28630fa17fa0a57b9c78accccb3fe9b59de55e44490742c72ab99539992",
+  "production_run_calls": 0,
+  "projected_lane_execute_seconds": {
+    "0": 4204.495246788812,
+    "1": 4337.97128636941,
+    "2": 4004.281187417917,
+    "3": 4141.094127988029
+  },
+  "projected_session_seconds": 5237.97128636941,
+  "reference_solver_calls": 0,
+  "registered_step_counts": {
+    "binary_equal": 2400,
+    "binary_unequal": 2400,
+    "blocked_cell": 2400,
+    "divalent": 1200,
+    "line_16": 240,
+    "line_32": 240,
+    "line_8": 240,
+    "membrane_block_release": 2402,
+    "membrane_short_pulse": 482,
+    "pure_bulk": 2400,
+    "single_outside": 1600,
+    "ternary_loop": 800,
+    "two_cells_chain": 1600,
+    "uniform_outside": 1600
+  },
+  "schema": "cells.core010_runtime_projection@1",
+  "scope": "Prospective wall-budget estimate from immutable v1 timings, not a throughput benchmark or runtime guarantee",
+  "selected_max_seconds": 7200,
+  "unchanged_schedule": {
+    "0": [
+      "binary_equal",
+      "pure_bulk",
+      "line_8"
+    ],
+    "1": [
+      "binary_unequal",
+      "single_outside",
+      "divalent"
+    ],
+    "2": [
+      "blocked_cell",
+      "two_cells_chain",
+      "ternary_loop"
+    ],
+    "3": [
+      "membrane_block_release",
+      "uniform_outside",
+      "membrane_short_pulse",
+      "line_16",
+      "line_32"
+    ]
+  }
+}

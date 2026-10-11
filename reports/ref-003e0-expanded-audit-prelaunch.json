@@ -1,0 +1,111 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "anchors": {
+    "capture.json": "0f71ad7752585fa2b82e00448664f55c5d265d7502089dac6a9c08c26ea4f63b",
+    "launch.json": "c1dab165004935953cfa483c6d163a6c867a388fff2d63db31c1077786f0544c",
+    "registration.json": "1c25ce10d09cb5f564effcd70a06c0debe4904671430bb6a7cbfe1f6b13e0e71",
+    "sources.zip": "f1a7ce40a3173f61034e74c8f2d913d4ce2979b6d6b061bdf55aa151566e3902"
+  },
+  "baseline_files": 922,
+  "capture_files_unchanged": 802,
+  "capture_rerun": false,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "ade92218098148bc822a1beb08a15ded1c502ddfa48ede2cf8301b13408a0b34",
+      "before": "1790b0f3b6a87ceac9210ac9cbbdb309a2cea9b3d69a98e14b0cd205a0a30022"
+    },
+    "README.md": {
+      "after": "95ac73f40b468f55923120dcfec2e1406769d91aa3aab11b86d47dd98581e2cb",
+      "before": "50469750116813273aac65e19c0459340e2bd8d9c4f7c04d59716136a46739d7"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "3ef0d8380434d65431631197cc05d6aa6fdae9b664a8b9b7be5a687245a83283",
+      "before": "c52aca111748df0fc812018db0bc80574e583d060c33bef9d3241a8e59962cbf"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "a150a50efff9db2f648b29247d2116e6e24e2632008a544d8e1e90f5f98a1c64",
+      "before": "22a0a8febc0b557e590904bf649a335429c87716ed08aae1ff9aee76ef4e470e"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "aa3f33366684d43d9477e3cba74e4d248a0cb16d79db089a2da49306edc305d4",
+      "before": "b968306f785f4f7d9253cf32f2611a3bee46830de379e83796aa84b2bbdb3e38"
+    },
+    "docs/DECISIONS.md": {
+      "after": "50850d7e4b79f8b2e8c0abb07753f702c0f37f4e684e431bc9f4753769f4c18e",
+      "before": "67f7b8242d9ec1118dce87b89b607fccc1c2c2a87b5a064824f17ead66d821ee"
+    },
+    "validation/betse/README.md": {
+      "after": "804524d314432e5cbfffb17f2ec4094002950a09ce2880a9cd5ce342cab51488",
+      "before": "124a15a3c837e3a6dbe4915a1e020c61eb6aa9ac82581aa0a581f38aa8f09e75"
+    }
+  },
+  "checked_utc": "2026-09-12T22:46:16.301682+00:00",
+  "independent_numerical_audit_run": false,
+  "job_plan": {
+    "automatic_expansion": false,
+    "automatic_retry": false,
+    "capture_rerun": false,
+    "cpu_affinity": "0-3",
+    "max_artifact_bytes": 67108864,
+    "schema": "cells.betse_expanded_audit_job_plan@1",
+    "stage_timeout_seconds": 180,
+    "stages": [
+      "independent_saved_data_audit",
+      "focused_regression"
+    ],
+    "test_modules": [
+      "test_full_loop_bridge.py",
+      "test_full_loop_observer.py",
+      "test_saved_full_loop.py",
+      "test_expanded_bridge.py",
+      "test_saved_expanded.py"
+    ],
+    "total_timeout_seconds": 420
+  },
+  "new_files_sha256_before_prelaunch": {
+    "docs/BETSE_EXPANDED_AUDIT.md": "4194823cbdf51d90f0c57b79fd875f1362e050a101a0f0d6d20ba61be7380728",
+    "reports/REF003E0_EXPANDED_AUDIT_HANDOFF.md": "90f866ce0f6abb2f368a285a4c07d15f76b43f556f36c2698c5abf3c7c2818ff",
+    "reports/ref-003e0-expanded-audit-checks-01.xml": "7f11c2e28da41b6b047b3b79caf25320325c7a36c39692914e3db19dfebf6a42",
+    "reports/ref-003e0-expanded-audit-checks-02.xml": "cc4abd0a7d86d3d654bb603aff98769a22dbae3407d25db11a8b38604a13cfba",
+    "reports/ref-003e0-expanded-audit-preservation.json": "3339f62737840289c15977718e1c636072ff9836088928223301b4ebad809eda",
+    "validation/betse/expanded_audit.py": "a5c255a394a777ba13ba5e89019c07bc182d6a3874c1a95c2290672c4eee2132",
+    "validation/betse/expanded_audit_context.py": "a0decf93b1313369708706772aa8052257f19ca891650355d281585cb05799bc",
+    "validation/betse/expanded_audit_job.py": "21b6d4bdfc0446c45dd4c44cadc2cd75462b2821d436d5c10816e5db48fc77f3",
+    "validation/betse/test_saved_expanded.py": "b7e003c7be81303022fd2b4640b0b63541c8ae41c3283bc0762f1c1a595db68c"
+  },
+  "pilot_audit_files_unchanged": 11,
+  "pilot_files_unchanged": 142,
+  "preservation_sha256": "3339f62737840289c15977718e1c636072ff9836088928223301b4ebad809eda",
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "345 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "resources": {
+    "basis": "D076 measured audit/regression, D077 focused tests, current preflight and explicit allowances; not expanded audit timing",
+    "estimated_artifact_bytes_with_allowances": 11628348,
+    "estimated_audit_seconds_with_allowances": 147,
+    "estimated_regression_seconds_with_allowances": 147,
+    "existing_capture_bytes_not_duplicated": 644923963,
+    "expected_comparisons": 1232616,
+    "new_preflight_seconds": 48.725,
+    "step_multiplier": 14.0
+  },
+  "schema": "cells.betse_expanded_audit_prelaunch@1",
+  "sources": {
+    "expanded_audit.py": "a5c255a394a777ba13ba5e89019c07bc182d6a3874c1a95c2290672c4eee2132",
+    "expanded_audit_context.py": "a0decf93b1313369708706772aa8052257f19ca891650355d281585cb05799bc",
+    "expanded_audit_job.py": "21b6d4bdfc0446c45dd4c44cadc2cd75462b2821d436d5c10816e5db48fc77f3",
+    "test_saved_expanded.py": "b7e003c7be81303022fd2b4640b0b63541c8ae41c3283bc0762f1c1a595db68c"
+  },
+  "status": "pass",
+  "test_receipt": "reports/ref-003e0-expanded-audit-checks-02.xml",
+  "test_receipt_sha256": "cc4abd0a7d86d3d654bb603aff98769a22dbae3407d25db11a8b38604a13cfba",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 143
+  },
+  "unchanged_baseline_files": 915
+}

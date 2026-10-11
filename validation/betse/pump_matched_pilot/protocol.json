@@ -1,0 +1,77 @@
+{
+  "schema": "cells.betse_matched_pump_pilot@1",
+  "decision": "D117",
+  "scope": "Matched seven-cell finite-bath pump/leak mapping and 1 ms numerical pilot; no relaxation, experimental validation or release promotion",
+  "prior_completion_sha256": "ca6e0f6535531ac772ea4d55e81a251d3b25fc8e4cefc2ec7987a6a357b9065e",
+  "variants": ["pump_leak", "pump_only", "leak_only", "all_blocked", "half_density", "closed_boundary"],
+  "duration_s": 0.001,
+  "common_times_s": [0.0, 0.00025, 0.0005, 0.00075, 0.001],
+  "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+  "cells_steps_s": [0.00005, 0.000025, 0.0000125],
+  "cells_eager_step_s": 0.00005,
+  "restart_step_s": 0.000025,
+  "restart_time_s": 0.0005,
+  "held_states": 48,
+  "mapping_backends": ["numpy", "jax_eager", "jax_jit"],
+  "native_runs": 36,
+  "observer_pairs": 18,
+  "cells_trajectories": 24,
+  "restart_suffixes": 6,
+  "reference_solves": 18,
+  "reference": {
+    "primary": "dop853_tight",
+    "sample_dt_s": 0.00000625,
+    "solves": [
+      {"id": "dop853_base", "method": "DOP853", "rtol": 1e-10, "atol": 1e-14, "max_step_s": 0.00005},
+      {"id": "dop853_tight", "method": "DOP853", "rtol": 1e-12, "atol": 1e-16, "max_step_s": 0.000025},
+      {"id": "radau_check", "method": "Radau", "rtol": 1e-11, "atol": 1e-15, "max_step_s": 0.000025}
+    ],
+    "max_rhs_calls_per_solve": 30000,
+    "max_accepted_steps_per_solve": 4096,
+    "agreement_amount_fmol": 1e-11,
+    "agreement_energy_pJ": 1e-10,
+    "agreement_voltage_V": 1e-9
+  },
+  "mapping": {"amount_fmol": 2e-12, "concentration_mM": 2e-12, "voltage_V": 2e-10, "flux_fmol_s": 2e-10, "power_pJ_s": 2e-8, "relative": 2e-11},
+  "trajectory": {
+    "native_amount_fmol": 1e-7,
+    "native_energy_pJ": 1e-7,
+    "native_voltage_V": 5e-6,
+    "cells_state_atol": 1e-8,
+    "cells_state_rtol": 2e-7,
+    "cells_voltage_V": 1e-7,
+    "relative": 1e-5,
+    "cross_engine_budget_multiplier": 2
+  },
+  "refinement": {
+    "contraction_max": 0.8,
+    "floor_amount_fmol": 5e-11,
+    "floor_energy_pJ": 5e-10,
+    "floor_voltage_V": 5e-9,
+    "policy": "Per variant and field: both successive reference-error contractions must pass, unless the coarser error is already below the independently registered floor; preserve every coarse result. Finest errors must pass regardless."
+  },
+  "accounting": {
+    "cells_material_fmol": 2e-11,
+    "cells_charge_C": 1e-20,
+    "cells_energy_pJ": 2e-8,
+    "native_base_material_fmol": 2e-12,
+    "native_roundoff_multiplier": 8,
+    "native_material_policy": "base + multiplier * float64_epsilon * completed_updates * largest_initial_total_species_inventory_fmol; conservation only, never rate or trajectory budgets",
+    "native_finest_energy_pJ": 1e-7
+  },
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "worker_timeout_seconds": {"mapping": 120, "reference": 120, "betse": 300, "cells": 420},
+    "total_timeout_seconds": 1080,
+    "per_file_bytes": 67108864,
+    "artifact_bytes": 536870912,
+    "max_cells_steps": 1024,
+    "max_cells_trace_bytes": 67108864
+  },
+  "gate_order": ["held_state_mapping", "independent_reference", "native_and_cells_capture", "saved_result_comparisons"],
+  "production_changed": false,
+  "biological_parameters_fitted": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

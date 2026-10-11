@@ -1,0 +1,52 @@
+{
+  "schema": "cells.betse_channel_transport_preflight_protocol@1",
+  "scope": "REF-004b / D089: real native preparation, targeted Kv1p5 gate-to-permeability mapping and one channel-only conservative transfer at a matched post-gate state. No coupled trajectory or production integrator comparison.",
+  "upstream_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "cell_count": 7,
+  "membrane_face_count": 30,
+  "seed": 0,
+  "temperature_K": 298.15,
+  "constants": {"F": 96485.33212331001, "R": 8.31446261815324},
+  "dt_s": 0.000025,
+  "thickness_m": 7.5e-9,
+  "max_permeability_m_per_s": 1e-8,
+  "abundance": 1.0,
+  "substances_affect_charge": true,
+  "geometry_source": "runs/ref-003b1-2026-09-12/alignment-05/native_preparation.json",
+  "variants": [
+    {"id": "network_off", "network": false, "channel": false, "permeability_fraction": 0.0},
+    {"id": "empty_network", "network": true, "channel": false, "permeability_fraction": 0.0},
+    {"id": "blocked_channel", "network": true, "channel": true, "permeability_fraction": 0.0},
+    {"id": "active_channel", "network": true, "channel": true, "permeability_fraction": 1.0}
+  ],
+  "states": [
+    {"id": "native_initial", "gate": null},
+    {"id": "prescribed_mh_a", "gate": [0.2, 0.6]},
+    {"id": "prescribed_mh_b", "gate": [0.4, 0.3]}
+  ],
+  "tolerances": {
+    "gate": 2e-13,
+    "gate_rate_per_s": 2e-10,
+    "energy_pJ": 1e-12,
+    "tau_s": 2e-13,
+    "permeability_m_per_s": 1e-22,
+    "diffusivity_m2_per_s": 1e-30,
+    "density_mol_per_m2_s": 2e-18,
+    "flux_fmol_per_s": 2e-10,
+    "amount_fmol": 2e-12,
+    "concentration_mM": 2e-12,
+    "voltage_V": 2e-10,
+    "current_A": 2e-20,
+    "current_density_A_per_m2": 2e-13,
+    "charge_C": 1e-20,
+    "charge_density_C_per_m3": 2e-8,
+    "relative": 2e-11
+  },
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "worker_timeout_seconds": {"betse": 120, "cells": 120},
+    "total_timeout_seconds": 300,
+    "max_worker_file_bytes": 33554432,
+    "max_artifact_bytes": 134217728
+  }
+}

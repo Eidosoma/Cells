@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+runs/
+upstream/
+.reference-venv/
+
+# Generated packaging and test-report artifacts.
+reports/*.tar.gz
+reports/*tests.xml
+reports/ref-*.xml

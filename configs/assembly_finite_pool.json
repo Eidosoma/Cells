@@ -1,0 +1,17 @@
+{
+  "model": "finite_bond_assembly@1",
+  "initial_nodes": [10, 12, 14, 16, 18],
+  "initial_free_trimers": 50,
+  "pool_volume_L": 5e-15,
+  "k_on_M_inv_s": 10000000.0,
+  "k_close_s_inv": 100.0,
+  "k_off_s_inv": 10.0,
+  "k_fragment_dissolve_s_inv": 1.0,
+  "worlds": 16384,
+  "end_time_s": 30.0,
+  "event_chunk_size": 128,
+  "max_events_per_world": 100000,
+  "max_wall_seconds": 600.0,
+  "recording": "summary",
+  "max_output_bytes": 268435456
+}

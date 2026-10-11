@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "voltage_gated_membrane@1",
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      },
+      {
+        "id": "Ca",
+        "valence": 2
+      }
+    ],
+    "cell": {
+      "id": "cell_0",
+      "volume_pL": 1,
+      "initial_amount_fmol": {
+        "Na": 12,
+        "K": 140,
+        "Cl": 10,
+        "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -142.0087367752766,
+      "initial_voltage_V": -0.065
+    },
+    "bath": {
+      "id": "bath_0",
+      "temperature_K": 298.15,
+      "concentration_mM": {
+        "Na": 145,
+        "K": 5,
+        "Cl": 156,
+        "Ca": 2
+      },
+      "background_charge_mM": 2
+    },
+    "membrane": {
+      "id": "membrane_0",
+      "inside": "cell_0",
+      "outside": "bath_0",
+      "area_m2": 1e-9,
+      "specific_capacitance_F_per_m2": 0.01,
+      "passive": {
+        "law": "constant_field@1",
+        "permeability_m_per_s": {
+          "Na": 1e-10,
+          "K": 1e-9,
+          "Cl": 1e-10,
+          "Ca": 1e-11
+        }
+      },
+      "pump": {
+        "id": "nak_0",
+        "law": "nak_atp_affinity_tanh@1",
+        "roles": {
+          "sodium": "Na",
+          "potassium": "K"
+        },
+        "stoichiometry": {
+          "Na": -3,
+          "K": 2
+        },
+        "capacity_fmol_per_s": 0.02,
+        "drive_J_per_mol": -50000
+      }
+    },
+    "channel": {
+      "id": "channel_kv1p5",
+      "membrane_id": "membrane_0",
+      "species_id": "K",
+      "kinetic_law": "betse_kv1p5_mh@1",
+      "max_permeability_m_per_s": 1e-8,
+      "abundance": 1,
+      "initial_gate": {
+        "m": 0.75,
+        "h": 0.85
+      }
+    }
+  },
+  "experiment": {
+    "end_time": 0.2,
+    "observation_times": [
+      0,
+      0.01,
+      0.0203,
+      0.02035,
+      0.0204,
+      0.1,
+      0.2
+    ],
+    "membrane_controls": {
+      "membrane_id": "membrane_0",
+      "leak": [
+        {
+          "time": 0,
+          "multipliers": {
+            "Na": 1,
+            "K": 1,
+            "Cl": 1,
+            "Ca": 1
+          }
+        },
+        {
+          "time": 0.0203,
+          "multipliers": {
+            "Na": 1,
+            "K": 1,
+            "Cl": 1,
+            "Ca": 1
+          }
+        },
+        {
+          "time": 0.0204,
+          "multipliers": {
+            "Na": 1,
+            "K": 1,
+            "Cl": 1,
+            "Ca": 1
+          }
+        },
+        {
+          "time": 0.2,
+          "multipliers": {
+            "Na": 1,
+            "K": 1,
+            "Cl": 1,
+            "Ca": 1
+          }
+        }
+      ],
+      "pump": [
+        {
+          "time": 0,
+          "multiplier": 1
+        },
+        {
+          "time": 0.0203,
+          "multiplier": 1
+        },
+        {
+          "time": 0.0204,
+          "multiplier": 1
+        },
+        {
+          "time": 0.2,
+          "multiplier": 1
+        }
+      ]
+    },
+    "channel_controls": {
+      "channel_id": "channel_kv1p5",
+      "schedule": [
+        {
+          "time": 0,
+          "availability": 0
+        },
+        {
+          "time": 0.0203,
+          "availability": 1
+        },
+        {
+          "time": 0.0204,
+          "availability": 0
+        },
+        {
+          "time": 0.2,
+          "availability": 1
+        }
+      ]
+    }
+  },
+  "execution": {
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "dt": 0.0005,
+    "capacity": 1,
+    "membrane_capacity": 1,
+    "jit": true,
+    "max_steps": 100000,
+    "max_trace_bytes": 268435456,
+    "material_balance_atol_fmol": {
+      "Na": 1e-10,
+      "K": 1e-10,
+      "Cl": 1e-10,
+      "Ca": 1e-12
+    },
+    "channel_capacity": 1
+  }
+}

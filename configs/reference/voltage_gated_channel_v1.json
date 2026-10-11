@@ -1,0 +1,606 @@
+{
+  "schema": "cells.kv1p5_reference_panel@1",
+  "scope": "SPEC-006 continuous gate arithmetic, exact prescribed-voltage gate responses and instantaneous ionic coupling; no coupled trajectories or production change",
+  "source": {
+    "repository": "https://github.com/betsee/betse",
+    "version": "1.5.0",
+    "commit": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "files": {
+      "betse/science/channels/vg_k.py": {
+        "sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+        "bytes": 24227,
+        "lines": 791
+      },
+      "betse/science/channels/channelsabc.py": {
+        "sha256": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+        "bytes": 2158,
+        "lines": 71
+      },
+      "LICENSE": {
+        "sha256": "d8be114cc34a3202c8025347913612d976112d05ac45ef3ad953d554d3894936",
+        "bytes": 1317,
+        "lines": 22
+      }
+    },
+    "primary_paper": "https://pubmed.ncbi.nlm.nih.gov/1986382/",
+    "paper_review_scope": "primary abstract and citation only; no coefficient-level calibration or trace extraction",
+    "native_execution": false,
+    "source_vendored": false
+  },
+  "base_panel": {
+    "path": "configs/reference/multispecies_membrane_v1.json",
+    "sha256": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34"
+  },
+  "kinetic_law": {
+    "id": "betse_kv1p5_mh@1",
+    "voltage_domain_V": [
+      -0.12,
+      0.06
+    ],
+    "gate_names": [
+      "m",
+      "h"
+    ],
+    "half_voltage_V": [
+      -0.006,
+      -0.0253
+    ],
+    "sigmoid_slope_V": [
+      0.0064,
+      -0.0035
+    ],
+    "tau_intercept_s": [
+      0.00833,
+      1.62
+    ],
+    "tau_slope_s_per_V": [
+      -0.1163,
+      -15.5
+    ],
+    "open_powers": [
+      1,
+      1
+    ],
+    "voltage_shift_V": 0,
+    "temperature_correction": "none",
+    "gating_charge_and_conformational_energy": "neglected"
+  },
+  "gate_probes": {
+    "voltages_V": [
+      -0.12,
+      -0.1,
+      -0.08,
+      -0.065,
+      -0.06,
+      -0.04,
+      -0.0253,
+      -0.02,
+      -0.006,
+      0,
+      0.02,
+      0.04,
+      0.06
+    ],
+    "states": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        0.2,
+        0.8
+      ],
+      [
+        0.8,
+        0.2
+      ],
+      [
+        0.5,
+        0.5
+      ]
+    ],
+    "elapsed_tau_factors": [
+      0,
+      1e-12,
+      0.001,
+      0.1,
+      1,
+      10,
+      100
+    ],
+    "decimal_precision": 70
+  },
+  "tolerances": {
+    "rtol": 2e-12,
+    "gate": 2e-13,
+    "time_constant_s": 1e-14,
+    "rate_per_s": 1e-10,
+    "permeability_m_per_s": 1e-23,
+    "flux_fmol_per_s": 1e-12,
+    "power_W": 1e-23,
+    "voltage_rate_V_per_s": 1e-12,
+    "negative_dissipation_W": 1e-24
+  },
+  "cases": [
+    {
+      "id": "nakcl_reduction_kv1p5",
+      "definition": {
+        "schema": "cells.voltage_gated_membrane_reference@1",
+        "assembly": {
+          "schema": "cells.multispecies_membrane_reference@1",
+          "species": [
+            {
+              "id": "Na",
+              "valence": 1
+            },
+            {
+              "id": "K",
+              "valence": 1
+            },
+            {
+              "id": "Cl",
+              "valence": -1
+            }
+          ],
+          "cell": {
+            "id": "cell_0",
+            "volume_pL": 1,
+            "initial_amount_fmol": {
+              "Na": 12,
+              "K": 140,
+              "Cl": 10
+            },
+            "fixed_charge_equivalent_fmol": -142.00673677527658,
+            "initial_voltage_V": -0.065
+          },
+          "bath": {
+            "id": "bath_0",
+            "temperature_K": 298.15,
+            "concentration_mM": {
+              "Na": 145,
+              "K": 5,
+              "Cl": 150
+            },
+            "background_charge_mM": 0
+          },
+          "membrane": {
+            "id": "membrane_0",
+            "inside": "cell_0",
+            "outside": "bath_0",
+            "area_m2": 1e-9,
+            "specific_capacitance_F_per_m2": 0.01,
+            "passive": {
+              "law": "constant_field@1",
+              "permeability_m_per_s": {
+                "Na": 1e-10,
+                "K": 1e-9,
+                "Cl": 1e-10
+              }
+            },
+            "pump": {
+              "id": "nak_0",
+              "law": "nak_atp_affinity_tanh@1",
+              "roles": {
+                "sodium": "Na",
+                "potassium": "K"
+              },
+              "stoichiometry": {
+                "Na": -3,
+                "K": 2
+              },
+              "capacity_fmol_per_s": 0.02,
+              "drive_J_per_mol": -50000
+            }
+          }
+        },
+        "channel": {
+          "id": "channel_kv1p5",
+          "membrane_id": "membrane_0",
+          "species_id": "K",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-8,
+          "abundance": 1,
+          "initial_gate": {
+            "m": 0,
+            "h": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "divalent_with_background_kv1p5",
+      "definition": {
+        "schema": "cells.voltage_gated_membrane_reference@1",
+        "assembly": {
+          "schema": "cells.multispecies_membrane_reference@1",
+          "species": [
+            {
+              "id": "Na",
+              "valence": 1
+            },
+            {
+              "id": "K",
+              "valence": 1
+            },
+            {
+              "id": "Cl",
+              "valence": -1
+            },
+            {
+              "id": "Ca",
+              "valence": 2
+            }
+          ],
+          "cell": {
+            "id": "cell_0",
+            "volume_pL": 1,
+            "initial_amount_fmol": {
+              "Na": 12,
+              "K": 140,
+              "Cl": 10,
+              "Ca": 0.001
+            },
+            "fixed_charge_equivalent_fmol": -142.0087367752766,
+            "initial_voltage_V": -0.065
+          },
+          "bath": {
+            "id": "bath_0",
+            "temperature_K": 298.15,
+            "concentration_mM": {
+              "Na": 145,
+              "K": 5,
+              "Cl": 156,
+              "Ca": 2
+            },
+            "background_charge_mM": 2
+          },
+          "membrane": {
+            "id": "membrane_0",
+            "inside": "cell_0",
+            "outside": "bath_0",
+            "area_m2": 1e-9,
+            "specific_capacitance_F_per_m2": 0.01,
+            "passive": {
+              "law": "constant_field@1",
+              "permeability_m_per_s": {
+                "Na": 1e-10,
+                "K": 1e-9,
+                "Cl": 1e-10,
+                "Ca": 1e-11
+              }
+            },
+            "pump": {
+              "id": "nak_0",
+              "law": "nak_atp_affinity_tanh@1",
+              "roles": {
+                "sodium": "Na",
+                "potassium": "K"
+              },
+              "stoichiometry": {
+                "Na": -3,
+                "K": 2
+              },
+              "capacity_fmol_per_s": 0.02,
+              "drive_J_per_mol": -50000
+            }
+          }
+        },
+        "channel": {
+          "id": "channel_kv1p5",
+          "membrane_id": "membrane_0",
+          "species_id": "K",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 1e-8,
+          "abundance": 1,
+          "initial_gate": {
+            "m": 0,
+            "h": 1
+          }
+        }
+      }
+    }
+  ],
+  "protocols": [
+    {
+      "id": "activation",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 0,
+          "h": 1
+        },
+        "end_time_s": 0.25,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": -0.08
+          },
+          {
+            "time_s": 0.02,
+            "voltage_V": 0.04
+          },
+          {
+            "time_s": 0.25,
+            "voltage_V": -0.08
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.001,
+          0.02,
+          0.020001,
+          0.021,
+          0.025,
+          0.03,
+          0.05,
+          0.1,
+          0.2,
+          0.25
+        ]
+      }
+    },
+    {
+      "id": "inactivation",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 1,
+          "h": 1
+        },
+        "end_time_s": 5,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": 0.02
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.001,
+          0.01,
+          0.05,
+          0.1,
+          0.5,
+          1,
+          2,
+          5
+        ]
+      }
+    },
+    {
+      "id": "recovery",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 1,
+          "h": 0
+        },
+        "end_time_s": 5,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": -0.08
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.001,
+          0.01,
+          0.02,
+          0.1,
+          0.5,
+          1,
+          2,
+          5
+        ]
+      }
+    },
+    {
+      "id": "block_release",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 0.01,
+          "h": 0.9
+        },
+        "end_time_s": 0.4,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": -0.08
+          },
+          {
+            "time_s": 0.023,
+            "voltage_V": 0.02
+          },
+          {
+            "time_s": 0.211,
+            "voltage_V": -0.08
+          },
+          {
+            "time_s": 0.4,
+            "voltage_V": 0.04
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          },
+          {
+            "time_s": 0.017,
+            "multiplier": 0
+          },
+          {
+            "time_s": 0.041,
+            "multiplier": 1
+          },
+          {
+            "time_s": 0.103,
+            "multiplier": 0
+          },
+          {
+            "time_s": 0.107,
+            "multiplier": 1
+          },
+          {
+            "time_s": 0.4,
+            "multiplier": 0
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.01,
+          0.017,
+          0.023,
+          0.025,
+          0.041,
+          0.05,
+          0.103,
+          0.105,
+          0.107,
+          0.2,
+          0.211,
+          0.25,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "substep_pulse",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 0,
+          "h": 1
+        },
+        "end_time_s": 0.1,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": -0.08
+          },
+          {
+            "time_s": 0.0203,
+            "voltage_V": 0.04
+          },
+          {
+            "time_s": 0.0204,
+            "voltage_V": -0.08
+          },
+          {
+            "time_s": 0.1,
+            "voltage_V": 0.06
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.02,
+          0.0203,
+          0.02031,
+          0.02035,
+          0.02039,
+          0.0204,
+          0.025,
+          0.1
+        ]
+      }
+    },
+    {
+      "id": "equal_open_a",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.8
+        },
+        "end_time_s": 0.05,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": 0
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.001,
+          0.005,
+          0.01,
+          0.05
+        ]
+      }
+    },
+    {
+      "id": "equal_open_b",
+      "protocol": {
+        "schema": "cells.kv1p5_gate_protocol@1",
+        "initial_gate": {
+          "m": 0.8,
+          "h": 0.2
+        },
+        "end_time_s": 0.05,
+        "voltage_steps": [
+          {
+            "time_s": 0,
+            "voltage_V": 0
+          }
+        ],
+        "availability_steps": [
+          {
+            "time_s": 0,
+            "multiplier": 1
+          }
+        ],
+        "sample_times_s": [
+          0,
+          0.001,
+          0.005,
+          0.01,
+          0.05
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "NUM-005a-instantaneous-graph-v1",
+  "scope": "Instantaneous full-RHS graph composition only; no integration or prepared E02 packets",
+  "source_revision": "b2cb370aaecbc8299f259bc4251d5396c81f19a6",
+  "pair_panel_sha256": "b67efad941db1b4c407aeddcac3836acf4a31653f3a1baa513ece6f5ce2e915d",
+  "e02_protocol_sha256": "7e828792a61695e57f78da5ebdb02318ab927b82470f39b63aca9772bf0bece8",
+  "include_pair_initial_control_settings": true,
+  "include_e02_constructed_seed_conditions": true,
+  "include_isolated_preparation_seeds": true,
+  "constructed_population": {
+    "cell_ids": [100, 200, 300, 400, 500],
+    "primary": [[10, 12, 11, 9, 10.5], [125, 127, 126, 123, 124], [55, 59, 57, 52, 54.5], [100, 0, 40, 30, 80], [0, 100, 30, 20, 10], [0, 100, 5, 2, 1]],
+    "context": [[80.006, 79.994, 80.002, 79.998, 80.001], [72, 50, 90, 72, 72], [0, 0.2, 0.3, 0.4, 0.5]]
+  },
+  "constructed_cases": [
+    {"id": "G00", "name": "isolated_gradient", "cells": [100], "edges": []},
+    {"id": "G01", "name": "ungated_star", "cells": [100, 200, 300], "edges": [[100, 200], [100, 300]]},
+    {"id": "G02", "name": "mixed_gate_star", "cells": [100, 200, 300], "edges": [[100, 200], [100, 300]], "gates": ["40/37", "45/45"], "swap_hemichannels": [false, true], "controls": {"ion_contact": [0.25, 0.8], "mirna_contact": [0.75, 0.3]}},
+    {"id": "G03", "name": "reverse_without_swap", "from": "G02", "reverse_edges": true},
+    {"id": "G04", "name": "reverse_with_swap", "from": "G02", "reverse_edges": true, "swap_all_hemichannels": true},
+    {"id": "G05", "name": "cell_and_edge_permutation", "from": "G02", "cell_permutation": [2, 0, 1], "edge_permutation": [1, 0]},
+    {"id": "G06", "name": "four_cell_chain", "cells": [100, 200, 300, 400], "edges": [[100, 200], [200, 300], [300, 400]], "gates": [null, "40/37", "45/45"], "swap_hemichannels": [false, true, false]},
+    {"id": "G07", "name": "disconnected_pairs_and_isolate", "cells": [100, 200, 300, 400, 500], "edges": [[100, 200], [300, 400]], "gates": ["40/37", null], "controls": {"ion_contact": [0.25, 0], "mirna_contact": [0, 0.75], "pump": [1, 0.4, 0, 1, 1]}},
+    {"id": "G08", "name": "zero_base_membrane_at_one_cell", "from": "G01", "membrane_diffusion": [[1e-18, 0, 1e-18], [1e-18, 0, 2e-18], [1e-18, 0, 4e-18]]},
+    {"id": "G09", "name": "zero_leak_control_at_one_cell", "from": "G01", "membrane_diffusion": [[1e-18, 1e-18, 1e-18], [1e-18, 1e-18, 2e-18], [1e-18, 1e-18, 4e-18]], "controls": {"leak": [[1, 0, 1], [1, 0, 0.5], [1, 0, 0.25]]}},
+    {"id": "G10", "name": "blocked_star", "from": "G01", "controls": {"ion_contact": [0, 0], "mirna_contact": [0, 0]}},
+    {"id": "G11", "name": "three_unconnected_cells", "cells": [100, 200, 300], "edges": []}
+  ],
+  "native_worker_timeout_seconds": 60,
+  "native_max_input_bytes": 1048576,
+  "instantaneous_tolerances": {
+    "voltage": {"atol": 2e-13, "rtol": 2e-12},
+    "delta_v": {"atol": 2e-13, "rtol": 2e-12},
+    "gate_scales": {"atol": 2e-12, "rtol": 2e-12},
+    "leak_flux": {"atol": 5e-21, "rtol": 2e-12},
+    "pump_flux": {"atol": 5e-21, "rtol": 2e-12},
+    "junction_flux": {"atol": 5e-21, "rtol": 2e-12},
+    "local_rate": {"atol": 5e-12, "rtol": 2e-12},
+    "primary_rate": {"atol": 5e-12, "rtol": 2e-12},
+    "packet": {"atol": 5e-12, "rtol": 2e-12}
+  }
+}

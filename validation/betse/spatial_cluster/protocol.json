@@ -1,0 +1,40 @@
+{
+  "schema": "cells.spatial_kinetic_cluster_qualification@1",
+  "scope": "Synthetic local two-cell cluster with pumps, Kv1p5 channels and physical-time junction gates in a closed three-region extracellular mesh; CPU/L4 numerical composition, no biological fit or native BETSE spatial parity",
+  "electrical_scope": "Every cell faces one local extracellular owner; all junctions remain within that capacitor component. Cross-region junctions require a different coupled field closure and are rejected.",
+  "duration_s": 0.02,
+  "arms": ["baseline", "pump_release", "channel_release", "junction_release", "blocked", "finite_limit"],
+  "steps_s": [0.0001, 0.00005, 0.000025],
+  "restart_times_s": [0.005, 0.01],
+  "references": [
+    {"method": "DOP853", "rtol": 1e-11, "atol": 1e-13, "max_step_s": 0.0001},
+    {"method": "Radau", "rtol": 1e-10, "atol": 1e-13, "max_step_s": 0.0001}
+  ],
+  "reference_rhs_cap": 100000,
+  "tolerances": {
+    "state_atol": 5e-10,
+    "state_rtol": 2e-9,
+    "voltage_V": 1e-8,
+    "material_fmol": 2e-11,
+    "charge_C": 1e-20,
+    "energy_pJ": 2e-8,
+    "cpu_gpu_atol": 2e-12,
+    "cpu_gpu_rtol": 2e-11,
+    "cpu_gpu_current_A": 1e-23,
+    "cpu_gpu_charge_C": 1e-24,
+    "cpu_gpu_power_W": 1e-24,
+    "cpu_gpu_work_J": 1e-26,
+    "contraction_max": 0.8,
+    "contraction_floor": 2e-11
+  },
+  "normalized_field_residual": "Each backend independently requires the normalized current residual <= 1. This roundoff diagnostic is bounded on both backends, not treated as a physical observable requiring identical floating-point cancellation noise.",
+  "resources": {
+    "cpu_affinity": [4, 5],
+    "max_worker_rss_bytes": 4294967296,
+    "per_file_bytes": 134217728,
+    "artifact_bytes": 805306368,
+    "free_disk_reserve_bytes": 4294967296,
+    "phase_seconds": {"regression": 600, "reference": 900, "cpu": 900, "gpu": 900, "compare": 180}
+  },
+  "automatic_followup": false
+}

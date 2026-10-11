@@ -1,0 +1,107 @@
+{
+  "kind": "resolved_surface_kinetic_trajectory_qualification@1",
+  "scope": "Registered resolved_tissue@2: synthetic 2-ms, two-cell/four-patch/five-outside worlds with Kv1.5 m/h gates, physical-time junction gates and maintained-pool Na/K ATPases. Same-stage resolved capacitor/return-current closure with nineteen complete state arrays. Numerical composition qualification, not native full-tissue equivalence.",
+  "tests": [
+    "tests/unit/test_surface_kinetic.py",
+    "tests/unit/test_specs.py",
+    "tests/unit/test_batch_identity.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_kinetic.py::test_cpu_gpu_complete_saved_states_and_observations"
+  ],
+  "required_evidence": [
+    "resolved-kinetic-stage-open-compact",
+    "resolved-kinetic-stage-closed-compact",
+    "resolved-kinetic-stage-clamped-compact",
+    "resolved-kinetic-stage-release-compact",
+    "resolved-kinetic-stage-open-padded",
+    "resolved-kinetic-stage-closed-padded",
+    "resolved-kinetic-stage-clamped-padded",
+    "resolved-kinetic-stage-release-padded",
+    "resolved-kinetic-trajectory-open",
+    "resolved-kinetic-trajectory-closed",
+    "resolved-kinetic-trajectory-clamped",
+    "resolved-kinetic-trajectory-release",
+    "resolved-kinetic-refinement",
+    "resolved-kinetic-restart",
+    "resolved-kinetic-partition",
+    "resolved-kinetic-ensemble",
+    "resolved-kinetic-patch-gates",
+    "resolved-kinetic-pump-forward",
+    "resolved-kinetic-pump-reverse",
+    "resolved-kinetic-passive-reduction"
+  ],
+  "required_gpu_evidence": [
+    "resolved-kinetic-cpu-gpu"
+  ],
+  "checks": [
+    "Strict registered identity; explicit independent channel, pump, junction and baseline-leak schedules; no implicit gate initialization or clamp preparation",
+    "Eight compact/padded initial-rate comparisons to independent full-node roots, Decimal GHK, Decimal Kv1.5/junction kinetics and an independently qualified Decimal ATPase oracle",
+    "All nineteen state histories versus segmented adaptive DOP853 in open, closed, voltage-clamped and off-grid multi-control release arms; accepted-grid observations",
+    "Local patch voltages drive channel gates; junction intrinsic opening times actual availability enters the field root; blocked routes retain evolving intrinsic gates; two channel populations on one patch add",
+    "Forward/reverse pump transport includes signed metabolic work, electrode current/work, reservoir work and nonnegative dissipation; omitted source-work terms are numerically detectable",
+    "Per-owner and global ionic accounting, capacitor/electrode and supplied charge, chemical-plus-capacitor energy and all three independently reconstructed source-work identities",
+    "All nineteen state corruption controls, invalid process declarations and actual invalid RK4 trial/control rejection; unconverged fields cannot advance",
+    "Three timesteps; complete disk/fresh-process/terminal restart; future branches block channels/pumps/junctions without resetting gates; changed scalar windows",
+    "Production lax.map scalar/world partitions and reordering, independent restart clocks, complete batch snapshots and changed windows",
+    "Ordinary ionic-world ensemble with per-patch endpoint voltages; incompatible reduced topologies rejected before execution; passive rate reduction with absent channels and pumps",
+    "Complete saved CPU/L4 state/readout comparison with separate charge/current/voltage tolerances and selected-device checks; shared schema/checkpoint identity regressions",
+    "GPU busy and measured SM-active with coverage, GPU phase time and allocated time retained; frozen-source registration and durable failure/completion artifacts"
+  ],
+  "tolerances": {
+    "initial_rate_rtol": 3e-10,
+    "initial_amount_energy_rate_atol": 3e-12,
+    "initial_charge_rate_atol_A": 3e-23,
+    "reference_state_rtol": 3e-09,
+    "reference_amount_energy_atol": 2e-11,
+    "reference_electrode_charge_atol_C": 3e-25,
+    "reference_voltage_atol_V": 2e-08,
+    "independent_dop853_rtol": 2e-11,
+    "independent_amount_energy_atol": 2e-14,
+    "independent_electrode_charge_atol_C": 1e-29,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": 2e-11,
+    "charge_atol_C": 3e-25,
+    "charge_rtol": 2e-12,
+    "energy_atol_pJ": 2e-08,
+    "source_work_atol_pJ": 3e-12,
+    "dissipation_monotonicity_atol_pJ": 1e-12,
+    "same_backend_complete_replay": "bitwise through production lax.map",
+    "refinement_dt_s": [
+      0.0001,
+      5e-05,
+      2.5e-05
+    ],
+    "refinement_final_to_initial_error_limit": 0.2,
+    "refinement_amount_energy_roundoff_floor": 3e-13,
+    "refinement_electrode_charge_roundoff_floor_C": 3e-27,
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "field_newton_target_fraction": 0.01,
+    "reference_gate_atol": 2e-11,
+    "independent_gate_atol": 2e-14,
+    "cpu_gpu_gate_atol": 3e-13
+  },
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 10737418240,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "Kv1.5 engineering law fixed at 298.15 K; no new channel catalog, temperature fit or biological parameter estimation",
+    "Existing maintained-pool Na/K pump and junction rate laws are reused unchanged; ATP/ADP/Pi are external maintained sources, not a metabolic network",
+    "No calcium/IP3/assembly composition under this resolved field yet; older qualified integrated models remain separate",
+    "Held boundary concentrations and voltages only; accepted-grid observations; no moving-clamp work, reset intervention or continuous observation enclosure",
+    "Synthetic manufactured charge backgrounds and controls, not native BETSE screened/FD field or full native tissue trajectory equivalence",
+    "Dense field limited to 256 total nodes; independent-world batching is exercised, but no multi-GPU/Jupiter execution or distributed single tissue is claimed",
+    "GPU counters include compilation and host correctness work; no throughput/utilization target or single warmed interval is claimed"
+  ],
+  "automatic_followup": false
+}

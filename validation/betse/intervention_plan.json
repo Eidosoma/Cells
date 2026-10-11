@@ -1,0 +1,47 @@
+{
+  "schema": "cells.betse_intervention_design@1",
+  "status": "design_only_not_registered",
+  "prior_closeout_sha256": "4caaa0485d971821ebccc7fa255323bb3e38708531503c4cb8838ef97bd197b9",
+  "scope": "Source/control review before a SIM-phase bridge and passive suppression/recovery comparison",
+  "duration_s": 0.001,
+  "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+  "candidate_pulse": {
+    "on_s": 0.0003,
+    "off_s": 0.0007,
+    "transition_s": 0.0001,
+    "additive_multiplier": -1.0,
+    "species": ["Na", "K", "Cl"],
+    "targets": "all 30 native faces / all seven Cells membranes",
+    "modulator": "None",
+    "exact_zero_interval": false
+  },
+  "clock": {
+    "primary": "elapsed_update_time",
+    "native_raw_label": "k * N * dt / (N - 1)",
+    "native_before_elapsed": "k * dt",
+    "yaml_time_scale": "N / (N - 1)",
+    "scale_fields": ["change start", "change finish", "change rate"],
+    "rewrite_native_clock": false
+  },
+  "drive_comparison": {
+    "first_target": "same declared native-step-held control in both engines",
+    "cells_step_subdivisions_per_native_interval": [1, 2, 4],
+    "separate_forcing_and_solver_refinement": true,
+    "continuous_waveform_qualified": false,
+    "controls_derived_from_native_trajectory_output": false
+  },
+  "gates": [
+    "REF-003e0: SIM-from-neutral no-event and zero-amplitude phase bridge",
+    "REF-003e1: corresponding held-drive suppression/recovery trajectory",
+    "Later: independently qualified continuous controls or exact square pulses"
+  ],
+  "criteria_source": "validation/betse/trajectory_refinement_protocol.json",
+  "relax_prior_tolerances": false,
+  "source_control_probe_atol": 2e-14,
+  "probe_worker_timeout_seconds": 20,
+  "cpu_affinity": "0-3",
+  "trajectory_run": false,
+  "trajectory_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

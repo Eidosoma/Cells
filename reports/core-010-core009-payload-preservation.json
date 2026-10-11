@@ -1,0 +1,8 @@
+{
+  "payloads_unchanged": 830,
+  "preserved_production_files": 48,
+  "scope": "Accepted CORE-009 payload preservation only; not execution under modified sources",
+  "source_archive_sha256": "843f25671910f008a4c6c955c780e04dcbe66a1573abc96f66b85312e0708456",
+  "status": "pass",
+  "verification_sha256": "247e2bd8f00cb58736e2b6e7ef2bf0c0855742fa8e929e6067ef861bc2ad3b92"
+}

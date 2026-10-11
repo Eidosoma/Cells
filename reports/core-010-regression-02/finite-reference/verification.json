@@ -1,0 +1,25 @@
+{
+  "archive_sha256": "73b152cfbeb016c9d842753fda21620f53fe8449a5fceb01f6cd6bac30dd9a15",
+  "contexts": {
+    "preserved-finite-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "555672a7fe1a023d84e03799ee200367c3ffd38962e6329718da2b674d545162",
+      "log_sha256": "3d727c4cb6d984bf49d26e4ca970c5d83dd6c4f909638379a292012cc2be93f1",
+      "seconds": 57.085,
+      "skipped": 0,
+      "tests": 256
+    }
+  },
+  "status": "pass",
+  "test_files": [
+    "tests/unit/test_finite_extracellular_reference.py",
+    "tests/unit/test_finite_extracellular_dynamics.py",
+    "tests/unit/test_finite_extracellular_attempt_audit.py",
+    "tests/unit/test_finite_extracellular_tangent.py",
+    "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+    "tests/unit/test_finite_extracellular_test_context.py"
+  ],
+  "total_tests": 256
+}

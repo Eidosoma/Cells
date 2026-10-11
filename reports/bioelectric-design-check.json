@@ -1,0 +1,42 @@
+{
+  "bath_mol_per_m3": [
+    145.0,
+    5.0,
+    150.0
+  ],
+  "checks_passed": 74,
+  "fixed_anion_equivalent_fmol": 142.00673677527658,
+  "frozen_concentration_relaxation_estimate_s": 0.0631281574233821,
+  "initial_amount_fmol": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "initial_voltage_derivative_V_per_s": 0.0320160372767786,
+  "max_bernoulli_scaled_error": 1.1102230246251565e-16,
+  "max_nernst_flux_residual_fmol_per_s": 3.552713678800501e-18,
+  "max_passive_flux_potential_product_fmol_J_per_mol_s": -0.2039790188131866,
+  "max_pump_rate_affinity_product_fmol_J_per_mol_s": -19.23836198947365,
+  "nernst_voltage_V": [
+    0.06402146473352771,
+    -0.08561292802531552,
+    -0.06957679405569096
+  ],
+  "passive_flux_inward_fmol_per_s": [
+    0.03959636779095933,
+    -0.016914657583149164,
+    0.0005360061901298455
+  ],
+  "pump_chemical_power_W": 9.413737790532785e-13,
+  "pump_cycle_free_energy_J_per_mol": -8676.272959336035,
+  "pump_cycle_rate_fmol_per_s": 0.01882747558106557,
+  "runtime": {
+    "numpy": "2.5.3",
+    "python": "3.13.5"
+  },
+  "scope": "instantaneous design checks only; no Cells model or trajectory validation",
+  "status": "pass",
+  "total_inward_current_A": 3.2016037276778595e-13,
+  "verified_utc": "2026-09-08T10:17:29.111288+00:00",
+  "verifier_sha256": "c2deeb28049a6567b9af09f6db2544dc42e0d1ecbf6b08e8facb02bae0bb57a9"
+}

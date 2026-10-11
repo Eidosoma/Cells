@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "bioelectric_cell@1",
+    "species": [
+      "Na",
+      "K",
+      "Cl"
+    ],
+    "units": {
+      "amount": "fmol",
+      "volume": "pL",
+      "time": "s",
+      "concentration": "mM",
+      "voltage": "V",
+      "area": "m2",
+      "permeability": "m/s",
+      "specific_capacitance": "F/m2",
+      "temperature": "K",
+      "chemical_drive": "J/mol_cycles",
+      "pump_capacity": "fmol_cycles/s"
+    },
+    "population": {
+      "count": 1,
+      "cell_id": 101
+    },
+    "initial_state": {
+      "amount_fmol": [
+        12,
+        140,
+        10
+      ],
+      "volume_pL": 1,
+      "voltage_V": -0.065
+    },
+    "parameters": {
+      "membrane": {
+        "membrane_id": 501,
+        "owner_cell_id": 101,
+        "bath_id": 901,
+        "area_m2": 1e-9,
+        "specific_capacitance_F_per_m2": 0.01,
+        "permeability_m_per_s": [
+          1e-10,
+          1e-9,
+          1e-10
+        ],
+        "pump_capacity_fmol_per_s": 0.02
+      },
+      "bath": {
+        "kind": "clamped",
+        "bath_id": 901,
+        "concentration_mM": [
+          145,
+          5,
+          150
+        ],
+        "potential_V": 0,
+        "temperature_K": 298.15,
+        "atp_free_energy_J_per_mol": -50000
+      }
+    }
+  },
+  "experiment": {
+    "end_time": 10,
+    "source": {
+      "kind": "none"
+    },
+    "observation_times": [
+      0,
+      0.0025,
+      0.1,
+      1,
+      2.03,
+      3.11,
+      4.13,
+      5.07,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "membrane_controls": {
+      "leak": {
+        "kind": "prescribed_leak_multipliers",
+        "membrane_id": 501,
+        "species": [
+          "Na",
+          "K",
+          "Cl"
+        ],
+        "schedule": [
+          {
+            "time": 0,
+            "multipliers": [
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "time": 3.11,
+            "multipliers": [
+              0,
+              1,
+              1
+            ]
+          },
+          {
+            "time": 4.13,
+            "multipliers": [
+              1,
+              1,
+              1
+            ]
+          }
+        ]
+      },
+      "pump": {
+        "kind": "prescribed_pump_multiplier",
+        "membrane_id": 501,
+        "schedule": [
+          {
+            "time": 0,
+            "multiplier": 1
+          },
+          {
+            "time": 2.03,
+            "multiplier": 0
+          },
+          {
+            "time": 5.07,
+            "multiplier": 1
+          }
+        ]
+      }
+    }
+  },
+  "execution": {
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "dt": 0.005,
+    "capacity": 1,
+    "membrane_capacity": 1,
+    "jit": true,
+    "max_steps": 100000,
+    "max_trace_bytes": 268435456
+  }
+}

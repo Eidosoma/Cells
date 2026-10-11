@@ -1,0 +1,53 @@
+{
+  "kind": "finite_er_calcium_qualification@1",
+  "physical_scope": "One finite cytosol/ER pair with local reversible buffer chemistry, GHK passive transport, capacitor charge, named BETSE 1.5 pump and instantaneous calcium-only release",
+  "duration_s": 0.02,
+  "steps_s": [0.00005, 0.000025, 0.0000125],
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_sources_sha256": {
+    "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8"
+  },
+  "checks": [
+    "Strict roles, finite stores, charge-conserving local chemistry and explicit maintained metabolic work",
+    "Pinned native pumpCaER and EndoRetic.channels calcium-only functions with harmonized physical constants; forward and reverse pump points, release activation/inhibition",
+    "Independent scalar-loop DOP853 and Radau full-state references, timestep refinement and off-grid observations",
+    "Local reaction/transport ledgers, global conserved moieties, capacitive charge and chemical/electrical/work/dissipation energy balance",
+    "Pump-off, release-off, passive-only, reaction-only reduction, no-reaction electrochemical equilibrium, pump stall/reversal and timed release interventions",
+    "Exact complete disk restart, terminal continuation, future branch, window and partition widths 1/2/3 on CPU and L4",
+    "Public CLI, explicit real device placement, CPU/L4 comparison and corrupt/invalid state refusal",
+    "Previous closed chemistry, reaction-transport and checkpoint identity regressions"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-9,
+    "independent_state_atol": 3e-12,
+    "reference_agreement_rtol": 2e-10,
+    "reference_agreement_atol": 5e-14,
+    "reference_solver_rtol": 2e-13,
+    "reference_solver_atol": 2e-17,
+    "reference_max_step_s": 0.00005,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "native_pump_rtol": 3e-12,
+    "native_pump_atol_fmol_per_s": 3e-14,
+    "energy_atol_pJ": 1e-9,
+    "minimum_refinement_improvement": 6,
+    "max_abs_voltage_V": 0.15,
+    "max_abs_pump_affinity_RT": 80,
+    "max_actual_step_times_inventory_loss_bound": 0.25
+  },
+  "resources": {
+    "max_wall_seconds": 2700,
+    "artifact_and_cache_bytes": 1610612736,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "Measured/calibrated ER biology, a two-Ca/ATP SERCA cycle, proton exchange or finite ATP consumption",
+    "Native BETSE initialization, split-step trajectories and lifecycle parity",
+    "IP3-dependent release, kinetic receptor gates, plasma membrane currents and spatial ionic/assembly coupling",
+    "Multiple connected organelles, sustained GPU throughput, multi-worker adapter and JUPITER scaling"
+  ],
+  "automatic_followup": false
+}

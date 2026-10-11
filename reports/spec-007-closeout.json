@@ -1,0 +1,500 @@
+{
+  "schema": "cells.spec007_design_closeout@1",
+  "verified_utc": "2026-09-10 13:44:08 UTC",
+  "status": "pass",
+  "scope": "Data-defined physical ionic graph specification and independent instantaneous reference; no production or graph trajectory change",
+  "production_version": "0.12.0",
+  "production_change": false,
+  "scientific": {
+    "receipt": "reports/spec-007-design-check.json",
+    "receipt_sha256": "f649f5b18eddea1ced4d87bf61a936498dae14898f4e77abb67e990c1ac56ca9",
+    "synthetic_definitions": 8,
+    "instantaneous_checks": 14116,
+    "failed_checks": 0,
+    "source_files": 20,
+    "maximum_normalized_error": 0.022218934591505812,
+    "calculator_reproduction": {
+      "status": "pass",
+      "checks": 14116,
+      "ignored_fields": [
+        "verified_utc"
+      ],
+      "independent_ode_solver_run": false
+    },
+    "biological_acceptance": "not_assessable",
+    "checks": 14116,
+    "checks_failed": 0,
+    "coupled_trajectory_qualification": "not_performed",
+    "failures": [],
+    "gpu_qualification": "not_performed",
+    "groups": {
+      "assembled_decimal_edge": {
+        "checks": 182,
+        "failed": 0,
+        "max_normalized_error": 0.000015809684907740173
+      },
+      "bath_excludes_internal": {
+        "checks": 323,
+        "failed": 0
+      },
+      "blocked_edge_no_transfer": {
+        "checks": 27,
+        "failed": 0
+      },
+      "capacitance_weighted_charge": {
+        "checks": 41,
+        "failed": 0,
+        "max_normalized_error": 0.00007170304697425417
+      },
+      "cell_permutation": {
+        "checks": 1390,
+        "failed": 0,
+        "max_normalized_error": 0
+      },
+      "cycle_history_witness": {
+        "checks": 2,
+        "failed": 0
+      },
+      "decimal_edge_flux": {
+        "checks": 1890,
+        "failed": 0,
+        "max_normalized_error": 0.00008404698013147284
+      },
+      "disabled_edge_exact_zero": {
+        "checks": 630,
+        "failed": 0
+      },
+      "disconnected_local_reduction": {
+        "checks": 24,
+        "failed": 0
+      },
+      "edge_owned_dissipation": {
+        "checks": 110,
+        "failed": 0,
+        "max_normalized_error": 0.000001253669134258537
+      },
+      "edge_permutation": {
+        "checks": 307,
+        "failed": 0,
+        "max_normalized_error": 0
+      },
+      "edge_reversal": {
+        "checks": 1890,
+        "failed": 0,
+        "max_normalized_error": 0
+      },
+      "gate_control_separation": {
+        "checks": 41,
+        "failed": 0
+      },
+      "global_species_balance": {
+        "checks": 138,
+        "failed": 0,
+        "max_normalized_error": 0.00027755575615628914
+      },
+      "graph_orientation": {
+        "checks": 307,
+        "failed": 0,
+        "max_normalized_error": 0
+      },
+      "graph_power_balance": {
+        "checks": 41,
+        "failed": 0,
+        "max_normalized_error": 0.000037005237445063146
+      },
+      "history_cannot_be_reset": {
+        "checks": 8,
+        "failed": 0
+      },
+      "history_not_extra_material": {
+        "checks": 8,
+        "failed": 0
+      },
+      "incidence_composition": {
+        "checks": 323,
+        "failed": 0,
+        "max_normalized_error": 0.000002165087760681626
+      },
+      "individual_nernst_balance": {
+        "checks": 30,
+        "failed": 0,
+        "max_normalized_error": 7.216449660063516e-8
+      },
+      "junction_gate_decimal": {
+        "checks": 42,
+        "failed": 0,
+        "max_normalized_error": 0.00006165898981009714
+      },
+      "junction_gate_inward": {
+        "checks": 21,
+        "failed": 0
+      },
+      "junction_gate_symmetry": {
+        "checks": 21,
+        "failed": 0
+      },
+      "local_plus_edge_power": {
+        "checks": 41,
+        "failed": 0,
+        "max_normalized_error": 0.00001850261872253157
+      },
+      "nonzero_history_charge": {
+        "checks": 18,
+        "failed": 0,
+        "max_normalized_error": 0.001958327976777502
+      },
+      "nonzero_history_global": {
+        "checks": 27,
+        "failed": 0,
+        "max_normalized_error": 0.014822500594546123
+      },
+      "nonzero_history_material": {
+        "checks": 60,
+        "failed": 0,
+        "max_normalized_error": 0.022218934591505812
+      },
+      "old_hyperbolic_pair_reduction": {
+        "checks": 117,
+        "failed": 0,
+        "max_normalized_error": 0.00016385255522520972
+      },
+      "passive_direction": {
+        "checks": 1890,
+        "failed": 0
+      },
+      "shared_recipient_not_duplicated": {
+        "checks": 2,
+        "failed": 0
+      },
+      "species_permutation": {
+        "checks": 3894,
+        "failed": 0,
+        "max_normalized_error": 0
+      },
+      "unequal_capacitance_not_voltage_sum": {
+        "checks": 1,
+        "failed": 0
+      },
+      "zero_voltage_diffusion": {
+        "checks": 270,
+        "failed": 0,
+        "max_normalized_error": 0.000007629853430580607
+      }
+    },
+    "independent_ode_solver_run": false,
+    "method_selection": "not_performed",
+    "native_betse_execution": false,
+    "production_change": false,
+    "production_release_sha256": "2a08a2487aafd13cb1e604063e9ff3b68bd5a75cc7c09fe4dea480f952b05085",
+    "production_source_sha256": {
+      "__init__.py": "e1779d2b1a431aa97884c309e79afab014bb09b9df4c48c55f7b021a2208a3e0",
+      "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+      "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+      "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+      "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+      "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+      "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+      "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+      "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+      "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+      "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+      "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+      "core/schedule.py": "412e410bd0173f67f80646aa610ad56d8695e42e5fda8f88a8711f2f66122edd",
+      "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+      "core/specs.py": "f9fcfb9fe032d41cb6edb777b78ff2e7c0e2461c31976884adbc6286a93cfead",
+      "core/state.py": "238409d6c59681f5bb048e22a4b97d7d14871638a1914d818b023152aadaa71c",
+      "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+      "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+      "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+      "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+      "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+      "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+      "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+      "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+      "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+      "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+      "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+      "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+      "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+      "models/registry.py": "7cea6961cc927bcc0a8160565211d1bdc989ae6504c0477cab2b57330d70f6b6",
+      "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+      "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+      "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+      "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+      "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+      "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+      "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+      "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+      "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+    },
+    "production_version": "0.12.0",
+    "protocol_sha256": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+    "python": "3.13.5",
+    "scope": "SPEC-007 instantaneous physical graph composition, arithmetic, state and accounting checks only; no coupled trajectories, method selection or production change",
+    "source_sha256": {
+      "configs/reference/multispecies_membrane_v1.json": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34",
+      "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+      "configs/reference/voltage_gated_channel_v1.json": "16b6e245ba2cef921fc48e1a4c7f8ebd03481724e7de5d1062fcf0d8fdeed09c",
+      "docs/MULTISPECIES_MEMBRANE_SPEC.md": "f3729c43c2a03d833400c70435b50826821f72af7de5726169dcc5d74a1f5bc6",
+      "docs/PHYSICAL_IONIC_GRAPH_SPEC.md": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+      "docs/SELECTIVE_CONTACT_SPEC.md": "3d806b3891989d9cfeaaad61911b206cde227b586ea7a3ef8d2907e5a190c2eb",
+      "docs/VOLTAGE_GATED_CHANNEL_SPEC.md": "a66fb7027ece28a25d380f67f8c673f61f9e40b6aca3541ced2c5ebfe34deecd",
+      "pyproject.toml": "e9befe2cc4359b1e08421d2f7b69dbba2e0e6a12dab6cdc1789e056a72ec8a82",
+      "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+      "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+      "runs/core-007-2026-09-10/release-audit.json": "2a08a2487aafd13cb1e604063e9ff3b68bd5a75cc7c09fe4dea480f952b05085",
+      "scripts/check_physical_ionic_graph.py": "740ab49dfbc49f40beb0119ae9c8198fdca8f0299fd82196db1df99290688d39",
+      "scripts/check_selective_contact_contract.py": "fbec1f370d80d2348b45bc2004759bbdaf3bb8bd93bf5e636c8b6a888498d884",
+      "scripts/check_voltage_gated_channel.py": "4c596910282cbd9bca0e3d057f4f470f7f33fa505d19f24634329321d355474c",
+      "tests/reference_bioelectric.py": "8f53073a62aa760387c44199ad2d0b88a399deb9b53bc9e59a5f8090af407710",
+      "tests/reference_bioelectric_pair.py": "2b6a25656b53a4395a86698cb399a5c622f692bec1edff8f7165030225855d8d",
+      "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+      "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+      "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+      "tests/unit/test_physical_ionic_graph_reference.py": "2648efc3c6615c485aa497409c21da3530296e8cecab6b1bdbe2c5720682e780"
+    },
+    "spec_sha256": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+    "status": "pass",
+    "tolerances": {
+      "charge_V": 1e-10,
+      "current_A": 1e-23,
+      "energy_pJ": 1e-8,
+      "flux_fmol_per_s": 1e-13,
+      "gate": 2e-13,
+      "material_fmol": 1e-12,
+      "negative_dissipation_W": 1e-24,
+      "power_W": 1e-23,
+      "rate_per_s": 1e-11,
+      "rtol": 2e-12,
+      "voltage_rate_V_per_s": 1e-11
+    },
+    "verified_utc": "2026-09-10T13:26:18.361546+00:00",
+    "witnesses": {
+      "cycle_history": "algebraic circulation only; no trajectory or memory claim",
+      "star_recipient_local_rate_fmol_per_s": [
+        -0.023515473996644318,
+        -0.03175185472666023,
+        0.0056265803875910495
+      ],
+      "unequal_pair_unweighted_voltage_rate_V_per_s": 0.010341807746016117
+    }
+  },
+  "previous_production": {
+    "audit": "reports/spec-007-core007-audit.json",
+    "audit_sha256": "98dab1ff876ac421bd75c3548bb19a292bbe16de3a6a51ea6d522fb3c374ce05",
+    "result": {
+      "cohort_runs": 4,
+      "fresh_process_restarts": 14,
+      "maximum_gate_error": 0.0000777161380275393,
+      "maximum_observed_normalized_error": 0.7771613802753929,
+      "payload_hashes": 1580,
+      "production_sources": 44,
+      "reference_cases": 14,
+      "scalar_runs": 43,
+      "solver_rerun": false,
+      "status": "pass",
+      "verification_sha256": "b6c35e258fff90da5a05b232b1da774d7e2082fe7e357aec1cbc5ce80438e6cf",
+      "window_runs": 2
+    },
+    "implementation_dependencies_unchanged": 204,
+    "production_modules_unchanged": 44
+  },
+  "tests": {
+    "new_tests": 114,
+    "preflight_and_targeted": {
+      "spec-007-preflight-01.xml": {
+        "tests": 114,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 1.795
+      },
+      "spec-007-targeted-01.xml": {
+        "tests": 114,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 1.796
+      }
+    },
+    "regression_receipt": "reports/spec-007-regression-01/verification.json",
+    "verification_sha256": "a77e469989378b822ae0189e0a693845cc4cdb7fe3ef2ce2f3f0dc424838a4d0",
+    "summed_context_seconds": 805.528,
+    "reauthenticated_xml_log_receipts": 6,
+    "channel_historical_test_files": [
+      "tests/unit/test_voltage_gated_channel_reference.py",
+      "tests/unit/test_voltage_gated_dynamics.py",
+      "tests/unit/test_voltage_gated_artifact_audit.py"
+    ],
+    "contexts": {
+      "current-production": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "284d620b5fb5857fe184226944510f974a7aaca4e0011510a5592aa9e538cd36",
+        "log_sha256": "3ebc32b3732a0287f73eceef6cc98f9f6354e6dd2d77e61aa70aa4740a3dc997",
+        "seconds": 627.89,
+        "skipped": 0,
+        "tests": 1821
+      },
+      "preserved-channel-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "a0ae005481c9e485b93232ca97d79ec6152d3c17f3791fa96cdfde586b3dc604",
+        "log_sha256": "d57fafa81afc66ea39f079c1c826ee0565ea48096c57bf5a0e218a236a32d1e5",
+        "seconds": 18.968,
+        "skipped": 0,
+        "tests": 205
+      },
+      "preserved-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "13858c697bd5f13c3c7243ecda9803be3858a94a7ec0c1267316e6444958cb6f",
+        "log_sha256": "2038fc1c621e3446e8fed43b5a582c2039a8352cf413dac056713c052600f87f",
+        "seconds": 158.67,
+        "skipped": 0,
+        "tests": 971
+      }
+    },
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "driver_sha256": "5e6826e46552162fea5c23ff1980aebadd20911bdb346b567ad5eaf87645dd3f",
+    "historical_test_files": [
+      "tests/unit/test_comparison_evidence.py",
+      "tests/unit/test_graph_candidate.py",
+      "tests/unit/test_graph_diagnostics.py",
+      "tests/unit/test_graph_evaluation.py",
+      "tests/unit/test_graph_evidence.py",
+      "tests/unit/test_graph_reference_panel.py",
+      "tests/unit/test_graph_refinement.py",
+      "tests/unit/test_source_graph_continuation.py",
+      "tests/unit/test_source_graph_paths.py",
+      "tests/unit/test_source_preparations.py"
+    ],
+    "preserved_channel_source_sha256": "59d4c371f57b5a758a1c6f03c77d3385b97eb079c2fc05cfaeb708e155acdda4",
+    "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+    "status": "pass",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "total_tests": 2997
+  },
+  "evidence_sha256": {
+    "reports/spec-007-design-check.json": "f649f5b18eddea1ced4d87bf61a936498dae14898f4e77abb67e990c1ac56ca9",
+    "reports/spec-007-core007-audit.json": "98dab1ff876ac421bd75c3548bb19a292bbe16de3a6a51ea6d522fb3c374ce05",
+    "reports/spec-007-preflight-01.xml": "dc10dc7b932503466ecc0cb3d6557117100b3db8db26d881857b0c8efdfb3617",
+    "reports/spec-007-targeted-01.xml": "aaf7cd9085553283c6f48de6640a3a88059d86e22ad546257a734c7d4050934b",
+    "reports/spec-007-workspace-baseline.json": "c272825b5a54c42118eea2955926114b882a830967c947028a2f9e651f27a6c7"
+  },
+  "workspace": {
+    "baseline": "reports/spec-007-workspace-baseline.json",
+    "baseline_sha256": "c272825b5a54c42118eea2955926114b882a830967c947028a2f9e651f27a6c7",
+    "pre_existing_files": 428,
+    "unchanged_pre_existing_files": 417,
+    "missing_pre_existing_files": [],
+    "modified_pre_existing_files": {
+      "docs/ARCHITECTURE.md": {
+        "before_sha256": "ae92138cbdd51c43622d40f7e730dea8be4cacdfc95af244ac3ea0278929c7e2",
+        "after_sha256": "742613f619c769caae94332117e0d6ec3de91a1b2c0265486c5e8d99a0c9492a",
+        "kind": "documentation_only"
+      },
+      "docs/BETSE_CAPABILITY_ROADMAP.md": {
+        "before_sha256": "c4ad64f4497102f03aed1a5a1ebaeeb26d811915d2a0b550ba319c034291d565",
+        "after_sha256": "e8a7d50f5a0ecb7e38e150e8d138f85c59aae48f1b0d0f88da1af986a0cbf21f",
+        "kind": "documentation_only"
+      },
+      "docs/DECISIONS.md": {
+        "before_sha256": "b3aca37f1fdf2e0300ed7632d89b7d751f364e2fabd2b8de536bb7de5e7c1687",
+        "after_sha256": "0715912a631b317c187129a3f4f191f0d7bc5ce4e810c38785e33c022be8f704",
+        "kind": "documentation_only"
+      },
+      "docs/EXPERIMENTS.md": {
+        "before_sha256": "c4dae7a670c0ee3b6c4669eaec0182465d70f3af3279487e55fd16701d71072f",
+        "after_sha256": "978e92abd785d7320f73515200b04012f5074d35b951b85593265bfdf0b6ba0f",
+        "kind": "documentation_only"
+      },
+      "docs/MULTISCALE_DESIGN.md": {
+        "before_sha256": "3a8af967a7ff9a5b14331cc4d00bb3ecb083e6e669ad7d900403b408eef4ff8a",
+        "after_sha256": "b6977017e3d75d7a9f1a0730fa890a483e46340e5e78b013fdc9acdb7b8107f9",
+        "kind": "documentation_only"
+      },
+      "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md": {
+        "before_sha256": "4a98ae3b5c548e79b1d9a8870f5dd5e2f9beb84e06cd7089191a61f97365e8aa",
+        "after_sha256": "dc306ed6e903bbb410b7de01edd266796294b39106204927b95867345bb238cc",
+        "kind": "documentation_only"
+      },
+      "docs/MULTISPECIES_MEMBRANE.md": {
+        "before_sha256": "d12cef69b417bff1b23639e12607f0a28c3c42b745cefc27a39340bca4f2650a",
+        "after_sha256": "104a2e72357ca57a85c280382dcff0785c8f38cfe4432ba1dc91c30ea90cafe1",
+        "kind": "documentation_only"
+      },
+      "docs/ROADMAP.md": {
+        "before_sha256": "62b7f573a186238f08c9a8d0818315e825d743832ab3d47465c6d176882a950a",
+        "after_sha256": "bdd2d7ad2adfe32d9def13cfb1302b17a28c41c1d30749bd14c5f872dd02a555",
+        "kind": "documentation_only"
+      },
+      "docs/VOLTAGE_GATED_MEMBRANE.md": {
+        "before_sha256": "edbdcf7a532413151b19e42747f1244df0d6eca3006b428c5c9b90c4369ece6f",
+        "after_sha256": "4af19e984b196201a028e052b35d96ed9c6108058f5630d3da8931d899e21568",
+        "kind": "documentation_only"
+      },
+      "PROGRESS.md": {
+        "before_sha256": "50ce67ed1fe9c9318f10fdcd13ce3d01ec56ad818b90d74f56b1133705d3732c",
+        "after_sha256": "516329923d886f18ae433cbaa76545a7d7d369e68e0f9fd238cb7c951d81e140",
+        "kind": "documentation_only"
+      },
+      "README.md": {
+        "before_sha256": "bc0991873ad786800287ead62f27996bcc2c522122f3a4c7e3ee98127352e2ad",
+        "after_sha256": "9876cbc7c5a653df2e512cf5590dd546f88388de975aee525fe3694b43ebe96d",
+        "kind": "documentation_only"
+      }
+    },
+    "production_and_packaging_unchanged": true,
+    "earlier_references_pilot_and_results_unchanged": true,
+    "documentation_sha256": {
+      "docs/ARCHITECTURE.md": "742613f619c769caae94332117e0d6ec3de91a1b2c0265486c5e8d99a0c9492a",
+      "docs/BETSE_CAPABILITY_ROADMAP.md": "e8a7d50f5a0ecb7e38e150e8d138f85c59aae48f1b0d0f88da1af986a0cbf21f",
+      "docs/DECISIONS.md": "0715912a631b317c187129a3f4f191f0d7bc5ce4e810c38785e33c022be8f704",
+      "docs/EXPERIMENTS.md": "978e92abd785d7320f73515200b04012f5074d35b951b85593265bfdf0b6ba0f",
+      "docs/MULTISCALE_DESIGN.md": "b6977017e3d75d7a9f1a0730fa890a483e46340e5e78b013fdc9acdb7b8107f9",
+      "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md": "dc306ed6e903bbb410b7de01edd266796294b39106204927b95867345bb238cc",
+      "docs/MULTISPECIES_MEMBRANE.md": "104a2e72357ca57a85c280382dcff0785c8f38cfe4432ba1dc91c30ea90cafe1",
+      "docs/ROADMAP.md": "bdd2d7ad2adfe32d9def13cfb1302b17a28c41c1d30749bd14c5f872dd02a555",
+      "docs/VOLTAGE_GATED_MEMBRANE.md": "4af19e984b196201a028e052b35d96ed9c6108058f5630d3da8931d899e21568",
+      "PROGRESS.md": "516329923d886f18ae433cbaa76545a7d7d369e68e0f9fd238cb7c951d81e140",
+      "README.md": "9876cbc7c5a653df2e512cf5590dd546f88388de975aee525fe3694b43ebe96d",
+      "docs/PHYSICAL_IONIC_GRAPH_SPEC.md": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+      "reports/SPEC007_DESIGN_CHECK.md": "161fb3d6592a0890259c9d8f49ac8cb5665bbb77416f2b104d2a9f84d2daeb18"
+    }
+  },
+  "static_checks": {
+    "markdown_check": {"status":"pass","markdown_files":13,"local_links":779,"structure_checks":"pass"},
+    "ruff_check": "pass",
+    "ruff_format_check": "pass",
+    "python_files": 202,
+    "pip_check": "pass",
+    "git_diff_check": "pass"
+  },
+  "next_gate": "NUM-008: freeze and qualify short coupled graph trajectories, reference refinement, independent controls, stage/interior domains, complete histories and resource limits before CORE-008 production.",
+  "out_of_scope": [
+    "No production graph family or package-version change.",
+    "No graph timestep selection or graph ODE integration.",
+    "No finite-bath or extracellular-field extension, topology mutation or geometry evolution.",
+    "No GPU execution, optimization, multirate solver or organ model.",
+    "No biological calibration/validation, BETSE parity or deferred E02 campaign."
+  ]
+}

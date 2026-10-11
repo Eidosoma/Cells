@@ -1,0 +1,16 @@
+{
+  "schema": "cells.betse_channel_setup_amendment@1",
+  "decision": "D090",
+  "scope": "REF-004b configuration-only correction: an empty biomolecule sequence, not null. Same twelve prescribed single-transfer cases; no new numerical method or coupled trajectory.",
+  "configuration_path": ["general network", "biomolecules"],
+  "original_value": null,
+  "corrected_value": [],
+  "base_protocol_sha256": "6354ced23893880cf0c619234bc03553660c113e8644aeb12bdf9b81ee6a6ce3",
+  "failure_sha256": "e0d4a28641be602862abec1667be15743606ed30da4016cb73523302a50f69f1",
+  "original_registration_sha256": "bde5e58153cbe955252bad47b216fad2b6a9cfa449691e3f8f2ac64b3a31dcbc",
+  "configuration_contract_timeout_seconds": 20,
+  "numerical_protocol_changed": false,
+  "original_results_reused_as_new_execution": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "cells.betse_channel_loop_audit_plan@1",
+  "decision": "D094",
+  "capture": "runs/ref-004b-loop-preparation-2026-09-14/capture-01",
+  "anchors": {
+    "completion.json": "49db72ff95caa5e69c96e476233f0874bde6a046affea5130dc1e0ad640a6efd",
+    "registration.json": "e8ec5eb5e6274544bfced0dec64d77509c540d25e9222ed4703ace29e211cd27",
+    "loop-comparisons.json": "56e8ca0d237d635e347b77bbf1b35e237481325d6b503326189937d2aadc304f",
+    "cells.json": "6f04de8cc3a1b0afb7812933faf1c2d3e9d12a1f3e4e3db28e2a1a30a83e9951"
+  },
+  "native_comparisons": 73744,
+  "readiness_comparisons": 348,
+  "expected_comparisons": 74092,
+  "precision_digits": 80,
+  "cpu_affinity": [0, 1, 2, 3],
+  "total_timeout_seconds": 120,
+  "max_artifact_bytes": 67108864,
+  "max_file_bytes": 33554432,
+  "scope": "Saved-data closeout of eight-step native INIT preparation, observer controls and twelve Cells initial-state/grid readiness records. No cross-engine trajectory or independent numerical reference solution.",
+  "simulators_rerun": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

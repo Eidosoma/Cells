@@ -1,0 +1,17 @@
+{
+  "schema": "cells.betse_channel_runtime_amendment@1",
+  "decision": "D091",
+  "scope": "Reproduce the registered numerical environment before importing Cells. Keep strict runtime equality and all twelve single-transfer cases unchanged.",
+  "failure_sha256": "1b2f3624233860fa9d3d9e720a388fa6fe3995d5dcef936bdec02eadbb94fd50",
+  "previous_registration_sha256": "7b10286e2994965847fbf700ea8e5e33078a224391fd5062f62b6df63fe631e8",
+  "cells_log_sha256": "ce22ba21543f16318b7946b2620c6fe81a729fbdbe8e115906d9e173554d0f42",
+  "base_protocol_sha256": "6354ced23893880cf0c619234bc03553660c113e8644aeb12bdf9b81ee6a6ce3",
+  "registered_numerical_environment": {"XLA_FLAGS": null, "JAX_DISABLE_JIT": null},
+  "startup_probe_timeout_seconds": 8,
+  "startup_contract_timeout_seconds": 25,
+  "strict_runtime_check_changed": false,
+  "numerical_protocol_changed": false,
+  "previous_native_results_reused_as_new_execution": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

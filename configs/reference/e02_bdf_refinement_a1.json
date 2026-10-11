@@ -1,0 +1,24 @@
+{
+  "revision": "e02_sw1_bdf_refinement_a1@1",
+  "decision": "D035",
+  "authorization_date": "2026-09-09",
+  "scope": "one_tighter_BDF_reference_sensitivity_trial_not_panel_continuation",
+  "case_key": "M_to_E/mirna_only",
+  "new_variant": "bdf_tight",
+  "new_method": ["BDF", 0.1],
+  "reference_order": ["radau", "bdf", "refined", "bdf_tight"],
+  "required_pairs": ["radau_vs_refined", "radau_vs_bdf_tight", "refined_vs_bdf_tight"],
+  "changes": {
+    "BDF_rtol_from": 1e-10,
+    "BDF_rtol_to": 1e-11,
+    "BDF_atol_from": 1e-11,
+    "BDF_atol_to": 1e-12
+  },
+  "unchanged": ["equations", "case", "initial_state", "context", "zero_assay_ledgers", "duration_1000", "max_step_0.1", "Jacobian_strategy", "dense_checks", "error_budgets", "resources"],
+  "comparison_grid": "union_all_four_accepted_endpoints_midpoints_original_observers_phase_boundaries",
+  "old_BDF_pairs": "retained_diagnostic_not_removed_or_reclassified",
+  "promotion_policy": "diagnostic_agreement_only_original_panel_qualification_unchanged",
+  "automatic_retry_or_sweep": false,
+  "remaining_controls_run": false,
+  "candidate_selection": "not_run"
+}

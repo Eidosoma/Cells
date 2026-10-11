@@ -1,0 +1,99 @@
+{
+  "status": "pass",
+  "campaign_status": "unqualified",
+  "scope": "pinned_prior_subset_reuse_plus_new_dense_domain_accounting_grid_observer_audit",
+  "NUM005c1_complete": false,
+  "NUM005c_complete": false,
+  "receipt_sha256": "4a432c2f8341b5cd949abf51b776f165cf98951cdd6bf2167168d8853965b194",
+  "registration_sha256": "354269b779a029c74106672f45c8932cee6730d13c5862a4da5c5e68da539e63",
+  "prior_audit_sha256": "c1e0ec7be902316d50cfc605cf7ebe7f4a031c9ad42f1c0813f44f93c016cfbd",
+  "prior_receipt_sha256": "fdebf3a244e185ad3bc45d32fa9f4e7f322c6a2373fcf358e2b210147cb9bac4",
+  "prior_audited_conditions_reused": [
+    "E_to_M/active",
+    "E_to_M/blocked",
+    "E_to_M/ionic_only",
+    "E_to_M/isolated",
+    "E_to_M/mirna_only",
+    "E_to_M/one_neighbor",
+    "E_to_M/same_state",
+    "M_to_E/active"
+  ],
+  "new_trajectory_audits": {
+    "M_to_E/blocked/radau": {
+      "steps": 10202,
+      "chunks": 40,
+      "maximum_accounting_residual": 7.59953492177503e-14
+    },
+    "M_to_E/blocked/bdf": {
+      "steps": 10043,
+      "chunks": 40,
+      "maximum_accounting_residual": 1.6819878823071122e-13
+    },
+    "M_to_E/blocked/refined": {
+      "steps": 10229,
+      "chunks": 40,
+      "maximum_accounting_residual": 6.530981079484244e-14
+    },
+    "M_to_E/ionic_only/radau": {
+      "steps": 10202,
+      "chunks": 40,
+      "maximum_accounting_residual": 7.59953493458666e-14
+    },
+    "M_to_E/ionic_only/bdf": {
+      "steps": 10202,
+      "chunks": 40,
+      "maximum_accounting_residual": 1.2329921750105531e-13
+    },
+    "M_to_E/ionic_only/refined": {
+      "steps": 10229,
+      "chunks": 40,
+      "maximum_accounting_residual": 6.017418902394866e-14
+    },
+    "M_to_E/mirna_only/radau": {
+      "steps": 10186,
+      "chunks": 40,
+      "maximum_accounting_residual": 7.545963853772264e-12
+    },
+    "M_to_E/mirna_only/bdf": {
+      "steps": 12848,
+      "chunks": 51,
+      "maximum_accounting_residual": 7.119638212316204e-12
+    },
+    "M_to_E/mirna_only/refined": {
+      "steps": 10384,
+      "chunks": 41,
+      "maximum_accounting_residual": 7.815970093361102e-12
+    }
+  },
+  "new_case_audits": {
+    "M_to_E/blocked": {
+      "comparison_grid": {
+        "samples": 61946,
+        "chunks": 242
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    },
+    "M_to_E/ionic_only": {
+      "comparison_grid": {
+        "samples": 62264,
+        "chunks": 244
+      },
+      "observations": {
+        "observations": 1007,
+        "terminal_observations": 102
+      }
+    }
+  },
+  "aggregate_artifact_bytes": 511109773,
+  "new_payloads": 1181,
+  "new_archived_source_files": 29,
+  "seconds": 488.9789850729867,
+  "audit_wall_budget_seconds": 3600,
+  "incomplete_attempts_not_numerically_promoted": true,
+  "comparison_flux_scores": "online_recorded_not_independently_recomputed_by_this_audit",
+  "production_changed": false,
+  "candidate_selected": false
+}

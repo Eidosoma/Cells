@@ -1,0 +1,93 @@
+{
+  "schema": "cells.core009_test_context_correction@1",
+  "status": "pass",
+  "original_matrix": "reports/core-009-regression-01/verification.json",
+  "original_matrix_sha256": "1c5db922a5a6d1a55552ff9ee78bf14f34720de2844e70ecee9581a4a1ac4544",
+  "original_result": {
+    "tests": 3614,
+    "passed": 3612,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "current_production_tests": 1969,
+    "current_production_status": "pass"
+  },
+  "failure": "Two unchanged historical auditor import-isolation tests invoked ROOT/.venv/bin/python, which did not exist in the independently copied 0.13.0 test workspace. Both failed with FileNotFoundError before the audited subprocess could start.",
+  "failed_tests": [
+    "tests/unit/test_finite_extracellular_dynamics.py::test_auditor_imports_no_solver",
+    "tests/unit/test_finite_extracellular_tangent.py::test_read_only_v2_auditor_imports_no_rhs_or_ode"
+  ],
+  "correction": "The new production-context launcher links only the isolated workspace's .venv directory to the existing pinned interpreter prefix. Sources, scientific inputs and evidence remain independent copies; original source, confinement and no-links guards are unchanged. Existing environment paths are not overwritten.",
+  "implementation_changes": {
+    "scripts/test_finite_extracellular_production_build.py": {
+      "before": "bf69c8a93e1c629acdb853fded69e07779b006c340e27ddc4cd4f109de512235",
+      "after": "88b691f1e38a40af84585570c0b310172e75fc7b5531ac9774a8b4f9987de53e"
+    },
+    "tests/unit/test_finite_extracellular_production_context.py": {
+      "before": "becfeb1f926ffed98010f69b71c6238adfc7260578f5f8e5088a377701819a9c",
+      "after": "e8f7291b882e901fea3cc42040344dd6c1e4e2d992d02ed3ca14a4ac5bb8a391"
+    }
+  },
+  "unit_receipt": "reports/core-009-context-correction-01.xml",
+  "unit_tests": 8,
+  "new_unit_tests": 2,
+  "preserved_formal_session": "runs/core-009-2026-09-10/acceptance-01",
+  "preserved_formal_verification_sha256": "be01a644ef86d230ca24f9cc096704fc5023c8d47c48049f4f426cd9c7cb3096",
+  "formal_session_handling": "Original successful numerical/replay evidence is retained. Its implementation capsule contains the earlier test launcher, so it will not be silently relabeled as final current-source acceptance; a new captured session and regression matrix are required.",
+  "unchanged": {
+    "production_modules": 48,
+    "scientific_inputs": true,
+    "reference_scripts": true,
+    "original_tests": true,
+    "tolerances": true,
+    "numerics": true,
+    "prospective_resource_limits": true
+  },
+  "new_expected_targeted_tests": 150,
+  "new_expected_full_matrix_tests": 3616,
+  "next": [],
+  "historical_context_recheck": {
+    "receipt": "reports/core-009-finite-context-correction-01/verification.json",
+    "sha256": "12e2f308d97ad7ecdd8f06712acd8adff5e94cce64322c00f4ee2a722df4b884",
+    "tests": 256,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 62.043
+  },
+  "unit_receipt_sha256": "cc746409b53d898e59262f034688c41536c4b85e82ee0cf6874f022f9fce2376",
+  "targeted_recheck": {
+    "receipt": "reports/core-009-targeted-03.xml",
+    "sha256": "a9e0a76c4679b402bde3064a98712b1a4149aba3bb7cbe9bed4496f61db1999b",
+    "tests": 150,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 109.444
+  },
+  "final_session": "runs/core-009-2026-09-10/acceptance-02",
+  "final_acceptance": {
+    "verification": "runs/core-009-2026-09-10/acceptance-02/verification.json",
+    "verification_sha256": "247e2bd8f00cb58736e2b6e7ef2bf0c0855742fa8e929e6067ef861bc2ad3b92",
+    "recorded_seconds": 631.7336249579675,
+    "artifact_bytes": 446951333,
+    "capsule_sha256": "69432e98e4ad6a132c65fb8f9faafc01db6b7c91b8310a41d2a04a3d5ba12f00",
+    "status": "pass"
+  },
+  "repeat_check": {
+    "receipt": "reports/core-009-repeat-audit.json",
+    "arrays_exact": 25654,
+    "npz_files": 408,
+    "production_sources_unchanged": 48
+  },
+  "final_matrix": "reports/core-009-regression-02/verification.json",
+  "final_matrix_sha256": "e64950a3e14518562404bf72a7ddefa043992b1b2a8a51a751346636a91d2916",
+  "final_matrix_result": {
+    "tests": 3616,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "summed_context_seconds": 1168.04
+  },
+  "resolution": "Correction and all prospective acceptance/test gates complete; the original failed matrix and superseded numerical acceptance remain retained. Final source/evidence/workspace release checks are recorded separately."
+}

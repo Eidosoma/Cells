@@ -1,0 +1,592 @@
+{
+  "comparisons": {
+    "branch": {
+      "branch_manifest_sha256": "bb3e695b945d3b09472e1085a858938a95cc321a0c23a891994372f8499dfd46",
+      "exact_arrays": 73,
+      "nonzero_history_retained": true,
+      "parent_manifest_sha256": "ee30db0bd1007cd999ab3d4bea39b3a5db5d893e5c0fd6b011ff8a2d2ee3907e",
+      "parent_time": 0.0713
+    },
+    "cohort-resumed/divalent/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/membrane/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/membrane/2": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/membrane/3": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/membrane/4": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/membrane/5": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/mesh/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/mesh/2": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/mesh/3": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohort-resumed/ternary/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/divalent/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/membrane/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/membrane/2": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/membrane/3": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/membrane/4": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/membrane/5": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/mesh/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/mesh/2": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/mesh/3": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "cohorts/ternary/1": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "windows/divalent": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "windows/membrane": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "windows/mesh": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    },
+    "windows/ternary": {
+      "bitwise_required": false,
+      "comparison_factor": 0.001,
+      "native": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      },
+      "observed": {
+        "errors": {
+          "amount_and_transfer_fmol": 0,
+          "concentration_mM": 0,
+          "dissipation_pJ": 0,
+          "potential_V": 0
+        },
+        "maximum_normalized_error": 0,
+        "pass": true
+      }
+    }
+  },
+  "failure_sha256": "b01c968d283977a961c58f6e827c91a4e02a17e3f31ccc708c8b33376e92807e",
+  "full_acceptance": false,
+  "scope": "Read-only branch and completed scalar/window/cohort comparisons only; full registered session remains stopped",
+  "status": "pass",
+  "trajectory_solver_calls": 0
+}

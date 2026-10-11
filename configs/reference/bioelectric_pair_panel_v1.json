@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "contract": "SPEC-002 physical pair, not BITSEY source compatibility",
+  "state_order": "species-major Na/K/Cl amounts and leaks, two pump ledgers, oriented Na/K/Cl transfer, gate, three dissipation diagnostics",
+  "targets": {
+    "amount_fmol": 1e-7,
+    "leak_fmol": 1e-7,
+    "pump_cycles_fmol": 1e-7,
+    "transfer_fmol": 1e-7,
+    "gate_fraction": 1e-7,
+    "voltage_V": 1e-6,
+    "dissipation_pJ": 1e-6
+  },
+  "balance_targets": {
+    "amount_fmol": 1e-8,
+    "charge_as_voltage_V": 1e-8,
+    "energy_pJ": 1e-6
+  },
+  "reference_factor": 0.1,
+  "reference_settings": {
+    "rtol": 1e-11,
+    "atol": 1e-13,
+    "refined_rtol": 1e-12,
+    "refined_atol": 1e-14,
+    "max_step_s": 0.25
+  },
+  "candidate_steps_s": [0.02, 0.01, 0.005, 0.0025, 0.001],
+  "base": {
+    "horizon": 10.0,
+    "cells": [
+      {
+        "volume_pL": 1.0,
+        "area_m2": 1e-9,
+        "specific_capacitance_F_per_m2": 0.01,
+        "temperature_K": 298.15,
+        "initial_mM": [12.0, 140.0, 10.0],
+        "bath_mM": [145.0, 5.0, 150.0],
+        "permeability_m_per_s": [1e-10, 1e-9, 1e-10],
+        "initial_voltage_V": -0.065,
+        "pump_capacity_fmol_per_s": 0.02,
+        "atp_free_energy_J_per_mol": -50000.0
+      },
+      {
+        "volume_pL": 1.0,
+        "area_m2": 1e-9,
+        "specific_capacitance_F_per_m2": 0.01,
+        "temperature_K": 298.15,
+        "initial_mM": [18.0, 130.0, 15.0],
+        "bath_mM": [145.0, 5.0, 150.0],
+        "permeability_m_per_s": [1e-10, 1e-9, 1e-10],
+        "initial_voltage_V": -0.045,
+        "pump_capacity_fmol_per_s": 0.02,
+        "atp_free_energy_J_per_mol": -50000.0
+      }
+    ],
+    "junction": {
+      "endpoints": [0, 1],
+      "area_m2": 1e-11,
+      "permeability_m_per_s": [1e-8, 5e-9, 2e-9],
+      "residual": [0.1, 0.1, 0.0],
+      "sensitivity_per_V": 100.0,
+      "half_voltage_V": 0.04,
+      "tau_s": 0.2,
+      "initial_gate": 0.25
+    },
+    "controls": [{"time": 0.0}]
+  },
+  "cases": [
+    {"id": "Q00", "name": "baseline"},
+    {"id": "Q01", "name": "contact_blocked", "controls": [{"time": 0.0, "contact": 0.0}]},
+    {"id": "Q02", "name": "isolated_exchange", "controls": [{"time": 0.0, "leak": [[0, 0], [0, 0], [0, 0]], "pump": [0, 0]}]},
+    {"id": "Q03", "name": "gate_only", "horizon": 1.0, "controls": [{"time": 0.0, "leak": [[0, 0], [0, 0], [0, 0]], "pump": [0, 0], "contact": 0.0}]},
+    {"id": "Q04", "name": "identical_cells", "cell_overrides": {"1": {"initial_mM": [12, 140, 10], "initial_voltage_V": -0.065}}},
+    {"id": "Q05", "name": "unequal_volume_capacitance", "cell_overrides": {"1": {"volume_pL": 1.7, "area_m2": 1.6e-9}}},
+    {"id": "Q06", "name": "reversed_edge", "junction": {"endpoints": [1, 0]}},
+    {"id": "Q07", "name": "initial_gate_zero", "horizon": 1.0, "junction": {"initial_gate": 0.0}},
+    {"id": "Q08", "name": "initial_gate_one", "horizon": 1.0, "junction": {"initial_gate": 1.0}},
+    {"id": "Q09", "name": "fast_gate", "horizon": 1.0, "junction": {"tau_s": 0.02}},
+    {"id": "Q10", "name": "slow_gate", "junction": {"tau_s": 2.0}},
+    {"id": "Q11", "name": "strong_junction", "horizon": 1.0, "junction": {"permeability_m_per_s": [1e-7, 5e-8, 2e-8]}},
+    {"id": "Q12", "name": "weak_junction", "junction": {"permeability_m_per_s": [1e-9, 5e-10, 2e-10]}},
+    {"id": "Q13", "name": "zero_residual", "horizon": 1.0, "junction": {"residual": [0, 0, 0]}},
+    {"id": "Q14", "name": "potassium_impermeant", "junction": {"permeability_m_per_s": [1e-8, 0, 2e-9]}},
+    {"id": "Q15", "name": "gate_decoupled", "horizon": 1.0, "junction": {"residual": [1, 1, 1]}},
+    {"id": "Q16", "name": "contact_release", "horizon": 1.0, "controls": [{"time": 0.0, "contact": 0.0}, {"time": 0.123}]},
+    {"id": "Q17", "name": "short_contact_block", "horizon": 1.0, "controls": [{"time": 0.0}, {"time": 0.1234, "contact": 0.0}, {"time": 0.1241}]},
+    {"id": "Q18", "name": "independent_controls", "horizon": 1.0, "controls": [
+      {"time": 0.0},
+      {"time": 0.117, "leak": [[0, 1], [0, 1], [0, 1]]},
+      {"time": 0.211, "leak": [[0, 1], [0, 1], [0, 1]], "pump": [1, 0]},
+      {"time": 0.301, "leak": [[0, 1], [0, 1], [0, 1]], "pump": [1, 0], "contact": 0},
+      {"time": 0.437, "leak": [[0, 1], [0, 1], [0, 1]], "pump": [1, 0]}
+    ]},
+    {"id": "Q19", "name": "leaks_off_pumps_retained", "horizon": 1.0, "controls": [{"time": 0.0, "leak": [[0, 0], [0, 0], [0, 0]]}]}
+  ]
+}

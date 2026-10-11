@@ -1,0 +1,41 @@
+{
+  "payload_hashes": 421,
+  "prepared_packets_sha256": "a7eee3207205b799717523c14c0d4436d8935d4766f3b976474856ab90458e6b",
+  "production_files_unchanged": 39,
+  "scope": "preparation_artifact_accounting_domain_and_identity_not_switching",
+  "source_capsule_files": 20,
+  "status": "pass",
+  "trajectories": {
+    "E/bdf": {
+      "chunks": 21,
+      "maximum_accounting_residual": 3.6415315207705135e-14,
+      "steps": 5290
+    },
+    "E/radau": {
+      "chunks": 21,
+      "maximum_accounting_residual": 2.2205418213245958e-14,
+      "steps": 5251
+    },
+    "E/refined": {
+      "chunks": 22,
+      "maximum_accounting_residual": 3.8192683971337776e-14,
+      "steps": 5508
+    },
+    "M/bdf": {
+      "chunks": 21,
+      "maximum_accounting_residual": 4.8405723873656825e-14,
+      "steps": 5294
+    },
+    "M/radau": {
+      "chunks": 21,
+      "maximum_accounting_residual": 2.753433512510879e-14,
+      "steps": 5326
+    },
+    "M/refined": {
+      "chunks": 23,
+      "maximum_accounting_residual": 2.931057452030222e-14,
+      "steps": 5703
+    }
+  },
+  "verification_sha256": "cf2570b6a8720bdb864113a2075d748d883a78a7a69783acab91d060c2360d63"
+}

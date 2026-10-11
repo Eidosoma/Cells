@@ -1,0 +1,164 @@
+{
+  "Cells_zero_pairs": 6,
+  "created_utc": "2026-09-13T17:37:36.880613+00:00",
+  "failure_anchors": {
+    "cells-failure.json": "81ed94ba37389ba9f68987f181c76552225bb42ee202015062305b5a64bbfc7f",
+    "failure.json": "12cddb240fca4a6831bd29663c6ed7ea8b3572fdc159931f6ac84acd912ac65f",
+    "native.json": "df021ee24f82a282aa20389461d6b1d825e4a2039a6e8155a0d451b7d0277e02",
+    "registration.json": "209586bf9f03897d71db4192f1a9fb0883b56c47756949978b6e2fc888de928d"
+  },
+  "independent_audit_run": false,
+  "integration_calls": 0,
+  "internal_laws": {
+    "comparisons": 666108,
+    "failed_comparisons": 0,
+    "first_failures": [],
+    "maximum_normalized_error": 0.18106284912210208,
+    "worst": {
+      "actual": -1.7861641765648528e-06,
+      "expected": -1.7861645386970192e-06,
+      "id": "native/baseline/step/145/outside_step/0",
+      "normalized_error": 0.18106284912210208
+    }
+  },
+  "internal_laws_by_hold": {
+    "0.00000625": {
+      "comparisons": 273284,
+      "failed_comparisons": 0,
+      "first_failures": [],
+      "maximum_normalized_error": 0.18106284912210208,
+      "worst": {
+        "actual": -1.7861641765648528e-06,
+        "expected": -1.7861645386970192e-06,
+        "id": "native/baseline/step/145/outside_step/0",
+        "normalized_error": 0.18106284912210208
+      }
+    },
+    "0.00001250": {
+      "comparisons": 392824,
+      "failed_comparisons": 0,
+      "first_failures": [],
+      "maximum_normalized_error": 0.16794084230914463,
+      "worst": {
+        "actual": -10.124682312831283,
+        "expected": -10.124682309438459,
+        "id": "native/baseline/step/70/after/rho/3",
+        "normalized_error": 0.16794084230914463
+      }
+    }
+  },
+  "new_cells_runs": 0,
+  "original_cells_worker_receipt_exists": false,
+  "provenance": "frozen_failure_manifest_registration_started_rows_and_completed_payloads",
+  "retained_cells_runs": 26,
+  "retained_native_runs": 16,
+  "reused_cells": {
+    "0.00000625/baseline/jax_eager/subdivision-1": {
+      "path": "cells/0.00000625/baseline/jax_eager/subdivision-1/result.json",
+      "sha256": "8968fe068e6e9aa7c3370b106f0f6b4e67c8da8f93131c467217a9d820a55375"
+    },
+    "0.00000625/baseline/jax_eager/subdivision-2": {
+      "path": "cells/0.00000625/baseline/jax_eager/subdivision-2/result.json",
+      "sha256": "d285c876cc08fca70fc80e1998c7aa3ba4152a4ceabb2cae1ffaaffb4cffcec3"
+    },
+    "0.00001250/baseline/jax_eager/subdivision-1": {
+      "path": "cells/0.00001250/baseline/jax_eager/subdivision-1/result.json",
+      "sha256": "a5c07380199215cec987dba978718ffb9f116cad237d951436f6d415b242bb12"
+    },
+    "0.00001250/baseline/jax_eager/subdivision-2": {
+      "path": "cells/0.00001250/baseline/jax_eager/subdivision-2/result.json",
+      "sha256": "1420bbc8c3ea106455f2ec145031906d77019c46bdf8c0d981f9437aa6043a09"
+    },
+    "0.00001250/baseline/jax_eager/subdivision-4": {
+      "path": "cells/0.00001250/baseline/jax_eager/subdivision-4/result.json",
+      "sha256": "2a8c08d5833cdaef159b4c45a5769594bf92557066c6bd65fe185acb25cf6300"
+    },
+    "0.00001250/baseline/jax_jit/subdivision-1": {
+      "path": "cells/0.00001250/baseline/jax_jit/subdivision-1/result.json",
+      "sha256": "f93eac98655d0fa336368ab7dae5250b66f478bff264b0726eb4b8d56828351e"
+    },
+    "0.00001250/baseline/jax_jit/subdivision-2": {
+      "path": "cells/0.00001250/baseline/jax_jit/subdivision-2/result.json",
+      "sha256": "570c6e617225364c5a5962d31f3a3688c4e379b35565094a76387e303fc0fdf0"
+    },
+    "0.00001250/baseline/jax_jit/subdivision-4": {
+      "path": "cells/0.00001250/baseline/jax_jit/subdivision-4/result.json",
+      "sha256": "4bc7cb40e835d699a4ca16204e9be6922f4d02cc801785b05441e53b46fecef5"
+    },
+    "0.00001250/static_blocked/jax_eager/subdivision-1": {
+      "path": "cells/0.00001250/static_blocked/jax_eager/subdivision-1/result.json",
+      "sha256": "641f49ca2dc27ce68729410ee51439db331a17e1185cb53d972265631e45fa24"
+    },
+    "0.00001250/static_blocked/jax_eager/subdivision-2": {
+      "path": "cells/0.00001250/static_blocked/jax_eager/subdivision-2/result.json",
+      "sha256": "2222f3c4be9060ea1ffabbe14e0ebf02033cc427f5c8ad7d72824e0b38e21f9c"
+    },
+    "0.00001250/static_blocked/jax_eager/subdivision-4": {
+      "path": "cells/0.00001250/static_blocked/jax_eager/subdivision-4/result.json",
+      "sha256": "ccad7c514e04417911793fe0d9c5abf1e84d49fbeb1830ef77707894e6923ec6"
+    },
+    "0.00001250/static_blocked/jax_jit/subdivision-1": {
+      "path": "cells/0.00001250/static_blocked/jax_jit/subdivision-1/result.json",
+      "sha256": "4db37ac99ecde7502a4f28e58cacb38ec101800fb88e6c91f111526a2b40a5e5"
+    },
+    "0.00001250/static_blocked/jax_jit/subdivision-2": {
+      "path": "cells/0.00001250/static_blocked/jax_jit/subdivision-2/result.json",
+      "sha256": "bb89263b9b0688212738b9000aef5b1b103785be6bef9a18e8b96a852373c192"
+    },
+    "0.00001250/static_blocked/jax_jit/subdivision-4": {
+      "path": "cells/0.00001250/static_blocked/jax_jit/subdivision-4/result.json",
+      "sha256": "460fc5c11a45e72225ec5ab18d42608709a8ec381ba45c44e842e6d6f343b73f"
+    },
+    "0.00001250/suppression_recovery/jax_eager/subdivision-1": {
+      "path": "cells/0.00001250/suppression_recovery/jax_eager/subdivision-1/result.json",
+      "sha256": "211638ce7426d43f4406adff238c4f41ed477dd5d9ffe8dd38af541629397f21"
+    },
+    "0.00001250/suppression_recovery/jax_eager/subdivision-2": {
+      "path": "cells/0.00001250/suppression_recovery/jax_eager/subdivision-2/result.json",
+      "sha256": "259762d08200a4471dc380de04c2acb3043ab013601f992c559857a9a8147ac0"
+    },
+    "0.00001250/suppression_recovery/jax_eager/subdivision-4": {
+      "path": "cells/0.00001250/suppression_recovery/jax_eager/subdivision-4/result.json",
+      "sha256": "2ac9fd129900a3292506c732d107851a9b3fa502952c54a8e746c1afd0a57d57"
+    },
+    "0.00001250/suppression_recovery/jax_jit/subdivision-1": {
+      "path": "cells/0.00001250/suppression_recovery/jax_jit/subdivision-1/result.json",
+      "sha256": "ed737158c28932ae637f7642bd65bcaa8270b8a1c5296873935b1f14bd386910"
+    },
+    "0.00001250/suppression_recovery/jax_jit/subdivision-2": {
+      "path": "cells/0.00001250/suppression_recovery/jax_jit/subdivision-2/result.json",
+      "sha256": "533cf3bfc2f960608a8623ca5a1afb41d225d530c163c17b4e99e8d68890f2da"
+    },
+    "0.00001250/suppression_recovery/jax_jit/subdivision-4": {
+      "path": "cells/0.00001250/suppression_recovery/jax_jit/subdivision-4/result.json",
+      "sha256": "ce05e019715d08ecceebd86645f54920f6d0233e5073b2f7b9ae04b67dc65e77"
+    },
+    "0.00001250/zero_amplitude/jax_eager/subdivision-1": {
+      "path": "cells/0.00001250/zero_amplitude/jax_eager/subdivision-1/result.json",
+      "sha256": "a400ca02d728ac09d91977bb037661a1622eb540749407add3a9c0afd9305076"
+    },
+    "0.00001250/zero_amplitude/jax_eager/subdivision-2": {
+      "path": "cells/0.00001250/zero_amplitude/jax_eager/subdivision-2/result.json",
+      "sha256": "bce6cb9198e0b6cac9690d1845f12bb1a15ae232ed62f1aa05922b6fc9a0c4e3"
+    },
+    "0.00001250/zero_amplitude/jax_eager/subdivision-4": {
+      "path": "cells/0.00001250/zero_amplitude/jax_eager/subdivision-4/result.json",
+      "sha256": "d652880b687693c361debf32a9fdaf50ec16b510666b2e36c3e4797373015f65"
+    },
+    "0.00001250/zero_amplitude/jax_jit/subdivision-1": {
+      "path": "cells/0.00001250/zero_amplitude/jax_jit/subdivision-1/result.json",
+      "sha256": "af8dc083a4222961b216524890b8163a9362e765542bcd2e917763d01af97789"
+    },
+    "0.00001250/zero_amplitude/jax_jit/subdivision-2": {
+      "path": "cells/0.00001250/zero_amplitude/jax_jit/subdivision-2/result.json",
+      "sha256": "06dc730e782dfdf167bfa6c36e7656807f2b13f1377e6d1e43317bdc5dfc66ec"
+    },
+    "0.00001250/zero_amplitude/jax_jit/subdivision-4": {
+      "path": "cells/0.00001250/zero_amplitude/jax_jit/subdivision-4/result.json",
+      "sha256": "8f4c19a022b52958f949cdf6581bc40d4642fdffde981b0f3faf6f856fa1e4f0"
+    }
+  },
+  "schema": "cells.betse_trace_resume_reuse_check@1",
+  "status": "retained_rows_pass_frozen_internal_checks_not_response_qualification",
+  "trajectory_qualified": false
+}

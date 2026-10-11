@@ -1,0 +1,85 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "baseline_files": 834,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "daddd26cff6581bb87ad4e79473a656b711a47a8bbe482b88118747ff7503907",
+      "before": "c19c6c463c2ee4ae964776e6653fd80771fe828a5feeaab2963be52f6496567b"
+    },
+    "README.md": {
+      "after": "c0f52d7e29a3e11f82c94fa9cfdeb91ea28268e17b8f92d8a09c20ece39f81b7",
+      "before": "8892b2966040cd012bf6be9132e05d6a754d8eb5d198da32a87ab0a9e1b03197"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "30ef7778c0d9ed81e2e2a951c134fa2f50ec8b1d922c18d0e31aae48c0b81550",
+      "before": "76e5b1dcce960a486868c2d4fa6fb4bb0c2acd3eb8e5151f206f3e7e160eef9b"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "5b02cfebfa5334b5a0e47abcea37581f47d20906d7445be3f85a1288b479fec9",
+      "before": "b8dde28e5b76998fb7e99b776c3955c7439479a19d6742cc0c6a1e0cc0ce8c63"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "1a7a6c06919c71620cf3088a6803ddfc0d623f8a6f6ef7d0f8e409e83f907896",
+      "before": "a5dc6de1a3d34169c7c9cba2dfef3137d67caa1b59a16b8fd9d4d48abce9e78f"
+    },
+    "docs/DECISIONS.md": {
+      "after": "ad153b72913ecf4dc192c77f63f913af496698e530410ef44e0991ef215a4cc8",
+      "before": "7ba954f44a24dd5f6cd2f3fb6076f5e9d5570d54c13af0b5c392f89818585495"
+    },
+    "validation/betse/README.md": {
+      "after": "be21feaaf11bc5e93626fdf2993cdadbeef7b651dee735eb8e3e6e10badca5b7",
+      "before": "afdb9fff481282285bc84b18d2a4020a7ad896f4d49707e0494edf97cb4e063b"
+    }
+  },
+  "checked_utc": "2026-09-12T17:54:06.516644+00:00",
+  "preservation_sha256": "46990131b2086a043e12c21b244f3cdc6534645e50acaacbab4eb4330871eca1",
+  "production_modules_unchanged": 51,
+  "protocol_sha256": "c2933437201d456d3183a652df75ef854ae3b62136716f8277b347600a45bb7b",
+  "schema": "cells.betse_trajectory_refinement_prelaunch@1",
+  "sources": {
+    "alignment.py": "b10de826d8f6c9b793d27b132f21aae4f2945dea0094c939e1619ba12f5841f6",
+    "alignment_protocol.json": "86458da3279cdf5ac3a915afd4b263e7c7949d188125599fe165613aa4deff10",
+    "cluster_alignment.py": "6b351da0b93dcc43d3b13b2b193fdedc30549106c6d5ed158097b63253b86b30",
+    "cluster_check.py": "382afe6907142b6373f4bca72f4334464d1af0f444940b75b3b3b779e6fca72d",
+    "cluster_closeout.py": "5b6ab55944ac4d96b5876f09f919bdc4c6fd4d462e26c11871bcefbd2dca6e6c",
+    "cluster_evidence.py": "c0a302ae107c3d51e0202c28f37885084155aeaa68dedb87969b8bc7768c6fbf",
+    "cluster_protocol.json": "a56ed7751b46d7fcb47385078d578a238931feff03f42cbf957b0123b46ebe9b",
+    "contact.py": "c2fb432d3b0988b08abf43e3c0e37eb7a8ddd8f549ce8480657d5dfdfc18c67d",
+    "finish.py": "82d2255cad0e149a1526cd5c9f3e7dbf44505989050435751f2e85fe7b7fcdd5",
+    "finish_preparation.py": "ad2595ba091377c7b00002aa896e735fc0fd670d06ebc50024e7a6029a9838d6",
+    "geometry_probe.py": "dd9c77d92c10bef1894e7b0543950afef086a768558ac1535242db31deeb80b1",
+    "native_observer.py": "64e4de5c620f407677a606da36f2a0bc5f4bd335e7b4006d0c7de5df49d900c2",
+    "preparation.py": "c0e768781c52ade2f5b7c0863cc7ab297d002add251e3d940ff94d4db8f928d8",
+    "preserve.py": "abb995d675ad02fde5b0a49ad0713638ac299e6700fde81f4e08516165c3a170",
+    "protocol.json": "4931c3265784ba7b259cc464ffbb7764fc1a296581a4c4204cd180ffbdad7b2d",
+    "requirements-lock.txt": "dd48b289e5d77bcd7c9dcfed82a6a63149f93dda376d663ddb08d54785a9f7a5",
+    "single_cell.svg": "3f73da4940b837382a6dedb8a9c3a1c7757d667b9b211d875b63b1a55017b321",
+    "test_alignment.py": "e67e74c8f67423412c9f37b5dc03a9bd6cc82f10355779585dc4ea4352dd46dc",
+    "test_cluster.py": "e5f2772805f0979b08f5cd03ff1bddfdbf1aa63b152af6adf69c0e68cfa31f09",
+    "test_contact.py": "dc7ba77b9bbec19dc1251f35bc038b49721cbbe97f5acdf2b5dc8ab2b8f71dde",
+    "test_native_observer.py": "93bf132831d08a5e85dd64051c508bd7ef3f31b62e9624e875a24c14c846c22c",
+    "test_preparation.py": "25aab82f7499a34c91d9d04351b1c2c94dcad25ffd3aee4e4c99aff3d956034c",
+    "test_refinement.py": "2b67bf6fe0e990265c8386156ccf6fd7918de5333ec071dee59aacf350589ac3",
+    "test_saved_cluster.py": "153c971a348b8201b7dce89cf6f008c2d303724374265add767704f2470ea6cb",
+    "test_saved_contact.py": "1ec44831ed109621e85e5d9de1c14da25c29f0163a2865a30789bcbdd2b006a3",
+    "test_trajectory.py": "6580a43d1deb694d33cafce45f1e40b327dde1fefdc8b714bb393a0976422fdf",
+    "trajectory.py": "65f716fbc528db07674e1fc69339f83de6f28b261cc394a8fbf3616ee73e4f8b",
+    "trajectory_check.py": "8e2acfe4e691cb7c86141a9229ff714d438c67f2569a63a2bd2ed445b78db92d",
+    "trajectory_context.py": "a6540d0941d721277dc9f8de1bc826c4b44cdd2be89ebbceb076e1380b080452",
+    "trajectory_failure.py": "75188182b4c4b8a03575604edb30cbcdb7db420aad70e09dcaab245941108dd6",
+    "trajectory_protocol.json": "205ca8a2f2a42d3af472bdcf4d2788cbfa46b7dfae06ce1c5e75b0fa75a7c6bd",
+    "trajectory_refinement.py": "17ac38d0385e6fc9d50b973e2792b26b493fa6ff2f0c20433d90c725b0642ca8",
+    "trajectory_refinement_check.py": "7eeb5b69808fb236f44fefde84282f3d964a46403a059c3bc711a9d887eff070",
+    "trajectory_refinement_context.py": "e6e7976e7434f7910abf1a367d2d34ad0649bcf66354ed0538c1d5fd0116c037",
+    "trajectory_refinement_protocol.json": "c2933437201d456d3183a652df75ef854ae3b62136716f8277b347600a45bb7b"
+  },
+  "status": "pass",
+  "test_counts": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 276
+  },
+  "test_receipt_sha256": "d0ed41a4ddd9b5c1ed309779eec9abff4cf81cd96560b22574ace3255badd075",
+  "unchanged_baseline_files": 827
+}

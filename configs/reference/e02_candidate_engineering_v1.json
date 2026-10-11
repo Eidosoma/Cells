@@ -1,0 +1,22 @@
+{
+  "revision": "e02_candidate_engineering@1",
+  "decision": "D037",
+  "date": "2026-09-09",
+  "scope": "short_checked_RK4_engineering_and_resource_preflight_not_long_study",
+  "cases": ["prepare_E", "prepare_M", "E_to_M/active", "M_to_E/active", "E_to_M/one_neighbor", "M_to_E/one_neighbor"],
+  "duration": 5.12,
+  "step": 0.01,
+  "window_widths": [16, 256],
+  "steps_per_profile": 512,
+  "planned_profiles": 12,
+  "order": "case_then_window_width",
+  "evidence": "full_float64_accepted_states_five_RHS_slopes_cubic_coefficients_and_all_comparison_samples",
+  "reference_selection": "audited_preparations_and_A2_per_case_selected_trios",
+  "comparison_grid": "union_candidate_and_selected_reference_endpoints_midpoints_original_observers_and_short_phase_end",
+  "accuracy_limit": 1.0,
+  "automatic_retry_or_refinement": false,
+  "long_study_run": false,
+  "timestep_selected": false,
+  "production_changed": false,
+  "resource_policy": "original_caps_aggregate_preparation_all_long_reference_roots_and_one_new_engineering_root"
+}

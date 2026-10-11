@@ -1,0 +1,279 @@
+{
+  "baseline_files": 668,
+  "biological_validation": false,
+  "changed_baseline_files": {
+    "PROGRESS.md": {
+      "after": "e6c83d8bb3acdbb7a2e721797171c1b54ea4e8bd90d948c2077e21798605d314",
+      "before": "6305b836671730fbedf107b5ec1dd8ccbeae36816a5f94e13c842866cfc9d8a6"
+    },
+    "README.md": {
+      "after": "889a24266a97106c53fd894c9e751f881132875a5076aeffdefff3b7cffbca85",
+      "before": "15c615149393e021277afecb3d1bff8ff86f12e595f06279744a699aa11ce5bf"
+    },
+    "docs/ARCHITECTURE.md": {
+      "after": "326e974845b1b8512ccfde638b0002ddc1604d2d68c155fe8ab136918e548d21",
+      "before": "f90bd016f74fef3868cdaf8d74cd9e3e01d5b40c11efb0143a8f2329f519b3bb"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "ba40b5a50c50720fbffc899792d16e633ba16c731498afbd48bd444b6d071de5",
+      "before": "d01caa36f5639a4b8736e48c2383d70f710916d323d607b793d895e123bcc4f2"
+    },
+    "docs/DECISIONS.md": {
+      "after": "56c668a3fe3822d46cefd787d9a024df85f75e74154d46654d0abced22a99073",
+      "before": "bf749687d6f1e5505f54e607e9c2662349c5c473c2cccae297669fb122e0a92b"
+    },
+    "docs/EXPERIMENTS.md": {
+      "after": "60b8db49070dbf1e9d303270297aa81b35908b9ce1cd736c1f7803ca1419c222",
+      "before": "f29dd5088978515cf192a292b7e8196f78ec1fb1eaabeae2b2d98e3991d75c26"
+    },
+    "docs/MULTISCALE_DESIGN.md": {
+      "after": "aee5b4cc9e1560d029b51179ae380551676e0befe518a482da673637a60cc1b8",
+      "before": "ccb83f9cb270616414626210aae1ea91b8b2ee5c84f10110d060733d67c573f4"
+    },
+    "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md": {
+      "after": "f8a3e020168e07f829366ce815e147496231d497be6f6c376c732025b9774133",
+      "before": "4df39156f86ecfea040f1856f2d67429a2b1ba9472ce2f58ca7879124690dc90"
+    },
+    "docs/ROADMAP.md": {
+      "after": "986e374cacebe06b69e8d0a3aecd5f5fcfcba4ed8c91fa2d64edce023e345c3c",
+      "before": "c02f7dc0cc6450f84d504dbcd6890ad9d1275689b24c034f2b0d78257a60647c"
+    },
+    "docs/SCIENTIFIC_BASIS.md": {
+      "after": "773db019d739e62ee37309688d74c01d1d36efbb6652d9c9059eb55538adbe9c",
+      "before": "8837c57fdcfdfe9240c3a0b54db222bd67fe3885b4b3a4cd123b35be20cac878"
+    },
+    "pyproject.toml": {
+      "after": "5fe2a8c7fd351d4ce65ec76dcadfe74c19cac9f90e595cb9f2dcd018bb95391d",
+      "before": "d6e77e7122c118af8844ed3b15461d50c3a08c06773831a265a58ae3d179ed6c"
+    },
+    "src/cells/__init__.py": {
+      "after": "dbd3c441da86faa24d68684318e19b07b44d789dc915cad7890e932c940a5cf5",
+      "before": "ad218a9919318d31bf80127ff975904ef2f3977f01ac4ceb019bcb4afa4afe7a"
+    },
+    "src/cells/core/schedule.py": {
+      "after": "da7cfaa5c553977caae3aa7572cf074d069db5bb2f48b175ebb4d8e96ce2f0b9",
+      "before": "abde97947a4b3e210829acd3a41cbbf5a41a2530273909d710f96315e1e72a52"
+    },
+    "src/cells/core/specs.py": {
+      "after": "6c06418d8dbfe23ea8044fa5a61a8386d079099b9489fa2d7e4d69658299dadf",
+      "before": "5bdd8ea61f330947b5854d1ab6d720b56a312a3607d547fe40a04c7a4517803d"
+    },
+    "src/cells/core/state.py": {
+      "after": "4f1c4b7456109a6acf7f47a1b2c3cda80c9bd125c58e302392b4496d907fef37",
+      "before": "04f606bd1c8c86816234b32c7e9b5fad973af2e6ec49765fa01187db2575966e"
+    },
+    "src/cells/models/registry.py": {
+      "after": "ad830d54bf5c5b4f77c66b5ca451d0103c06a345406e0e8f1c06e37a5ed17677",
+      "before": "95219ea1f814e60e9722fbdbd89c4e7bae9c36955d324878477806b6fddb00c4"
+    }
+  },
+  "core010_release_accepted": false,
+  "driver_sha256": "ea8365157498553942c6fd15e55d8fea01845bb293fde6ba6b8b4cf9ddf17ba4",
+  "gpu_tested": false,
+  "missing_baseline_files": [],
+  "new_production_files": [
+    "core/spatial_extracellular_spec.py",
+    "models/spatial_extracellular.py",
+    "numerics/extracellular_field.py"
+  ],
+  "new_workspace_files_sha256_before_receipt": {
+    "configs/spatial_extracellular_cell.json": "d1707a02b1d9e1f47fb61da204c3fe50ce17a0ac27124885d33f179430cb6d35",
+    "docs/SPATIAL_EXTRACELLULAR.md": "9ce952030cb52e5c4033d687b2570ee4c51842356eec040da8e1fc3b96ff7bab",
+    "reports/CORE010_IMPLEMENTATION.md": "eafdcf7648e430946af17b6dd733c2167d8e584040b3de3a5c645ef413444bfe",
+    "reports/core-010-cli-example.json": "8d5d8306f90761fd87c3d3a318e59861e0f54f96530e065eb3f1e40e24ef1742",
+    "reports/core-010-cli-window.json": "86ab3139767d8836ae91ff8436e3f2e1b5072b5676666af1091c67d53097c4fd",
+    "reports/core-010-core009-payload-preservation.json": "a8910c060fa85e2dcb5d1870474543d3e5e84a29d937dbd0b0a878ca70023398",
+    "reports/core-010-preflight-01.xml": "cfed1020984f5cfb21ba1d1097fa147485c20d56b84280818708e39ec9d5b33e",
+    "reports/core-010-preflight-02.xml": "7a10c67ef8f83247153de72ce8fe1f2e233e751408681b74103ea7079be8b35b",
+    "reports/core-010-preflight-03.xml": "c13ad459b712bb9703d81d4daf6623201522c647bedbf357ba2a0dd0a26d8e18",
+    "reports/core-010-preflight-04.xml": "ffd86854217343c46e6eac11b9032abb9fc1cdb9de69d2093fc363c9e66c420c",
+    "reports/core-010-preflight-05.xml": "418bfd020b1e9cccec87638d55ba9ac6d880d8abaf9402d58901e2f6a2bf8638",
+    "reports/core-010-preflight-06.xml": "ef4c7d3e8e51e36fe360d4574fc477c814d6c337c67f3f9c2c165e3226865a38",
+    "reports/core-010-preservation.json": "214f970e8fed180e174be7e4a4c67f61862585b3c617196af553f024261396cb",
+    "reports/core-010-preserved-num010-audit.json": "c186caeea87dacd20e083ace254da35f9ada65fca931c73e021c29efadf40128",
+    "reports/core-010-regression-01/current/current-production.xml": "891b56c28451e9cb32953d843042c8656a7d4520bb82a54af7e570420401e7ad",
+    "reports/core-010-regression-01/current/verification.json": "0f646ef42b7fe73f26b39e31cbaa8da7a555faa5444cf4acf75296848b8c2c6e",
+    "reports/core-010-regression-01/finite-reference/preserved-finite-reference.xml": "756f06f128bc6e6b8b6e9327b23519070ae42157637db1219a14bb31afa03309",
+    "reports/core-010-regression-01/finite-reference/verification.json": "eba8fc7b4d182696c0f156c6ee01cc20f70a6a60d74d8da4b614c0d92d59003a",
+    "reports/core-010-regression-01/historical/preserved-channel-reference.xml": "f21303a00300fc11de5f4229f7a7d4ef5db739f8752278fa1d1d70830e842b80",
+    "reports/core-010-regression-01/historical/preserved-physical-graph-reference.xml": "196be20b39023b7edd5926399626790808c9e50fb9c9be3ad84d8f55c3f531f1",
+    "reports/core-010-regression-01/historical/preserved-reference.xml": "1d64a6d52f575df86154c5f51fba8c4058d3e1a41764eda908c4d312fd055aa9",
+    "reports/core-010-regression-01/historical/verification.json": "2ddc1100df646b64b9c0118dd3ffed9f1ee7f9ceafbe923d191338016d8e9138",
+    "reports/core-010-regression-01/spatial-reference/preserved-spatial-reference.xml": "a5e65237b82a4d307b05ba18335bf15afee75c6b17e5df8e519589fa3a914b76",
+    "reports/core-010-regression-01/spatial-reference/verification.json": "0dec1a8c46fd53c6ab68495debc5bf325599ae00e58880a577911cf714fce713",
+    "reports/core-010-regression-01/verification.json": "1d6299e32551af990451f27074c314cac3ff6854d0b86930a72e072a1d388bb6",
+    "reports/core-010-workspace-baseline.json": "96ee2041f910adc085f9e5e4b499e1d89b6a0a8b6cb43a996c9381b7e8f11b5a",
+    "scripts/audit_preserved_spatial_extracellular_reference.py": "77489d221ddba31d5bbf96f9cc4557c65e66ad816af628d745e97d84fadd3180",
+    "scripts/close_core010_implementation.py": "ea8365157498553942c6fd15e55d8fea01845bb293fde6ba6b8b4cf9ddf17ba4",
+    "scripts/preserve_core010_baseline.py": "decb29735c08ec782faad77fed79dad5d33a4e8c7d1dec2e6e5a58b90d301d4b",
+    "scripts/test_spatial_extracellular_build.py": "68e24bdd68545b211e28b2fb810208eb9ec5db60ba70ba17587f49c54c988f85",
+    "src/cells/core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "src/cells/models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "src/cells/numerics/extracellular_field.py": "3edc539c2141930bb26a402802c2750b06c4891e87f3bf02cad7ced2559601a4",
+    "tests/spatial_extracellular_fixtures.py": "5a6320b40860120659de6d26f7d1d6f8adec494b129985f423780863fe800fcc",
+    "tests/unit/test_spatial_extracellular_context.py": "35654c78a44094a977a571d0a198a7f7ca51205bb5adc38c9af1bdcdb8bda6ef",
+    "tests/unit/test_spatial_extracellular_example.py": "279691f5b4b4d64bb0608050d758b340bd8f05b0cff59ee032bae392e5e8c22a",
+    "tests/unit/test_spatial_extracellular_execution.py": "599a81989ab887b3ddaa6b6ec3b677058089c0f5f1e3984d6ce4b1319156eeec",
+    "tests/unit/test_spatial_extracellular_production.py": "fc4e81ec1a5d4e7c82abc5f4c4f1e8cfd59e1c534be2453fac76f57a104e40fc"
+  },
+  "next_gate": "Frozen full production panel, independent saved-data/corruption audit, fresh-process paths and release closeout",
+  "preflight": {
+    "errors": 0,
+    "failures": 0,
+    "sha256": "ef4c7d3e8e51e36fe360d4574fc477c814d6c337c67f3f9c2c165e3226865a38",
+    "skipped": 0,
+    "tests": 156
+  },
+  "preservation_sha256": "214f970e8fed180e174be7e4a4c67f61862585b3c617196af553f024261396cb",
+  "preserved_reference_audit_sha256": "c186caeea87dacd20e083ace254da35f9ada65fca931c73e021c29efadf40128",
+  "production_sources": 51,
+  "quality": {
+    "format": "275 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "regression": {
+    "contexts": {
+      "current-production": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "891b56c28451e9cb32953d843042c8656a7d4520bb82a54af7e570420401e7ad",
+        "log_sha256": "e4c04e2ef36e66cd09a9d682a371df2c3cc5f5590e2c92385df54f6ebc8f3479",
+        "seconds": 1177.107,
+        "skipped": 0,
+        "tests": 2212
+      },
+      "preserved-channel-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "f21303a00300fc11de5f4229f7a7d4ef5db739f8752278fa1d1d70830e842b80",
+        "log_sha256": "ffc0d90d7be4ae784f0cf59255731c8b742f7cd1c69ba84b72df4f7215180202",
+        "seconds": 19.596,
+        "skipped": 0,
+        "tests": 205
+      },
+      "preserved-finite-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "756f06f128bc6e6b8b6e9327b23519070ae42157637db1219a14bb31afa03309",
+        "log_sha256": "73d6b4068156433cf615ef35603d0fd236fa8ef4968a7eae189ec45ed6637737",
+        "seconds": 58.902,
+        "skipped": 0,
+        "tests": 256
+      },
+      "preserved-physical-graph-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "196be20b39023b7edd5926399626790808c9e50fb9c9be3ad84d8f55c3f531f1",
+        "log_sha256": "54ca685b629d0eb001f6a58b529fc41d405e8f58a9024f768fae73bbb89d36dd",
+        "seconds": 15.134,
+        "skipped": 0,
+        "tests": 213
+      },
+      "preserved-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "1d64a6d52f575df86154c5f51fba8c4058d3e1a41764eda908c4d312fd055aa9",
+        "log_sha256": "5a8efd38cd199babab4e2ad1b5731059d49b4be5787464a1738315a208063feb",
+        "seconds": 156.6,
+        "skipped": 0,
+        "tests": 971
+      },
+      "preserved-spatial-reference": {
+        "errors": 0,
+        "exit_code": 0,
+        "failures": 0,
+        "junit_sha256": "a5e65237b82a4d307b05ba18335bf15afee75c6b17e5df8e519589fa3a914b76",
+        "log_sha256": "101d5579ab9d08edac929fe07b15f32b2b4daa3a2c5660c12a55fb8c63c7a487",
+        "seconds": 8.644,
+        "skipped": 0,
+        "tests": 105
+      }
+    },
+    "sha256": "1d6299e32551af990451f27074c314cac3ff6854d0b86930a72e072a1d388bb6",
+    "total_tests": 3962
+  },
+  "retained_preflight_failures": {
+    "reports/core-010-preflight-01.xml": "Four test API errors (.checkpoint instead of .final); 69 passing tests.",
+    "reports/core-010-preflight-03.xml": "One test incorrectly assumed initial-step depletion; 49 passing execution tests. Replaced with a definite negative trial, not relaxed checks."
+  },
+  "runtime": {
+    "cells_version": "0.15.0.dev0",
+    "machine": "x86_64",
+    "numerical_environment": {
+      "JAX_DISABLE_JIT": null,
+      "XLA_FLAGS": null
+    },
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "ml_dtypes": "0.6.0",
+      "numpy": "2.5.3",
+      "opt_einsum": "3.4.0",
+      "scipy": "1.18.1"
+    },
+    "platform": "Linux",
+    "python": "3.13.5"
+  },
+  "scope": "CORE-010 development integration and regression only",
+  "source_hashes": {
+    "__init__.py": "dbd3c441da86faa24d68684318e19b07b44d789dc915cad7890e932c940a5cf5",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "da7cfaa5c553977caae3aa7572cf074d069db5bb2f48b175ebb4d8e96ce2f0b9",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "core/specs.py": "6c06418d8dbfe23ea8044fa5a61a8386d079099b9489fa2d7e4d69658299dadf",
+    "core/state.py": "4f1c4b7456109a6acf7f47a1b2c3cda80c9bd125c58e302392b4496d907fef37",
+    "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "ad830d54bf5c5b4f77c66b5ca451d0103c06a345406e0e8f1c06e37a5ed17677",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/extracellular_field.py": "3edc539c2141930bb26a402802c2750b06c4891e87f3bf02cad7ced2559601a4",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "status": "pass",
+  "unchanged_baseline_files": 652,
+  "unchanged_old_production_files": 43
+}

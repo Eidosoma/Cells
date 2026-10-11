@@ -1,0 +1,97 @@
+{
+  "kind": "cross_region_calcium_ip3_assembly_qualification@1",
+  "scope": "Registered spatial_calcium@5: synthetic two-cell, three-outside, 2-ms tissue with owned buffered cytosol/ER chemistry, PMCA/NCX/Cav1.2, finite IP3 release and assembly-controlled potassium channels; numerical qualification only.",
+  "tests": [
+    "tests/unit/test_tissue_calcium.py",
+    "tests/unit/test_tissue_field.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_tissue_calcium.py::test_cpu_gpu_complete_histories_and_assembly",
+    "tests/unit/test_tissue_field.py::test_cpu_gpu_saved_physical_fields"
+  ],
+  "required_evidence": [
+    "calcium-baseline",
+    "calcium-blocked",
+    "calcium-release",
+    "calcium-same_region",
+    "calcium-refinement",
+    "calcium-restart",
+    "calcium-partition",
+    "calcium-assembly",
+    "calcium-assembly-reference",
+    "calcium-assembly-replay",
+    "gradient",
+    "equal",
+    "zero_drive",
+    "reverse",
+    "blocked",
+    "same_region",
+    "narrow_return",
+    "wide_return",
+    "triangle",
+    "triangle_padded",
+    "divalent"
+  ],
+  "required_gpu_evidence": [
+    "calcium-cpu-gpu",
+    "cpu-gpu"
+  ],
+  "checks": [
+    "Explicit new identity, strict physical/chemical owners, accepted observation grids, padded and compact full stage derivatives",
+    "Free cytosolic calcium drives every transport law; bound material and ER exchange do not charge the plasma capacitor; duplicate material is rejected",
+    "Independent scalar chemistry/process laws and nonlinear field roots at each adaptive DOP853 stage, instantaneous material/charge/energy balance",
+    "Four evolving control cases, all 25 state fields, complete material/charge/work/dissipation accounting and timestep refinement",
+    "Inherited actual-control RK4 field guard including combined endpoint and every assembly event segment",
+    "Complete disk/fresh-process restart, terminal reload, future IP3 intervention, changed windows, independent world clocks and bitwise partition replay",
+    "Independent stochastic event histories and event-segmented adaptive calcium reference, complete assembly restart/partition, ligand response without changing random events",
+    "Same-region reduction to spatial_calcium@4; frozen-source four-family compatibility retained in development preflight",
+    "Ensemble aggregation retains owned ligand; 4-node/16-GPU planning preserves task identities but does not claim remote execution",
+    "Complete saved CPU/L4 histories and coupled assembly state; physical device explicitly checked"
+  ],
+  "tolerances": {
+    "reference_state_atol": 3e-12,
+    "reference_state_rtol": 3e-09,
+    "cpu_gpu_state_atol": 3e-13,
+    "cpu_gpu_state_rtol": 3e-10,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": {
+      "Na": 2e-11,
+      "K": 2e-11,
+      "Cl": 2e-11,
+      "Ca": 1e-10
+    },
+    "component_charge_atol_C": 1e-20,
+    "energy_atol_pJ": 1e-09,
+    "stage_energy_rate_atol_pJ_per_s": 2e-12,
+    "stage_charge_rate_atol_A": 2e-23,
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "same_backend_replay": "bitwise",
+    "refinement_dt_s": [
+      2.5e-05,
+      1.25e-05,
+      6.25e-06
+    ],
+    "refinement_error_ratio_or_floor": [
+      0.2,
+      3e-13
+    ]
+  },
+  "resources": {
+    "max_wall_seconds": 7200,
+    "artifact_and_cache_bytes": 3221225472,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 10737418240,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "Synthetic fixtures, no measured biological calibration or native full BETSE tissue trajectory equivalence",
+    "Accepted integration boundary observations only; no nonlinear continuous interpolation enclosure",
+    "Assembly changes potassium channel availability only; neutral separate protein pools, no protein energy or chemical feedback",
+    "Connected dense field per world; independent-world GPU architecture only, no distributed single-world solve or measured multi-GPU scaling",
+    "GPU busy and measured SM-active are recorded with coverage; compilation/host work make this a correctness run with no throughput gate or single warm interval",
+    "No automatic followup audit, benchmark or regression"
+  ],
+  "automatic_followup": false
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "cells.betse_trajectory_prelaunch@1",
+  "status": "pass",
+  "checked_utc": "2026-09-12T16:58:55.651382+00:00",
+  "existing_files": 819,
+  "unchanged_files": 812,
+  "intended_document_edits": [
+    "PROGRESS.md",
+    "README.md",
+    "docs/BETSE_CAPABILITY_ROADMAP.md",
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md",
+    "docs/BETSE_REFERENCE_PLAN.md",
+    "docs/DECISIONS.md",
+    "validation/betse/README.md"
+  ],
+  "missing_files": [],
+  "accepted_implementation_files_unchanged": 352,
+  "production_modules_unchanged": 51,
+  "source_capsule_members": 29,
+  "preservation_sha256": "42e96c49de24443ad9004ddad65c75afdd5a9d012c93b7002d6230e0970faa31",
+  "prior_closeout_sha256": "3878ed73e01d537cc330230c980e0be86198fd6bc55cfb4d3ab7a2200ddd99ca",
+  "protocol_sha256": "205ca8a2f2a42d3af472bdcf4d2788cbfa46b7dfae06ce1c5e75b0fa75a7c6bd",
+  "tests": 228,
+  "test_receipt_sha256": "ab76b225907fa42e29d4b1a222fdbe355075a31df94eb74d262ff3ac4da0cd5b",
+  "test_seconds": 24.234,
+  "full_trajectory_executed_by_preflight": false,
+  "ruff_check": "pass",
+  "ruff_format_check": "308 files already formatted"
+}

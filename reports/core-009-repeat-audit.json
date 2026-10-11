@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "old_session": "runs/core-009-2026-09-10/acceptance-01",
+  "new_session": "runs/core-009-2026-09-10/acceptance-02",
+  "old_verification_sha256": "be01a644ef86d230ca24f9cc096704fc5023c8d47c48049f4f426cd9c7cb3096",
+  "new_verification_sha256": "247e2bd8f00cb58736e2b6e7ef2bf0c0855742fa8e929e6067ef861bc2ad3b92",
+  "production_sources_unchanged": 48,
+  "old_payloads_rehashed": 830,
+  "implementation_files_changed": [
+    "scripts/test_finite_extracellular_production_build.py",
+    "tests/unit/test_finite_extracellular_production_context.py"
+  ],
+  "npz_files": 408,
+  "arrays_exact": 25654,
+  "cpu_affinity": [
+    6
+  ],
+  "solver_rerun": false
+}

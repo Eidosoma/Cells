@@ -1,0 +1,38 @@
+{
+  "schema": "cells.betse_channel_loop_preparation_protocol@1",
+  "scope": "D093: eight-step native INIT lifecycle/observer preparation plus Cells initial-state and candidate-grid readiness, not a cross-engine trajectory qualification",
+  "prior_completion_sha256": "18070f9898bbbd6061867f050ac54d00dbb407b9bd978ced3ebfef136e8b40fb",
+  "phase": "INIT",
+  "steps": 8,
+  "dt_s": 0.000025,
+  "duration_s": 0.0002,
+  "initial_gate": [0.2, 0.6],
+  "fixture_boundary": "sole successful native init_dynamics return, before clear_storage and initial update_V; identical fixture in both observation modes",
+  "modes": ["observed", "unobserved"],
+  "variants": ["network_off", "empty_network", "blocked_channel", "active_channel"],
+  "native_runs": 8,
+  "observed_steps": 32,
+  "initial_power_atol_pJ_per_s": 1e-12,
+  "observer_pair_equality": "exact exported numerical values, shapes, float64 bytes and native sampled histories; not path-dependent pickle bytes",
+  "pilot_candidate": {
+    "duration_s": 0.002,
+    "observation_times_s": [0.0, 0.00025, 0.0005, 0.001, 0.002],
+    "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+    "cells_steps_s": [0.00005, 0.000025, 0.0000125],
+    "max_steps": 1024,
+    "max_trace_bytes": 67108864,
+    "status": "readiness candidates only; neither integration nor convergence qualification"
+  },
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "worker_timeout_seconds": {"betse": 120, "cells": 60},
+    "total_timeout_seconds": 240,
+    "max_worker_file_bytes": 33554432,
+    "max_artifact_bytes": 134217728
+  },
+  "cells_trajectory_runs": 0,
+  "production_changed": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

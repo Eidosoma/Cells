@@ -1,0 +1,156 @@
+{
+  "alignment_qualified": false,
+  "baseline_files": 782,
+  "changed_baseline_files": {
+    "PROGRESS.md": {
+      "after": "39bc351c5c6db1505dfcd6e24c1afab2e575dfe9216e72fe0c331e309a8ffd72",
+      "before": "022d0f808e70c78db2b1b1d3c5744d06033129654f36e243c485b343cdad5f9d"
+    },
+    "README.md": {
+      "after": "2f366922e450da260caeef4d922a7a6cbc516b354de878d451dd6b5665da1856",
+      "before": "04055d18deb8e7a96454fd1d3ec378d1fcb88ecfa78f0baeec4806a01fa59411"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "92cdca93a8679d7d2e4155f30bcfc69960c42b620c13b5bc66746a213f5c3415",
+      "before": "95a0462f5cccbfdabfbc65a15e9e6b51514e3d7fd3860ff4b509c47d66731afa"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "653c9a218a09c625d8c5e7d20ca1f27769e0378f6fdbf86051f862734ecfd90c",
+      "before": "bf86190efe54c685df3b78fb3b91566003edf8a451f41dc2a498bc0fc69ecdb0"
+    },
+    "docs/DECISIONS.md": {
+      "after": "213062e99331880b50826a5b936842f70ab3fa5f743cf916d7f10d2742e249b5",
+      "before": "02d9159d81675dce4237829ba5a0de6676216a8963d7c044f7d9380390f8ea18"
+    },
+    "validation/betse/README.md": {
+      "after": "fe3eed6088f81fd77e8de94f267a089a574ec31df50cb3192fd2178f6f3509f6",
+      "before": "83c0cb6864f5d9e579158e860e37834e9960efe4b34b64fdf35cdb78f8128134"
+    }
+  },
+  "core_matrix_rerun": false,
+  "core_regression_tests_previously_passed": 4190,
+  "development_version": "0.15.0.dev0",
+  "diagnostic_audit_sha256": "d77bd15b4fbfb2993d1f11be31e27c3d14a0ebada25ccf7d1c34cf7f98ef26f7",
+  "driver_sha256": "ad2595ba091377c7b00002aa896e735fc0fd670d06ebc50024e7a6029a9838d6",
+  "finished_utc": "2026-09-12T12:44:07.287840+00:00",
+  "gpu_tested": false,
+  "new_files_sha256_before_handoff": {
+    "docs/BETSE_INITIALIZATION_ALIGNMENT.md": "19eca4baec2bcd543ce528fc622c33caaf8f436bf9adbf75e6b434aab66b9d5e",
+    "reports/REF003B1_PREPARATION.md": "7642791a421efcc344cf76b4e0563fc05c17622746e10a2e2de280f2c9754e1a",
+    "reports/ref-003b1-checks-01.xml": "be22ec1fca08e52791c8fe11fe6943655d45ba30268414a4434411e170793fd3",
+    "reports/ref-003b1-checks-02.xml": "8adbc48327a8c54af411b07bfaa206ab121ef7a5d94c6c0d0097d7999d06a723",
+    "reports/ref-003b1-preflight-01.xml": "3a2097d2a9c31c7b2153d1e79e3673745d4b22ce78add14cf888999cda5c26b1",
+    "reports/ref-003b1-preflight-02.xml": "f1cb51b2b1b6c53e1d4096e4137aee986ded531248fcd7f4328d4e1f2b10f150",
+    "reports/ref-003b1-preflight-03.xml": "701b1fa77cc3c6a934be942ac57ade09ad28ba3b1f621a773f8221ad43d16042",
+    "reports/ref-003b1-preparation-audit.json": "d77bd15b4fbfb2993d1f11be31e27c3d14a0ebada25ccf7d1c34cf7f98ef26f7",
+    "reports/ref-003b1-preservation.json": "84c53c7a130ae2e981fcd79e6836fd7c0b04495fd45518bc9c91ddd0ca1406d9",
+    "validation/betse/alignment.py": "b10de826d8f6c9b793d27b132f21aae4f2945dea0094c939e1619ba12f5841f6",
+    "validation/betse/alignment_protocol.json": "86458da3279cdf5ac3a915afd4b263e7c7949d188125599fe165613aa4deff10",
+    "validation/betse/finish_preparation.py": "ad2595ba091377c7b00002aa896e735fc0fd670d06ebc50024e7a6029a9838d6",
+    "validation/betse/preparation.py": "c0e768781c52ade2f5b7c0863cc7ab297d002add251e3d940ff94d4db8f928d8",
+    "validation/betse/test_alignment.py": "e67e74c8f67423412c9f37b5dc03a9bd6cc82f10355779585dc4ea4352dd46dc",
+    "validation/betse/test_preparation.py": "25aab82f7499a34c91d9d04351b1c2c94dcad25ffd3aee4e4c99aff3d956034c"
+  },
+  "next_step": "Native one-cell geometry feasibility; explicitly specify seven-cell alternative if unavailable",
+  "preservation_sha256": "84c53c7a130ae2e981fcd79e6836fd7c0b04495fd45518bc9c91ddd0ca1406d9",
+  "prior_component_contact": {
+    "case_count": 54,
+    "comparison_count": 1047,
+    "payloads": 10,
+    "production_calls": 0,
+    "status": "pass",
+    "trajectory_calls": 0,
+    "upstream_calls": 0,
+    "verification_sha256": "7576ac12fefaf78cc3daa829a2ce0e7a2714f93ec970e9ca48218b164a03843d"
+  },
+  "production_changed": false,
+  "quality": {
+    "format": "295 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "retained_attempts": {
+    "alignment-01": {
+      "files_sha256": {
+        "adapter_sources.zip": "83809aab0f8b4d621a9dd84cd92fcf7e232eac820aa056306bb3144d36d10c35",
+        "betse.stderr.log": "b55c5bc44f15b04df967fd381f05d9b8d43a7e52e03c457b5ec6fee5618b43ce",
+        "betse.stdout.log": "f76bd587f6f383a79b8b60be9f4fa9a907ae15b932097b245030d373546a522f",
+        "failure.json": "da630bb480b0b2384270240a84dd12093adba8e3ba8ac77fbcf2ffd2d74451e9",
+        "matplotlib-cache/fontlist-v3.11.0.json": "ff2eeb55d7c642c8612e1a1827c3ad7ef5bcfc9a88cdfae141e936a21d22045c",
+        "native.yaml": "aa06c8a70e5322d8f93c9ef7cc6b00b3108b7ab0007efe28ea264e5982d367cb",
+        "registration.json": "a664e2dd3cf6cca727a93bef601cbd644f8d798e4258e8c0b2f504fa0d111755"
+      },
+      "seconds": 3.5185590439941734,
+      "status": "failed_not_qualified"
+    },
+    "alignment-02": {
+      "files_sha256": {
+        "adapter_sources.zip": "c2c9da22f431a96dc063d93d933c8089d62c8c30c13f93d7b3e17353d28a0f36",
+        "betse.stderr.log": "a38f7669976bbf9b4686586dd4f53633cd4b30f4f035521517d8b3bb0096cb87",
+        "betse.stdout.log": "f76bd587f6f383a79b8b60be9f4fa9a907ae15b932097b245030d373546a522f",
+        "failure.json": "75ff692d6acf89315c274d2795cf1b5571d508dc5539ae9ee3327448e3ead041",
+        "matplotlib-cache/fontlist-v3.11.0.json": "90266476beca09935acdba23df8534a69b8131d445f1971451c6829c05bf9758",
+        "native.yaml": "88d88959c5a217386bc40063b8ae05732939835174f65c1a3affe316cd5e4910",
+        "registration.json": "352c4a4f747d7ac67653546e1012d4a8ff829b8cd28279871d0b281af7fea549"
+      },
+      "seconds": 3.539565433980897,
+      "status": "failed_not_qualified"
+    },
+    "alignment-03": {
+      "files_sha256": {
+        "adapter_sources.zip": "84d6a2a583e43745f706aca602716e1701740cdfafb417d0866972ab846a2dcb",
+        "betse.stderr.log": "a7c09f6b1021fd5a8a24d9b74ea6348dec3f4fe4b3be2f61cf7930dc0934daeb",
+        "betse.stdout.log": "f76bd587f6f383a79b8b60be9f4fa9a907ae15b932097b245030d373546a522f",
+        "failure.json": "e3ebf17e1eb64f4b2bef9fbe6179e1a7e0dab0a13aa7423927b0f2ffdad38ec0",
+        "matplotlib-cache/fontlist-v3.11.0.json": "3557324f077fecaf12d7b302a709b7615926e4e80908634a27c37794f1c06971",
+        "native.yaml": "c01ad5e420a2e8eced290b2e21e25bd749cd24136d771dd370dfa4a379aebc61",
+        "registration.json": "9b3c6d234c72f81038041745c1945a628313d8c2e56c6bff180b89fb25229a63"
+      },
+      "seconds": 3.5956361630233005,
+      "status": "failed_not_qualified"
+    },
+    "alignment-04": {
+      "files_sha256": {
+        "INITS/world_1.betse.gz": "f2fb6eb1e0f28dfca16f34354bb10bad6ab74d2a5cc609ef3d71486661b2af97",
+        "adapter_sources.zip": "55fa06d77d0076f0172ccfbeb2e1b75b486885018e49d59d08a6accc71eed82b",
+        "betse.stderr.log": "481019867a3aea2cacb06a0dc12cb2ea98d7b699c59913c89f91d2de27cc2ca9",
+        "betse.stdout.log": "dac897a18f0c90ea10469f2cfae0b90464c8cbfcaec98573f74ff53755e6a4d0",
+        "failure.json": "01c0f3372c84187b100faaffb1e736ef84be2046ae6a8b2a11af325ef3801122",
+        "matplotlib-cache/fontlist-v3.11.0.json": "3f6d152dc9997e11bfcc08a59da6c8372ed89f5e175893d2d86189ad240c1e64",
+        "native.yaml": "5e6f26312baae226698d20bf9ca0357d5e1d5b8b1d920bd98c78043ae9c1281c",
+        "registration.json": "d59cd585cfd0ebb7d03ee252aeb0e4d4e2f85cf62087fa3dec1e4a8b3abd4d21"
+      },
+      "seconds": 4.040209167986177,
+      "status": "failed_not_qualified"
+    },
+    "alignment-05": {
+      "files_sha256": {
+        "INITS/world_1.betse.gz": "0d630eb74b7a1a3d0a020cecdd58fe332aad6d9de51026dd346b413020a995cf",
+        "adapter_sources.zip": "c950398b8977edc93f9103213d808ca1076fc66d5454660622818f3f88b8a594",
+        "betse.stderr.log": "103e5a684a512751a38cf353ab5814a3f631f79d779466f0fa181a09c14d4c3c",
+        "betse.stdout.log": "e7efd0a2edca0eea7c209259c03e37122193bf531327faad09fbb8dce9780a6c",
+        "failure.json": "bd8f044cf124648564ffc90bfe42555534464f6fc66b8e8a59f0c4dc63c4613a",
+        "matplotlib-cache/fontlist-v3.11.0.json": "fa89c3bbdfa4c534a12aff7e03402ac94453f277df217b2ab4b46be4bbea3e96",
+        "native.yaml": "0b28f3819037ada4395379e55c3f4390f85da55330f0a8651ad4c1ef6037a833",
+        "native_preparation.json": "1e78472bfeb2f19648f2ee0218b589a63cdcfc5064c28a4bb2d00ccf39d61be8",
+        "registration.json": "b980c1c69db25799389eff3e07becbc1370b34733d6cf0330ee47461d6d619a8"
+      },
+      "seconds": 4.0932430169777945,
+      "status": "failed_not_qualified"
+    }
+  },
+  "schema": "cells.betse_preparation_handoff@1",
+  "scope": "Native preparation rejected at one-cell guard; diagnostic and software tests only",
+  "stable_promotion": false,
+  "stable_version": "0.14.0",
+  "status": "recorded_not_qualified",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "8adbc48327a8c54af411b07bfaa206ab121ef7a5d94c6c0d0097d7999d06a723",
+    "skipped": 0,
+    "tests": 103
+  },
+  "trajectory_run": false,
+  "unchanged_accepted_implementation_files": 352,
+  "unchanged_baseline_files": 776
+}

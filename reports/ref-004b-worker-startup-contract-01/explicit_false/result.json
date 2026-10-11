@@ -1,0 +1,139 @@
+{
+  "amendment_sha256": "7f16b3e73bcf241c0228afa69c1ccc9fe3c835732b843dacd12757650f408108",
+  "cells_package_path": "/home/robert/Research/PlasticHeredity/NewIdeas/simulations/Cells/src/cells/__init__.py",
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cpu",
+  "elapsed_seconds": 0.6010344399837777,
+  "environment_provider_sha256": "3a09a66ebd76520b5cfd72a2faa93ccd8f44de2d05f8d375e48f906382a75165",
+  "exception": {
+    "filename": null,
+    "frames": [
+      {
+        "function": "probe",
+        "line": 117,
+        "path": "/home/robert/Research/PlasticHeredity/NewIdeas/simulations/Cells/validation/betse/channel_transport_runtime_fix/startup_contract.py"
+      },
+      {
+        "function": "cells_worker",
+        "line": 324,
+        "path": "/home/robert/Research/PlasticHeredity/NewIdeas/simulations/Cells/validation/betse/channel_transport_preflight/transport_workers.py"
+      },
+      {
+        "function": "require",
+        "line": 36,
+        "path": "/home/robert/Research/PlasticHeredity/NewIdeas/simulations/Cells/validation/betse/contact.py"
+      }
+    ],
+    "message": "Accepted Cells runtime differs",
+    "type": "ValueError"
+  },
+  "executable": "/home/robert/Research/PlasticHeredity/NewIdeas/simulations/Cells/.venv/bin/python",
+  "jit_disabled": false,
+  "loaded_production_sha256": {
+    "__init__.py": "dbd3c441da86faa24d68684318e19b07b44d789dc915cad7890e932c940a5cf5",
+    "__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+    "batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+    "batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+    "core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+    "core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+    "core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "core/finite_extracellular_spec.py": "4d5420bd675b1e2d5b9c17a019311fea7f06f3ba14f5bff7991196174e26518c",
+    "core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+    "core/schedule.py": "da7cfaa5c553977caae3aa7572cf074d069db5bb2f48b175ebb4d8e96ce2f0b9",
+    "core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "core/specs.py": "6c06418d8dbfe23ea8044fa5a61a8386d079099b9489fa2d7e4d69658299dadf",
+    "core/state.py": "4f1c4b7456109a6acf7f47a1b2c3cda80c9bd125c58e302392b4496d907fef37",
+    "core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+    "coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+    "models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "models/finite_extracellular.py": "217f7de0ac3671252967c05e713a6fa61c9109b726f4ad8d84ff58b04df31d04",
+    "models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "models/registry.py": "ad830d54bf5c5b4f77c66b5ca451d0103c06a345406e0e8f1c06e37a5ed17677",
+    "models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "numerics/extracellular_field.py": "3edc539c2141930bb26a402802c2750b06c4891e87f3bf02cad7ced2559601a4",
+    "numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+    "observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+  },
+  "mode": "explicit_false",
+  "observed_runtime": {
+    "cells_version": "0.15.0.dev0",
+    "machine": "x86_64",
+    "numerical_environment": {
+      "JAX_DISABLE_JIT": "false",
+      "XLA_FLAGS": null
+    },
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "ml_dtypes": "0.6.0",
+      "numpy": "2.5.3",
+      "opt_einsum": "3.4.0",
+      "scipy": "1.18.1"
+    },
+    "platform": "Linux",
+    "python": "3.13.5"
+  },
+  "previous_registration_sha256": "7b10286e2994965847fbf700ea8e5e33078a224391fd5062f62b6df63fe631e8",
+  "requested_runtime": {
+    "cells_version": "0.15.0.dev0",
+    "machine": "x86_64",
+    "numerical_environment": {
+      "JAX_DISABLE_JIT": null,
+      "XLA_FLAGS": null
+    },
+    "packages": {
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "ml_dtypes": "0.6.0",
+      "numpy": "2.5.3",
+      "opt_einsum": "3.4.0",
+      "scipy": "1.18.1"
+    },
+    "platform": "Linux",
+    "python": "3.13.5"
+  },
+  "scope": {
+    "gpu_tested": false,
+    "native_simulator_run": false,
+    "production_integrator_run": false,
+    "real_cells_worker_entered": true,
+    "runtime_check_modified": false,
+    "transport_executed": false
+  },
+  "script_sha256": "5f7d0e4313afdd57e442127a537d6a73d16121c512f2c3a9c29132f83a718cc3",
+  "warnings": [],
+  "x64_enabled": true
+}

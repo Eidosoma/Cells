@@ -1,0 +1,47 @@
+{
+  "kind": "tissue_return_current_component_qualification@1",
+  "scope": "Instantaneous nonlinear return-current closure for constant-field cell junctions and logmean extracellular electrodiffusion; one local capacitor per cell. Numerical component only, not an integrated tissue model or native BETSE trajectory qualification.",
+  "tests": ["tests/unit/test_tissue_field.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_tissue_field.py::test_cpu_gpu_saved_physical_fields"],
+  "required_evidence": ["gradient", "equal", "zero_drive", "reverse", "blocked", "same_region", "narrow_return", "wide_return", "triangle", "triangle_padded", "divalent"],
+  "required_gpu_evidence": ["cpu-gpu"],
+  "checks": [
+    "Independent scalar GHK/face laws and bracketed/reduced numerical roots at every declared witness",
+    "Exact two-region resistor limit, current reversal and zero drive",
+    "Capacitor-component current balance, species conservation, nonnegative dissipation and instantaneous free-energy identity",
+    "Gauge independence, neutral padding, same-region legacy reduction, blocking and connected return-path validation",
+    "Wrong outside-only closure rejected; iteration exhaustion and invalid physical domains cannot pass; no clipping or state repair",
+    "Analytic Bernoulli derivative versus automatic differentiation and explicit independent-world batching",
+    "Every physical field independently compared between fresh float64 CPU and L4 results with units-specific tolerances"
+  ],
+  "tolerances": {
+    "field_current_absolute_A": 1e-23,
+    "field_current_relative": 2e-12,
+    "newton_target_normalized_residual": 0.01,
+    "physical_comparison_rtol": 3e-10,
+    "voltage_atol_V": 3e-13,
+    "flux_atol_fmol_per_s": 3e-13,
+    "chemical_potential_atol_J_per_mol": 3e-8,
+    "current_comparison_atol_A": 1e-23,
+    "dissipation_rate_atol_pJ_per_s": 3e-12,
+    "material_rate_atol_fmol_per_s": 1e-15,
+    "component_charge_rate_atol_A": 2e-23,
+    "energy_rate_atol_pJ_per_s": 1e-10
+  },
+  "resources": {
+    "max_wall_seconds": 1800,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.15
+  },
+  "scope_exclusions": [
+    "No production model/parser/checkpoint registration or calcium/IP3/assembly composition yet",
+    "No time integration, timestep refinement, evolving junction kinetics, model checkpoint/restart or tissue trajectories in this component gate",
+    "No native BETSE equivalence, biological measurements/fit, water/mechanics or multiscale claim",
+    "Dense connected extracellular return graph only; no multiple disconnected components or distributed single-world solver",
+    "GPU busy and SM-active are recorded; no throughput/saturation claim or optimization gate"
+  ],
+  "automatic_followup": false
+}

@@ -1,0 +1,477 @@
+{
+  "biological_acceptance": "not_assessable",
+  "cases": [
+    {
+      "algebraic_ledger_probe": {
+        "amount_fmol": [
+          12.011,
+          139.996,
+          10.005
+        ],
+        "bath_exchange_fmol": [
+          -0.011,
+          0.004,
+          -0.005
+        ],
+        "charge_residual_V": 7.500944310123714e-14,
+        "material_residual_fmol": [
+          -7.667477763817487e-16,
+          9.322403959899361e-15,
+          7.814929259275516e-16
+        ]
+      },
+      "anchor_residual_V": -8.294753772730701e-14,
+      "bath_charge_residual_mM": 0.0,
+      "id": "nakcl_reduction",
+      "initial": {
+        "amount_rate_fmol_per_s": [
+          -0.01688605895223739,
+          0.020740293578981984,
+          0.0005360061901298455
+        ],
+        "bath_rate_fmol_per_s": [
+          0.01688605895223739,
+          -0.020740293578981984,
+          -0.0005360061901298455
+        ],
+        "chemical_power_W": 9.413737790532787e-13,
+        "concentration_mM": [
+          12.0,
+          140.0,
+          10.0
+        ],
+        "cycle_energy_J_per_mol": -8676.272959336042,
+        "inward_current_A": 3.2016037276778595e-13,
+        "passive_dissipation_W": [
+          4.929224672797167e-13,
+          3.364063565478994e-14,
+          2.3669684658557606e-16
+        ],
+        "passive_fmol_per_s": [
+          0.03959636779095933,
+          -0.016914657583149164,
+          0.0005360061901298455
+        ],
+        "potential_J_per_mol": [
+          -12448.678875850352,
+          1988.8452065564506,
+          -441.5934945233321
+        ],
+        "pump_cycles_fmol_per_s": 0.018827475581065574,
+        "pump_dissipation_W": 1.633523172765589e-13,
+        "pump_species_fmol_per_s": [
+          -0.05648242674319672,
+          0.03765495116213115,
+          0.0
+        ],
+        "stored_energy_rate_W": 2.512216619956276e-13,
+        "voltage_V": -0.065,
+        "voltage_rate_V_per_s": 0.03201603727677859
+      },
+      "resolved": {
+        "area_m2": 1e-09,
+        "bath_background_charge_mM": 0.0,
+        "bath_id": "bath_0",
+        "bath_mM": [
+          145.0,
+          5.0,
+          150.0
+        ],
+        "capacity_fmol_per_s": 0.02,
+        "cell_id": "cell_0",
+        "drive_J_per_mol": -50000.0,
+        "fixed_charge_equivalent_fmol": -142.00673677527658,
+        "initial_amount_fmol": [
+          12.0,
+          140.0,
+          10.0
+        ],
+        "initial_voltage_V": -0.065,
+        "membrane_id": "membrane_0",
+        "permeability_m_per_s": [
+          1e-10,
+          1e-09,
+          1e-10
+        ],
+        "pump_id": "nak_0",
+        "pump_roles": [
+          "Na",
+          "K"
+        ],
+        "species_ids": [
+          "Na",
+          "K",
+          "Cl"
+        ],
+        "specific_capacitance_F_per_m2": 0.01,
+        "stoichiometry": [
+          -3,
+          2,
+          0
+        ],
+        "temperature_K": 298.15,
+        "valence": [
+          1,
+          1,
+          -1
+        ],
+        "volume_pL": 1.0
+      },
+      "species_ids": [
+        "Na",
+        "K",
+        "Cl"
+      ]
+    },
+    {
+      "algebraic_ledger_probe": {
+        "amount_fmol": [
+          12.011,
+          139.996,
+          10.005,
+          0.0012000000000000001
+        ],
+        "bath_exchange_fmol": [
+          -0.011,
+          0.004,
+          -0.005,
+          -0.0002
+        ],
+        "charge_residual_V": 7.500944310123714e-14,
+        "material_residual_fmol": [
+          -7.667477763817487e-16,
+          9.322403959899361e-15,
+          7.814929259275516e-16,
+          8.131516293641283e-20
+        ]
+      },
+      "anchor_residual_V": -1.7508217098338719e-13,
+      "bath_charge_residual_mM": 0.0,
+      "id": "divalent_with_background",
+      "initial": {
+        "amount_rate_fmol_per_s": [
+          -0.01688605895223739,
+          0.020740293578981984,
+          0.0006674027436606142,
+          0.00010184257462838305
+        ],
+        "bath_rate_fmol_per_s": [
+          0.01688605895223739,
+          -0.020740293578981984,
+          -0.0006674027436606142,
+          -0.00010184257462838305
+        ],
+        "chemical_power_W": 9.413737790532787e-13,
+        "concentration_mM": [
+          12.0,
+          140.0,
+          10.0,
+          0.001
+        ],
+        "cycle_energy_J_per_mol": -8676.272959336042,
+        "inward_current_A": 3.2713516193513646e-13,
+        "passive_dissipation_W": [
+          4.929224672797167e-13,
+          3.364063565478994e-14,
+          3.5960991770808697e-16,
+          3.1963703246121146e-15
+        ],
+        "passive_fmol_per_s": [
+          0.03959636779095933,
+          -0.016914657583149164,
+          0.0006674027436606142,
+          0.00010184257462838305
+        ],
+        "potential_J_per_mol": [
+          -12448.678875850352,
+          1988.8452065564506,
+          -538.819957100678,
+          -31385.40375943423
+        ],
+        "pump_cycles_fmol_per_s": 0.018827475581065574,
+        "pump_dissipation_W": 1.633523172765589e-13,
+        "pump_species_fmol_per_s": [
+          -0.05648242674319672,
+          0.03765495116213115,
+          0.0,
+          0.0
+        ],
+        "stored_energy_rate_W": 2.47902378599893e-13,
+        "voltage_V": -0.065,
+        "voltage_rate_V_per_s": 0.03271351619351364
+      },
+      "resolved": {
+        "area_m2": 1e-09,
+        "bath_background_charge_mM": 2.0,
+        "bath_id": "bath_0",
+        "bath_mM": [
+          145.0,
+          5.0,
+          156.0,
+          2.0
+        ],
+        "capacity_fmol_per_s": 0.02,
+        "cell_id": "cell_0",
+        "drive_J_per_mol": -50000.0,
+        "fixed_charge_equivalent_fmol": -142.0087367752766,
+        "initial_amount_fmol": [
+          12.0,
+          140.0,
+          10.0,
+          0.001
+        ],
+        "initial_voltage_V": -0.065,
+        "membrane_id": "membrane_0",
+        "permeability_m_per_s": [
+          1e-10,
+          1e-09,
+          1e-10,
+          1e-11
+        ],
+        "pump_id": "nak_0",
+        "pump_roles": [
+          "Na",
+          "K"
+        ],
+        "species_ids": [
+          "Na",
+          "K",
+          "Cl",
+          "Ca"
+        ],
+        "specific_capacitance_F_per_m2": 0.01,
+        "stoichiometry": [
+          -3,
+          2,
+          0,
+          0
+        ],
+        "temperature_K": 298.15,
+        "valence": [
+          1,
+          1,
+          -1,
+          2
+        ],
+        "volume_pL": 1.0
+      },
+      "species_ids": [
+        "Na",
+        "K",
+        "Cl",
+        "Ca"
+      ]
+    }
+  ],
+  "checks": 1546,
+  "checks_failed": 0,
+  "failures": [],
+  "gpu_qualification": "not_performed",
+  "groups": {
+    "absent_pump": {
+      "checks": 2,
+      "failed": 0
+    },
+    "assembly_off": {
+      "checks": 2,
+      "failed": 0
+    },
+    "bath_charge": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "bath_ledger": {
+      "checks": 7,
+      "failed": 0,
+      "max_normalized_error": 0.009322403959899361
+    },
+    "bath_rate": {
+      "checks": 28,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "capacitor_rate": {
+      "checks": 8,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "capacity_not_area_density": {
+      "checks": 2,
+      "failed": 0
+    },
+    "charge_ledger": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 0.0007500944310123714
+    },
+    "current": {
+      "checks": 8,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "decimal_flux": {
+      "checks": 210,
+      "failed": 0,
+      "max_normalized_error": 9.01155052455484e-05
+    },
+    "decimal_potential": {
+      "checks": 210,
+      "failed": 0,
+      "max_normalized_error": 0.00019831653185679055
+    },
+    "direct_charge": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 0.0017486266489938503
+    },
+    "energy_identity": {
+      "checks": 8,
+      "failed": 0,
+      "max_normalized_error": 2.8727018188791183e-05
+    },
+    "inactive_charge": {
+      "checks": 1,
+      "failed": 0,
+      "max_normalized_error": 2.6017839731762924e-08
+    },
+    "inactive_species": {
+      "checks": 1,
+      "failed": 0
+    },
+    "initial_charge": {
+      "checks": 2,
+      "failed": 0,
+      "max_normalized_error": 0.0017508217098338719
+    },
+    "legacy_definition": {
+      "checks": 1,
+      "failed": 0
+    },
+    "legacy_fixed_charge": {
+      "checks": 1,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "legacy_flux": {
+      "checks": 21,
+      "failed": 0,
+      "max_normalized_error": 0.0004439048183497458
+    },
+    "legacy_potential": {
+      "checks": 21,
+      "failed": 0,
+      "max_normalized_error": 0.0003912174539491498
+    },
+    "legacy_pump_energy": {
+      "checks": 7,
+      "failed": 0,
+      "max_normalized_error": 0.0003156907104422484
+    },
+    "legacy_pump_rate": {
+      "checks": 7,
+      "failed": 0,
+      "max_normalized_error": 0.00029850792596432626
+    },
+    "material_ledger": {
+      "checks": 7,
+      "failed": 0,
+      "max_normalized_error": 0.009322403959899361
+    },
+    "material_rate": {
+      "checks": 28,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "nernst": {
+      "checks": 30,
+      "failed": 0,
+      "max_normalized_error": 7.105427357601002e-07
+    },
+    "orientation": {
+      "checks": 210,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "passive_area": {
+      "checks": 210,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "passive_dissipation": {
+      "checks": 210,
+      "failed": 0
+    },
+    "passive_off": {
+      "checks": 210,
+      "failed": 0
+    },
+    "pump_direction": {
+      "checks": 6,
+      "failed": 0
+    },
+    "pump_dissipation": {
+      "checks": 6,
+      "failed": 0
+    },
+    "pump_stall_energy": {
+      "checks": 6,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "species_permutation": {
+      "checks": 30,
+      "failed": 0
+    },
+    "stoichiometry": {
+      "checks": 2,
+      "failed": 0
+    },
+    "units": {
+      "checks": 8,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    },
+    "zero_voltage": {
+      "checks": 30,
+      "failed": 0,
+      "max_normalized_error": 0.0
+    }
+  },
+  "production_change": false,
+  "protocol_schema": "cells.multispecies_instantaneous_panel@1",
+  "protocol_sha256": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34",
+  "runtime": {
+    "numpy": "2.5.3",
+    "python": "3.13.5",
+    "scipy": "1.18.1"
+  },
+  "scope": "synthetic instantaneous reference only; no trajectories or biological acceptance",
+  "source_sha256": {
+    "configs/reference/multispecies_membrane_v1.json": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34",
+    "docs/MULTISPECIES_MEMBRANE_SPEC.md": "f3729c43c2a03d833400c70435b50826821f72af7de5726169dcc5d74a1f5bc6",
+    "pyproject.toml": "706f5ef48c8d13ecd975e3a9676307edc08e8f7ad2472ea2527470d00fd1d839",
+    "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+    "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+    "scripts/check_multispecies_contract.py": "0e89bd49a30e896ae348accdd93649e861cee462a0d75789488db6c034d8048d",
+    "tests/reference_bioelectric.py": "8f53073a62aa760387c44199ad2d0b88a399deb9b53bc9e59a5f8090af407710",
+    "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+    "tests/unit/test_multispecies_reference.py": "6bf55d740586f1343da6bdc5e0dc6502f99cfbf20529680efed8b83f587aeac2"
+  },
+  "status": "pass",
+  "tolerances": {
+    "amount_fmol": 1e-12,
+    "bath_charge_mM": 1e-12,
+    "current_A": 1e-23,
+    "cycle_energy_J_per_mol": 1e-08,
+    "flux_fmol_per_s": 1e-14,
+    "negative_dissipation_W": 1e-24,
+    "nernst_flux_fmol_per_s": 1e-12,
+    "potential_J_per_mol": 1e-09,
+    "power_W": 1e-23,
+    "rtol": 3e-12,
+    "voltage_V": 1e-10
+  },
+  "trajectory_qualification": "not_performed",
+  "verified_utc": "2026-09-09T15:41:59.186425+00:00"
+}

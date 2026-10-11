@@ -1,0 +1,431 @@
+{
+  "schema": "cells.num008_closeout@1",
+  "completed_utc": "2026-09-10 14:59:51 UTC",
+  "status": "pass",
+  "task": "NUM-008",
+  "decision": "D053",
+  "scope": "independent CPU numerical reference only; no production extension",
+  "numerical": {
+    "status": "pass",
+    "cases": 12,
+    "graph_attempts": 84,
+    "independent_component_solves": 5,
+    "selected_dt_s": 0.002,
+    "refined_dt_s": 0.001,
+    "all_four_candidates_pass": true,
+    "rejected_candidates": 0,
+    "verification_path": "runs/num-008-2026-09-10/reference-01/verification.json",
+    "verification_sha256": "bd9ee2599899dd3b34fa2072b308c2dd435485bb538a7775f24396baf664c8a7",
+    "protocol_sha256": "d09e21f945525769aea541e668625b168586f4c29d2cd852767b301ef2d8e00f",
+    "source_sha256": {
+      "configs/reference/physical_ionic_graph_trajectories_v1.json": "d09e21f945525769aea541e668625b168586f4c29d2cd852767b301ef2d8e00f",
+      "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+      "docs/PHYSICAL_IONIC_GRAPH_NUMERICS.md": "bb439a278e55c17b83fcbd8a0debf128455c78ad1a1451fabb772232871d790f",
+      "docs/PHYSICAL_IONIC_GRAPH_SPEC.md": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+      "pyproject.toml": "e9befe2cc4359b1e08421d2f7b69dbba2e0e6a12dab6cdc1789e056a72ec8a82",
+      "reports/spec-007-design-check.json": "f649f5b18eddea1ced4d87bf61a936498dae14898f4e77abb67e990c1ac56ca9",
+      "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+      "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76",
+      "runs/core-007-2026-09-10/release-audit.json": "2a08a2487aafd13cb1e604063e9ff3b68bd5a75cc7c09fe4dea480f952b05085",
+      "scripts/audit_multispecies_reference.py": "bdadac94ff1b659327d7733aead918ab138b21b97d13ff2bbf252b0bdb0698f7",
+      "scripts/audit_physical_ionic_graph_reference.py": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+      "scripts/qualify_physical_ionic_graph_reference.py": "5b9ca3abb764249f434e8b39c96715fae1a7af218462e743373566beb65a56ac",
+      "scripts/qualify_voltage_gated_reference.py": "a12cea1122ec1e4148e82f60ebbf3d64862d2569d00219f827e9f6719e309f0b",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/multispecies_numerical_checks.py": "bf93b1c1286ce92d18ba23c208329fbdb81a9f88c5d1c7652ed7d24ea812bd6c",
+      "tests/physical_ionic_graph_numerical_checks.py": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+      "tests/physical_ionic_graph_numerical_data.py": "fb210feb2326963e58baa8988c3ca9631bb750deef805fce7e225925ab0d0ed8",
+      "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+      "tests/reference_multispecies_dynamics.py": "a8ece60a2c2267d692ab2c48d0a204813746558e8aaeb3db8109ada6a0afe650",
+      "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+      "tests/reference_physical_ionic_graph_dynamics.py": "e2e6ba8569a77393d2f94c94485c17e872f1fb2df8ebed5b4d2a72a689dbb4dd",
+      "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+      "tests/reference_voltage_gated_dynamics.py": "224fba61aa0449a5d12e2759ccd19b07ea07754058eb943aeb2bfe8a292e9fa7",
+      "tests/unit/test_physical_ionic_graph_artifact_audit.py": "77ca0afc6e4940ffc486d408cbf9902c3a9202144a06a6abf3a164bebf052711",
+      "tests/unit/test_physical_ionic_graph_dynamics.py": "b1bc0d7b8b26f79d3db2999e2a9c2e7e778710cc5ddbb32e6a8e63a93c3eb22a",
+      "tests/voltage_gated_numerical_checks.py": "4c27043f751bf5e1210d3ddedd8b356d9adde17e25cd36ffa735adf2354ef3f2"
+    },
+    "resources": {
+      "status": "pass",
+      "frozen_sources": 26,
+      "production_modules": 44,
+      "graph_attempts": 84,
+      "component_attempts": 5,
+      "max_rhs_calls_any_attempt": 13794,
+      "max_steps_any_attempt": 1828,
+      "total_rhs_calls_including_components": 345551,
+      "all_reference_and_candidate_attempts_complete": true
+    },
+    "seconds": 321.8050051649334,
+    "artifact_bytes": 114706916,
+    "artifact_cap_bytes": 268435456,
+    "wall_cap_s": 1800,
+    "accounting_and_error_summary": {
+      "charge_residual_V": 1.793814684019026e-12,
+      "global_charge_residual_C": 3.777250292105664e-23,
+      "energy_residual_pJ": 3.223452577994293e-8,
+      "dissipation_decrease_pJ": 0,
+      "material_by_species": {
+        "Na": 3.307510515471179e-14,
+        "K": 3.984590435379687e-13,
+        "Cl": 3.768764000964403e-14,
+        "Ca": 1.4484263398048536e-18
+      },
+      "worst": {
+        "case": "pair_divalent",
+        "place": "observed_comparison",
+        "quantity": "amount_fmol",
+        "species": "K",
+        "value": 9.212308304189882e-9,
+        "score": 0.09212308304189883
+      }
+    }
+  },
+  "evidence": {
+    "reports/num-008-preflight-01.xml": {
+      "sha256": "2848acde55f004a4d83acc546c16e3af1b9bb14bd285a5f14e5317ec804bc9b6",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "1",
+          "skipped": "0",
+          "tests": "84",
+          "time": "9.183",
+          "timestamp": "2026-09-10T14:31:45.107463+00:00",
+          "hostname": "eidosoma-vm-2"
+        }
+      ]
+    },
+    "reports/num-008-preflight-02.xml": {
+      "sha256": "3f984bd156730c40e7459d432a4e361ca8460742f515cac9bd066a565289413c",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "84",
+          "time": "9.108",
+          "timestamp": "2026-09-10T14:32:38.612257+00:00",
+          "hostname": "eidosoma-vm-2"
+        }
+      ]
+    },
+    "reports/num-008-preflight-03.xml": {
+      "sha256": "86681878ee9b3b97e0a22687a99b841e468c357761180ba5555059f2848a0d46",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "88",
+          "time": "9.932",
+          "timestamp": "2026-09-10T14:34:41.283450+00:00",
+          "hostname": "eidosoma-vm-2"
+        }
+      ]
+    },
+    "reports/num-008-targeted-01.xml": {
+      "sha256": "7082999e920c83500f768422cbd4cabadc0130a14ba2f766c12f65ab017f945d",
+      "suites": [
+        {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "99",
+          "time": "29.958",
+          "timestamp": "2026-09-10T14:42:51.757909+00:00",
+          "hostname": "eidosoma-vm-2"
+        }
+      ]
+    },
+    "reports/num-008-reference-audit.json": {
+      "sha256": "c3e09fb747658f26644f5e17e7335e7a6c9c7b25ce1a2920a18a72023b47cb70",
+      "result": {
+        "auditor_sha256": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+        "cases": 12,
+        "independent_component_solves": 5,
+        "payloads": 194,
+        "qualification_status": "pass",
+        "rejected_candidates": 0,
+        "replayed_arrays": 89,
+        "replayed_sample_rows": 256283,
+        "selected_dt_s": 0.002,
+        "solver_rerun": false,
+        "source_files": 26,
+        "status": "pass",
+        "verification_sha256": "bd9ee2599899dd3b34fa2072b308c2dd435485bb538a7775f24396baf664c8a7"
+      }
+    },
+    "reports/num-008-core007-audit.json": {
+      "sha256": "98dab1ff876ac421bd75c3548bb19a292bbe16de3a6a51ea6d522fb3c374ce05",
+      "result": {
+        "cohort_runs": 4,
+        "fresh_process_restarts": 14,
+        "maximum_gate_error": 0.0000777161380275393,
+        "maximum_observed_normalized_error": 0.7771613802753929,
+        "payload_hashes": 1580,
+        "production_sources": 44,
+        "reference_cases": 14,
+        "scalar_runs": 43,
+        "solver_rerun": false,
+        "status": "pass",
+        "verification_sha256": "b6c35e258fff90da5a05b232b1da774d7e2082fe7e357aec1cbc5ce80438e6cf",
+        "window_runs": 2
+      }
+    }
+  },
+  "test_matrix": {
+    "matrix": {
+      "channel_historical_test_files": [
+        "tests/unit/test_voltage_gated_channel_reference.py",
+        "tests/unit/test_voltage_gated_dynamics.py",
+        "tests/unit/test_voltage_gated_artifact_audit.py"
+      ],
+      "contexts": {
+        "current-production": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "d5cc0f616ec3d77812bc778d959e418109e6f8b3724f2f9164de71e10909f2a5",
+          "log_sha256": "70300b18e6b0e47dd65bad9f97e46ebed664487d751e070fc0531f788eb884e4",
+          "seconds": 637.4,
+          "skipped": 0,
+          "tests": 1920
+        },
+        "preserved-channel-reference": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "339e08b8cef3de328fc435638a0861113be67e44db6a8ddc2e7b564018eb8076",
+          "log_sha256": "9aa1e42b6666b11b4a4d46173947525ae1beda2da3fd663810bebe8bb9895fa8",
+          "seconds": 18.479,
+          "skipped": 0,
+          "tests": 205
+        },
+        "preserved-reference": {
+          "errors": 0,
+          "exit_code": 0,
+          "failures": 0,
+          "junit_sha256": "c9b8df32001568e7073b0cff44d3e88cb6e30240205be3be859255303efa6e1a",
+          "log_sha256": "76be8ccb3212a57fe5780d3d13bd81fc092461f158330161d3a16cee844d0a8c",
+          "seconds": 158.247,
+          "skipped": 0,
+          "tests": 971
+        }
+      },
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "driver_sha256": "5e6826e46552162fea5c23ff1980aebadd20911bdb346b567ad5eaf87645dd3f",
+      "historical_test_files": [
+        "tests/unit/test_comparison_evidence.py",
+        "tests/unit/test_graph_candidate.py",
+        "tests/unit/test_graph_diagnostics.py",
+        "tests/unit/test_graph_evaluation.py",
+        "tests/unit/test_graph_evidence.py",
+        "tests/unit/test_graph_reference_panel.py",
+        "tests/unit/test_graph_refinement.py",
+        "tests/unit/test_source_graph_continuation.py",
+        "tests/unit/test_source_graph_paths.py",
+        "tests/unit/test_source_preparations.py"
+      ],
+      "preserved_channel_source_sha256": "59d4c371f57b5a758a1c6f03c77d3385b97eb079c2fc05cfaeb708e155acdda4",
+      "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+      "status": "pass",
+      "thread_environment": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "total_tests": 3096
+    },
+    "verification_sha256": "ab72c57bdd1c1866abafa9bc2b3ff8b099c3db819d46c30513d2d96c7876f267",
+    "xml_and_log_hashes_rechecked": 6,
+    "sum_junit_seconds": 814.126
+  },
+  "production": {
+    "version": "0.12.0",
+    "modified": false,
+    "source_files": 44,
+    "source_sha256": {
+      "src/cells/batch_io.py": "cc01a215fa151d9548f2cd64bbfee141098545d3e7bdaea2aa47e3ef77496fb0",
+      "src/cells/batch_window_io.py": "db577f730e80a1cddc0c47dfa94442ef3db4a43b672a49e38039631938cf8a49",
+      "src/cells/core/batch.py": "73ab9828f6608cff087600b4966bc5d1892ad75230025630c850c8472ff75555",
+      "src/cells/core/batch_windows.py": "723aa2a4212edd234f9fc8977fc83584760790eb6121893b0a99a13eed36c411",
+      "src/cells/core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+      "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+      "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+      "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+      "src/cells/core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+      "src/cells/core/runner.py": "3d834c089737807e2547cd7d4d7175ee8e7e116df6825d396d0ae6c3aed59a68",
+      "src/cells/core/schedule.py": "412e410bd0173f67f80646aa610ad56d8695e42e5fda8f88a8711f2f66122edd",
+      "src/cells/core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+      "src/cells/core/specs.py": "f9fcfb9fe032d41cb6edb777b78ff2e7c0e2461c31976884adbc6286a93cfead",
+      "src/cells/core/state.py": "238409d6c59681f5bb048e22a4b97d7d14871638a1914d818b023152aadaa71c",
+      "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+      "src/cells/core/windows.py": "ea7fdf2901af3ee4468d7f016cfe1969c5b1beeb3877c73e39b51836109a64e1",
+      "src/cells/coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+      "src/cells/coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+      "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+      "src/cells/__init__.py": "e1779d2b1a431aa97884c309e79afab014bb09b9df4c48c55f7b021a2208a3e0",
+      "src/cells/io.py": "0b98e256dc66dd08e1ef27c40eca203d4b70fd5e5ed84132f67b544afd30eddc",
+      "src/cells/__main__.py": "72b9026f86bbe3147f85f6feb0723f1bff95971f4b4595ea222d543b58f264ea",
+      "src/cells/models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+      "src/cells/models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+      "src/cells/models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+      "src/cells/models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+      "src/cells/models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+      "src/cells/models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+      "src/cells/models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+      "src/cells/models/registry.py": "7cea6961cc927bcc0a8160565211d1bdc989ae6504c0477cab2b57330d70f6b6",
+      "src/cells/models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+      "src/cells/models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+      "src/cells/models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+      "src/cells/numerics/fixed_step.py": "71681d0bdffcd91f2dfe6b3758fcdb645bd626f2c2b61020b7621eabba26f686",
+      "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "src/cells/observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+      "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "src/cells/processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+      "src/cells/processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+      "src/cells/processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+      "src/cells/window_io.py": "3e129a1a8ec6064b64a9ca8d983fe68965109b095282cdd92d1612b6f525a457"
+    },
+    "earlier_acceptance_audit": {
+      "cohort_runs": 4,
+      "fresh_process_restarts": 14,
+      "maximum_gate_error": 0.0000777161380275393,
+      "maximum_observed_normalized_error": 0.7771613802753929,
+      "payload_hashes": 1580,
+      "production_sources": 44,
+      "reference_cases": 14,
+      "scalar_runs": 43,
+      "solver_rerun": false,
+      "status": "pass",
+      "verification_sha256": "b6c35e258fff90da5a05b232b1da774d7e2082fe7e357aec1cbc5ce80438e6cf",
+      "window_runs": 2
+    },
+    "packaging_sha256": {
+      "pyproject.toml": "e9befe2cc4359b1e08421d2f7b69dbba2e0e6a12dab6cdc1789e056a72ec8a82",
+      "requirements-lock.txt": "15c5373861e466a0863a1d6997eca273df5d7b045a089f8aacd2b6bf05967797",
+      "requirements-reference.txt": "22db826e21b91bebf9083237a4550eccd20d5f5716b283fd7d6590d06e5ade76"
+    }
+  },
+  "workspace": {
+    "baseline_file": "reports/num-008-workspace-baseline.json",
+    "baseline_sha256": "4b7d043afc31b077ce52cff8c3723da1b790650da8e455e39ac278c82b34d42d",
+    "baseline_files": 444,
+    "unchanged_files": 433,
+    "changed_documentation": [
+      {
+        "path": "docs/ARCHITECTURE.md",
+        "before_sha256": "742613f619c769caae94332117e0d6ec3de91a1b2c0265486c5e8d99a0c9492a",
+        "after_sha256": "c30380a8c7d85d3ba98f1bdb2814e18a77ddc708df0bb62670201345d1b69282"
+      },
+      {
+        "path": "docs/BETSE_CAPABILITY_ROADMAP.md",
+        "before_sha256": "e8a7d50f5a0ecb7e38e150e8d138f85c59aae48f1b0d0f88da1af986a0cbf21f",
+        "after_sha256": "34f5edcc4981859b345df93039d43e77a0af9465164870e0b5c7cb766e464559"
+      },
+      {
+        "path": "docs/DECISIONS.md",
+        "before_sha256": "0715912a631b317c187129a3f4f191f0d7bc5ce4e810c38785e33c022be8f704",
+        "after_sha256": "9823d3d144f1d028ba30ba1f9f42818b66062feb34cfcc262b93826f6c5fc7f2"
+      },
+      {
+        "path": "docs/EXPERIMENTS.md",
+        "before_sha256": "978e92abd785d7320f73515200b04012f5074d35b951b85593265bfdf0b6ba0f",
+        "after_sha256": "b6bde821ed7c66f9c75595e317756adb9524f3154a6a8bac0f56cff781175965"
+      },
+      {
+        "path": "docs/MULTISCALE_DESIGN.md",
+        "before_sha256": "b6977017e3d75d7a9f1a0730fa890a483e46340e5e78b013fdc9acdb7b8107f9",
+        "after_sha256": "24cb365cacce708f09dce0e019badde5bc537e9c3b09f99218dbb0b5767ed9b7"
+      },
+      {
+        "path": "docs/MULTISCALE_EXECUTION_ARCHITECTURE.md",
+        "before_sha256": "dc306ed6e903bbb410b7de01edd266796294b39106204927b95867345bb238cc",
+        "after_sha256": "177730d942f61a888acdc0ab13e5718ddd6fb4977f9145d24e28dbdf00fa8b61"
+      },
+      {
+        "path": "docs/MULTISPECIES_MEMBRANE.md",
+        "before_sha256": "104a2e72357ca57a85c280382dcff0785c8f38cfe4432ba1dc91c30ea90cafe1",
+        "after_sha256": "b11d8ee69c6e129edecb12421a26d518624044a0e9fbb14b3286d849b2a354a9"
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "before_sha256": "bdd2d7ad2adfe32d9def13cfb1302b17a28c41c1d30749bd14c5f872dd02a555",
+        "after_sha256": "9c0e0507c1ccadd670df5172267a00f19ee6710574b1eb3741f3ae3d3fcf7bfb"
+      },
+      {
+        "path": "docs/VOLTAGE_GATED_MEMBRANE.md",
+        "before_sha256": "4af19e984b196201a028e052b35d96ed9c6108058f5630d3da8931d899e21568",
+        "after_sha256": "664a35d646b0f5b313ffda4fe9a4f3588c83fdc3e0b4c96741ee929818b47e60"
+      },
+      {
+        "path": "PROGRESS.md",
+        "before_sha256": "516329923d886f18ae433cbaa76545a7d7d369e68e0f9fd238cb7c951d81e140",
+        "after_sha256": "225085380c4794ce94d3f8c286763dba40bc614ef6f2c390492c99259cc7c503"
+      },
+      {
+        "path": "README.md",
+        "before_sha256": "9876cbc7c5a653df2e512cf5590dd546f88388de975aee525fe3694b43ebe96d",
+        "after_sha256": "31b0c0751a20074f80c228fa908cb1ede47f3ae5d623d1afaa03c3a826bebc35"
+      }
+    ],
+    "missing_files": [],
+    "new_files_sha256_excluding_this_receipt": {
+      "configs/reference/physical_ionic_graph_trajectories_v1.json": "d09e21f945525769aea541e668625b168586f4c29d2cd852767b301ef2d8e00f",
+      "docs/PHYSICAL_IONIC_GRAPH_NUMERICS.md": "bb439a278e55c17b83fcbd8a0debf128455c78ad1a1451fabb772232871d790f",
+      "reports/num-008-core007-audit.json": "98dab1ff876ac421bd75c3548bb19a292bbe16de3a6a51ea6d522fb3c374ce05",
+      "reports/num-008-preflight-01.xml": "2848acde55f004a4d83acc546c16e3af1b9bb14bd285a5f14e5317ec804bc9b6",
+      "reports/num-008-preflight-02.xml": "3f984bd156730c40e7459d432a4e361ca8460742f515cac9bd066a565289413c",
+      "reports/num-008-preflight-03.xml": "86681878ee9b3b97e0a22687a99b841e468c357761180ba5555059f2848a0d46",
+      "reports/num-008-reference-audit.json": "c3e09fb747658f26644f5e17e7335e7a6c9c7b25ce1a2920a18a72023b47cb70",
+      "reports/NUM008_REFERENCE.md": "56051b5405809ef3d20747871fb34b99bf87f6beca87840e1bd691e0164548d2",
+      "reports/num-008-regression-01/current-production.xml": "d5cc0f616ec3d77812bc778d959e418109e6f8b3724f2f9164de71e10909f2a5",
+      "reports/num-008-regression-01/preserved-channel-reference.xml": "339e08b8cef3de328fc435638a0861113be67e44db6a8ddc2e7b564018eb8076",
+      "reports/num-008-regression-01/preserved-reference.xml": "c9b8df32001568e7073b0cff44d3e88cb6e30240205be3be859255303efa6e1a",
+      "reports/num-008-regression-01/verification.json": "ab72c57bdd1c1866abafa9bc2b3ff8b099c3db819d46c30513d2d96c7876f267",
+      "reports/num-008-targeted-01.xml": "7082999e920c83500f768422cbd4cabadc0130a14ba2f766c12f65ab017f945d",
+      "reports/num-008-workspace-baseline.json": "4b7d043afc31b077ce52cff8c3723da1b790650da8e455e39ac278c82b34d42d",
+      "scripts/audit_physical_ionic_graph_reference.py": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+      "scripts/qualify_physical_ionic_graph_reference.py": "5b9ca3abb764249f434e8b39c96715fae1a7af218462e743373566beb65a56ac",
+      "tests/physical_ionic_graph_numerical_checks.py": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+      "tests/physical_ionic_graph_numerical_data.py": "fb210feb2326963e58baa8988c3ca9631bb750deef805fce7e225925ab0d0ed8",
+      "tests/reference_physical_ionic_graph_dynamics.py": "e2e6ba8569a77393d2f94c94485c17e872f1fb2df8ebed5b4d2a72a689dbb4dd",
+      "tests/unit/test_physical_ionic_graph_artifact_audit.py": "77ca0afc6e4940ffc486d408cbf9902c3a9202144a06a6abf3a164bebf052711",
+      "tests/unit/test_physical_ionic_graph_dynamics.py": "b1bc0d7b8b26f79d3db2999e2a9c2e7e778710cc5ddbb32e6a8e63a93c3eb22a"
+    }
+  },
+  "static_code_checks": {
+    "ruff_check": "pass",
+    "ruff_format_check": "pass",
+    "python_files": 209,
+    "pip_check": "pass",
+    "git_diff_check": "pass",
+    "markdown": {
+      "status": "pass",
+      "markdown_files": 13,
+      "local_links": 798,
+      "structure_checks": "pass"
+    }
+  },
+  "report_sha256": "56051b5405809ef3d20747871fb34b99bf87f6beca87840e1bd691e0164548d2",
+  "limits": [
+    "Twelve short synthetic preparations and fixed graph weights, not an arbitrary-graph timestep guarantee.",
+    "No production graph, exact graph checkpoint/restart, eager/JIT, GPU or multirate qualification.",
+    "No native BETSE execution, biological acceptance, organ implementation, pilot refit or deferred E02 promotion."
+  ],
+  "next_gate": "CORE-008: preserve 0.12.0, implement a new CPU/JAX physical graph family through the shared engine, then accept complete history/restart/branch/window/cohort behavior under prospective budgets."
+}

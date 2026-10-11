@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "source_decay@1",
+    "units": {"amount": "fmol", "volume": "pL", "time": "s"},
+    "population": {"count": 1, "cell_id": 1},
+    "initial_state": {"amount": 0.2, "volume": 2.0},
+    "parameters": {"decay_rate": 0.4}
+  },
+  "experiment": {
+    "end_time": 12.0,
+    "source": {
+      "kind": "prescribed_external_amount_rate",
+      "schedule": [
+        {"time": 0.0, "rate": 0.0},
+        {"time": 2.03, "rate": 1.5},
+        {"time": 5.07, "rate": 0.0},
+        {"time": 6.0, "rate": 0.5}
+      ]
+    },
+    "observation_times": [0.0, 1.0, 2.0, 2.03, 3.0, 4.0, 5.0, 5.07, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+  },
+  "execution": {
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "dt": 0.05,
+    "capacity": 1,
+    "jit": true,
+    "max_steps": 100000,
+    "max_trace_bytes": 67108864
+  }
+}

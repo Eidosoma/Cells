@@ -1,0 +1,96 @@
+{
+  "dataset_id": "bonzanni2020_rptec_endpoints@1",
+  "curated_utc_date": "2026-09-09",
+  "status": "provisional_figure_derived_summary",
+  "source": {
+    "authors": "Bonzanni M; Payne SL; Adelfio M; Kaplan DL; Levin M; Oudin MJ",
+    "title": "Defined extracellular ionic solutions to study and manipulate the cellular resting membrane potential",
+    "year": 2020,
+    "journal": "Biology Open",
+    "doi": "10.1242/bio.048553",
+    "pmcid": "PMC6994931",
+    "license": "CC-BY-4.0",
+    "article_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6994931/",
+    "xml_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6994931/fullTextXML",
+    "retrieved_xml_sha256": "41626ffe5917c4f225cb516e83fafdbe97cf7e01d4d61d43633a0511f13beb5b",
+    "asset_package_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6994931/supplementaryFiles",
+    "retrieved_package_sha256": "3843e402c2b2e9a9e303eded5206c1e0f87b6708e24b4ece5e0495f896be73ef",
+    "figures": [
+      {
+        "path": "sources/biolopen-9-048553-g2.jpg",
+        "sha256": "f7a79041283260cf6dd3d040edf9192ded7d6420f0dc70191b2f912fe690f475",
+        "locator": "Figure 2A and 2B",
+        "width_px": 650,
+        "height_px": 245,
+        "modified": false
+      },
+      {
+        "path": "sources/biolopen-9-048553-g3.jpg",
+        "sha256": "a4a74eb3f135398bed91ee6131ce513c1a2a4a7a0fb8da50627e48d1cd8f3fad",
+        "locator": "Figure 3C; cell/experiment counts from its caption",
+        "width_px": 750,
+        "height_px": 438,
+        "modified": false
+      }
+    ]
+  },
+  "recording": {
+    "cell_line": "RPTEC/TERT1",
+    "configuration": "whole_cell_zero_applied_current",
+    "temperature_C": 25,
+    "temperature_K": 298.15,
+    "external_pH": 7.4,
+    "internal_solution_pH": 7.2,
+    "minimum_recording_s": 30,
+    "sampling_kind": "condition_endpoint_not_time_series",
+    "liquid_junction_potential_corrected": true,
+    "series_resistance_compensated": false,
+    "leak_corrected": false,
+    "cell_pairing_across_conditions": "not_established",
+    "intercellular_coupling": "not_established",
+    "intracellular_solution": {
+      "source_locator": "Materials and methods / Electrophysiology",
+      "recipe_mM": {
+        "K-Asp": 130,
+        "NaCl": 10,
+        "EGTA-KOH": 5,
+        "MgCl2": 2,
+        "CaCl2": 2,
+        "ATP_Na_salt": 2,
+        "creatine_phosphate": 5,
+        "GTP": 0.1,
+        "HEPES-KOH": 10
+      },
+      "free_intracellular_ion_concentrations": "not_established_by_recipe",
+      "unresolved": [
+        "Counterion stoichiometries and titration additions are not fully specified.",
+        "Chelation, activity and dialysis state are not measured by this recipe."
+      ]
+    }
+  },
+  "split": {
+    "fit": ["C1", "C2"],
+    "evaluation": ["C3"],
+    "quarantined": ["C4", "C5"],
+    "blinded": false,
+    "prospective": false,
+    "basis": "Increasing-dose pilot; C4/C5 excluded for input-table disagreement before any Cells fit."
+  },
+  "uncertainty": {
+    "source_error_bar_kind": "SEM",
+    "sem_transcribed": false,
+    "raw_per_cell_data_retained": false,
+    "independent_experiment_data_retained": false,
+    "mean_digitization_method": "manual_visual_nearest_1_mV",
+    "digitization_bound_mV": 2,
+    "digitization_bound_kind": "curator_reading_bound_not_statistical_uncertainty",
+    "second_reader_verified": false
+  },
+  "claims": {
+    "production_config": false,
+    "model_fitted": false,
+    "simulation_run": false,
+    "biologically_validated": false,
+    "quantitative_biological_acceptance": "not_assessable_with_current_uncertainty_and_boundary"
+  }
+}

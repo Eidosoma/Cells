@@ -1,0 +1,68 @@
+{
+  "channel_historical_test_files": [
+    "tests/unit/test_voltage_gated_channel_reference.py",
+    "tests/unit/test_voltage_gated_dynamics.py",
+    "tests/unit/test_voltage_gated_artifact_audit.py"
+  ],
+  "contexts": {
+    "current-production": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "679ad4806eaa23f16292a7eb4c66f741c8d54607f3670f0b65ca0499e2e986d2",
+      "log_sha256": "9992c55f7e2ac28ad9a25fbf4f0ba2d7db6172ed3c6358e8cfcc806b1ead421f",
+      "seconds": 569.734,
+      "skipped": 0,
+      "tests": 1707
+    },
+    "preserved-channel-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "643f9c06b5ce41b52a8cb92758f6b5de8c946913556c15cadf4cf35f92eeb5cd",
+      "log_sha256": "2232a8d5b0dbac3f6680828b9bb4173901e6100b48d40835dbfd50dcc6b971a3",
+      "seconds": 18.16,
+      "skipped": 0,
+      "tests": 205
+    },
+    "preserved-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "19225b42ea85f7d178670d73cf6e321f74252bc44d0bad34ee5809147a2bcb8f",
+      "log_sha256": "41ab4163ec4deae081cc52e0ff68525f8917551fc35e99f1078da6d6b2d91917",
+      "seconds": 154.505,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "driver_sha256": "5e6826e46552162fea5c23ff1980aebadd20911bdb346b567ad5eaf87645dd3f",
+  "historical_test_files": [
+    "tests/unit/test_comparison_evidence.py",
+    "tests/unit/test_graph_candidate.py",
+    "tests/unit/test_graph_diagnostics.py",
+    "tests/unit/test_graph_evaluation.py",
+    "tests/unit/test_graph_evidence.py",
+    "tests/unit/test_graph_reference_panel.py",
+    "tests/unit/test_graph_refinement.py",
+    "tests/unit/test_source_graph_continuation.py",
+    "tests/unit/test_source_graph_paths.py",
+    "tests/unit/test_source_preparations.py"
+  ],
+  "preserved_channel_source_sha256": "59d4c371f57b5a758a1c6f03c77d3385b97eb079c2fc05cfaeb708e155acdda4",
+  "preserved_source_sha256": "24a65b3bd478b76e230670785091b255f51d1427450e15c7b5dabc8a154f6536",
+  "status": "pass",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "total_tests": 2883
+}

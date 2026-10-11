@@ -1,0 +1,68 @@
+{
+  "status": "pass",
+  "trial_status": "pass",
+  "scope": "refinement_integrity_new_dense_path_union_grid_and_primary_history_score_audit",
+  "trajectory": {
+    "steps": 17704,
+    "chunks": 70,
+    "maximum_accounting_residual": 1.4424017535930034e-12
+  },
+  "comparison": {
+    "samples": 103243,
+    "chunks": 404,
+    "independently_recomputed_primary_history_scores": {
+      "radau_vs_bdf": {
+        "ionic_state": 0.006471240270020731,
+        "regulatory_state": 0.22626951094532805,
+        "ionic_history": 0.002531425868405433,
+        "regulatory_history": 0.14831724872135027
+      },
+      "radau_vs_refined": {
+        "ionic_state": 2.6999244960510254e-7,
+        "regulatory_state": 0.00007309000677005044,
+        "ionic_history": 0.0000010155008215357868,
+        "regulatory_history": 0.00009791451918650563
+      },
+      "radau_vs_bdf_tight": {
+        "ionic_state": 0.0021266166834660654,
+        "regulatory_state": 0.005334674482439988,
+        "ionic_history": 0.0008265080028008311,
+        "regulatory_history": 0.0036757952942033123
+      },
+      "bdf_vs_refined": {
+        "ionic_state": 0.006471240269999793,
+        "regulatory_state": 0.22626946830184846,
+        "ionic_history": 0.002531373752145682,
+        "regulatory_history": 0.14831722442301296
+      },
+      "bdf_vs_bdf_tight": {
+        "ionic_state": 0.0063895927545295035,
+        "regulatory_state": 0.2251706107681209,
+        "ionic_history": 0.0025010420871060374,
+        "regulatory_history": 0.147586380232109
+      },
+      "refined_vs_bdf_tight": {
+        "ionic_state": 0.002126700500268844,
+        "regulatory_state": 0.005334691340757373,
+        "ionic_history": 0.0008260343543110937,
+        "regulatory_history": 0.003675806910230478
+      }
+    },
+    "sampled_state_identity": "all_four_inputs_exact",
+    "derived_scores": "online_recorded_not_independently_recomputed",
+    "agreement": "agreement_met"
+  },
+  "receipt_sha256": "1b84b3d3bcb3ca19b64271294a1896b5bde14118cab37326ca8bdf21c7592a38",
+  "registration_sha256": "8879e53b387bda2f17ae8d3d7c0725bfed2820f20152d6c4d5f5671b97528fea",
+  "prior_audit_sha256": "a2608343963bf6c42aacfefdecd6c15d1dd63f1da3d2f338777cf674f5d8dee0",
+  "payloads": 483,
+  "source_capsule_files": 35,
+  "aggregate_artifact_bytes": 582424320,
+  "seconds": 102.52272595500108,
+  "audit_wall_budget_seconds": 3600,
+  "case_qualification_changed": false,
+  "original_qualified_conditions": 10,
+  "NUM005c1_complete": false,
+  "production_changed": false,
+  "candidate_selected": false
+}

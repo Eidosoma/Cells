@@ -1,0 +1,182 @@
+{
+  "schema": "cells.finite_extracellular_panel@1",
+  "scope": "SPEC-008 instantaneous finite outside inventory, capacitor charge and energy checks only; no integration, timestep or production change",
+  "inherited_sources_sha256": {
+    "configs/reference/physical_ionic_graph_v1.json": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+    "docs/PHYSICAL_IONIC_GRAPH_SPEC.md": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+    "docs/MULTISPECIES_MEMBRANE_SPEC.md": "f3729c43c2a03d833400c70435b50826821f72af7de5726169dcc5d74a1f5bc6",
+    "docs/VOLTAGE_GATED_CHANNEL_SPEC.md": "a66fb7027ece28a25d380f67f8c673f61f9e40b6aca3541ced2c5ebfe34deecd",
+    "tests/reference_multispecies.py": "c9f388fdb45b26ccc2a501907b39fbc33b8ef405941fd4165d676f963d0094f6",
+    "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+    "tests/reference_voltage_gated_channel.py": "d7b8a3def16266f2fa257eaf18751c2a64596a588eacf32099b7833ffd13b48f",
+    "scripts/check_voltage_gated_channel.py": "4c596910282cbd9bca0e3d057f4f470f7f33fa505d19f24634329321d355474c",
+    "runs/core-008-2026-09-10/release-audit.json": "e03a211726888d3962825db544bba6742aa09603031d68ebbbc4745542393f08"
+  },
+  "tolerances": {
+    "rtol": 2e-12,
+    "flux_fmol_per_s": 1e-13,
+    "rate_per_s": 1e-11,
+    "gate": 2e-13,
+    "power_W": 1e-23,
+    "negative_dissipation_W": 1e-24,
+    "charge_C": 1e-20,
+    "current_A": 1e-23,
+    "voltage_V": 1e-10,
+    "concentration_mM": 1e-12,
+    "material_fmol": 1e-10,
+    "energy_J": 1e-20
+  },
+  "probes": {
+    "decimal_precision": 70,
+    "ledger_scale_fmol": 0.000001,
+    "directional_probe_s": 0.000001,
+    "availability": [
+      0,
+      0.3,
+      1
+    ],
+    "gate_states": [
+      0,
+      0.25,
+      1
+    ],
+    "volume_limit_cases": [
+      "single_mono_small",
+      "single_mono",
+      "single_mono_large",
+      "single_mono_very_large"
+    ],
+    "volume_limit_transfer_fmol": 0.001,
+    "reference_concentration_mM": 1
+  },
+  "cases": [
+    {
+      "id": "single_mono_small",
+      "source_case": "single_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 0.1,
+        "initial_amount_fmol": {
+          "Na": 14.5,
+          "K": 0.5,
+          "Cl": 15
+        },
+        "fixed_charge_equivalent_fmol": 0.006736775276570413
+      }
+    },
+    {
+      "id": "single_mono",
+      "source_case": "single_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 150
+        },
+        "fixed_charge_equivalent_fmol": 0.006736775276570413
+      }
+    },
+    {
+      "id": "single_mono_large",
+      "source_case": "single_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 10,
+        "initial_amount_fmol": {
+          "Na": 1450,
+          "K": 50,
+          "Cl": 1500
+        },
+        "fixed_charge_equivalent_fmol": 0.006736775276570413
+      }
+    },
+    {
+      "id": "single_mono_very_large",
+      "source_case": "single_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1000,
+        "initial_amount_fmol": {
+          "Na": 145000,
+          "K": 5000,
+          "Cl": 150000
+        },
+        "fixed_charge_equivalent_fmol": 0.006736775276570413
+      }
+    },
+    {
+      "id": "single_divalent",
+      "source_case": "single_divalent",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 156,
+          "Ca": 2
+        },
+        "fixed_charge_equivalent_fmol": 2.0067367752765706
+      }
+    },
+    {
+      "id": "disconnected_mono",
+      "source_case": "disconnected_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 150
+        },
+        "fixed_charge_equivalent_fmol": 0.017722901112208318
+      }
+    },
+    {
+      "id": "pair_mono",
+      "source_case": "pair_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 150
+        },
+        "fixed_charge_equivalent_fmol": 0.01606461796720637
+      }
+    },
+    {
+      "id": "star_mono",
+      "source_case": "star_mono",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 150
+        },
+        "fixed_charge_equivalent_fmol": 0.017722901112208318
+      }
+    },
+    {
+      "id": "star_divalent",
+      "source_case": "star_divalent",
+      "extracellular": {
+        "id": "bath_shared",
+        "volume_pL": 1,
+        "initial_amount_fmol": {
+          "Na": 145,
+          "K": 5,
+          "Cl": 156,
+          "Ca": 2
+        },
+        "fixed_charge_equivalent_fmol": 2.0177229011122084
+      }
+    }
+  ]
+}

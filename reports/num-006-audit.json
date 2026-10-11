@@ -1,0 +1,13 @@
+{
+  "audit_sha256": "ecca3e9df3f27e01728fb4afa47281f26bfebab52ebff93675a8a95b523f2f11",
+  "cases": 14,
+  "payloads": 186,
+  "qualification_status": "pass",
+  "replayed_arrays": 84,
+  "replayed_sample_rows": 547572,
+  "selected_dt_s": 0.01,
+  "solver_rerun": false,
+  "source_files": 13,
+  "status": "pass",
+  "verification_sha256": "331f3dde9ec6093ad1ccd18f27044bc8c30f573c3a596f07642e5c34a2edd41a"
+}

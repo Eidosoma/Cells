@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "emt_mirna@1",
+    "units": {"concentration": "bitsey_scaled_coordinate", "time": "bitsey_time_unit"},
+    "population": {"count": 1, "cell_id": 1},
+    "initial_state": {"mir200_total": 0, "zeb_mrna_total": 100, "zeb_protein": 100},
+    "parameters": {"snail": 72, "parameter_set": "bitsey-b2cb370-mirna-simple"}
+  },
+  "experiment": {
+    "end_time": 10000,
+    "source": {"kind": "none"},
+    "observation_times": [0, 0.1, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 5000, 10000]
+  },
+  "execution": {
+    "backend": "cpu", "precision": "float64", "solver": "rk4",
+    "dt": 0.1, "capacity": 1, "jit": true,
+    "max_steps": 250000, "max_trace_bytes": 67108864
+  }
+}

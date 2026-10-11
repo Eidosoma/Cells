@@ -1,0 +1,428 @@
+{
+  "schema": "cells.physical_ionic_graph_trajectory_panel@1",
+  "task": "NUM-008",
+  "physical_panel": "configs/reference/physical_ionic_graph_v1.json",
+  "physical_panel_sha256": "6b6e5431e475e6467428f78d99a1b8756c71cac160498b393aff16d7e17dfc7f",
+  "inherited_sources_sha256": {
+    "docs/PHYSICAL_IONIC_GRAPH_SPEC.md": "04feb84040e18af82e12ca21894e38051ef7bec9f0da214379856274ff54e91f",
+    "tests/reference_physical_ionic_graph.py": "ee37f6ad69b9f6b62bbd2061d61d275a2ca9964dc2de05c1a2786535cab2a1f9",
+    "reports/spec-007-design-check.json": "f649f5b18eddea1ced4d87bf61a936498dae14898f4e77abb67e990c1ac56ca9",
+    "runs/core-007-2026-09-10/release-audit.json": "2a08a2487aafd13cb1e604063e9ff3b68bd5a75cc7c09fe4dea480f952b05085"
+  },
+  "scope": "short synthetic coupled physical ionic graph CPU reference qualification; not production, biology, arbitrary graph timesteps, multirate or GPU acceptance",
+  "references": [
+    {
+      "id": "radau",
+      "method": "Radau",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "bdf",
+      "method": "BDF",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "refined",
+      "method": "Radau",
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "max_step_s": 0.0025
+    }
+  ],
+  "candidate": {
+    "method": "independent_absolute_amount_coupled_RK4",
+    "steps_s": [
+      0.002,
+      0.001,
+      0.0005,
+      0.00025
+    ],
+    "observation": "interval_control_cubic_hermite",
+    "comparison_fractions": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "selection": "coarsest all-case passing step with passing next-finer step and cell voltage/membrane gate/junction gate refinement",
+    "voltage_refinement_floor_V": 1e-10,
+    "gate_refinement_floor": 1e-8,
+    "maximum_refined_error_ratio": 0.8,
+    "domain_rejection": "retain rejected trial and completed prefix; continue only the declared candidate ladder"
+  },
+  "trajectory_limits": {
+    "amount_fmol": 1e-7,
+    "leak_fmol": 1e-7,
+    "junction_fmol": 1e-7,
+    "species_overrides": {
+      "Ca": {
+        "amount_fmol": 1e-9,
+        "leak_fmol": 1e-9,
+        "junction_fmol": 1e-9
+      }
+    },
+    "pump_cycles_fmol": 1e-7,
+    "membrane_dissipation_pJ": 0.000001,
+    "junction_dissipation_pJ": 0.000001,
+    "voltage_V": 0.000001,
+    "membrane_gate": 0.0001,
+    "junction_gate": 0.0001,
+    "open_fraction": 0.0001,
+    "channel_fmol": 1e-7,
+    "reference_factor": 0.1
+  },
+  "accounting_limits": {
+    "material_fmol": 1e-10,
+    "species_material_overrides_fmol": {
+      "Ca": 1e-12
+    },
+    "charge_as_voltage_V": 1e-8,
+    "global_charge_C": 1e-19,
+    "energy_pJ": 0.000001,
+    "dissipation_decrease_pJ": 1e-10
+  },
+  "resources": {
+    "max_horizon_s": 0.3,
+    "max_cases": 12,
+    "max_graph_attempts": 84,
+    "max_reduction_attempts": 5,
+    "max_steps_per_attempt": 100000,
+    "max_rhs_calls_per_attempt": 100000,
+    "max_samples_per_case": 100000,
+    "session_wall_seconds": 1800,
+    "artifact_bytes": 268435456,
+    "workers": 1
+  },
+  "profiles": {
+    "single": {
+      "horizon_s": 0.1,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "baseline": {
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "internal": {
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "block_release": {
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.0137,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0271,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {
+              "channel_1": 0
+            },
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0433,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {
+              "cell_2": {
+                "Na": 0
+              }
+            },
+            "pump": {
+              "cell_0": 0
+            },
+            "channel": {},
+            "junction": {
+              "junction_1": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0679,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.113,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.177,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.231,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.3,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    },
+    "short_pulse": {
+      "horizon_s": 0.05,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.0203,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        },
+        {
+          "time_s": 0.0204,
+          "leak": 1,
+          "pump": 1,
+          "channel": 1,
+          "junction": 1,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {
+              "junction_0": 0
+            }
+          }
+        },
+        {
+          "time_s": 0.05,
+          "leak": 0,
+          "pump": 0,
+          "channel": 0,
+          "junction": 0,
+          "overrides": {
+            "leak": {},
+            "pump": {},
+            "channel": {},
+            "junction": {}
+          }
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "single_mono",
+      "assembly": "single_mono",
+      "profile": "single",
+      "independent_cell_reduction": true
+    },
+    {
+      "id": "single_divalent",
+      "assembly": "single_divalent",
+      "profile": "single",
+      "independent_cell_reduction": true
+    },
+    {
+      "id": "disconnected_mono",
+      "assembly": "disconnected_mono",
+      "profile": "single",
+      "independent_cell_reduction": true
+    },
+    {
+      "id": "pair_mono",
+      "assembly": "pair_mono",
+      "profile": "baseline",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "pair_divalent",
+      "assembly": "pair_divalent",
+      "profile": "baseline",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_mono",
+      "assembly": "star_mono",
+      "profile": "baseline",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_divalent",
+      "assembly": "star_divalent",
+      "profile": "baseline",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "pair_mono_internal",
+      "assembly": "pair_mono",
+      "profile": "internal",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_mono_internal",
+      "assembly": "star_mono",
+      "profile": "internal",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_mono_block_release",
+      "assembly": "star_mono",
+      "profile": "block_release",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_divalent_block_release",
+      "assembly": "star_divalent",
+      "profile": "block_release",
+      "independent_cell_reduction": false
+    },
+    {
+      "id": "star_mono_short_pulse",
+      "assembly": "star_mono",
+      "profile": "short_pulse",
+      "independent_cell_reduction": false
+    }
+  ]
+}

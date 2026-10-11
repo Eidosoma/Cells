@@ -1,0 +1,26 @@
+{
+  "schema": "cells.betse_profile_bridge_preflight_plan@2",
+  "revision": 2,
+  "prior_handoff_sha256": "31c0e7743b2e237c5a9ec8f683d10bf28c0968833d3dc35be8cd37ce29690b9c",
+  "scope": "Six independent SIM-from-neutral preparations; isolate profile activation and zero-amplitude event setup without transport/integration",
+  "variants": {
+    "baseline": {"profiles_enabled": false, "event_mode": "disabled"},
+    "default_profile": {"profiles_enabled": true, "event_mode": "disabled"},
+    "zero_amplitude": {"profiles_enabled": true, "event_mode": "zero_amplitude"}
+  },
+  "case_ids": ["passive", "blocked"],
+  "constant_profile": "matched_constants",
+  "dt_s": 0.000025,
+  "duration_s": 0.001,
+  "dispatch_elapsed_times_s": [0.0, 0.0003, 0.0005, 0.0007, 0.001],
+  "equality": "exact_values_shapes_dtypes_bytes",
+  "preserve_partial_state": true,
+  "worker_timeout_seconds": 35,
+  "max_artifact_bytes": 33554432,
+  "cpu_affinity": "0-3",
+  "failure_policy": "Retain all completed stages and failure; no automatic retry, control/physics change or trajectory launch",
+  "trajectory_run": false,
+  "trajectory_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

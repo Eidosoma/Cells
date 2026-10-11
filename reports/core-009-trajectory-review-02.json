@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "maxima": {
+    "voltage_V": 1.9102077211674562e-8,
+    "membrane_gate": 1.201560384522793e-7,
+    "junction_gate": 1.6828453075490302e-9,
+    "outside_concentration_mM": 0.00005939372375645888,
+    "charge_residual_V": 1.161330086892438e-16,
+    "global_charge_residual_C": 6.3288812054152285e-28,
+    "energy_residual_pJ": 6.4987412638772835e-9,
+    "dissipation_decrease_pJ": 0,
+    "cubic_countercharge_C": 5.858145013936635e-28
+  },
+  "depletion_fraction": 0.8080565755647833,
+  "internal_exchange_outside_exactly_frozen": true,
+  "old_regression": {
+    "scalar_cases": 78,
+    "scalar_arrays": 3511,
+    "windows": 1777,
+    "batches": 10,
+    "worlds": 44,
+    "batch_arrays": 2042,
+    "later_reference_cases": 40,
+    "later_exact_arrays": 2868
+  },
+  "verification_sha256": "247e2bd8f00cb58736e2b6e7ef2bf0c0855742fa8e929e6067ef861bc2ad3b92",
+  "repeat_audit_sha256": "4acf46e8910626562b3cfebceb2da4c4eb3b57243f9f9132f5f6391b6b54fa7c",
+  "maxima_recomputed_from_new_accepted_and_observed_records": true,
+  "depletion_and_exact_outside_witness_reproduced_in_every_saved_array": true,
+  "solver_rerun": false
+}

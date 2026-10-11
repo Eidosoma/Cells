@@ -1,0 +1,23 @@
+{
+  "schema": "cells.betse_channel_feedback_audit_plan@1",
+  "decision": "D096",
+  "capture": "runs/ref-004b-feedback-pilot-2026-09-15/capture-01",
+  "completion_sha256": "28e985c8f1d49d7953b21382ad6a34b6f2989f23c5407a97118902f8391c8ceb",
+  "scope": "Independent saved-data closeout of the fixed 2 ms four-control coupled pilot, at registered observations and within registered budgets; no biological or general BETSE qualification.",
+  "native_identities": 5181760,
+  "native_charge_snapshots": 2264,
+  "expected_coarse_rejections": 14,
+  "capture_files": 284,
+  "capture_source_inputs": 112,
+  "precision_digits": 80,
+  "cpu_affinity": [0, 1, 2, 3],
+  "total_timeout_seconds": 900,
+  "max_file_bytes": 134217728,
+  "max_artifact_bytes": 268435456,
+  "max_decoded_record_bytes": 134217728,
+  "simulators_rerun": false,
+  "reference_integrator_rerun": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "cells.multispecies_trajectory_panel@1",
+  "task": "NUM-006",
+  "physical_panel": "configs/reference/multispecies_membrane_v1.json",
+  "physical_panel_sha256": "a5b267af9f88f218673e585ba1e3e575a9a85cb567ae24d3542721e13cfe6f34",
+  "scope": "bounded synthetic CPU trajectory qualification; not production, biology or GPU acceptance",
+  "references": [
+    {"id": "radau", "method": "Radau", "rtol": 1e-11, "atol": 1e-13, "max_step_s": 0.05},
+    {"id": "bdf", "method": "BDF", "rtol": 1e-11, "atol": 1e-13, "max_step_s": 0.05},
+    {"id": "refined", "method": "Radau", "rtol": 1e-12, "atol": 1e-14, "max_step_s": 0.025}
+  ],
+  "candidate": {
+    "method": "independent_absolute_amount_RK4",
+    "steps_s": [0.01, 0.005, 0.0025],
+    "observation": "interval_control_cubic_hermite",
+    "comparison_fractions": [0.25, 0.5, 0.75],
+    "selection": "coarsest passing step with a passing next-finer step and voltage refinement",
+    "voltage_refinement_floor_V": 1e-10,
+    "maximum_refined_voltage_error_ratio": 0.8
+  },
+  "trajectory_limits": {
+    "amount_fmol": 1e-7,
+    "passive_fmol": 1e-7,
+    "species_overrides": {"Ca": {"amount_fmol": 1e-9, "passive_fmol": 1e-9}},
+    "pump_cycles_fmol": 1e-7,
+    "voltage_V": 1e-6,
+    "dissipation_pJ": 1e-6,
+    "reference_factor": 0.1
+  },
+  "accounting_limits": {
+    "material_fmol": 1e-10,
+    "species_material_overrides_fmol": {"Ca": 1e-12},
+    "charge_as_voltage_V": 1e-8,
+    "energy_pJ": 1e-6,
+    "dissipation_decrease_pJ": 1e-10
+  },
+  "resources": {
+    "max_horizon_s": 10,
+    "max_cases": 14,
+    "max_steps_per_attempt": 100000,
+    "max_rhs_calls_per_attempt": 100000,
+    "max_samples_per_case": 100000,
+    "session_wall_seconds": 600,
+    "artifact_bytes": 134217728,
+    "workers": 1
+  },
+  "profiles": {
+    "baseline_1s": {"horizon_s": 1, "controls": [{"time_s": 0, "leak": 1, "blocked_species": [], "pump": 1}]},
+    "baseline_10s": {"horizon_s": 10, "controls": [{"time_s": 0, "leak": 1, "blocked_species": [], "pump": 1}]},
+    "passive_10s": {"horizon_s": 10, "controls": [{"time_s": 0, "leak": 1, "blocked_species": [], "pump": 0}]},
+    "pump_1s": {"horizon_s": 1, "controls": [{"time_s": 0, "leak": 0, "blocked_species": [], "pump": 1}]},
+    "off_1s": {"horizon_s": 1, "controls": [{"time_s": 0, "leak": 0, "blocked_species": [], "pump": 0}]},
+    "block_release_mono": {
+      "horizon_s": 2,
+      "controls": [
+        {"time_s": 0, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 0.203, "leak": 1, "blocked_species": [], "pump": 0},
+        {"time_s": 0.311, "leak": 1, "blocked_species": ["Na"], "pump": 0},
+        {"time_s": 0.413, "leak": 1, "blocked_species": [], "pump": 0},
+        {"time_s": 0.507, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 0.713, "leak": 0, "blocked_species": [], "pump": 0},
+        {"time_s": 1.307, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 2, "leak": 0, "blocked_species": [], "pump": 0}
+      ]
+    },
+    "block_release_divalent": {
+      "horizon_s": 2,
+      "controls": [
+        {"time_s": 0, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 0.203, "leak": 1, "blocked_species": [], "pump": 0},
+        {"time_s": 0.311, "leak": 1, "blocked_species": ["Ca"], "pump": 0},
+        {"time_s": 0.413, "leak": 1, "blocked_species": [], "pump": 0},
+        {"time_s": 0.507, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 0.713, "leak": 0, "blocked_species": [], "pump": 0},
+        {"time_s": 1.307, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 2, "leak": 0, "blocked_species": [], "pump": 0}
+      ]
+    },
+    "short_pulse_1s": {
+      "horizon_s": 1,
+      "controls": [
+        {"time_s": 0, "leak": 1, "blocked_species": [], "pump": 0},
+        {"time_s": 0.203, "leak": 1, "blocked_species": [], "pump": 1},
+        {"time_s": 0.204, "leak": 1, "blocked_species": [], "pump": 0}
+      ]
+    }
+  },
+  "cases": [
+    {"id": "mono_baseline_1s", "assembly": "nakcl_reduction", "profile": "baseline_1s"},
+    {"id": "mono_baseline_10s", "assembly": "nakcl_reduction", "profile": "baseline_10s"},
+    {"id": "mono_passive_10s", "assembly": "nakcl_reduction", "profile": "passive_10s"},
+    {"id": "mono_pump_1s", "assembly": "nakcl_reduction", "profile": "pump_1s"},
+    {"id": "mono_off_1s", "assembly": "nakcl_reduction", "profile": "off_1s"},
+    {"id": "mono_block_release", "assembly": "nakcl_reduction", "profile": "block_release_mono"},
+    {"id": "mono_short_pulse", "assembly": "nakcl_reduction", "profile": "short_pulse_1s"},
+    {"id": "divalent_baseline_1s", "assembly": "divalent_with_background", "profile": "baseline_1s"},
+    {"id": "divalent_baseline_10s", "assembly": "divalent_with_background", "profile": "baseline_10s"},
+    {"id": "divalent_passive_10s", "assembly": "divalent_with_background", "profile": "passive_10s"},
+    {"id": "divalent_pump_1s", "assembly": "divalent_with_background", "profile": "pump_1s"},
+    {"id": "divalent_off_1s", "assembly": "divalent_with_background", "profile": "off_1s"},
+    {"id": "divalent_block_release", "assembly": "divalent_with_background", "profile": "block_release_divalent"},
+    {"id": "divalent_short_pulse", "assembly": "divalent_with_background", "profile": "short_pulse_1s"}
+  ]
+}

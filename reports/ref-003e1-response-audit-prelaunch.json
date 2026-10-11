@@ -1,0 +1,129 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "anchors": {
+    "cells.json": "1ecd08895df82580be10bf9c210096c371ccb24ac969d1f19870ae2f62b28d4f",
+    "comparison.json": "8f5354995beb44324b3bc92fa15527ff26de5a6fb44bff364558b758706ed939",
+    "failure.json": "557eb5bdf908451c67e96e04f09fbce303f15f8389eaaeb7c53edca2e7486703",
+    "launch.json": "1d485eed1ea858bf1388557d0e0edb97754e747083d2487cf8a7b74bc2ae88a8",
+    "native.json": "7c988fa9346a7e713cb1235e99adff2db8dd7af3917b17678f43e303606f67f0",
+    "registration.json": "8c7b1e5fe7ff8f963ed14896fc57cf8e174c8f7e5812d33a0339c87b7f17349b",
+    "sources.zip": "e287cb9dbb102859446a7c8d8940b8fbc3cf818a013f791e197b87b89a05ed8e"
+  },
+  "baseline_files": 969,
+  "capture_files_unchanged": 150,
+  "capture_rerun": false,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "7b2585b4544f4e82b131b748d743f3d3b34ac877c59743d7380fe3633ae1c893",
+      "before": "c82d9f65ec58553ce1a1c17244821d24d1791d2941731e314d9ca0fb210719fd"
+    },
+    "README.md": {
+      "after": "657172fb6881cfc5d589d9fd9dd5fd666718a2ef17493005867b2cf2d0f361ac",
+      "before": "64ec1fbe2b2ae15abc4567de179d3638061c3f51213c96875634a5517714fe74"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "9bdeb779a470738b18dd9d1eceeb9f04244a9152d405a0df384ed5807d6ac5e2",
+      "before": "6526afae7e9b082039669f078a5e093804c0f069365d69fb50a0d8b576836e97"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "e01e5d5bdc7baf0c96857ff99531b847ae2e3b60a532ec324b54af8819d0e803",
+      "before": "f71c7f64f69fc86b6a41283fb1612da58d9212fe662789862c2133aba1ef255b"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "d665decfc795f77f288f293074a26da8f0e6c4e98d0bd8a817bbcde6c19e6b24",
+      "before": "3ee5ebc808189d56de999aa6dfa3ad557693fae49c5bd636c1816829db27c283"
+    },
+    "docs/DECISIONS.md": {
+      "after": "64867d0784172c62b0a86cff2e16b3112343eee609fb027181b582e8a6df6600",
+      "before": "42c5fcdf19ef3bf6417716b570c578f514a0cecaee2196ac12998415e1e4de80"
+    },
+    "validation/betse/README.md": {
+      "after": "b436f5fdfc3b8f29162c7fae1e374108c600dbbd15057446b198e471e9f8ad56",
+      "before": "32b9287c75cee2f6aee791c8394edb780c9baf92b1eae8be4caa6758aac9976c"
+    }
+  },
+  "created_utc": "2026-09-13T10:58:39.489028+00:00",
+  "external_metadata_change": {
+    "added_line": "reports/ref-*.xml",
+    "after_sha256": "333c9eb6f13478d273688c4bb4c7509cc43ca195885fa8a0a9dec63d9646c4e5",
+    "before_sha256": "4f9e07619d8b890d1a6144a8270fef4325058fb248b278c841f17cc25bbeb365",
+    "changed_by_audit": false,
+    "old_preservation_guard_expected_to_reject": true,
+    "path": ".gitignore",
+    "user_commit": "fa5ec7127cfb0062e1151904b90f25a38b3e9bd5"
+  },
+  "independent_numerical_audit_run": false,
+  "new_files_sha256_before_prelaunch": {
+    "docs/BETSE_HELD_RESPONSE_AUDIT.md": "56e27b69c7be01642c46b3893d08e2b158c12726a962bfdd4a1214305af2ac49",
+    "docs/BETSE_HELD_RESPONSE_REFINEMENT.md": "7a7ba866de2b126de15ea6a666f2dd331a407d30d04c6d1715365d105e8aa324",
+    "reports/REF003E1_RESPONSE_AUDIT_HANDOFF.md": "a3813cc1d092fb0711fec91358d8d701eb4198c436a4021de2c581f0fa27c87f",
+    "reports/ref-003e1-response-audit-checks-01.xml": "c0ad993f9d13e8d777e12f428e24ea1505cd5b03a687018ef1a7a0003514fe15",
+    "reports/ref-003e1-response-audit-preservation.json": "f31e7854b4819ca6ccf62893e5a4b22883038adf52ac82259580bbcc14b8d2af",
+    "validation/betse/response_audit/response_audit.py": "f7933c7b6bfbfc3afc33d6daf55033a253ea2293e2b296e21ad1d6bf74d8562f",
+    "validation/betse/response_audit/response_audit_context.py": "dbb7efa808a94cdcfc0d209ee714010b9d5a7706e865c8449f30bed7366ef0de",
+    "validation/betse/response_audit/response_audit_job.py": "836dfbce270e55bd56c4f9af1b590e224f238ef807d5ac1cf189b3cb47f71366",
+    "validation/betse/response_audit/test_saved_response.py": "d9ec7754211a7b1fe4014f76f18820b7e1fa2465016f36d4fc07257f3796eecd"
+  },
+  "plan": {
+    "automatic_expansion": false,
+    "automatic_polling": false,
+    "automatic_retry": false,
+    "capture_rerun": false,
+    "cpu_affinity": "0-3",
+    "frozen_comparisons": 345576,
+    "frozen_failures": 150,
+    "independent_surface_comparisons": 147312,
+    "internal_comparisons": 198264,
+    "max_artifact_bytes": 16777216,
+    "max_worker_file_bytes": 8388608,
+    "original_packet_rewritten": false,
+    "response_qualified": false,
+    "schema": "cells.betse_held_response_audit_plan@1",
+    "stage_timeout_seconds": {
+      "audit": 90,
+      "legacy_regression": 90,
+      "regression": 120
+    },
+    "test_modules": [
+      "test_held_response.py",
+      "test_held_response_check.py",
+      "response_audit/test_saved_response.py"
+    ],
+    "total_timeout_seconds": 360
+  },
+  "preservation_sha256": "f31e7854b4819ca6ccf62893e5a4b22883038adf52ac82259580bbcc14b8d2af",
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "363 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "resources": {
+    "basis": "D081 comparison/focused-test measurements plus current preflight and explicit allowances",
+    "estimated_artifact_bytes_with_allowances": 4461432,
+    "new_preflight_seconds": 12.004,
+    "original_capture_copied": false,
+    "peak_RAM_measured": false,
+    "stage_seconds_with_allowances": {
+      "audit": 44,
+      "legacy_regression": 48,
+      "regression": 34
+    }
+  },
+  "schema": "cells.betse_held_response_audit_prelaunch@1",
+  "sources": {
+    "response_audit/response_audit.py": "f7933c7b6bfbfc3afc33d6daf55033a253ea2293e2b296e21ad1d6bf74d8562f",
+    "response_audit/response_audit_context.py": "dbb7efa808a94cdcfc0d209ee714010b9d5a7706e865c8449f30bed7366ef0de",
+    "response_audit/response_audit_job.py": "836dfbce270e55bd56c4f9af1b590e224f238ef807d5ac1cf189b3cb47f71366",
+    "response_audit/test_saved_response.py": "d9ec7754211a7b1fe4014f76f18820b7e1fa2465016f36d4fc07257f3796eecd"
+  },
+  "status": "pass",
+  "test_receipt": "reports/ref-003e1-response-audit-checks-01.xml",
+  "test_receipt_sha256": "c0ad993f9d13e8d777e12f428e24ea1505cd5b03a687018ef1a7a0003514fe15",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 70
+  },
+  "unchanged_baseline_files": 962
+}

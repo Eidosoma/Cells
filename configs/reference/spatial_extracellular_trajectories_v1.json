@@ -1,0 +1,2367 @@
+{
+  "schema": "cells.spatial_extracellular_trajectories@1",
+  "scope": "NUM-010 short passive closed spatial trajectories, temporal/spatial refinement and reference restart only; no production, biology or GPU promotion",
+  "coordinate_contract": "all_five_fields_explicit_anchored_amounts_component_charge_tangent_jacobian@1",
+  "references": [
+    {
+      "id": "radau",
+      "method": "Radau",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "bdf",
+      "method": "BDF",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "refined",
+      "method": "Radau",
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "max_step_s": 0.0025
+    }
+  ],
+  "candidate": {
+    "method": "RK4",
+    "steps_s": [
+      0.004,
+      0.002,
+      0.001,
+      0.0005,
+      0.00025,
+      0.000125,
+      0.0000625
+    ],
+    "refinement_ratio": 0.8,
+    "concentration_floor_mM": 1e-8,
+    "potential_floor_V": 1e-10
+  },
+  "observation_uniform_count": 201,
+  "trajectory_limits": {
+    "amount_and_transfer_fmol": 1e-7,
+    "concentration_mM": 0.0001,
+    "potential_V": 0.000001,
+    "dissipation_pJ": 0.000001,
+    "reference_factor": 0.1
+  },
+  "accounting_limits": {
+    "material_fmol": 1e-10,
+    "charge_C": 1e-20,
+    "current_A": 1e-23,
+    "current_rtol": 2e-12,
+    "energy_pJ": 0.000001,
+    "dissipation_decrease_pJ": 1e-10
+  },
+  "spatial_limits": {
+    "refinement_ratio": 0.3,
+    "finest_concentration_error_mM": 0.02
+  },
+  "relaxation_witness": {
+    "case": "pure_bulk",
+    "minimum_contrast_fraction_decrease": 0.1
+  },
+  "resources": {
+    "main_attempts": 140,
+    "session_wall_seconds": 1800,
+    "artifact_bytes": 536870912,
+    "max_rhs_calls_per_attempt": 100000,
+    "max_steps_per_attempt": 100000,
+    "max_samples_per_attempt": 50000
+  },
+  "cases": [
+    {
+      "id": "single_outside",
+      "source_case": "single_outside",
+      "world": {
+        "id": "single_outside",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              120,
+              120
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": []
+      },
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        },
+        {
+          "time_s": 0.073,
+          "membrane_availability": {
+            "membrane_0": 0
+          }
+        },
+        {
+          "time_s": 0.127,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "binary_unequal",
+      "source_case": "binary_unequal",
+      "world": {
+        "id": "binary_unequal",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "binary_equal",
+      "source_case": "binary_equal",
+      "world": {
+        "id": "binary_equal",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              1e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "uniform_outside",
+      "source_case": "uniform_outside",
+      "world": {
+        "id": "uniform_outside",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              96,
+              96
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "ternary_loop",
+      "source_case": "ternary_loop",
+      "world": {
+        "id": "ternary_loop",
+        "species_ids": [
+          "Na",
+          "K",
+          "Cl"
+        ],
+        "valence": [
+          1,
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              130,
+              140
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              29,
+              1,
+              30
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "middle",
+            "kind": "extracellular",
+            "volume_pL": 0.3,
+            "initial_amount_fmol": [
+              30,
+              6,
+              36
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.5,
+            "initial_amount_fmol": [
+              40,
+              15,
+              55
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10,
+              3e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "middle",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1.33e-9,
+              1.96e-9,
+              2.03e-9
+            ]
+          },
+          {
+            "id": "face_1",
+            "left": "middle",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1.33e-9,
+              1.96e-9,
+              2.03e-9
+            ]
+          },
+          {
+            "id": "face_2",
+            "left": "far",
+            "right": "near",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1.33e-9,
+              1.96e-9,
+              2.03e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.1,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "two_cells_chain",
+      "source_case": "two_cells_chain",
+      "world": {
+        "id": "two_cells_chain",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell_a",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "cell_b",
+            "kind": "intracellular",
+            "volume_pL": 2,
+            "initial_amount_fmol": [
+              40,
+              40
+            ],
+            "fixed_charge_equivalent_fmol": -0.003109280896878652
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "middle",
+            "kind": "extracellular",
+            "volume_pL": 0.3,
+            "initial_amount_fmol": [
+              27,
+              27
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.5,
+            "initial_amount_fmol": [
+              30,
+              30
+            ],
+            "fixed_charge_equivalent_fmol": 0.003109280896878652
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell_a",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          },
+          {
+            "id": "membrane_1",
+            "inside": "cell_b",
+            "outside": "far",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.03,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "middle",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_1",
+            "left": "middle",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1,
+            "membrane_1": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "divalent",
+      "source_case": "divalent",
+      "world": {
+        "id": "divalent",
+        "species_ids": [
+          "Ca",
+          "Cl"
+        ],
+        "valence": [
+          2,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              1,
+              2
+            ],
+            "fixed_charge_equivalent_fmol": -0.004145707862504869
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              0.4,
+              0.8
+            ],
+            "fixed_charge_equivalent_fmol": 0.004145707862504869
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              0.8,
+              1.6
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.04,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.15,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "pure_bulk",
+      "source_case": "pure_bulk",
+      "world": {
+        "id": "pure_bulk",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {}
+        }
+      ],
+      "analytic_kind": "binary_relaxation",
+      "mesh_parameters": null
+    },
+    {
+      "id": "blocked_cell",
+      "source_case": "binary_unequal",
+      "world": {
+        "id": "binary_unequal",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 0
+          }
+        }
+      ],
+      "analytic_kind": "binary_relaxation",
+      "mesh_parameters": null
+    },
+    {
+      "id": "membrane_block_release",
+      "source_case": "binary_unequal",
+      "world": {
+        "id": "binary_unequal",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.3,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        },
+        {
+          "time_s": 0.0713,
+          "membrane_availability": {
+            "membrane_0": 0
+          }
+        },
+        {
+          "time_s": 0.1637,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        },
+        {
+          "time_s": 0.3,
+          "membrane_availability": {
+            "membrane_0": 0.35
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "membrane_short_pulse",
+      "source_case": "binary_unequal",
+      "world": {
+        "id": "binary_unequal",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "cell",
+            "kind": "intracellular",
+            "volume_pL": 1,
+            "initial_amount_fmol": [
+              10,
+              10
+            ],
+            "fixed_charge_equivalent_fmol": -0.006736775276570412
+          },
+          {
+            "id": "near",
+            "kind": "extracellular",
+            "volume_pL": 0.2,
+            "initial_amount_fmol": [
+              24,
+              24
+            ],
+            "fixed_charge_equivalent_fmol": 0.006736775276570412
+          },
+          {
+            "id": "far",
+            "kind": "extracellular",
+            "volume_pL": 0.8,
+            "initial_amount_fmol": [
+              48,
+              48
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [
+          {
+            "id": "membrane_0",
+            "inside": "cell",
+            "outside": "near",
+            "area_m2": 1e-9,
+            "capacitance_F": 1e-11,
+            "initial_voltage_V": -0.065,
+            "permeability_m_per_s": [
+              1e-10,
+              2e-10
+            ]
+          }
+        ],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "near",
+            "right": "far",
+            "area_m2": 1e-12,
+            "length_m": 0.00001,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.06,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {
+            "membrane_0": 0
+          }
+        },
+        {
+          "time_s": 0.0203,
+          "membrane_availability": {
+            "membrane_0": 1
+          }
+        },
+        {
+          "time_s": 0.0204,
+          "membrane_availability": {
+            "membrane_0": 0
+          }
+        }
+      ],
+      "analytic_kind": null,
+      "mesh_parameters": null
+    },
+    {
+      "id": "line_8",
+      "source_case": null,
+      "world": {
+        "id": "line_8",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "outside_0",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.2987247679202216,
+              0.2987247679202216
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_1",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.29130686369548897,
+              0.29130686369548897
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_2",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.27760036392077,
+              0.27760036392077
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_3",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.2596919589370357,
+              0.2596919589370357
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_4",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.2403080410629643,
+              0.2403080410629643
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_5",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.22239963607923005,
+              0.22239963607923005
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_6",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.20869313630451103,
+              0.20869313630451103
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_7",
+            "kind": "extracellular",
+            "volume_pL": 0.0025,
+            "initial_amount_fmol": [
+              0.20127523207977838,
+              0.20127523207977838
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "outside_0",
+            "right": "outside_1",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_1",
+            "left": "outside_1",
+            "right": "outside_2",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_2",
+            "left": "outside_2",
+            "right": "outside_3",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_3",
+            "left": "outside_3",
+            "right": "outside_4",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_4",
+            "left": "outside_4",
+            "right": "outside_5",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_5",
+            "left": "outside_5",
+            "right": "outside_6",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_6",
+            "left": "outside_6",
+            "right": "outside_7",
+            "area_m2": 1e-12,
+            "length_m": 0.0000025,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.03,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {}
+        }
+      ],
+      "analytic_kind": "cosine_line",
+      "mesh_parameters": {
+        "volumes": 8,
+        "length_m": 0.00002,
+        "area_m2": 1e-12,
+        "mean_mM": 100,
+        "amplitude_mM": 20,
+        "diffusivities_m2_per_s": [
+          1e-9,
+          2e-9
+        ]
+      }
+    },
+    {
+      "id": "line_16",
+      "source_case": null,
+      "world": {
+        "id": "line_16",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "outside_0",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.14983967127860515,
+              0.14983967127860515
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_1",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.1488850966416165,
+              0.1488850966416165
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_2",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.14701263113560703,
+              0.14701263113560703
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_3",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.14429423255988194,
+              0.14429423255988194
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_4",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.1408343674472109,
+              0.1408343674472109
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_5",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.13676599647355908,
+              0.13676599647355908
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_6",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.13224546485387526,
+              0.13224546485387526
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_7",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.12744649408316047,
+              0.12744649408316047
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_8",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.12255350591683954,
+              0.12255350591683954
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_9",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.11775453514612477,
+              0.11775453514612477
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_10",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.11323400352644093,
+              0.11323400352644093
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_11",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.10916563255278913,
+              0.10916563255278913
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_12",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.10570576744011806,
+              0.10570576744011806
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_13",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.10298736886439297,
+              0.10298736886439297
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_14",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.10111490335838351,
+              0.10111490335838351
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_15",
+            "kind": "extracellular",
+            "volume_pL": 0.00125,
+            "initial_amount_fmol": [
+              0.10016032872139487,
+              0.10016032872139487
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "outside_0",
+            "right": "outside_1",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_1",
+            "left": "outside_1",
+            "right": "outside_2",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_2",
+            "left": "outside_2",
+            "right": "outside_3",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_3",
+            "left": "outside_3",
+            "right": "outside_4",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_4",
+            "left": "outside_4",
+            "right": "outside_5",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_5",
+            "left": "outside_5",
+            "right": "outside_6",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_6",
+            "left": "outside_6",
+            "right": "outside_7",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_7",
+            "left": "outside_7",
+            "right": "outside_8",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_8",
+            "left": "outside_8",
+            "right": "outside_9",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_9",
+            "left": "outside_9",
+            "right": "outside_10",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_10",
+            "left": "outside_10",
+            "right": "outside_11",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_11",
+            "left": "outside_11",
+            "right": "outside_12",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_12",
+            "left": "outside_12",
+            "right": "outside_13",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_13",
+            "left": "outside_13",
+            "right": "outside_14",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_14",
+            "left": "outside_14",
+            "right": "outside_15",
+            "area_m2": 1e-12,
+            "length_m": 0.00000125,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.03,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {}
+        }
+      ],
+      "analytic_kind": "cosine_line",
+      "mesh_parameters": {
+        "volumes": 16,
+        "length_m": 0.00002,
+        "area_m2": 1e-12,
+        "mean_mM": 100,
+        "amplitude_mM": 20,
+        "diffusivities_m2_per_s": [
+          1e-9,
+          2e-9
+        ]
+      }
+    },
+    {
+      "id": "line_32",
+      "source_case": null,
+      "world": {
+        "id": "line_32",
+        "species_ids": [
+          "Cation",
+          "Anion"
+        ],
+        "valence": [
+          1,
+          -1
+        ],
+        "temperature_K": 310,
+        "compartments": [
+          {
+            "id": "outside_0",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07497992991294523,
+              0.07497992991294523
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_1",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07485974136565991,
+              0.07485974136565991
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_2",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07462052175250139,
+              0.07462052175250139
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_3",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0742645748891151,
+              0.0742645748891151
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_4",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07379532873837583,
+              0.07379532873837583
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_5",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0732173023972312,
+              0.0732173023972312
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_6",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07253606257532781,
+              0.07253606257532781
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_7",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07175816998455414,
+              0.07175816998455414
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_8",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.07089111615579868,
+              0.07089111615579868
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_9",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0699432512914122,
+              0.0699432512914122
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_10",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06892370384819438,
+              0.06892370384819438
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_11",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0678422926253647,
+              0.0678422926253647
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_12",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06670943220415856,
+              0.06670943220415856
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_13",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06553603264971666,
+              0.06553603264971666
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_14",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06433339444119372,
+              0.06433339444119372
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_15",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06311309964196674,
+              0.06311309964196674
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_16",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06188690035803326,
+              0.06188690035803326
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_17",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.06066660555880628,
+              0.06066660555880628
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_18",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05946396735028334,
+              0.05946396735028334
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_19",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.058290567795841436,
+              0.058290567795841436
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_20",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0571577073746353,
+              0.0571577073746353
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_21",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05607629615180563,
+              0.05607629615180563
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_22",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.055056748708587795,
+              0.055056748708587795
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_23",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.054108883844201316,
+              0.054108883844201316
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_24",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.053241830015445864,
+              0.053241830015445864
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_25",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.052463937424672195,
+              0.052463937424672195
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_26",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0517826976027688,
+              0.0517826976027688
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_27",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05120467126162418,
+              0.05120467126162418
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_28",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.0507354251108849,
+              0.0507354251108849
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_29",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05037947824749861,
+              0.05037947824749861
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_30",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05014025863434009,
+              0.05014025863434009
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          },
+          {
+            "id": "outside_31",
+            "kind": "extracellular",
+            "volume_pL": 0.000625,
+            "initial_amount_fmol": [
+              0.05002007008705477,
+              0.05002007008705477
+            ],
+            "fixed_charge_equivalent_fmol": 0
+          }
+        ],
+        "membranes": [],
+        "faces": [
+          {
+            "id": "face_0",
+            "left": "outside_0",
+            "right": "outside_1",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_1",
+            "left": "outside_1",
+            "right": "outside_2",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_2",
+            "left": "outside_2",
+            "right": "outside_3",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_3",
+            "left": "outside_3",
+            "right": "outside_4",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_4",
+            "left": "outside_4",
+            "right": "outside_5",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_5",
+            "left": "outside_5",
+            "right": "outside_6",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_6",
+            "left": "outside_6",
+            "right": "outside_7",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_7",
+            "left": "outside_7",
+            "right": "outside_8",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_8",
+            "left": "outside_8",
+            "right": "outside_9",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_9",
+            "left": "outside_9",
+            "right": "outside_10",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_10",
+            "left": "outside_10",
+            "right": "outside_11",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_11",
+            "left": "outside_11",
+            "right": "outside_12",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_12",
+            "left": "outside_12",
+            "right": "outside_13",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_13",
+            "left": "outside_13",
+            "right": "outside_14",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_14",
+            "left": "outside_14",
+            "right": "outside_15",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_15",
+            "left": "outside_15",
+            "right": "outside_16",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_16",
+            "left": "outside_16",
+            "right": "outside_17",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_17",
+            "left": "outside_17",
+            "right": "outside_18",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_18",
+            "left": "outside_18",
+            "right": "outside_19",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_19",
+            "left": "outside_19",
+            "right": "outside_20",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_20",
+            "left": "outside_20",
+            "right": "outside_21",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_21",
+            "left": "outside_21",
+            "right": "outside_22",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_22",
+            "left": "outside_22",
+            "right": "outside_23",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_23",
+            "left": "outside_23",
+            "right": "outside_24",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_24",
+            "left": "outside_24",
+            "right": "outside_25",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_25",
+            "left": "outside_25",
+            "right": "outside_26",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_26",
+            "left": "outside_26",
+            "right": "outside_27",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_27",
+            "left": "outside_27",
+            "right": "outside_28",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_28",
+            "left": "outside_28",
+            "right": "outside_29",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_29",
+            "left": "outside_29",
+            "right": "outside_30",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          },
+          {
+            "id": "face_30",
+            "left": "outside_30",
+            "right": "outside_31",
+            "area_m2": 1e-12,
+            "length_m": 6.25e-7,
+            "diffusivity_m2_per_s": [
+              1e-9,
+              2e-9
+            ]
+          }
+        ]
+      },
+      "horizon_s": 0.03,
+      "controls": [
+        {
+          "time_s": 0,
+          "membrane_availability": {}
+        }
+      ],
+      "analytic_kind": "cosine_line",
+      "mesh_parameters": {
+        "volumes": 32,
+        "length_m": 0.00002,
+        "area_m2": 1e-12,
+        "mean_mM": 100,
+        "amplitude_mM": 20,
+        "diffusivities_m2_per_s": [
+          1e-9,
+          2e-9
+        ]
+      }
+    }
+  ]
+}

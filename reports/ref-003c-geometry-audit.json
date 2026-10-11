@@ -1,0 +1,13 @@
+{
+  "alignment_qualified": false,
+  "completion_sha256": "7c37798dc3700419fb690e7c9857a493cccfd09c95522ec0d360ac95ef2b3b28",
+  "explicit_svg_centres": 1,
+  "installed_python_files": 332,
+  "native_exception_type": "QhullError",
+  "one_cell_seed_succeeded": false,
+  "production_calls": 0,
+  "schema": "cells.betse_svg_negative_evidence_audit@1",
+  "status": "native_one_centre_rejection_confirmed",
+  "trajectory_calls": 0,
+  "upstream_calls": 0
+}

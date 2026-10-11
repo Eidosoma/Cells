@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="19" skipped="0" tests="98" time="71.332" timestamp="2026-09-10T10:56:45.551155+00:00" hostname="eidosoma-vm-2"><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_roundtrip_numeric_axes_and_complete_ownership[mono_baseline]" time="0.004" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_roundtrip_numeric_axes_and_complete_ownership[divalent_depolarized]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path0-multispecies_membrane@1]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path1-cell_0]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path2-bad/path]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path3-unknown]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path4-Ca]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path5-Cl]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path6-missing]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path7-custom]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path8-value8]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path9--0.01]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path10-1.01]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path11-True]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path12-nan]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path13-True]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path14--1]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path15-1e+308]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path16-False]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path17-inf]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path18-300]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path19-0]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path20-True]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path21-1]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path22-gpu]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path23-missing]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path24-value24]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path25-0.001]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path26-1.1]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_invalid_schema_is_refused[path27-True]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_python_types_are_not_silently_dropped" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.12]" time="0.440"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 1.8370862164829305e-08 (ACTUAL), 1.8370861928652693e-08 (DESIRED)&#10; [1]: 1.0 (ACTUAL), 0.9999999999982248 (DESIRED)&#10;Max absolute difference among violations: 1.77524662e-12&#10;Max relative difference among violations: 1.28560441e-08&#10; ACTUAL: array([1.837086e-08, 1.000000e+00], dtype=float32)&#10; DESIRED: array([1.837086e-08, 1.000000e+00])">voltage = np.float64(-0.12)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 1.8370862164829305e-08 (ACTUAL), 1.8370861928652693e-08 (DESIRED)
+E            [1]: 1.0 (ACTUAL), 0.9999999999982248 (DESIRED)
+E           Max absolute difference among violations: 1.77524662e-12
+E           Max relative difference among violations: 1.28560441e-08
+E            ACTUAL: array([1.837086e-08, 1.000000e+00], dtype=float32)
+E            DESIRED: array([1.837086e-08, 1.000000e+00])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.11]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 8.764247638737288e-08 (ACTUAL), 8.764247451323235e-08 (DESIRED)&#10; [1]: 1.0 (ACTUAL), 0.9999999999690918 (DESIRED)&#10;Max absolute difference among violations: 3.09081649e-11&#10;Max relative difference among violations: 2.13839299e-08&#10; ACTUAL: array([8.764248e-08, 1.000000e+00], dtype=float32)&#10; DESIRED: array([8.764247e-08, 1.000000e+00])">voltage = np.float64(-0.11)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 8.764247638737288e-08 (ACTUAL), 8.764247451323235e-08 (DESIRED)
+E            [1]: 1.0 (ACTUAL), 0.9999999999690918 (DESIRED)
+E           Max absolute difference among violations: 3.09081649e-11
+E           Max relative difference among violations: 2.13839299e-08
+E            ACTUAL: array([8.764248e-08, 1.000000e+00], dtype=float32)
+E            DESIRED: array([8.764247e-08, 1.000000e+00])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.09999999999999999]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 4.1811830442384235e-07 (ACTUAL), 4.181187231316641e-07 (DESIRED)&#10; [1]: 1.0 (ACTUAL), 0.9999999994618356 (DESIRED)&#10;Max absolute difference among violations: 5.38164402e-10&#10;Max relative difference among violations: 1.00140893e-06&#10; ACTUAL: array([4.181183e-07, 1.000000e+00], dtype=float32)&#10; DESIRED: array([4.181187e-07, 1.000000e+00])">voltage = np.float64(-0.09999999999999999)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 4.1811830442384235e-07 (ACTUAL), 4.181187231316641e-07 (DESIRED)
+E            [1]: 1.0 (ACTUAL), 0.9999999994618356 (DESIRED)
+E           Max absolute difference among violations: 5.38164402e-10
+E           Max relative difference among violations: 1.00140893e-06
+E            ACTUAL: array([4.181183e-07, 1.000000e+00], dtype=float32)
+E            DESIRED: array([4.181187e-07, 1.000000e+00])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.09]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 1.9947276541643078e-06 (ACTUAL), 1.9947297215270606e-06 (DESIRED)&#10; [1]: 1.0 (ACTUAL), 0.9999999906296398 (DESIRED)&#10;Max absolute difference among violations: 9.37036015e-09&#10;Max relative difference among violations: 1.03641247e-06&#10; ACTUAL: array([1.994728e-06, 1.000000e+00], dtype=float32)&#10; DESIRED: array([1.99473e-06, 1.00000e+00])">voltage = np.float64(-0.09)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 1.9947276541643078e-06 (ACTUAL), 1.9947297215270606e-06 (DESIRED)
+E            [1]: 1.0 (ACTUAL), 0.9999999906296398 (DESIRED)
+E           Max absolute difference among violations: 9.37036015e-09
+E           Max relative difference among violations: 1.03641247e-06
+E            ACTUAL: array([1.994728e-06, 1.000000e+00], dtype=float32)
+E            DESIRED: array([1.99473e-06, 1.00000e+00])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.07999999999999999]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 9.516251338936854e-06 (ACTUAL), 9.516251694168798e-06 (DESIRED)&#10; [1]: 0.9999998807907104 (ACTUAL), 0.9999998368460481 (DESIRED)&#10;Max absolute difference among violations: 4.39446624e-08&#10;Max relative difference among violations: 4.39446695e-08&#10; ACTUAL: array([9.516251e-06, 9.999999e-01], dtype=float32)&#10; DESIRED: array([9.516252e-06, 9.999998e-01])">voltage = np.float64(-0.07999999999999999)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 9.516251338936854e-06 (ACTUAL), 9.516251694168798e-06 (DESIRED)
+E            [1]: 0.9999998807907104 (ACTUAL), 0.9999998368460481 (DESIRED)
+E           Max absolute difference among violations: 4.39446624e-08
+E           Max relative difference among violations: 4.39446695e-08
+E            ACTUAL: array([9.516251e-06, 9.999999e-01], dtype=float32)
+E            DESIRED: array([9.516252e-06, 9.999998e-01])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.06999999999999999]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 4.5397824578685686e-05 (ACTUAL), 4.5397868702434476e-05 (DESIRED)&#10; [1]: 0.9999971389770508 (ACTUAL), 0.9999971592186269 (DESIRED)&#10;Max absolute difference among violations: 2.02415761e-08&#10;Max relative difference among violations: 9.71934367e-07&#10; ACTUAL: array([4.539782e-05, 9.999971e-01], dtype=float32)&#10; DESIRED: array([4.539787e-05, 9.999972e-01])">voltage = np.float64(-0.06999999999999999)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 4.5397824578685686e-05 (ACTUAL), 4.5397868702434476e-05 (DESIRED)
+E            [1]: 0.9999971389770508 (ACTUAL), 0.9999971592186269 (DESIRED)
+E           Max absolute difference among violations: 2.02415761e-08
+E           Max relative difference among violations: 9.71934367e-07
+E            ACTUAL: array([4.539782e-05, 9.999971e-01], dtype=float32)
+E            DESIRED: array([4.539787e-05, 9.999972e-01])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.06]" time="0.005"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.00021654405281879008 (ACTUAL), 0.00021654404989510323 (DESIRED)&#10; [1]: 0.9999505281448364 (ACTUAL), 0.999950539450011 (DESIRED)&#10;Max absolute difference among violations: 1.13051746e-08&#10;Max relative difference among violations: 1.35015802e-08&#10; ACTUAL: array([2.165441e-04, 9.999505e-01], dtype=float32)&#10; DESIRED: array([2.165440e-04, 9.999505e-01])">voltage = np.float64(-0.06)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.00021654405281879008 (ACTUAL), 0.00021654404989510323 (DESIRED)
+E            [1]: 0.9999505281448364 (ACTUAL), 0.999950539450011 (DESIRED)
+E           Max absolute difference among violations: 1.13051746e-08
+E           Max relative difference among violations: 1.35015802e-08
+E            ACTUAL: array([2.165441e-04, 9.999505e-01], dtype=float32)
+E            DESIRED: array([2.165440e-04, 9.999505e-01])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.04999999999999999]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.0010322310263291001 (ACTUAL), 0.0010322310367548214 (DESIRED)&#10; [1]: 0.9991394281387329 (ACTUAL), 0.9991395058336833 (DESIRED)&#10;Max absolute difference among violations: 7.76949504e-08&#10;Max relative difference among violations: 7.7761864e-08&#10; ACTUAL: array([0.001032, 0.999139], dtype=float32)&#10; DESIRED: array([0.001032, 0.99914 ])">voltage = np.float64(-0.04999999999999999)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.0010322310263291001 (ACTUAL), 0.0010322310367548214 (DESIRED)
+E            [1]: 0.9991394281387329 (ACTUAL), 0.9991395058336833 (DESIRED)
+E           Max absolute difference among violations: 7.76949504e-08
+E           Max relative difference among violations: 7.7761864e-08
+E            ACTUAL: array([0.001032, 0.999139], dtype=float32)
+E            DESIRED: array([0.001032, 0.99914 ])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.039999999999999994]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.004905405919998884 (ACTUAL), 0.00490540570572204 (DESIRED)&#10; [1]: 0.9852259755134583 (ACTUAL), 0.9852259683067269 (DESIRED)&#10;Max absolute difference among violations: 7.20673132e-09&#10;Max relative difference among violations: 4.36817783e-08&#10; ACTUAL: array([0.004905, 0.985226], dtype=float32)&#10; DESIRED: array([0.004905, 0.985226])">voltage = np.float64(-0.039999999999999994)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.004905405919998884 (ACTUAL), 0.00490540570572204 (DESIRED)
+E            [1]: 0.9852259755134583 (ACTUAL), 0.9852259683067269 (DESIRED)
+E           Max absolute difference among violations: 7.20673132e-09
+E           Max relative difference among violations: 4.36817783e-08
+E            ACTUAL: array([0.004905, 0.985226], dtype=float32)
+E            DESIRED: array([0.004905, 0.985226])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.03]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.02297736518085003 (ACTUAL), 0.02297736991002561 (DESIRED)&#10; [1]: 0.7929593920707703 (ACTUAL), 0.792959404894767 (DESIRED)&#10;Max absolute difference among violations: 1.28239968e-08&#10;Max relative difference among violations: 2.05818838e-07&#10; ACTUAL: array([0.022977, 0.792959], dtype=float32)&#10; DESIRED: array([0.022977, 0.792959])">voltage = np.float64(-0.03)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.02297736518085003 (ACTUAL), 0.02297736991002561 (DESIRED)
+E            [1]: 0.7929593920707703 (ACTUAL), 0.792959404894767 (DESIRED)
+E           Max absolute difference among violations: 1.28239968e-08
+E           Max relative difference among violations: 2.05818838e-07
+E            ACTUAL: array([0.022977, 0.792959], dtype=float32)
+E            DESIRED: array([0.022977, 0.792959])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.01999999999999999]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.10087861865758896 (ACTUAL), 0.1008786227300567 (DESIRED)&#10; [1]: 0.18030451238155365 (ACTUAL), 0.18030451880605602 (DESIRED)&#10;Max absolute difference among violations: 6.42450237e-09&#10;Max relative difference among violations: 4.03699776e-08&#10; ACTUAL: array([0.100879, 0.180305], dtype=float32)&#10; DESIRED: array([0.100879, 0.180305])">voltage = np.float64(-0.01999999999999999)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.10087861865758896 (ACTUAL), 0.1008786227300567 (DESIRED)
+E            [1]: 0.18030451238155365 (ACTUAL), 0.18030451880605602 (DESIRED)
+E           Max absolute difference among violations: 6.42450237e-09
+E           Max relative difference among violations: 4.03699776e-08
+E            ACTUAL: array([0.100879, 0.180305], dtype=float32)
+E            DESIRED: array([0.100879, 0.180305])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[-0.009999999999999995]" time="0.003"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.3486451506614685 (ACTUAL), 0.34864513533394587 (DESIRED)&#10; [1]: 0.012475574389100075 (ACTUAL), 0.012475574093971015 (DESIRED)&#10;Max absolute difference among violations: 1.53275226e-08&#10;Max relative difference among violations: 4.39631048e-08&#10; ACTUAL: array([0.348645, 0.012476], dtype=float32)&#10; DESIRED: array([0.348645, 0.012476])">voltage = np.float64(-0.009999999999999995)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.3486451506614685 (ACTUAL), 0.34864513533394587 (DESIRED)
+E            [1]: 0.012475574389100075 (ACTUAL), 0.012475574093971015 (DESIRED)
+E           Max absolute difference among violations: 1.53275226e-08
+E           Max relative difference among violations: 4.39631048e-08
+E            ACTUAL: array([0.348645, 0.012476], dtype=float32)
+E            DESIRED: array([0.348645, 0.012476])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.0]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.7185943722724915 (ACTUAL), 0.7185943925708561 (DESIRED)&#10; [1]: 0.0007250309572555125 (ACTUAL), 0.0007250305818660101 (DESIRED)&#10;Max absolute difference among violations: 2.02983647e-08&#10;Max relative difference among violations: 5.17756784e-07&#10; ACTUAL: array([0.718594, 0.000725], dtype=float32)&#10; DESIRED: array([0.718594, 0.000725])">voltage = np.float64(0.0)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.7185943722724915 (ACTUAL), 0.7185943925708561 (DESIRED)
+E            [1]: 0.0007250309572555125 (ACTUAL), 0.0007250305818660101 (DESIRED)
+E           Max absolute difference among violations: 2.02983647e-08
+E           Max relative difference among violations: 5.17756784e-07
+E            ACTUAL: array([0.718594, 0.000725], dtype=float32)
+E            DESIRED: array([0.718594, 0.000725])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.010000000000000009]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.9241418242454529 (ACTUAL), 0.9241418199787566 (DESIRED)&#10; [1]: 4.1668878111522645e-05 (ACTUAL), 4.166888146995182e-05 (DESIRED)&#10;Max absolute difference among violations: 4.26669633e-09&#10;Max relative difference among violations: 8.0598016e-08&#10; ACTUAL: array([9.241418e-01, 4.166888e-05], dtype=float32)&#10; DESIRED: array([9.241418e-01, 4.166888e-05])">voltage = np.float64(0.010000000000000009)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.9241418242454529 (ACTUAL), 0.9241418199787566 (DESIRED)
+E            [1]: 4.1668878111522645e-05 (ACTUAL), 4.166888146995182e-05 (DESIRED)
+E           Max absolute difference among violations: 4.26669633e-09
+E           Max relative difference among violations: 8.0598016e-08
+E            ACTUAL: array([9.241418e-01, 4.166888e-05], dtype=float32)
+E            DESIRED: array([9.241418e-01, 4.166888e-05])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.020000000000000018]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.9830850958824158 (ACTUAL), 0.9830850867332735 (DESIRED)&#10; [1]: 2.393247768850415e-06 (ACTUAL), 2.3932470012905856e-06 (DESIRED)&#10;Max absolute difference among violations: 9.14914222e-09&#10;Max relative difference among violations: 3.20719019e-07&#10; ACTUAL: array([9.830851e-01, 2.393248e-06], dtype=float32)&#10; DESIRED: array([9.830851e-01, 2.393247e-06])">voltage = np.float64(0.020000000000000018)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.9830850958824158 (ACTUAL), 0.9830850867332735 (DESIRED)
+E            [1]: 2.393247768850415e-06 (ACTUAL), 2.3932470012905856e-06 (DESIRED)
+E           Max absolute difference among violations: 9.14914222e-09
+E           Max relative difference among violations: 3.20719019e-07
+E            ACTUAL: array([9.830851e-01, 2.393248e-06], dtype=float32)
+E            DESIRED: array([9.830851e-01, 2.393247e-06])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.03]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.9964063763618469 (ACTUAL), 0.9964063974185798 (DESIRED)&#10; [1]: 1.3745099636253144e-07 (ACTUAL), 1.3745075389942726e-07 (DESIRED)&#10;Max absolute difference among violations: 2.10567329e-08&#10;Max relative difference among violations: 1.76399981e-06&#10; ACTUAL: array([9.964064e-01, 1.374510e-07], dtype=float32)&#10; DESIRED: array([9.964064e-01, 1.374508e-07])">voltage = np.float64(0.03)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.9964063763618469 (ACTUAL), 0.9964063974185798 (DESIRED)
+E            [1]: 1.3745099636253144e-07 (ACTUAL), 1.3745075389942726e-07 (DESIRED)
+E           Max absolute difference among violations: 2.10567329e-08
+E           Max relative difference among violations: 1.76399981e-06
+E            ACTUAL: array([9.964064e-01, 1.374510e-07], dtype=float32)
+E            DESIRED: array([9.964064e-01, 1.374508e-07])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.04000000000000001]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 2 / 2 (100%)&#10;Mismatch at indices:&#10; [0]: 0.9992445707321167 (ACTUAL), 0.9992445943672705 (DESIRED)&#10; [1]: 7.894159992360983e-09 (ACTUAL), 7.894157839492999e-09 (DESIRED)&#10;Max absolute difference among violations: 2.36351538e-08&#10;Max relative difference among violations: 2.72716612e-07&#10; ACTUAL: array([9.992446e-01, 7.894160e-09], dtype=float32)&#10; DESIRED: array([9.992446e-01, 7.894158e-09])">voltage = np.float64(0.04000000000000001)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 2 / 2 (100%)
+E           Mismatch at indices:
+E            [0]: 0.9992445707321167 (ACTUAL), 0.9992445943672705 (DESIRED)
+E            [1]: 7.894159992360983e-09 (ACTUAL), 7.894157839492999e-09 (DESIRED)
+E           Max absolute difference among violations: 2.36351538e-08
+E           Max relative difference among violations: 2.72716612e-07
+E            ACTUAL: array([9.992446e-01, 7.894160e-09], dtype=float32)
+E            DESIRED: array([9.992446e-01, 7.894158e-09])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.05000000000000002]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 1 / 2 (50%)&#10;Mismatch at index:&#10; [0]: 0.999841570854187 (ACTUAL), 0.9998415637808975 (DESIRED)&#10;Max absolute difference among violations: 7.07328951e-09&#10;Max relative difference among violations: 7.07441035e-09&#10; ACTUAL: array([9.998416e-01, 4.533820e-10], dtype=float32)&#10; DESIRED: array([9.998416e-01, 4.533822e-10])">voltage = np.float64(0.05000000000000002)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 1 / 2 (50%)
+E           Mismatch at index:
+E            [0]: 0.999841570854187 (ACTUAL), 0.9998415637808975 (DESIRED)
+E           Max absolute difference among violations: 7.07328951e-09
+E           Max relative difference among violations: 7.07441035e-09
+E            ACTUAL: array([9.998416e-01, 4.533820e-10], dtype=float32)
+E            DESIRED: array([9.998416e-01, 4.533822e-10])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_pure_kinetics_matches_independent_scalar[0.06]" time="0.002"><failure message="AssertionError: &#10;Not equal to tolerance rtol=2e-15, atol=2e-16&#10;&#10;Mismatched elements: 1 / 2 (50%)&#10;Mismatch at index:&#10; [0]: 0.9999667406082153 (ACTUAL), 0.9999667858050522 (DESIRED)&#10;Max absolute difference among violations: 4.51968368e-08&#10;Max relative difference among violations: 4.51983381e-08&#10; ACTUAL: array([9.999667e-01, 2.603895e-11], dtype=float32)&#10; DESIRED: array([9.999668e-01, 2.603893e-11])">voltage = np.float64(0.06)
+
+    @pytest.mark.parametrize("voltage", np.linspace(-0.12, 0.06, 19))
+    def test_pure_kinetics_matches_independent_scalar(voltage):
+        expected = reference.kinetics(float(voltage))
+        for xp in (np, __import__("jax.numpy", fromlist=["array"])):
+            target, tau = kinetics(xp.array([voltage]), xp=xp)
+&gt;           np.testing.assert_allclose(
+                target[:, 0], (expected.m_inf, expected.h_inf), atol=2e-16, rtol=2e-15
+            )
+E           AssertionError: 
+E           Not equal to tolerance rtol=2e-15, atol=2e-16
+E           
+E           Mismatched elements: 1 / 2 (50%)
+E           Mismatch at index:
+E            [0]: 0.9999667406082153 (ACTUAL), 0.9999667858050522 (DESIRED)
+E           Max absolute difference among violations: 4.51968368e-08
+E           Max relative difference among violations: 4.51983381e-08
+E            ACTUAL: array([9.999667e-01, 2.603895e-11], dtype=float32)
+E            DESIRED: array([9.999668e-01, 2.603893e-11])
+
+tests/unit/test_voltage_gated_membrane.py:135: AssertionError</failure></testcase><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[1]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[6]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[10]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[11]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[12]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_complete_rhs_matches_independent_physics[13]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_baseline]" time="2.481" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_depolarized]" time="0.161" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_channel_only]" time="0.153" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_block_release]" time="2.496" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_short_pulse]" time="2.388" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[divalent_baseline]" time="2.458" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[divalent_depolarized]" time="0.174" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[divalent_channel_only]" time="0.167" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[divalent_block_release]" time="2.724" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[divalent_short_pulse]" time="2.476" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_equal_open_a]" time="2.507" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_equal_open_b]" time="0.081" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_gates_only]" time="2.640" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_all_frozen_cases_against_saved_implicit_reference[mono_channel_off]" time="0.160" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_eager_jit_padding_and_observation_noninterference" time="12.942" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_ids_bind_roles_without_species_name_or_position_dispatch" time="0.043" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_disabled_current_retains_evolving_gates_and_ionic_ledgers[availability]" time="1.413" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_disabled_current_retains_evolving_gates_and_ionic_ledgers[abundance]" time="0.027" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_disabled_current_retains_evolving_gates_and_ionic_ledgers[max_permeability_m_per_s]" time="0.025" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_rejected_real_stage_does_not_advance_or_clip[False]" time="4.739" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_rejected_real_stage_does_not_advance_or_clip[True]" time="1.459" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_unsampled_cubic_interior_is_checked[gate]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_unsampled_cubic_interior_is_checked[voltage]" time="0.002" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[amount]" time="0.007" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[leak_transferred]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[pump_cycles]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[dissipated_energy_pJ]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[gate]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_padding_is_refused[channel_transferred]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_ids]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_active]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_membranes]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_species]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_laws]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_permeability]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_corrupt_channel_binding_or_parameters_are_refused[channel_abundance]" time="0.006" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_channel_capacity_budget_precedes_allocation[scalar]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_channel_capacity_budget_precedes_allocation[window]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_channel_capacity_budget_precedes_allocation[batch]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_channel_capacity_budget_precedes_allocation[batch_window]" time="0.001" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_event_restart_future_branch_and_fresh_process" time="5.480" /><testcase classname="tests.unit.test_voltage_gated_membrane" name="test_scalar_windows_batches_and_unequal_clock_cohorts" time="22.260" /></testsuite></testsuites>

@@ -1,0 +1,127 @@
+{
+  "schema": "cells.multispecies_instantaneous_panel@1",
+  "task": "SPEC-005",
+  "scope": "synthetic instantaneous reference only; no trajectories or biological acceptance",
+  "tolerances": {
+    "rtol": 3e-12,
+    "flux_fmol_per_s": 1e-14,
+    "nernst_flux_fmol_per_s": 1e-12,
+    "potential_J_per_mol": 1e-9,
+    "cycle_energy_J_per_mol": 1e-8,
+    "voltage_V": 1e-10,
+    "amount_fmol": 1e-12,
+    "current_A": 1e-23,
+    "power_W": 1e-23,
+    "negative_dissipation_W": 1e-24,
+    "bath_charge_mM": 1e-12
+  },
+  "passive_probe": {
+    "decimal_precision": 70,
+    "valences": [-3, -2, -1, 1, 2, 3],
+    "dimensionless_voltages": [-40, -1, -1e-8, 0, 1e-8, 1, 40],
+    "concentration_pairs_mM": [[0.001, 2], [12, 145], [140, 5], [10, 156], [2, 2]],
+    "temperature_K": 298.15,
+    "area_m2": 1e-9,
+    "permeability_m_per_s": 1e-10
+  },
+  "reduction_voltages_V": [-0.2, -0.065, -1e-10, 0, 1e-10, 0.02, 0.2],
+  "pump_drive_probes_J_per_mol": [-50000, 0, 50000],
+  "stall_offsets_J_per_mol": [-1000, 0, 1000],
+  "cases": [
+    {
+      "id": "nakcl_reduction",
+      "assembly": {
+        "schema": "cells.multispecies_membrane_reference@1",
+        "species": [
+          {"id": "Na", "valence": 1},
+          {"id": "K", "valence": 1},
+          {"id": "Cl", "valence": -1}
+        ],
+        "cell": {
+          "id": "cell_0",
+          "volume_pL": 1.0,
+          "initial_amount_fmol": {"Na": 12.0, "K": 140.0, "Cl": 10.0},
+          "fixed_charge_equivalent_fmol": -142.00673677527658,
+          "initial_voltage_V": -0.065
+        },
+        "bath": {
+          "id": "bath_0",
+          "temperature_K": 298.15,
+          "concentration_mM": {"Na": 145.0, "K": 5.0, "Cl": 150.0},
+          "background_charge_mM": 0.0
+        },
+        "membrane": {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "bath_0",
+          "area_m2": 1e-9,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {"Na": 1e-10, "K": 1e-9, "Cl": 1e-10}
+          },
+          "pump": {
+            "id": "nak_0",
+            "law": "nak_atp_affinity_tanh@1",
+            "roles": {"sodium": "Na", "potassium": "K"},
+            "stoichiometry": {"Na": -3, "K": 2},
+            "capacity_fmol_per_s": 0.02,
+            "drive_J_per_mol": -50000.0
+          }
+        }
+      },
+      "ledger_probe": {
+        "passive_fmol": {"Na": 0.02, "K": -0.01, "Cl": 0.005},
+        "pump_cycles_fmol": 0.003
+      }
+    },
+    {
+      "id": "divalent_with_background",
+      "assembly": {
+        "schema": "cells.multispecies_membrane_reference@1",
+        "species": [
+          {"id": "Na", "valence": 1},
+          {"id": "K", "valence": 1},
+          {"id": "Cl", "valence": -1},
+          {"id": "Ca", "valence": 2}
+        ],
+        "cell": {
+          "id": "cell_0",
+          "volume_pL": 1.0,
+          "initial_amount_fmol": {"Na": 12.0, "K": 140.0, "Cl": 10.0, "Ca": 0.001},
+          "fixed_charge_equivalent_fmol": -142.00873677527658,
+          "initial_voltage_V": -0.065
+        },
+        "bath": {
+          "id": "bath_0",
+          "temperature_K": 298.15,
+          "concentration_mM": {"Na": 145.0, "K": 5.0, "Cl": 156.0, "Ca": 2.0},
+          "background_charge_mM": 2.0
+        },
+        "membrane": {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "bath_0",
+          "area_m2": 1e-9,
+          "specific_capacitance_F_per_m2": 0.01,
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {"Na": 1e-10, "K": 1e-9, "Cl": 1e-10, "Ca": 1e-11}
+          },
+          "pump": {
+            "id": "nak_0",
+            "law": "nak_atp_affinity_tanh@1",
+            "roles": {"sodium": "Na", "potassium": "K"},
+            "stoichiometry": {"Na": -3, "K": 2},
+            "capacity_fmol_per_s": 0.02,
+            "drive_J_per_mol": -50000.0
+          }
+        }
+      },
+      "ledger_probe": {
+        "passive_fmol": {"Na": 0.02, "K": -0.01, "Cl": 0.005, "Ca": 0.0002},
+        "pump_cycles_fmol": 0.003
+      }
+    }
+  ]
+}

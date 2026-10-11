@@ -1,0 +1,869 @@
+{
+  "execution": {
+    "backend": "cpu",
+    "capacity": 7,
+    "channel_capacity": 0,
+    "dt": 0.0001,
+    "edge_capacity": 12,
+    "extracellular_capacity": 1,
+    "jit": true,
+    "material_balance_atol_fmol": {
+      "Cl": 2e-11,
+      "K": 2e-11,
+      "Na": 2e-11
+    },
+    "max_steps": 100000,
+    "max_trace_bytes": 268435456,
+    "membrane_capacity": 7,
+    "precision": "float64",
+    "solver": "rk4"
+  },
+  "experiment": {
+    "channel_controls": [],
+    "end_time": 0.02,
+    "junction_controls": [
+      {
+        "junction_id": "junction_0",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_1",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_2",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_3",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_4",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_5",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_6",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_7",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_8",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_9",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_10",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      },
+      {
+        "junction_id": "junction_11",
+        "schedule": [
+          {
+            "open_fraction": 1.0,
+            "time": 0
+          },
+          {
+            "open_fraction": 0.5,
+            "time": 0.005
+          },
+          {
+            "open_fraction": 0.0,
+            "time": 0.01
+          },
+          {
+            "open_fraction": 1.0,
+            "time": 0.015
+          }
+        ]
+      }
+    ],
+    "membrane_controls": [
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_0",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_1",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_2",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_3",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_4",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_5",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "leak": [
+          {
+            "multipliers": {
+              "Cl": 1.0,
+              "K": 1.0,
+              "Na": 1.0
+            },
+            "time": 0.0
+          }
+        ],
+        "membrane_id": "membrane_6",
+        "pump": [
+          {
+            "multiplier": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ],
+    "observation_times": [
+      0.0,
+      0.003713,
+      0.005,
+      0.01,
+      0.015,
+      0.02
+    ]
+  },
+  "model": {
+    "cells": [
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -68.25087407181402,
+          "id": "cell_0",
+          "initial_amount_fmol": {
+            "Cl": 3.6584827313820227,
+            "K": 68.27668980701006,
+            "Na": 3.6320489857623492
+          },
+          "initial_voltage_V": -0.020573879941257294,
+          "volume_pL": 0.460614559625212
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.8982837049796536e-10,
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -66.63245156070748,
+          "id": "cell_1",
+          "initial_amount_fmol": {
+            "Cl": 3.9245077488853,
+            "K": 66.35430133846228,
+            "Na": 4.20224517181489
+          },
+          "initial_voltage_V": -0.013907213274749855,
+          "volume_pL": 0.4558462907444638
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.863915169870302e-10,
+          "id": "membrane_1",
+          "inside": "cell_1",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -64.75993579700193,
+          "id": "cell_2",
+          "initial_amount_fmol": {
+            "Cl": 4.166599373141808,
+            "K": 64.18658942527874,
+            "Na": 4.739732661046016
+          },
+          "initial_voltage_V": -0.007240546607505364,
+          "volume_pL": 0.4491832606546999
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.839490463666793e-10,
+          "id": "membrane_2",
+          "inside": "cell_2",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -64.93791024126357,
+          "id": "cell_3",
+          "initial_amount_fmol": {
+            "Cl": 4.54134098117871,
+            "K": 64.05059463076579,
+            "Na": 5.428639359891615
+          },
+          "initial_voltage_V": -0.0005738799409941017,
+          "volume_pL": 0.4567553253082257
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.897146887330887e-10,
+          "id": "membrane_3",
+          "inside": "cell_3",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -63.950582143005555,
+          "id": "cell_4",
+          "initial_amount_fmol": {
+            "Cl": 4.840272555473904,
+            "K": 62.760332626228816,
+            "Na": 6.03070409547561
+          },
+          "initial_voltage_V": 0.006092786725719652,
+          "volume_pL": 0.45623012693402465
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.8825186414031455e-10,
+          "id": "membrane_4",
+          "inside": "cell_4",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -63.84528977260093,
+          "id": "cell_5",
+          "initial_amount_fmol": {
+            "Cl": 5.210313706297759,
+            "K": 62.33194608316596,
+            "Na": 6.724040705557431
+          },
+          "initial_voltage_V": 0.012759453392520041,
+          "volume_pL": 0.46207333837976106
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 2.8985391932140514e-10,
+          "id": "membrane_5",
+          "inside": "cell_5",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      },
+      {
+        "cell": {
+          "fixed_charge_equivalent_fmol": -117.3472413437859,
+          "id": "cell_6",
+          "initial_amount_fmol": {
+            "Cl": 10.291684011825442,
+            "K": 113.9503456438611,
+            "Na": 13.689275504043644
+          },
+          "initial_voltage_V": 0.019426120059112404,
+          "volume_pL": 0.8617615649509048
+        },
+        "channel": null,
+        "membrane": {
+          "area_m2": 3.4558496659169997e-10,
+          "id": "membrane_6",
+          "inside": "cell_6",
+          "outside": "outside",
+          "passive": {
+            "law": "constant_field@1",
+            "permeability_m_per_s": {
+              "Cl": 0.0,
+              "K": 0.0,
+              "Na": 0.0
+            }
+          },
+          "pump": null,
+          "specific_capacitance_F_per_m2": 0.01
+        }
+      }
+    ],
+    "extracellular": {
+      "fixed_charge_equivalent_fmol": -195.75,
+      "id": "outside",
+      "initial_amount_fmol": {
+        "Cl": 810.0,
+        "K": 27.0,
+        "Na": 978.75
+      },
+      "volume_pL": 6.75
+    },
+    "id": "finite_extracellular@3",
+    "junctions": [
+      {
+        "area_m2": 5.825317809332204e-11,
+        "from_cell": "cell_0",
+        "gate": {
+          "initial_gate": 0.24,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.05,
+          "threshold_voltage_V": 0.01
+        },
+        "id": "junction_0",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      },
+      {
+        "area_m2": 5.7554939330037774e-11,
+        "from_cell": "cell_0",
+        "gate": {
+          "initial_gate": 0.64,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.1,
+          "threshold_voltage_V": 0.015
+        },
+        "id": "junction_1",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_5"
+      },
+      {
+        "area_m2": 5.7513896887967e-11,
+        "from_cell": "cell_0",
+        "gate": {
+          "initial_gate": 0.96,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.2,
+          "threshold_voltage_V": 0.02
+        },
+        "id": "junction_2",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_1"
+      },
+      {
+        "area_m2": 5.884055808628286e-11,
+        "from_cell": "cell_1",
+        "gate": {
+          "initial_gate": 0.24,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.05,
+          "threshold_voltage_V": 0.01
+        },
+        "id": "junction_3",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_2"
+      },
+      {
+        "area_m2": 5.667902067092806e-11,
+        "from_cell": "cell_1",
+        "gate": {
+          "initial_gate": 0.64,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.1,
+          "threshold_voltage_V": 0.015
+        },
+        "id": "junction_4",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      },
+      {
+        "area_m2": 5.7016806692219477e-11,
+        "from_cell": "cell_2",
+        "gate": {
+          "initial_gate": 0.96,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.2,
+          "threshold_voltage_V": 0.02
+        },
+        "id": "junction_5",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_3"
+      },
+      {
+        "area_m2": 5.6030560529393776e-11,
+        "from_cell": "cell_2",
+        "gate": {
+          "initial_gate": 0.24,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.05,
+          "threshold_voltage_V": 0.01
+        },
+        "id": "junction_6",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      },
+      {
+        "area_m2": 5.6594315116849386e-11,
+        "from_cell": "cell_3",
+        "gate": {
+          "initial_gate": 0.64,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.1,
+          "threshold_voltage_V": 0.015
+        },
+        "id": "junction_7",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_4"
+      },
+      {
+        "area_m2": 5.870118897467249e-11,
+        "from_cell": "cell_3",
+        "gate": {
+          "initial_gate": 0.96,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.2,
+          "threshold_voltage_V": 0.02
+        },
+        "id": "junction_8",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      },
+      {
+        "area_m2": 5.80967370223378e-11,
+        "from_cell": "cell_4",
+        "gate": {
+          "initial_gate": 0.24,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.05,
+          "threshold_voltage_V": 0.01
+        },
+        "id": "junction_9",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_5"
+      },
+      {
+        "area_m2": 5.785360400037625e-11,
+        "from_cell": "cell_4",
+        "gate": {
+          "initial_gate": 0.64,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.1,
+          "threshold_voltage_V": 0.015
+        },
+        "id": "junction_10",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      },
+      {
+        "area_m2": 5.806741432300732e-11,
+        "from_cell": "cell_5",
+        "gate": {
+          "initial_gate": 0.96,
+          "law": "betse_rate_junction_relaxation@1",
+          "minimum_open_fraction": 0.2,
+          "threshold_voltage_V": 0.02
+        },
+        "id": "junction_11",
+        "permeability_m_per_s": {
+          "Cl": 7.807692307692307e-10,
+          "K": 7.538461538461537e-10,
+          "Na": 5.115384615384615e-10
+        },
+        "to_cell": "cell_6"
+      }
+    ],
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      }
+    ],
+    "temperature_K": 298.15
+  },
+  "schema_version": 1
+}

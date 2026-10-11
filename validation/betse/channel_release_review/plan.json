@@ -1,0 +1,32 @@
+{
+  "schema": "cells.betse_channel_release_review_plan@1",
+  "decision": "D103",
+  "reference": "REF-004d",
+  "capture": "runs/ref-004d-release-preflight-2026-09-15/capture-01",
+  "capture_files": 605,
+  "capture_source_inputs": 165,
+  "fresh_phases": 144,
+  "saved_single_updates": 288,
+  "input_applications": 288,
+  "observer_pairs": 72,
+  "zero_flux_mean_rows": 1776,
+  "mean_extent": 30,
+  "original_failure_preserved": true,
+  "captured_values_changed": false,
+  "physical_tolerances_changed": false,
+  "simulators_rerun": false,
+  "reference_integrator_rerun": false,
+  "production_changed": false,
+  "release_response_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "total_timeout_seconds": 180,
+    "max_file_bytes": 33554432,
+    "max_artifact_bytes": 67108864
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "model_contract": "bitsey_emt_pair@1-design",
+  "scope": "Frozen instantaneous and future trajectory inputs; not a production Cells config or assay result",
+  "source_revision": "b2cb370aaecbc8299f259bc4251d5396c81f19a6",
+  "clock": "source_nominal_time",
+  "primary_rows": ["Na", "K", "Cl", "miR200_total", "Zeb_mRNA_total", "ZEB_prot"],
+  "context_rows": ["P", "snail", "ST"],
+  "parameters": {
+    "F": 96485.0, "R": 8.314, "q": 1.602e-19, "kb": 1.3806e-23,
+    "T": 310.0, "cell_r": 5e-6, "cm": 0.05, "tm": 7.5e-9, "GJ_len": 1e-7,
+    "deltaGATP": -37000.0, "cATP": 1.5, "cADP": 0.15, "cPi": 0.15,
+    "alpha_NaK": 1e-7, "KmNK_Na": 12.0, "KmNK_K": 0.2, "KmNK_ATP": 0.5
+  },
+  "bath_ions": [145.0, 5.0, 140.0],
+  "membrane_diffusion": [[1e-18, 1e-18], [1e-18, 1e-18], [1e-18, 1e-18]],
+  "junction_ion_diffusion": [1e-18, 1e-18, 1e-18],
+  "junction_mirna_diffusion": 2e-15,
+  "gate_parameters": {
+    "45/45": [-110.0, -0.0102, -110.0, -0.0102, 0.06, 1.56],
+    "40/37": [407.0, 0.0263, 245.0, 0.0195, 0.28, 1.02]
+  },
+  "preparation": {
+    "capture": "runs/m1b-2026-09-08/source-reference/reference.json",
+    "capture_sha256": "17c75594bbe2bf59af64030f9b4346fe93e334a786c2c7685f6479cb63627596",
+    "meaning": "Accepted full packets from independent native isolated helpers, not proven equilibria or current memory-harness references",
+    "requested_end_time": 10000.0,
+    "settings": {
+      "time_step": 0.005, "adaptive_timestep": true,
+      "sim_integ_max_delt_Vm": 0.0001, "sim_integ_max_delt_cc": 0.001,
+      "use_implicit": false
+    },
+    "cells": [
+      {
+        "label": "E", "accepted_time": 10000.315, "last_sample_time": 9956.355,
+        "seed_regulation": [100.0, 0.0, 0.0],
+        "raw_packet": {
+          "Na": 5.921982071896217, "K": 146.66586752396915, "Cl": 72.59207476573407,
+          "P": 80.0, "snail": 72.0,
+          "miR200_total": 83.99620026441187, "Zeb_mRNA_total": 5.951805843082533,
+          "ZEB_prot": 0.4100548570488943, "miR200_free": 83.99620026441187,
+          "bound0": 0.006707465417945945, "bound1": 0.014085040212810117,
+          "bound2": 0.029577246461187326, "bound3": 0.062109407925593954,
+          "bound4": 0.130423856660556, "bound5": 0.2738777095829253,
+          "bound6": 0.5751171735521456
+        }
+      },
+      {
+        "label": "M", "accepted_time": 10000.27, "last_sample_time": 9960.305,
+        "seed_regulation": [0.0, 100.0, 100.0],
+        "raw_packet": {
+          "Na": 5.921981973875867, "K": 146.6661333539646, "Cl": 72.59233865816385,
+          "P": 80.0, "snail": 72.0,
+          "miR200_total": 8.817966186145588, "Zeb_mRNA_total": 68.62439028585246,
+          "ZEB_prot": 62.72131153718953, "miR200_free": 8.817966186145588,
+          "bound0": 20.766358796513455, "bound1": 4.577926241925566,
+          "bound2": 1.0091999700992047, "bound3": 0.22247728028484814,
+          "bound4": 0.04904492836843564, "bound5": 0.010811912998869948,
+          "bound6": 0.002383477080789579
+        }
+      }
+    ],
+    "adapter": "Select all six evolving rows plus P/snail by name; append inert ST=0; recompute free/bound diagnostics; new phase clock starts at zero"
+  },
+  "constructed_initials": {
+    "seeds": {
+      "primary": [[10.0, 10.0], [125.0, 125.0], [55.0, 55.0], [100.0, 0.0], [0.0, 100.0], [0.0, 100.0]],
+      "context": [[80.0, 80.0], [72.0, 72.0], [0.0, 0.0]]
+    },
+    "voltage_gradient": {
+      "primary": [[10.0, 10.0], [125.0, 125.0], [55.0, 55.0], [100.0, 0.0], [0.0, 100.0], [0.0, 100.0]],
+      "context": [[80.006, 79.994], [72.0, 72.0], [0.0, 0.0]]
+    }
+  },
+  "default_controls": {
+    "leak": [[1.0, 1.0], [1.0, 1.0], [1.0, 1.0]],
+    "pump": [1.0, 1.0], "ion_contact": 1.0, "mirna_contact": 1.0
+  },
+  "cases": [
+    {"id": "S00", "name": "prepared_blocked", "initial": "prepared", "gate": null, "end_time": 10.0, "controls": {"ion_contact": 0.0, "mirna_contact": 0.0}},
+    {"id": "S01", "name": "prepared_active", "initial": "prepared", "gate": null, "end_time": 10.0},
+    {"id": "S02", "name": "prepared_ionic_only", "initial": "prepared", "gate": null, "end_time": 10.0, "controls": {"mirna_contact": 0.0}},
+    {"id": "S03", "name": "prepared_mirna_only", "initial": "prepared", "gate": null, "end_time": 10.0, "controls": {"ion_contact": 0.0}},
+    {"id": "S04", "name": "prepared_algebraic_gate", "initial": "prepared", "gate": "45/45", "end_time": 10.0},
+    {"id": "S05", "name": "heterotypic_gradient", "initial": "voltage_gradient", "gate": "40/37", "end_time": 1.0},
+    {"id": "S06", "name": "reverse_edge_keep_hemichannels", "initial": "voltage_gradient", "gate": "40/37", "end_time": 1.0, "edge": [1, 0]},
+    {"id": "S07", "name": "reverse_edge_swap_hemichannels", "initial": "voltage_gradient", "gate": "40/37", "end_time": 1.0, "edge": [1, 0], "swap_hemichannels": true},
+    {"id": "S08", "name": "zero_base_membranes", "initial": "voltage_gradient", "gate": null, "end_time": 1.0, "membrane_diffusion": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]},
+    {"id": "S09", "name": "zero_ic_leak_controls", "initial": "voltage_gradient", "gate": null, "end_time": 1.0, "controls": {"leak": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+    {"id": "S10", "name": "zero_voltage_seed_boundary", "initial": "seeds", "gate": "45/45", "end_time": 1.0},
+    {"id": "S11", "name": "independent_membrane_controls", "initial": "voltage_gradient", "gate": "45/45", "end_time": 1.0, "controls": {"leak": [[0.0, 1.0], [1.0, 0.25], [0.5, 0.0]], "pump": [0.0, 1.0]}},
+    {"id": "S12", "name": "blocked_then_release", "initial": "prepared", "gate": null, "end_time": 1.0, "controls": {"ion_contact": 0.0, "mirna_contact": 0.0}, "events": [{"time": 0.137, "set": {"ion_contact": 1.0, "mirna_contact": 1.0}}]},
+    {"id": "S13", "name": "gated_route_pulse", "initial": "voltage_gradient", "gate": "45/45", "end_time": 1.0, "events": [{"time": 0.137, "set": {"mirna_contact": 0.0, "pump": [0.0, 1.0]}}, {"time": 0.274, "set": {"mirna_contact": 1.0, "pump": [1.0, 1.0]}}]}
+  ],
+  "future_numerical_gate": {
+    "status": "not run or qualified",
+    "observation_times": [0.0, 0.001, 0.0037, 0.01, 0.017, 0.1, 0.137, 0.274, 0.5, 1.0, 3.17, 10.0],
+    "reference_methods": ["Radau", "BDF"],
+    "reference_rtol": 1e-10, "reference_atol": 1e-11,
+    "reference_refinement_factor": 0.1,
+    "candidate_rk4_steps": [0.01, 0.005, 0.0025, 0.001],
+    "candidate_error_targets": {
+      "ionic_concentration": {"atol": 5e-8, "rtol": 5e-10},
+      "regulatory_coordinate": {"atol": 5e-6, "rtol": 5e-8},
+      "voltage": {"atol": 5e-7, "rtol": 0.0},
+      "gate_scale": {"atol": 5e-6, "rtol": 5e-8},
+      "membrane_and_junction_flux": {"atol": 1e-13, "rtol": 1e-5}
+    },
+    "reference_agreement_fraction_of_candidate_targets": 0.1,
+    "notes": "Split at events, exact carryover, right-continuous controls; compare full trajectories and instantaneous fluxes, not labels alone. Native adaptive-Euler trajectory/clock refinement and all-state domain checks remain separate gates; no step is accepted by this freeze."
+  }
+}

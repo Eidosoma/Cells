@@ -1,0 +1,15 @@
+{
+  "auditor_sha256": "6cd9e355a7ea964c783157abfbb8bb6c47cbc61f9895ca6b3e3dd073807bf070",
+  "cases": 12,
+  "independent_component_solves": 5,
+  "payloads": 194,
+  "qualification_status": "pass",
+  "rejected_candidates": 0,
+  "replayed_arrays": 89,
+  "replayed_sample_rows": 256283,
+  "selected_dt_s": 0.002,
+  "solver_rerun": false,
+  "source_files": 26,
+  "status": "pass",
+  "verification_sha256": "bd9ee2599899dd3b34fa2072b308c2dd435485bb538a7775f24396baf664c8a7"
+}

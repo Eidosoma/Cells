@@ -1,0 +1,315 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "resources": {
+    "max_wall_seconds": 5400,
+    "native_timeout_seconds": 2400,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2
+  },
+  "kind": "native_betse_active_spatial_refinement@1",
+  "scope": "Unchanged betse_spatial_nak_kv1p5@1: freely evolving native-matched active tissue through 256 us at three timesteps, common-completed-time refinement of fields, gates, pump/channel rates and material ledgers. Includes the original active and passive qualification regressions.",
+  "duration_s": 0.000256,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
+  ],
+  "temperature_K": 298.15,
+  "initial_gate": [
+    0.2,
+    0.6
+  ],
+  "pump_parameters": {
+    "cATP": 1.5,
+    "cADP": 0.1,
+    "cPi": 0.1,
+    "KmNK_Na": 12.0,
+    "KmNK_K": 0.2,
+    "KmNK_ATP": 0.5,
+    "deltaGATP": -37000.0
+  },
+  "cases": [
+    {
+      "id": "pump",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 0.0
+    },
+    {
+      "id": "channel",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 0.0,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08
+    },
+    {
+      "id": "coupled",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08
+    },
+    {
+      "id": "partial",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        0.0,
+        0.4,
+        1.0
+      ],
+      "channel_permeability_m_s": 1e-08
+    }
+  ],
+  "tests": [
+    "tests/unit/test_betse_spatial_active_refinement.py",
+    "tests/unit/test_betse_spatial_trajectory.py",
+    "tests/unit/test_betse_spatial_active.py"
+  ],
+  "expected_cpu_skips": 3,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_trajectory.py::test_cpu_gpu_complete_trajectories",
+    "tests/unit/test_betse_spatial_active.py::test_active_cpu_gpu",
+    "tests/unit/test_betse_spatial_active_refinement.py::test_long_active_cpu_gpu"
+  ],
+  "required_evidence": [
+    "native-spatial-trajectory-uniform-0",
+    "native-spatial-trajectory-uniform-1",
+    "native-spatial-trajectory-diffusion-0",
+    "native-spatial-trajectory-diffusion-1",
+    "native-spatial-trajectory-junction-0",
+    "native-spatial-trajectory-junction-1",
+    "native-spatial-trajectory-combined-0",
+    "native-spatial-trajectory-combined-1",
+    "native-spatial-boundary-field",
+    "native-spatial-replay",
+    "native-spatial-negative-controls",
+    "active-native-trajectory-off-0",
+    "active-native-trajectory-off-1",
+    "active-native-trajectory-pump-0",
+    "active-native-trajectory-pump-1",
+    "active-native-trajectory-channel-0",
+    "active-native-trajectory-channel-1",
+    "active-native-trajectory-coupled-0",
+    "active-native-trajectory-coupled-1",
+    "active-native-trajectory-blocked-0",
+    "active-native-trajectory-blocked-1",
+    "active-native-trajectory-partial-0",
+    "active-native-trajectory-partial-1",
+    "active-native-controls",
+    "active-native-replay",
+    "active-native-negative-controls",
+    "long-active-native-trajectory-pump-0",
+    "long-active-native-trajectory-pump-1",
+    "long-active-native-trajectory-pump-2",
+    "long-active-native-trajectory-channel-0",
+    "long-active-native-trajectory-channel-1",
+    "long-active-native-trajectory-channel-2",
+    "long-active-native-trajectory-coupled-0",
+    "long-active-native-trajectory-coupled-1",
+    "long-active-native-trajectory-coupled-2",
+    "long-active-native-trajectory-partial-0",
+    "long-active-native-trajectory-partial-1",
+    "long-active-native-trajectory-partial-2",
+    "long-active-native-refinement-pump",
+    "long-active-native-refinement-channel",
+    "long-active-native-refinement-coupled",
+    "long-active-native-refinement-partial",
+    "long-active-native-prefix",
+    "long-active-native-replay",
+    "long-active-native-negative-controls",
+    "long-active-prerequisite"
+  ],
+  "required_gpu_evidence": [
+    "native-spatial-trajectory-cpu-gpu",
+    "active-native-cpu-gpu",
+    "long-active-native-cpu-gpu"
+  ],
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-active-20261010-01",
+    "registration_sha256": "68f17ca0ca2a2083b7764e7f450d5c9227996bc4f360a00c562b9e943a1a2873",
+    "require_completed_cpu_and_gpu": true
+  },
+  "checks": [
+    "Pinned installed native sources; fresh observed/bare pairs and exact complete native order including separate dynamic channel updates",
+    "Independent pump stoichiometry, semi-implicit Kv1p5 gates, channel flux and per-update spatial accounting",
+    "Complete freely evolving native trajectories, concentrations, fields, ordinary and channel fluxes, separate pump-cycle/channel-transfer ledgers and material checks",
+    "Off/blocked controls, pump-only/channel-only/coupled/partial availability; detection of omitted or doubled transfers and wrong channel sampling order",
+    "Complete disk/window/world reorder/partition replay, invalid-state retention, complete CPU/L4 saved histories",
+    "Original short passive regression panel retained; GPU-busy and measured SM-active with coverage",
+    "Require a complete passing CPU/L4 predecessor matching its frozen registration, source hashes, evidence hashes, test counts and declared skips before any long active capture",
+    "Native and Cells temporal self-refinement at 64,128,256 us using completed update times; require resolved m gate and patch voltage signals in every active case",
+    "Bitwise original 64-us native and Cells state/rate prefixes; derived readouts retain registered numerical tolerances; native raw linspace labels excluded from physical prefix comparisons",
+    "Long-horizon 13-array disk/window/world replay and complete CPU/L4 histories; no production or tolerance changes"
+  ],
+  "scope_exclusions": [
+    "One Na/K pump law and one Kv1p5 population; no general active channel catalog, calcium, dynamic gap-junction gates, mechanics, noise or assembly in this native compatibility component",
+    "256-us matched-step panel and temporal self-refinement only; order is claimed only for resolved differences, not continuum accuracy, spatial convergence or long-term stability",
+    "Maintained ATP/ADP/Pi and native nonconservative exterior stencil: separate material ledgers, no finite-ATP or thermodynamic energy-balance claim",
+    "Dense static geometry up to 256 grid sites; no ordinary model registry, sparse/distributed tissue or remote multi-GPU execution qualification",
+    "Declared synthetic initial states, not biological calibration; whole GPU phase includes compilation and host checks"
+  ],
+  "automatic_followup": false,
+  "refinement": {
+    "common_completed_times_s": [
+      6.4e-05,
+      0.000128,
+      0.000256
+    ],
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "required_resolved_final_fields": {
+      "pump": [
+        "vm",
+        "m_gate"
+      ],
+      "channel": [
+        "vm",
+        "m_gate"
+      ],
+      "coupled": [
+        "vm",
+        "m_gate"
+      ],
+      "partial": [
+        "vm",
+        "m_gate"
+      ]
+    }
+  }
+}

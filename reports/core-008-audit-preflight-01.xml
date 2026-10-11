@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="28" time="10.427" timestamp="2026-09-10T15:52:09.151304+00:00" hostname="eidosoma-vm-2"><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_saved_complete_graph_has_independent_readouts_and_dense_domain" time="3.973" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[amount]" time="0.178" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[gate]" time="0.177" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[junction_gate]" time="0.191" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[junction_transferred]" time="0.183" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[junction_dissipated_energy_pJ]" time="0.179" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[channel_transferred]" time="0.178" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[leak_transferred]" time="0.267" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[pump_cycles]" time="0.278" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[dissipated_energy_pJ]" time="0.196" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_gate]" time="0.195" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_transferred]" time="0.181" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_gate_inf]" time="0.185" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_gate_rate_per_s]" time="0.211" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_availability]" time="0.356" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_open_fraction]" time="0.281" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_effective_permeability_m_per_s]" time="0.291" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_flux_fmol_per_s]" time="0.216" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_delta_mu_J_per_mol]" time="0.190" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_current_A]" time="0.187" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_junction_dissipation_rate_pJ_per_s]" time="0.190" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_channel_availability]" time="0.187" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_channel_flux_fmol_per_s]" time="0.189" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_bath_exchange_fmol]" time="0.184" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_species_balance_fmol]" time="0.186" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_global_species_balance_fmol]" time="0.187" /><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_global_charge_balance_C]" time="0.259"><failure message="Failed: DID NOT RAISE any of (ValueError, AssertionError)">saved = (PosixPath('/tmp/pytest-of-robert/pytest-360/test_rehashed_corrupt_real_val25/run'), {'id': 'star_divalent', 'graph': ...time_s': 0, 'value': {'leak': [[...], [...], [...]], 'pump': [1, 1, 1], 'channel': [1, 1], 'junction': [1, 1]}}], ...})
+field = 'observed_global_charge_balance_C'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "amount",
+            "gate",
+            "junction_gate",
+            "junction_transferred",
+            "junction_dissipated_energy_pJ",
+            "channel_transferred",
+            "leak_transferred",
+            "pump_cycles",
+            "dissipated_energy_pJ",
+            "observed_junction_gate",
+            "observed_junction_transferred",
+            "observed_junction_gate_inf",
+            "observed_junction_gate_rate_per_s",
+            "observed_junction_availability",
+            "observed_junction_open_fraction",
+            "observed_junction_effective_permeability_m_per_s",
+            "observed_junction_flux_fmol_per_s",
+            "observed_junction_delta_mu_J_per_mol",
+            "observed_junction_current_A",
+            "observed_junction_dissipation_rate_pJ_per_s",
+            "observed_channel_availability",
+            "observed_channel_flux_fmol_per_s",
+            "observed_bath_exchange_fmol",
+            "observed_species_balance_fmol",
+            "observed_global_species_balance_fmol",
+            "observed_global_charge_balance_C",
+            "observed_resolved_energy_balance_pJ",
+        ],
+    )
+    def test_rehashed_corrupt_real_values_cannot_pass(saved, field):
+        path, case = saved
+        with np.load(path / "trajectory.npz", allow_pickle=False) as source:
+            arrays = dict(source)
+        # Corrupt a REAL route/cell, not only padding. At time &gt; 0 to evade t=0 identity alone.
+        arrays[field][1].flat[0] += 1
+        np.savez(path / "trajectory.npz", **arrays)
+        manifest = json.loads((path / "manifest.json").read_text())
+        manifest["files_sha256"]["trajectory.npz"] = sha(path / "trajectory.npz")
+        (path / "manifest.json").write_text(json.dumps(manifest))
+&gt;       with pytest.raises((ValueError, AssertionError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, AssertionError)
+
+tests/unit/test_physical_ionic_graph_build_audit.py:76: Failed</failure></testcase><testcase classname="tests.unit.test_physical_ionic_graph_build_audit" name="test_rehashed_corrupt_real_values_cannot_pass[observed_resolved_energy_balance_pJ]" time="0.256"><failure message="Failed: DID NOT RAISE any of (ValueError, AssertionError)">saved = (PosixPath('/tmp/pytest-of-robert/pytest-360/test_rehashed_corrupt_real_val26/run'), {'id': 'star_divalent', 'graph': ...time_s': 0, 'value': {'leak': [[...], [...], [...]], 'pump': [1, 1, 1], 'channel': [1, 1], 'junction': [1, 1]}}], ...})
+field = 'observed_resolved_energy_balance_pJ'
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "amount",
+            "gate",
+            "junction_gate",
+            "junction_transferred",
+            "junction_dissipated_energy_pJ",
+            "channel_transferred",
+            "leak_transferred",
+            "pump_cycles",
+            "dissipated_energy_pJ",
+            "observed_junction_gate",
+            "observed_junction_transferred",
+            "observed_junction_gate_inf",
+            "observed_junction_gate_rate_per_s",
+            "observed_junction_availability",
+            "observed_junction_open_fraction",
+            "observed_junction_effective_permeability_m_per_s",
+            "observed_junction_flux_fmol_per_s",
+            "observed_junction_delta_mu_J_per_mol",
+            "observed_junction_current_A",
+            "observed_junction_dissipation_rate_pJ_per_s",
+            "observed_channel_availability",
+            "observed_channel_flux_fmol_per_s",
+            "observed_bath_exchange_fmol",
+            "observed_species_balance_fmol",
+            "observed_global_species_balance_fmol",
+            "observed_global_charge_balance_C",
+            "observed_resolved_energy_balance_pJ",
+        ],
+    )
+    def test_rehashed_corrupt_real_values_cannot_pass(saved, field):
+        path, case = saved
+        with np.load(path / "trajectory.npz", allow_pickle=False) as source:
+            arrays = dict(source)
+        # Corrupt a REAL route/cell, not only padding. At time &gt; 0 to evade t=0 identity alone.
+        arrays[field][1].flat[0] += 1
+        np.savez(path / "trajectory.npz", **arrays)
+        manifest = json.loads((path / "manifest.json").read_text())
+        manifest["files_sha256"]["trajectory.npz"] = sha(path / "trajectory.npz")
+        (path / "manifest.json").write_text(json.dumps(manifest))
+&gt;       with pytest.raises((ValueError, AssertionError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, AssertionError)
+
+tests/unit/test_physical_ionic_graph_build_audit.py:76: Failed</failure></testcase></testsuite></testsuites>

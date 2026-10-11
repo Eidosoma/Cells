@@ -1,0 +1,19 @@
+{
+  "status": "interrupted_not_accepted",
+  "reason": "Stopped before editing the SPEC-008 checker to replace string-based all-off labels with numeric control predicates and test that the extra gate assertions execute.",
+  "scope": "Incomplete current-production regression context, not a scientific acceptance result",
+  "recorded_utc": "2026-09-10 17:32:20 UTC",
+  "driver_exit_code": 1,
+  "stop_signals": ["SIGINT to confirmed pytest PID 1442310", "SIGTERM to the same still-running pytest PID"],
+  "log": "current-production.log",
+  "junit_completed": false,
+  "matrix_receipt_completed": false,
+  "partial_output": "81 progress markers, including one failure marker, without a completed failure traceback or test receipt; this partial output is not classified as passing",
+  "checker_before_sha256": "f30c0eaf3f46505c3a9d3a8f638107c2277f43da7c2a5ffbaaf24c10e57d0f03",
+  "reference_before_sha256": "ce06463420fa29cd0d3fe9b49584644348e5467e7b9a2cbc1bcc21224a0f99bd",
+  "test_before_sha256": "39cdf99b055c8b4f1b854724dd5473c41922bc05073502c53a308898f37f3ca2",
+  "original_reference_receipt": "reports/spec-008-design-check.json",
+  "original_reference_receipt_sha256": "f2cca4c7f92d4abdbeec4770d61c79e9e6e7d7ac0f23b29269aa16d1c6daa734",
+  "physical_inputs_or_tolerances_changed": false,
+  "production_changed": false
+}

@@ -1,0 +1,622 @@
+{
+  "schema": "cells.spatial_extracellular_design_panel@1",
+  "scope": "SPEC-009 synthetic instantaneous arithmetic only; no integration, production, biology or GPU qualification",
+  "tolerances": {
+    "rtol": 2e-12,
+    "voltage_V": 1e-10,
+    "charge_C": 1e-20,
+    "current_A": 1e-23,
+    "flux_fmol_per_s": 1e-12,
+    "power_W": 1e-23
+  },
+  "cases": [
+    {
+      "id": "single_outside",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            10
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            120,
+            120
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": []
+    },
+    {
+      "id": "binary_unequal",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            10
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            24,
+            24
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.8,
+          "initial_amount_fmol": [
+            48,
+            48
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "binary_equal",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            10
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            24,
+            24
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.8,
+          "initial_amount_fmol": [
+            48,
+            48
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            1e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "uniform_outside",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            10
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            24,
+            24
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.8,
+          "initial_amount_fmol": [
+            96,
+            96
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ternary_loop",
+      "species_ids": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "valence": [
+        1,
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            130,
+            140
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            29,
+            1,
+            30
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        },
+        {
+          "id": "middle",
+          "kind": "extracellular",
+          "volume_pL": 0.3,
+          "initial_amount_fmol": [
+            30,
+            6,
+            36
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.5,
+          "initial_amount_fmol": [
+            40,
+            15,
+            55
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10,
+            3e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "middle",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1.33e-9,
+            1.96e-9,
+            2.03e-9
+          ]
+        },
+        {
+          "id": "face_1",
+          "left": "middle",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1.33e-9,
+            1.96e-9,
+            2.03e-9
+          ]
+        },
+        {
+          "id": "face_2",
+          "left": "far",
+          "right": "near",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1.33e-9,
+            1.96e-9,
+            2.03e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "two_cells_chain",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell_a",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            10,
+            10
+          ],
+          "fixed_charge_equivalent_fmol": -0.006736775276570412
+        },
+        {
+          "id": "cell_b",
+          "kind": "intracellular",
+          "volume_pL": 2,
+          "initial_amount_fmol": [
+            40,
+            40
+          ],
+          "fixed_charge_equivalent_fmol": -0.003109280896878652
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            24,
+            24
+          ],
+          "fixed_charge_equivalent_fmol": 0.006736775276570412
+        },
+        {
+          "id": "middle",
+          "kind": "extracellular",
+          "volume_pL": 0.3,
+          "initial_amount_fmol": [
+            27,
+            27
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.5,
+          "initial_amount_fmol": [
+            30,
+            30
+          ],
+          "fixed_charge_equivalent_fmol": 0.003109280896878652
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell_a",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.065,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        },
+        {
+          "id": "membrane_1",
+          "inside": "cell_b",
+          "outside": "far",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.03,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "middle",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        },
+        {
+          "id": "face_1",
+          "left": "middle",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "divalent",
+      "species_ids": [
+        "Ca",
+        "Cl"
+      ],
+      "valence": [
+        2,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "cell",
+          "kind": "intracellular",
+          "volume_pL": 1,
+          "initial_amount_fmol": [
+            1,
+            2
+          ],
+          "fixed_charge_equivalent_fmol": -0.004145707862504869
+        },
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            0.4,
+            0.8
+          ],
+          "fixed_charge_equivalent_fmol": 0.004145707862504869
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.8,
+          "initial_amount_fmol": [
+            0.8,
+            1.6
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell",
+          "outside": "near",
+          "area_m2": 1e-9,
+          "capacitance_F": 1e-11,
+          "initial_voltage_V": -0.04,
+          "permeability_m_per_s": [
+            1e-10,
+            2e-10
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure_bulk",
+      "species_ids": [
+        "Cation",
+        "Anion"
+      ],
+      "valence": [
+        1,
+        -1
+      ],
+      "temperature_K": 310,
+      "compartments": [
+        {
+          "id": "near",
+          "kind": "extracellular",
+          "volume_pL": 0.2,
+          "initial_amount_fmol": [
+            24,
+            24
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        },
+        {
+          "id": "far",
+          "kind": "extracellular",
+          "volume_pL": 0.8,
+          "initial_amount_fmol": [
+            48,
+            48
+          ],
+          "fixed_charge_equivalent_fmol": 0
+        }
+      ],
+      "membranes": [],
+      "faces": [
+        {
+          "id": "face_0",
+          "left": "near",
+          "right": "far",
+          "area_m2": 1e-12,
+          "length_m": 0.00001,
+          "diffusivity_m2_per_s": [
+            1e-9,
+            2e-9
+          ]
+        }
+      ]
+    }
+  ]
+}

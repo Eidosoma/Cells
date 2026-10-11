@@ -1,0 +1,39 @@
+{
+  "schema": "cells.betse_passive_trajectory_protocol@1",
+  "scope": "REF-003d v2: refine the failed native step ladder; unchanged 1 ms seven-cell passive/blocked model, Cells runs and numerical criteria",
+  "revision": 2,
+  "duration_s": 0.001,
+  "cases": [{"id": "passive", "availability": 1.0}, {"id": "blocked", "availability": 0.0}],
+  "native_steps_s": [0.000025, 0.0000125, 0.00000625],
+  "cells_steps_s": [0.0001, 0.00005],
+  "cells_backends": ["jax_eager", "jax_jit"],
+  "backend_clarification": "The existing full runner has eager and compiled JAX paths. NumPy supplies ordinary readouts and independent arithmetic, not a third production integrator. No new NumPy stepping loop is invented for this comparison.",
+  "common_times_s": [0.0, 0.0001, 0.0002, 0.00030000000000000003, 0.0004, 0.0005, 0.0006000000000000001, 0.0007, 0.0008, 0.0009000000000000001, 0.001],
+  "native_constant_profiles": ["source_constants", "matched_constants"],
+  "native_observer": "Read-only sys.setprofile hook at actual FULL-loop/step/storage boundaries; no monkeypatch or substitute solver",
+  "noninterference": "Every native case/profile/step is repeated without the observer; all exported ordinary and final arrays must match dtype, shape and bytes",
+  "ordinary_sample_indices": "1..N-1; raw labels k*N*dt/(N-1), elapsed after update (k+1)*dt; observer includes unsampled index 0",
+  "instantaneous_tolerances": {
+    "voltage_V": 2e-10, "concentration_mM": 2e-12, "amount_fmol": 2e-12,
+    "flux_fmol_per_s": 2e-10, "current_A": 2e-20, "charge_density_C_per_m3": 2e-8, "relative": 2e-11
+  },
+  "cumulative_amount_atol_fmol": 1e-10,
+  "trajectory_tolerances": {
+    "voltage_V": 5e-6, "amount_fmol": 1e-7, "transfer_fmol": 1e-7,
+    "flux_fmol_per_s": 1e-5, "current_A": 1e-15, "relative": 1e-5
+  },
+  "refinement": {
+    "native_finest_difference_within_trajectory_limits": true,
+    "native_contraction_max": 0.75,
+    "contraction_floor": "corresponding instantaneous absolute tolerance",
+    "cells_refinement_and_backend_limits": "instantaneous_tolerances",
+    "cross_program": "matched-constant native finest step versus Cells finest step, both actual runner backends; compare increments, not large absolute inventories"
+  },
+  "forbidden_warning_categories": ["RuntimeWarning", "FloatingPointError"],
+  "worker_timeout_seconds": 90,
+  "total_timeout_seconds": 180,
+  "max_artifact_bytes": 134217728,
+  "cpu_affinity": "0-3",
+  "model_calls_during_separate_audit": 0,
+  "failure_policy": "Retain errors, incomplete coverage and failed comparisons; no automatic retry or post-result tolerance change"
+}

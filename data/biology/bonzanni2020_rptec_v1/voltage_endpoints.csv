@@ -1,0 +1,4 @@
+condition_id,mean_voltage_mV_approx,digitization_bound_mV,published_sem_mV,n_cells,n_experiments,source_panel,extraction
+C1,-39,2,,52,9,Figure_3C,manual_visual_nearest_1_mV
+C2,-24,2,,26,3,Figure_3C,manual_visual_nearest_1_mV
+C3,-18,2,,20,3,Figure_3C,manual_visual_nearest_1_mV

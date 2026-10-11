@@ -1,0 +1,140 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "automatic_retry": false,
+  "baseline_files": 880,
+  "biology_validated": false,
+  "changed_baseline_files": {
+    "PROGRESS.md": {
+      "after": "106dae3082bff2bbb6268032ef8016224692d4b3640ce2d1c7db4ac0d4d46b38",
+      "before": "a34b0eae10a49c3d1111b2908f3232a90fb75f21a0a6db0289f7a61ade470abd"
+    },
+    "README.md": {
+      "after": "bc81fae93bb0c5aa5c15f8cf2d616ab682b5f03a94d863cf45791e25926ecff5",
+      "before": "b48ca55234d83651b56e0ba9259af10f1e65bdac78acef0fa15dda1886bd3368"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "6ef91b85defa29ab2a21790483e5f0517161b2b62519732069ece96845fa32eb",
+      "before": "d51f71e65320dee30873eabaf232be8a505c3081bb9a65927708d2fd92839fc3"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "8bbabb7c91abde5311186c0b4566ca90b455170e68b3cbc289d0bf29d2bf5bc9",
+      "before": "6c8688627e7d720ae67b4d274625690417c5f0b1c01b9789084a88d8645da596"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "7f6d4e5781ec89d6d7f4542cf4c0860254da2c1a8b62a3f658398d42fb7591c4",
+      "before": "6bb68f673ed64eeb9958d882818674617dd42ce6309e22bdd363682aef13f2b6"
+    },
+    "docs/DECISIONS.md": {
+      "after": "2efa5152b9c90b30b6c3751fd0557e8f85ce762247f135a09a4539e74cbef353",
+      "before": "eb98d0db798c29c63aca5ae7f71ce71d51a177d9084d75622e8855f8d1354935"
+    },
+    "validation/betse/README.md": {
+      "after": "f538cc4656f07ce18a879379f25ccefb01463256068feef90f9f4c7b877097ee",
+      "before": "e2e2f51524aa47c088ee227b19658bb4deeb19237488a76e48c7012b1a45e648"
+    }
+  },
+  "event_dispatch_calls": 30,
+  "finished_utc": "2026-09-12T20:32:50.623130+00:00",
+  "full_loop_observer_runtime_tested": false,
+  "gpu_tested": false,
+  "native_attempt": "runs/ref-003e0-v2-2026-09-12/preflight-01",
+  "native_attempt_files_sha256": {
+    "completion.json": "e98c0bbef8d871baed90a20ca55ac4c76adb1351b156a1739e6f5d8ace477b8c",
+    "preparation-00/INITS/world_1.betse.gz": "a852f4093709744b12fd4c8f79ff638ec78236f448898d79fd42aac0493edb5b",
+    "preparation-00/core.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-00/dispatch.json": "2a5a6ce4329119f3997db3377f1a6f25076231d8c640e41ee743113844b16c62",
+    "preparation-00/dynamics.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-00/final.json": "e78ee3ee94c06d9266391c78d99ab3a47f1ba656d43670abc4eeb46e161e4fa3",
+    "preparation-00/metadata.json": "d53d26f78b55ca6f88b6289fe4c11409df8ff01f661d39d39f8bf6ade2cec763",
+    "preparation-00/native.yaml": "b917937e837098aa913a7e031186f6261b47c2c45b320e4fd011c959532e3708",
+    "preparation-00/ready.json": "d56512323c65a98a0ec7e26fa605b2e1a8e345f0a3098b264434df8e7efab232",
+    "preparation-00/result.json": "1c4cdbea0bfde19b5796b8793b1c55a6d8eca24f51e3dbe80d62414174fddc95",
+    "preparation-01/INITS/world_1.betse.gz": "b7bf9e5dc1f3c22cb84f46d1a9a5c67d805b9d0f53eec65e50f69d9fdd499925",
+    "preparation-01/core.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-01/dispatch.json": "2a5a6ce4329119f3997db3377f1a6f25076231d8c640e41ee743113844b16c62",
+    "preparation-01/dynamics.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-01/final.json": "e22ecc7d59346e3a7faf0debb048f9b3a1f199756a1660b171340b96c8958fe7",
+    "preparation-01/metadata.json": "8e02c90a3050c97336bedc95c3d6e52557ec91dfcd25f83a281b48f043adff10",
+    "preparation-01/native.yaml": "410ab1b4b0e7260b4b2317548ccb96151273f5110d85f441717102a9b4a90ab7",
+    "preparation-01/ready.json": "666d97fbd9977da4872cc87855185e2597fefe21e6acedc9087eb1c0329fe454",
+    "preparation-01/result.json": "2ccdd82e61bb080c154aca01fdd89fbe9e8dd9291b93a3ef1426bb95b77e0907",
+    "preparation-02/INITS/world_1.betse.gz": "536d248364980d65fc7525504becc682b750fb5b3dc4a172d2b2dbc7b2818fcf",
+    "preparation-02/core.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-02/dispatch.json": "2a5a6ce4329119f3997db3377f1a6f25076231d8c640e41ee743113844b16c62",
+    "preparation-02/dynamics.json": "7e0aa483980650a5ad868bc89a783d2f188961fa03175cb78d75a45a878c0527",
+    "preparation-02/final.json": "18705f776a10d7289955309c8768cefb38c988aaa06fe2bf034522b9ed9a895e",
+    "preparation-02/metadata.json": "2f66348cc4d9ce2c4304543ed3f3e5d549921adae56ce7f1874280b32da35328",
+    "preparation-02/native.yaml": "36fe75bece5bbd62395fb48cb19eb7dd9ec6805578345979842a7b471e18a63d",
+    "preparation-02/ready.json": "874a56ba99383360d88166c668d9780a16fc4af3109bd8f29e9bedb0b682c98c",
+    "preparation-02/result.json": "aa64b40ad145125c0547dc075b915a231325ed5d20caefcc98d38a3ff5e147f8",
+    "preparation-03/INITS/world_1.betse.gz": "f0dd0520b406e815be1e8bbfd849944f575166241140240d0ff905e90ee21cac",
+    "preparation-03/core.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-03/dispatch.json": "f04bc80a6cb6285bb0de4fd2885c1ab4aaafd9d7034f7bc054b1853834c5925f",
+    "preparation-03/dynamics.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-03/final.json": "5adebc22e3e3a98bffabbf7f7f5149fd8d0c727794497687845fbae284c83310",
+    "preparation-03/metadata.json": "458fcec5b6d0ab9d0ab9532a16b473783cac05077b5e36510f0f00a87dea2280",
+    "preparation-03/native.yaml": "5b200dc2e4206f5a5b7583f90c431b8e9af17a36076d56c428e5e79e64bd1ca3",
+    "preparation-03/ready.json": "a2a0bfea1e53febe70e14eaa190314f82176f1be649b1fd3950799068a0a0b3e",
+    "preparation-03/result.json": "1f8950af701c6134cfa51fc03400aa069b1f0763ea9b23bd6a520c5d1294b3bd",
+    "preparation-04/INITS/world_1.betse.gz": "eb792c66b82b3cce01435110e2b60794154df8d2393649569136674ae3c47ef9",
+    "preparation-04/core.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-04/dispatch.json": "f04bc80a6cb6285bb0de4fd2885c1ab4aaafd9d7034f7bc054b1853834c5925f",
+    "preparation-04/dynamics.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-04/final.json": "2dfa09f45116262aeac4f30ac6070a7dfc1786b4e19efed3f0bf620c672a3460",
+    "preparation-04/metadata.json": "393abb8ce5e6adf1658f075457a51bb9e189b3ff82428f93d92e8fc47e289f71",
+    "preparation-04/native.yaml": "f3adbee607d638095023ac0d35a93bcc42253e5100bea8718cda9cfa44b542d5",
+    "preparation-04/ready.json": "a19d48584155cc82cf2329eaf5f6295f391672176d2a0b7b5b75eac286d4d0b0",
+    "preparation-04/result.json": "7a2837bda51c9c3cf16a88aca70116fa34bd92881d299a33e57a654614aea9f3",
+    "preparation-05/INITS/world_1.betse.gz": "4d7e95fd4d1746bff7b019750fc59525ad91ffd9079bf20c0a185602cadbb4a3",
+    "preparation-05/core.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-05/dispatch.json": "f04bc80a6cb6285bb0de4fd2885c1ab4aaafd9d7034f7bc054b1853834c5925f",
+    "preparation-05/dynamics.json": "f54cca12c7311c2ed1314d87fac3e3ff6e629f0152b3ec4b26d21ff3db079696",
+    "preparation-05/final.json": "82d23dffdd9aa4a5aaf9228d953f54158d668972bdf004219f1f3b6a26edb765",
+    "preparation-05/metadata.json": "8e7aa6b398e33fd01319e0472661d03807e6231350e4e39f146a4638bc3bffe0",
+    "preparation-05/native.yaml": "eeb2216ff94e185c0220a84ac10eb2f31ed7417b062eb114ebc33a5e1f9a248d",
+    "preparation-05/ready.json": "c8936ba1a7d02c6f0a527ab74de91364dc57c11424d8a01ecddb3145bdd1aa4f",
+    "preparation-05/result.json": "931720286eb81101f26fde7d8220fa9c310072e92ecb7da2c98a6f5e43b9c939",
+    "registration.json": "5ea5de7646c22a820c415739de3eabbb2b590784aeccc1708799735e102f80a8",
+    "sources.zip": "428e66440bb709d408027f23eb8c5ec29a5b3f45a4062488bda181fc993c1d57",
+    "worker.json": "ec9cc989d5f016832ba9b3b621291ab3a78ca8187797fe372c92237d8e72be56",
+    "worker.log": "618eceacb541eca57b6589035cc9e2911d19fc2c2f5f59d760cb55c6f74618a7"
+  },
+  "native_elapsed_seconds": 17.359757540980354,
+  "native_terminal_filename": "completion.json",
+  "native_terminal_sha256": "e98c0bbef8d871baed90a20ca55ac4c76adb1351b156a1739e6f5d8ace477b8c",
+  "new_files_sha256_before_handoff": {
+    "docs/BETSE_PROFILE_BRIDGE_PREFLIGHT.md": "c6f57244b1ab7c78eb577feb023dffdfa9dfbf7f0118c70c7e83a2f5a1809815",
+    "reports/REF003E0_PROFILE_BRIDGE.md": "ce784d8bb46f9196704dcddb1122d7f3396dcc23c7f85085f9a1ab39d3e6741e",
+    "reports/ref-003e0-v2-checks-01.xml": "b6b282dd4a8228cce26d985a843644c1aa6766dbea280bda7504eaadec47a155",
+    "reports/ref-003e0-v2-checks-02.xml": "1b17d139da991583674172975ec09100d4dbc077e932055b683a765e313288cd",
+    "reports/ref-003e0-v2-preservation.json": "0b79644b93bced5571468f559970b08633bb14b805c077b6a35ebdf20f7bd464",
+    "validation/betse/profile_bridge.py": "15db26782f53625e8a41f2d4eb61c17a6775e3591926fb901230e4a143e0f3e6",
+    "validation/betse/profile_bridge_check.py": "1c5af8be979988ebad2afffcbb2b337326ac0713be66fc3469a14fde52ebb3b9",
+    "validation/betse/profile_bridge_context.py": "68b6c062431ad766e79f57dd0e5544732e914b1d36db501f5f53d16be3454406",
+    "validation/betse/profile_bridge_plan.json": "bc74998dec3b1a9a8a64cc3d076595e649ac5c0f013331964f52836b483e65c7",
+    "validation/betse/test_profile_bridge.py": "11c1fa38904042d6d9ac85eaf87b3bd21bef701c393c87372d9959f9c53b0645"
+  },
+  "preparations_passed": 6,
+  "preservation_sha256": "0b79644b93bced5571468f559970b08633bb14b805c077b6a35ebdf20f7bd464",
+  "prior_adapter_suite_rerun": false,
+  "prior_handoff_sha256": "31c0e7743b2e237c5a9ec8f683d10bf28c0968833d3dc35be8cd37ce29690b9c",
+  "production_changed": false,
+  "production_matrix_rerun": false,
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "327 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "schema": "cells.betse_profile_bridge_handoff@2",
+  "status": "preparation_checks_pass",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "1b17d139da991583674172975ec09100d4dbc077e932055b683a765e313288cd",
+    "skipped": 0,
+    "tests": 87
+  },
+  "trajectory_qualified": false,
+  "trajectory_run": false,
+  "unchanged_baseline_files": 873
+}

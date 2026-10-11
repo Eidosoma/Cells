@@ -1,0 +1,11 @@
+{
+  "cells": 7,
+  "comparisons": 19691,
+  "native_faces": 30,
+  "payloads": 14,
+  "production_calls": 0,
+  "status": "pass",
+  "trajectory_calls": 0,
+  "upstream_calls": 0,
+  "verification_sha256": "ca064838d5177543b7b51f8a226f89df18ecfea5d0e51cbf5e04243da42e91c8"
+}

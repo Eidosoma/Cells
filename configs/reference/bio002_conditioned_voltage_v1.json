@@ -1,0 +1,75 @@
+{
+  "protocol_id": "bio002_conditioned_voltage@1",
+  "created_utc_date": "2026-09-09",
+  "dataset_directory": "data/biology/bonzanni2020_rptec_v1",
+  "dataset_id": "bonzanni2020_rptec_endpoints@1",
+  "dataset_sha256": {
+    "README.md": "6a21e40ad97d912361b783655380f7f32358ec791939084d734b78dcce26e243",
+    "conditions.csv": "f4b7bd9f424766e41069303a82816be2f52b0c6df0cf8c79d5a337734564f519",
+    "manifest.json": "5706f14f8e07ac03706b6f1cb7850fdfc561b6a91ba269a6a234b294ebd63f20",
+    "sources/biolopen-9-048553-g2.jpg": "f7a79041283260cf6dd3d040edf9192ded7d6420f0dc70191b2f912fe690f475",
+    "sources/biolopen-9-048553-g3.jpg": "a4a74eb3f135398bed91ee6131ce513c1a2a4a7a0fb8da50627e48d1cd8f3fad",
+    "voltage_endpoints.csv": "abd4df465f4171885157a4e4a53768a7361fcf709923603860d2c14642bda15e"
+  },
+  "split": {
+    "fit": ["C1", "C2"],
+    "evaluation": ["C3"],
+    "quarantined": ["C4", "C5"],
+    "blinded": false,
+    "prospective": false
+  },
+  "boundary": {
+    "id": "conditioned_zero_current_endpoint@1",
+    "temperature_K": 298.15,
+    "applied_current_A": 0,
+    "external_Na_plus_K_mM": 145.4,
+    "external_Cl_mM": 151,
+    "external_Ca_mM": 1.8,
+    "external_Mg_mM": 1,
+    "background_positive_charge_mM_equivalents": 5.6,
+    "intracellular_ions": "unknown_but_assumed_fixed_across_conditions",
+    "intracellular_values_from_pipette_recipe": false,
+    "relative_permeabilities": "assumed_fixed_across_conditions",
+    "divalent_ions": "retained_for_bath_charge_only_no_modeled_current",
+    "pump_current": "omitted_in_this_comparator",
+    "intercellular_current": "omitted_not_experimentally_excluded",
+    "pipette_dialysis": "conditional_fixed_internal_approximation_not_a_dynamic_reservoir",
+    "dynamics": false
+  },
+  "model": {
+    "id": "conditioned_ghk_affine_exp@1",
+    "equation": "exp(V_mV / V_T_mV) = a + b * K_external_mM",
+    "free_parameters": ["a_dimensionless", "b_per_mM"],
+    "fit_method": "two_point_exact_solve_in_exponentiated_voltage",
+    "coefficient_policy": "finite_with_positive_log_argument_over_declared_dose_domain",
+    "dose_domain_mM": [5.4, 65.4],
+    "physical_parameter_identification": false,
+    "boltzmann_J_per_K": 1.380649e-23,
+    "elementary_charge_C": 1.602176634e-19
+  },
+  "reading_sensitivity": {
+    "fit_voltage_half_width_mV": 2,
+    "evaluation_voltage_half_width_mV": 2,
+    "method": "all_four_corners_of_fit_reading_box_with_shared_C1_baseline",
+    "probability_distribution": null,
+    "confidence_interval": false,
+    "numerical_sem_available": false,
+    "invalid_corner_policy": "refuse_not_clip_or_discard"
+  },
+  "comparison": {
+    "null_model": "unchanged_C1_voltage",
+    "signed_error": "predicted_minus_measured_mV",
+    "voltage_change_baseline": "same_C1_value_used_in_each_fit_corner",
+    "numerical_crosscheck_absolute_tolerance_mV": 1e-10,
+    "biological_acceptance": "not_assessable",
+    "no_refitting_on_evaluation": true
+  },
+  "execution": {
+    "backend": "python_standard_library_cpu_float64",
+    "trajectory_integration": false,
+    "gpu": false,
+    "optimization": false,
+    "production_model_change": false,
+    "long_E02_study": false
+  }
+}

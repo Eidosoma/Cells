@@ -1,0 +1,454 @@
+{
+  "created_utc": "2026-09-08T12:11:33.902990+00:00",
+  "harness_hashes": {
+    "capture_contact_reference.py": "6b2655c4570cac76c9ff55c45b940858b523e5f87611aa998d6a4266b74b8bd1",
+    "capture_emt_reference.py": "86e5062c4d771ba835260b9b369b19cb59107e1608ba2097601f6a2b51a4ef1e"
+  },
+  "license_named_paths": [],
+  "packages": {
+    "matplotlib": "3.11.1",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1"
+  },
+  "probes": {
+    "constants": {
+      "F": 96485,
+      "GJ_len": 1e-07,
+      "R": 8.314,
+      "T": 310,
+      "cell_sa": 3.1415926535897934e-10,
+      "cell_vol": 5.235987755982989e-16,
+      "cm": 0.05,
+      "kb": 1.3806e-23,
+      "q": 1.602e-19,
+      "tm": 7.5e-09
+    },
+    "full_rhs": {
+      "concentrations": [
+        [
+          12.0,
+          18.0
+        ],
+        [
+          125.0,
+          125.0
+        ],
+        [
+          55.0,
+          55.0
+        ],
+        [
+          82.00310929159973,
+          87.99378141680054
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "diffusion": [
+        2e-15,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "slopes": [
+        [
+          0.31455372839276624,
+          -0.31455372839276624
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "valences": [
+        1.0,
+        1.0,
+        -1.0,
+        -1.0,
+        0.0
+      ],
+      "vm": [
+        -0.009999999999990988,
+        0.019999999999981977
+      ]
+    },
+    "gates": [
+      {
+        "kind": "45/45",
+        "parameters": [
+          -110.0,
+          -0.0102,
+          -110.0,
+          -0.0102,
+          0.06,
+          1.56
+        ],
+        "records": [
+          {
+            "closed_blocked": 0.0007217895135051974,
+            "delta_v": -0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.0004626855855802547,
+            "ordinary": 0.06069402837837038,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.056672306535671034,
+            "delta_v": -0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.03632840162543015,
+            "ordinary": 0.11449260243814521,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.9447355305359283,
+            "delta_v": 0.0,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.6055996990614925,
+            "ordinary": 0.9683995485922388,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.056672306535671034,
+            "delta_v": 0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.03632840162543015,
+            "ordinary": 0.11449260243814521,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.0007217895135051974,
+            "delta_v": 0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.0004626855855802547,
+            "ordinary": 0.06069402837837038,
+            "time_independent": true
+          }
+        ]
+      },
+      {
+        "kind": "40/37",
+        "parameters": [
+          407.0,
+          0.0263,
+          245.0,
+          0.0195,
+          0.28,
+          1.02
+        ],
+        "records": [
+          {
+            "closed_blocked": 3.286271228758848e-10,
+            "delta_v": -0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 3.221834537998871e-10,
+            "ordinary": 0.28000000023841576,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.0038492448891606977,
+            "delta_v": -0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.0037737694991771546,
+            "ordinary": 0.2827925894293911,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 1.0114637838468306,
+            "delta_v": 0.0,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.9916311606341476,
+            "ordinary": 1.0138070588692694,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.006675816217124248,
+            "delta_v": 0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.006544917859925733,
+            "ordinary": 0.2848432392163451,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 3.726233406774753e-07,
+            "delta_v": 0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 3.653170006641915e-07,
+            "ordinary": 0.2800002703345805,
+            "time_independent": true
+          }
+        ]
+      },
+      {
+        "kind": "43/45",
+        "parameters": [
+          -27.0,
+          -0.1253,
+          -88.0,
+          -0.0223,
+          0.04,
+          1.03
+        ],
+        "records": [
+          {
+            "closed_blocked": 0.006381954055518751,
+            "delta_v": -0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.006196071898561893,
+            "ordinary": 0.046134111179576276,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.17885234756125498,
+            "delta_v": -0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.17364305588471357,
+            "ordinary": 0.21190662532586643,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.8769966723954377,
+            "delta_v": 0.0,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.8514530799955705,
+            "ordinary": 0.8829385491956149,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.9328798746147492,
+            "delta_v": 0.04,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.9057086161308244,
+            "ordinary": 0.9366515299695162,
+            "time_independent": true
+          },
+          {
+            "closed_blocked": 0.7957112034473195,
+            "delta_v": 0.08,
+            "fully_blocked": 0.0,
+            "on_fraction": 0.77253514897798,
+            "ordinary": 0.8048097974882003,
+            "time_independent": true
+          }
+        ]
+      }
+    ],
+    "limiting": [
+      {
+        "delta_v": 0.018517933159745863,
+        "normalized_flux": -0.3068528194400547,
+        "x": 0.6931471805599453
+      },
+      {
+        "delta_v": 0.02137258426966292,
+        "normalized_flux": -0.19999999999999996,
+        "x": 0.8
+      }
+    ],
+    "mirna": {
+      "charge_excluded": true,
+      "diffusion": 2e-15,
+      "effective_transport_valence": -1,
+      "free_concentrations": [
+        100.0,
+        40.0
+      ],
+      "output_is_total": true,
+      "primary_and_derived_unchanged_by_transport": true,
+      "records": [
+        {
+          "delta_v": -0.08,
+          "flux": 7.1889809479749355e-06
+        },
+        {
+          "delta_v": 0.0,
+          "flux": 1.2000000000000002e-06
+        },
+        {
+          "delta_v": 0.08,
+          "flux": -1.1955923791899736e-06
+        }
+      ],
+      "scale_at_40mv": {
+        "Cl": 0.11449260243814521,
+        "K": 0.11449260243814521,
+        "Na": 0.11449260243814521,
+        "P": 0.11449260243814521,
+        "ZEB_prot": 0.0,
+        "Zeb_mRNA_total": 0.0,
+        "bound0": 0.0,
+        "bound1": 0.0,
+        "bound2": 0.0,
+        "bound3": 0.0,
+        "bound4": 0.0,
+        "bound5": 0.0,
+        "bound6": 0.0,
+        "miR200_free": 0.0,
+        "miR200_total": 0.056672306535671034,
+        "snail": 0.0
+      },
+      "temporary_diffusion_reset": true,
+      "temporary_valence_reset": true,
+      "total_concentrations": [
+        100.0,
+        40.0
+      ]
+    },
+    "transport": [
+      {
+        "delta_v": -0.08,
+        "flux": [
+          -1.1980165706354881e-06,
+          -3.7928376161837083e-06,
+          7.4834714219624e-07,
+          0.0,
+          1.6e-07
+        ],
+        "reverse": [
+          1.1980165706354881e-06,
+          3.7928376161837083e-06,
+          -7.4834714219624e-07,
+          -0.0,
+          -1.6e-07
+        ]
+      },
+      {
+        "delta_v": -0.02,
+        "flux": [
+          -3.8950414265887207e-07,
+          -8.732094040459271e-07,
+          7.458678554906001e-08,
+          0.0,
+          1.6e-07
+        ],
+        "reverse": [
+          3.8950414265887207e-07,
+          8.732094040459271e-07,
+          -7.458678554906001e-08,
+          -0.0,
+          -1.6e-07
+        ]
+      },
+      {
+        "delta_v": 0.0,
+        "flux": [
+          -1.2000000000000002e-07,
+          1.0000000000000001e-07,
+          -1.5e-07,
+          -0.0,
+          1.6e-07
+        ],
+        "reverse": [
+          1.2000000000000002e-07,
+          -1.0000000000000001e-07,
+          1.5e-07,
+          0.0,
+          -1.6e-07
+        ]
+      },
+      {
+        "delta_v": 0.02,
+        "flux": [
+          5.966942843924804e-08,
+          1.1480716658956138e-06,
+          -4.8688017832359e-07,
+          -0.0,
+          1.6e-07
+        ],
+        "reverse": [
+          -5.966942843924804e-08,
+          -1.1480716658956138e-06,
+          4.8688017832359e-07,
+          0.0,
+          -1.6e-07
+        ]
+      },
+      {
+        "delta_v": 0.08,
+        "flux": [
+          5.986777137569922e-07,
+          4.2922866635824546e-06,
+          -1.4975207132943602e-06,
+          -0.0,
+          1.6e-07
+        ],
+        "reverse": [
+          -5.986777137569922e-07,
+          -4.2922866635824546e-06,
+          1.4975207132943602e-06,
+          0.0,
+          -1.6e-07
+        ]
+      }
+    ],
+    "transport_inputs": {
+      "concentrations": [
+        [
+          12.0,
+          18.0
+        ],
+        [
+          140.0,
+          130.0
+        ],
+        [
+          10.0,
+          15.0
+        ],
+        [
+          80.0,
+          80.0
+        ],
+        [
+          7.0,
+          3.0
+        ]
+      ],
+      "diffusion": [
+        2e-15,
+        1e-15,
+        3e-15,
+        0.0,
+        4e-15
+      ],
+      "valences": [
+        1.0,
+        1.0,
+        -1.0,
+        -1.0,
+        0.0
+      ]
+    }
+  },
+  "python": "3.13.5",
+  "repository": "https://gitlab.com/grodstein/bitsey.git",
+  "revision": "b2cb370aaecbc8299f259bc4251d5396c81f19a6",
+  "schema_version": 1,
+  "scope": "instantaneous source contact probes only; no trajectory or assay parity",
+  "source_hashes": {
+    "GJ_lib.py": "cc54f276b0cd4a88d7500c9555a4058ec639d0517bd2d38b039f6a3d8cc0e6da",
+    "README.md": "3e84ba97ec15abcb7f2ab4aa1fc2908fca40c34c784b62f01265d1591c68906b",
+    "cancer_GJ_sims/GRN_miRNA.py": "9b290b6d2cd9c195aa439e2776a841f8cb2a9a64c4c0deff636788430f4e2a42",
+    "cancer_GJ_sims/zombie.py": "8a4947327d6a58dba7c2b815610e3daa2615ee68de25d1347bacaee23f981152",
+    "edebug.py": "a71b04d20444d343a623eaa1761bd879802e64aaf8460304318da4015da96ee0",
+    "eplot.py": "6167186c73408df56c03f3464e1de3fc34aeae444e9abebdb4bc1185e2a4a5bd",
+    "sim.py": "b5ad4ac5e13db437b1e087369c592bf9139346a46c46cc320a01a9aaa4061e87",
+    "sim_toolbox.py": "53b2fafaf11f6915d8e11aef201ad5499a3ce174016ad246364dbf490e5abe8c"
+  },
+  "worker_timeout_seconds": 60
+}

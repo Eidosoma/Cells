@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "kind": "independent_worlds",
+  "worlds": [
+    {
+      "world_id": 101,
+      "simulation": {
+        "schema_version": 1,
+        "model": {
+          "id": "bitsey_emt_pair@1",
+          "units": {
+            "time": "bitsey_time_unit",
+            "ionic_concentration": "mol/m3",
+            "regulatory_coordinate": "bitsey_scaled_coordinate",
+            "voltage": "V",
+            "length": "m",
+            "diffusion": "m2/bitsey_time_unit"
+          },
+          "ionic_species": [
+            "Na",
+            "K",
+            "Cl"
+          ],
+          "regulatory_coordinates": [
+            "miR200_total",
+            "Zeb_mRNA_total",
+            "ZEB_prot"
+          ],
+          "population": {
+            "count": 2,
+            "cell_ids": [
+              101,
+              102
+            ]
+          },
+          "initial_state": {
+            "ions": [
+              [
+                5.921982071896217,
+                5.921981973875867
+              ],
+              [
+                146.66586752396915,
+                146.6661333539646
+              ],
+              [
+                72.59207476573407,
+                72.59233865816385
+              ]
+            ],
+            "regulation": [
+              [
+                83.99620026441187,
+                8.817966186145588
+              ],
+              [
+                5.951805843082533,
+                68.62439028585246
+              ],
+              [
+                0.4100548570488943,
+                62.72131153718953
+              ]
+            ]
+          },
+          "parameters": {
+            "parameter_set": "bitsey-b2cb370-emt-pair-simple",
+            "context": {
+              "P": [
+                80,
+                80
+              ],
+              "snail": [
+                72,
+                72
+              ],
+              "ST": [
+                0,
+                0
+              ]
+            },
+            "membranes": [
+              {
+                "membrane_id": 201,
+                "owner_cell_id": 101,
+                "bath_id": 401,
+                "diffusion": [
+                  1e-18,
+                  1e-18,
+                  1e-18
+                ]
+              },
+              {
+                "membrane_id": 202,
+                "owner_cell_id": 102,
+                "bath_id": 401,
+                "diffusion": [
+                  1e-18,
+                  1e-18,
+                  1e-18
+                ]
+              }
+            ],
+            "bath": {
+              "kind": "clamped",
+              "bath_id": 401,
+              "ions": [
+                145,
+                5,
+                140
+              ]
+            },
+            "contact": {
+              "contact_id": 301,
+              "from_cell_id": 101,
+              "to_cell_id": 102,
+              "ion_diffusion": [
+                1e-18,
+                1e-18,
+                1e-18
+              ],
+              "mirna_diffusion": 2e-15,
+              "gate_profile": null,
+              "swap_hemichannels": false
+            }
+          }
+        },
+        "experiment": {
+          "end_time": 1,
+          "source": {
+            "kind": "none"
+          },
+          "observation_times": [
+            0,
+            0.137,
+            0.274,
+            0.5,
+            0.713,
+            1
+          ],
+          "membrane_controls": [
+            {
+              "membrane_id": 201,
+              "leak": [
+                {
+                  "time": 0,
+                  "multipliers": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              ],
+              "pump": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                }
+              ]
+            },
+            {
+              "membrane_id": 202,
+              "leak": [
+                {
+                  "time": 0,
+                  "multipliers": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              ],
+              "pump": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                }
+              ]
+            }
+          ],
+          "contact_controls": [
+            {
+              "route": "ions",
+              "contact_id": 301,
+              "schedule": [
+                {
+                  "time": 0,
+                  "multiplier": 0
+                },
+                {
+                  "time": 0.137,
+                  "multiplier": 1
+                }
+              ]
+            },
+            {
+              "route": "mirna",
+              "contact_id": 301,
+              "schedule": [
+                {
+                  "time": 0,
+                  "multiplier": 0
+                },
+                {
+                  "time": 0.137,
+                  "multiplier": 1
+                },
+                {
+                  "time": 0.5,
+                  "multiplier": 0
+                },
+                {
+                  "time": 0.713,
+                  "multiplier": 1
+                }
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "dt": 0.01,
+          "capacity": 2,
+          "jit": true,
+          "max_steps": 200000,
+          "max_trace_bytes": 536870912,
+          "backend": "cpu",
+          "precision": "float64",
+          "solver": "rk4",
+          "edge_capacity": 1,
+          "membrane_capacity": 2
+        }
+      }
+    },
+    {
+      "world_id": 202,
+      "simulation": {
+        "schema_version": 1,
+        "model": {
+          "id": "bitsey_emt_pair@1",
+          "units": {
+            "time": "bitsey_time_unit",
+            "ionic_concentration": "mol/m3",
+            "regulatory_coordinate": "bitsey_scaled_coordinate",
+            "voltage": "V",
+            "length": "m",
+            "diffusion": "m2/bitsey_time_unit"
+          },
+          "ionic_species": [
+            "Na",
+            "K",
+            "Cl"
+          ],
+          "regulatory_coordinates": [
+            "miR200_total",
+            "Zeb_mRNA_total",
+            "ZEB_prot"
+          ],
+          "population": {
+            "count": 2,
+            "cell_ids": [
+              101,
+              102
+            ]
+          },
+          "initial_state": {
+            "ions": [
+              [
+                10,
+                10
+              ],
+              [
+                125,
+                125
+              ],
+              [
+                55,
+                55
+              ]
+            ],
+            "regulation": [
+              [
+                100,
+                0
+              ],
+              [
+                0,
+                100
+              ],
+              [
+                0,
+                100
+              ]
+            ]
+          },
+          "parameters": {
+            "parameter_set": "bitsey-b2cb370-emt-pair-simple",
+            "context": {
+              "P": [
+                80.006,
+                79.994
+              ],
+              "snail": [
+                72,
+                72
+              ],
+              "ST": [
+                0,
+                0
+              ]
+            },
+            "membranes": [
+              {
+                "membrane_id": 201,
+                "owner_cell_id": 101,
+                "bath_id": 401,
+                "diffusion": [
+                  1e-18,
+                  1e-18,
+                  1e-18
+                ]
+              },
+              {
+                "membrane_id": 202,
+                "owner_cell_id": 102,
+                "bath_id": 401,
+                "diffusion": [
+                  1e-18,
+                  1e-18,
+                  1e-18
+                ]
+              }
+            ],
+            "bath": {
+              "kind": "clamped",
+              "bath_id": 401,
+              "ions": [
+                145,
+                5,
+                140
+              ]
+            },
+            "contact": {
+              "contact_id": 301,
+              "from_cell_id": 101,
+              "to_cell_id": 102,
+              "ion_diffusion": [
+                1e-18,
+                1e-18,
+                1e-18
+              ],
+              "mirna_diffusion": 2e-15,
+              "gate_profile": "45/45",
+              "swap_hemichannels": false
+            }
+          }
+        },
+        "experiment": {
+          "end_time": 1,
+          "source": {
+            "kind": "none"
+          },
+          "observation_times": [
+            0,
+            0.137,
+            0.274,
+            0.5,
+            0.713,
+            1
+          ],
+          "membrane_controls": [
+            {
+              "membrane_id": 201,
+              "leak": [
+                {
+                  "time": 0,
+                  "multipliers": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              ],
+              "pump": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                },
+                {
+                  "time": 0.137,
+                  "multiplier": 0
+                },
+                {
+                  "time": 0.274,
+                  "multiplier": 1
+                }
+              ]
+            },
+            {
+              "membrane_id": 202,
+              "leak": [
+                {
+                  "time": 0,
+                  "multipliers": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              ],
+              "pump": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                }
+              ]
+            }
+          ],
+          "contact_controls": [
+            {
+              "route": "ions",
+              "contact_id": 301,
+              "schedule": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                }
+              ]
+            },
+            {
+              "route": "mirna",
+              "contact_id": 301,
+              "schedule": [
+                {
+                  "time": 0,
+                  "multiplier": 1
+                },
+                {
+                  "time": 0.137,
+                  "multiplier": 0
+                },
+                {
+                  "time": 0.274,
+                  "multiplier": 1
+                }
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "dt": 0.01,
+          "capacity": 2,
+          "jit": true,
+          "max_steps": 200000,
+          "max_trace_bytes": 536870912,
+          "backend": "cpu",
+          "precision": "float64",
+          "solver": "rk4",
+          "edge_capacity": 1,
+          "membrane_capacity": 2
+        }
+      }
+    }
+  ],
+  "execution": {
+    "mapping": "lax_map",
+    "max_worlds": 64,
+    "max_padded_steps": 1000000,
+    "max_working_bytes": 536870912
+  }
+}

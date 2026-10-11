@@ -1,0 +1,69 @@
+{
+  "kind": "gated_calcium_assembly_qualification@1",
+  "physical_scope": "Two owned cytosol/ER stores, finite outside regions, Cav1.2 voltage-gated calcium entry, PMCA, synthetic NCX, buffering, spatial transport and assembly-controlled potassium channels",
+  "duration_s": 0.02,
+  "steps_s": [
+    2.5e-05,
+    1.25e-05,
+    6.25e-06
+  ],
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_sources_sha256": {
+    "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "checks": [
+    "Pinned BETSE Cav1p2 native initialization, targets, millivolt/millisecond conversion, -10 mV shift and m^2*h opening; held-voltage discrete-to-continuous convergence and actual CPU/L4 placement",
+    "Calcium (+2) constant-field flux and reversal; independent scalar stage derivative with exactly one cytosol/extracellular owner and physical energy derivative",
+    "Strict calcium channel identities, membrane/species binding, gate domains, nonnegative capacities, control boundaries and combined inventory/gate loss bounds",
+    "Independent DOP853 and Radau full-state trajectories, mutual agreement and 25/12.5/6.25 us refinement at unchanged tolerances",
+    "Blocked, zero-permeability and zero-abundance channels reduce all prior state exactly to spatial_calcium@2 while gates keep relaxing; merged calcium/plasma/ER timed interventions",
+    "Complete scalar/batch snapshots, window restart, world partitions 1/2/3 and future calcium controls; corrupt gate, transfer, energy, padding and interior cubic rejection",
+    "Assembly event-union independent reference, complete restart and world partitions; channel-dependent calcium response with unchanged protein streams",
+    "Ensemble model and random-world identity preserved through four nodes/16 GPUs; complete saved CPU/L4 state agreement",
+    "Full prior plasma, spatial calcium, ER, chemistry, reaction and checkpoint panel plus selected assembly-cluster regressions"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-09,
+    "independent_state_atol": 3e-12,
+    "reference_agreement_rtol": 2e-10,
+    "reference_agreement_atol": 5e-14,
+    "reference_solver_rtol": 2e-13,
+    "reference_solver_atol": 2e-17,
+    "reference_max_step_s": 5e-05,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "native_pump_rtol": 3e-12,
+    "native_pump_atol_fmol_per_s": 3e-14,
+    "energy_atol_pJ": 1e-09,
+    "minimum_refinement_improvement": 6,
+    "max_abs_voltage_V": 0.15,
+    "max_abs_plasma_affinity_RT": 80,
+    "max_actual_step_times_inventory_loss_bound": 0.25,
+    "native_gate_rtol": 3e-14,
+    "native_gate_atol": 3e-16,
+    "calcium_gate_voltage_domain_V": [
+      -0.12,
+      0.06
+    ],
+    "calcium_gate_minimum_tau_s": 0.005
+  },
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.15
+  },
+  "resource_rationale": "Fresh CPU and L4 runs of the new channel panel plus all prior 233 checks. The earlier plasma CPU+GPU panel used about 66 minutes and nearly 8 GiB RSS; allow three hours and 12 GiB RSS for the added compiled family. A 1 GiB artifact/cache allowance fits current disk space while preserving 4 GiB free. No scientific tolerances relaxed.",
+  "scope_exclusions": [
+    "Native BETSE initialization lifecycle, complete trajectories or equivalence to its semi-implicit time updater",
+    "Biological calibration, measured channel abundance/permeability, temperature compensation, calcium-dependent channel inactivation or gating charge/energy",
+    "Calcium-driven assembly or protein chemistry consuming ions or ATP; direct assembly control of the new calcium channels",
+    "Detailed two-calcium SERCA, proton countertransport, finite ATP, IP3, variable volume, mechanics or lifecycle",
+    "Cross-region junctions, sustained utilization/speedup, distributed single-world integration or actual JUPITER execution"
+  ],
+  "automatic_followup": false
+}

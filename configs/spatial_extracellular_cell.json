@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "spatial_extracellular@1",
+    "species": [{"id": "Cation", "valence": 1}, {"id": "Anion", "valence": -1}],
+    "temperature_K": 310,
+    "cells": [{
+      "id": "cell", "volume_pL": 1,
+      "initial_amount_fmol": {"Cation": 10, "Anion": 10},
+      "fixed_charge_equivalent_fmol": -0.006736775276570412
+    }],
+    "extracellular": [
+      {"id": "near", "volume_pL": 0.2,
+       "initial_amount_fmol": {"Cation": 24, "Anion": 24},
+       "fixed_charge_equivalent_fmol": 0.006736775276570412},
+      {"id": "far", "volume_pL": 0.8,
+       "initial_amount_fmol": {"Cation": 48, "Anion": 48},
+       "fixed_charge_equivalent_fmol": 0}
+    ],
+    "membranes": [{
+      "id": "membrane_0", "inside": "cell", "outside": "near",
+      "area_m2": 1e-9, "capacitance_F": 1e-11, "initial_voltage_V": -0.065,
+      "permeability_m_per_s": {"Cation": 1e-10, "Anion": 2e-10},
+      "law": "constant_field@1"
+    }],
+    "faces": [{
+      "id": "face_0", "sender": "near", "receiver": "far",
+      "area_m2": 1e-12, "length_m": 1e-5,
+      "diffusivity_m2_per_s": {"Cation": 1e-9, "Anion": 2e-9},
+      "law": "logmean_electrodiffusion@1"
+    }],
+    "closure": {"law": "capacitive_components_current_continuity@1", "gauge_reference": "far"}
+  },
+  "experiment": {
+    "end_time": 0.3,
+    "observation_times": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
+    "membrane_controls": [{"membrane_id": "membrane_0", "schedule": [{"time": 0, "availability": 1}]}]
+  },
+  "execution": {
+    "dt": 0.000125, "jit": true,
+    "capacity": 1, "membrane_capacity": 1, "extracellular_capacity": 2,
+    "face_capacity": 1, "edge_capacity": 0,
+    "field_solver": "gauged_dense_kirchhoff@1",
+    "backend": "cpu", "precision": "float64", "solver": "rk4",
+    "max_steps": 10000, "max_trace_bytes": 1073741824,
+    "material_balance_atol_fmol": {"Cation": 1e-10, "Anion": 1e-10}
+  }
+}

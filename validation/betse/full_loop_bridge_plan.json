@@ -1,0 +1,32 @@
+{
+  "schema": "cells.betse_full_loop_bridge_plan@1",
+  "prior_handoff_sha256": "64892978d762ab61f4047b98c5071e4831a295326366c3432f0c9b6839fdbfc5",
+  "scope": "matched-constant 25-us full-loop pilot; not the expanded bridge",
+  "case_ids": ["passive", "blocked"],
+  "variants": {
+    "baseline": {"profiles_enabled": false, "event_mode": "disabled"},
+    "default_profile": {"profiles_enabled": true, "event_mode": "disabled"},
+    "zero_amplitude": {"profiles_enabled": true, "event_mode": "zero_amplitude"}
+  },
+  "modes": ["observed", "unobserved"],
+  "constant_profile": "matched_constants",
+  "dt_s": 0.000025,
+  "duration_s": 0.001,
+  "native_runs": 12,
+  "observed_steps": 240,
+  "preparation": "fresh_seed_and_SIM_init_core_then_one_native_run_sim_core",
+  "equality": "exact_values_shapes_dtypes_bytes_and_legacy_trace_values",
+  "worker_timeout_seconds": 120,
+  "total_timeout_seconds": 150,
+  "max_artifact_bytes": 268435456,
+  "max_worker_file_bytes": 33554432,
+  "cpu_affinity": "0-3",
+  "partial_evidence": "core_dynamics_loop_entry_then_metadata_and_failure_trace",
+  "cells_runs": 0,
+  "independent_audit": "separate_user_requested_saved_data_step",
+  "automatic_retry": false,
+  "expanded_bridge_qualified": false,
+  "nonzero_intervention": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

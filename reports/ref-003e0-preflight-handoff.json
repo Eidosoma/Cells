@@ -1,0 +1,107 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "automatic_retry": false,
+  "baseline_files": 867,
+  "biology_validated": false,
+  "capture_registered": false,
+  "changed_baseline_files": {
+    "PROGRESS.md": {
+      "after": "a34b0eae10a49c3d1111b2908f3232a90fb75f21a0a6db0289f7a61ade470abd",
+      "before": "ab6131b6a6a0c23ab366c2ed9823fd8a29571b1421746c66c75be809e5b742de"
+    },
+    "README.md": {
+      "after": "b48ca55234d83651b56e0ba9259af10f1e65bdac78acef0fa15dda1886bd3368",
+      "before": "610d333b92711a87e11006164ffe7169935cdc3d7a080fefa54dda8094023596"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "d51f71e65320dee30873eabaf232be8a505c3081bb9a65927708d2fd92839fc3",
+      "before": "3e2b85e1d78af5fbdfaa05dbc943fcfcbc8a75bf5b4ae08dfedaa076bae5c82e"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "6c8688627e7d720ae67b4d274625690417c5f0b1c01b9789084a88d8645da596",
+      "before": "4ddc007d3534e3fc9885871968f0e196a0ebea35a9ff2ba156908c9269382e29"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "6bb68f673ed64eeb9958d882818674617dd42ce6309e22bdd363682aef13f2b6",
+      "before": "56bc33d44794f86bc54ca1c2c81d77397249ef291a8363eea58b59a692af8a58"
+    },
+    "docs/DECISIONS.md": {
+      "after": "eb98d0db798c29c63aca5ae7f71ce71d51a177d9084d75622e8855f8d1354935",
+      "before": "cf3e03026468bbe853a58836b80367d3e1ec057eef031e08383364b2dbc0a495"
+    },
+    "validation/betse/README.md": {
+      "after": "e2e2f51524aa47c088ee227b19658bb4deeb19237488a76e48c7012b1a45e648",
+      "before": "ff3b3a0d8932a34c98471d9b515104a6742a3d0f6cfe790e952c198f48c77f5d"
+    }
+  },
+  "completed_preparation_results": 0,
+  "design_review_sha256": "17b03572398115bebad98276f1ab159c2e8254f83fa06004d549272225262d94",
+  "failed_attempt": "runs/ref-003e0-2026-09-12/preflight-01",
+  "failed_attempt_files_sha256": {
+    "failure.json": "a59ff3debb871735a8376a0a18805a3aadb0ca2d899518cb6520819261a59c95",
+    "preparation-00/INITS/world_1.betse.gz": "d3cd0fbb27cc489d661b5f5060a27fe0b1dcf4d93f92cc9c0e2abe8ae659c973",
+    "preparation-00/native.yaml": "b917937e837098aa913a7e031186f6261b47c2c45b320e4fd011c959532e3708",
+    "registration.json": "56e3a3b4eeca2a697ac4a002557fd1e13b7d5a706000837df5b50abaa46d75bb",
+    "sources.zip": "a55df2422cddacd02de18eb7af57bb4793e98c42575505f11e9f44eddcae0c24",
+    "worker.log": "e844f3e4dea0f065e9506a9f9abc51029e845bf7ffb133f2edc961146394fe8a"
+  },
+  "finished_utc": "2026-09-12T20:07:00.061547+00:00",
+  "first_failure": "Adapter metadata assumed dyna.tissue_default existed with profiles disabled",
+  "full_loop_observer_runtime_tested": false,
+  "gpu_tested": false,
+  "integration_entry_prohibited": true,
+  "native_elapsed_seconds": 9.490878988057375,
+  "native_trajectory_run": false,
+  "new_files_sha256_before_handoff": {
+    "docs/BETSE_SIM_PHASE_BRIDGE.md": "136e5c0dc26ba33e7aca43d2c3fb6f699e7c8ef6692c03cb552c0b3219a3ed4a",
+    "reports/REF003E0_PHASE_PREFLIGHT.md": "a9d2ed96c7d7472945a592cb44448382345cd48acce48009ccffd0a4148ba443",
+    "reports/ref-003e0-preflight-checks-01.xml": "c6adb807114e8561cc4ad4d762fb2d4ae8dca302cbb607bcafd1aa1a3cfcfea9",
+    "reports/ref-003e0-preflight-checks-02.xml": "bb4503bdc6f3acd88e3d82a55a2f598b91cd75cc646146f9c804c41b508aedc2",
+    "reports/ref-003e0-preflight-checks-03.xml": "a26c5cb4081f96c4101fca4ed725f1d63dfb14e5bfab7c9ee1d51f58fb11b452",
+    "reports/ref-003e0-preflight-checks-04.xml": "63af9474717d10499266a61cedf0cb957bdf488f64ac7f2035fe5d1b7cc2c7e9",
+    "reports/ref-003e0-preflight-preservation.json": "3e6044d424fce1537a98f80afe35a34140116609b247ccd9bb7fa74da53ddceb",
+    "validation/betse/native_event_observer.py": "4a07e1eee01fafe31069a990023dcc85848e0d0011d1912e6b5df5b9b0617f39",
+    "validation/betse/phase_bridge.py": "0a978832baf61f6e35fe522317c8e43876d6d8c35ec5384a70e32de9a8e42b1c",
+    "validation/betse/phase_bridge_context.py": "993924ca150e883876749a8a63bdd14f25543ab5c528655a5a9cfe15b11e9c58",
+    "validation/betse/test_native_event_observer.py": "14f2937ec789a6b879abd264d2649e12f5d3acb1eea6d33360d96c59c7e79c28",
+    "validation/betse/test_phase_bridge.py": "de2f8ac96b93a3d321528502f5f7f4f4cf16d058465e473fb932f071601034f4"
+  },
+  "next": "Version the profile bridge; retain profiles-off baseline, compare default-only profiles-on no-event, then enabled zero-amplitude; improve partial-state persistence before retry",
+  "post_attempt_adapter_changes": {
+    "phase_bridge.py": {
+      "captured": "adc341d9a0c4fd8c894fbc8176d12351933d4cae2611a12646f51ebf7dcd347d",
+      "current": "0a978832baf61f6e35fe522317c8e43876d6d8c35ec5384a70e32de9a8e42b1c"
+    },
+    "phase_bridge_context.py": {
+      "captured": "795b36d2064adf6a1f0dfc8f686830e3bac4d59322aa6067118dc9b0728d7933",
+      "current": "993924ca150e883876749a8a63bdd14f25543ab5c528655a5a9cfe15b11e9c58"
+    },
+    "test_phase_bridge.py": {
+      "captured": "a337495aeaa1173e00ac23b25d92dff86dbba9524c2b05124f9ed4071f5cb7fb",
+      "current": "de2f8ac96b93a3d321528502f5f7f4f4cf16d058465e473fb932f071601034f4"
+    }
+  },
+  "preparation_attempt_registered": true,
+  "preservation_sha256": "3e6044d424fce1537a98f80afe35a34140116609b247ccd9bb7fa74da53ddceb",
+  "prior_adapter_suite_rerun": false,
+  "production_changed": false,
+  "production_matrix_rerun": false,
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "323 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "schema": "cells.betse_phase_bridge_handoff@1",
+  "status": "native_preflight_failed_profile_prerequisite",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "63af9474717d10499266a61cedf0cb957bdf488f64ac7f2035fe5d1b7cc2c7e9",
+    "skipped": 0,
+    "tests": 73
+  },
+  "trajectory_qualified": false,
+  "unchanged_baseline_files": 860,
+  "underlying_prerequisite": "Targeted events require the tissue profiles and target map omitted by the accepted baseline configuration",
+  "zero_amplitude_runtime_tested": false
+}

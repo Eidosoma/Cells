@@ -1,0 +1,13 @@
+{
+  "cohort_runs": 4,
+  "implementation_sources": 256,
+  "maximum_observed_normalized_error": 0.5939372375645887,
+  "payload_hashes": 830,
+  "production_sources": 48,
+  "reference_cases": 14,
+  "scalar_runs": 43,
+  "solver_rerun": false,
+  "status": "pass",
+  "verification_sha256": "be01a644ef86d230ca24f9cc096704fc5023c8d47c48049f4f426cd9c7cb3096",
+  "window_runs": 2
+}

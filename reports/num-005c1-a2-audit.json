@@ -1,0 +1,214 @@
+{
+  "status": "pass",
+  "campaign_status": "pass",
+  "scope": "pinned_old_audits_plus_new_dense_curves_grid_state_identity_scores_and_observers",
+  "receipt_sha256": "33b12877213cdd92d203b3fe8d314dd9f1e827345db3a870b77b349389fe71f8",
+  "registration_sha256": "05aaf162aead58530218956be16fd68574004ecfa7fc2581201c47d28445cdd1",
+  "prior_audit_sha256": "ab652d6b39fe2ede6d76c2823a3011323c59dd66450de1053249e13272352310",
+  "new_trajectory_audits": {
+    "M_to_E/same_state/radau": {
+      "steps": 10356,
+      "chunks": 41,
+      "maximum_accounting_residual": 4.7711834611382396e-14
+    },
+    "M_to_E/same_state/refined": {
+      "steps": 10349,
+      "chunks": 41,
+      "maximum_accounting_residual": 1.2409604434786148e-13
+    },
+    "M_to_E/same_state/bdf_tight": {
+      "steps": 10337,
+      "chunks": 41,
+      "maximum_accounting_residual": 4.352074313540069e-14
+    },
+    "M_to_E/one_neighbor/radau": {
+      "steps": 10196,
+      "chunks": 40,
+      "maximum_accounting_residual": 3.4106550821695685e-12
+    },
+    "M_to_E/one_neighbor/refined": {
+      "steps": 10390,
+      "chunks": 41,
+      "maximum_accounting_residual": 3.183243034426541e-12
+    },
+    "M_to_E/one_neighbor/bdf_tight": {
+      "steps": 10338,
+      "chunks": 41,
+      "maximum_accounting_residual": 2.6147972675971687e-12
+    },
+    "M_to_E/isolated/radau": {
+      "steps": 10385,
+      "chunks": 41,
+      "maximum_accounting_residual": 4.1328221197173496e-14
+    },
+    "M_to_E/isolated/refined": {
+      "steps": 10400,
+      "chunks": 41,
+      "maximum_accounting_residual": 7.330247520087596e-14
+    },
+    "M_to_E/isolated/bdf_tight": {
+      "steps": 10169,
+      "chunks": 40,
+      "maximum_accounting_residual": 9.262035582935368e-14
+    }
+  },
+  "new_comparison_audits": {
+    "M_to_E/same_state": {
+      "samples": 63082,
+      "chunks": 247,
+      "sampled_state_identity": "all_selected_inputs_exact",
+      "independently_recomputed_primary_history_scores": {
+        "radau_vs_refined": {
+          "ionic_state": 2.6958653234426853e-7,
+          "regulatory_state": 1.6855040591828656e-9,
+          "ionic_history": 0.0000013320890397320362,
+          "regulatory_history": 9.835908080881749e-10
+        },
+        "radau_vs_bdf_tight": {
+          "ionic_state": 0.0025685891117779845,
+          "regulatory_state": 3.4932989615079766e-9,
+          "ionic_history": 0.0009955761436021015,
+          "regulatory_history": 4.750387109535443e-9
+        },
+        "refined_vs_bdf_tight": {
+          "ionic_state": 0.0025685729057459087,
+          "regulatory_state": 3.4932989615079766e-9,
+          "ionic_history": 0.0009952520599813778,
+          "regulatory_history": 4.712953057540393e-9
+        }
+      },
+      "agreement": "pass",
+      "derived_scores": "online_recorded_not_independently_recomputed"
+    },
+    "M_to_E/one_neighbor": {
+      "samples": 62846,
+      "chunks": 246,
+      "sampled_state_identity": "all_selected_inputs_exact",
+      "independently_recomputed_primary_history_scores": {
+        "radau_vs_refined": {
+          "ionic_state": 2.6988433418382434e-7,
+          "regulatory_state": 0.000037530769416703325,
+          "ionic_history": 0.0000018675396420239131,
+          "regulatory_history": 0.00005454575068461786
+        },
+        "radau_vs_bdf_tight": {
+          "ionic_state": 0.004834429943807968,
+          "regulatory_state": 0.00039934765542591014,
+          "ionic_history": 0.0018811650227923084,
+          "regulatory_history": 0.0003615813361029882
+        },
+        "refined_vs_bdf_tight": {
+          "ionic_state": 0.004834463318602576,
+          "regulatory_state": 0.00039935448532569596,
+          "ionic_history": 0.0018810109660740563,
+          "regulatory_history": 0.0003615874574640149
+        }
+      },
+      "agreement": "pass",
+      "derived_scores": "online_recorded_not_independently_recomputed"
+    },
+    "M_to_E/isolated": {
+      "samples": 62906,
+      "chunks": 246,
+      "sampled_state_identity": "all_selected_inputs_exact",
+      "independently_recomputed_primary_history_scores": {
+        "radau_vs_refined": {
+          "ionic_state": 2.4754894911000376e-7,
+          "regulatory_state": 1.6855040591828656e-9,
+          "ionic_history": 0.0000011208044955446287,
+          "regulatory_history": 7.400307721780132e-10
+        },
+        "radau_vs_bdf_tight": {
+          "ionic_state": 0.005103884094643658,
+          "regulatory_state": 1.6855040591828656e-9,
+          "ionic_history": 0.001987128506791039,
+          "regulatory_history": 9.368537501371353e-10
+        },
+        "refined_vs_bdf_tight": {
+          "ionic_state": 0.0051039177885341975,
+          "regulatory_state": 1.6855040591828656e-9,
+          "ionic_history": 0.0019870631316072844,
+          "regulatory_history": 1.0299049535686055e-9
+        }
+      },
+      "agreement": "pass",
+      "derived_scores": "online_recorded_not_independently_recomputed"
+    }
+  },
+  "new_observer_audits": {
+    "M_to_E/mirna_only": {
+      "source_samples": {
+        "samples": 1007,
+        "chunks": 4,
+        "sampled_state_identity": "all_selected_inputs_exact"
+      },
+      "labels_cache_and_drift": {
+        "observations": 1007,
+        "terminal_observations": 102
+      },
+      "events": {
+        "cells": 3,
+        "event_summary": "independently_recomputed"
+      }
+    },
+    "M_to_E/same_state": {
+      "source_samples": {
+        "samples": 1007,
+        "chunks": 4,
+        "sampled_state_identity": "all_selected_inputs_exact"
+      },
+      "labels_cache_and_drift": {
+        "observations": 1007,
+        "terminal_observations": 102
+      },
+      "events": {
+        "cells": 3,
+        "event_summary": "independently_recomputed"
+      }
+    },
+    "M_to_E/one_neighbor": {
+      "source_samples": {
+        "samples": 1007,
+        "chunks": 4,
+        "sampled_state_identity": "all_selected_inputs_exact"
+      },
+      "labels_cache_and_drift": {
+        "observations": 1007,
+        "terminal_observations": 102
+      },
+      "events": {
+        "cells": 2,
+        "event_summary": "independently_recomputed"
+      }
+    },
+    "M_to_E/isolated": {
+      "source_samples": {
+        "samples": 1007,
+        "chunks": 4,
+        "sampled_state_identity": "all_selected_inputs_exact"
+      },
+      "labels_cache_and_drift": {
+        "observations": 1007,
+        "terminal_observations": 102
+      },
+      "events": {
+        "cells": 1,
+        "event_summary": "independently_recomputed"
+      }
+    }
+  },
+  "new_payloads": 1176,
+  "source_capsule_files": 41,
+  "aggregate_artifact_bytes": 715966189,
+  "seconds": 395.8095814579865,
+  "audit_wall_budget_seconds": 3600,
+  "original_qualified_conditions": 10,
+  "amended_qualified_conditions": 14,
+  "NUM005c1_complete_under_A2": true,
+  "NUM005c_complete": false,
+  "original_campaign_reclassified": false,
+  "incomplete_attempts_not_numerically_promoted": true,
+  "derived_scores_and_RHS": "online_recorded_not_independently_recomputed",
+  "production_changed": false,
+  "candidate_selected": false
+}

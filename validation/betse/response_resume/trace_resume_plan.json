@@ -1,0 +1,28 @@
+{
+  "schema": "cells.betse_trace_resume_plan@1",
+  "amendment": "raise_only_eight_640_step_Cells_trace_caps",
+  "max_trace_bytes": 67108864,
+  "reused_native_runs": 16,
+  "reused_cells_runs": 26,
+  "new_native_runs": 0,
+  "new_cells_runs": 22,
+  "new_cells_steps": 8480,
+  "new_eager_steps": 4000,
+  "new_jit_steps": 4480,
+  "stage_timeout_seconds": {
+    "cells": 6600,
+    "comparison": 300
+  },
+  "total_timeout_seconds": 7200,
+  "max_artifact_bytes": 1073741824,
+  "max_worker_file_bytes": 67108864,
+  "cpu_affinity": "0-3",
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_expansion": false,
+  "trajectory_qualified": false,
+  "native_convergence_qualified": false,
+  "forcing_convergence_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

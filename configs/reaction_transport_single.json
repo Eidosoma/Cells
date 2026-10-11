@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "reaction_transport@1",
+    "units": {"amount": "fmol", "volume": "pL", "time": "s"},
+    "species": ["A", "B"],
+    "population": {"count": 1, "cell_ids": [101]},
+    "initial_state": {"amount": [[8], [0]], "volume": [1]},
+    "parameters": {
+      "reaction": {"from_species": "A", "to_species": "B", "forward_rate": [0.2], "reverse_rate": [0.05]},
+      "contacts": []
+    }
+  },
+  "experiment": {
+    "end_time": 12,
+    "source": {"kind": "none"},
+    "contact": {"kind": "prescribed_contact_open_fractions", "contact_ids": [], "schedule": [{"time": 0, "open_fractions": []}]},
+    "observation_times": [0, 1, 2, 4, 6, 8, 10, 12]
+  },
+  "execution": {
+    "backend": "cpu", "precision": "float64", "solver": "rk4",
+    "dt": 0.05, "capacity": 1, "edge_capacity": 0, "jit": true,
+    "max_steps": 100000, "max_trace_bytes": 67108864
+  }
+}

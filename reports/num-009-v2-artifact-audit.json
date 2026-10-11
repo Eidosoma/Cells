@@ -1,0 +1,22 @@
+{
+  "auditor_sha256": "f0ebe1b248a4352a79237b726b8779b1b0360fb1c4619721faa61eb9c88b445d",
+  "cases": 14,
+  "depletion_witness": {
+    "case": "single_mono_depletion",
+    "fractional_drop": 0.8080565756235892,
+    "minimum_outside_fraction": 0.19194342437641077,
+    "pass": true,
+    "required_fractional_drop": 0.05,
+    "species": "K"
+  },
+  "payloads": 242,
+  "qualification_status": "pass",
+  "rejected_candidates": 0,
+  "replayed_arrays": 112,
+  "replayed_sample_rows": 251400,
+  "selected_dt_s": 0.001,
+  "solver_rerun": false,
+  "source_files": 43,
+  "status": "pass",
+  "verification_sha256": "a628ee5eb7cbecb438728012ffe2a2ba6fb28b7a9ab20a7c4f429318f5b0c45b"
+}

@@ -1,0 +1,42 @@
+{
+  "version": "betse_rate_junction_process@1",
+  "law": "betse_rate_junction_relaxation@1",
+  "threshold_voltage_V": 0.015,
+  "minimum_open_fraction": 0.1,
+  "voltages_V": [-0.12, -0.08, -0.04, 0.0, 0.04, 0.08, 0.12],
+  "initial_gates": [0.1, 0.2, 1.0],
+  "native_steps_s": [0.0025, 0.00125, 0.000625],
+  "calls_per_outer_step": [1, 3],
+  "phases": [
+    {"duration_s": 0.25, "voltage_multiplier": 1.0, "availability": 1.0},
+    {"duration_s": 0.25, "voltage_multiplier": 1.0, "availability": 0.5},
+    {"duration_s": 0.25, "voltage_multiplier": 0.0, "availability": 0.0},
+    {"duration_s": 0.25, "voltage_multiplier": 0.0, "availability": 1.0}
+  ],
+  "device_worlds": 32768,
+  "device_thresholds_V": [0.0, 0.015, 0.06],
+  "device_minimums": [0.0, 0.1, 0.4],
+  "device_initial_fractions": [0.0, 0.25, 1.0],
+  "device_step_s": 0.000625,
+  "tolerances": {
+    "source_gate_atol": 5e-14,
+    "source_gate_rtol": 2e-13,
+    "physical_gate_atol": 5e-12,
+    "native_finest_gate_atol": 0.003,
+    "native_refinement_ratio_max": 0.6,
+    "minimum_clock_difference": 0.01,
+    "minimum_block_state_difference": 0.05
+  },
+  "resources": {
+    "cpu_affinity": [4, 5],
+    "native_timeout_seconds": 300,
+    "comparison_timeout_seconds": 600,
+    "artifact_bytes": 1073741824,
+    "per_file_bytes": 134217728,
+    "free_disk_reserve_bytes": 4294967296
+  },
+  "physical_scope": "Isolated voltage-clamped dynamic gate process; physical-time continuous rates, external availability and explicit initial conductance. Coupled free-voltage production integration is not yet qualified.",
+  "compatibility_scope": "Actual unmodified native Gap_Junction class with one or three calls per declared outer step, implicit updates, class-only initialization and stored-state blocking; the three-call mode represents the previously measured FULL-driver call policy, not a new full-driver run.",
+  "gpu_scope": "CPU/L4 float64 function and complete gate-state replay qualification; no throughput target, multi-GPU scaling or biological validation.",
+  "automatic_followup": false
+}

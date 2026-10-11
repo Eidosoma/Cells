@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "exact_replay": true,
+  "evaluations": 44,
+  "scalar_oracle_comparisons": 1016
+}

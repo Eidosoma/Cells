@@ -1,0 +1,32 @@
+{
+  "schema": "cells.betse_refined_response_audit_plan@1",
+  "cpu_affinity": "0-3",
+  "stage_timeout_seconds": {"audit": 300, "regression": 300},
+  "total_timeout_seconds": 900,
+  "max_artifact_bytes": 67108864,
+  "max_worker_file_bytes": 16777216,
+  "frozen_comparisons": 2494936,
+  "required_comparisons": 2298936,
+  "internal_comparisons": 1373032,
+  "independent_surface_comparisons": 1121904,
+  "surface_scopes": 132,
+  "required_failed_comparisons": 0,
+  "diagnostic_failed_comparisons": 4173,
+  "previous_regression_tests": 231,
+  "test_modules": [
+    "response_audit/test_saved_response.py",
+    "response_panel/test_refined_response.py",
+    "response_panel/test_refined_response_check.py",
+    "response_resume/test_trace_resume.py",
+    "response_closeout/test_refined_audit.py"
+  ],
+  "capture_rerun": false,
+  "original_packets_rewritten": false,
+  "automatic_polling": false,
+  "automatic_retry": false,
+  "automatic_expansion": false,
+  "native_convergence_qualified": false,
+  "forcing_convergence_qualified": false,
+  "biology_validated": false,
+  "gpu_tested": false
+}

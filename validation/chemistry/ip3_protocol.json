@@ -1,0 +1,70 @@
+{
+  "kind": "ip3_calcium_assembly_qualification@1",
+  "physical_scope": "Finite owned cytosolic IP3 controls ER calcium release at every shared RK4 stage; synthetic reversible IP3 buffering coupled to the CaV1.2/plasma/ER/spatial/assembly model",
+  "duration_s": 0.02,
+  "steps_s": [
+    2.5e-05,
+    1.25e-05,
+    6.25e-06
+  ],
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_sources_sha256": {
+    "sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "checks": [
+    "Pinned BETSE EndoRetic.channels IP3 factor, numeric mM units, Hill powers 1/2/4/8, zero limit and molecule/metabolic/GRN network priority and absent/missing branches; actual CPU/L4 placement",
+    "Explicit per-cell free IP3 species/moiety ownership and new model identity; strict affinities, integer powers and mandatory ER release routes",
+    "Independent scalar stage derivatives before and after moiety/charge-conserving ligand redistribution; same-cell cytosolic read, ER exclusion, no ligand consumption by release and physical energy derivative",
+    "Dynamic finite IP3 binding changes the release fraction; ligand reaction and release interventions, merged event clocks and exact release-blocked reduction to spatial_calcium@3",
+    "Independent DOP853 and Radau full-state trajectories, mutual agreement and 25/12.5/6.25 us refinement at unchanged tolerances",
+    "Read-only IP3 observations, whole-cubic positivity enclosure, corrupt inventory/moiety/cross-cell/layout checkpoint rejection and complete scalar/batch/window restart and future reaction controls",
+    "Assembly event-union independent reference, complete restart and partitions; IP3-dependent calcium response without changing protein random streams",
+    "IP3-aware ensemble summaries and model/random-world identity through four nodes/16 GPUs; complete saved CPU/L4 state comparison",
+    "All 276 prior CaV1.2, plasma, spatial calcium, ER, chemistry, reaction and checkpoint checks including selected assembly-cluster regressions"
+  ],
+  "tolerances": {
+    "independent_state_rtol": 3e-09,
+    "independent_state_atol": 3e-12,
+    "reference_agreement_rtol": 2e-10,
+    "reference_agreement_atol": 5e-14,
+    "reference_solver_rtol": 2e-13,
+    "reference_solver_atol": 2e-17,
+    "reference_max_step_s": 5e-05,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_atol": 3e-13,
+    "native_pump_rtol": 3e-12,
+    "native_pump_atol_fmol_per_s": 3e-14,
+    "energy_atol_pJ": 1e-09,
+    "minimum_refinement_improvement": 6,
+    "max_abs_voltage_V": 0.15,
+    "max_abs_plasma_affinity_RT": 80,
+    "max_actual_step_times_inventory_loss_bound": 0.25,
+    "native_gate_rtol": 3e-14,
+    "native_gate_atol": 3e-16,
+    "calcium_gate_voltage_domain_V": [
+      -0.12,
+      0.06
+    ],
+    "calcium_gate_minimum_tau_s": 0.005
+  },
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 17179869184,
+    "gpu_memory_fraction": 0.15
+  },
+  "resource_rationale": "Fresh CPU and L4 panels include the new finite IP3 model plus all 276 prior checks. The previous gated panel took 74.5 minutes with 10.60 GiB peak child RSS. Retain the three-hour wall allowance and 1 GiB artifact/cache allowance; allow 16 GiB child RSS for the additional compiled chemical family, with a mandatory 4 GiB available-memory and disk reserve before launch. Preflight every refinement grid; the larger ten-species trace has a 2 GiB per-run cap. No scientific tolerances relaxed.",
+  "scope_exclusions": [
+    "Full native BETSE initialization/lifecycle/trajectories or finite-step equivalence to its semi-implicit updater",
+    "Experimentally measured or fitted IP3 concentrations, binding rates, buffering sites or charge state; explicit -3 ligand/complex charge is a nominal synthetic engineering choice, not a pH-dependent protonation model",
+    "Native molecule/metabolic/GRN lifecycle, IP3 synthesis/degradation, PLC/PIP2 signaling, intercellular IP3 diffusion or receptor-binding kinetics beyond the instantaneous Hill factor",
+    "Calcium feedback onto protein assembly, protein chemistry consuming ions or ATP, or direct assembly control of IP3 release",
+    "Detailed two-calcium SERCA, proton countertransport, finite ATP, variable volume, mechanics, lifecycle, calcium-dependent CaV inactivation or gating charge/energy",
+    "Cross-region junctions, sustained utilization/speedup, distributed single-world integration or actual JUPITER execution"
+  ],
+  "automatic_followup": false
+}

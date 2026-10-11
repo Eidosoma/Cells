@@ -1,0 +1,496 @@
+{
+  "schema": "cells.num009_prior_graph_extrema_review@1",
+  "status": "pass",
+  "scope": "Read-only diagnostic of actual saved NUM-008 candidate cubic domains using the corrected stable stationary-root formula; old files/verdicts/physics unchanged",
+  "source_verification_sha256": "bd9ee2599899dd3b34fa2072b308c2dd435485bb538a7775f24396baf664c8a7",
+  "previous_checker_sha256": "586ed728710b2a6ad438fa83496106c41cae73d7b0873bd2f99b9abf3625bbb4",
+  "new_checker_sha256": "81e430c5edf41e657f14ba6b179976e9ba89735296e74bf864ac5a8fdedf3b5c",
+  "candidate_records": 48,
+  "previous_passed": 48,
+  "stable_passed": 48,
+  "changed_domain_verdicts": 0,
+  "solver_rerun": false,
+  "seconds": 26.7888726539677,
+  "records": [
+    {
+      "case": "single_mono",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 602,
+      "stable_extrema_checked": 602,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_mono",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 1202,
+      "stable_extrema_checked": 1202,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_mono",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 2402,
+      "stable_extrema_checked": 2402,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_mono",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 4802,
+      "stable_extrema_checked": 4802,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_divalent",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 702,
+      "stable_extrema_checked": 702,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_divalent",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 1402,
+      "stable_extrema_checked": 1402,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_divalent",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 2802,
+      "stable_extrema_checked": 2802,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "single_divalent",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 5602,
+      "stable_extrema_checked": 5602,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "disconnected_mono",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 1603,
+      "stable_extrema_checked": 1603,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "disconnected_mono",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 3203,
+      "stable_extrema_checked": 3203,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "disconnected_mono",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 6403,
+      "stable_extrema_checked": 6403,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "disconnected_mono",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 12803,
+      "stable_extrema_checked": 12803,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 2804,
+      "stable_extrema_checked": 2804,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 5604,
+      "stable_extrema_checked": 5604,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 11204,
+      "stable_extrema_checked": 11204,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 22404,
+      "stable_extrema_checked": 22404,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_divalent",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 3204,
+      "stable_extrema_checked": 3204,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_divalent",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 6404,
+      "stable_extrema_checked": 6404,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_divalent",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 12804,
+      "stable_extrema_checked": 12804,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_divalent",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 25604,
+      "stable_extrema_checked": 25604,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 4006,
+      "stable_extrema_checked": 4006,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 8006,
+      "stable_extrema_checked": 8006,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 16006,
+      "stable_extrema_checked": 16006,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 32006,
+      "stable_extrema_checked": 32006,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 4606,
+      "stable_extrema_checked": 4606,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 9206,
+      "stable_extrema_checked": 9206,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 18406,
+      "stable_extrema_checked": 18406,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 36806,
+      "stable_extrema_checked": 36806,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono_internal",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 2801,
+      "stable_extrema_checked": 2801,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono_internal",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 5601,
+      "stable_extrema_checked": 5601,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono_internal",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 11201,
+      "stable_extrema_checked": 11201,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "pair_mono_internal",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 22401,
+      "stable_extrema_checked": 22401,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_internal",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 4005,
+      "stable_extrema_checked": 4005,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_internal",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 8005,
+      "stable_extrema_checked": 8005,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_internal",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 16005,
+      "stable_extrema_checked": 16005,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_internal",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 32005,
+      "stable_extrema_checked": 32005,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_block_release",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 6286,
+      "stable_extrema_checked": 6286,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_block_release",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 12166,
+      "stable_extrema_checked": 12166,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_block_release",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 24166,
+      "stable_extrema_checked": 24166,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_block_release",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 48166,
+      "stable_extrema_checked": 48166,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent_block_release",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 7228,
+      "stable_extrema_checked": 7228,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent_block_release",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 13990,
+      "stable_extrema_checked": 13990,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent_block_release",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 27790,
+      "stable_extrema_checked": 27790,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_divalent_block_release",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 55390,
+      "stable_extrema_checked": 55390,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_short_pulse",
+      "dt_s": 0.002,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 1083,
+      "stable_extrema_checked": 1083,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_short_pulse",
+      "dt_s": 0.001,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 2083,
+      "stable_extrema_checked": 2083,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_short_pulse",
+      "dt_s": 0.0005,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 4083,
+      "stable_extrema_checked": 4083,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    },
+    {
+      "case": "star_mono_short_pulse",
+      "dt_s": 0.00025,
+      "previous_pass": true,
+      "stable_pass": true,
+      "previous_extrema_checked": 8083,
+      "stable_extrema_checked": 8083,
+      "minimum_amount_difference_fmol": 0,
+      "maximum_voltage_domain_difference": 0
+    }
+  ]
+}

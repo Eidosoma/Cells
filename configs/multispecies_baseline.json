@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "multispecies_membrane@1",
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      },
+      {
+        "id": "Ca",
+        "valence": 2
+      }
+    ],
+    "cell": {
+      "id": "cell_0",
+      "volume_pL": 1,
+      "initial_amount_fmol": {
+        "Na": 12,
+        "K": 140,
+        "Cl": 10,
+        "Ca": 0.001
+      },
+      "fixed_charge_equivalent_fmol": -142.0087367752766,
+      "initial_voltage_V": -0.065
+    },
+    "bath": {
+      "id": "bath_0",
+      "temperature_K": 298.15,
+      "concentration_mM": {
+        "Na": 145,
+        "K": 5,
+        "Cl": 156,
+        "Ca": 2
+      },
+      "background_charge_mM": 2
+    },
+    "membrane": {
+      "id": "membrane_0",
+      "inside": "cell_0",
+      "outside": "bath_0",
+      "area_m2": 1e-9,
+      "specific_capacitance_F_per_m2": 0.01,
+      "passive": {
+        "law": "constant_field@1",
+        "permeability_m_per_s": {
+          "Na": 1e-10,
+          "K": 1e-9,
+          "Cl": 1e-10,
+          "Ca": 1e-11
+        }
+      },
+      "pump": {
+        "id": "nak_0",
+        "law": "nak_atp_affinity_tanh@1",
+        "roles": {
+          "sodium": "Na",
+          "potassium": "K"
+        },
+        "stoichiometry": {
+          "Na": -3,
+          "K": 2
+        },
+        "capacity_fmol_per_s": 0.02,
+        "drive_J_per_mol": -50000
+      }
+    }
+  },
+  "experiment": {
+    "end_time": 1,
+    "observation_times": [
+      0,
+      0.01,
+      0.1,
+      0.5,
+      1
+    ],
+    "membrane_controls": {
+      "membrane_id": "membrane_0",
+      "leak": [
+        {
+          "time": 0,
+          "multipliers": {
+            "Na": 1,
+            "K": 1,
+            "Cl": 1,
+            "Ca": 1
+          }
+        }
+      ],
+      "pump": [
+        {
+          "time": 0,
+          "multiplier": 1
+        }
+      ]
+    }
+  },
+  "execution": {
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "dt": 0.01,
+    "capacity": 1,
+    "membrane_capacity": 1,
+    "jit": true,
+    "max_steps": 100000,
+    "max_trace_bytes": 268435456,
+    "material_balance_atol_fmol": {
+      "Na": 1e-10,
+      "K": 1e-10,
+      "Cl": 1e-10,
+      "Ca": 1e-12
+    }
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "accepted_implementation_files_unchanged": 352,
+  "baseline_files": 846,
+  "betse_family_parity": false,
+  "biology_validated": false,
+  "capture_rerun": false,
+  "changed_documents": {
+    "PROGRESS.md": {
+      "after": "cb4c97c435b2685b574ce27242e33d6b60bafe86a6a5ff64420a8b06a42ceaa6",
+      "before": "159cb583bfaed62170cb1b3e252e28a3ac9517a8fe5529496c776bfcdde04dec"
+    },
+    "README.md": {
+      "after": "71b0cbba486779e3ee39fec5ad45eb5b266813eef43d955783b47a1e0c31002b",
+      "before": "c0f52d7e29a3e11f82c94fa9cfdeb91ea28268e17b8f92d8a09c20ece39f81b7"
+    },
+    "docs/BETSE_CAPABILITY_ROADMAP.md": {
+      "after": "608d7bc7479361456ed5f1189d1db4959b24d7a120cfe267f91b3f0fafb4e05a",
+      "before": "30ef7778c0d9ed81e2e2a951c134fa2f50ec8b1d922c18d0e31aae48c0b81550"
+    },
+    "docs/BETSE_PASSIVE_TRAJECTORY_PLAN.md": {
+      "after": "8fd8dbb447c8996e50d81e71fed327eb15c93593bdb63247e95af4c65d595cc6",
+      "before": "c8acc536c3198ce37ba2f10e34868d732abda392adae22a06df28f7db4b65e3c"
+    },
+    "docs/BETSE_REFERENCE_PLAN.md": {
+      "after": "8516e6f31d2b36d9ca5a0e4c16c3f0b752a461d611d7434544f96cf2bd6267c1",
+      "before": "9098ae598fc5686b6df6a31e3232b53f2430eb3ba564a331ea3633ee30520838"
+    },
+    "docs/DECISIONS.md": {
+      "after": "57f167b2709f10be4d56534b5bff5d6150548e7516241e079a9df4d24ac292f0",
+      "before": "ad153b72913ecf4dc192c77f63f913af496698e530410ef44e0991ef215a4cc8"
+    },
+    "validation/betse/README.md": {
+      "after": "d59802521bd0062652db9c76a89948b34f1566060530806d84f59346e89f0436",
+      "before": "be21feaaf11bc5e93626fdf2993cdadbeef7b651dee735eb8e3e6e10badca5b7"
+    }
+  },
+  "development_version": "0.15.0.dev0",
+  "driver_sha256": "ec802adc80b21b9e3ec1034b9986c16cbeaa962395cc276c9cc4cf5538718607",
+  "evidence_audit_sha256": "11404dd1b7dcfab19110b82ad0cf499ab538526790dd6784520c8541687cbb50",
+  "finished_utc": "2026-09-12T18:42:35.427146+00:00",
+  "gpu_tested": false,
+  "independent_audit": {
+    "accepted_implementation_files": 352,
+    "anchors": {
+      "comparison.json": "227bdeb196948d3bc63f1f217fa97c75c6b75acbcdaadcbcbf20bdd5a0767a35",
+      "registration.json": "b3a26038fec113443f6a57ca1b4ac3b6c905d7be2f9d629d2d839c9cdb12c883",
+      "sources.zip": "f89a295c1490d8b501f635c740dbb103ec2fb892ab66ea57a30242a2708700ab",
+      "verification.json": "05d982137e940f6f1479df1552ddc287fbd6cae702c43ae3b6b0999b35efcff0"
+    },
+    "auxiliary_export_runs_checked": 12,
+    "betse_family_parity": false,
+    "biology_validated": false,
+    "capsule_sources": 35,
+    "capture_rerun": false,
+    "comparison": {
+      "biological_validation": false,
+      "cells_runs": 8,
+      "comparisons": 435144,
+      "failed_comparisons": 0,
+      "first_failures": [],
+      "maximum_normalized_error": 0.5597446917076546,
+      "native_observed_runs": 12,
+      "native_steps_observed": 1120,
+      "native_unobserved_runs": 12,
+      "prior_overlap": {
+        "cells_runs_byte_equal": 8,
+        "native_runs_byte_equal": 8,
+        "timings_compared": false
+      },
+      "refinements_and_cross_differences": {
+        "blocked/cross/jax_eager": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 3.0736961218551997e-13
+        },
+        "blocked/cross/jax_jit": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 3.0736961218551997e-13
+        },
+        "blocked/jax_eager": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        },
+        "blocked/jax_jit": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        },
+        "blocked/matched_constants": {
+          "coarse_to_middle": {
+            "amount_fmol": 0.0,
+            "current_A": 0.0,
+            "flux_fmol_per_s": 0.0,
+            "transfer_fmol": 0.0,
+            "voltage_V": 0.0
+          },
+          "middle_to_fine": {
+            "amount_fmol": 0.0,
+            "current_A": 0.0,
+            "flux_fmol_per_s": 0.0,
+            "transfer_fmol": 0.0,
+            "voltage_V": 0.0
+          }
+        },
+        "blocked/source_constants": {
+          "coarse_to_middle": {
+            "amount_fmol": 0.0,
+            "current_A": 0.0,
+            "flux_fmol_per_s": 0.0,
+            "transfer_fmol": 0.0,
+            "voltage_V": 0.0
+          },
+          "middle_to_fine": {
+            "amount_fmol": 0.0,
+            "current_A": 0.0,
+            "flux_fmol_per_s": 0.0,
+            "transfer_fmol": 0.0,
+            "voltage_V": 0.0
+          }
+        },
+        "passive/cross/jax_eager": {
+          "amount_fmol": 5.902696318998892e-08,
+          "current_A": 1.4038624824940858e-16,
+          "flux_fmol_per_s": 8.122323923026586e-07,
+          "transfer_fmol": 9.837423073423579e-09,
+          "voltage_V": 4.893971758124227e-07
+        },
+        "passive/cross/jax_jit": {
+          "amount_fmol": 5.902696318998892e-08,
+          "current_A": 1.4038624824940858e-16,
+          "flux_fmol_per_s": 8.122323923026586e-07,
+          "transfer_fmol": 9.837423073423579e-09,
+          "voltage_V": 4.893971758126395e-07
+        },
+        "passive/jax_eager": {
+          "amount_fmol": 8.90813030979265e-15,
+          "current_A": 2.351083176597253e-23,
+          "flux_fmol_per_s": 1.360300760921973e-13,
+          "transfer_fmol": 1.4846386923658694e-15,
+          "voltage_V": 8.191928038692176e-14
+        },
+        "passive/jax_jit": {
+          "amount_fmol": 8.908076099684026e-15,
+          "current_A": 2.351083176597253e-23,
+          "flux_fmol_per_s": 1.360300760921973e-13,
+          "transfer_fmol": 1.4846386923658694e-15,
+          "voltage_V": 8.191949722735625e-14
+        },
+        "passive/matched_constants": {
+          "coarse_to_middle": {
+            "amount_fmol": 1.1828388268853018e-07,
+            "current_A": 2.8130132731309303e-16,
+            "flux_fmol_per_s": 1.6275113564334642e-06,
+            "transfer_fmol": 1.9713163590588212e-08,
+            "voltage_V": 9.806397961557595e-07
+          },
+          "middle_to_fine": {
+            "amount_fmol": 5.907293654239254e-08,
+            "current_A": 1.4049120864076566e-16,
+            "flux_fmol_per_s": 8.128370494742132e-07,
+            "transfer_fmol": 9.845081190294259e-09,
+            "voltage_V": 4.897669371756608e-07
+          }
+        },
+        "passive/source_constants": {
+          "coarse_to_middle": {
+            "amount_fmol": 1.1828909851629987e-07,
+            "current_A": 2.8132593916587516e-16,
+            "flux_fmol_per_s": 1.6276584635932512e-06,
+            "transfer_fmol": 1.9714031416012364e-08,
+            "voltage_V": 9.806798902929712e-07
+          },
+          "middle_to_fine": {
+            "amount_fmol": 5.907544853300806e-08,
+            "current_A": 1.4050343358827502e-16,
+            "flux_fmol_per_s": 8.129101326109778e-07,
+            "transfer_fmol": 9.845512214393592e-09,
+            "voltage_V": 4.897856624912298e-07
+          }
+        }
+      },
+      "status": "pass",
+      "trajectory_run": true,
+      "worst": {
+        "actual": 0.000554057962473653,
+        "expected": 0.00055399888702512,
+        "id": "native_refinement/passive/source_constants/0.00001250/10/amount_fmol/22",
+        "normalized_error": 0.5597446917076546
+      }
+    },
+    "driver_sha256": "398aeb1cef688841bf58f776706ad6fb442e83a9c25aafb03b818dac43280634",
+    "gpu_tested": false,
+    "model_imports": [],
+    "native_steps_observed": 1120,
+    "one_cell_alignment_qualified": false,
+    "original_v1_qualified": false,
+    "payload_files": 115,
+    "production_calls": 0,
+    "retained_failed_packet_files": 119,
+    "schema": "cells.betse_trajectory_evidence_audit@1",
+    "scope": "1 ms neutral-prepared seven-cell passive/blocked finite bath only",
+    "status": "pass",
+    "trajectory_qualified": true
+  },
+  "new_files_sha256_before_closeout": {
+    "reports/REF003D_CLOSEOUT.md": "7e9432236d6b4d670e3c08513ce2b951e92387a45a67df38cf99a6f99ca14a15",
+    "reports/ref-003d-closeout-preservation.json": "bf6329ccf2a2afc99b13ecef1f0cb77853dc8e06a28bf2bebf1b2cae1c5bec81",
+    "reports/ref-003d-v2-closeout-existing-01.xml": "052bc288bf80e0de460cd5b0c445d60282628b0fb90d04bdd24b62a2a0331983",
+    "reports/ref-003d-v2-closeout-existing-02.xml": "ba835a303de59744197306073052fcc7a2998f1ef0b65ed1a55cb4a65e531135",
+    "reports/ref-003d-v2-closeout-new-01.xml": "702032fe7cf16fd9eb28c6fae174e9a08e28e2c2aa92f6379e3e3c25a006501c",
+    "reports/ref-003d-v2-closeout-new-02.xml": "8b92e783a969561f83fde103c9791c78ed69d61161a97c7fbe036fbbd1f75ca6",
+    "reports/ref-003d-v2-evidence-audit.json": "11404dd1b7dcfab19110b82ad0cf499ab538526790dd6784520c8541687cbb50",
+    "validation/betse/test_saved_trajectory.py": "de27dfcb54d7fc2e7886e591ba16c317b58e718ccfe638accc5b1bd4bb551a82",
+    "validation/betse/trajectory_closeout.py": "ec802adc80b21b9e3ec1034b9986c16cbeaa962395cc276c9cc4cf5538718607",
+    "validation/betse/trajectory_evidence.py": "398aeb1cef688841bf58f776706ad6fb442e83a9c25aafb03b818dac43280634"
+  },
+  "next_step": "Design a separately registered passive block/release event comparison; not launched",
+  "one_cell_alignment_qualified": false,
+  "original_v1_qualified": false,
+  "preservation_sha256": "bf6329ccf2a2afc99b13ecef1f0cb77853dc8e06a28bf2bebf1b2cae1c5bec81",
+  "prior_production_matrix_tests": 4190,
+  "production_changed": false,
+  "production_matrix_rerun": false,
+  "production_modules_unchanged": 51,
+  "quality": {
+    "format": "316 files already formatted",
+    "lint": "All checks passed!"
+  },
+  "retained_v1_files": 119,
+  "retained_v2_files": 119,
+  "schema": "cells.betse_trajectory_closeout@1",
+  "scope": "1 ms neutral-prepared seven-cell passive/blocked finite bath only",
+  "stable_promotion": false,
+  "stable_version": "0.14.0",
+  "status": "pass",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": {
+      "reports/ref-003d-v2-closeout-existing-02.xml": "ba835a303de59744197306073052fcc7a2998f1ef0b65ed1a55cb4a65e531135",
+      "reports/ref-003d-v2-closeout-new-02.xml": "8b92e783a969561f83fde103c9791c78ed69d61161a97c7fbe036fbbd1f75ca6"
+    },
+    "skipped": 0,
+    "tests": 325
+  },
+  "trajectory_qualified": true,
+  "unchanged_baseline_files": 839
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "cells.betse_kv1p5_contact_protocol@1",
+  "upstream_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "kinetic_law": "betse_kv1p5_mh@1",
+  "scope": "Isolated untargeted Kv1p5 kinetics and prescribed-voltage gate histories; no ionic transport, native tissue preparation, voltage clamp, temperature calibration or biological validation",
+  "fixture_temperature_K": 298.15,
+  "temperature_correction": "none; neither gate kernel consumes temperature",
+  "voltage_domain_V": [-0.12, 0.06],
+  "voltages_V": [-0.12, -0.1, -0.08, -0.065, -0.06, -0.04, -0.0253, -0.02, -0.006, 0, 0.02, 0.04, 0.06],
+  "one_step_initial_gate": [0.2, 0.8],
+  "step_us": [1000, 500, 250],
+  "cases": [
+    {"id": "activation", "initial_gate": [0, 1], "segments": [{"voltage_V": 0.02, "duration_us": 40000, "sample_every_us": 1000}]},
+    {"id": "deactivation_recovery", "initial_gate": [1, 0.1], "segments": [{"voltage_V": -0.08, "duration_us": 4000000, "sample_every_us": 20000}]},
+    {"id": "slow_inactivation", "initial_gate": [1, 1], "segments": [{"voltage_V": 0.02, "duration_us": 3000000, "sample_every_us": 20000}]},
+    {"id": "pulse_recovery", "initial_gate": [0.1, 0.8], "segments": [{"voltage_V": -0.08, "duration_us": 10000, "sample_every_us": 1000}, {"voltage_V": 0.02, "duration_us": 10000, "sample_every_us": 1000}, {"voltage_V": -0.08, "duration_us": 40000, "sample_every_us": 1000}]},
+    {"id": "history_low_m", "initial_gate": [0.2, 0.8], "segments": [{"voltage_V": -0.02, "duration_us": 20000, "sample_every_us": 1000}]},
+    {"id": "history_high_m", "initial_gate": [0.8, 0.2], "segments": [{"voltage_V": -0.02, "duration_us": 20000, "sample_every_us": 1000}]}
+  ],
+  "limits": {
+    "decimal_precision": 70,
+    "kinetic_gate_atol": 2e-13,
+    "kinetic_tau_s_atol": 1e-14,
+    "kinetic_rtol": 2e-12,
+    "discrete_gate_atol": 2e-11,
+    "discrete_gate_rtol": 2e-11,
+    "native_finest_continuous_gate_atol": 0.01,
+    "cells_finest_continuous_gate_atol": 1e-7,
+    "native_error_ratio": [0.4, 0.6],
+    "cells_error_ratio": [0.03, 0.1],
+    "refinement_roundoff_floor": 1e-11,
+    "minimum_history_gate_separation": 0.01
+  },
+  "resources": {
+    "cpu_affinity": [0, 1, 2, 3],
+    "worker_timeout_seconds": {"betse": 60, "cells": 90},
+    "total_timeout_seconds": 180,
+    "max_artifact_bytes": 67108864,
+    "max_worker_file_bytes": 16777216
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "cells.biological_literature_candidate@1",
+  "id": "xenopus_costa_1989_betse_2016",
+  "date_reviewed_utc": "2026-09-16",
+  "status": "candidate_not_simulation_config_not_validated",
+  "original_review_extent": "abstract verified; scanned full methods and tables pending",
+  "sources": {
+    "original": {
+      "doi": "10.1113/jphysiol.1989.sp017649",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1189096/",
+      "locator": "Abstract, items 4 and 7"
+    },
+    "betse_table": {
+      "doi": "10.3389/fbioe.2016.00055",
+      "url": "https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2016.00055/full",
+      "locator": "Section 3.1.1, Table 2"
+    }
+  },
+  "original_abstract": {
+    "permeability": {
+      "role": "candidate_input_not_yet_selected",
+      "unit_original": "1e-8 cm/s",
+      "values_original": {"Na": 5.44, "K": 17.41, "Cl": 1.49},
+      "conversion_to_m_per_s": 1e-10,
+      "values_m_per_s": {"Na": 5.44e-10, "K": 1.741e-9, "Cl": 1.49e-10},
+      "pooled_experiments": 68
+    },
+    "inside_concentration": {
+      "role": "candidate_evaluation_outcome_unless_declared_initialization_or_calibration",
+      "unit": "mM",
+      "values": {"Na": 10.1, "K": 109.5, "Cl": 37.7},
+      "reported_plus_minus": {"Na": 0.66, "K": 3.3, "Cl": 1.18},
+      "sample_counts": {"Na": 12, "K": 13, "Cl": 19},
+      "uncertainty_kind": null
+    }
+  },
+  "betse_2016_table_2": {
+    "permeability": {
+      "role": "historical_betse_comparison_input_not_original_pooled_estimate",
+      "unit": "nm/s",
+      "values": {"Na": 0.537, "K": 1.765, "Cl": 0.138}
+    },
+    "experimental_comparison": {
+      "inside_concentration_mM": {"Na": 10.1, "K": 109.5, "Cl": 37.7},
+      "outside_concentration_mM": {"Na": 114.0, "K": 2.4, "Cl": 116.4},
+      "membrane_voltage_mV": -39.1,
+      "role": "secondary_transcription_pending_original_table_verification"
+    },
+    "reported_simulation_endpoints": {
+      "inside_concentration_mM": {"Na": 9.21, "K": 100.7, "Cl": 39.95},
+      "outside_concentration_mM": {"Na": 115.0, "K": 2.5, "Cl": 111.5},
+      "membrane_voltage_mV": -37.6,
+      "simulation_duration_minutes": 30,
+      "role": "historical_simulator_outputs_not_experimental_targets_or_clamped_inputs"
+    }
+  },
+  "blocking_questions_before_biological_registration": [
+    "Reconcile original pooled versus BETSE table permeability values",
+    "Verify original full methods, solution recipe and uncertainty definitions",
+    "Choose justified chloride transport or non-steady-state scope",
+    "Resolve preparation, geometry, temperature, charge and metabolic reservoirs",
+    "Separate calibration and initialization from held-out evaluation",
+    "Preregister biological tolerances and an independent perturbation"
+  ],
+  "biological_tolerances": null,
+  "runnable": false,
+  "biology_validated": false
+}

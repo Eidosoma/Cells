@@ -1,0 +1,550 @@
+{
+  "anchors": {
+    "comparison.json": "c8ae7af0b0c8f0057990dd65cec8f7b46f0183fc69a5fda0b9c677646ddb7ad9",
+    "failure.json": "fd5f2baebca2e32a3b108c58628e0c2c9a4f409eb6ab61572a7fe42d593839e8",
+    "launch.json": "6e1d365bf7609f58963b77e9a655cbc680997270e426aafbf0c6c7b19e13829a",
+    "registration.json": "9f41747f0f59eda41782368adfcf58b734f89ee7c51e2729c9ca9425a754927c",
+    "sources.zip": "5c879920a325711a7783f2b656ace71596e8da738bb99a458a2390b7a1313a36"
+  },
+  "full_trajectory_rerun": false,
+  "independent_endpoint_diagnostic": {
+    "endpoints": [
+      {
+        "bath_error_vs_cells_fmol": [
+          5.277949582188851e-07,
+          9.499770848691571e-07,
+          -2.146225166474512e-07
+        ],
+        "bath_increment_fmol": [
+          -0.00028082200136481106,
+          0.0005548903074346079,
+          -0.00011198644245524747
+        ],
+        "bath_vs_integrated_flux_residual_fmol": [
+          5.733635137852855e-14,
+          3.8673491492557943e-16,
+          -9.936357834618159e-14
+        ],
+        "dt_s": 0.0001,
+        "material_residual_fmol": [
+          5.895652889498226e-14,
+          -1.034270325633857e-13,
+          -9.600417791473526e-14
+        ],
+        "per_cell_errors_fmol": [
+          [
+            -7.377105805887713e-08,
+            -7.289626591683193e-08,
+            -7.22745668429981e-08,
+            -7.374211262116919e-08,
+            -7.336977837284301e-08,
+            -7.377756556102875e-08,
+            -8.796355188856749e-08
+          ],
+          [
+            -1.3278079670470773e-07,
+            -1.3120626003456737e-07,
+            -1.3008729531924842e-07,
+            -1.3272875570272038e-07,
+            -1.3205857501802332e-07,
+            -1.3279251114330386e-07,
+            -1.5832299437375415e-07
+          ],
+          [
+            2.999829364716894e-08,
+            2.9642565203688375e-08,
+            2.9389761019258677e-08,
+            2.9986529216881384e-08,
+            2.983511984771834e-08,
+            3.0000936768723624e-08,
+            3.576921493981362e-08
+          ]
+        ]
+      },
+      {
+        "bath_error_vs_cells_fmol": [
+          2.6315493632247337e-07,
+          4.7350533081741333e-07,
+          -1.0697780750108061e-07
+        ],
+        "bath_increment_fmol": [
+          -0.00028108664138670747,
+          0.0005544138356805561,
+          -0.0001118787977461011
+        ],
+        "bath_vs_integrated_flux_residual_fmol": [
+          1.0566268454810512e-12,
+          6.331632267098097e-15,
+          1.2865282569742703e-13
+        ],
+        "dt_s": 5e-05,
+        "material_residual_fmol": [
+          1.0563430555624032e-12,
+          -5.7773881165235075e-15,
+          1.2962204822952045e-13
+        ],
+        "per_cell_errors_fmol": [
+          [
+            -3.678159895488032e-08,
+            -3.634543438778379e-08,
+            -3.6035461347424906e-08,
+            -3.676716597715205e-08,
+            -3.658152390486729e-08,
+            -3.678484190585237e-08,
+            -4.3857853501423193e-08
+          ],
+          [
+            -6.6183095079038e-08,
+            -6.539825483521775e-08,
+            -6.484056758659582e-08,
+            -6.61571373937502e-08,
+            -6.582309997009276e-08,
+            -6.618889758735992e-08,
+            -7.891428414282832e-08
+          ],
+          [
+            1.4952564708725326e-08,
+            1.4775252387246376e-08,
+            1.4649242391107662e-08,
+            1.4946701683965085e-08,
+            1.4871231579379845e-08,
+            1.4953881492524838e-08,
+            1.7829062880166157e-08
+          ]
+        ]
+      },
+      {
+        "bath_error_vs_cells_fmol": [
+          1.3139204772252226e-07,
+          2.3638378242091165e-07,
+          -5.34061963539177e-08
+        ],
+        "bath_increment_fmol": [
+          -0.0002812184042753074,
+          0.0005541767141321596,
+          -0.00011182522613495394
+        ],
+        "bath_vs_integrated_flux_residual_fmol": [
+          4.94789213940916e-14,
+          -1.2435798918408736e-14,
+          -1.1160615888492625e-13
+        ],
+        "dt_s": 2.5e-05,
+        "material_residual_fmol": [
+          4.9316778959196395e-14,
+          -1.4474749523984975e-14,
+          -1.0753352960683749e-13
+        ],
+        "per_cell_errors_fmol": [
+          [
+            -1.8364950102472163e-08,
+            -1.814717443027506e-08,
+            -1.799240460701563e-08,
+            -1.8357743907324996e-08,
+            -1.826505183453737e-08,
+            -1.836657002746438e-08,
+            -2.189810349661304e-08
+          ],
+          [
+            -3.3039960555959866e-08,
+            -3.2648188127591335e-08,
+            -3.236972576618627e-08,
+            -3.302704453606237e-08,
+            -3.2860264317967694e-08,
+            -3.3042919402343916e-08,
+            -3.9395694189603924e-08
+          ],
+          [
+            7.464697784916296e-09,
+            7.376176977875082e-09,
+            7.313272849893154e-09,
+            7.461770940178994e-09,
+            7.424094090962522e-09,
+            7.465356764290999e-09,
+            8.900719412250718e-09
+          ]
+        ]
+      }
+    ],
+    "extrapolated_endpoint_error_fmol": [
+      -3.70840877428856e-10,
+      -7.377659755900337e-10,
+      1.6541479324521172e-10
+    ],
+    "extrapolation_is_qualification": false,
+    "observed_endpoint_orders": [
+      1.0060871706784564,
+      1.0067639180386103,
+      1.0067368208662715
+    ],
+    "species": [
+      "Na",
+      "K",
+      "Cl"
+    ]
+  },
+  "model_calls": 0,
+  "packet_files": 119,
+  "preservation_sha256": "46990131b2086a043e12c21b244f3cdc6534645e50acaacbab4eb4330871eca1",
+  "qualified": false,
+  "replayed_comparison": {
+    "biological_validation": false,
+    "cells_runs": 8,
+    "comparisons": 129384,
+    "failed_comparisons": 36,
+    "first_failures": [
+      {
+        "actual": 0.0002796898677819293,
+        "expected": 0.00027956509819726527,
+        "id": "native_refinement/passive/source_constants/0.00005000/5/amount_fmol/22",
+        "normalized_error": 1.2137632620847878
+      },
+      {
+        "actual": 0.0003350229079897016,
+        "expected": 0.00033487470894866256,
+        "id": "native_refinement/passive/source_constants/0.00005000/6/amount_fmol/22",
+        "normalized_error": 1.4339703693814485
+      },
+      {
+        "actual": 0.0003901595890385412,
+        "expected": 0.0003899884476274984,
+        "id": "native_refinement/passive/source_constants/0.00005000/7/amount_fmol/22",
+        "normalized_error": 1.6471761437027965
+      },
+      {
+        "actual": -0.00022399280587137582,
+        "expected": -0.00022409998400974018,
+        "id": "native_refinement/passive/source_constants/0.00005000/8/amount_fmol/21",
+        "normalized_error": 1.0482892238141768
+      },
+      {
+        "actual": 0.0004451021160725155,
+        "expected": 0.0004449085107027795,
+        "id": "native_refinement/passive/source_constants/0.00005000/8/amount_fmol/22",
+        "normalized_error": 1.8535860753363225
+      },
+      {
+        "actual": -0.00025248625494356247,
+        "expected": -0.00025260583480957166,
+        "id": "native_refinement/passive/source_constants/0.00005000/9/amount_fmol/21",
+        "normalized_error": 1.1663363240123101
+      },
+      {
+        "actual": 0.0004998526651289747,
+        "expected": 0.000499637065698666,
+        "id": "native_refinement/passive/source_constants/0.00005000/9/amount_fmol/22",
+        "normalized_error": 2.0533988837875414
+      },
+      {
+        "actual": -0.0002810868955833712,
+        "expected": -0.00028121866307628807,
+        "id": "native_refinement/passive/source_constants/0.00005000/10/amount_fmol/21",
+        "normalized_error": 1.2816330168144885
+      },
+      {
+        "actual": 0.000554413383540231,
+        "expected": 0.0005541762515721693,
+        "id": "native_refinement/passive/source_constants/0.00005000/10/amount_fmol/22",
+        "normalized_error": 2.2468069739342167
+      },
+      {
+        "actual": 0.00027968997898097925,
+        "expected": 0.0002795652151756922,
+        "id": "native_refinement/passive/matched_constants/0.00005000/5/amount_fmol/22",
+        "normalized_error": 1.2137070262742535
+      },
+      {
+        "actual": 0.00033502306984822816,
+        "expected": 0.00033487487759975565,
+        "id": "native_refinement/passive/matched_constants/0.00005000/6/amount_fmol/22",
+        "normalized_error": 1.433904621271322
+      },
+      {
+        "actual": 0.0003901598105253701,
+        "expected": 0.0003899886768781169,
+        "id": "native_refinement/passive/matched_constants/0.00005000/7/amount_fmol/22",
+        "normalized_error": 1.6471013836042607
+      },
+      {
+        "actual": -0.00022399264376105066,
+        "expected": -0.00022409981844617732,
+        "id": "native_refinement/passive/matched_constants/0.00005000/8/amount_fmol/21",
+        "normalized_error": 1.0482554653203036
+      },
+      {
+        "actual": 0.0004451024059526354,
+        "expected": 0.00044490880927594567,
+        "id": "native_refinement/passive/matched_constants/0.00005000/8/amount_fmol/22",
+        "normalized_error": 1.853502794756738
+      },
+      {
+        "actual": -0.00025248604947591957,
+        "expected": -0.0002526056245457653,
+        "id": "native_refinement/passive/matched_constants/0.00005000/9/amount_fmol/21",
+        "normalized_error": 1.1662895679850251
+      },
+      {
+        "actual": 0.0004998530319515471,
+        "expected": 0.0004996374420955796,
+        "id": "native_refinement/passive/matched_constants/0.00005000/9/amount_fmol/22",
+        "normalized_error": 2.0533076228244593
+      },
+      {
+        "actual": -0.00028108664138670747,
+        "expected": -0.0002812184042753074,
+        "id": "native_refinement/passive/matched_constants/0.00005000/10/amount_fmol/21",
+        "normalized_error": 1.2815882653087038
+      },
+      {
+        "actual": 0.0005544138356805561,
+        "expected": 0.0005541767141321596,
+        "id": "native_refinement/passive/matched_constants/0.00005000/10/amount_fmol/22",
+        "normalized_error": 2.2467081499497095
+      },
+      {
+        "actual": 0.0002794408483551065,
+        "expected": 0.0002795652151756922,
+        "id": "cross/passive/jax_eager/0.00005000/5/amount_fmol/22",
+        "normalized_error": 1.209845144054656
+      },
+      {
+        "actual": 0.0003347271547610899,
+        "expected": 0.00033487487759975565,
+        "id": "cross/passive/jax_eager/0.00005000/6/amount_fmol/22",
+        "normalized_error": 1.4293626233050196
+      },
+      {
+        "actual": 0.00038981808288614885,
+        "expected": 0.0003899886768781169,
+        "id": "cross/passive/jax_eager/0.00005000/7/amount_fmol/22",
+        "normalized_error": 1.6419073905988513
+      },
+      {
+        "actual": -0.00022420668896024428,
+        "expected": -0.00022409981844617732,
+        "id": "cross/passive/jax_eager/0.00005000/8/amount_fmol/21",
+        "normalized_error": 1.0452804253157466
+      },
+      {
+        "actual": 0.00044471582036894453,
+        "expected": 0.00044490880927594567,
+        "id": "cross/passive/jax_eager/0.00005000/8/amount_fmol/22",
+        "normalized_error": 1.8476839819774382
+      },
+      {
+        "actual": -0.00025272486225415676,
+        "expected": -0.0002526056245457653,
+        "id": "cross/passive/jax_eager/0.00005000/9/amount_fmol/21",
+        "normalized_error": 1.1629990731916957
+      },
+      {
+        "actual": 0.0004994225260363487,
+        "expected": 0.0004996374420955796,
+        "id": "cross/passive/jax_eager/0.00005000/9/amount_fmol/22",
+        "normalized_error": 2.0468902894610084
+      },
+      {
+        "actual": -0.00028134979632302994,
+        "expected": -0.0002812184042753074,
+        "id": "cross/passive/jax_eager/0.00005000/10/amount_fmol/21",
+        "normalized_error": 1.277981291282409
+      },
+      {
+        "actual": 0.0005539403303497387,
+        "expected": 0.0005541767141321596,
+        "id": "cross/passive/jax_eager/0.00005000/10/amount_fmol/22",
+        "normalized_error": 2.2397178749564723
+      },
+      {
+        "actual": 0.0002794408483551065,
+        "expected": 0.0002795652151756922,
+        "id": "cross/passive/jax_jit/0.00005000/5/amount_fmol/22",
+        "normalized_error": 1.209845144054656
+      },
+      {
+        "actual": 0.0003347271547610899,
+        "expected": 0.00033487487759975565,
+        "id": "cross/passive/jax_jit/0.00005000/6/amount_fmol/22",
+        "normalized_error": 1.4293626233050196
+      },
+      {
+        "actual": 0.00038981808288614885,
+        "expected": 0.0003899886768781169,
+        "id": "cross/passive/jax_jit/0.00005000/7/amount_fmol/22",
+        "normalized_error": 1.6419073905988513
+      },
+      {
+        "actual": -0.00022420668896024426,
+        "expected": -0.00022409981844617732,
+        "id": "cross/passive/jax_jit/0.00005000/8/amount_fmol/21",
+        "normalized_error": 1.0452804253154815
+      },
+      {
+        "actual": 0.00044471582036894453,
+        "expected": 0.00044490880927594567,
+        "id": "cross/passive/jax_jit/0.00005000/8/amount_fmol/22",
+        "normalized_error": 1.8476839819774382
+      },
+      {
+        "actual": -0.00025272486225415676,
+        "expected": -0.0002526056245457653,
+        "id": "cross/passive/jax_jit/0.00005000/9/amount_fmol/21",
+        "normalized_error": 1.1629990731916957
+      },
+      {
+        "actual": 0.0004994225260363487,
+        "expected": 0.0004996374420955796,
+        "id": "cross/passive/jax_jit/0.00005000/9/amount_fmol/22",
+        "normalized_error": 2.0468902894610084
+      },
+      {
+        "actual": -0.00028134979632302994,
+        "expected": -0.0002812184042753074,
+        "id": "cross/passive/jax_jit/0.00005000/10/amount_fmol/21",
+        "normalized_error": 1.277981291282409
+      },
+      {
+        "actual": 0.0005539403303497387,
+        "expected": 0.0005541767141321596,
+        "id": "cross/passive/jax_jit/0.00005000/10/amount_fmol/22",
+        "normalized_error": 2.2397178749564723
+      }
+    ],
+    "maximum_normalized_error": 2.2468069739342167,
+    "native_observed_runs": 12,
+    "native_steps_observed": 280,
+    "native_unobserved_runs": 12,
+    "refinements_and_cross_differences": {
+      "blocked/cross/jax_eager": {
+        "amount_fmol": 0.0,
+        "current_A": 0.0,
+        "flux_fmol_per_s": 0.0,
+        "transfer_fmol": 0.0,
+        "voltage_V": 3.0736961218551997e-13
+      },
+      "blocked/cross/jax_jit": {
+        "amount_fmol": 0.0,
+        "current_A": 0.0,
+        "flux_fmol_per_s": 0.0,
+        "transfer_fmol": 0.0,
+        "voltage_V": 3.0736961218551997e-13
+      },
+      "blocked/jax_eager": {
+        "amount_fmol": 0.0,
+        "current_A": 0.0,
+        "flux_fmol_per_s": 0.0,
+        "transfer_fmol": 0.0,
+        "voltage_V": 0.0
+      },
+      "blocked/jax_jit": {
+        "amount_fmol": 0.0,
+        "current_A": 0.0,
+        "flux_fmol_per_s": 0.0,
+        "transfer_fmol": 0.0,
+        "voltage_V": 0.0
+      },
+      "blocked/matched_constants": {
+        "coarse_to_middle": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        },
+        "middle_to_fine": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        }
+      },
+      "blocked/source_constants": {
+        "coarse_to_middle": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        },
+        "middle_to_fine": {
+          "amount_fmol": 0.0,
+          "current_A": 0.0,
+          "flux_fmol_per_s": 0.0,
+          "transfer_fmol": 0.0,
+          "voltage_V": 0.0
+        }
+      },
+      "passive/cross/jax_eager": {
+        "amount_fmol": 2.3638378242091165e-07,
+        "current_A": 5.621787842032673e-16,
+        "flux_fmol_per_s": 3.252580798210336e-06,
+        "transfer_fmol": 3.939566785430605e-08,
+        "voltage_V": 1.959800984850657e-06
+      },
+      "passive/cross/jax_jit": {
+        "amount_fmol": 2.3638378242091165e-07,
+        "current_A": 5.621787842032673e-16,
+        "flux_fmol_per_s": 3.252580798210336e-06,
+        "transfer_fmol": 3.939566785430605e-08,
+        "voltage_V": 1.959800984850874e-06
+      },
+      "passive/jax_eager": {
+        "amount_fmol": 8.90813030979265e-15,
+        "current_A": 2.351083176597253e-23,
+        "flux_fmol_per_s": 1.360300760921973e-13,
+        "transfer_fmol": 1.4846386923658694e-15,
+        "voltage_V": 8.191928038692176e-14
+      },
+      "passive/jax_jit": {
+        "amount_fmol": 8.908076099684026e-15,
+        "current_A": 2.351083176597253e-23,
+        "flux_fmol_per_s": 1.360300760921973e-13,
+        "transfer_fmol": 1.4846386923658694e-15,
+        "voltage_V": 8.191949722735625e-14
+      },
+      "passive/matched_constants": {
+        "coarse_to_middle": {
+          "amount_fmol": 4.764717540517438e-07,
+          "current_A": 1.1329031645818605e-15,
+          "flux_fmol_per_s": 6.554391906263279e-06,
+          "transfer_fmol": 7.940867451387747e-08,
+          "voltage_V": 3.949350213426671e-06
+        },
+        "middle_to_fine": {
+          "amount_fmol": 2.3712154839650168e-07,
+          "current_A": 5.638801819181484e-16,
+          "flux_fmol_per_s": 3.2623824939154167e-06,
+          "transfer_fmol": 3.951862087855993e-08,
+          "voltage_V": 1.9657268038150884e-06
+        }
+      },
+      "passive/source_constants": {
+        "coarse_to_middle": {
+          "amount_fmol": 4.764928811518132e-07,
+          "current_A": 1.1330044744183792e-15,
+          "flux_fmol_per_s": 6.554996989469042e-06,
+          "transfer_fmol": 7.941218942478755e-08,
+          "voltage_V": 3.949512173402484e-06
+        },
+        "middle_to_fine": {
+          "amount_fmol": 2.371319680616324e-07,
+          "current_A": 5.639316665256232e-16,
+          "flux_fmol_per_s": 3.2626898046617114e-06,
+          "transfer_fmol": 3.952035825686756e-08,
+          "voltage_V": 1.9658072876991856e-06
+        }
+      }
+    },
+    "status": "failed",
+    "trajectory_run": true,
+    "worst": {
+      "actual": 0.000554413383540231,
+      "expected": 0.0005541762515721693,
+      "id": "native_refinement/passive/source_constants/0.00005000/10/amount_fmol/22",
+      "normalized_error": 2.2468069739342167
+    }
+  },
+  "schema": "cells.betse_failed_trajectory_audit@1",
+  "status": "rejection_confirmed"
+}

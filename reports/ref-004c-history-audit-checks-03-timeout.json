@@ -1,0 +1,13 @@
+{
+  "schema": "cells.bounded_software_check_timeout@1",
+  "date_utc": "2026-09-15",
+  "command": "PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 timeout 55s .venv/bin/python -B -m pytest -q -W error --tb=short validation/betse/channel_history_audit/test_history_audit.py --junitxml=reports/ref-004c-history-audit-checks-03.xml",
+  "exit_code": 124,
+  "timeout_seconds": 55,
+  "status": "foreground_limit_reached_not_a_complete_software_receipt",
+  "stage": "expanded_saved_reference_replay_tests",
+  "junit_completion_written": false,
+  "numerical_integration_run": false,
+  "old_evidence_changed": false,
+  "handling": "Keep complete reference replay in the separately authorized detached audit. Bound software replay fixtures by sampled rows without changing the registered full audit or captured numerical criteria."
+}

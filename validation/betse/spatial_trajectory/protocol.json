@@ -1,0 +1,65 @@
+{
+  "kind": "native_betse_passive_spatial_trajectory@1",
+  "scope": "Separate betse_spatial_passive@1 compatibility kernel: freely evolving trajectories from native initial state and static geometry, field and transport inputs on the pinned seven-cell/30-patch/10x10-grid panel. Four synthetic passive cases at two native steps over 8 microseconds. No evolving native values are fed into Cells.",
+  "tests": ["tests/unit/test_betse_spatial_trajectory.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_betse_spatial_trajectory.py::test_cpu_gpu_complete_trajectories"],
+  "native_binding": {
+    "root": "/mnt/workspaces/Cells/betse-tissue-contact-20261008-01",
+    "completion_sha256": "667d808ccd7f18204ffb604453f0bb2da88e57eb74721e9dde783b8e5f9c1224"
+  },
+  "required_evidence": [
+    "native-spatial-trajectory-uniform-0", "native-spatial-trajectory-uniform-1",
+    "native-spatial-trajectory-diffusion-0", "native-spatial-trajectory-diffusion-1",
+    "native-spatial-trajectory-junction-0", "native-spatial-trajectory-junction-1",
+    "native-spatial-trajectory-combined-0", "native-spatial-trajectory-combined-1",
+    "native-spatial-boundary-field", "native-spatial-replay", "native-spatial-negative-controls"
+  ],
+  "required_gpu_evidence": ["native-spatial-trajectory-cpu-gpu"],
+  "checks": [
+    "Authenticate prior native capture, observed/bare neutrality and independent update accounting without changing frozen artifacts",
+    "Reconstruct Dirichlet operator from grid topology, solve on selected device, compare discrete harmonic functions and captured native boundary operator without importing its inverse",
+    "Native sigma=1 zero-padded screened-charge field, distinct patch voltage convention, native q/kb drift and reversed edge derivatives",
+    "Freely evolving full concentration/membrane-lag/field/flux histories at every completed native step, four cases and both native timesteps",
+    "Separate per-species/per-grid-site reservoir reset and native stencil ledgers; membrane/junction exchange and local/global material accounting",
+    "Complete state replay across disk restart, changed integration windows, mapped worlds and partitions; continuation includes lagged membrane concentrations",
+    "Invalid layouts and negative/nonfinite trials reject without clipping or advancing state; damaged geometry/field/ledgers and omitted membrane lag are detected",
+    "CPU/L4 complete histories and float64 device placement, GPU-busy and measured SM-active with coverage"
+  ],
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-8,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-8,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise"
+  },
+  "resources": {
+    "max_wall_seconds": 3600,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "Pinned passive nonpolarizable FULL INIT mode only; no pumps, intrinsic channels, calcium chemistry, assembly, mechanics, noise or biological calibration",
+    "Separate native compatibility law; qualified resolved capacitor/return-current models are unchanged",
+    "Native edge stencil can add/remove net material independently of boundary resets; these terms are recorded explicitly, not claimed to be a conservative finite-volume scheme",
+    "No thermodynamic energy balance is asserted for the native screened-field/update law",
+    "Eight microsecond matched-step panel, not a longer-duration, timestep-convergence or spatial-refinement qualification",
+    "Bounded dense boundary solver up to 256 grid sites, static geometry and held boundaries; no sparse/distributed tissue or remote multi-GPU execution claim",
+    "Reusable numerical component with full-state scan/replay; ordinary model-registry integration is subsequent work",
+    "Whole GPU phase includes compilation and host checks; no single warmed throughput interval"
+  ],
+  "automatic_followup": false
+}

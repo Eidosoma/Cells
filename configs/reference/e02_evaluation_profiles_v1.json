@@ -1,0 +1,49 @@
+{
+  "revision": "e02_evaluation_profiles@1",
+  "decision": "D041",
+  "date": "2026-09-09",
+  "scope": "short_immutable_scalar_RHS_evaluation_and_independent_stage_audit",
+  "cases": [
+    "prepare_E",
+    "prepare_M",
+    "E_to_M/active",
+    "M_to_E/active",
+    "E_to_M/one_neighbor",
+    "M_to_E/one_neighbor"
+  ],
+  "policies": [
+    "scalar_frozen",
+    "scalar_cached"
+  ],
+  "trajectory_policy": "rk4_basis",
+  "comparison_policy": "trajectory_backed",
+  "readout_policy": "batched_cached",
+  "order": "case_then_evaluation_policy",
+  "duration": 5.12,
+  "step": 0.01,
+  "window_steps": 256,
+  "steps_per_profile": 512,
+  "planned_profiles": 12,
+  "probe_states_per_case": 8,
+  "probe_coordinate_modes": [
+    "absolute",
+    "increments"
+  ],
+  "probe_case_inventory": "all_45_frozen_graph_fixtures",
+  "microprofile_calls": 256,
+  "candidate_accuracy_limit": 1,
+  "integration_and_sample_identity": "exact_ordered_arrays_against_D040_trajectory_backed",
+  "derivative_identity": "bitwise_complete_RHS_on_probes_and_every_recorded_RK4_stage_in_pinned_CPU_float64_runtime",
+  "restart_policy": "explicit_evaluator_identity_same_policy_only_D040_dependency_aware_closed_committed_prefix",
+  "performance": "one_matched_short_measurement_per_case_policy_not_statistical_benchmark_microprofiles_separate",
+  "resource_policy": "all_prior_roots_plus_one_new_root_under_original_caps",
+  "automatic_retry_or_refinement": false,
+  "equations_changed": false,
+  "integration_kernel_changed": false,
+  "stage_checks_changed": false,
+  "whole_curve_checks_changed": false,
+  "production_changed": false,
+  "long_study_run": false,
+  "timestep_selected": false,
+  "compact_long_policy_adopted": false
+}

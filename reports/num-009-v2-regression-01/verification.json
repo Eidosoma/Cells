@@ -1,0 +1,62 @@
+{
+  "child_receipts_sha256": {
+    "current": "2c8a12852c90c00e5982bc48f931884ee225ff17140b82dcefa6ee0dc367ac59",
+    "historical": "911aa50f3fd61ce8c5cdc60caabf7d034efdede92d6fabbb3e904f7adee46195"
+  },
+  "contexts": {
+    "current-production": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "f5aac21e1ea18924b9d7a4819bba6591f1c20b549342c33ae3a7d1dd33047188",
+      "log_sha256": "5914cac32b43f0c4851f0a8102fa8a6b54dc3bcf09dc86b9866aa9be84ac0a70",
+      "seconds": 737.6,
+      "skipped": 0,
+      "tests": 2077
+    },
+    "preserved-channel-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "f49133c33810685e2a97f8d04ce3c205482abf220368fe22d27dda42d065d1d0",
+      "log_sha256": "41dbdd4fa96dac5ba073758fa950b05a3cc9bffb20f1a61a05a2c23d4a0fdf09",
+      "seconds": 18.757,
+      "skipped": 0,
+      "tests": 205
+    },
+    "preserved-physical-graph-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "a52fc325e49fd8feec8c6e2a54b97def779cb248414dd75bdc70cedaa733e22b",
+      "log_sha256": "879ae87d73ae2563dfd55e4869412d0f6a85bca9509f0c7dcc3015b257b8cacf",
+      "seconds": 15.361,
+      "skipped": 0,
+      "tests": 213
+    },
+    "preserved-reference": {
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "junit_sha256": "46472ce26c2588845c62c0344732007d8ff65c2696f2c9b86f37c3d16e1f389e",
+      "log_sha256": "6be2f46a7fc4fca36599689d65402011798fb66fc5a5511465a333470dff304a",
+      "seconds": 154.703,
+      "skipped": 0,
+      "tests": 971
+    }
+  },
+  "current_pytest_addopts": "--ignore=tests/unit/test_finite_extracellular_artifact_audit.py",
+  "driver_sha256": "69fcfe9e01b500bfe9a7afeb52109d89f01d874a085783362e332ccaf1605b2e",
+  "historical_pytest_addopts": null,
+  "schema": "cells.finite_extracellular_build_matrix@1",
+  "status": "pass",
+  "total_tests": 3466,
+  "underlying_driver_sha256": "4102a34c4d31e2599ee40b684e31af4f5598a5b6f61b13fc8b39189169d15b99",
+  "unexecuted_prospective_suite": {
+    "file": "tests/unit/test_finite_extracellular_artifact_audit.py",
+    "maintained_replacement": "tests/unit/test_finite_extracellular_artifact_audit_v2.py",
+    "reason": "V1 stopped unqualified and has no complete session; not passing coverage.",
+    "sha256": "43c3726befed5985cc763fa6d4519b6e6bf23d2c3dd1ee15126dc9e593d2858f",
+    "tests": 13
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "record_id": "bio003_pilot_closeout@1",
+  "date_utc": "2026-09-09",
+  "decision_id": "D044",
+  "workflow_status": "closed",
+  "outcome": "descriptive_only",
+  "biological_acceptance": "not_assessable",
+  "dynamic_cell_validated": false,
+  "new_fit_or_retuning": false,
+  "production_model_changed": false,
+  "dataset_revised": false,
+  "original_analysis": {
+    "path": "runs/bio-002-2026-09-09/endpoint-01/analysis.json",
+    "sha256": "2f8fbda1110de5fd8550a2c32e0f7e7f6d6598e88d6d730e2070fe6283f305bc",
+    "protocol_sha256": "d5f24b40d80083f2b2b4694aee67a1fe21089e578203235d12520ce2ee2982ba",
+    "fit": ["C1", "C2"],
+    "evaluation": ["C3"],
+    "quarantined": ["C4", "C5"]
+  },
+  "reviewed_source_sha256": {
+    "data/reviews/bio003_2026-09-09/article.xml": "41626ffe5917c4f225cb516e83fafdbe97cf7e01d4d61d43633a0511f13beb5b",
+    "data/reviews/bio003_2026-09-09/biolopen-9-048553-s1.pdf": "11cee59f29fb69d3668680d81e9a07540cbaee83bb6bc9771da21c579a024024"
+  },
+  "review": {
+    "supplement_pages_text_and_visually_reviewed": 1,
+    "supplement_embedded_files": 0,
+    "package_image_files": 20,
+    "package_pdf_files": 1,
+    "numeric_endpoint_sem_recovered": false,
+    "experiment_level_records_recovered": false,
+    "independent_second_reader": false,
+    "measurement_boundary_qualified": false,
+    "resolving_correction_found_in_bounded_search": false,
+    "authors_contacted": false
+  },
+  "verification": {
+    "targeted_tests_passed": 63,
+    "warning_strict": true,
+    "full_regression_rerun": false,
+    "protected_file_identities_unchanged": 62,
+    "production_source_files_unchanged": 39,
+    "closeout_and_architecture_markdown_files_checked": 13,
+    "local_links_checked": 616,
+    "tables_checked": 29
+  },
+  "next_track": "ARCH-003_BETSE_capability_and_multiscale_GPU_architecture",
+  "automatic_pilot_continuation": false
+}

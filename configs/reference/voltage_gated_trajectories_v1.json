@@ -1,0 +1,419 @@
+{
+  "schema": "cells.voltage_gated_trajectory_panel@1",
+  "task": "NUM-007",
+  "physical_panel": "configs/reference/voltage_gated_channel_v1.json",
+  "physical_panel_sha256": "16b6e245ba2cef921fc48e1a4c7f8ebd03481724e7de5d1062fcf0d8fdeed09c",
+  "scope": "bounded synthetic coupled cell/channel CPU numerical qualification; not production, biology, voltage-clamp or GPU acceptance",
+  "references": [
+    {
+      "id": "radau",
+      "method": "Radau",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "bdf",
+      "method": "BDF",
+      "rtol": 1e-11,
+      "atol": 1e-13,
+      "max_step_s": 0.005
+    },
+    {
+      "id": "refined",
+      "method": "Radau",
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "max_step_s": 0.0025
+    }
+  ],
+  "candidate": {
+    "method": "independent_absolute_amount_coupled_RK4",
+    "steps_s": [
+      0.002,
+      0.001,
+      0.0005,
+      0.00025
+    ],
+    "observation": "interval_control_cubic_hermite",
+    "comparison_fractions": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "selection": "coarsest all-case passing step with passing next-finer step and voltage/gate refinement",
+    "voltage_refinement_floor_V": 1e-10,
+    "gate_refinement_floor": 1e-8,
+    "maximum_refined_error_ratio": 0.8,
+    "domain_rejection": "retain rejected trial and completed prefix, continue declared candidate ladder; never clip"
+  },
+  "trajectory_limits": {
+    "amount_fmol": 1e-7,
+    "passive_fmol": 1e-7,
+    "species_overrides": {
+      "Ca": {
+        "amount_fmol": 1e-9,
+        "passive_fmol": 1e-9
+      }
+    },
+    "pump_cycles_fmol": 1e-7,
+    "dissipation_pJ": 0.000001,
+    "voltage_V": 0.000001,
+    "gate": 0.0001,
+    "open_fraction": 0.0001,
+    "channel_fmol": 1e-7,
+    "reference_factor": 0.1
+  },
+  "accounting_limits": {
+    "material_fmol": 1e-10,
+    "species_material_overrides_fmol": {
+      "Ca": 1e-12
+    },
+    "charge_as_voltage_V": 1e-8,
+    "energy_pJ": 0.000001,
+    "dissipation_decrease_pJ": 1e-10
+  },
+  "resources": {
+    "max_horizon_s": 2,
+    "max_cases": 14,
+    "max_steps_per_attempt": 100000,
+    "max_rhs_calls_per_attempt": 100000,
+    "max_samples_per_case": 100000,
+    "session_wall_seconds": 900,
+    "artifact_bytes": 134217728,
+    "workers": 1
+  },
+  "profiles": {
+    "baseline": {
+      "horizon_s": 0.5,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        }
+      ]
+    },
+    "depolarized": {
+      "horizon_s": 0.5,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        }
+      ]
+    },
+    "channel_only": {
+      "horizon_s": 0.5,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 0,
+          "pump": 0,
+          "availability": 1,
+          "blocked_species": []
+        }
+      ]
+    },
+    "block_release": {
+      "horizon_s": 1,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.0137,
+          "leak": 1,
+          "pump": 1,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.0271,
+          "leak": 1,
+          "pump": 0,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.0433,
+          "leak": 1,
+          "pump": 0,
+          "availability": 1,
+          "blocked_species": [
+            "Na"
+          ]
+        },
+        {
+          "time_s": 0.0679,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.113,
+          "leak": 0,
+          "pump": 0,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.407,
+          "leak": 1,
+          "pump": 1,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.617,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        },
+        {
+          "time_s": 1,
+          "leak": 0,
+          "pump": 0,
+          "availability": 0,
+          "blocked_species": []
+        }
+      ]
+    },
+    "short_pulse": {
+      "horizon_s": 0.2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.0203,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.0204,
+          "leak": 1,
+          "pump": 1,
+          "availability": 0,
+          "blocked_species": []
+        },
+        {
+          "time_s": 0.2,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        }
+      ]
+    },
+    "equal_open": {
+      "horizon_s": 0.1,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 1,
+          "blocked_species": []
+        }
+      ]
+    },
+    "gates_only": {
+      "horizon_s": 2,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 0,
+          "pump": 0,
+          "availability": 0,
+          "blocked_species": []
+        }
+      ]
+    },
+    "channel_off": {
+      "horizon_s": 0.5,
+      "controls": [
+        {
+          "time_s": 0,
+          "leak": 1,
+          "pump": 1,
+          "availability": 0,
+          "blocked_species": []
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "mono_baseline",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "baseline",
+      "preparation": null
+    },
+    {
+      "id": "mono_depolarized",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "depolarized",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        },
+        "initial_voltage_V": 0.02,
+        "fixed_charge_equivalent_fmol": -141.99792714606875
+      }
+    },
+    {
+      "id": "mono_channel_only",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "channel_only",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "mono_block_release",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "block_release",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "mono_short_pulse",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "short_pulse",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "divalent_baseline",
+      "assembly": "divalent_with_background_kv1p5",
+      "profile": "baseline",
+      "preparation": null
+    },
+    {
+      "id": "divalent_depolarized",
+      "assembly": "divalent_with_background_kv1p5",
+      "profile": "depolarized",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        },
+        "initial_voltage_V": 0.02,
+        "fixed_charge_equivalent_fmol": -141.99992714606876
+      }
+    },
+    {
+      "id": "divalent_channel_only",
+      "assembly": "divalent_with_background_kv1p5",
+      "profile": "channel_only",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "divalent_block_release",
+      "assembly": "divalent_with_background_kv1p5",
+      "profile": "block_release",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "divalent_short_pulse",
+      "assembly": "divalent_with_background_kv1p5",
+      "profile": "short_pulse",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    },
+    {
+      "id": "mono_equal_open_a",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "equal_open",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.8
+        },
+        "initial_voltage_V": 0,
+        "fixed_charge_equivalent_fmol": -142
+      }
+    },
+    {
+      "id": "mono_equal_open_b",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "equal_open",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.8,
+          "h": 0.2
+        },
+        "initial_voltage_V": 0,
+        "fixed_charge_equivalent_fmol": -142
+      }
+    },
+    {
+      "id": "mono_gates_only",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "gates_only",
+      "preparation": {
+        "initial_gate": {
+          "m": 0,
+          "h": 1
+        },
+        "initial_voltage_V": 0.06,
+        "fixed_charge_equivalent_fmol": -141.99378143820624
+      }
+    },
+    {
+      "id": "mono_channel_off",
+      "assembly": "nakcl_reduction_kv1p5",
+      "profile": "channel_off",
+      "preparation": {
+        "initial_gate": {
+          "m": 0.75,
+          "h": 0.85
+        }
+      }
+    }
+  ]
+}

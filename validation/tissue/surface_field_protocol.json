@@ -1,0 +1,58 @@
+{
+  "kind": "resolved_surface_charge_current_field_qualification@1",
+  "scope": "Same-stage membrane charge constraints and nonlinear return currents across resolved surfaces, with explicit concentration/voltage reservoirs and electrode charge/current/work. Bounded dense numerical component, not yet a registered evolving tissue model.",
+  "tests": ["tests/unit/test_surface_field.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_surface_field.py::test_cpu_gpu_saved_fields"],
+  "required_evidence": ["open", "closed", "anchored", "all_clamped", "blocked", "equilibrium", "one_owner", "split", "padded", "divalent", "native_geometry", "legacy-reduction", "batch-partitions", "negative-controls", "capacitor-energy-derivative"],
+  "required_gpu_evidence": ["field-cpu-gpu"],
+  "checks": [
+    "Independent full-node scipy hybrid root with scalar currents and independently discovered capacitance topology versus production reduced damped Newton",
+    "All finite-node capacitor charge constraints, including gauge/representative nodes; no charge repair, pseudoinverse or regularization",
+    "Every floating capacitance-component current balance, including the closed gauge component, and local capacitor charge-rate balance",
+    "Explicit finite/reservoir material exchange, voltage-clamp electrode charge/current, reservoir electrochemical supply and open-system chemical-plus-capacitor energy identity",
+    "Analytic clamped capacitor divider, gauge/reference independence, patch subdivision, inactive padding, controls and zero-drive equilibrium",
+    "One-outside-owner-per-cell reduction agrees with the previously qualified nonlinear tissue field law",
+    "Capacitor energy and patch-voltage rates agree with independent symmetric charge perturbations",
+    "Invalid charge compatibility, domain, boundary, return connectivity and exhausted Newton solve cannot pass",
+    "Wrong field, missing reservoir ledger and missing electrode current rejected by independent accounting",
+    "Seven-cell/30-surface/100-outside native topology with manufactured compatible capacitor charge and synthetic conservative outside faces; not native screened-field equivalence",
+    "Selected-device float64 execution; exact partition/reordering replay through lax.map as used by core.batch._batch_rollout; direct vmap partition and mapped/vmap physical comparisons retain original unit-specific numerical tolerances",
+    "Independent physical accounting on mapped and vectorized cohorts; preserve both sets of outputs and direct-vmap partition differences; saved CPU/L4 values and both GPU activity counters"
+  ],
+  "tolerances": {
+    "physical_rtol": 3e-10,
+    "voltage_atol_V": 3e-13,
+    "charge_atol_C": 3e-25,
+    "charge_rtol": 2e-12,
+    "current_constraint_atol_A": 1e-23,
+    "current_constraint_rtol": 2e-12,
+    "current_newton_target": 0.01,
+    "flux_atol_fmol_s": 3e-12,
+    "chemical_potential_atol_J_mol": 3e-8,
+    "current_comparison_atol_A": 3e-23,
+    "energy_atol_pJ": 3e-12,
+    "power_atol_pJ_s": 3e-12,
+    "voltage_rate_atol_V_s": 3e-8,
+    "material_rate_atol_fmol_s": 3e-14,
+    "energy_balance_atol_pJ_s": 1e-10,
+    "energy_derivative_atol_pJ_s": 1e-9
+  },
+  "resources": {
+    "max_wall_seconds": 1800,
+    "artifact_and_cache_bytes": 1073741824,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 6442450944,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "No production model/parser/checkpoint registration, time integration or evolving tissue trajectory qualification yet",
+    "No native full-field equivalence; native topology is reused with declared manufactured charge and synthetic graph transport",
+    "Held reservoir concentrations and held voltage clamps only; time-varying clamp work and boundary interventions need a separate integration contract",
+    "No calcium/IP3/assembly composition, biology, water or mechanics claim",
+    "Dense host-bound fixed geometry limited to 256 total cell/outside nodes; world batching is not multi-GPU or distributed single-world scaling",
+    "Bitwise partition replay applies to the established lax.map execution path; arbitrary direct vmap cohort widths are numerically compared, not claimed bitwise",
+    "No GPU-throughput or warmed-utilization claim; busy and measured SM-active reported with coverage"
+  ],
+  "automatic_followup": false
+}

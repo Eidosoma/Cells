@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="28" time="5.573" timestamp="2026-09-16T11:59:37.820828+00:00" hostname="eidosoma-vm-2"><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[pump_leak]" time="0.513" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[pump_only]" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[leak_only]" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[all_blocked]" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[pump_block_release]" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_complete_rhs_and_same_stage_conservation[two_cells_shared_bath]" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[pump_leak]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[pump_only]" time="0.000" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[leak_only]" time="0.000" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[all_blocked]" time="0.000" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[pump_block_release]" time="0.000" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_explicit_initial_charge_closure[two_cells_shared_bath]" time="0.000" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_domain_refuses_bad_trial_without_repair[0--13.0]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_domain_refuses_bad_trial_without_repair[0-nan]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_domain_refuses_bad_trial_without_repair[0-inf]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_domain_refuses_bad_trial_without_repair[3--141.0]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_domain_refuses_bad_trial_without_repair[2-140.0]" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_synthetic_pump_is_not_called_or_subtracted" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_species_roles_follow_explicit_mapping" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_held_inputs_have_exact_grid_boundaries" time="0.001" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_short_numpy_and_independent_adaptive_reference" time="0.559"><failure message="ValueError: Reference imported a model runtime">def test_short_numpy_and_independent_adaptive_reference():
+        case, protocol = copy.deepcopy(p.cases()[0]), p.protocol()
+        case["end_time_s"] = 0.0004
+        protocol["sample_dt_s"] = 0.0001
+&gt;       reference = r.integrate(case, protocol, "Radau")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+validation/betse/pump_coupled/test_coupled_pump.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+case = {'id': 'pump_leak', 'species': ['Na', 'K', 'Cl'], 'valence': [1, 1, -1], 'pump_stoichiometry': [-3, 2, 0], ...}
+plan = {'schema': 'cells.kinetic_pump_coupled_candidate@1', 'decision': 'D109', 'law_id': 'nak_atp_mass_action_positive@1', '..._cells_shared_bath', 'species': ['Na', 'K', 'Cl'], 'valence': [1, 1, -1], 'pump_stoichiometry': [-3, 2, 0], ...}], ...}
+method = 'Radau'
+
+    def integrate(case, plan, method):
+        import numpy as np
+        from scipy.integrate import solve_ivp
+    
+        times = np.linspace(0, case["end_time_s"], round(case["end_time_s"] / plan["sample_dt_s"]) + 1)
+        samples, state, segments = [np.zeros(size(case))], np.zeros(size(case)), []
+        for index, row in enumerate(case["controls"]):
+            start = row["time_s"]
+            end = (
+                case["controls"][index + 1]["time_s"]
+                if index + 1 &lt; len(case["controls"])
+                else case["end_time_s"]
+            )
+            control = [row["pump"], row["leak"]]
+            solution = solve_ivp(
+                lambda _t, y, control=control: rhs(case, y, control),
+                (start, end),
+                state,
+                method=method,
+                rtol=plan["reference_rtol"],
+                atol=plan["reference_atol"],
+                max_step=plan["reference_max_step_s"],
+                dense_output=True,
+            )
+            if not solution.success:
+                raise ValueError(solution.message)
+            selected = times[(times &gt; start + 1e-14) &amp; (times &lt;= end + 1e-14)]
+            samples.extend(solution.sol(selected).T)
+            state = solution.y[:, -1].copy()
+            segments.append(
+                {
+                    "start_s": start,
+                    "end_s": end,
+                    "nfev": solution.nfev,
+                    "end_state": state.tolist(),
+                    "last_solver_time_s": float(solution.t[-1]),
+                }
+            )
+        if any(
+            name == "cells" or name.startswith(("cells.", "betse.", "jax.")) for name in sys.modules
+        ):
+&gt;           raise ValueError("Reference imported a model runtime")
+E           ValueError: Reference imported a model runtime
+
+validation/betse/pump_coupled/coupled_reference.py:160: ValueError</failure></testcase><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_four_step_compiled_shared_rk4_and_restart" time="4.233" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_blocked_pump_retains_history_and_leak" time="0.007" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_all_blocked_exactly_preserves_complete_state" time="0.007" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_controller_failure_is_durable" time="0.005" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_detached_launch_never_waits_or_polls" time="0.002" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_closed_source_contact_is_required" time="0.003" /><testcase classname="validation.betse.pump_coupled.test_coupled_pump" name="test_existing_registration_directory_is_refused" time="0.001" /></testsuite></testsuites>

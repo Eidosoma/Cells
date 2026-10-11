@@ -1,0 +1,17 @@
+{
+  "model": "capsid_graph@1",
+  "topology": "dodecahedron_g10_2@1",
+  "initial_nodes": [10, 12, 14, 16, 18],
+  "root_node": 10,
+  "free_trimer_M": 1.7e-8,
+  "k_on_M_inv_s": 10000000.0,
+  "k_off_s_inv": 10.0,
+  "seed": 20260919,
+  "worlds": 64,
+  "end_time_s": 300.0,
+  "max_events_per_world": 100000,
+  "event_chunk_size": 128,
+  "recording": "summary",
+  "max_output_bytes": 268435456,
+  "max_wall_seconds": 600.0
+}

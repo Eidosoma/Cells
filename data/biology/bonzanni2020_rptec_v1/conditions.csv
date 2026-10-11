@@ -1,0 +1,6 @@
+condition_id,NaCl_mM,KCl_mM,CaCl2_mM,MgCl2_mM,HEPES_mM,glucose_mM,figure2b_Na_mM,figure2b_K_mM,figure2b_Cl_mM,role
+C1,140,5.4,1.8,1,10,5.5,140,5.4,151,fit
+C2,110,35.4,1.8,1,10,5.5,110,35.4,151,fit
+C3,80,65.4,1.8,1,10,5.5,80,65.4,151,evaluation
+C4,45,100.4,1.8,1,0,5.5,45,110.4,151,quarantined
+C5,10,135.4,1.8,1,0,5.5,10,145.4,151,quarantined
