@@ -30,10 +30,10 @@ Fig. 2, Discussion and Methods. [Source](https://www.nature.com/articles/s41592-
 | Next | Use kidney transport programs to choose which channel/buffer/exchanger mechanisms need development and independent calibration. | [Tissue calcium](../src/cells/models/tissue_calcium.py) already composes free/bound calcium, ER, PMCA/NCX and CaV1.2. Its synthetic buffers and CaV1.2 must not be relabelled as measured calbindin or TRPV5. Polarized epithelial surfaces and appropriate reservoirs also need separate modelling. |
 | Later | Test whether an explicitly modelled neighbour signal changes a cell's transport machinery and persists after removal. | Requires a causal regulatory law, parameter evidence and a declared timescale. The present fast ionic solver does not infer these from RNA counts. |
 
-For Plastic Heredity and Where Do Forms Come From, I would compare identical
-starting cells under different neighbourhoods, then restore a common environment
-and apply the same challenge. Separate ongoing environmental support, persistent
-state and transmission to fresh recipients. This is a proposed assay; the
+For Plastic Heredity and How Forms Become Reconstructible, I would compare
+identical starting cells under different neighbourhoods, then restore a common
+environment and apply the same challenge. Separate ongoing environmental support,
+persistent state and transmission to fresh recipients. This is a proposed assay; the
 paper does not demonstrate renewable heredity.
 
 For assembly, retain the existing distinction between the protein-bond graph

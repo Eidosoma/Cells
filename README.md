@@ -12,15 +12,16 @@ status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research backgro
 ## Why we are building Cells
 
 One of Cells' central goals is to test the ideas in our *Plastic Heredity* and
-*Where Do Forms Come From?* preprints in the most biologically and physically
-realistic simulations we can build and verify.
+*How Forms Become Reconstructible* preprints in the most biologically and
+physically realistic simulations we can build and verify.
 
-![Cells research goals: ask questions from Plastic Heredity and Where Do Forms Come From?, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
+![Cells research goals: ask questions from Plastic Heredity and How Forms Become Reconstructible, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
 
 - **Plastic Heredity:** When does inherited organisation break, recover or
   persist? What lets an acquired state pass to new carriers and be renewed?
-- **Forms:** How do experience, retained cellular state and tissue organisation
-  affect which patterns and functions can be expressed, repaired or reconstructed?
+- **How Forms Become Reconstructible:** How do experience, retained cellular
+  state and tissue organisation affect which patterns and functions can be
+  expressed, repaired or reconstructed?
 
 We are building toward experiments that remove cues, disrupt candidate memory
 mechanisms, change cell membership and challenge cells with matched visible

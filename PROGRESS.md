@@ -59,12 +59,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   or multi-GPU claim follows; no automatic polling or follow-up is scheduled.
 
 - **README research purpose added, 11 October.** An
-  [early section](README.md#why-we-are-building-cells) now makes testing Plastic
-  Heredity and the Forms preprint in increasingly realistic cell/tissue models
-  a central goal. A matching [conceptual infographic](docs/assets/cells-research-goals.png)
+  [early section](README.md#why-we-are-building-cells) now makes testing *Plastic
+  Heredity* and *How Forms Become Reconstructible* in increasingly realistic
+  cell/tissue models a central goal. A matching [conceptual infographic](docs/assets/cells-research-goals.png)
   presents questions, models, interventions and measurements as research goals.
   [Prompts](docs/assets/readme-image-prompts.json) and
-  [documentation checks](/mnt/workspaces/Cells/readme-research-goals-20261011-01/verification.json)
+  [documentation checks](/mnt/workspaces/Cells/readme-forms-title-20261011-01/verification.json)
   preserve the asset provenance and distinguish this wording update from a new
   experiment or scientific qualification.
 

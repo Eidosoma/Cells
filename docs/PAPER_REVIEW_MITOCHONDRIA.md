@@ -73,7 +73,8 @@ fission/fusion changes area or capacitance, its material, charge and energy
 changes also need accounting. New stiffness and timescales require their own
 step-refinement and independent-solver checks.
 
-For Plastic Heredity and Where Do Forms Come From, a useful proposed assay is:
+For Plastic Heredity and How Forms Become Reconstructible, a useful proposed
+assay is:
 condition otherwise matched cells, remove the conditioning, restore a common
 environment, then challenge them. Separately compare retaining, resetting or
 transferring mitochondrial state, while controlling mtDNA genotype, host

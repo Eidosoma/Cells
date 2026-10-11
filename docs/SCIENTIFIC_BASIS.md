@@ -34,6 +34,9 @@ recorded separately so a newer manuscript or mechanism does not silently replace
 an earlier source version. Navigation was reviewed on **2026-10-11**; no new
 literature search or experimental reanalysis was performed for this docs update.
 
+The Forms preprint is now titled *How Forms Become Reconstructible*. The September
+orientation below retains the title used at that review.
+
 | Reviewed material | Maintained entry point | Scope |
 | --- | --- | --- |
 | Plastic Heredity v5.0 and Where Do Forms Come From? v0.11, September orientation | [Recorded orientation](../PROGRESS.md) | Later research context; manuscripts belong to the external research tree and do not overwrite S01's v2.3 review |
