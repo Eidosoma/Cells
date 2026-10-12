@@ -135,7 +135,7 @@
     "free_disk_reserve_bytes": 4294967296,
     "max_worker_rss_bytes": 8589934592,
     "gpu_memory_fraction": 0.2,
-    "max_batch_working_bytes": 268435456
+    "max_batch_working_bytes": 536870912
   },
   "tests": [
     "tests/unit/test_two_task_readout.py"

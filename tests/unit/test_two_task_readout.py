@@ -10,8 +10,8 @@ import numpy as np
 import pytest
 
 from cells.assays.readout import CentroidReader, VoltageReadout, score_predictions
-from cells.core.batch import run_batch
-from cells.core.batch_windows import iter_batch_windows
+from cells.core.batch import plan_batch, run_batch
+from cells.core.batch_windows import iter_batch_windows, plan_batch_windows
 from cells.core.runner import control_values, run
 from cells.core.specs import parse_spec
 from cells.core.windows import WindowPolicy
@@ -129,12 +129,30 @@ def test_host_assay_splits_and_equal_physical_cue_budget():
         assert np.all(controls.channel[32:] == 1)
         assert {"world_id", "location", "timing", "preparation", "split"}.isdisjoint(raw)
         budgets.append(dict(world_id=row["world_id"], blocked_area_time_m2_s=dose))
+    # Exercise the real allocation guards before any accepted simulation. A
+    # single-world numerical smoke does not establish that four worlds fit.
+    plans = []
+    for start in range(0, len(ROWS), RULE["batch_worlds"]):
+        rows = ROWS[start : start + RULE["batch_worlds"]]
+        batch = assay.batch(BASE, rows, BACKEND, RULE)
+        full = plan_batch(batch)
+        windowed = plan_batch_windows(batch, WindowPolicy(window_steps=17, recording="full"))
+        assert batch.max_working_bytes <= RULE["resources"]["max_worker_rss_bytes"] // 16
+        plans.append(
+            dict(
+                world_ids=[r["world_id"] for r in rows],
+                estimated_batch_working_bytes=full.estimated_working_bytes,
+                estimated_window_working_bytes=windowed.estimated_working_bytes,
+                batch_budget_bytes=batch.max_working_bytes,
+            )
+        )
     evidence(
         "assay-design",
         dict(
             status="passed",
             cases=ROWS,
             cue_budgets=budgets,
+            allocation_plans=plans,
             unique_evaluation_cases_per_task_single=4,
             unique_evaluation_cases_per_task_joint=8,
             steps_per_arm=16 * 64,

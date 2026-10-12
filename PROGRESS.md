@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-11 UTC.
+Last updated: 2026-10-12 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,30 +9,40 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **First two-task readout assay launched at 23:52:21 UTC on 11 October.**
+- **Corrected two-task assay relaunched at 11:19:13 UTC on 12 October.**
+  The [new registration](/mnt/workspaces/Cells/two-task-readout-20261012-01/registration.json)
+  freezes **955 sources and 15 tests per backend** with the corrected **512-MiB**
+  batch allowance. The [single launch check](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/launch-check.json)
+  confirms the detached controller and CPU phase at **11:19:33 UTC**, with no
+  failure artifact at that check. L4 follows CPU; results remain pending.
+  The [earlier failed run](/mnt/workspaces/Cells/two-task-readout-20261011-01/failure.json)
+  stopped at **23:52:35 UTC on 11 October**, after **13.24 seconds**:
+  ten CPU checks passed, then the first batch raised a setup error before any
+  trajectory executed. Its L4 phase never started and produced no assay outcomes
+  or GPU utilization measurements. The four-world planner requires **258.53 MiB**;
+  the declared **256-MiB** batch allowance was too small. The
+  [failure review](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/failed-run-review.json)
+  authenticates all **955 frozen sources**, matching the checkout before repair;
+  failed evidence remains untouched. The
+  [fix verification](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/fix-verification.json)
+  records **nine preflight passes in 7.84 seconds**, including all **20 full-batch
+  and 20 window plans** under the corrected **512-MiB** allowance. Window plans
+  require at most **76.86 MiB**. Only the protocol's batch allowance and its
+  preflight test changed; all **141 production modules**, physical inputs,
+  decoder settings, splits and numerical tolerances remain unchanged.
   The [assay guide](docs/TWO_TASK_READOUT_ASSAY.md) and
-  [protocol](validation/assays/two_task_protocol.json) fix an **80-world panel
-  per backend** on the unchanged 64-us junction runtime: location only, timing
-  only, both together, disconnected junctions and no cue. Two passive readers
-  share post-cue voltages; calibration holds out complete input combinations
-  and cue strengths. Input-only, shuffled-label, endpoint-only and readout-margin
-  comparisons are retained. Numerical qualification does not require a positive
-  task score. The [preparation receipt](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/preparation.json)
-  authenticates **all 950 prior sources / 139 existing production modules**,
-  nine bounded host checks, two changed-check reruns and a 64-step NumPy
-  calibration smoke with all fourteen arrays and material checks. No held-out
-  task data was inspected during preparation. Ruff and documentation links pass.
-  The [registration](/mnt/workspaces/Cells/two-task-readout-20261011-01/registration.json)
-  freezes **955 sources and 15 tests per backend**, including CPU/L4 agreement,
-  complete checkpoint/window/partition replay and observer neutrality.
-  Limits are **40 minutes, 8 GiB worker RSS, 2 GiB artifacts/cache and 0.2 GPU
-  memory fraction**; each arm executes 1,024 solver steps. The
-  [single launch check](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/launch-check.json)
-  confirms the detached controller and CPU phase, with no failure artifact at
-  that check. CPU runs first, then L4 with GPU-busy and measured SM-active
-  coverage. Results are pending; there is no biological, causal-consumer,
-  new native mixed-intervention or multi-GPU claim. No automatic polling or
-  follow-up job is scheduled.
+  [protocol](validation/assays/two_task_protocol.json) still specify **80 worlds
+  per backend**, five equal-work arms, shared post-cue voltage readers and
+  held-out cue strengths/input combinations. CPU/L4 agreement, checkpoint/window/
+  partition replay, controls and GPU-busy/SM-active coverage are included in this run.
+  Other limits remain **40 minutes, 8 GiB worker RSS, 2 GiB artifacts/cache and
+  0.2 GPU memory fraction**. The [original preparation](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/preparation.json)
+  and [registration](/mnt/workspaces/Cells/two-task-readout-20261011-01/registration.json)
+  preserve the original prerequisite and 15-test inventory. The
+  [retry preparation](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/retry-preparation.json)
+  binds the passing preflight, confirms **953 unchanged registered files** and
+  both intended repair files, and preserves the original failure artifact.
+  No automatic polling or follow-up job is scheduled.
 
 - **Quantum birthmarks reviewed, 11 October.** The
   [research note](docs/PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) checks the Phys.org
