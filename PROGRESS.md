@@ -9,6 +9,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Broader Cells scope and calibration resources documented, 12 October.**
+  The README now leads with integrated cells, tissues and organs, placing BETSE
+  in its bioelectric-layer role. The
+  [calibration plan](docs/SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack)
+  distinguishes existing assembly/chemistry/electrodiffusion references from
+  future physiology, molecular, atlas and organ-function resources. New resource
+  descriptions were reviewed; datasets and models were not imported or fitted.
+  The [documentation/source checks](/mnt/workspaces/Cells/calibration-resources-docs-20261012-01/verification.json)
+  retain the review scope and unchanged simulation sources. The pending timing
+  diagnosis and completed simulation evidence are unchanged.
+
 - **BETSE and BITSEY reference roles clarified, 12 October.** The README and
   design entry points now identify both references and make scientific feature
   parity with both an explicit target. BITSEY's BETSE ancestry and separate

@@ -13,7 +13,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Parallel execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) | Resolution, coupled clocks, device placement and the requirements for future distributed tissues |
 | [BETSE capability coverage](BETSE_CAPABILITY_ROADMAP.md) | Implemented subsets, reference correspondence and remaining mechanism gaps |
 | [BITSEY replication](ROADMAP.md#bitsey-replication) | Regulatory/ionic reference and planned reproduction of the Forms lineage experiments |
-| [Scientific basis](SCIENTIFIC_BASIS.md) | Research provenance, hypotheses and the limits of source and experimental evidence |
+| [Scientific basis and calibration plan](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) | References across the stack, future cell/organ data resources and the limits of model and experimental evidence |
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
 

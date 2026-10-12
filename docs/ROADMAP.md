@@ -6,8 +6,15 @@ criteria. [Progress](../PROGRESS.md) owns current status, active runs and result
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
 build sequence and its historical status statements.
 
-The target is **feature parity with the scientific simulation capabilities of
-both BETSE and BITSEY**, assessed against pinned source versions. BITSEY is a
+Cells' wider target is integrated cell physiology, molecular assembly, tissues
+and organs for testing the Plastic Heredity and Forms ideas. The
+[calibration plan](SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) combines
+model references with measured molecular, cellular, anatomical and functional
+evidence. Source-model comparisons support that programme one layer at a time.
+
+Within that scope, **feature parity with the scientific simulation capabilities
+of both BETSE and BITSEY** is a verification target, assessed against pinned
+source versions. BITSEY is a
 [simplified BETSE-derived simulator](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
 with its own implementation; agreement with one does not establish agreement
 with the other. Track their coverage separately, including coupled behaviour,
@@ -195,6 +202,13 @@ count, and one measurable function. Its definition specifies species, geometry,
 cell/process families, resolution, parameters, ports, and omitted physiology.
 Implement any missing reusable mechanism as a model module; keep organ selection
 and assembly in data. Do not relabel a tissue patch as a whole organ.
+
+Select the calibration data alongside that function: published model repositories
+for candidate laws, molecular/cell atlases for composition and placement, and
+matched physiological and mechanical experiments for dynamics. Qualify one cell
+or small functional tissue unit first; then test the assembled organ under held-out
+conditions. Preserve the distinction between anatomical agreement and functional
+validation, and between model-reproduction inputs and independent measurements.
 
 Add a second independently initialised organ instance and explicit couplers only
 after generic multi-compartment exchange tests pass. A coupled world checkpoint

@@ -2,9 +2,10 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-Cells is an early-stage multiscale simulator for investigating how cellular state,
-communication, and tissue organisation affect memory, inheritance, and adaptation.
-The long-term goal is a whole-organ model and later multiple interacting organs.
+Cells is an independent, early-stage multiscale simulator for investigating how
+molecular assembly, cell physiology and communication shape memory, inheritance
+and tissue organisation. We are building toward integrated whole-cell models,
+whole organs and interacting organ systems.
 The simulation stack is **Python and JAX**, with independent CPU references and
 local NVIDIA GPU execution. See [Progress](PROGRESS.md) for current verification
 status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research background.
@@ -28,21 +29,52 @@ mechanisms, change cell membership and challenge cells with matched visible
 states but different histories. The aim is to identify what carries history,
 what it changes, and when it survives replacement.
 
-We use two complementary reference simulators: **BETSE** to calibrate and verify
-the bioelectric layer, and **BITSEY** for coupled regulatory/ionic models and the
-cellular-state transmission experiments extended in *How Forms Become
-Reconstructible*. Our target is **feature parity with the scientific simulation
-capabilities of both** within Cells' larger simulation stack. Reproducing the
-Forms experiments is the first BITSEY target; the
-[replication plan](docs/ROADMAP.md#bitsey-replication) separates existing
-components from the complete assays and broader coverage still to build.
-
 Realism means explicit physical mechanisms, material and energy accounting, and
 calibration against measurements. Bioelectricity, chemistry and assembly provide
-the starting point; mechanics, growth and turnover are planned extensions.
+the starting point; metabolism, mechanics, growth and turnover are planned
+extensions. Cells' purpose is to study how these processes work together in the
+same evolving cells and tissues.
 The goal is to find where the ideas hold, fail or need revision. See the
 [research background](docs/SCIENTIFIC_BASIS.md) and
 [planned experiments](docs/EXPERIMENTS.md).
+
+## References and calibration
+
+We draw on several sources, each serving a particular part of the simulator:
+
+| Part of Cells | Reference and role |
+| --- | --- |
+| Bioelectric layer | [BETSE](docs/BETSE_CAPABILITY_ROADMAP.md) provides scientific inspiration and a calibration and verification instrument for electrical transport, channels, pumps, junctions and fields. |
+| Regulation and cellular-state transmission | [BITSEY](docs/ROADMAP.md#bitsey-replication) supplies regulatory/ionic reference models; reproducing the Forms paper's writing, retention and replacement experiments is the first assay target. |
+| Protein-cage assembly | [Asor et al.'s mass-photometry study and stochastic model](docs/CAPSID_ASSEMBLY.md) underpin the assembly branch. The paper contains real measurements; fitting Cells to those data remains future work. |
+| Physical chemistry and electrodiffusion | [Thermodynamic reaction-network and electrodiffusion references](docs/SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack) guide material, charge and energy accounting and numerical checks. |
+
+Scientific feature parity with BETSE and BITSEY remains a verification goal for
+the relevant layers within this broader programme. Comparisons cover declared
+models and conditions; experimental calibration requires measured data.
+
+For whole-cell and organ development, the planned resource set includes:
+
+- **Cell physiology and energy:** published models from
+  [Physiome/CellML](https://physiomeproject.org/data-repositories/physiome-model-repository)
+  and [BioModels](https://www.ebi.ac.uk/training/online/courses/biomodels-quick-tour/what-is-biomodels/),
+  alongside the [mitochondrial model and measurement leads](docs/PAPER_REVIEW_MITOCHONDRIA.md).
+- **Molecular quantities and locations:** [BioNumbers](https://bionumbers.hms.harvard.edu/aboutus.aspx)
+  and the [Human Protein Atlas](https://www.proteinatlas.org/about/introduction),
+  with each value traced to its experimental conditions.
+- **Tissue composition and anatomy:** [CCI-seq](docs/PAPER_REVIEW_CCI_SEQ.md),
+  [Human Cell Atlas](https://data.humancellatlas.org/), and
+  [HuBMAP](https://portal.hubmapconsortium.org/)/[Human Reference Atlas](https://humanatlas.io/asctb-tables)
+  for cell types, neighbourhoods and spatial organisation.
+- **Measured function:** matched experiments on voltage, calcium, ATP, oxygen
+  use, transport, growth and mechanical responses; later, organ-level recordings
+  from resources such as [PhysioNet](https://physionet.org/about/) where appropriate.
+
+These are candidates for future benchmarks. The first organ and species are
+still to be selected; human atlases apply to compatible human targets. Anatomical
+or expression data do not by themselves specify transport rates or validate organ
+function. See the [calibration plan](docs/SCIENTIFIC_BASIS.md#calibration-across-the-cells-stack)
+for source roles, existing evidence and the path to independent experimental tests.
 
 ## Current functionality
 
@@ -66,9 +98,7 @@ execution remains to be qualified. Distributing one interacting tissue across
 multiple GPUs requires further development. See the
 [GPU and ensemble guide](docs/GPU_ENSEMBLES.md).
 
-BETSE and BITSEY comparisons apply to the declared models and test conditions;
-biological validation remains separate. BITSEY's nominal model clock is kept
-distinct from physically calibrated time. The
+BITSEY's nominal model clock is kept distinct from physically calibrated time. The
 [assembly-to-cell coupling](docs/CAPSID_ASSEMBLY.md) is an experimental modelling
 hypothesis.
 
@@ -84,10 +114,10 @@ hypothesis.
 
 ![Planned Cells development: broader BETSE channel and transport coverage; integrated assembly, energy and mechanics; Jupiter scaling from four to sixteen GPUs; and tissue-to-organ models.](docs/assets/cells-future.png)
 
-The next directions are broader BETSE coverage, reproduction of the BITSEY
-state-writing, transmission and replacement assays, richer cell physiology
-including water and mechanics, and Jupiter qualification from four to sixteen GPUs.
-Experimental calibration and organ models are longer-term goals. The organ
+The next directions are richer integrated cell physiology, broader BETSE/BITSEY
+verification, reproduction of the Forms assays, and Jupiter qualification from
+four to sixteen GPUs. Experimental calibration, energy metabolism, water,
+mechanics and organ models extend that programme. The organ
 illustration is schematic; it does not select a particular organ to build first.
 Detailed scope and priorities are recorded in [Progress](PROGRESS.md) and the
 [Roadmap](docs/ROADMAP.md).

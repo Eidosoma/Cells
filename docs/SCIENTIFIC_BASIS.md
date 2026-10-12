@@ -27,6 +27,79 @@ gate contract, not a calibrated channel or coupled production trajectory.
 R011 reviews bulk electrodiffusion, membrane charge and scalable field-solver
 design for SPEC-009; it is not new biology or executed upstream solver evidence.
 
+## Calibration across the Cells stack
+
+Direction and resource review: **2026-10-12**. Cells' scientific scope is the
+coupling of molecular assembly, regulation, bioelectricity, chemistry and future
+metabolism, mechanics and turnover within cells, tissues and organs. BETSE is
+inspiration and a calibration/verification instrument for the bioelectric layer;
+BITSEY provides a related regulatory/ionic reference. Coverage of those simulators
+is an engineering milestone within the broader research programme.
+
+Other references already shape the implementation. The
+[protein-cage model](CAPSID_ASSEMBLY.md) follows the stochastic description in
+[Asor et al. (2026)](https://www.nature.com/articles/s41586-026-10948-z), whose
+study measures individual assembly histories using mass photometry. Cells has
+not fitted its rates or validated its extended assembly-to-cell coupling against
+those measurements. A future benchmark should compare intermediate populations
+and assembly-time distributions under matched concentrations and preparation,
+including the measurement window and the distinction between surface and bulk
+kinetics.
+
+The [reaction-network model](COMPARTMENT_REACTIONS.md) uses the ideal chemical
+thermodynamics described by [Rao and Esposito (2016)](https://journals.aps.org/prx/abstract/10.1103/PhysRevX.6.041064).
+The [electrodiffusion review](#r011-spatial-extracellular-closure-and-solver-separation)
+draws on Solbrå et al., Sætra and Mori, and related energy/field-solver work.
+These support equations, accounting and numerical design. Synthetic verification
+parameters and source-model agreement do not establish measured cell physiology.
+
+### Candidate resources for whole cells and organs
+
+The resources below are a selection plan, not imported datasets or calibrated
+Cells models. This review checked primary resource descriptions and the existing
+paper notes; no dataset adapter, parameter fit or new biological run was made.
+
+| Resource | Intended use in Cells | What remains to qualify |
+| --- | --- | --- |
+| [Physiome Model Repository / CellML](https://physiomeproject.org/data-repositories/physiome-model-repository) and [BioModels](https://www.ebi.ac.uk/training/online/courses/biomodels-quick-tour/what-is-biomodels/) | Locate published electrophysiology, signalling, metabolic and physiological models; reproduce selected equations and then return to their experimental sources. | Pin individual model versions, curation status, units, conditions and numerical protocols. Repository inclusion is not validation for every cell type, and models are not raw measurements. |
+| [BioNumbers](https://bionumbers.hms.harvard.edu/aboutus.aspx) | Find literature constraints on cell size, molecular abundance, concentrations and characteristic times; use appropriate ranges to constrain model choices. | Read the cited original measurement, species, compartment and uncertainty. A literature number is not a universal default. |
+| [Corrected Beard mitochondrial model and primary measurement leads](PAPER_REVIEW_MITOCHONDRIA.md) | Start energetic coupling with isolated-mitochondria comparisons, then ATP supply/demand, oxygen consumption, membrane potential and calcium responses. | Reproduce corrected equations/parameters and identify fitting versus independent data before integrating an energy module. Existing maintained ATP pools are not a metabolism model. |
+| [Karr et al., whole-cell modelling (2012)](https://pubmed.ncbi.nlm.nih.gov/22817898/) | A prospective design reference for coupling cellular processes and grounding them in multiple data sources. | This is a bacterial model; it supplies neither an animal-cell parameter set nor validation of Cells. Only the publication overview was reviewed here. |
+| [Human Protein Atlas](https://www.proteinatlas.org/about/introduction) | Constrain which proteins and compartments belong in a selected cell/tissue model, using expression and localization evidence. | Distinguish measured staining/proteomics from inferred expression, and relative signal from absolute abundance. Localization does not supply kinetic constants. |
+| [CCI-seq](PAPER_REVIEW_CCI_SEQ.md), [Human Cell Atlas](https://data.humancellatlas.org/), [HuBMAP](https://portal.hubmapconsortium.org/) and [Human Reference Atlas](https://humanatlas.io/asctb-tables) | Select cell types, heterogeneity, neighbourhoods and anatomical placement for tissue/organ definitions; compare predicted organisation with observed samples. | Select matching species, tissue, developmental state and samples. RNA counts or clump membership do not specify electrical junctions; reference anatomy is not a functional organ model. |
+| Organ-specific primary experiments and, where suitable, [PhysioNet](https://physionet.org/about/) recordings | Compare whole-system responses: electrical signals, pressure/volume/flow, solute transport, oxygen use, deformation and recovery after intervention. PhysioNet is a source of candidate physiological recordings, not all of these measurements. | Choose the organ and experimental task first, then a compatible dataset and measurement model. For example, extracellular ECG cannot be compared directly with a single cell's membrane voltage. |
+
+For mechanics, growth and body shape, we still need selected primary measurements
+of force/deformation, stiffness, volume changes, cell motion and turnover in the
+chosen tissue. An anatomical mesh alone cannot supply those laws. The first organ
+and species remain open; the human resources above are appropriate only for
+compatible human targets. Other organisms need their own measurements.
+
+### Turning references into calibration and validation
+
+Begin with one cell type or small functional tissue unit and one measured
+response. Keep independently measured inputs, fitted parameters and held-out
+outcomes separate. Record preparation, bath/nutrient conditions, temperature,
+geometry, units, replicate identity, uncertainty and the observation process.
+Check both time courses and responses to interventions before transferring
+parameters to a larger coupled model. Numerical/source agreement, CPU/GPU
+agreement and biological prediction remain separate evidence.
+
+The existing biological work retains its limits: the
+[Bonzanni/RPTEC pilot](../reports/BIO003_PILOT_CLOSEOUT.md) closed as descriptive
+without biological acceptance, and the
+[Costa/Xenopus candidate](BETSE_BIOLOGICAL_BENCHMARK_PLAN.md) still needs original
+methods and boundary-condition reconciliation. Neither is a completed whole-cell
+calibration. These are useful starting lessons for the next measured-data target.
+
+For organs, validate both the component physiology and the assembled function
+against withheld conditions. Atlas agreement tests organisation; transport,
+energetics and mechanics require functional measurements as well. The
+[organ-selection plan](MULTISCALE_DESIGN.md#selecting-the-first-organ-later)
+therefore chooses a tractable function and sufficient evidence before increasing
+anatomical scale. Full stacks and reduced models must preserve the responses
+relevant to the Plastic Heredity and Forms experiments.
+
 ## BETSE and BITSEY as complementary references
 
 **BETSE** calibrates and verifies the bioelectric layer within the broader Cells
