@@ -9,26 +9,153 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **75/25 distributed-cue qualification launched at 18:24:35 UTC on
-  12 October.** The detached job is running its CPU phase, followed by the L4.
-  The [launch check](/mnt/workspaces/Cells/two-task-distributed-development-20261012-01/launch-check.json)
-  confirms a live worker, no failure artifact, **968 matching current/frozen
-  sources** and **eight registered tests per backend**. Durable
-  [status](/mnt/workspaces/Cells/two-task-distributed-20261012-01/status.json),
-  logs and completion/failure artifacts live under
-  [/mnt/workspaces/Cells/two-task-distributed-20261012-01](/mnt/workspaces/Cells/two-task-distributed-20261012-01).
-  Results have not yet been reviewed; no automatic follow-up is scheduled.
+- **Unstimulated-cell readout qualification launched at 23:05:47 UTC on
+  12 October**, running detached through CPU then L4. The
+  [launch check](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/launch-check.json)
+  confirms the CPU phase started, **974 frozen sources** match the checkout
+  and preflight, and all **ten tests** are registered. No result is available
+  at this launch check. Logs, inputs and eventual result/failure artifacts are
+  under [the run directory](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01).
+  Estimated duration is **15–20 minutes**; the registered wall limit is
+  **40 minutes**. No automatic follow-up or further polling is scheduled.
 
-  The [protocol](validation/assays/distributed_cue_protocol.json) allocates
-  **75/25** of the inhibition dose across source cells 1 and 4, swapping the
-  bias for location in the location-only, joint and disconnected arms.
-  Timing-only stays **50/50**, with no-cue unchanged. Total area-integrated
-  inhibition, pulse times/durations, physical model, **0.25-us** step,
-  **64-us** horizon, reader and **2-nV** margin remain fixed. Calibration uses
-  **0.4/0.6/0.8**; fresh evaluation strengths are
-  **0.425/0.575/0.625/0.775**. The question is whether distributing the cue
-  preserves a resolvable timing component while the bias carries location.
-  Scientific failure or abstention remains separate from numerical acceptance.
+  The [protocol](validation/assays/unstimulated_readout_protocol.json) and
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#reading-unstimulated-cells) restrict the
+  primary reader to **cells 2, 3, 5, 6 and 7**, excluding both stimulated sources.
+  Calibration and evaluation share **0.0625-us** steps and the unchanged
+  **2-nV** margin. Fresh strengths **0.4375/0.5625/0.6375/0.7625** test whether
+  both location and timing remain readable in **16 joint cases**. The all-cell
+  comparator and disconnected arm are reported separately; a successful reader
+  is a scientific outcome, not an acceptance gate or a biological sensing claim.
+
+  The [preflight](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/preparation.json)
+  passed **four checks in 28.24 s** without simulating fresh responses. It
+  authenticates **971 prior sources, 1,149 evidence hashes and 17 passing
+  reports**, checks physical doses, and verifies source-cell exclusion and
+  prediction independence from evaluation metadata. All **35 batch plans**
+  fit the **4-GiB** working bound; estimated retained arrays are **638.3 MiB**
+  and uncompressed arrays across both backends are **5.45 GiB**, within the
+  **8-GiB** artifact/cache allowance. Source style and method links pass.
+
+  The run streams **140 worlds per backend**, with equal **28,672 panel steps
+  per arm**, and compares all **60 calibration worlds** with authenticated
+  finest-step trajectories. Conservation/domain checks, physical CPU/L4
+  tolerances and bitwise replay are retained. Both GPU-busy and measured
+  SM-active coverage are recorded, including compilation and host work.
+
+- **Distributed-cue timestep qualification completed at 19:52:06 UTC on
+  12 October**, after **19 min 37 s** of recorded execution. The
+  [result](/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01/result.json)
+  records **11 CPU passes / one expected GPU deferral** and **12 L4 passes**,
+  with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/two-task-distributed-timing-development-20261012-01/completed-status-20261012T224442Z.json)
+  authenticates **971 unchanged sources, 1,149 evidence hashes and 17 passing
+  reports**, plus the reused coarse panel's **968 sources and 587 evidence
+  hashes**. At that status check the GPU was idle and no new job was launched.
+
+  **The declared primary stability target passed on both backends.** With
+  calibration matched to the timestep, both labels remain correct and resolved
+  in **16/16 joint cases at 0.25, 0.125 and 0.0625 us**. The
+  [reader results](/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01/evidence/gpu/distributed-timing-readouts.json)
+  give finest-step timing scores of **8.026–20.174 nV**, above the unchanged
+  **2-nV** margin. The largest timing-score change between the two finest steps
+  is **0.01837 nV**; all joint task scores meet the declared **2-nV / 10%**
+  drift limits with unchanged decisions. Final-time-only reading also passes
+  **16/16** at all steps; the two single-task arms retain **8/8**.
+
+  **Fixed original calibration does not retain the same robustness.** With
+  the 0.25-us curves held fixed, three-time joint timing stays correct in all
+  sixteen forced choices but falls to **13/16 resolved** at the finest step;
+  its finest-step score range is **1.049–11.011 nV**. Final-time-only timing
+  drops to **7/16 resolved**. All sixteen fixed-reader timing comparisons fail
+  the declared finest-step score-drift criterion in each voltage mode. This
+  exposes sensitivity to timestep-dependent response shifts; the positive
+  matched-calibration result is not a certificate of calibration transfer.
+
+  All **35 active timing contrasts** meet the original-to-finest and
+  finest-pair stability limits and exceed the declared signal floor; all
+  **28 null pairs** remain exactly zero. The
+  [contrast report](/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01/evidence/gpu/distributed-timing-contrasts.json)
+  gives a maximum finest-pair relative change of **0.1609%**. No pair resolves
+  convergence order under the inherited comparison allowance. These are
+  tested-step results, not a continuum error bound. Disconnected reading also
+  retains **16/16** with matched calibration, so a need for junction
+  communication remains unestablished.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01/evidence/gpu/distributed-timing-cpu-gpu.json)
+  passes across **545,993,840 new state/field values** with existing physical
+  tolerances. All decisions agree across **96 task/mode/arm/level comparisons**;
+  the largest reader-score difference is **0.0002341 nV**. There are no paired
+  contrast or reader-stability classification disagreements, although numerical
+  summaries are not all bitwise identical. Fourteen-array restart, reorder,
+  partition and streamed-window replay pass bitwise. Material residual uses
+  less than **0.649%** of its error budget; null and disconnected controls pass.
+
+  The [protocol](validation/assays/distributed_timing_protocol.json) and
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#refining-the-distributed-cue) preserve
+  cues, doses, physical timing, model, horizon, reader algorithm and margins.
+  **140 coarse worlds per backend** are authenticated and reused, with both
+  saved voltage-reader reports reproduced exactly. **280 new worlds per
+  backend** execute **215,040 panel steps**, equally **43,008 per arm**. This
+  audits inspected cases rather than adding fresh scientific holdouts. The
+  [preflight](/mnt/workspaces/Cells/two-task-distributed-timing-development-20261012-01/preparation.json)
+  retains five passing checks, 105 allocation plans and source/style/link
+  verification. Streaming kept peak child RSS at **1.44 GiB** and artifacts/cache
+  at **2.10 GiB**, within the registered **8-GiB / 12-GiB** bounds.
+
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01/gpu-metrics/result.json)
+  cover **619.42 s**: GPU busy **24.306%**, measured SM-active **8.930%**, with
+  **99.9999% / 99.807% coverage**, using **0.1721 GPU-hours**. These include
+  compilation and host checks; no single warmed interval is defined. Summed L4
+  execution time per arm is **32.04–33.29 s**, excluding compilation and host
+  work. This remains a single-GPU correctness run, not a throughput qualification.
+
+  This result motivated the unstimulated-cell experiment above, with calibration
+  explicitly tied to its chosen timestep. The completed audit did not schedule
+  an automatic follow-up.
+
+- **75/25 distributed-cue qualification completed at 18:30:19 UTC on
+  12 October**, after **5 min 43 s** of recorded execution. The
+  [result](/mnt/workspaces/Cells/two-task-distributed-20261012-01/result.json)
+  records **seven CPU passes / one expected GPU deferral** and **eight L4
+  passes**, with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/two-task-distributed-development-20261012-01/completed-status-20261012T184631Z.json)
+  authenticates **968 unchanged sources, 587 evidence hashes and 15 required
+  passing reports**. At that closeout the GPU was idle; the completed run
+  scheduled no automatic follow-up.
+
+  **The primary target passed on both backends:** both location and timing are
+  correct and resolved in **16/16 fresh joint cases**. The
+  [readout results](/mnt/workspaces/Cells/two-task-distributed-20261012-01/evidence/gpu/distributed-readouts.json)
+  give timing scores of **8.025–20.178 nV**, above the unchanged **2-nV** margin;
+  location scores are **5.210–9.987 uV**. Both single-task arms pass **8/8**.
+  Final-time-only joint reading also passes **16/16**, with timing scores of
+  **4.640–11.666 nV**. The earlier one-cell failures remain frozen; different
+  held-out strengths prevent a matched estimate of the allocation's effect.
+
+  **Disconnected reading also passes 16/16**, with timing scores of
+  **8.119–20.441 nV**. Thus these observations do not establish that junction
+  communication is necessary: the reader still sees both stimulated source
+  cells, and other physical routes remain. Input-history reading passes;
+  current-input and no-cue controls remain unresolved. At the **1-uV** margin,
+  timing remains unresolved in every joint case. The balanced centroid
+  comparator gets timing **8/16** correct. This is synthetic decodability using
+  one passive external reader, not biological sensing or polycomputing.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-distributed-20261012-01/evidence/gpu/distributed-cpu-gpu.json)
+  passes across **91,359,800 state/field values** under existing physical
+  tolerances. Every reported task score and decision agrees exactly across
+  **48 task/mode/arm comparisons**, as do all **32 shuffled joint metrics**.
+  All **24 unchanged calibration worlds** reproduce bitwise on each backend;
+  fourteen-array restart, partition, window and reorder replay pass. Material
+  residual uses less than **0.649%** of its error budget.
+
+  The [protocol](validation/assays/distributed_cue_protocol.json) and
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#distributed-source-cue) fix the
+  **75/25** allocation and fresh strengths **0.425/0.575/0.625/0.775** while
+  preserving total dose, physical timing, model, **0.25-us** step, **64-us**
+  horizon and reader. Calibration remains **0.4/0.6/0.8**. All **140 worlds
+  per backend** use equal solver work across arms: **7,168 steps per arm**.
 
   The [preflight](/mnt/workspaces/Cells/two-task-distributed-development-20261012-01/preparation.json)
   records **two passing checks in 19.20 s**, independently verifying every
@@ -36,17 +163,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   authenticates the completed prerequisite's **963 sources, 587 evidence
   hashes and 15 passing reports**. All **35 batch plans** fit the limits:
   **929.31 MiB** maximum working estimate and **1.39 GiB** retained arrays.
-  Ruff, formatting, 21 local method links and diff checks pass. The
-  [method](docs/TWO_TASK_READOUT_ASSAY.md#distributed-source-cue) describes the
-  new physical hypothesis and limits of comparisons with earlier panels.
+  Ruff, formatting, 21 local method links and diff checks pass. Actual peak
+  child RSS was **2.07 GiB**, with **392 MiB** of artifacts/cache, within bounds.
 
-  The run evaluates **140 worlds per backend**, with **7,168 solver steps per
-  arm**, reproduces **24 unchanged calibration worlds**, and checks conservation,
-  controls, restart/partition/window replay and CPU/L4 agreement using existing
-  physical tolerances. Both GPU-busy and measured SM-active coverage are recorded.
-  Bounds remain **40 minutes / 8 GiB worker RSS / 2 GiB artifacts/cache / 0.2
-  GPU-memory fraction**. Expected runtime is approximately **4–8 minutes**,
-  based on the preceding panel; only the launch has been checked.
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-distributed-20261012-01/gpu-metrics/result.json)
+  cover **186.41 s**: GPU busy **17.035%**, measured SM-active **5.082%**, with
+  **99.998% / 100% coverage**, using **0.0518 GPU-hours**. These averages include
+  compilation and host checks; no single warmed interval is defined. Summed
+  L4 execution time per arm was **5.17–5.49 s**, excluding compilation and host
+  work. This is a single-GPU correctness run, not a throughput qualification.
+
+  The completed timestep audit above addresses stability for the changed cue.
+  A separately declared readout restricted to unstimulated cells remains the
+  next proposed experiment, to test whether signals reach cells outside the
+  directly stimulated sources. That experiment has not been launched.
 
 - **Saved template-margin diagnosis completed at 17:23:13 UTC on
   12 October.** The

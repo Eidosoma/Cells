@@ -427,3 +427,8 @@ dependency. Record a substantive design change in [Decisions](docs/DECISIONS.md)
 Add a research check-in to [Scientific basis](docs/SCIENTIFIC_BASIS.md), then
 update the affected experiment or roadmap entry. Link completed tasks to their
 code, tests, benchmark reports, or run artifacts.
+
+## License
+
+Cells is licensed under the [MIT License](LICENSE). Third-party materials retain
+their existing license notices.

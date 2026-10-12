@@ -1,0 +1,106 @@
+{
+  "kind": "distributed_cue_timing_refinement@1",
+  "scope": "Temporal self-refinement of the completed 75/25 cue panel, using saved 0.25-us observations and two newly simulated finer steps; numerical checks and scientific stability outcomes remain separate.",
+  "purpose": "Test whether the successful nanovolt-scale location/timing decoding survives smaller integration steps, and expose sensitivity to changing versus frozen calibration curves.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-distributed-20261012-01",
+    "registration_sha256": "43b6649d2e786efed08beb105248f77a77a0beaf8ef01c41cc4df07b7ad42a55",
+    "completion_sha256": "de77f0f228993f0b43b39380fa76a726e74f357b2ce7dffa62e89dd0474e4fd9",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/distributed_cue_protocol.json",
+  "source_protocol_sha256": "9346cb997cb0231f4b746e41b2b2e7d327398a32aabe571433bed4492df8e186",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "simulated_levels": [
+    1,
+    2
+  ],
+  "duration_s": 6.4e-05,
+  "readout_times_s": [
+    4e-05,
+    4.8e-05,
+    6.4e-05
+  ],
+  "panel": "All 140 prior cases at three resolutions: 140 authenticated coarse trajectories reused, 280 new worlds per backend. The 75/25 source shares, total doses, event times, geometry, initial state, strengths, labels and observation support are unchanged. This is an audit of inspected cases, not fresh holdout validation.",
+  "baseline_reproduction": "Re-evaluate the two voltage reader modes on authenticated saved coarse features and require exact reproduction of the previous reports; retain the bound original full trajectories without copying or resimulating them.",
+  "contrast": {
+    "definition": "late minus early area-weighted voltage, paired at fixed arm, location and cue strength; 21 features at the original completed times",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the saved 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "reader_check": {
+    "observation_modes": [
+      "voltage",
+      "final_voltage"
+    ],
+    "calibration_modes": [
+      "resolution_matched",
+      "frozen_coarse"
+    ],
+    "calibration": "Resolution-matched mode fits the unchanged template algorithm on calibration rows at each timestep. Frozen-coarse mode always uses the saved 0.25-us calibration rows and changes only the evaluated observations. Both are reported; no selection of the more favorable answer.",
+    "criteria": {
+      "absolute_score_change_limit_V": 2e-09,
+      "relative_score_change_limit": 0.1
+    },
+    "stability": "For every evaluated task and case, compare signed scores across all steps. The two finest scores must differ by at most BOTH 2 nV and 10% of the absolute finest score; separately report prediction/resolution changes and original-to-finest stability. Resolution/correctness at every level is reported independently. Null zero scores have zero relative allowance. These are numerical diagnostics, not biological noise or continuum error bounds.",
+    "primary": "Report whether the resolution-matched, three-time voltage reader retains both correct and resolved labels in all 16 joint cases at every step, and whether all joint task scores meet the finest-step drift limits with unchanged decisions. Also report the frozen-coarse and final-time comparisons and all control arms. No scientific outcome is an engineering acceptance gate."
+  },
+  "batch_worlds": 4,
+  "storage": "Save full state/field arrays per world as each batch finishes. Retain only all readout vectors, the current batch, one reference control, and four finest joint worlds for replay. Compare saved CPU/L4 arrays one world at a time. Both completed and failed evidence are preserved.",
+  "resources": {
+    "max_wall_seconds": 2400,
+    "artifact_and_cache_bytes": 12884901888,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_distributed_timing.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_distributed_timing.py::test_distributed_timing_cpu_gpu"
+  ],
+  "required_evidence": [
+    "distributed-timing-prerequisite",
+    "distributed-timing-design",
+    "distributed-timing-panel",
+    "distributed-timing-baseline-reproduction",
+    "distributed-timing-contrasts",
+    "distributed-timing-readouts",
+    "distributed-timing-controls",
+    "distributed-timing-fine-replay"
+  ],
+  "required_gpu_evidence": [
+    "distributed-timing-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "The prior successful synthetic panel and earlier failures remain frozen. No fresh scientific generalization claim from these already inspected strengths.",
+    "No changes to physical equations, source shares, doses, geometry, state, control times, observation support, reader algorithm, abstention margin or physical comparison tolerances.",
+    "No adaptive timestep, reader selection, feature search, threshold tuning, stronger cue, longer horizon, continuum or spatial convergence certificate.",
+    "Recalibration at each resolution can hide common shifts; the frozen-coarse reader and paired physical contrasts are therefore also retained.",
+    "Disconnected controls retain other physical routes and direct source-cell observations. This audit does not establish a requirement for junction communication or biological polycomputing.",
+    "Convergence-order interpretation uses the inherited numerical allowance. An unresolved ratio cannot establish formal order.",
+    "Four-world batches keep equal solver steps across arms. Larger bounded batch/disk estimates accommodate finer traces; memory is bounded by streaming, and no numerical tolerance is relaxed.",
+    "Record GPU-busy and measured SM-active with coverage. Compilation/host checks remain part of this single-GPU correctness run; no throughput or multi-GPU claim."
+  ],
+  "automatic_followup": false
+}

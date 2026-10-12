@@ -1,0 +1,219 @@
+{
+  "kind": "two_task_unstimulated_readout@1",
+  "scope": "Fresh strength-interpolation assay with a fixed reader restricted to cells receiving no direct channel inhibition; numerical qualification and decoding outcomes are separate.",
+  "purpose": "Test whether both location and timing can be read outside the two directly stimulated cells, and report the same restricted readout with junctions disconnected. Keep an explicitly separate all-cell comparator on the same panel.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-distributed-timing-20261012-01",
+    "registration_sha256": "0213863d40ec76e5a2bab87debf1d70f7da96afe3493e85349b92c286b1d7baf",
+    "completion_sha256": "2a1d6704d222b04e310452e33164ba0ed966fe75ae598bd30cd6a001b0fa9de6",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/distributed_timing_protocol.json",
+  "source_protocol_sha256": "a368b7b246cfc39d7a1cd856fedb3f05d8c80639a305ced5911834e63b5f4042",
+  "dt_s": 6.25e-08,
+  "duration_s": 6.4e-05,
+  "world_id_offset": 300000,
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    },
+    {
+      "id": "evaluation_4375",
+      "split": "heldout",
+      "amplitude": 0.4375
+    },
+    {
+      "id": "evaluation_5625",
+      "split": "heldout",
+      "amplitude": 0.5625
+    },
+    {
+      "id": "evaluation_6375",
+      "split": "heldout",
+      "amplitude": 0.6375
+    },
+    {
+      "id": "evaluation_7625",
+      "split": "heldout",
+      "amplitude": 0.7625
+    }
+  ],
+  "cue": {
+    "source_cell_ids": [
+      1,
+      4
+    ],
+    "location_coded_arms": [
+      "location_only",
+      "joint",
+      "disconnected"
+    ],
+    "location_weights": [
+      [
+        0.75,
+        0.25
+      ],
+      [
+        0.25,
+        0.75
+      ]
+    ],
+    "timing_only_weights": [
+      0.5,
+      0.5
+    ],
+    "no_cue_weights": [
+      0.0,
+      0.0
+    ],
+    "dose": "Source j receives amplitude * share_j * minimum_source_area / source_area_j fractional channel inhibition for the same 8-us pulse; total area-integrated inhibition is unchanged.",
+    "timing": "Location-only retains the fixed 16-24-us pulse; other cued arms retain early 8-16-us or late 24-32-us pulses. Readout remains 40,48,64 us."
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ],
+    "times_s": [
+      4e-05,
+      4.8e-05,
+      6.4e-05
+    ],
+    "support": "All five unstimulated cells, selected before fresh responses. Both voltage and input-only primary-support modes exclude source cells. Input history on this support is a null control, not source control history."
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Fit the unchanged three-strength polyline separately in each arm and observation mode at dt=0.0625 us; calibration and evaluation share this exact step. All label combinations are calibrated; unused single-task duplicates are excluded.",
+    "features": "Primary: 15 area-weighted membrane-voltage values from unstimulated cells 2,3,5,6,7 at 40,48,64 us, in time-first order. The separate all-cell comparator uses 21 values and cannot enter the primary fit. No feature search or fitted scaling.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "generalization": "Held-out strengths 0.4375,0.5625,0.6375,0.7625 are disjoint from all preceding panels and chosen symmetrically around 0.6 before response simulation. Generalization is within one deterministic tissue and all-combinations calibration, not independent biological replication or untrained input combinations.",
+  "scientific_target": "Report whether both labels are correct and resolved for all 16 fresh joint cases using ONLY the 15 primary features at the unchanged 2-nV margin. Report disconnected and all-cell outcomes separately, including every failure and abstention. Reader success is never an engineering acceptance gate.",
+  "historical_reproduction": {
+    "level": 2,
+    "worlds": 60,
+    "comparison": "All calibration worlds match saved finest-step physical inputs and reproduce full same-backend trajectories under inherited field-specific tolerances. Report bitwise agreement separately. This does not supply new holdouts or certify the restricted reader at other timesteps."
+  },
+  "batch_worlds": 4,
+  "storage": "Stream all 140 full trajectories per backend to disk in four-world batches; retain only readout vectors and four joint calibration worlds for replay. CPU/L4 comparisons load one world at a time.",
+  "resources": {
+    "max_wall_seconds": 2400,
+    "artifact_and_cache_bytes": 8589934592,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_unstimulated_readout.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_unstimulated_readout.py::test_unstimulated_cpu_gpu"
+  ],
+  "required_evidence": [
+    "unstimulated-prerequisite",
+    "unstimulated-design",
+    "unstimulated-observation-support",
+    "unstimulated-reader-isolation",
+    "unstimulated-panel",
+    "unstimulated-calibration-reproduction",
+    "unstimulated-readouts",
+    "unstimulated-controls",
+    "unstimulated-replay"
+  ],
+  "required_gpu_evidence": [
+    "unstimulated-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "No physical model, geometry, initial-state, 75/25 allocation, total-dose, pulse-time, 64-us-horizon, reader-algorithm, margin or numerical-tolerance changes.",
+    "Use the finest previously tested step, 0.0625 us, for both calibration and evaluation. This is an explicit operating point, not a continuum error bound or independent convergence certificate for the new strengths and restricted readout.",
+    "No fresh-response simulation or inspection during development. Nonintegrating control/resource checks, synthetic known answers and authenticated prior evidence precede frozen-source launch.",
+    "No feature subset search, adaptive template density, threshold tuning, strength input to prediction, evaluation-label fitting or feedback to physics. The all-cell comparator never supplies primary features or calibration.",
+    "A disconnected control leaves extracellular/electrical routes and shared environmental coupling. Removing directly stimulated observations does not by itself establish that junction communication is required; per-arm calibration does not test reader transfer.",
+    "One passive external decoder producing two labels is not two causal biological consumers or evidence of biological polycomputing, memory, reconstruction or heredity. The synthetic 2-nV margin is not measured biological sensor noise.",
+    "All seven reader modes and 32 predeclared whole-curve label shuffles are reported without selecting a favorable result; shuffles do not establish significance.",
+    "Every arm has equal solver steps. Record both GPU-busy and measured SM-active with coverage, including compilation and host work; no throughput or multi-GPU qualification."
+  ],
+  "automatic_followup": false
+}

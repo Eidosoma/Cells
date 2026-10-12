@@ -353,3 +353,96 @@ reproduction check. All five arms retain equal solver work, with GPU-busy and
 measured SM-active coverage recorded. Earlier timestep refinement does not
 certify convergence of this changed cue. Execution status and results belong in
 [Progress](../PROGRESS.md); no automatic follow-up is scheduled.
+
+## Refining the distributed cue
+
+The [distributed timing protocol](../validation/assays/distributed_timing_protocol.json)
+checks a concrete risk in the successful 75/25 panel: a nanovolt-scale decoding
+margin needs temporal checks on this changed physical cue. It authenticates and
+reuses the completed **0.25-us** trajectories, then simulates all 140 cases at
+**0.125 and 0.0625 us**, giving **280 new worlds per backend**. Source shares,
+doses, events, initial state, geometry, strengths and the **64-us** horizon stay
+fixed. These are already inspected cases, so this is numerical self-refinement,
+not fresh held-out validation. Re-evaluating the saved coarse observations must
+exactly reproduce the previous three-time and final-time voltage reader reports.
+
+The [analysis](../validation/assays/distributed_timing.py) reports two calibration
+conditions for both voltage observation modes. Resolution-matched calibration
+fits the unchanged template algorithm to calibration rows at each timestep.
+Frozen-coarse calibration always uses the saved 0.25-us calibration curves and
+changes only the evaluation observations. The latter exposes common voltage
+shifts that recalibration could hide. Neither condition uses evaluation strength
+or labels to fit or predict, and both are retained without choosing whichever
+gives a better outcome. Known-answer checks include a shared response shift
+that preserves decoding after recalibration but changes fixed-reader decisions.
+
+For each evaluated task, the **0.125-to-0.0625-us signed score change** must be no
+larger than both **2 nV** and **10% of the absolute finest-step score** to meet
+the declared drift criterion. Prediction and abstention changes, correctness at
+every level and the original-to-finest comparison are reported separately.
+The primary question is whether the resolution-matched three-time reader retains
+both correct and resolved labels in all sixteen joint cases at every step, with
+stable finest-step scores and decisions. The **2-nV** abstention margin remains
+unchanged. Exact null scores have zero relative allowance and cannot count as a
+positive decoding result.
+
+The earlier paired-contrast analysis is reused for all **63 early/late pairs**,
+including **28 null pairs**, with its existing absolute, relative and
+convergence-order interpretation limits. A passing numerical suite does not
+require stable contrasts or successful decoding. No tested-step comparison is a
+continuum error bound or biological noise model; disconnected and source-cell
+readout limitations remain.
+
+The [checks](../tests/unit/test_distributed_timing.py) preserve all new full
+trajectories on disk as four-world batches finish, retaining only readout
+vectors and four finest-step worlds for replay. CPU/L4 arrays are compared one
+world at a time using existing physical tolerances; within-run reorder,
+partition, window and snapshot replay remain bitwise. Finer traces require a
+**4-GiB** batch working bound and **12-GiB** artifact/cache allowance; the
+**8-GiB** worker RSS and **40-minute** wall limits remain. Every arm has equal
+solver work, and both GPU utilization measures are recorded. The runner freezes
+source and inputs before new simulation and schedules no follow-up job.
+
+## Reading unstimulated cells
+
+The [unstimulated-cell protocol](../validation/assays/unstimulated_readout_protocol.json)
+tests a limitation of the earlier reader: it could directly observe both
+stimulated source cells. The primary observation now contains only cells
+**2, 3, 5, 6 and 7**, excluding sources **1 and 4**. All five cells are selected
+before new responses are simulated, without searching for a favorable subset.
+Area-weighted voltage at **40, 48 and 64 us** gives **15 features**. A separate
+all-seven-cell reader provides a comparator on the same inputs; its features
+and calibration cannot enter the primary fit.
+
+Calibration and evaluation both use **0.0625 us**, the finest step in the
+completed temporal audit. This explicit operating point avoids mixing response
+curves from different timesteps. The previous audit does not independently
+certify convergence of the restricted reader or its new test strengths.
+Physical equations, geometry, 75/25 source allocation, dose, pulse times and
+**64-us** horizon remain unchanged. Calibration retains **0.4/0.6/0.8**;
+fresh evaluation uses **0.4375/0.5625/0.6375/0.7625**, disjoint from previous
+panels and chosen symmetrically around 0.6 before inspecting new responses.
+
+The unchanged template algorithm and **2-nV** margin are fitted separately
+in each arm and observation mode. Both labels must be correct and resolved
+in all **16 joint cases** to meet the primary scientific target. The final-time,
+1-uV-margin, centroid, all-cell and input-only comparators, plus the 32 fixed
+curve-label shuffles, are all retained. Input history on the five unstimulated
+cells is a null control because their channel controls never change. Successful
+decoding is an outcome, not a requirement for numerical acceptance.
+
+The disconnected arm uses the same restricted support. It helps assess the
+role of junctions, but leaves extracellular and electrical coupling available;
+separate per-arm calibration also does not test reader transfer. Even a positive
+result would establish synthetic decodability by an external reader, not
+biological sensing, multiple causal consumers or polycomputing.
+
+The [checks](../tests/unit/test_unstimulated_readout.py) verify source-cell
+exclusion with synthetic perturbations and confirm that evaluation metadata
+cannot change predictions. They stream **140 worlds per backend** to disk,
+reproduce all **60 calibration worlds** against authenticated finest-step
+trajectories, and preserve conservation, physical CPU/L4 tolerances and bitwise
+reorder, partition, window and snapshot replay. Each arm executes **28,672
+panel steps**. Both GPU utilization measures are recorded; compilation and
+host work remain included. Results and job status belong in
+[Progress](../PROGRESS.md).
