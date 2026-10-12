@@ -9,15 +9,87 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Ordinary dynamic-junction runtime qualification: CPU complete; L4 phase
-  running at 18:22 UTC on 11 October.** The
-  [status check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/status-20261011T182200Z.json)
-  records **347 CPU passes / two declared GPU deferrals**, with no failures or
-  errors, in **12 min 10 s**. L4 has **170/349 passing tests reported** so far;
-  all new junction tests and their CPU/L4 comparison have passed, with shared
-  regressions continuing. The controller is alive, both stderr logs are empty
-  and no failure artifact exists. GPU console counts are provisional until full
-  qualification finishes. The retry launched at **17:56:37 UTC**. The
+- **First two-task readout assay launched at 23:52:21 UTC on 11 October.**
+  The [assay guide](docs/TWO_TASK_READOUT_ASSAY.md) and
+  [protocol](validation/assays/two_task_protocol.json) fix an **80-world panel
+  per backend** on the unchanged 64-us junction runtime: location only, timing
+  only, both together, disconnected junctions and no cue. Two passive readers
+  share post-cue voltages; calibration holds out complete input combinations
+  and cue strengths. Input-only, shuffled-label, endpoint-only and readout-margin
+  comparisons are retained. Numerical qualification does not require a positive
+  task score. The [preparation receipt](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/preparation.json)
+  authenticates **all 950 prior sources / 139 existing production modules**,
+  nine bounded host checks, two changed-check reruns and a 64-step NumPy
+  calibration smoke with all fourteen arrays and material checks. No held-out
+  task data was inspected during preparation. Ruff and documentation links pass.
+  The [registration](/mnt/workspaces/Cells/two-task-readout-20261011-01/registration.json)
+  freezes **955 sources and 15 tests per backend**, including CPU/L4 agreement,
+  complete checkpoint/window/partition replay and observer neutrality.
+  Limits are **40 minutes, 8 GiB worker RSS, 2 GiB artifacts/cache and 0.2 GPU
+  memory fraction**; each arm executes 1,024 solver steps. The
+  [single launch check](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/launch-check.json)
+  confirms the detached controller and CPU phase, with no failure artifact at
+  that check. CPU runs first, then L4 with GPU-busy and measured SM-active
+  coverage. Results are pending; there is no biological, causal-consumer,
+  new native mixed-intervention or multi-GPU claim. No automatic polling or
+  follow-up job is scheduled.
+
+- **Quantum birthmarks reviewed, 11 October.** The
+  [research note](docs/PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) checks the Phys.org
+  account against the PRX paper and records proposed extensions to E04/E09/E11/E12
+  and the planned two-task assay: matched-history comparisons, causal carrier
+  tests, reader controls and preserved behaviour under coarse graining. It
+  distinguishes quantum theory/simulation from biological measurements and
+  prevents logs, accounting ledgers or observer buffers from masquerading as
+  physical memory. [Sources and documentation checks](/mnt/workspaces/Cells/quantum-birthmarks-review-20261011-01/verification.json)
+  record seven local link/anchor checks and all **948 unchanged code/configuration/
+  validation files**. This was documentation-only; no simulation or job was changed.
+
+- **Long dynamic-junction qualification passed at 22:53:05 UTC on
+  11 October**, after **68 min 44 s**. The
+  [result](/mnt/workspaces/Cells/betse-spatial-junction-refinement-20261011-01/result.json)
+  records **42 CPU passes / one declared GPU deferral** and **43 L4 passes /
+  no skips**, with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/betse-spatial-junction-refinement-development-20261011-01/completed-status-20261011T230327Z.json)
+  authenticates **950 frozen sources, 314 evidence hashes, 65 required passing
+  reports**, both test inventories and raw GPU metrics. All **950 registered
+  current files**, including **139 production modules**, remain unchanged.
+  The [protocol](validation/betse/spatial_active/junction_refinement_protocol.json)
+  covers six unchanged cases through **256 us**, at **1/0.5/0.25-us** steps.
+  All **18 native trajectory comparisons per backend** pass across
+  **61,221,888 scalar values each**, using at most **23.80% CPU / 25.29% L4**
+  of the existing error budget. Direct
+  [CPU/L4 agreement](/mnt/workspaces/Cells/betse-spatial-junction-refinement-20261011-01/evidence/gpu/long-junction-cpu-gpu.json)
+  passes across **59,243,520 values**. All five native/Cells temporal-refinement
+  cases pass, as do original 64-us prefixes, fourteen-array replay through nine
+  disk cuts and changed windows, independent-world reorder/partition, effects
+  and corruption controls. Half blocking remains a separate step-sensitivity
+  result: multiplying stored opening after every moving-ion update changes the
+  prescribed blocking rate when dt changes; no fixed-law refinement is claimed.
+  The [preparation receipt](/mnt/workspaces/Cells/betse-spatial-junction-refinement-development-20261011-01/preparation.json)
+  retains both authenticated prerequisites and **12 bounded preflight passes**.
+  The [registration](/mnt/workspaces/Cells/betse-spatial-junction-refinement-20261011-01/registration.json)
+  retains the **90-minute / 12-GiB RSS / 4-GiB artifacts-cache / 0.2 GPU-memory**
+  limits. Peak child RSS was **7.02 GiB**, artifacts/cache **594.74 MiB**.
+  The **1493.18-s GPU phase** used **0.4148 GPU-hours**: whole-phase GPU busy
+  **0.693%**, measured SM-active **0.242%**, both with **100% coverage**.
+  These include compilation, host checks and idle intervals; no single warmed
+  throughput interval was defined. This closes the longer array component only;
+  ordinary junction configuration remains limited to 64 us, and native mixed
+  pump/channel/junction events remain later work. No biological, spatial-
+  convergence or multi-GPU claim follows. The
+  [roadmap](docs/ROADMAP.md#m2-and-m3-implementation-slice) places the first small
+  two-task readout assay next. No follow-up job was launched.
+
+- **Ordinary dynamic-junction runtime qualification passed at 18:25:06 UTC
+  on 11 October**, after **28 min 28 s**. The
+  [result](/mnt/workspaces/Cells/betse-junction-runtime-20261011-02/result.json)
+  records **347 CPU passes / two declared GPU deferrals** and **349 L4 passes /
+  no skips**, with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/completed-status-20261011T185921Z.json)
+  authenticates **947 frozen sources, 138 evidence hashes, 80 required passing
+  reports**, both test inventories and raw GPU counters. All **139 production
+  modules** match the completed run. The retry launched at **17:56:37 UTC**. The
   [initial attempt](/mnt/workspaces/Cells/betse-junction-runtime-20261011-01/failure.json)
   stopped at **17:40:14 UTC**, after **31 CPU passes**. The first full-history
   comparison rejected boundary-potential shapes **[64,10,10] versus [64,100]**:
@@ -39,24 +111,37 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   state arrays**, explicit moving-ion order, and reciprocal junction controls
   alongside pump/channel controls in the CLI, snapshots, windows and independent
   worlds. The unchanged [protocol](validation/betse/spatial_active/junction_runtime_protocol.json)
-  requires **349 tests per backend**: **347 CPU passes / two declared GPU
-  deferrals**, then **349 L4 passes**, with **80 required evidence reports**.
-  Full qualification exercises disk cuts beside interventions, window changes,
+  passed its **349-test inventory per backend**, including all **80 required
+  evidence reports**. Qualification covered disk cuts beside interventions, window changes,
   future branching, corrupt snapshots, domain failure retention, world
   reorder/partition/resume and existing shared-runner regressions.
-  Limits remain **90 minutes**, **12 GiB worker RSS**, **4 GiB artifacts/cache**
-  and **0.2 GPU memory fraction**. GPU-busy, measured SM-active and coverage are
-  recorded. The detached
+  Limits were **90 minutes**, **12 GiB worker RSS**, **4 GiB artifacts/cache**
+  and **0.2 GPU memory fraction**. Peak child RSS was **3.64 GiB** and
+  artifacts/cache **274.13 MiB**. The **962.82-s GPU phase** used **0.2674
+  GPU-hours**: whole-phase GPU busy **1.264%**, measured SM-active **0.273%**,
+  with **100.00% / 99.88% coverage**, respectively. These include compilation,
+  host checks and idle intervals; no single warmed interval was defined. The
   [registration](/mnt/workspaces/Cells/betse-junction-runtime-20261011-02/registration.json)
   freezes **947 sources**; the
   [launch check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261011-02/launch-check.json)
   confirms the controller and CPU phase, without a failure artifact at that
-  check. The retry uses `/mnt/workspaces/Cells/betse-junction-runtime-20261011-02`;
-  full acceptance is pending. After acceptance, the next scientific comparison
-  is longer/refined coupled junction trajectories and combined interventions.
+  check. This closes ordinary runtime integration for the declared **64-us**
+  junction histories, including complete snapshots and shared execution. The
+  longer/refined coupled junction comparison is now recorded above; combined
+  pump/channel/junction interventions remain subsequent work.
   Mixed-control mapping alone does not establish native mixed-intervention
   correspondence. No longer dynamic-junction, spatial-convergence, biological
   or multi-GPU claim follows; no automatic polling or follow-up is scheduled.
+
+- **Multiscale architecture reviewed, 11 October.** The
+  [execution architecture](docs/MULTISCALE_EXECUTION_ARCHITECTURE.md) now maps
+  existing code to remaining interfaces and adds a primary-source review of
+  polycomputing: shared physical state, overlapping functional groups, explicit
+  readouts/consumers and joint-task causal tests. It also updates stochastic
+  assembly, bidirectional event-coupling requirements and the 4–16-GH200 design.
+  Historical sections are preserved in collapsible notes.
+  [Review sources and checks](/mnt/workspaces/Cells/multiscale-architecture-review-20261011-01/verification.json)
+  record this documentation-only change; no new experiment was launched.
 
 - **README research purpose added, 11 October.** An
   [early section](README.md#why-we-are-building-cells) now makes testing *Plastic
@@ -101,8 +186,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **0.164%**, measured SM-active **0.129%**, with **100.00% / 99.65% coverage**.
   These include compilation, host checks and recording; no warmed interval was
   identified. Peak child RSS was **2.00 GiB**, artifacts/cache **93.89 MiB**.
-  This closes the array component. Ordinary configuration, complete snapshots
-  and shared-runner integration are the next authorized implementation step.
+  This closes the short array component. The subsequent ordinary configuration,
+  complete snapshot and shared-runner qualification is recorded above.
   No longer-time, spatial-convergence, biological or multi-GPU claim follows.
 
 - **Long scheduled BETSE intervention qualification passed at 15:34:53 UTC

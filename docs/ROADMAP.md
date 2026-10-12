@@ -91,6 +91,18 @@ assays' biological outcomes. Select a bounded assay with positive and negative
 controls, explicit preparation and read-only observations before claiming memory,
 transmission or renewal.
 
+The [first two-task readout assay](TWO_TASK_READOUT_ASSAY.md) applies the
+verified CPU/L4 dynamic-junction runtime to this question, following the
+[polycomputing design](MULTISCALE_EXECUTION_ARCHITECTURE.md#polycomputing-several-functions-in-the-same-evolving-substrate).
+Test whether one tissue trajectory supports both cue-location and temporal-pattern
+readouts. Fix the readout complexity and calibration split, hold out complete
+input combinations, and compare single-task and joint-task inputs with input-only,
+disconnected and shuffled controls. Keep passive readouts separate from physical
+consumers. Causal use, ablation/rescue and feedback coupling follow only when their
+mechanisms and accounting are explicit; successful decoding alone does not
+establish biological polycomputing. This bounded assay can precede organ models
+and larger GPU runs.
+
 ## M4 and M5 implementation slice
 
 CPU and local L4 execution are implemented for selected model families. The

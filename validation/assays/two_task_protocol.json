@@ -1,0 +1,169 @@
+{
+  "kind": "two_task_voltage_readout_assay@1",
+  "scope": "Synthetic two-task decodability assay using passive readers of shared 64-us tissue trajectories; numerical and assay-integrity qualification, with task success reported separately.",
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-junction-refinement-20261011-01",
+    "registration_sha256": "bc27577b60c9ff5a3b61ab3864afafddabe8c9c320cf8b40505c7c9ce58ab11c",
+    "completion_sha256": "375c9045fb6c652ef4b18e702ca89aa4adb7fccb59249d8cc41a850fc8af158c",
+    "require_completed_cpu_and_gpu": true
+  },
+  "arms": [
+    "location_only",
+    "timing_only",
+    "joint",
+    "disconnected",
+    "no_cue"
+  ],
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    },
+    {
+      "id": "heldout_low",
+      "split": "heldout",
+      "amplitude": 0.5
+    },
+    {
+      "id": "heldout_high",
+      "split": "heldout",
+      "amplitude": 0.7
+    }
+  ],
+  "dt_s": 1e-06,
+  "steps": 64,
+  "source_cell_ids": [
+    1,
+    4
+  ],
+  "readout_cell_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "control_steps": [
+    0,
+    8,
+    16,
+    24,
+    32
+  ],
+  "location_only_pulse_steps": [
+    16,
+    24
+  ],
+  "timing_pulses_steps": [
+    [
+      8,
+      16
+    ],
+    [
+      24,
+      32
+    ]
+  ],
+  "readout_steps": [
+    40,
+    48,
+    64
+  ],
+  "input_history_steps": [
+    12,
+    20,
+    28
+  ],
+  "cue": "Transient Kv1p5 channel inhibition at one of two source cells, with equal area-integrated inhibition and equal 8-us pulse duration; timing-only distributes that inhibition across both source cells.",
+  "reader": {
+    "type": "two_class_centroid",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "features": "Area-weighted voltage in seven fixed cell IDs at three post-cue completed times; shared 21-dimensional support for both tasks. Also report final-time-only and 1-uV margin sensitivity.",
+    "calibration": "Fixed class means, no feature selection, normalization fit, hyperparameter search, or retraining on held-out data. Separate calibration in each physical arm.",
+    "holdout": "Four leave-one-location/timing-combination-out folds; each also withholds both held-out cue strengths. Single-task arms use unique physical inputs only, deduplicating the unused task label.",
+    "shuffle_seeds": [
+      4100,
+      4101,
+      4102,
+      4103,
+      4104,
+      4105,
+      4106,
+      4107,
+      4108,
+      4109,
+      4110,
+      4111,
+      4112,
+      4113,
+      4114,
+      4115,
+      4116,
+      4117,
+      4118,
+      4119,
+      4120,
+      4121,
+      4122,
+      4123,
+      4124,
+      4125,
+      4126,
+      4127,
+      4128,
+      4129,
+      4130,
+      4131
+    ]
+  },
+  "batch_worlds": 4,
+  "resources": {
+    "max_wall_seconds": 2400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 268435456
+  },
+  "tests": [
+    "tests/unit/test_two_task_readout.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_two_task_readout.py::test_assay_cpu_gpu"
+  ],
+  "required_evidence": [
+    "assay-prerequisite",
+    "assay-design",
+    "assay-panel",
+    "assay-readouts",
+    "assay-replay",
+    "assay-controls"
+  ],
+  "required_gpu_evidence": [
+    "assay-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "Not a biological measurement, causal use by a modelled consumer, feedback, polycomputing demonstration, or reconstruction/heredity result.",
+    "No new native mixed-intervention equivalence claim; simulation uses the unchanged qualified runtime, with new declared synthetic channel cues.",
+    "No independent biological replicates, population significance, novel geometries, stochastic noise calibration, or longer physical horizon.",
+    "The three-time reader has external post-cue buffering. Final-time-only reading is reported separately; neither establishes persistent memory or renewal.",
+    "The input-history baseline sees earlier raw controls, with the same 21-feature count and decoder class; it is an encoding baseline, not a tissue measurement.",
+    "Disconnecting gap junctions leaves extracellular/electrical routes and direct source-cell observations; chance performance is not required for this ablation.",
+    "Four folds are reported once without selecting the best fold. Shuffled calibration labels are descriptive nulls, not a significance claim.",
+    "Equal solver work and stable world IDs prepare independent-world distribution; no multi-GPU or throughput claim."
+  ],
+  "automatic_followup": false
+}

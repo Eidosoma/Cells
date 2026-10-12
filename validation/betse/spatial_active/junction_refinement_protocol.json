@@ -1,0 +1,466 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "resources": {
+    "max_wall_seconds": 5400,
+    "native_timeout_seconds": 2400,
+    "artifact_and_cache_bytes": 4294967296,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2,
+    "max_retained_array_estimate_bytes": 4294967296
+  },
+  "kind": "betse_spatial_dynamic_junction_refinement@1",
+  "scope": "Six unchanged coupled junction cases through 256 us at three timesteps; native source correspondence for all, temporal self-refinement for the five binary-block cases.",
+  "duration_s": 0.000256,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
+  ],
+  "temperature_K": 298.15,
+  "initial_gate": [
+    0.2,
+    0.6
+  ],
+  "pump_parameters": {
+    "cATP": 1.5,
+    "cADP": 0.1,
+    "cPi": 0.1,
+    "KmNK_Na": 12.0,
+    "KmNK_K": 0.2,
+    "KmNK_ATP": 0.5,
+    "deltaGATP": -37000.0
+  },
+  "cases": [
+    {
+      "id": "coupled",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "reversed",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Cl",
+        "K",
+        "Na"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "half_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 0.5
+        }
+      ]
+    },
+    {
+      "id": "block_release",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0.0
+        },
+        {
+          "time_s": 4e-05,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "disconnected",
+      "fixture": "mixed",
+      "topology": "none",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    },
+    {
+      "id": "single_pair",
+      "fixture": "mixed",
+      "topology": "single",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1.0
+        }
+      ]
+    }
+  ],
+  "tests": [
+    "tests/unit/test_betse_spatial_junction_refinement.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_spatial_junction_refinement.py::test_long_junction_cpu_gpu"
+  ],
+  "required_evidence": [
+    "long-junction-prerequisite",
+    "long-junction-resources",
+    "long-junction-fixed-voltage-block-clock",
+    "long-junction-native-coupled-0",
+    "long-junction-native-coupled-1",
+    "long-junction-native-coupled-2",
+    "long-junction-native-reversed-0",
+    "long-junction-native-reversed-1",
+    "long-junction-native-reversed-2",
+    "long-junction-native-half_block-0",
+    "long-junction-native-half_block-1",
+    "long-junction-native-half_block-2",
+    "long-junction-native-block_release-0",
+    "long-junction-native-block_release-1",
+    "long-junction-native-block_release-2",
+    "long-junction-native-disconnected-0",
+    "long-junction-native-disconnected-1",
+    "long-junction-native-disconnected-2",
+    "long-junction-native-single_pair-0",
+    "long-junction-native-single_pair-1",
+    "long-junction-native-single_pair-2",
+    "long-junction-prefix",
+    "long-junction-refinement-coupled",
+    "long-junction-refinement-reversed",
+    "long-junction-refinement-block_release",
+    "long-junction-refinement-disconnected",
+    "long-junction-refinement-single_pair",
+    "long-junction-step-sensitivity-half_block",
+    "long-junction-replay",
+    "long-junction-worlds",
+    "long-junction-effects",
+    "long-junction-negative-controls"
+  ],
+  "required_gpu_evidence": [
+    "long-junction-cpu-gpu"
+  ],
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-junction-runtime-20261011-02",
+    "registration_sha256": "0c7ec32e0e014d90170063ec9f7fa97bb72d14d1d01b121f9af9cffca9ab2882",
+    "completion_sha256": "2be7d4306bb6ae9adec8396a3101a86cacc8a9d985231be00fca44b1f72471e4",
+    "require_completed_cpu_and_gpu": true
+  },
+  "checks": [
+    "Authenticate completed ordinary dynamic-junction CPU/L4 runtime; all 947 prior source files and all 139 production modules unchanged; separately authenticate original 64-us component evidence for prefix comparisons",
+    "Preserve all six original physical cases, control schedules, units, initial/static data, native method provenance, source clocks and tolerances",
+    "Unmodified pinned FULL INIT observed/bare pairs through 256 us at 1/0.5/0.25 us; independently reconstruct each per-ion junction gate/flux and existing active/field/material updates",
+    "Compare complete Cells histories against native captures without injecting evolving native state; match original native and Cells state/rate prefixes bitwise, with existing tolerances for derived readouts",
+    "Common-completed-time self-refinement of native and Cells concentrations, fields, gates, fluxes and material ledgers in five binary-block cases; retain existing resolution and ratio thresholds",
+    "Exclude half-block from fixed-physical-law convergence: check its constant-voltage per-update recurrence independently and report coupled trajectory step sensitivity",
+    "All fourteen state arrays restart exactly around both block/release boundaries, mid-history and terminal state; changed windows and independent-world reordering/partition preserve complete histories",
+    "Full blocking removes stored opening and transport; release, reversed order, isolated and single-pair effects persist; reject corrupted timing, opening and material evidence",
+    "Compare complete CPU/L4 histories; record GPU-busy and measured SM-active with coverage, without a utilization acceptance threshold"
+  ],
+  "scope_exclusions": [
+    "Component array API through 256 us only; ordinary dynamic-junction configuration remains qualified to 64 us pending a later runtime extension",
+    "Pinned BETSE clock advances by one full outer dt per moving ion; this does not calibrate a physical-time gating law",
+    "Half-block is a dt-dependent native prescription, not refinement of a fixed physical-time block; no interpolation of stored state or effective-rate replacement",
+    "Fixed geometry, maintained ATP/ADP/Pi, one Kv1p5 population, declared initial junction opening/threshold; no biological calibration, spatial convergence, water/flow/mechanics, energy feedback or channel catalog",
+    "Pump and channel controls are constant in these native junction captures; actual mixed pump/channel/junction event correspondence remains a subsequent task",
+    "No longer-horizon stability, native built-in SIM events, remote throughput or multi-GPU claim"
+  ],
+  "automatic_followup": false,
+  "junction": {
+    "threshold_voltage_V": 0.015,
+    "minimum_open_fraction": 0.1,
+    "initial_open": 0.35,
+    "native_source_sha256": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd"
+  },
+  "prefix_binding": {
+    "root": "/mnt/workspaces/Cells/betse-spatial-junction-20261011-01",
+    "registration_sha256": "f892edad6a2d37f36e2847eafae5bd74d860b1f4f0da243e914ff467b654171a",
+    "completion_sha256": "ac21110df98ef9d31a6450b0b5327eff9c06be9859fed866b27e7544f08cddfc",
+    "require_completed_cpu_and_gpu": true
+  },
+  "allowed_prior_source_changes": [],
+  "refinement": {
+    "common_completed_times_s": [
+      1.6e-05,
+      2.4e-05,
+      3.2e-05,
+      4e-05,
+      6.4e-05,
+      0.000128,
+      0.000256
+    ],
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "required_resolved_final_fields": {
+      "coupled": [
+        "vm",
+        "m_gate"
+      ],
+      "reversed": [
+        "vm",
+        "m_gate"
+      ],
+      "block_release": [
+        "vm",
+        "m_gate"
+      ],
+      "disconnected": [
+        "vm",
+        "m_gate"
+      ],
+      "single_pair": [
+        "vm",
+        "m_gate"
+      ]
+    },
+    "cases": [
+      "coupled",
+      "reversed",
+      "block_release",
+      "disconnected",
+      "single_pair"
+    ],
+    "required_resolved_junction_cases": [
+      "coupled",
+      "reversed",
+      "block_release",
+      "single_pair"
+    ]
+  },
+  "step_sensitivity": {
+    "cases": [
+      "half_block"
+    ],
+    "reason": "Pinned BETSE multiplies the stored opening by 0.5 after each moving-ion update; refining dt changes the physical-time rate of this prescription.",
+    "fixed_voltage_V": 0.04,
+    "duration_s": 0.000256,
+    "updates_per_outer_step": 3,
+    "block_fraction": 0.5,
+    "claim": "Native correspondence at each dt and descriptive step sensitivity only; no fixed-law physical-time refinement claim."
+  }
+}

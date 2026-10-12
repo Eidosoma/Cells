@@ -31,8 +31,9 @@ design for SPEC-009; it is not new biology or executed upstream solver evidence.
 
 The source catalogue began with the September baseline. Later reviews are
 recorded separately so a newer manuscript or mechanism does not silently replace
-an earlier source version. Navigation was reviewed on **2026-10-11**; no new
-literature search or experimental reanalysis was performed for this docs update.
+an earlier source version. The navigation review on **2026-10-11** did not repeat
+the underlying literature searches or experimental analyses. Individual dated
+reviews below record their own scope.
 
 The Forms preprint is now titled *How Forms Become Reconstructible*. The September
 orientation below retains the title used at that review.
@@ -43,6 +44,7 @@ orientation below retains the title used at that review.
 | Asor et al. protein-cage assembly, reviewed 2026-09-19 | [Assembly model and source](CAPSID_ASSEMBLY.md) | Experimentally motivated stochastic model with prescribed geometry; implementation and cell coupling do not constitute a biological fit |
 | CCI-seq, reviewed 2026-10-08 | [Paper review](PAPER_REVIEW_CCI_SEQ.md) | Tissue neighbourhood measurements as future observational inputs; association is not an inferred electrical conductance |
 | Mitochondrial biology, reviewed 2026-10-10 | [Literature note](PAPER_REVIEW_MITOCHONDRIA.md) | Proposed energy, calcium and inheritance mechanisms; no mitochondrial simulator implementation or new experimental result |
+| Quantum birthmarks, reviewed 2026-10-11 | [Literature note](PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) | Quantum theory/simulation motivates proposed classical history, carrier and readout tests; no biological mechanism or simulator implementation follows from the analogy |
 
 ## Current sources
 

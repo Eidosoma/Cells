@@ -24,6 +24,8 @@ the [project README](../README.md) gives the short feature overview.
   breakable bonds and experimental assembly-to-cell coupling.
 - [Tissue electrical models](TISSUE_RETURN_CURRENT.md): cross-region return
   currents, resolved membranes and native BETSE comparison components.
+- [Two-task readout assay](TWO_TASK_READOUT_ASSAY.md): cue location and timing
+  read from shared tissue trajectories, with frozen calibration and controls.
 - [Compartment chemistry](COMPARTMENT_REACTIONS.md), [ER calcium](ER_CALCIUM.md),
   [spatial calcium](SPATIAL_CALCIUM.md) and [plasma calcium/IP3](PLASMA_CALCIUM.md):
   named model versions, ownership, equations and their synthetic test domains.
@@ -39,6 +41,9 @@ the [project README](../README.md) gives the short feature overview.
 - [CCI-seq review](PAPER_REVIEW_CCI_SEQ.md) and
   [mitochondria review](PAPER_REVIEW_MITOCHONDRIA.md) record proposed uses of
   literature; they are not completed simulator validations.
+- [Quantum birthmarks review](PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) proposes
+  classical history/readout tests inspired by a quantum theory and simulation
+  paper, with explicit limits on biological and heredity claims.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.
