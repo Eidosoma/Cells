@@ -2,7 +2,7 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-Cells is an independent, early-stage multiscale simulator for investigating how
+Cells is an independent multiscale simulator for investigating how
 molecular assembly, cell physiology and communication shape memory, inheritance
 and tissue organisation. We are building toward integrated whole-cell models,
 whole organs and interacting organ systems.
@@ -12,9 +12,11 @@ status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research backgro
 
 ## Why we are building Cells
 
-One of Cells' central goals is to test the ideas in our *Plastic Heredity* and
-*How Forms Become Reconstructible* preprints in the most biologically and
-physically realistic simulations we can build and verify.
+One of Cells' central goals is to test the ideas in our
+[*Plastic Heredity*](https://doi.org/10.5281/zenodo.22143269) and
+[*How Forms Become Reconstructible*](https://doi.org/10.5281/zenodo.23327869)
+preprints in the most biologically and physically realistic simulations we can
+build and verify.
 
 ![Cells research goals: ask questions from Plastic Heredity and How Forms Become Reconstructible, model realistic cells and tissues, remove cues and disrupt pathways, and measure memory, inheritance and form.](docs/assets/cells-research-goals.png)
 
