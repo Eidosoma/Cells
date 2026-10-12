@@ -6,6 +6,14 @@ criteria. [Progress](../PROGRESS.md) owns current status, active runs and result
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
 build sequence and its historical status statements.
 
+The target is **feature parity with the scientific simulation capabilities of
+both BETSE and BITSEY**, assessed against pinned source versions. BITSEY is a
+[simplified BETSE-derived simulator](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
+with its own implementation; agreement with one does not establish agreement
+with the other. Track their coverage separately, including coupled behaviour,
+preparation, interventions, numerical clocks and complete state. Each supported
+Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
+
 ## Current development priorities
 
 1. Extend the verified simulation stack: compose membrane transport, junctions,
@@ -61,6 +69,13 @@ kept explicit. Existing isolated regulation, the coupled two-cell model and
 independent graph references are starting components; full lineage reproduction
 remains to be implemented and verified. This work can proceed alongside BETSE
 coverage without waiting for every bioelectric mechanism to be complete.
+
+Full BITSEY parity also requires an inventory of the pinned core and model
+families beyond the selected miRNA/EMT circuit, including general regulatory
+gates, reaction-diffusion and their coupled use. Map each capability to a Cells
+implementation, a reference comparison or an explicit remaining gap. The Forms
+lineage assays are the first replication priority, not the complete BITSEY
+feature list; that broader inventory remains to be completed.
 
 1. **Establish the coupled reference and clocks.** Pin BITSEY and the selected
    assay protocol; map the complete 17-entry native packet into primary state,

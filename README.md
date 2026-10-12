@@ -31,9 +31,11 @@ what it changes, and when it survives replacement.
 We use two complementary reference simulators: **BETSE** to calibrate and verify
 the bioelectric layer, and **BITSEY** for coupled regulatory/ionic models and the
 cellular-state transmission experiments extended in *How Forms Become
-Reconstructible*. Reproducing those BITSEY experiments in Cells is a near-term
-goal; the [replication plan](docs/ROADMAP.md#bitsey-replication) separates existing
-components from the complete assays still to build.
+Reconstructible*. Our target is **feature parity with the scientific simulation
+capabilities of both** within Cells' larger simulation stack. Reproducing the
+Forms experiments is the first BITSEY target; the
+[replication plan](docs/ROADMAP.md#bitsey-replication) separates existing
+components from the complete assays and broader coverage still to build.
 
 Realism means explicit physical mechanisms, material and energy accounting, and
 calibration against measurements. Bioelectricity, chemistry and assembly provide

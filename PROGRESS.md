@@ -10,7 +10,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 ## Current position
 
 - **BETSE and BITSEY reference roles clarified, 12 October.** The README and
-  design entry points now identify both references. The
+  design entry points now identify both references and make scientific feature
+  parity with both an explicit target. BITSEY's BETSE ancestry and separate
+  execution core were checked against the pinned source and the authors' paper;
+  coverage must be verified separately. The broader BITSEY feature inventory
+  remains open beyond the first Forms replication target. The
   [BITSEY replication plan](docs/ROADMAP.md#bitsey-replication) builds on existing
   regulation, pair and independent graph work, starting with corrected clocks
   (P10R) and the editable lineage (P11), with CPU/L4 verification. The
@@ -18,7 +22,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   distinguishes Forms v0.17 from the later P32 report. This was documentation
   only; no simulation or frozen result changed. The
   [documentation checks](/mnt/workspaces/Cells/bitsey-reference-docs-20261012-01/verification.json)
-  record link checks and unchanged registered simulation sources. The pending
+  record link checks and unchanged registered simulation sources; the
+  [relationship and parity clarification checks](/mnt/workspaces/Cells/bitsey-betse-relationship-20261012-01/verification.json)
+  retain the subsequent source inspection and documentation checks. The pending
   technical step remains the two-task decoder/timing diagnosis described below.
 
 - **CPU/L4 two-task assay qualification passed at 11:21:19 UTC on

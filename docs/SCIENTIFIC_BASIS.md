@@ -35,6 +35,17 @@ comparison scope. **BITSEY** supplies the coupled regulatory/ionic reference and
 the cellular model used for our transmission and replacement extensions in
 *How Forms Become Reconstructible*. Both are active reference choices.
 
+BITSEY is a simplified BETSE-derived simulator. Its
+[own README](https://gitlab.com/grodstein/bitsey/-/blob/b2cb370aaecbc8299f259bc4251d5396c81f19a6/README.md)
+describes the relationship, and [Grodstein, McMillen and Levin (2023), section 2.5](https://www.frontiersin.org/journals/cell-and-developmental-biology/articles/10.3389/fcell.2023.1087650/full)
+explains the faster, reduced model with uniform concentrations within each cell.
+Inspection of the pinned [core](https://gitlab.com/grodstein/bitsey/-/blob/b2cb370aaecbc8299f259bc4251d5396c81f19a6/sim.py)
+on 12 October confirms its own NumPy/SciPy execution and local transport helpers;
+the inspected Python sources do not import BETSE as a runtime dependency.
+Cells targets scientific feature parity with both, verified separately. Their
+shared ancestry does not make their model assumptions, clocks or feature sets
+interchangeable, or provide independent biological validation.
+
 Cells already implements [isolated BITSEY regulation](EMT_REFERENCE.md) and a
 bounded [two-cell regulatory/ionic model](SOURCE_EMT_PAIR.md). Independent
 [graph](SOURCE_EMT_GRAPH_REFERENCE.md), [preparation](SOURCE_PREPARATION_REFERENCE.md)
