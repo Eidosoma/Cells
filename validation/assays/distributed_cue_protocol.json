@@ -1,0 +1,198 @@
+{
+  "kind": "two_task_distributed_cue@1",
+  "scope": "Fresh strength-interpolation assay with a fixed 75/25 location-coded cue and the unchanged template reader; numerical qualification and decoding outcomes remain separate.",
+  "purpose": "Test whether sharing the fixed inhibition dose between both source cells retains a timing component while the spatial bias carries location. The single fixed split is the midpoint between the previous one-cell cue and the successful 50/50 timing-only reference, chosen before fresh response simulation.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-templates-20261012-01",
+    "registration_sha256": "d3f0b70a60334f3748dfcdc2cb61f20576e706137e1ef148446f817706c96836",
+    "completion_sha256": "42d1de03c8f2f648a81e7afb85ad27489bf3ff6669ce9481abc03688f0ce3019",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/two_task_protocol.json",
+  "source_protocol_sha256": "cd16cfc62497281f6c6cc4125c548ecc65d7f480f49f8f1207763084747f9458",
+  "dt_s": 2.5e-07,
+  "duration_s": 6.4e-05,
+  "world_id_offset": 200000,
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    },
+    {
+      "id": "evaluation_0425",
+      "split": "heldout",
+      "amplitude": 0.425
+    },
+    {
+      "id": "evaluation_0575",
+      "split": "heldout",
+      "amplitude": 0.575
+    },
+    {
+      "id": "evaluation_0625",
+      "split": "heldout",
+      "amplitude": 0.625
+    },
+    {
+      "id": "evaluation_0775",
+      "split": "heldout",
+      "amplitude": 0.775
+    }
+  ],
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "All four location/timing combinations at three ordered strengths, fitted separately in each physical arm; the midpoint provides two fixed interpolation segments. Single-task duplicates are excluded from fitting and scoring.",
+    "features": "The unchanged 21 area-weighted membrane-voltage features at 40, 48 and 64 us; both labels use this one shared observation. No per-feature scaling or feature selection.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "generalization": "Interpolation to four fresh strengths, with all location/timing combinations represented in calibration. These strengths are disjoint from all original and template panels, selected symmetrically about 0.6 without inspecting new responses. This is a new-panel decoding test, not a matched effect estimate against earlier held-out strengths or independent biological preparations.",
+  "scientific_target": "Report whether every fresh joint-arm case has both labels correct and resolved at the primary 2-nV margin. Also report all failures, abstentions, comparator modes and controls. This target is an outcome, never an engineering acceptance gate.",
+  "batch_worlds": 4,
+  "resources": {
+    "max_wall_seconds": 2400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 1073741824,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_distributed_cue.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_distributed_cue.py::test_distributed_cpu_gpu"
+  ],
+  "required_evidence": [
+    "distributed-prerequisite",
+    "distributed-design",
+    "distributed-panel",
+    "distributed-calibration-reproduction",
+    "distributed-readouts",
+    "distributed-controls",
+    "distributed-replay"
+  ],
+  "required_gpu_evidence": [
+    "distributed-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "Only source allocation and fresh evaluation strengths change. The physical model, geometry, pulse timing/duration, observation support, 64-us horizon, integration step, reader, margins and numerical tolerances remain unchanged.",
+    "No fresh evaluation simulation or response inspection during development. Nonintegrating control/resource checks and authenticated previous reader evidence precede frozen-source launch.",
+    "No mixture sweep, adaptive template density, feature selection, fitted scaling, evaluation-strength input, evaluation-label fitting or feedback to physics.",
+    "The original combination-holdout failure and the one-cell template margin failure remain frozen. This new all-combinations calibration panel answers a distinct question.",
+    "One passive external decoder producing two labels is not two causal biological consumers or evidence of biological polycomputing, memory, reconstruction or heredity.",
+    "The prior temporal refinement supports this step on the prior panel, not continuum accuracy or an independent convergence certificate for distributed cues or fresh strengths.",
+    "Disconnected junctions leave other physical routes and direct source-cell observations. Separate per-arm calibration does not test decoder transfer.",
+    "Earlier input history observes controls rather than tissue. All six reader modes and all 32 seeded curve-label shuffles are retained without selecting a preferred outcome.",
+    "Five arms have equal solver steps. GPU-busy and measured SM-active with coverage are descriptive; no throughput or multi-GPU qualification."
+  ],
+  "automatic_followup": false,
+  "reader_protocol": "validation/assays/template_readout_protocol.json",
+  "reader_protocol_sha256": "771270256b83af54e9bff672611575d84478f671ec6c5c442d829a6d4681b07a",
+  "cue": {
+    "source_cell_ids": [
+      1,
+      4
+    ],
+    "location_coded_arms": [
+      "location_only",
+      "joint",
+      "disconnected"
+    ],
+    "location_weights": [
+      [
+        0.75,
+        0.25
+      ],
+      [
+        0.25,
+        0.75
+      ]
+    ],
+    "timing_only_weights": [
+      0.5,
+      0.5
+    ],
+    "no_cue_weights": [
+      0.0,
+      0.0
+    ],
+    "dose": "Source j receives amplitude * share_j * minimum_source_area / source_area_j fractional channel inhibition for the same 8-us pulse; total area-integrated inhibition is unchanged.",
+    "timing": "Location-only retains the fixed 16-24-us pulse; other cued arms retain early 8-16-us or late 24-32-us pulses. Readout remains 40,48,64 us."
+  },
+  "historical_reproduction": {
+    "arms": [
+      "timing_only",
+      "no_cue"
+    ],
+    "strengths": [
+      0.4,
+      0.6,
+      0.8
+    ],
+    "worlds": 24,
+    "comparison": "Use the existing field-specific physical tolerances against same-backend saved template worlds, recording bitwise agreement separately. Location-coded arms deliberately have different controls and are excluded."
+  }
+}

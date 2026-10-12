@@ -9,6 +9,296 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **75/25 distributed-cue qualification launched at 18:24:35 UTC on
+  12 October.** The detached job is running its CPU phase, followed by the L4.
+  The [launch check](/mnt/workspaces/Cells/two-task-distributed-development-20261012-01/launch-check.json)
+  confirms a live worker, no failure artifact, **968 matching current/frozen
+  sources** and **eight registered tests per backend**. Durable
+  [status](/mnt/workspaces/Cells/two-task-distributed-20261012-01/status.json),
+  logs and completion/failure artifacts live under
+  [/mnt/workspaces/Cells/two-task-distributed-20261012-01](/mnt/workspaces/Cells/two-task-distributed-20261012-01).
+  Results have not yet been reviewed; no automatic follow-up is scheduled.
+
+  The [protocol](validation/assays/distributed_cue_protocol.json) allocates
+  **75/25** of the inhibition dose across source cells 1 and 4, swapping the
+  bias for location in the location-only, joint and disconnected arms.
+  Timing-only stays **50/50**, with no-cue unchanged. Total area-integrated
+  inhibition, pulse times/durations, physical model, **0.25-us** step,
+  **64-us** horizon, reader and **2-nV** margin remain fixed. Calibration uses
+  **0.4/0.6/0.8**; fresh evaluation strengths are
+  **0.425/0.575/0.625/0.775**. The question is whether distributing the cue
+  preserves a resolvable timing component while the bias carries location.
+  Scientific failure or abstention remains separate from numerical acceptance.
+
+  The [preflight](/mnt/workspaces/Cells/two-task-distributed-development-20261012-01/preparation.json)
+  records **two passing checks in 19.20 s**, independently verifying every
+  source's dose and physical timing without simulating fresh responses. It
+  authenticates the completed prerequisite's **963 sources, 587 evidence
+  hashes and 15 passing reports**. All **35 batch plans** fit the limits:
+  **929.31 MiB** maximum working estimate and **1.39 GiB** retained arrays.
+  Ruff, formatting, 21 local method links and diff checks pass. The
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#distributed-source-cue) describes the
+  new physical hypothesis and limits of comparisons with earlier panels.
+
+  The run evaluates **140 worlds per backend**, with **7,168 solver steps per
+  arm**, reproduces **24 unchanged calibration worlds**, and checks conservation,
+  controls, restart/partition/window replay and CPU/L4 agreement using existing
+  physical tolerances. Both GPU-busy and measured SM-active coverage are recorded.
+  Bounds remain **40 minutes / 8 GiB worker RSS / 2 GiB artifacts/cache / 0.2
+  GPU-memory fraction**. Expected runtime is approximately **4–8 minutes**,
+  based on the preceding panel; only the launch has been checked.
+
+- **Saved template-margin diagnosis completed at 17:23:13 UTC on
+  12 October.** The
+  [diagnostic result](/mnt/workspaces/Cells/two-task-template-diagnosis-20261012-01/result.json)
+  authenticates **963 unchanged sources, 587 evidence hashes and 15 passing
+  reports**, then reproduces all **six original reader modes and 32 shuffles**
+  exactly on each saved backend. The
+  [inputs/source hashes](/mnt/workspaces/Cells/two-task-template-diagnosis-20261012-01/inputs.json)
+  and [verification](/mnt/workspaces/Cells/two-task-template-diagnosis-development-20261012-01/verification.json)
+  retain seven passing known-answer checks, completion hashes and method-link
+  checks. This was short CPU analysis of saved evidence; no simulation or GPU
+  job was launched.
+
+  **Strength/timing overlap is the main limitation in the sampled joint
+  response geometry.** Between **97.25% and 99.97% of the squared norm** of the
+  matched early/late voltage difference lies along the alternative timing
+  curve's local strength direction. Allowing strength to vary leaves only
+  **1.06–2.70 nV** perpendicular separation, consistent with the reader's
+  **0.526–1.345-nV** half-gap scores. The alternative timing curve can closely
+  imitate each observation by shifting inferred strength by **0.00022–0.00368**;
+  no endpoint clipping is involved.
+
+  The same-strength calibration approximation residual is **0.038–0.090 nV**.
+  Moving observations exactly onto their true fixed calibration curves changes
+  timing scores by at most **0.0055 nV**; **0/16** then exceed the unchanged
+  **2-nV** margin. This diagnostic does not correct the opposite physical curve
+  or certify unobserved interpolation error. Timing-only inputs retain much
+  larger perpendicular separation (**28.96–48.43 nV**) and still pass **8/8**;
+  disconnected joint inputs retain only **0.023–0.379 nV**. The primary voltage
+  summaries agree exactly between CPU/L4; not every secondary diagnostic value
+  is bitwise identical. Null responses stay unresolved. Known strengths and
+  paired labels are diagnostic information only; the frozen failed primary
+  target remains unchanged. The
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#diagnosing-weak-template-margins)
+  explains this distinction and how to reproduce the analysis.
+
+  This diagnosis motivated the separately frozen **75/25 distributed-cue**
+  experiment above: a fixed midpoint between the one-cell joint cue and the
+  successful **50/50** timing-only cue. The diagnostic itself launched no
+  simulation or automatic follow-up.
+
+- **Fresh-strength template qualification passed at 16:04:33 UTC on
+  12 October**, after **3 min 39 s** of recorded execution. The
+  [result](/mnt/workspaces/Cells/two-task-templates-20261012-01/result.json)
+  records **17 CPU passes / one expected GPU deferral** and **18 L4 passes**,
+  with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/two-task-templates-development-20261012-01/completed-status-20261012T170713Z.json)
+  authenticates **963 frozen sources, 587 evidence hashes and 15 required
+  passing reports**; all 963 current registered files match. The
+  [registration](/mnt/workspaces/Cells/two-task-templates-20261012-01/registration.json)
+  retains all 18 tests per backend. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-templates-20261012-01/evidence/gpu/templates-cpu-gpu.json)
+  passes across **91,359,800 state/field values**, with exact agreement of every
+  reported decision across 48 task/mode/arm comparisons and all 32 shuffled
+  joint metrics. Forty historical calibration worlds reproduce bitwise;
+  fourteen-array restart, partition, window and reorder replay pass. Material
+  residual uses less than **0.652%** of its error budget.
+
+  **The primary joint correct-and-resolved target was not met.** The
+  [readout results](/mnt/workspaces/Cells/two-task-templates-20261012-01/evidence/gpu/templates-readouts.json)
+  choose both labels correctly in **16/16 fresh joint cases**, but timing is
+  unresolved in **all sixteen**: its absolute score is **0.526–1.345 nV**, below
+  the unchanged **2-nV** margin. Location is correct and resolved in all sixteen.
+  Each single-task arm succeeds in **8/8** unique cases, including resolved
+  timing. The balanced centroid comparator gives joint timing **8/16**; the
+  template reader improves forced-choice accuracy without meeting the declared
+  resolution criterion. Final-time-only joint reading also gives **16/16**
+  correct choices with unresolved timing.
+
+  Earlier-input history recovers both joint labels correctly and resolved in
+  **16/16**; no-cue and current-input controls remain unresolved. Disconnected
+  three-time reading also chooses both labels correctly in **16/16**, with
+  unresolved timing, so these scores do not establish a need for the junction
+  route. The saved-data diagnosis above separates strength/timing overlap from
+  sampled calibration approximation error. The fixed margin and frozen results remain
+  unchanged; no new biological or polycomputing claim follows.
+
+  The [protocol](validation/assays/template_readout_protocol.json) fixes a
+  calibrated response-curve reader, using all location/timing combinations at
+  strengths **0.4/0.6/0.8**, before evaluating fresh strengths
+  **0.45/0.55/0.65/0.75**. Prediction receives observations only. It tests strength
+  interpolation; the original unseen-combination failure remains unchanged.
+  The [method](docs/TWO_TASK_READOUT_ASSAY.md#fresh-strength-interpolation-with-calibrated-response-curves)
+  retains balanced centroid, final-time, margin-sensitivity, input-history,
+  no-cue, disconnected and label-shuffle comparisons. All scientific outcomes,
+  including failure and abstention, are reported separately from numerical
+  qualification. No fresh evaluation simulation or response inspection took
+  place during development.
+
+  **140 worlds per backend** use the unchanged physical cues, **64-us** horizon
+  and finest previously verified **0.25-us** step, with **7,168 solver steps per
+  arm**. The
+  [preflight](/mnt/workspaces/Cells/two-task-templates-development-20261012-01/preparation.json)
+  records **12 passing checks**, all **35 batch plans**, **929.31 MiB** maximum
+  batch working estimate and **1.39 GiB** retained-array estimate. The completed
+  prerequisite's **960 sources and 987 evidence hashes** authenticate unchanged.
+  Ruff, formatting, local method links and diff checks pass. Bounds remain
+  **40 minutes / 8 GiB worker RSS / 2 GiB artifacts/cache / 0.2 GPU-memory
+  fraction**.
+
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-templates-20261012-01/gpu-metrics/result.json)
+  cover the **124.77-s GPU phase**: GPU busy **21.154%**, measured SM-active
+  **7.653%**, with **99.9995% / 99.183% coverage**, using **0.0347 GPU-hours**.
+  These averages include compilation and host checks; no single warmed interval
+  is defined. Summed L4 execution time per arm was **4.84–5.02 s**, excluding
+  compilation and host work. This is a single-GPU qualification, not a
+  multi-GPU utilization result. At that closeout the GPU was idle; this run
+  launched no automatic follow-up.
+
+- **CPU/L4 timing-refinement qualification passed at 15:35:20 UTC on
+  12 October**, after **5 min 23 s** of recorded execution. The
+  [result](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-02/result.json)
+  records **14 CPU passes / one expected GPU deferral** and **15 L4 passes**,
+  with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/two-task-timing-refinement-development-20261012-02/completed-status-20261012T154315Z.json)
+  authenticates **960 frozen sources, 987 evidence hashes and 15 required
+  passing reports**; all 960 current registered files still match. The
+  [registration](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-02/registration.json)
+  retains the unchanged 15-test inventory per backend. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-02/evidence/gpu/timing-cpu-gpu.json)
+  passes across **91,746,400 state/field values in 240 worlds per backend**.
+  Fine-step reorder, partition, window and snapshot replay remain bitwise across
+  fourteen state arrays. Material residual uses less than **0.652%** of its
+  error budget.
+
+  All **20 cue pairs** meet the declared timing-stability limits and exceed the
+  declared synthetic reader floor; all **16 null pairs** remain exactly zero.
+  CPU/L4 paired contrasts agree exactly. The largest **0.5-to-0.25-us** relative
+  change is **0.111%**; original 1-us contrasts also meet the limits. The
+  [contrast results](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-02/evidence/gpu/timing-contrasts.json)
+  establish stability at the tested timesteps, not convergence order, continuum
+  accuracy or biological sensor resolution. **The original two-task decoding
+  failure remains unchanged.** The revised reader and calibration design is
+  registered in the fresh-strength assay above.
+
+  The historical comparison now reuses the **existing field-specific physical
+  tolerances**, retaining exact-agreement counts and every differing field.
+  **Within-run replay remains bitwise**; physics, scientific stability criteria
+  and numerical allowances are unchanged. The
+  [repair preflight](/mnt/workspaces/Cells/two-task-timing-refinement-development-20261012-02/preparation.json)
+  records **nine passing tests**, saved CPU/L4 comparisons over **13,283,360
+  values each**, and **nine rejected corruption controls**, including an exact
+  replay changed by one floating-point step. Ruff, formatting and diff checks
+  pass. In this retry, historical CPU and L4 full histories also happen to match
+  their original evidence bitwise. The failed run below remains intact.
+
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-02/gpu-metrics/result.json)
+  cover the **189.61-s GPU phase**: whole-phase GPU busy **13.201%**, measured
+  SM-active **4.993%**, with **99.999% / 100% coverage**, using **0.0527 GPU-hours**.
+  These include compilation and host checks; no single warmed throughput
+  interval is defined. The fresh-strength follow-up was launched separately
+  on the user's subsequent instruction.
+
+- **The first timing-refinement run stopped at 14:37:37 UTC on 12 October**, after
+  **3 min 41 s**. The [failure](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-01/failure.json)
+  preserves **14 CPU passes / one expected GPU deferral** and **10 L4 passes /
+  one failure**. All **240 L4 worlds** were saved before the historical coarse
+  comparison rejected small differences from the previous GPU run. Its first
+  failing field was accumulated membrane transport, differing by up to
+  **4.25e-19 fmol** in the first world. The qualification is **incomplete**;
+  the four later L4 checks were not executed. The corrected retry is recorded
+  above.
+
+  A [read-only failure review](/mnt/workspaces/Cells/two-task-timing-refinement-development-20261012-01/failure-review.json)
+  authenticates the completed predecessor and **all 960 unchanged registered
+  sources**. All **13,283,360 state/field values** across the eighty historical
+  coarse GPU comparisons meet the **existing physical tolerances**; all eighty
+  voltage readout vectors are bitwise identical. Small differences also occur
+  in gates and other ledgers, with maxima retained by field. Their compiler or
+  runtime cause is not established by this review.
+
+  Reconstructing timing contrasts from the saved panels gives **exact CPU/L4
+  agreement**: all **20 cue pairs** meet the declared stability limits and all
+  **16 null pairs** are exactly zero. The largest 0.5-to-0.25-us relative change
+  is **0.111%**; original 1-us contrasts also meet the limits. This post-stop
+  diagnosis does not replace the unexecuted L4 contrast, control, fine replay
+  and full CPU/L4 comparison checks, or establish two-task decoding success.
+
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-01/gpu-metrics/result.json)
+  cover the **115.27-s GPU phase**: whole-phase GPU busy **22.126%**, measured
+  SM-active **7.525%**, with **99.999% / 100% coverage**. These include compilation
+  and host checks; no single warmed throughput interval is defined.
+  The [launch receipt](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-01/launch.json)
+  records the detached worker started at **14:33:55 UTC**. The initial
+  [launch check](/mnt/workspaces/Cells/two-task-timing-refinement-development-20261012-01/launch-check.json)
+  observed the CPU phase running at **14:34:17 UTC**, with no failure artifact.
+  The [registration](/mnt/workspaces/Cells/two-task-timing-refinement-20261012-01/registration.json)
+  freezes **960 sources and 15 tests per backend**; all **955 original assay
+  sources** remain unchanged at launch.
+
+  The [protocol](validation/assays/timing_refinement_protocol.json) repeats all
+  eighty worlds at **1/0.5/0.25-us** steps, for **240 worlds and 35,840 solver
+  steps per backend**, with identical physical cues and the same **64-us**
+  horizon. It compares paired early/late voltage differences at the original
+  readout times, retains null/disconnected controls, reproduces the original
+  coarse evidence and checks fourteen-array replay at the finest step.
+  Stability requires both a **2-nV absolute** and **10% relative** change limit;
+  signal resolution is reported separately. These are declared synthetic
+  diagnostics, not biological precision or a new decoding claim. A passing
+  numerical suite need not imply a stable timing signal.
+
+  [Preflight and preparation](/mnt/workspaces/Cells/two-task-timing-refinement-development-20261012-01/preparation.json)
+  record **nine passes**, all sixty batch plans, **929.31 MiB** maximum batch
+  working estimate and **1.42 GiB** retained-array estimate. The initial host
+  preflight failure is preserved there: the new test incorrectly assumed all
+  static junction masks were one, whereas the frozen geometry blocks exterior
+  patches. The correction requires the unchanged binary mask; no physics,
+  criteria or prior evidence changed. Ruff, formatting and diff checks pass.
+  Limits are **40 minutes**, **8 GiB worker RSS**, **2 GiB artifacts/cache**,
+  **1 GiB per batch** and **0.2 GPU-memory fraction**. The existing runner records
+  GPU-busy and measured SM-active coverage and saves completion/failure evidence.
+  No automatic follow-up is scheduled.
+
+- **Two-task encoding/timing diagnosis completed, 12 October.** The
+  [saved-data diagnostic](validation/assays/two_task_diagnostic.py) authenticates
+  **955 unchanged sources, 345 evidence hashes and 13 required passing reports**.
+  It reproduces all five original CPU and L4 readout reports exactly, including
+  scores and fitted means. The
+  [diagnostic result](/mnt/workspaces/Cells/two-task-diagnosis-20261012-01/result.json)
+  preserves every diagnostic split, prediction and paired voltage contrast;
+  [inputs and source hashes](/mnt/workspaces/Cells/two-task-diagnosis-20261012-01/inputs.json)
+  identify the already-inspected evidence. This was short CPU analysis of saved
+  data, with no simulation or GPU job.
+
+  The earlier-input failure comes from the **reader/split geometry**: omitting
+  a location–timing combination leaves its pulse on an unseen feature, and the
+  opposite class's averaged centroid is closer. This is reproducible with a
+  perfect one-hot input; the existing positive oracle used a different,
+  factorized encoding. Using all four combinations for calibration while still
+  withholding strengths recovers both input labels in **8/8** cases. Summing
+  input deficits over time or cells also gives **8/8** with the original
+  combination holdouts, using different feature supports. These are post-hoc
+  encoding diagnostics, not a repaired scientific result.
+
+  With balanced calibration, tissue voltage still gives location **8/8** and
+  timing **4/8**, on both saved backends; disconnected results match. No-cue and
+  current-input controls remain unresolved. Across the joint panel, timing
+  contrasts have **5.7–169 nV** Euclidean magnitude over the 21 voltage features,
+  versus **20.7–41.5 uV** for location and **11.5–17.3 uV** for strength. Timing
+  is weak and mixed with larger effects; this motivated the timing-refinement
+  check above before interpreting it physically. **The original two-task
+  objective remains unproved.**
+
+  [Six known-answer checks](/mnt/workspaces/Cells/two-task-diagnosis-development-20261012-01/unit.xml)
+  pass, covering the omitted-input failure, calibration isolation, fixed input
+  marginalization, nulls, known paired effects and altered-result rejection.
+  The separately registered timing-refinement follow-up is recorded above;
+  a revised assay and fresh evaluation inputs remain later work. This saved-data
+  analysis launched no simulation. The
+  [diagnostic method](docs/TWO_TASK_READOUT_ASSAY.md#diagnosing-an-encoding-or-readout-failure)
+  explains the scope and reproduction command.
+
 - **Broader Cells scope and calibration resources documented, 12 October.**
   The README now leads with integrated cells, tissues and organs, placing BETSE
   in its bioelectric-layer role. The
@@ -17,8 +307,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   future physiology, molecular, atlas and organ-function resources. New resource
   descriptions were reviewed; datasets and models were not imported or fitted.
   The [documentation/source checks](/mnt/workspaces/Cells/calibration-resources-docs-20261012-01/verification.json)
-  retain the review scope and unchanged simulation sources. The pending timing
-  diagnosis and completed simulation evidence are unchanged.
+  retain the review scope and unchanged simulation sources. Completed simulation
+  evidence is unchanged.
 
 - **BETSE and BITSEY reference roles clarified, 12 October.** The README and
   design entry points now identify both references and make scientific feature
@@ -35,8 +325,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [documentation checks](/mnt/workspaces/Cells/bitsey-reference-docs-20261012-01/verification.json)
   record link checks and unchanged registered simulation sources; the
   [relationship and parity clarification checks](/mnt/workspaces/Cells/bitsey-betse-relationship-20261012-01/verification.json)
-  retain the subsequent source inspection and documentation checks. The pending
-  technical step remains the two-task decoder/timing diagnosis described below.
+  retain the subsequent source inspection and documentation checks.
 
 - **CPU/L4 two-task assay qualification passed at 11:21:19 UTC on
   12 October**, after **2 min 5 s**. The
@@ -59,9 +348,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   junctions give the same joint-task scores, so this result does not establish
   a need for that route. No-cue and current-input baselines have no resolved
   decisions. The earlier-input baseline succeeds on each task alone but also
-  fails both joint holdouts (**0/8 each**). Next is to examine the decoder and
-  held-out combination design against known encoded inputs before attributing
-  the timing failure to tissue dynamics. These are small deterministic tests,
+  fails both joint holdouts (**0/8 each**). This prompted the saved-data diagnosis
+  above, which separates the encoding/readout issue from the unresolved physical
+  timing question. These are small deterministic tests,
   without biological validation, a causal consumer or a polycomputing claim;
   the [protocol](validation/assays/two_task_protocol.json) and completed results
   remain frozen rather than retuned to improve scores.
@@ -79,7 +368,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The [repair preflight](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/fix-verification.json)
   verified all 20 batch/window plans under 512 MiB and nine passing checks,
   without changing physics, decoder settings, splits or numerical tolerances.
-  No follow-up computation was launched; the GPU is idle.
+  Subsequent diagnosis and timing refinement are recorded above.
 
 - **Quantum birthmarks reviewed, 11 October.** The
   [research note](docs/PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) checks the Phys.org

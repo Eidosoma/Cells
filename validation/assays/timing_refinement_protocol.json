@@ -1,0 +1,68 @@
+{
+  "kind": "two_task_timing_refinement@1",
+  "scope": "Temporal self-refinement of paired early/late voltage responses on the unchanged 64-us two-task panel; numerical execution and signal-stability outcomes are reported separately.",
+  "purpose": "Check whether nanovolt timing contrasts survive smaller timesteps before changing readers or making a new decoding claim.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-readout-20261012-01",
+    "registration_sha256": "4c48d42ccc8340d7231e8329a3689e3f0ee5dd095699c6d5c549f53f0e004a46",
+    "completion_sha256": "a05e141acdc28e27ffb97be1d8a0f9ad5d80adf874e443dbdbe13917ee656d79",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/two_task_protocol.json",
+  "source_protocol_sha256": "cd16cfc62497281f6c6cc4125c548ecc65d7f480f49f8f1207763084747f9458",
+  "dt_s": [1e-6, 5e-7, 2.5e-7],
+  "duration_s": 64e-6,
+  "readout_times_s": [40e-6, 48e-6, 64e-6],
+  "panel": "All 80 original worlds at all three resolutions; original physical event times, doses, model, initial state and readout support unchanged. No retraining or new classifier.",
+  "historical_comparison": "Compare the original 1-us histories using the existing field-specific physical tolerances in test_betse_junction_runtime.compare and the unchanged voltage readout tolerances. Record exact agreement and all differing fields separately. Within-run reorder, partition, window and snapshot replay remain bitwise. This corrects the overly strict historical equality check from the failed first run without changing physics or signal-stability criteria.",
+  "batch_worlds": 4,
+  "contrast": {
+    "definition": "late minus early area-weighted voltage, paired at fixed arm, location and cue strength; 21 features at the original completed times",
+    "absolute_change_limit_l2_V": 2e-9,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-9,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.5-to-0.25-us contrast change must satisfy BOTH absolute and relative limits. Report separately whether the finest signal exceeds the declared floor, and whether the original 1-us contrast meets the same limits against 0.25 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "resources": {
+    "max_wall_seconds": 2400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 1073741824,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": ["tests/unit/test_two_task_timing_refinement.py"],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": ["tests/unit/test_two_task_timing_refinement.py::test_timing_cpu_gpu"],
+  "required_evidence": [
+    "timing-prerequisite",
+    "timing-design",
+    "timing-panel",
+    "timing-coarse-reproduction",
+    "timing-contrasts",
+    "timing-controls",
+    "timing-fine-replay"
+  ],
+  "required_gpu_evidence": ["timing-cpu-gpu"],
+  "scope_exclusions": [
+    "This is a follow-up on already-inspected inputs, not fresh held-out scientific validation. The original two-task failure is unchanged.",
+    "A passing suite does not imply a resolved or stable timing signal. Report every pair and all declared resolution outcomes, including negative results.",
+    "No decoder changes, feature selection, post-hoc threshold tuning, stronger cues, longer physical horizon, or biological sensor-noise calibration.",
+    "Same native per-moving-ion junction clock, with binary junction availability only. No partial stored-opening blocks or redefinition of physical clock semantics.",
+    "CPU/L4 temporal self-refinement only: no new native mixed-intervention, continuum/spatial convergence, biological, memory, causal-consumer or polycomputing claim.",
+    "Single-task unused labels and no-cue duplicates are numerical controls, not independent preparations; all world executions are retained with explicit identities.",
+    "Record GPU-busy and measured SM-active with coverage; equal panel solver work across arms is not a throughput or multi-GPU qualification."
+  ],
+  "automatic_followup": false
+}
