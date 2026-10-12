@@ -11,10 +11,9 @@ The reference is Joel Grodstein's
 [BITSEY repository](https://gitlab.com/grodstein/bitsey), fixed at commit
 `b2cb370aaecbc8299f259bc4251d5396c81f19a6`. The relevant implementation is
 [GRN_miRNA.py at that revision](https://gitlab.com/grodstein/bitsey/-/blob/b2cb370aaecbc8299f259bc4251d5396c81f19a6/cancer_GJ_sims/GRN_miRNA.py).
-The existing exploration's
-[starting point](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/STARTING_POINT.md)
-and [smoke report](../../../preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/SMOKE_RESULTS.md)
-identify the two smallest source cases.
+The existing exploration's `STARTING_POINT.md` and `SMOKE_RESULTS.md` identify
+the two smallest source cases. Their external research-tree location is recorded
+in [Scientific basis](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references).
 
 The previous exploration checkout was absent. A separate, clean, pinned checkout
 was obtained under Cells' ignored `upstream/bitsey/`. No existing research lane

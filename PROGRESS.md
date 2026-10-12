@@ -9,40 +9,60 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Corrected two-task assay relaunched at 11:19:13 UTC on 12 October.**
-  The [new registration](/mnt/workspaces/Cells/two-task-readout-20261012-01/registration.json)
-  freezes **955 sources and 15 tests per backend** with the corrected **512-MiB**
-  batch allowance. The [single launch check](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/launch-check.json)
-  confirms the detached controller and CPU phase at **11:19:33 UTC**, with no
-  failure artifact at that check. L4 follows CPU; results remain pending.
-  The [earlier failed run](/mnt/workspaces/Cells/two-task-readout-20261011-01/failure.json)
-  stopped at **23:52:35 UTC on 11 October**, after **13.24 seconds**:
-  ten CPU checks passed, then the first batch raised a setup error before any
-  trajectory executed. Its L4 phase never started and produced no assay outcomes
-  or GPU utilization measurements. The four-world planner requires **258.53 MiB**;
-  the declared **256-MiB** batch allowance was too small. The
-  [failure review](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/failed-run-review.json)
-  authenticates all **955 frozen sources**, matching the checkout before repair;
-  failed evidence remains untouched. The
-  [fix verification](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/fix-verification.json)
-  records **nine preflight passes in 7.84 seconds**, including all **20 full-batch
-  and 20 window plans** under the corrected **512-MiB** allowance. Window plans
-  require at most **76.86 MiB**. Only the protocol's batch allowance and its
-  preflight test changed; all **141 production modules**, physical inputs,
-  decoder settings, splits and numerical tolerances remain unchanged.
-  The [assay guide](docs/TWO_TASK_READOUT_ASSAY.md) and
-  [protocol](validation/assays/two_task_protocol.json) still specify **80 worlds
-  per backend**, five equal-work arms, shared post-cue voltage readers and
-  held-out cue strengths/input combinations. CPU/L4 agreement, checkpoint/window/
-  partition replay, controls and GPU-busy/SM-active coverage are included in this run.
-  Other limits remain **40 minutes, 8 GiB worker RSS, 2 GiB artifacts/cache and
-  0.2 GPU memory fraction**. The [original preparation](/mnt/workspaces/Cells/two-task-readout-development-20261011-01/preparation.json)
-  and [registration](/mnt/workspaces/Cells/two-task-readout-20261011-01/registration.json)
-  preserve the original prerequisite and 15-test inventory. The
-  [retry preparation](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/retry-preparation.json)
-  binds the passing preflight, confirms **953 unchanged registered files** and
-  both intended repair files, and preserves the original failure artifact.
-  No automatic polling or follow-up job is scheduled.
+- **BETSE and BITSEY reference roles clarified, 12 October.** The README and
+  design entry points now identify both references. The
+  [BITSEY replication plan](docs/ROADMAP.md#bitsey-replication) builds on existing
+  regulation, pair and independent graph work, starting with corrected clocks
+  (P10R) and the editable lineage (P11), with CPU/L4 verification. The
+  [source review](docs/SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
+  distinguishes Forms v0.17 from the later P32 report. This was documentation
+  only; no simulation or frozen result changed. The
+  [documentation checks](/mnt/workspaces/Cells/bitsey-reference-docs-20261012-01/verification.json)
+  record link checks and unchanged registered simulation sources. The pending
+  technical step remains the two-task decoder/timing diagnosis described below.
+
+- **CPU/L4 two-task assay qualification passed at 11:21:19 UTC on
+  12 October**, after **2 min 5 s**. The
+  [result](/mnt/workspaces/Cells/two-task-readout-20261012-01/result.json) records
+  **14 CPU passes / one declared GPU deferral** and **15 L4 passes**, with no
+  failures or errors. The [completed-evidence check](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/completed-status-20261012T124850Z.json)
+  authenticates **955 frozen sources, 345 evidence hashes and 13 required
+  passing reports**; all 955 current files, including 141 production modules,
+  match. The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-readout-20261012-01/evidence/gpu/assay-cpu-gpu.json)
+  passes across **13,283,360 state/field values** from **80 worlds per backend**,
+  with exact agreement of all reported decoder decisions. Fourteen-array
+  restart, window/partition/reorder replay, observer neutrality and controls
+  pass. Maximum material residual uses less than **0.625%** of its error budget.
+
+  **The two-task scientific objective is not demonstrated.** The frozen
+  [readout results](/mnt/workspaces/Cells/two-task-readout-20261012-01/evidence/gpu/assay-readouts.json)
+  recover location in **8/8 held-out joint cases**, but timing in **0/8**, so
+  joint success is **0/8**. Single-task results are location **4/4** and timing
+  **2/4**. Final-time-only reading gives the same accuracies. Disconnected
+  junctions give the same joint-task scores, so this result does not establish
+  a need for that route. No-cue and current-input baselines have no resolved
+  decisions. The earlier-input baseline succeeds on each task alone but also
+  fails both joint holdouts (**0/8 each**). Next is to examine the decoder and
+  held-out combination design against known encoded inputs before attributing
+  the timing failure to tissue dynamics. These are small deterministic tests,
+  without biological validation, a causal consumer or a polycomputing claim;
+  the [protocol](validation/assays/two_task_protocol.json) and completed results
+  remain frozen rather than retuned to improve scores.
+
+  The **72.04-s GPU phase** used **0.0200 GPU-hours**: whole-phase GPU busy
+  **6.843%**, measured SM-active **2.032%**, with **99.999% / 100% coverage**.
+  These include compilation and host checks; no single warmed interval exists.
+  Each arm executed **1,024 solver steps**; summed L4 execution times were
+  **0.709–0.773 s per arm**, excluding compilation/host work. Peak child RSS
+  was **1.41 GiB**, artifacts/cache **78.37 MiB**. The
+  [registration](/mnt/workspaces/Cells/two-task-readout-20261012-01/registration.json)
+  retains the 40-minute / 8-GiB RSS / 2-GiB artifacts / 0.2 GPU-memory limits.
+  The [earlier memory-planning failure](/mnt/workspaces/Cells/two-task-readout-20261011-01/failure.json)
+  remains intact: its 256-MiB batch allowance was below the 258.53-MiB estimate.
+  The [repair preflight](/mnt/workspaces/Cells/two-task-readout-development-20261012-01/fix-verification.json)
+  verified all 20 batch/window plans under 512 MiB and nine passing checks,
+  without changing physics, decoder settings, splits or numerical tolerances.
+  No follow-up computation was launched; the GPU is idle.
 
 - **Quantum birthmarks reviewed, 11 October.** The
   [research note](docs/PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) checks the Phys.org

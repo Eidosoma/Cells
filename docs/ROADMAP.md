@@ -1,6 +1,6 @@
 # Roadmap
 
-Direction reviewed: **2026-10-11**. This document defines priorities and completion
+Direction reviewed: **2026-10-12**. This document defines priorities and completion
 criteria. [Progress](../PROGRESS.md) owns current status, active runs and results;
 [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md) records the mechanism-level gaps.
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
@@ -16,10 +16,14 @@ build sequence and its historical status statements.
    Cells simulations. Broaden comparisons of named mechanisms and their
    combinations within declared physical and numerical regimes; retain
    source-specific clock semantics separately from physical-time models.
-3. Develop assembly coupling as an explicit model hypothesis. Keep finite protein
+3. Use BITSEY as the regulatory/ionic reference and reproduce the cellular
+   state-writing, transmission, revision and replacement experiments in
+   *How Forms Become Reconstructible*. Start with the corrected-clock lineage
+   assays below, alongside continuing BETSE work.
+4. Develop assembly coupling as an explicit model hypothesis. Keep finite protein
    material and ionic inventories distinct; use intervention and conservation
    checks before adding feedback from calcium, energy or neighbouring cells.
-4. Carry CPU/L4 verification and resource measurement into each new family.
+5. Carry CPU/L4 verification and resource measurement into each new family.
    Prepare Jupiter qualification in stages while capability work remains the
    immediate priority. Further utilization optimization is parked; telemetry
    continues on GPU runs.
@@ -48,6 +52,46 @@ Mitochondrial energetics and assembly feedback also serve the wider Cells resear
 programme; their proposed scope should not be confused with a fully audited list
 of mechanisms exercised by the pinned BETSE runtime. Jupiter execution remains a
 separate qualification track.
+
+## BITSEY replication
+
+The first target is the Forms programme's corrected-clock BITSEY experiments,
+with [source versions and provenance](SCIENTIFIC_BASIS.md#betse-and-bitsey-as-complementary-references)
+kept explicit. Existing isolated regulation, the coupled two-cell model and
+independent graph references are starting components; full lineage reproduction
+remains to be implemented and verified. This work can proceed alongside BETSE
+coverage without waiting for every bioelectric mechanism to be complete.
+
+1. **Establish the coupled reference and clocks.** Pin BITSEY and the selected
+   assay protocol; map the complete 17-entry native packet into primary state,
+   fixed context and derived quantities. Account for all mechanisms needed by
+   the assay, including state-dependent K expression omitted by the current
+   pair. Reuse the graph references and implement the P10R boundary/observation
+   clock contract, with waiting cells continuing to evolve. Check native and
+   independent CPU trajectories, numerical refinement, accounting and restart
+   before extending duration. Source time remains nominal model units.
+2. **Reproduce the editable lineage (P11).** Rebuild the 13-by-13 preparation at
+   each numerical resolution, write M into three E targets, remove cues and test
+   isolated retention. Follow three complete M handovers, rewrite the actual
+   current carriers to E, then follow three E handovers into fresh M recipients.
+   Preserve full state and identity; remove every old teacher at each boundary.
+   Require both isolated retention holds and the registered RNA-blocked,
+   boundary-cut, sham, no-cue and ordinary-founder controls. Judge trajectories,
+   clocks and retention criteria as well as endpoint labels.
+3. **Qualify GPU execution and extend the assays.** Compare CPU and L4 state,
+   outcomes, numerical refinement and complete checkpoint/replay behaviour for
+   the new model. Use independent ensembles for later Jupiter runs across
+   4–16 GPUs, recording GPU busy, measured SM-active and arm finish imbalance.
+   Then extend to perturbation, tissue context, turnover and communication-pause
+   experiments using their own pinned protocols and numerical checks.
+
+The later P31/P32 pause studies are separate source campaigns; P32's completion
+on 12 October postdates Forms v0.17. Preserve the original P10/P27/P30 numerical
+failures when selecting their corrected successors. These are externally
+scheduled cellular assays with supplied fresh cells, not autonomous division.
+Agreement with BITSEY equations, reproduction of the Forms extensions and
+biological validation are separate completion claims; the original cancer
+paper's table/geometry correspondence also remains a separate question.
 
 ## Milestones
 

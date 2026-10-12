@@ -28,6 +28,13 @@ mechanisms, change cell membership and challenge cells with matched visible
 states but different histories. The aim is to identify what carries history,
 what it changes, and when it survives replacement.
 
+We use two complementary reference simulators: **BETSE** to calibrate and verify
+the bioelectric layer, and **BITSEY** for coupled regulatory/ionic models and the
+cellular-state transmission experiments extended in *How Forms Become
+Reconstructible*. Reproducing those BITSEY experiments in Cells is a near-term
+goal; the [replication plan](docs/ROADMAP.md#bitsey-replication) separates existing
+components from the complete assays still to build.
+
 Realism means explicit physical mechanisms, material and energy accounting, and
 calibration against measurements. Bioelectricity, chemistry and assembly provide
 the starting point; mechanics, growth and turnover are planned extensions.
@@ -43,6 +50,8 @@ The goal is to find where the ideas hold, fail or need revision. See the
   channels, gap junctions and extracellular fields in selected model families.
 - **Cell chemistry:** calcium and IP3 signalling, internal compartments and
   chemical reactions.
+- **Regulatory cell state:** BITSEY-based isolated regulation and a bounded
+  [two-cell regulatory/ionic model](docs/SOURCE_EMT_PAIR.md).
 - **Protein assembly:** stochastic cage formation, finite material pools,
   breakable bonds and experimental coupling to cell models.
 - **Repeatable experiments:** checkpoints, restart, branching and independent
@@ -55,9 +64,9 @@ execution remains to be qualified. Distributing one interacting tissue across
 multiple GPUs requires further development. See the
 [GPU and ensemble guide](docs/GPU_ENSEMBLES.md).
 
-Cells uses BETSE as a reference to calibrate and verify the bioelectric layer
-of its broader simulations. Verified comparisons apply to the declared models
-and test conditions; biological validation remains separate. The
+BETSE and BITSEY comparisons apply to the declared models and test conditions;
+biological validation remains separate. BITSEY's nominal model clock is kept
+distinct from physically calibrated time. The
 [assembly-to-cell coupling](docs/CAPSID_ASSEMBLY.md) is an experimental modelling
 hypothesis.
 
@@ -73,8 +82,9 @@ hypothesis.
 
 ![Planned Cells development: broader BETSE channel and transport coverage; integrated assembly, energy and mechanics; Jupiter scaling from four to sixteen GPUs; and tissue-to-organ models.](docs/assets/cells-future.png)
 
-The next directions are broader BETSE coverage, richer cell physiology including
-water and mechanics, and Jupiter qualification from four to sixteen GPUs.
+The next directions are broader BETSE coverage, reproduction of the BITSEY
+state-writing, transmission and replacement assays, richer cell physiology
+including water and mechanics, and Jupiter qualification from four to sixteen GPUs.
 Experimental calibration and organ models are longer-term goals. The organ
 illustration is schematic; it does not select a particular organ to build first.
 Detailed scope and priorities are recorded in [Progress](PROGRESS.md) and the
@@ -320,7 +330,7 @@ to inspect them. They are not silently migrated into this version.
 | --- | --- |
 | [Architecture](docs/ARCHITECTURE.md) | Simulator structure, state ownership, numerical execution and checkpoints |
 | [Multiscale and parallel design](docs/MULTISCALE_EXECUTION_ARCHITECTURE.md) | How mechanisms, resolution, coupled clocks and device placement fit together |
-| [BETSE capability coverage](docs/BETSE_CAPABILITY_ROADMAP.md) | Implemented subsets, comparison scope and remaining gaps |
+| [BETSE coverage](docs/BETSE_CAPABILITY_ROADMAP.md) and [BITSEY replication](docs/ROADMAP.md#bitsey-replication) | Complementary references, implemented subsets and remaining comparisons |
 | [Protein assembly](docs/CAPSID_ASSEMBLY.md) | Assembly models and their experimental connection to cell dynamics |
 | [GPU execution](docs/GPU_ENSEMBLES.md) | Independent ensembles, local qualification and Jupiter preparation |
 | [Scientific basis](docs/SCIENTIFIC_BASIS.md) | Research sources, hypotheses and evidence limits |

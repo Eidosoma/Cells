@@ -3,7 +3,8 @@
 Design baseline: 2026-09-09, D045 / ARCH-003. Implementation and primary-source
 review: **2026-10-11**. This is the target architecture for
 [multiscale composition](MULTISCALE_DESIGN.md), BETSE calibration of the
-bioelectric layer, and experiments motivated by *Plastic Heredity* and
+bioelectric layer, [BITSEY regulatory/ionic and lineage replication](ROADMAP.md#bitsey-replication),
+and experiments motivated by *Plastic Heredity* and
 *How Forms Become Reconstructible*. [Progress](../PROGRESS.md) owns run status;
 [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md) owns the mechanism inventory.
 

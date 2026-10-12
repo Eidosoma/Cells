@@ -27,6 +27,47 @@ gate contract, not a calibrated channel or coupled production trajectory.
 R011 reviews bulk electrodiffusion, membrane charge and scalable field-solver
 design for SPEC-009; it is not new biology or executed upstream solver evidence.
 
+## BETSE and BITSEY as complementary references
+
+**BETSE** calibrates and verifies the bioelectric layer within the broader Cells
+simulations; its [capability inventory](BETSE_CAPABILITY_ROADMAP.md) defines the
+comparison scope. **BITSEY** supplies the coupled regulatory/ionic reference and
+the cellular model used for our transmission and replacement extensions in
+*How Forms Become Reconstructible*. Both are active reference choices.
+
+Cells already implements [isolated BITSEY regulation](EMT_REFERENCE.md) and a
+bounded [two-cell regulatory/ionic model](SOURCE_EMT_PAIR.md). Independent
+[graph](SOURCE_EMT_GRAPH_REFERENCE.md), [preparation](SOURCE_PREPARATION_REFERENCE.md)
+and [long-path reference work](SOURCE_GRAPH_PATHS_REFERENCE.md) provide further
+building blocks. These comparisons do not yet reproduce the complete Forms
+lineage experiments. The [replication plan](ROADMAP.md#bitsey-replication) starts
+with corrected clocks (P10R) and the freshly prepared editable lineage (P11),
+then extends the assays with CPU/L4 verification.
+
+The targeted source review on **2026-10-12** used Forms **v0.17, 10 October 2026**,
+especially section 5.2 and methods C.7/C.9, plus the continuing exploration's
+P10R/P11 protocols and P11/P32 reports. The native reference remains
+[BITSEY revision b2cb370](https://gitlab.com/grodstein/bitsey/-/tree/b2cb370aaecbc8299f259bc4251d5396c81f19a6).
+The lineage experiments extend that model; they are not the original cancer
+paper's table experiments. Nominal BITSEY clocks and scaled regulatory
+coordinates retain their source meanings rather than becoming calibrated
+physical quantities through agreement with BETSE.
+
+Local source provenance, relative to the external `Random-Replications` research
+tree (not bundled with Cells):
+
+- Forms: `WhereDoFormsComeFrom/PRE_PRINT_PAPER_DRAFT_V0.17.md`.
+- Continuing BITSEY studies:
+  `PlasticHeredity/NewIdeas/preprints/ingressing-minds-v-ruliad-paper-ideas/levin-cancer-gj-exploration/`;
+  specifically `PAPER_CONTACT_CLOCK_RECOVERY_PROTOCOL.md`,
+  `PAPER_EDITABLE_LINEAGE_PROTOCOL.md`, `PAPER_EDITABLE_LINEAGE_RESULTS.md` and
+  `PAPER_CONVERGED_PAUSE_BOUNDARY_RESULTS.md`.
+
+P32's reported completion on **12 October** is subsequent to that manuscript
+version. This review uses its report as a future replication lead; it does not
+rerun the study or audit its raw arrays. The corrected experiments and preserved
+numerical failures keep separate identities.
+
 ## Subsequent research and model reviews
 
 The source catalogue began with the September baseline. Later reviews are
@@ -41,6 +82,7 @@ orientation below retains the title used at that review.
 | Reviewed material | Maintained entry point | Scope |
 | --- | --- | --- |
 | Plastic Heredity v5.0 and Where Do Forms Come From? v0.11, September orientation | [Recorded orientation](../PROGRESS.md) | Later research context; manuscripts belong to the external research tree and do not overwrite S01's v2.3 review |
+| How Forms Become Reconstructible v0.17 and continuing BITSEY studies, reviewed 2026-10-12 | [Complementary references](#betse-and-bitsey-as-complementary-references) and [replication plan](ROADMAP.md#bitsey-replication) | Targeted lineage-method review; P10R/P11 are initial replication targets, with the later P32 report retained separately; no new Cells assay result |
 | Asor et al. protein-cage assembly, reviewed 2026-09-19 | [Assembly model and source](CAPSID_ASSEMBLY.md) | Experimentally motivated stochastic model with prescribed geometry; implementation and cell coupling do not constitute a biological fit |
 | CCI-seq, reviewed 2026-10-08 | [Paper review](PAPER_REVIEW_CCI_SEQ.md) | Tissue neighbourhood measurements as future observational inputs; association is not an inferred electrical conductance |
 | Mitochondrial biology, reviewed 2026-10-10 | [Literature note](PAPER_REVIEW_MITOCHONDRIA.md) | Proposed energy, calcium and inheritance mechanisms; no mitochondrial simulator implementation or new experimental result |

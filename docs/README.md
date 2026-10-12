@@ -12,6 +12,7 @@ the [project README](../README.md) gives the short feature overview.
 | [Multiscale composition](MULTISCALE_DESIGN.md) | How cells, regions and future organs compose without confusing membership with physical exchange |
 | [Parallel execution architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md) | Resolution, coupled clocks, device placement and the requirements for future distributed tissues |
 | [BETSE capability coverage](BETSE_CAPABILITY_ROADMAP.md) | Implemented subsets, reference correspondence and remaining mechanism gaps |
+| [BITSEY replication](ROADMAP.md#bitsey-replication) | Regulatory/ionic reference and planned reproduction of the Forms lineage experiments |
 | [Scientific basis](SCIENTIFIC_BASIS.md) | Research provenance, hypotheses and the limits of source and experimental evidence |
 | [Roadmap](ROADMAP.md) | Development priorities, dependencies and completion criteria |
 | [Experiment programme](EXPERIMENTS.md) | Proposed memory and relay assays; implementing their prerequisites does not establish an assay result |
@@ -22,6 +23,8 @@ the [project README](../README.md) gives the short feature overview.
   independent workers, telemetry, checkpoints and the planned Jupiter path.
 - [Protein assembly](CAPSID_ASSEMBLY.md): stochastic cages, finite pools,
   breakable bonds and experimental assembly-to-cell coupling.
+- [BITSEY regulation](EMT_REFERENCE.md) and [coupled pair](SOURCE_EMT_PAIR.md):
+  the existing bounded models behind the planned lineage replication.
 - [Tissue electrical models](TISSUE_RETURN_CURRENT.md): cross-region return
   currents, resolved membranes and native BETSE comparison components.
 - [Two-task readout assay](TWO_TASK_READOUT_ASSAY.md): cue location and timing
@@ -63,7 +66,7 @@ Versioned model guides and frozen specifications describe a particular model,
 source revision and numerical domain. A restriction in an older version is not
 automatically a restriction on every Cells model. Consult its successor guide
 and Progress before interpreting a historical "next" or "planned" statement.
-Numerical qualification, native BETSE agreement and biological validation are
+Numerical qualification, native BETSE/BITSEY agreement and biological validation are
 separate claims. L4 results do not establish Jupiter or multi-node scaling.
 
 Paths under `/mnt/workspaces` and older `runs/` references identify local evidence
