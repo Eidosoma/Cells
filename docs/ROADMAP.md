@@ -1,6 +1,6 @@
 # Roadmap
 
-Direction reviewed: **2026-10-12**. This document defines priorities and completion
+Direction reviewed: **2026-10-13**. This document defines priorities and completion
 criteria. [Progress](../PROGRESS.md) owns current status, active runs and results;
 [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md) records the mechanism-level gaps.
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
@@ -42,6 +42,15 @@ Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
    Prepare Jupiter qualification in stages while capability work remains the
    immediate priority. Further utilization optimization is parked; telemetry
    continues on GPU runs.
+6. **Retain channel compensation as a planned follow-up** to the current
+   two-task assay and its immediate diagnosis. Use the
+   [Hazan and Levin review](PAPER_REVIEW_CHANNEL_COMPENSATION.md) to develop the
+   [bounded functional-recovery experiment](EXPERIMENTS.md#functional-recovery-through-channel-compensation):
+   hold an impaired mechanism fixed, search other permitted controls, and test
+   recovery across held-out challenges and parameter uncertainty. A reference
+   must first demonstrate the function being restored. The review's GPU
+   benchmarking, intervention and licensing caveats remain implementation inputs.
+   This is queued work, not an automatic run or a restart of utilization tuning.
 
 Water/volume/flow, biophysical mechanics, spatial redistribution and mitochondrial
 energy dynamics require new laws and references. Existing calcium and tissue

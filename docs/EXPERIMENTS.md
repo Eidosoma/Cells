@@ -410,6 +410,48 @@ and fresh-reconstruction controls as appropriate. Shared support, sensing, writi
 and reconstruction belong in resource accounting alongside transmitted material.
 Any deterministic/model-specific evidence is labelled at that scope.
 
+## Functional recovery through channel compensation
+
+Planned follow-up recorded **2026-10-13**, after the current two-task assay is
+closed and its immediate diagnosis is resolved. The
+[Hazan and Levin review](PAPER_REVIEW_CHANNEL_COMPENSATION.md) supplies the
+scientific motivation, pinned source checks and implementation caveats; the
+[roadmap](ROADMAP.md#current-development-priorities) keeps this work in the queue.
+
+The first question is whether a small, verified Cells model can recover a
+specified function through other controls while an impaired mechanism stays
+fixed. Establish a reference that meets the target and an impairment that
+disrupts it before searching for compensation. If the reference cannot perform
+the task, developing that function is a separate experiment; it cannot be
+reported as restoration. Keep the existing two-task cues, readers, margins and
+recorded outcomes unchanged.
+
+- Select one qualified model family, parameter domain and time horizon. Freeze
+  the impaired kinetics and maximal conductance explicitly, along with allowed
+  alternative controls, bounds, search budget and outcome definitions.
+- Search batches of candidate interventions across several compatible baseline
+  states. Separate fitting/search inputs from held-out challenges; retain
+  reference, impairment-only, sham and unsuccessful-intervention controls.
+  Evaluate each task and their joint outcome separately.
+- Check perturbation tolerance and the transition into a recovered state, with
+  conservation/domain checks, timestep comparisons, CPU/L4 agreement and complete
+  replay. Preserve invalid candidates as failures rather than favourable scores.
+- Qualify compact summaries against full recordings before using them for larger
+  searches. Measure warmed and whole-job throughput separately; retain GPU-busy,
+  measured SM-active and coverage, and use measured batch costs for future
+  Jupiter scheduling. The source benchmark supplies no Cells scaling guarantee.
+- Implement from equations and declared interfaces with provenance suitable for
+  Cells' MIT licence. Carry forward the review's distinction between holding a
+  mutation's kinetics fixed and leaving the affected channel entirely unchanged.
+
+Completion means a reproducible CPU/L4 report of the search, held-out outcomes,
+robustness, failures and costs; a valid negative result is informative. External
+compensation is the initial scope. Local adaptive control, assembly-mediated
+replacement, persistence after removing external support, transmission and
+reconstruction remain later extensions with their own mechanisms and controls.
+Neither a successful optimizer nor matching outputs alone establishes heredity
+or polycomputing. Run status and evidence belong in [Progress](../PROGRESS.md).
+
 ## Later experiments
 
 | Assay | Question | Added requirements |

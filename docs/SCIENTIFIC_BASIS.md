@@ -171,6 +171,7 @@ orientation below retains the title used at that review.
 | CCI-seq, reviewed 2026-10-08 | [Paper review](PAPER_REVIEW_CCI_SEQ.md) | Tissue neighbourhood measurements as future observational inputs; association is not an inferred electrical conductance |
 | Mitochondrial biology, reviewed 2026-10-10 | [Literature note](PAPER_REVIEW_MITOCHONDRIA.md) | Proposed energy, calcium and inheritance mechanisms; no mitochondrial simulator implementation or new experimental result |
 | Quantum birthmarks, reviewed 2026-10-11 | [Literature note](PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) | Quantum theory/simulation motivates proposed classical history, carrier and readout tests; no biological mechanism or simulator implementation follows from the analogy |
+| Hazan and Levin channel compensation, reviewed 2026-10-13 | [Paper and source review](PAPER_REVIEW_CHANNEL_COMPENSATION.md) | Computational recovery, robustness and GPU search methods; pinned-code checks distinguish intervention constraints and integration throughput from biological rescue and whole-job performance |
 
 ## Current sources
 

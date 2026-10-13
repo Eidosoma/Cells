@@ -47,6 +47,9 @@ the [project README](../README.md) gives the short feature overview.
 - [Quantum birthmarks review](PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) proposes
   classical history/readout tests inspired by a quantum theory and simulation
   paper, with explicit limits on biological and heredity claims.
+- [Ion channel compensation review](PAPER_REVIEW_CHANNEL_COMPENSATION.md)
+  examines Hazan and Levin's search methods, released GPU benchmark and
+  possible functional-recovery experiments in Cells.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.
