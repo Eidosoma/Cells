@@ -9,39 +9,52 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Unstimulated-cell readout qualification launched at 23:05:47 UTC on
-  12 October**, running detached through CPU then L4. The
-  [launch check](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/launch-check.json)
-  confirms the CPU phase started, **974 frozen sources** match the checkout
-  and preflight, and all **ten tests** are registered. No result is available
-  at this launch check. Logs, inputs and eventual result/failure artifacts are
-  under [the run directory](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01).
-  Estimated duration is **15–20 minutes**; the registered wall limit is
-  **40 minutes**. No automatic follow-up or further polling is scheduled.
+- **Unstimulated-cell qualification completed at 23:20:15 UTC on 12 October**
+  after **14 min 27 s**. The
+  [result](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01/result.json)
+  records **nine CPU passes / one expected GPU deferral** and **ten L4 passes**,
+  with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/completed-status-20261012T234817Z.json)
+  authenticates **974 unchanged sources, 591 evidence hashes and 19 passing
+  reports**. The GPU is idle; this status check launched no new computation.
 
-  The [protocol](validation/assays/unstimulated_readout_protocol.json) and
-  [method](docs/TWO_TASK_READOUT_ASSAY.md#reading-unstimulated-cells) restrict the
-  primary reader to **cells 2, 3, 5, 6 and 7**, excluding both stimulated sources.
-  Calibration and evaluation share **0.0625-us** steps and the unchanged
-  **2-nV** margin. Fresh strengths **0.4375/0.5625/0.6375/0.7625** test whether
-  both location and timing remain readable in **16 joint cases**. The all-cell
-  comparator and disconnected arm are reported separately; a successful reader
-  is a scientific outcome, not an acceptance gate or a biological sensing claim.
+  **The primary scientific target was not met.** Reading only unstimulated
+  cells **2, 3, 5, 6 and 7** gives both labels correct in **16/16 forced choices**,
+  but **0/16 clear the unchanged 2-nV margin** on either task. The
+  [reader results](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01/evidence/gpu/unstimulated-readouts.json)
+  give location scores of **0.576–1.760 nV** and timing scores of
+  **0.174–1.002 nV**. The all-cell comparator still passes **16/16**, with
+  timing scores **8.263–19.848 nV**. Final-time-only restricted reading gets
+  both labels correct in **15/16** forced choices, with none resolved.
 
-  The [preflight](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/preparation.json)
-  passed **four checks in 28.24 s** without simulating fresh responses. It
-  authenticates **971 prior sources, 1,149 evidence hashes and 17 passing
-  reports**, checks physical doses, and verifies source-cell exclusion and
-  prediction independence from evaluation metadata. All **35 batch plans**
-  fit the **4-GiB** working bound; estimated retained arrays are **638.3 MiB**
-  and uncompressed arrays across both backends are **5.45 GiB**, within the
-  **8-GiB** artifact/cache allowance. Source style and method links pass.
+  With junctions disconnected, all **28 saved primary observation vectors**
+  are identical across strengths and labels, and both task scores are zero.
+  This is consistent with a small junction-mediated cue on this panel; it does
+  not establish robust remote decoding or biological sensing. No-cue and both
+  restricted input-only readers also remain unresolved.
 
-  The run streams **140 worlds per backend**, with equal **28,672 panel steps
-  per arm**, and compares all **60 calibration worlds** with authenticated
-  finest-step trajectories. Conservation/domain checks, physical CPU/L4
-  tolerances and bitwise replay are retained. Both GPU-busy and measured
-  SM-active coverage are recorded, including compilation and host work.
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01/evidence/gpu/unstimulated-cpu-gpu.json)
+  passes across **363,815,480 state/field values** using existing tolerances.
+  All task scores and decisions agree exactly across **56 mode/arm/task
+  comparisons**, as do the 32 shuffled joint metrics. All **60 calibration
+  worlds** reproduce bitwise on each backend; conservation/domain controls and
+  fourteen-array replay pass. Material residual uses less than **0.649%** of
+  its budget. Peak child RSS is **1.40 GiB**; artifacts/cache occupy **1.39 GiB**.
+
+  The [protocol](validation/assays/unstimulated_readout_protocol.json) fixes
+  calibration and evaluation at **0.0625 us**, with the **64-us** horizon and
+  fresh strengths **0.4375/0.5625/0.6375/0.7625**. Following
+  [four passing preflight checks](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/preparation.json),
+  **140 worlds per backend** executed equally **28,672 panel steps per arm**.
+  The [GPU measurements](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01/gpu-metrics/result.json)
+  cover **445.69 s**: GPU busy **23.441%**, SM-active **8.517%**, with
+  **99.999% / 99.781% coverage**, using **0.1238 GPU-hours**. These include
+  compilation and host checks; there is no single warmed interval. Summed
+  execution per arm is **21.62–22.06 s**, excluding compilation and host work.
+
+  Next proposed work: inspect the saved time courses and response geometry to
+  understand the weak remote margins, then decide whether to qualify a longer
+  observation window. No follow-up run is scheduled.
 
 - **Distributed-cue timestep qualification completed at 19:52:06 UTC on
   12 October**, after **19 min 37 s** of recorded execution. The
