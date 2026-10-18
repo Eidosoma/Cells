@@ -1,0 +1,436 @@
+{
+  "kind": "source_order_local_channel@1",
+  "scope": "Calibration-only paired flank Kv1p5 interventions at fixed 0.9x junction permeability in one synthetic tissue.",
+  "purpose": "Measure paired flank-specific channel effects after uniform remote-channel changes failed the separation objective.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-channel-compensation-20261017-01",
+    "registration_sha256": "4bc140eebaa3cdfc88e485b47dfc9e6df901779cc355f4575ab0f6c0bccb7b8b",
+    "completion_sha256": "327837575900507f09ead0d07aa6f6578e1ca90000494264e2f23a16a3687cc3",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/source_order_long/channel_compensation_protocol.json",
+  "source_protocol_sha256": "ef693771434fa705bbef9231a0fc5008e9f1c2c94cbcd7ac0f89a3c33d9d4520",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000512,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4,
+    "long512": 8,
+    "spanning512": null,
+    "selected320": null
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ],
+    "long512": [
+      320,
+      384,
+      512
+    ],
+    "spanning512": [
+      128,
+      256,
+      512
+    ],
+    "selected320": [
+      128,
+      160,
+      320
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Unchanged three-strength polyline per arm, panel and timestep; all location/order combinations calibrated. Evaluation strengths never fit curves. The wire key timing now means source order.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "Calibration geometry on selected320: minimum opposite-label curve half-distance across tasks, active arms and all three timesteps. Condition-calibrated geometry selects a candidate; raw frozen-source and shared-reference-assisted readings of calibration points are separate diagnostics, never fresh confirmation.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "Five conditions (sham, cells 2/6 channels 0.9x and 1.1x, cells 3/5 channels 0.9x and 1.1x), three calibration strengths, five arms and four label combinations at three timesteps. No held-out responses are loaded or simulated.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "Sham full histories reproduce the completed uniform-channel sham bitwise. Changed-flank candidates reproduce initial states only, including no-cue and disconnected arms.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 36000,
+    "artifact_and_cache_bytes": 206158430208,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_local_channel.py"
+  ],
+  "expected_cpu_skips": 5,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_local_channel.py::test_cpu_gpu[sham]",
+    "tests/unit/test_local_channel.py::test_cpu_gpu[source1_flank_lower]",
+    "tests/unit/test_local_channel.py::test_cpu_gpu[source1_flank_higher]",
+    "tests/unit/test_local_channel.py::test_cpu_gpu[source4_flank_lower]",
+    "tests/unit/test_local_channel.py::test_cpu_gpu[source4_flank_higher]"
+  ],
+  "required_evidence": [
+    "local-channel-sham-reader-isolation",
+    "local-channel-sham-archive",
+    "local-channel-sham-support",
+    "local-channel-sham-calibration-isolation",
+    "local-channel-sham-geometry-known-answers",
+    "local-channel-sham-binding",
+    "local-channel-sham-design",
+    "local-channel-sham-history-boundaries",
+    "local-channel-sham-decision-known-answers",
+    "local-channel-sham-reader-views-known-answers",
+    "local-channel-sham-prerequisite",
+    "local-channel-sham-panel",
+    "local-channel-sham-controls",
+    "local-channel-sham-contrasts",
+    "local-channel-sham-replay",
+    "local-channel-sham-historical-reproduction",
+    "local-channel-sham-calibration",
+    "local-channel-source1_flank_lower-reader-isolation",
+    "local-channel-source1_flank_lower-archive",
+    "local-channel-source1_flank_lower-support",
+    "local-channel-source1_flank_lower-calibration-isolation",
+    "local-channel-source1_flank_lower-geometry-known-answers",
+    "local-channel-source1_flank_lower-binding",
+    "local-channel-source1_flank_lower-design",
+    "local-channel-source1_flank_lower-history-boundaries",
+    "local-channel-source1_flank_lower-decision-known-answers",
+    "local-channel-source1_flank_lower-reader-views-known-answers",
+    "local-channel-source1_flank_lower-prerequisite",
+    "local-channel-source1_flank_lower-panel",
+    "local-channel-source1_flank_lower-controls",
+    "local-channel-source1_flank_lower-contrasts",
+    "local-channel-source1_flank_lower-replay",
+    "local-channel-source1_flank_lower-historical-reproduction",
+    "local-channel-source1_flank_lower-calibration",
+    "local-channel-source1_flank_higher-reader-isolation",
+    "local-channel-source1_flank_higher-archive",
+    "local-channel-source1_flank_higher-support",
+    "local-channel-source1_flank_higher-calibration-isolation",
+    "local-channel-source1_flank_higher-geometry-known-answers",
+    "local-channel-source1_flank_higher-binding",
+    "local-channel-source1_flank_higher-design",
+    "local-channel-source1_flank_higher-history-boundaries",
+    "local-channel-source1_flank_higher-decision-known-answers",
+    "local-channel-source1_flank_higher-reader-views-known-answers",
+    "local-channel-source1_flank_higher-prerequisite",
+    "local-channel-source1_flank_higher-panel",
+    "local-channel-source1_flank_higher-controls",
+    "local-channel-source1_flank_higher-contrasts",
+    "local-channel-source1_flank_higher-replay",
+    "local-channel-source1_flank_higher-historical-reproduction",
+    "local-channel-source1_flank_higher-calibration",
+    "local-channel-source4_flank_lower-reader-isolation",
+    "local-channel-source4_flank_lower-archive",
+    "local-channel-source4_flank_lower-support",
+    "local-channel-source4_flank_lower-calibration-isolation",
+    "local-channel-source4_flank_lower-geometry-known-answers",
+    "local-channel-source4_flank_lower-binding",
+    "local-channel-source4_flank_lower-design",
+    "local-channel-source4_flank_lower-history-boundaries",
+    "local-channel-source4_flank_lower-decision-known-answers",
+    "local-channel-source4_flank_lower-reader-views-known-answers",
+    "local-channel-source4_flank_lower-prerequisite",
+    "local-channel-source4_flank_lower-panel",
+    "local-channel-source4_flank_lower-controls",
+    "local-channel-source4_flank_lower-contrasts",
+    "local-channel-source4_flank_lower-replay",
+    "local-channel-source4_flank_lower-historical-reproduction",
+    "local-channel-source4_flank_lower-calibration",
+    "local-channel-source4_flank_higher-reader-isolation",
+    "local-channel-source4_flank_higher-archive",
+    "local-channel-source4_flank_higher-support",
+    "local-channel-source4_flank_higher-calibration-isolation",
+    "local-channel-source4_flank_higher-geometry-known-answers",
+    "local-channel-source4_flank_higher-binding",
+    "local-channel-source4_flank_higher-design",
+    "local-channel-source4_flank_higher-history-boundaries",
+    "local-channel-source4_flank_higher-decision-known-answers",
+    "local-channel-source4_flank_higher-reader-views-known-answers",
+    "local-channel-source4_flank_higher-prerequisite",
+    "local-channel-source4_flank_higher-panel",
+    "local-channel-source4_flank_higher-controls",
+    "local-channel-source4_flank_higher-contrasts",
+    "local-channel-source4_flank_higher-replay",
+    "local-channel-source4_flank_higher-historical-reproduction",
+    "local-channel-source4_flank_higher-calibration"
+  ],
+  "required_gpu_evidence": [
+    "local-channel-sham-cpu-gpu",
+    "local-channel-source1_flank_lower-cpu-gpu",
+    "local-channel-source1_flank_higher-cpu-gpu",
+    "local-channel-source4_flank_lower-cpu-gpu",
+    "local-channel-source4_flank_higher-cpu-gpu",
+    "local-channel-selection"
+  ],
+  "scope_exclusions": [
+    "Calibration-only intervention design for one synthetic tissue. No local rescue, biological replication, whole-organ validation, new BETSE/BITSEY parity or multi-GPU scaling result.",
+    "Each probe changes two cells together. It measures that group intervention, not independent single-cell derivatives or a general spatial controller.",
+    "Present from initialization; not a post-damage recovery or adaptive controller.",
+    "Source channel availability, fractional cue inhibition and timing stay fixed. Network feedback may change ionic currents and transported charge.",
+    "The two flank groups have slightly different membrane areas. Equal relative permeability changes are not equal absolute channel-capacity changes; report each area-weighted change.",
+    "Retain raw frozen-source, shared-no-cue-reference-assisted and condition-calibrated views separately. A geometric gain does not establish raw transfer.",
+    "Freeze any selected candidate before a separate fresh-strength experiment. No held-out responses enter this pilot.",
+    "Same synthetic initial state and calibration cases. Sham/backend/timestep repetitions are numerical controls, not independent biological cases.",
+    "A geometry gain alone is not biological recovery or raw-reader transfer. Retain every valid negative result and invalid failure.",
+    "Record GPU busy and measured SM-active with coverage and per-arm timing. No automatic polling, retry or follow-up."
+  ],
+  "automatic_followup": false,
+  "cue_timing": {
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "late_pulse_us": [
+      112,
+      120
+    ],
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "pulse_width_us": 8,
+    "onset_separation_us": 104,
+    "selection": "Inherited source pulse timing remains fixed in every local-channel condition.",
+    "source_allocation": "Each source retains amplitude * its 75/25 location share * minimum source membrane area integrated over 8 us. Order-only uses 50/50; no-cue uses zero. Compare dose with the common-pulse encoding at the SAME new strength.",
+    "comparison_panels": "Only selected320 ranks channel conditions; spanning512 and long512 remain descriptive comparators."
+  },
+  "replay": {
+    "snapshot_world": "joint/calibration_low/location=0/order=1",
+    "snapshot_step": 1663,
+    "snapshot_time_us": 103.9375,
+    "purpose": "Resume at 103.9375 us before the shifted second pulse, crossing its 112/120-us events with 257-step windows, reordering and partitioning four calibration worlds."
+  },
+  "source_cell_ids": [
+    1,
+    4
+  ],
+  "task_meanings": {
+    "location": "0: source 1 receives 75% of dose, source 4 receives 25%; 1: reverse allocation.",
+    "timing": "Internal reader key for source_order: 0 = source 1 early and source 4 late; 1 = source 4 early and source 1 late. This is NOT the preceding common early/late cue task.",
+    "timing_only": "Internal arm key for order-only: 50/50 source doses with the same opposite pulse orders."
+  },
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    }
+  ],
+  "max_steps": 8192,
+  "primary_panel": "selected320",
+  "work": {
+    "worlds_per_timestep": 300,
+    "worlds_per_backend": 900,
+    "world_steps_per_backend": 4300800,
+    "world_steps_per_arm_per_backend": 860160
+  },
+  "paired_comparator_panels": [
+    "spanning512",
+    "long512"
+  ],
+  "execution_estimate": {
+    "wall_hours": [
+      6,
+      8
+    ],
+    "basis": "900 worlds/backend versus the completed 540-world four-hour uniform-channel pilot; includes CPU then L4 and archive handling."
+  },
+  "work_per_condition": {
+    "worlds_per_timestep": 60,
+    "worlds_per_backend": 180,
+    "world_steps_per_backend": 860160,
+    "world_steps_per_arm_per_backend": 172032
+  },
+  "design_plan": "validation/assays/source_order_long/local_channel_plan.json",
+  "design_plan_sha256": "51728b8e7bb1142fac037acb569d188479a960e7e9d750309757de4ea40a9d9c",
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01",
+    "status": "completed_calibration_diagnosis",
+    "completion_sha256": "20389f0063faeaa6b0b2bd5ae369ab42ff51b31f10b40137af76ffe6abb3d26f",
+    "result_sha256": "751e85d65f262212e5562e6ff2615ab8e29fcc5925e23799db73c3bb6f1d55c0"
+  },
+  "conditions": [
+    {
+      "id": "sham",
+      "cell_ids": [],
+      "channel_scale": 1.0,
+      "world_id_offset": 600000
+    },
+    {
+      "id": "source1_flank_lower",
+      "cell_ids": [
+        2,
+        6
+      ],
+      "channel_scale": 0.9,
+      "world_id_offset": 620000
+    },
+    {
+      "id": "source1_flank_higher",
+      "cell_ids": [
+        2,
+        6
+      ],
+      "channel_scale": 1.1,
+      "world_id_offset": 640000
+    },
+    {
+      "id": "source4_flank_lower",
+      "cell_ids": [
+        3,
+        5
+      ],
+      "channel_scale": 0.9,
+      "world_id_offset": 660000
+    },
+    {
+      "id": "source4_flank_higher",
+      "cell_ids": [
+        3,
+        5
+      ],
+      "channel_scale": 1.1,
+      "world_id_offset": 680000
+    }
+  ],
+  "calibration_only": true,
+  "original_reader_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01",
+    "registration_sha256": "d8c5602801d19bc6efb4d128565167ec4458d7c33930277dad4b0651464e960d",
+    "completion_sha256": "8552dc444342ba59c499e11a3d6f18e3e550968619737f12f1f99a9ec13000a5",
+    "require_completed_cpu_and_gpu": true
+  },
+  "frozen_reader_source": {
+    "backend": "cpu",
+    "calibration": "archived_source_at_matching_timestep",
+    "files_sha256": {
+      "evidence/cpu/source-order-pulse-confirmation-readouts.json": "3ffd010ba4bf06b81db03a9bfcdfc5a34d974be0de982b91fc6fa2970c15c68d",
+      "evidence/cpu/source-order-pulse-confirmation-readouts.npz": "0ee314387ca74d54a0a91ef3a49b213f1129fc78a50083b97e01ec03cf38350d"
+    }
+  }
+}

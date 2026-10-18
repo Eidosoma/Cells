@@ -1,0 +1,73 @@
+{
+  "kind": "source_order_spanning_confirmation_plan@1",
+  "status": "designed_not_run",
+  "purpose": "Test whether early/late voltage observations reduce source-order/strength ambiguity on new evaluation strengths, without changing the tissue, cues, reader, feature count or margin.",
+  "execution_protocol_ready": false,
+  "remaining_implementation": "Adapt the established windowed assay runner and prerequisite/history checks to the new cohort and the fixed spanning feature extractor; run host preflight before registering and launching.",
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01",
+    "registration_sha256": "ae01cd63de9ed2a1052adb9bd90fdb25fb6643e017644e069886d7257f1c435b",
+    "completion_sha256": "e6c8c6a7e47071a0f08e4f0fc5d53c54ee518a7ba712e567637fce6b62dc7928"
+  },
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-long-diagnosis-20261014-01",
+    "completion_sha256": "27e34f1fae2250b30b313d33866d8cdef40bfae7bddccbc33e9d67db6c67b5b4"
+  },
+  "hypothesis": "With the same 15 features and calibration strengths, the spanning panel resolves more joint location/order cases than the late-only comparator while retaining the location signal. Report any failures and paired changes; improvement does not establish complete task resolution.",
+  "calibration_strengths": [0.4, 0.6, 0.8],
+  "evaluation_strengths": [0.41875, 0.46875, 0.51875, 0.56875, 0.63125, 0.68125, 0.73125, 0.78125],
+  "evaluation_design": "Four equally spaced new strengths in each calibration interval, mirrored around 0.6, including weak cues near 0.4. Fix this grid before generating its responses; do not restrict testing to the previously successful strength range.",
+  "world_id_offset": 420000,
+  "arms": ["location_only", "timing_only", "joint", "disconnected", "no_cue"],
+  "label_combinations": [[0, 0], [0, 1], [1, 0], [1, 1]],
+  "physical_conditions": {
+    "source_cell_ids": [1, 4],
+    "early_pulse_us": [8, 16],
+    "late_pulse_us": [104, 112],
+    "duration_s": 0.000512,
+    "dt_s": [0.00000025, 0.000000125, 0.0000000625],
+    "inherited_conditions": "Same compensated-charge production sources, initial state, tissue, location allocations, single-task and null controls, per-source doses at each strength and all physical/numerical tolerances. No new native BETSE capture is needed when these production sources remain authenticated and unchanged."
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "cell_ids": [2, 3, 5, 6, 7],
+    "feature_count": 15,
+    "voltage_margin_V": 0.000000002,
+    "primary_observation_times_us": [128, 256, 512],
+    "paired_comparator_observation_times_us": [320, 384, 512],
+    "primary_timestep_s": 0.0000000625,
+    "sampling": "Retain the source run's 12 observation times, so both panels come from the same trajectory and require no extra integration. Concatenate five remote voltages per selected time with no rescaling.",
+    "calibration": "Fit each arm and timestep using calibration cases only. Prediction receives voltage features only; no evaluation strength, labels or paired counterpart.",
+    "analysis": "Keep the existing timestep score/contrast limits, all 32 fixed label shuffles and reference-assisted transfer as separately labelled analyses. The old 8/16 primary and exploratory 15/16 result remain frozen."
+  },
+  "scientific_reporting": {
+    "joint_evaluation_cases": 32,
+    "single_task_evaluation_cases_per_arm": 16,
+    "primary": "Report correct and above-margin counts for each task and both tasks together, every case's score, and the paired change versus late-only observations.",
+    "full_target": "All 32 joint cases correct and above the unchanged margin, with timestep stability and appropriate controls. A numerical pass or partial improvement is not completion of this scientific target.",
+    "outcome_is_not_a_numerical_acceptance_gate": true,
+    "scope": "New deterministic strength interpolation tests in the same synthetic tissue; not independent biological replication or whole-organism validation."
+  },
+  "execution": {
+    "backends": ["cpu", "gpu"],
+    "worlds_per_timestep": 220,
+    "worlds_per_backend": 660,
+    "world_steps_per_backend": 3153920,
+    "world_steps_per_arm_per_backend": 630784,
+    "batch_worlds": 4,
+    "window_steps": 1024,
+    "max_steps": 8192,
+    "provisional_wall_hours": [3, 4],
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 103079215104,
+    "launch": "Detached with durable inputs, logs, result/failure artifacts and no automatic follow-up. Outputs under /mnt/workspaces/Cells. Estimates require resource preflight.",
+    "verification": [
+      "Authenticate completed precision-repair and diagnostic evidence, unchanged production sources and disjoint new evaluation strengths.",
+      "Independently verify all control samples, doses, observation support and resource bounds before response simulation.",
+      "Require the unchanged calibration and no-cue physical histories to reproduce their authenticated predecessors; map new IDs explicitly.",
+      "Keep complete windowed state archives, conservation/domain checks and the full CPU/L4 comparison with unchanged tolerances.",
+      "Require bitwise restart across the second pulse, window changes, world reordering and partitioning within each backend."
+    ],
+    "telemetry": "Record both GPU-busy and measured SM-active with coverage and phase scope, plus actual arm timings. Equal world-step budgets do not establish concurrent multi-GPU scaling."
+  }
+}

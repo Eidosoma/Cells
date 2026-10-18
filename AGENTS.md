@@ -1,8 +1,11 @@
-# Long-running jobs
+# Running jobs
 
-For long-running acceptance, benchmark or regression jobs, launch detached with
-durable logs and result/failure artifacts, then return control to the user.
-Do not automatically wait or poll repeatedly; the user will request status checks.
+For runs expected to finish in under 10 minutes, an attached watcher may monitor
+completion while keeping the user updated. For runs expected to take 10 minutes
+or more, including acceptance, benchmark or regression jobs, launch detached
+with durable logs and result/failure artifacts, then return control to the user.
+Do not automatically wait or poll repeatedly for detached jobs; the user will
+request status checks.
 Do not interrupt an active computation merely to stop assistant polling.
 Follow-up audits and regression jobs should wait for the user's next instruction.
 

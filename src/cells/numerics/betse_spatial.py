@@ -149,14 +149,43 @@ def ownership(p, *, xp=jnp):
     return cells, outside
 
 
+def charge_density(concentration, valence, extra, *, xp=jnp):
+    """Sum ionic charge before scaling by F, retaining cancellation residuals.
+
+    Nearly neutral mixtures subtract large positive and negative contributions.
+    Scaling every ion by F before a dot product magnifies backend rounding into
+    the voltage driving the gates. Neumaier summation preserves the same charge
+    equation; barriers keep compiled reassociation from discarding its residuals.
+    """
+
+    def retain(value):
+        return jax.lax.optimization_barrier(value) if xp is jnp else value
+
+    total = xp.zeros_like(concentration[0])
+    correction = xp.zeros_like(total)
+    for i in range(valence.size):
+        term = retain(valence[i] * concentration[i])
+        updated = retain(total + term)
+        residual = xp.where(
+            xp.abs(total) >= xp.abs(term),
+            retain(total - updated) + term,
+            retain(term - updated) + total,
+        )
+        correction = retain(correction + residual)
+        total = updated
+    return retain((total + correction) * F) + extra
+
+
 def field(state, p, *, xp=jnp):
     cells, outside = ownership(p, xp=xp)
     phi = boundary_field(p.boundary_values, xp=xp)
-    rho = (p.valence * F) @ state.cell_concentration + p.extra_cell_charge_density
+    rho = charge_density(state.cell_concentration, p.valence, p.extra_cell_charge_density, xp=xp)
     cell_area = cells @ p.membrane_area
     cell_v = rho * (p.cell_volume / cell_area) / p.capacitance_density
     vm = cell_v[p.cell_owner] - phi.ravel()[p.outside_owner]
-    rho_out = (p.valence * F) @ state.outside_concentration + p.extra_outside_charge_density
+    rho_out = charge_density(
+        state.outside_concentration, p.valence, p.extra_outside_charge_density, xp=xp
+    )
     grid_area = outside @ p.membrane_area
     mean_area = xp.mean(grid_area[p.outside_owner])
     voxel = p.height * p.spacing**2

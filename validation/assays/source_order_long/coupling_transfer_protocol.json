@@ -1,0 +1,408 @@
+{
+  "kind": "source_order_coupling_transfer@1",
+  "scope": "Paired transfer of the passing two-task assay to uniform junction permeabilities 0.9x and 1.1x, with the archived source readers fixed.",
+  "purpose": "Measure transfer without target-response calibration; separate shared background drift from altered cue responses. Same geometry and known strength cohort, not fresh strength validation or independent biological replication.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01",
+    "registration_sha256": "d8c5602801d19bc6efb4d128565167ec4458d7c33930277dad4b0651464e960d",
+    "completion_sha256": "8552dc444342ba59c499e11a3d6f18e3e550968619737f12f1f99a9ec13000a5",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/source_order_long/pulse_confirmation_protocol.json",
+  "source_protocol_sha256": "29df29977c4552f7fd54cf92558ee411400379621a55bff4bfb8f3eb1d7b3797",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000512,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4,
+    "long512": 8,
+    "spanning512": null,
+    "selected320": null
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ],
+    "long512": [
+      320,
+      384,
+      512
+    ],
+    "spanning512": [
+      128,
+      256,
+      512
+    ],
+    "selected320": [
+      128,
+      160,
+      320
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Unchanged three-strength polyline per arm, panel and timestep; all location/order combinations calibrated. Evaluation strengths never fit curves. The wire key timing now means source order.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "At each coupling condition: selected320 remote-voltage panel, finest dt=0.0625 us, unassisted raw transfer using archived CPU source calibration at that timestep. Report all 32 joint paired cases at each of three timesteps. All 90 source curves (six panels, three timesteps, five arms) stay fixed; no target stimulated response fits the primary reader.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "Two conditions, each with the same 220 input identities per timestep as the accepted confirmation: three diagnostic calibration strengths and eight already inspected evaluation strengths, four label combinations, five arms. Cases are paired across coupling; backend and timestep repetitions are numerical checks.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "All disconnected histories reproduce the paired source through 512 us. Other arms reproduce initial states only: changing coupling may alter background evolution immediately, including no-cue histories. No equality requirement hides altered connected responses.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 43200,
+    "artifact_and_cache_bytes": 274877906944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_source_order_coupling_transfer.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_source_order_coupling_transfer.py::test_cpu_gpu[lower]",
+    "tests/unit/test_source_order_coupling_transfer.py::test_cpu_gpu[higher]"
+  ],
+  "required_evidence": [
+    "source-order-coupling-binding",
+    "source-order-coupling-lower-design",
+    "source-order-coupling-lower-support",
+    "source-order-coupling-lower-reader-isolation",
+    "source-order-coupling-lower-archive",
+    "source-order-coupling-lower-reference-known-answers",
+    "source-order-coupling-lower-paired-known-answers",
+    "source-order-coupling-lower-prerequisite",
+    "source-order-coupling-lower-panel",
+    "source-order-coupling-lower-historical-reproduction",
+    "source-order-coupling-lower-readouts",
+    "source-order-coupling-lower-contrasts",
+    "source-order-coupling-lower-controls",
+    "source-order-coupling-lower-replay",
+    "source-order-coupling-lower-baseline-transfer",
+    "source-order-coupling-lower-frozen-reader-known-answers",
+    "source-order-coupling-lower-frozen-transfer",
+    "source-order-coupling-lower-history-boundaries",
+    "source-order-coupling-higher-design",
+    "source-order-coupling-higher-support",
+    "source-order-coupling-higher-reader-isolation",
+    "source-order-coupling-higher-archive",
+    "source-order-coupling-higher-reference-known-answers",
+    "source-order-coupling-higher-paired-known-answers",
+    "source-order-coupling-higher-prerequisite",
+    "source-order-coupling-higher-panel",
+    "source-order-coupling-higher-historical-reproduction",
+    "source-order-coupling-higher-readouts",
+    "source-order-coupling-higher-contrasts",
+    "source-order-coupling-higher-controls",
+    "source-order-coupling-higher-replay",
+    "source-order-coupling-higher-baseline-transfer",
+    "source-order-coupling-higher-frozen-reader-known-answers",
+    "source-order-coupling-higher-frozen-transfer",
+    "source-order-coupling-higher-history-boundaries"
+  ],
+  "required_gpu_evidence": [
+    "source-order-coupling-lower-cpu-gpu",
+    "source-order-coupling-higher-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "Uniform coupling perturbations in one synthetic geometry, not new tissue geometries or independent biological cases.",
+    "No new native BETSE capture or empirical biological calibration; these perturbed parameter regimes are not certified BETSE equivalence.",
+    "The same evaluation strengths are reused for a paired transfer estimate, not fresh strength validation. All failures remain visible.",
+    "Only junction permeability changes; reciprocal partner symmetry and zero entries remain intact. Initial states, source doses, gates, solvers, timesteps, reader support, margins and tolerance rules are unchanged.",
+    "Primary readers use only archived unperturbed CPU calibration, separately fixed at each timestep; both CPU and GPU target responses use those same readers.",
+    "Shared-no-cue-reference assistance and target calibration are distinct secondary diagnostics, never replacements for failed unassisted transfer.",
+    "No biological noise model, continuum error bound, general polycomputing claim or claim about causal use of decoded labels.",
+    "Track whole-phase GPU busy and measured SM-active, with per-arm timing and equal planned world-step work. No measured multi-GPU scaling claim.",
+    "No automatic audit, retry, regression or follow-up job."
+  ],
+  "automatic_followup": false,
+  "cue_timing": {
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "late_pulse_us": [
+      112,
+      120
+    ],
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "pulse_width_us": 8,
+    "onset_separation_us": 104,
+    "selection": "Only declared change: shift second pulse by 8 us, preserving its channel amplitudes and width. No pulse-time search.",
+    "source_allocation": "Each source retains amplitude * its 75/25 location share * minimum source membrane area integrated over 8 us. Order-only uses 50/50; no-cue uses zero. Compare dose with the common-pulse encoding at the SAME new strength.",
+    "comparison_panels": "short64 precedes the second pulse; middle128 straddles it. Only selected320 chooses the pulse protocol."
+  },
+  "replay": {
+    "snapshot_world": "joint/calibration_low/location=0/order=1",
+    "snapshot_step": 1663,
+    "snapshot_time_us": 103.9375,
+    "purpose": "Resume at 103.9375 us before the shifted second pulse, crossing its 112/120-us events with 257-step windows, reordering and partitioning four calibration worlds."
+  },
+  "source_cell_ids": [
+    1,
+    4
+  ],
+  "task_meanings": {
+    "location": "0: source 1 receives 75% of dose, source 4 receives 25%; 1: reverse allocation.",
+    "timing": "Internal reader key for source_order: 0 = source 1 early and source 4 late; 1 = source 4 early and source 1 late. This is NOT the preceding common early/late cue task.",
+    "timing_only": "Internal arm key for order-only: 50/50 source doses with the same opposite pulse orders."
+  },
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    },
+    {
+      "id": "evaluation_403125",
+      "split": "heldout",
+      "amplitude": 0.403125
+    },
+    {
+      "id": "evaluation_453125",
+      "split": "heldout",
+      "amplitude": 0.453125
+    },
+    {
+      "id": "evaluation_503125",
+      "split": "heldout",
+      "amplitude": 0.503125
+    },
+    {
+      "id": "evaluation_553125",
+      "split": "heldout",
+      "amplitude": 0.553125
+    },
+    {
+      "id": "evaluation_646875",
+      "split": "heldout",
+      "amplitude": 0.646875
+    },
+    {
+      "id": "evaluation_696875",
+      "split": "heldout",
+      "amplitude": 0.696875
+    },
+    {
+      "id": "evaluation_746875",
+      "split": "heldout",
+      "amplitude": 0.746875
+    },
+    {
+      "id": "evaluation_796875",
+      "split": "heldout",
+      "amplitude": 0.796875
+    }
+  ],
+  "baseline_reference": "Source calibration at matching timestep is frozen. A separately labelled diagnostic subtracts one shared no-cue calibration reference per condition and timestep, using no stimulated target responses. Target-calibrated readers and within-condition cross-timestep reference transfers are secondary diagnostics only.",
+  "max_steps": 8192,
+  "primary_panel": "selected320",
+  "work": {
+    "worlds_per_timestep": 440,
+    "worlds_per_backend": 1320,
+    "world_steps_per_backend": 6307840,
+    "world_steps_per_arm_per_backend": 1261568
+  },
+  "paired_comparator_panels": [
+    "spanning512",
+    "long512"
+  ],
+  "execution_estimate": {
+    "wall_hours": [
+      8,
+      10
+    ],
+    "basis": "Two copies of the accepted 660-world study, which took 4 h 33 min including finalization; source authentication, shared setup and archive traffic may change elapsed time."
+  },
+  "source_component_protocol_sha256": "43c8622c1dd7343d1c97aa4c2ba960ab930b86f4baa670630c9fc25035ccf1df",
+  "coupling_conditions": [
+    {
+      "id": "lower",
+      "permeability_scale": 0.9,
+      "world_id_offset": 500000
+    },
+    {
+      "id": "higher",
+      "permeability_scale": 1.1,
+      "world_id_offset": 520000
+    }
+  ],
+  "frozen_reader_source": {
+    "backend": "cpu",
+    "calibration": "archived_source_at_matching_timestep",
+    "files_sha256": {
+      "evidence/cpu/source-order-pulse-confirmation-readouts.json": "3ffd010ba4bf06b81db03a9bfcdfc5a34d974be0de982b91fc6fa2970c15c68d",
+      "evidence/cpu/source-order-pulse-confirmation-readouts.npz": "0ee314387ca74d54a0a91ef3a49b213f1129fc78a50083b97e01ec03cf38350d"
+    }
+  },
+  "transfer_design": {
+    "parameter": "model.tissue.junction_permeability",
+    "scales": [
+      0.9,
+      1.1
+    ],
+    "rationale": "A predeclared symmetric 10% local perturbation, not outcome-adaptive optimization or an empirically measured biological range.",
+    "source_reader_scale": 1.0,
+    "source_reader_strengths": [
+      0.4,
+      0.6,
+      0.8
+    ],
+    "target_stimulated_calibration_used_by_primary": false,
+    "source_backend": "cpu",
+    "paired_joint_cases_per_condition": 32,
+    "independent_biological_replicates": 0,
+    "unchanged": [
+      "geometry",
+      "initial state",
+      "gate law and parameters",
+      "channel and membrane permeability",
+      "pumps",
+      "cue schedule and per-source dose",
+      "observation times and support",
+      "reader algorithm and margin",
+      "integration timesteps and numerical tolerances"
+    ],
+    "diagnostics": [
+      "target-calibrated readers, shuffles and observation-panel comparisons",
+      "source-frozen readers with one shared target no-cue reference; explicitly target-reference-assisted",
+      "within-condition cross-timestep reference transfers",
+      "all paired input contrasts and timestep sensitivity"
+    ]
+  },
+  "work_per_condition": {
+    "worlds_per_timestep": 220,
+    "worlds_per_backend": 660,
+    "world_steps_per_backend": 3153920,
+    "world_steps_per_arm_per_backend": 630784
+  }
+}

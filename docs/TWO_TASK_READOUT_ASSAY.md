@@ -446,3 +446,298 @@ reorder, partition, window and snapshot replay. Each arm executes **28,672
 panel steps**. Both GPU utilization measures are recorded; compilation and
 host work remain included. Results and job status belong in
 [Progress](../PROGRESS.md).
+
+## Diagnosing weak unstimulated signals
+
+The [saved-trajectory diagnostic](../validation/assays/unstimulated_diagnostic.py)
+separates small propagated signals from ambiguity in the calibrated reader.
+It authenticates the completed unstimulated-cell panel and reproduces all seven
+reader modes and 32 label shuffles. It then reconstructs voltage at every saved
+step using the same charge, capacitance and boundary-potential law, checking the
+result against the archived membrane voltages and reader observations. Cell
+averages retain the reader's membrane-area weighting; the legacy arithmetic
+patch mean is a different observable. No transport is integrated again.
+
+At fixed strength and other input label, location and timing pairs supply
+separate source-cell and unstimulated-cell time courses. The diagnostic records
+all pairs, their three-time feature distances and their final-interval trends.
+For the existing fixed-curve score, which is 1-Lipschitz, both opposite-label
+cases can clear margin `m` only if their feature distance exceeds `2m`.
+This is a necessary condition, not a guarantee of successful decoding.
+
+The earlier strength-tangent and calibration-residual probes are applied to
+both tasks. Known labels, strengths and paired counterparts are used only to
+explain the saved failure; they do not enter a replacement reader. These are
+post-hoc diagnostics, without new holdouts, threshold tuning or convergence
+claims. Trends through **64 us** cannot establish behavior beyond that horizon.
+This diagnosis used the ordinary dynamic-junction runtime qualified through
+**64 us**. Its **256-us** extension has since passed separate CPU/L4 numerical
+qualification, recorded in [PROGRESS](../PROGRESS.md). The longer-observation
+assay is defined below; the earlier reader results remain frozen. The
+[known-answer checks](../tests/unit/test_unstimulated_diagnostic.py) cover voltage
+reconstruction, area weighting, pair-distance limits, signal trends and the
+distinction between strength ambiguity and interpolation error.
+
+## Longer observations with the same cues
+
+The [long-observation protocol](../validation/assays/long_observation_protocol.json)
+tests whether more propagation time improves the restricted readout. Its purpose
+is to separate a horizon effect from stronger stimulation, extra features,
+reader retuning or timestep sensitivity. All 140 cases from the unstimulated
+assay are reused, including calibration strengths, evaluation strengths, five
+arms, physical cell identities, source shares and pulse doses/times. This is a
+controlled extension of already inspected cases, not fresh generalization or
+independent biological replication.
+
+Three observation panels each retain exactly **15 primary voltage features**:
+**40/48/64 us**, **80/96/128 us**, and **160/192/256 us**. All exclude source cells
+1 and 4. The last panel at **dt = 0.0625 us** is the predeclared primary endpoint;
+the earlier panels and separate all-cell/final-time comparators cannot replace
+it after results are seen. The unchanged template algorithm is fitted only to
+calibration rows, separately for each panel and timestep, at the same **2-nV**
+margin. Every inherited reader mode and all 32 fixed shuffles are retained.
+
+All worlds run through **256 us** at **0.25, 0.125 and 0.0625 us**. In addition to
+matched calibration, readers frozen at the coarsest step expose shared numerical
+shifts. Both label contrasts and signed reader scores use the existing absolute
+and relative stability thresholds. Stability, resolution and decoding failure
+remain scientific outcomes, with no threshold changes or continuum-error claim.
+The finest run's first 64 us is compared with every archived original world,
+including its original readouts; those earlier results remain frozen.
+
+Four-world batches use **1,024-step windows**. Every state array and sampled field
+is written to disk, with complete per-world inputs and window boundaries;
+memory retains only the current window and compact readout vectors. Reordering,
+partitioning and a disk restart at **127.9375 us** with a changed window size
+must reproduce the saved histories and observations exactly. Every arm has the
+same **200,704 world-step** budget per backend across the three timesteps.
+CPU/L4 comparisons, conservation/domain checks, GPU-busy and measured SM-active
+are recorded separately from the decoding outcome. Current results and run
+artifacts are tracked in [PROGRESS](../PROGRESS.md).
+
+## Wider cue separation at fixed dose
+
+The [cue-separation protocol](../validation/assays/cue_separation_protocol.json)
+tests one change suggested by the unresolved timing signal: move the late pulse
+from **24–32 us to 104–112 us**, keeping the early pulse at **8–16 us**. This
+increases onset separation from **16 to 96 us**, without increasing the **8-us**
+pulse width or either source's area-integrated inhibition. The single sixfold
+separation is fixed before new responses are simulated; this is not a search
+over cue times. Location-only cues remain at **16–24 us**, and the original
+75/25 location allocation and 50/50 timing-only allocation stay fixed.
+
+The primary endpoint remains **15 unstimulated-cell voltage features at
+160/192/256 us**, at **dt = 0.0625 us**, with the same **2-nV margin**. Both cues
+have ended before this endpoint: the first primary observation is **48 us**
+after the late pulse ends. The three-strength calibration curves are fitted
+to the new responses using the unchanged reader algorithm, separately by panel
+and timestep; evaluation rows cannot fit the curves. The same four evaluation
+strengths have already been inspected, so this tests a controlled intervention,
+not fresh generalization. Correct forced choices, resolved decisions and
+finest-step stability remain distinct outcomes.
+
+The earlier **40/48/64-us** panel now precedes the late pulse, and the
+**80/96/128-us** panel spans it. They remain visible comparisons, but cannot
+replace the primary endpoint or demonstrate decoding after both cues.
+All inherited reader modes, 32 label shuffles, matched/frozen-coarse calibration
+and paired location/timing contrasts are retained without lowering tolerances.
+
+The [implementation](../validation/assays/cue_separation.py) reuses the completed
+long-observation assay's reader, observation and archive functions. The same
+runner executes **420 worlds per backend**, equally budgeted across five arms,
+at all three timesteps through **256 us**. Only **42 of the 140 case inputs**
+change. The [checks](../tests/unit/test_cue_separation.py) compare all windows of
+the **98 unchanged cases** with authenticated saved histories at each timestep.
+For changed cases, they compare the common prefix strictly before the old
+24-us onset. They preserve comparisons of unchanged features and reader reports
+from the unchanged location-only and no-cue arms.
+
+Nonintegrating preparation checks verify every control sample, pulse boundary,
+per-source dose, observation support and memory budget. A disk restart at
+**103.9375 us** in a delayed-cue world crosses the new **104/112-us** events
+using **257-step** windows; reordered and partitioned replay also remain exact
+requirements. Numerical/domain/conservation checks, CPU/L4 comparisons and
+both utilization measurements remain independent of scientific success.
+The preceding assay's registered source files and evidence remain unchanged.
+Current execution status and results belong in [PROGRESS](../PROGRESS.md).
+
+The [saved-data diagnosis](../validation/assays/cue_separation_diagnostic.py)
+replays the original reader reports and shuffles at all three timesteps, then
+reconstructs the 28 joint-case voltage histories from authenticated windows.
+Shared window endpoints must agree and are counted once; reconstructed voltages
+must reproduce archived observations and all three panels' voltage features.
+The existing pair-distance, strength-direction and calibration-residual probes
+describe the primary timing cases. Saved control-arm features supply comparisons.
+
+For each adjacent timestep pair, the diagnosis also crosses the two saved
+readers with the two sets of observations. This separates score changes caused
+by changed voltage features from those caused by changed calibration curves,
+reporting both orders because these contributions can depend on order.
+The [known-answer checks](../tests/unit/test_cue_separation_diagnostic.py) cover
+window seams, corrupted observations and a common shift hidden by recalibration.
+No integration, new calibration scheme, observation-time selection or threshold
+adjustment occurs. The three finite timesteps and post-hoc geometry do not
+establish a continuum error bound or fresh generalization.
+
+The [baseline-transfer diagnostic](../validation/assays/baseline_transfer_diagnostic.py)
+tests whether the saved no-cue response accounts for common timestep drift.
+It uses the lowest-ID no-cue calibration case as one shared reference per
+backend and timestep, and verifies that every duplicate no-cue observation is
+identical. Stimulated cases, evaluation strengths and task labels do not fit
+this reference. Only the original **15-feature long256 voltage panel** is used.
+All nine source/target timestep combinations and all five arms remain reported.
+
+Subtracting a common reference from both calibration vertices and observations
+must preserve matched curve distances, scores and resolved decisions within the
+inherited replay tolerance. Any roundoff-level forced-label differences in
+unresolved nulls remain visible. For transfer, source response curves remain
+fixed in these translated coordinates and the target observation uses its own
+no-cue reference. This supplies target-domain control information; it does not
+demonstrate transfer without that information. The
+[known-answer checks](../tests/unit/test_baseline_transfer_diagnostic.py) separate
+a removable common offset from cue-dependent changes that subtraction must
+retain. Translation cannot improve within-timestep separation of timing from
+strength. Original scientific outcomes and thresholds remain fixed.
+
+## Location allocation and source-pulse order
+
+The [source-order protocol](../validation/assays/source_order_protocol.json)
+tests a new temporal question: **which of the two source cells was stimulated
+first?** Each source receives one **8-us** pulse. Order 0 applies source 1 at
+**8–16 us** and source 4 at **104–112 us**; order 1 reverses these assignments.
+Location retains the **75/25 versus 25/75** division of the total cue dose.
+The order-only arm uses equal source doses, and location-only retains its
+simultaneous **16–24-us** pulses. Each source's integrated inhibition at a given
+strength equals that in the preceding common-pulse encoding. This task does
+not complete or replace the earlier common early/late classification result.
+
+Calibration strengths remain **0.4, 0.6 and 0.8**. Four evaluation strengths,
+**0.45625, 0.54375, 0.65625 and 0.74375**, are fixed before simulation and are
+disjoint from the earlier protocol panels. All label combinations occur in
+all five arms, giving **140 identities at each of three timesteps** per backend.
+The primary result still uses the **15 voltages from unstimulated cells** at
+**160/192/256 us**, matched calibration at **0.0625 us**, and the **2-nV** margin.
+Earlier panels, alternative readers and baseline-assisted transfer remain
+comparisons. Internal `timing` and `timing_only` keys are compatibility names
+for source order; reports carry their explicit meanings. The new strengths
+test interpolation within this deterministic tissue, not biological replication.
+
+The [acceptance checks](../tests/unit/test_source_order.py) independently verify
+every control sample and per-source dose without integrating during preparation.
+Across the three timesteps, **120 worlds** reproduce unchanged predecessor
+histories and features: all no-cue cases and location-only calibration cases.
+The remaining **300 worlds** reproduce only the common history before **8 us**.
+New strengths and source-order responses are not required to match old responses.
+Full state archives, conservation and domain checks, CPU/L4 tolerances, restart
+across the second pulse, reordering and partitioning reuse the established
+runner. All **986** preceding assay and diagnostic sources remain unchanged.
+
+All nine source/target timestep transfers also use a shared no-cue calibration
+reference, with unchanged matched scores checked explicitly. This comparison
+supplies target-timestep control information and cannot replace the primary
+endpoint. Numerical acceptance, task resolution and timestep stability remain
+separate outcomes. Each arm has the same world-step budget; GPU-busy and measured
+SM-active utilization retain their sampling coverage. Execution status belongs
+in [PROGRESS](../PROGRESS.md).
+
+The [source-order diagnosis](../validation/assays/source_order_diagnostic.py)
+authenticates the completed archive and replays all reader and baseline-transfer
+reports before examining the joint failures. For each task it distinguishes a
+competing curve that changes one label from a curve that changes both. Two
+oracle probes separately supply the true other label or the true cue strength;
+they describe missing information and cannot replace the original reader.
+The inherited interpolation-residual probe tests whether moving the observation
+onto its known calibration curve would change the score.
+
+Contrasts between the four label combinations at each strength describe the
+directions of the two effects and their possible cancellation. This is an
+algebraic description, not evidence of a causal nonlinear interaction. Complete
+joint voltage histories also retain both one-label and two-label differences,
+including their late-time trends. Timestep attribution uses both orders of
+crossing fixed readers with fixed observations, before and after subtracting
+the no-cue reference. The [known-answer checks](../tests/unit/test_source_order_diagnostic.py)
+separate label collisions, strength ambiguity, shared offsets and genuine
+threshold crossings. These post-hoc probes leave the source-order endpoint,
+margin and failed cases unchanged.
+
+### Later observations with the same source-order cues
+
+The [512-us follow-up protocol](../validation/assays/source_order_long/protocol.json)
+tests whether waiting longer separates the overlapping remote responses. Its
+primary panel is fixed at **320/384/512 us**, before simulating beyond the
+previous endpoint. The same 140 identities, strengths, pulse timing, per-source
+doses, five arms, three timesteps, tissue and initial conditions are retained.
+The reader still uses **15 unstimulated-cell voltages**, matched calibration at
+**0.0625 us** and the **2-nV margin**. These are reused evaluation cases in a
+paired follow-up, not a fresh holdout cohort. Earlier panels and other readers
+cannot replace the later primary result.
+
+The [checks](../tests/unit/test_source_order_long.py) compare all **420 world
+histories per backend through 256 us** with their saved predecessors. All three
+earlier feature panels and their complete reader reports must reproduce exactly.
+The numerical laws and tolerances are unchanged; the work ceiling rises to
+8192 steps solely to retain the finest timestep through 512 us. Four-world
+batches and 1024-step windows keep the existing memory bound. Complete state
+archives, conservation/domain checks, CPU/L4 comparisons, reordered/partitioned
+worlds and disk restart across the second pulse extend through the new endpoint.
+
+The protocol binds the completed 512-us native runtime qualification and the
+saved-data source-order diagnosis. The former covers its fixed synthetic cases
+at 1/0.5/0.25 us; the assay separately retains 0.25/0.125/0.0625-us refinement.
+Task resolution and score stability remain reported scientific outcomes,
+separate from numerical acceptance. Equal world-step budgets, actual arm
+timings and both utilization measurements remain recorded. Results and run
+status belong in [PROGRESS](../PROGRESS.md).
+
+The [charge-precision repair protocol](../validation/assays/source_order_long/precision_protocol.json)
+retains this experiment while correcting cancellation in the ionic charge sum
+that drives membrane voltage. It sums signed concentrations with compensation
+before multiplying by Faraday's constant; the physical equation and all
+tolerances remain unchanged. Independent 80-digit arithmetic checks exercise
+near-neutral mixtures, and all 18 configured native BETSE reference trajectories
+are compared again on CPU/L4 using the authenticated saved captures.
+
+For this arithmetic correction, older 256-us histories and features are compared
+with their existing numerical tolerances, with bitwise equality and all earlier
+reader-decision differences reported separately. Original archives and scientific
+reports remain frozen. Restart, windowing and world reordering within the
+corrected implementation still require bitwise agreement. The failed 512-us run
+is diagnostic evidence, not a successful acceptance reference.
+
+The [saved-feature diagnosis](../validation/assays/source_order_long_diagnostic.py)
+replays all four observation panels and the reference-assisted reports from the
+completed precision repair. It compares the 256-us and 512-us results using the
+existing competing-curve, true-strength, true-other-label and interpolation
+probes. These probes distinguish ambiguity with cue strength from weak order
+responses without supplying hidden information to the original reader.
+
+One exploratory comparator uses the same five unstimulated cells at **128, 256
+and 512 us**, after both source pulses have ended. Earlier transient and later
+response samples may separate order from strength. It retains **15 voltage
+features**, the same calibration-only reader, all five arms, three timesteps,
+fixed label shuffles and the **2-nV margin**, with no rescaling or search over
+observation times. The original 320/384/512-us primary result remains fixed.
+These are inspected cases; any promising comparator needs a separate registered
+experiment with new evaluation strengths. Execution and outcomes belong in
+[PROGRESS](../PROGRESS.md).
+
+The [confirmation design](../validation/assays/source_order_long/spanning_confirmation_plan.json)
+fixes eight new strengths spanning both calibration intervals, including weak
+cues, and pairs the spanning and late-only observations on the same trajectories.
+The [execution protocol](../validation/assays/source_order_long/spanning_protocol.json)
+and [checks](../tests/unit/test_source_order_spanning.py) implement that fixed
+design: **32 joint evaluation cases**, five arms, three timesteps and **660
+worlds per backend**. Both observation panels retain 15 voltage features and
+the same calibration cases and margin. Per-case paired results retain gains,
+losses and unresolved cases; improvement is separate from complete resolution.
+
+The established windowed harness receives module-scoped protocol and cohort
+parameters, restored after the checks. Its integration, archive, restart and
+CPU/L4 comparison paths remain unchanged. All calibration and no-cue histories
+must reproduce the accepted precision repair bitwise through 512 us; the new
+stimulated evaluation cases reproduce their common pre-cue history through
+8 us. Explicit old/new identity mappings and unchanged calibration curves are
+checked. Each arm has **630,784 world-steps per backend**, with actual arm
+timings and both GPU utilization measurements recorded. The saved design is a
+historical artifact; registration, launch and results are recorded only in
+[PROGRESS](../PROGRESS.md).

@@ -112,9 +112,9 @@ def parse(data):
             if type(values) is not list:
                 raise ConfigError("Junction controls require per-patch fractions")
             events.append(tuple(_number(v, "junction fraction") for v in values))
-    parsed = base.parse(raw)
-    if parsed.experiment.end_time > 64e-6:
-        raise ConfigError("This dynamic-junction runtime is bounded to 64 us")
+    parsed = base.parse(raw, horizon_s=512e-6)
+    if parsed.experiment.end_time > 512e-6:
+        raise ConfigError("This dynamic-junction runtime is bounded to 512 us")
     model = BetseJunctionModel(
         **{k: getattr(parsed.model, k) for k in base.BetseSpatialModel.__dataclass_fields__},
         junction=tuple(

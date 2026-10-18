@@ -147,7 +147,7 @@ def to_dict(spec):
     )
 
 
-def parse(data):
+def parse(data, *, horizon_s=256e-6):
     m = _fields(
         data["model"],
         {
@@ -251,9 +251,10 @@ def parse(data):
         return index * dt, index
 
     end, steps = clock(e["end_time"])
-    if not 0 < end <= 256e-6 or steps > execution.max_steps:
+    if not 0 < end <= horizon_s or steps > execution.max_steps:
         raise ConfigError(
-            "Initial BETSE runner requires a positive horizon up to 256 us within max_steps"
+            f"Initial BETSE runner requires a positive horizon up to {horizon_s * 1e6:g} us "
+            "within max_steps"
         )
     if type(e["observation_times"]) is not list or not e["observation_times"]:
         raise ConfigError("Require explicit accepted observation times")

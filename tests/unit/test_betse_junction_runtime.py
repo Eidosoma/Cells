@@ -2,8 +2,10 @@
 
 import copy
 import json
+import os
 import subprocess
 import sys
+import zipfile
 from dataclasses import replace
 from pathlib import Path
 
@@ -35,6 +37,7 @@ from cells.window_io import write_windowed_run
 from tests.unit import test_betse_spatial_runtime as previous
 from tests.unit.test_windows import assert_windows
 from validation.betse.spatial_active import intervention_refinement as legacy
+from validation.betse.spatial_active import junction_reference as independent
 from validation.betse.spatial_active import junction_runtime as runtime
 from validation.betse.spatial_active import junctions, refinement
 
@@ -88,7 +91,7 @@ def compare(actual, expected, area):
 def replay_batch():
     specs = [
         parse_spec(runtime.definition(c, i, backend=BACKEND, steps=n))
-        for c, i, n in (("coupled", 0, 64), ("block_release", 1, 96), ("reversed", 0, 37))
+        for c, i, n in (("coupled", 0, 512), ("block_release", 1, 640), ("reversed", 0, 384))
     ]
     return BatchSpec(
         tuple(WorldSpec(i + 10, s) for i, s in enumerate(specs)),
@@ -98,13 +101,18 @@ def replay_batch():
     )
 
 
+def long_definition(case, index):
+    count = round(PROTOCOL["duration_s"] / PROTOCOL["native_steps_s"][index])
+    return runtime.definition(case, index, backend=BACKEND, steps=count)
+
+
 def test_host_definitions_and_resources():
-    total = 0
+    retained, transient, native_bytes = 0, 0, 0
     old = json.loads(
         (Path(PROTOCOL["prior_binding"]["root"]) / "component-protocol.json").read_text()
     )
     for case, index in CASES:
-        raw = runtime.definition(case, index, backend=BACKEND)
+        raw = long_definition(case, index)
         spec = parse_spec(raw)
         assert parse_spec(spec.to_dict()) == spec
         assert get_model(spec.model) is model
@@ -113,6 +121,7 @@ def test_host_definitions_and_resources():
         common.bits(model.unflatten(flat), state)
         common.bits(model.parameters(spec, layout), p)
         assert len(flat) == 14
+        assert spec.experiment.end_time == PROTOCOL["duration_s"] == 512e-6
         grid = timeline(spec)
         expected = junctions.controls(
             next(c for c in old["cases"] if c["id"] == case),
@@ -122,10 +131,23 @@ def test_host_definitions_and_resources():
         )
         common.bits(control_values(spec, grid[:-1]), expected)
         assert model.check_values(flat, spec)["max_material_error_over_budget"] == 0
-        total += trace_bytes(spec, len(grid) - 1)
+        # Histories are retained, but compiler/field working arrays are reused
+        # between the sequential scalar runs. Count both separately.
+        initial_history = model.STATE_TYPE(*(np.asarray(v)[None] for v in flat))
+        observed = model.observe_history(
+            np.array([0.0]), initial_history, layout, np.array([0.0]), spec
+        )
+        per_sample = sum(v.nbytes for v in flat) + sum(v.nbytes for v in vars(observed).values())
+        retained += 2 * (per_sample * len(grid) + sum(v.nbytes for v in layout))
+        transient = max(transient, trace_bytes(spec, len(grid) - 1))
+        assert trace_bytes(spec, len(grid) - 1) <= spec.execution.max_trace_bytes
+        with zipfile.ZipFile(runtime.capture_folder(case, index) / "trace.npz") as archived:
+            # Two times the old duration, with two copies for target reconstruction.
+            native_bytes = max(native_bytes, 4 * sum(v.file_size for v in archived.infolist()))
+    total = retained + transient + native_bytes
     assert total < PROTOCOL["resources"]["max_retained_array_estimate_bytes"]
     batch = replay_batch()
-    full, windows = plan_batch(batch), plan_batch_windows(batch, WindowPolicy(23))
+    full, windows = plan_batch(batch), plan_batch_windows(batch, WindowPolicy(137))
     assert (
         max(full.estimated_working_bytes, windows.estimated_working_bytes) < batch.max_working_bytes
     )
@@ -137,11 +159,79 @@ def test_host_definitions_and_resources():
             status="passed",
             histories=len(CASES),
             retained_array_estimate_bytes=total,
+            retained_histories_with_host_device_copies_bytes=retained,
+            largest_scalar_working_bytes=transient,
+            largest_native_target_working_bytes=native_bytes,
+            estimate_scope="Retained histories plus scalar working and one native target",
             full_batch_bytes=full.estimated_working_bytes,
             window_batch_bytes=windows.estimated_working_bytes,
             batch_budget_bytes=batch.max_working_bytes,
         ),
     )
+
+
+def test_host_native_protocol_and_static_horizon():
+    old = json.loads(
+        (Path(PROTOCOL["prior_binding"]["root"]) / "component-protocol.json").read_text()
+    )
+    native = runtime.native_protocol()
+    metadata = {"kind", "duration_s", "resources", "scope", "automatic_followup"}
+    for name in set(native) - metadata:
+        assert native[name] == old[name], name
+    assert native["duration_s"] == 2 * old["duration_s"] == 512e-6
+    assert native["tolerances"] == PROTOCOL["tolerances"]
+    assert PROTOCOL["default_duration_s"] == 64e-6
+    static = previous.runtime.definition(backend=BACKEND)
+    static["experiment"]["end_time"] = 257e-6
+    with pytest.raises(ConfigError, match="horizon up to 256 us"):
+        parse_spec(static)
+    with pytest.raises(ValueError, match="registered horizon"):
+        runtime.definition(steps=513)
+
+
+@pytest.mark.parametrize("fault", [None, "trace", "missing_pair", "observer", "protocol", "mode"])
+def test_host_native_capture_authentication(tmp_path, fault):
+    """Reuse one real archived pair; reject changed evidence and observer effects."""
+    root = Path(PROTOCOL["prior_binding"]["root"])
+    rule = json.loads((root / "component-protocol.json").read_text())
+    rule["cases"], rule["native_steps_s"] = rule["cases"][:1], rule["native_steps_s"][:1]
+    rows = []
+    for mode in ("observed", "bare"):
+        key = f"{rule['cases'][0]['id']}/step-0/{mode}"
+        old = root / "evidence/cpu/long-junction-native" / key
+        folder = tmp_path / key
+        folder.mkdir(parents=True)
+        row = json.loads((old / "result.json").read_text())
+        (folder / "preparation.json").write_bytes((old / "preparation.json").read_bytes())
+        if mode == "observed":
+            if fault == "trace":
+                (folder / "trace.npz").write_bytes(b"corrupt")
+            else:
+                # Read-only link: the frozen archive is never modified by a fault.
+                (folder / "trace.npz").symlink_to(old / "trace.npz")
+        if fault == "observer" and mode == "bare":
+            row["final"] = {}
+        if fault == "mode" and mode == "observed":
+            row["mode"] = "bare"
+        (folder / "result.json").write_text(json.dumps(row))
+        rows.append(dict(path=key, sha256=refinement.digest(folder / "result.json")))
+    panel = dict(protocol=rule, rows=rows[:-1] if fault == "missing_pair" else rows)
+    if fault == "protocol":
+        panel["protocol"] = rule | {"duration_s": 512e-6}
+    (tmp_path / "panel.json").write_text(json.dumps(panel))
+    (tmp_path / "completion.json").write_text(
+        json.dumps(
+            dict(
+                status="native_spatial_contact_recorded",
+                panel_sha256=refinement.digest(tmp_path / "panel.json"),
+            )
+        )
+    )
+    if fault is None:
+        assert len(runtime.authenticate_capture(tmp_path, rule)) == 2
+    else:
+        with pytest.raises(AssertionError):
+            runtime.authenticate_capture(tmp_path, rule)
 
 
 def test_host_schedule_boundaries_and_static_controls():
@@ -224,7 +314,7 @@ def test_host_bad_definition(fault):
     elif fault == "immobile_ion":
         m["moving_order"][0] = 3
     elif fault == "long_horizon":
-        e["end_time"] = 128e-6
+        e["end_time"] = 513e-6
     elif fault == "missing_control":
         del e["changes"][1]["junction"]
     elif fault == "asymmetric_control":
@@ -269,21 +359,106 @@ def test_host_corrupt_state(fault):
 @pytest.fixture(scope="module")
 def trajectories(prior):
     assert prior["status"] == "passed"
-    return {(c, i): run(parse_spec(runtime.definition(c, i, backend=BACKEND))) for c, i in CASES}
+    return {(c, i): run(parse_spec(long_definition(c, i))) for c, i in CASES}
+
+
+@pytest.fixture(scope="module")
+def captured(prior, tmp_path_factory):
+    assert prior["status"] == "passed"
+    rule = runtime.native_protocol()
+    if BACKEND == "gpu":
+        assert EVIDENCE
+        root = Path(EVIDENCE) / "cpu"
+    else:
+        root = Path(EVIDENCE) / "cpu" if EVIDENCE else tmp_path_factory.mktemp("junction-native")
+        root.mkdir(parents=True, exist_ok=True)
+        settings = root / "junction-runtime-native-protocol.json"
+        settings.write_text(json.dumps(rule, indent=2) + "\n")
+        with (
+            (root / "junction-runtime-native.stdout.log").open("x") as out,
+            (root / "junction-runtime-native.stderr.log").open("x") as err,
+        ):
+            subprocess.run(
+                [
+                    "/mnt/workspaces/Cells/venv-betse/bin/python",
+                    "-B",
+                    str(runtime.PROTOCOL_PATH.with_name("junction_native.py")),
+                    "--output",
+                    str(root / "junction-runtime-native"),
+                    "--protocol",
+                    str(settings),
+                ],
+                check=True,
+                timeout=PROTOCOL["resources"]["native_timeout_seconds"],
+                stdout=out,
+                stderr=err,
+                env=dict(
+                    os.environ,
+                    MPLBACKEND="Agg",
+                    MPLCONFIGDIR=str(root / "matplotlib-junction-runtime"),
+                ),
+            )
+    path = root / "junction-runtime-native"
+    rows = runtime.authenticate_capture(path, rule)
+    common.evidence(
+        "junction-runtime-native-capture",
+        dict(
+            status="passed",
+            root=str(path),
+            pairs=len(CASES),
+            rows=len(rows),
+            completion_sha256=refinement.digest(path / "completion.json"),
+            observer_neutrality="bitwise",
+            trace_loading="one case at a time",
+            duration_s=rule["duration_s"],
+        ),
+    )
+    return path, rows
 
 
 @pytest.mark.parametrize("case,index", CASES)
-def test_runtime_qualified_histories(case, index, trajectories):
+def test_runtime_qualified_histories(case, index, trajectories, captured):
     result = trajectories[(case, index)]
     actual = {k: v[1:] for k, v in arrays(result).items()}
     path = (
         Path(PROTOCOL["prior_binding"]["root"])
-        / f"evidence/{BACKEND}/junction-native-{case}-{index}.npz"
+        / f"evidence/{BACKEND}/long-junction-native-{case}-{index}.npz"
     )
     with np.load(path, allow_pickle=False) as saved:
         expected = {k: saved[k] for k in actual}
-        count = compare(actual, expected, result.final.layout.tissue_membrane_area)
-        exact = all(np.array_equal(actual[k], expected[k]) for k in actual)
+        prefix = {k: v[: len(expected[k])] for k, v in actual.items()}
+        count = compare(prefix, expected, result.final.layout.tissue_membrane_area)
+        exact = all(np.array_equal(prefix[k], expected[k]) for k in actual)
+    native_root, rows = captured
+    key = f"{case}/step-{index}/observed"
+    row = rows[key]
+    with np.load(native_root / key / "trace.npz", allow_pickle=False) as saved:
+        trace = dict(saved)
+    native = runtime.compare_native(actual, row, trace)
+    native_prefix_scalars = 0
+    old_folder = runtime.capture_folder(case, index)
+    old_row = json.loads((old_folder / "result.json").read_text())
+    with np.load(old_folder / "trace.npz", allow_pickle=False) as saved:
+        assert set(trace) == set(saved)
+        for name in saved:
+            if name == "raw_label_s":
+                continue  # Native linspace labels depend on duration; completed-step clocks do not.
+            expected = saved[name]
+            common.bits(
+                trace[name] if name.startswith("initial_") else trace[name][: len(expected)],
+                expected,
+            )
+            native_prefix_scalars += expected.size
+    before = old_row["fixture"]["junction_inputs"]["steps"]
+    assert row["fixture"]["junction_inputs"]["steps"][: len(before)] == before
+    if BACKEND == "cpu":
+        updates = independent.native_check(row, trace, runtime.native_protocol())
+    else:
+        report = json.loads(
+            (native_root.parent / f"junction-runtime-qualified-{case}-{index}.json").read_text()
+        )
+        assert report["status"] == "passed" and report["native_trace_sha256"] == row["trace_sha256"]
+        updates = report["native_updates"]
     common.evidence(
         f"junction-runtime-qualified-{case}-{index}",
         dict(
@@ -292,10 +467,139 @@ def test_runtime_qualified_histories(case, index, trajectories):
             all_saved_arrays_bitwise=exact,
             target=str(path),
             state_arrays=14,
+            duration_s=result.spec.experiment.end_time,
+            component_prefix_duration_s=old_row["steps"] * old_row["dt_s"],
+            native_comparison=native,
+            native_trace_sha256=row["trace_sha256"],
+            native_updates=updates,
+            native_update_check="fresh CPU oracle" if BACKEND == "cpu" else "same saved CPU target",
+            native_prefix_scalars=native_prefix_scalars,
+            native_prefix_comparison="bitwise except duration-dependent raw sample labels",
             diagnostics=result.diagnostics,
             native_evolving_values_used_as_inputs=False,
         ),
         arrays(result),
+    )
+
+
+def test_runtime_256_prefixes(trajectories):
+    root = Path(PROTOCOL["runtime_prefix_binding"]["root"])
+    count, differences = 0, {}
+    for (case, index), result in trajectories.items():
+        end = round(256e-6 / result.spec.execution.dt) + 1
+        actual = {k: v[:end] for k, v in arrays(result).items()}
+        with np.load(
+            root / f"evidence/{BACKEND}/junction-runtime-qualified-{case}-{index}.npz",
+            allow_pickle=False,
+        ) as saved:
+            count += compare(actual, saved, result.final.layout.tissue_membrane_area)
+            differences[f"{case}-{index}"] = {
+                k: float(np.max(abs(actual[k] - saved[k])))
+                for k in actual
+                if not np.array_equal(actual[k], saved[k])
+            }
+    common.evidence(
+        "junction-runtime-256-prefixes",
+        dict(
+            status="passed",
+            histories=len(CASES),
+            duration_s=256e-6,
+            compared_scalars=count,
+            nonbitwise_fields=differences,
+            all_arrays_bitwise=not any(differences.values()),
+            comparison="Unchanged physical tolerances; exact differences recorded separately",
+        ),
+    )
+
+
+def test_runtime_original_prefixes(trajectories):
+    root = Path(PROTOCOL["prefix_binding"]["root"])
+    count, differences = 0, {}
+    for case, index in ((c, i) for c in PROTOCOL["cases"] for i in (0, 1)):
+        result = trajectories[(case, index)]
+        end = round(PROTOCOL["default_duration_s"] / result.spec.execution.dt) + 1
+        actual = {k: v[:end] for k, v in arrays(result).items()}
+        path = root / f"evidence/{BACKEND}/junction-runtime-qualified-{case}-{index}.npz"
+        with np.load(path, allow_pickle=False) as saved:
+            count += compare(actual, saved, result.final.layout.tissue_membrane_area)
+            differences[f"{case}-{index}"] = {
+                k: float(np.max(abs(actual[k] - saved[k])))
+                for k in actual
+                if not np.array_equal(actual[k], saved[k])
+            }
+    common.evidence(
+        "junction-runtime-original-prefixes",
+        dict(
+            status="passed",
+            histories=12,
+            duration_s=64e-6,
+            compared_scalars=count,
+            comparison="Unchanged physical tolerances; exact differences recorded separately",
+            nonbitwise_fields=differences,
+            all_arrays_bitwise=not any(differences.values()),
+        ),
+    )
+
+
+def test_runtime_native_targets_reject_corruption(trajectories, captured):
+    result = trajectories[("block_release", 1)]
+    actual = {k: np.asarray(v[1:]) for k, v in arrays(result).items()}
+    native_root, rows = captured
+    key = "block_release/step-1/observed"
+    folder, row = native_root / key, rows[key]
+    faults = {
+        "state__cell_concentration": 1e-5,
+        "state__membrane_inward_fmol": 1e-5,
+        "state__elapsed_s": 1e-6,
+        "junction__open": 1e-3,
+        "observed__vm": 1e-5,
+    }
+    with np.load(folder / "trace.npz", allow_pickle=False) as trace:
+        for name, change in faults.items():
+            corrupted = dict(actual)
+            corrupted[name] = actual[name].copy()
+            corrupted[name].flat[-1] += change
+            with pytest.raises(AssertionError):
+                runtime.compare_native(corrupted, row, trace)
+    common.evidence(
+        "junction-runtime-native-negative-controls",
+        dict(
+            status="passed",
+            rejected=list(faults),
+            tolerances_unchanged=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("duration", [64e-6, 256e-6])
+def test_runtime_horizon_branch(trajectories, tmp_path, duration):
+    full = trajectories[("block_release", 1)]
+    raw = runtime.definition(
+        "block_release", 1, backend=BACKEND, steps=round(duration / full.spec.execution.dt)
+    )
+    # Reserve the full continuation's storage before creating the checkpoint:
+    # branches intentionally cannot change execution settings, including budgets.
+    raw["execution"]["max_trace_bytes"] = full.spec.execution.max_trace_bytes
+    short_spec = parse_spec(raw)
+    original = run(short_spec)
+    cut = len(original.times) - 1
+    common.bits(original.history, model.STATE_TYPE(*(v[: cut + 1] for v in full.history)))
+    write_snapshot(tmp_path / "short-final", original.spec, original.final)
+    saved = load_snapshot(tmp_path / "short-final")
+    checkpoint = branch_checkpoint(saved.spec, saved.checkpoint, full.spec)
+    resumed = run(full.spec, checkpoint)
+    common.bits(resumed.history, model.STATE_TYPE(*(v[cut:] for v in full.history)))
+    common.evidence(
+        f"junction-runtime-horizon-branch-{round(duration * 1e6)}",
+        dict(
+            status="passed",
+            from_duration_s=duration,
+            to_duration_s=PROTOCOL["duration_s"],
+            state_arrays=14,
+            comparison="bitwise",
+            disk=True,
+            reserved_trace_bytes=full.spec.execution.max_trace_bytes,
+        ),
     )
 
 
@@ -345,7 +649,7 @@ def test_runtime_mixed_controls():
 
 def test_runtime_disk_windows_and_clock(trajectories, tmp_path):
     full = trajectories[("block_release", 1)]
-    cuts = [1, 31, 32, 33, 79, 80, 81, 128]
+    cuts = [1, 31, 32, 33, 79, 80, 81, 128, 256, 511, 512, 513, 767, 1023, 1024]
     for cut in cuts:
         checkpoint = full.checkpoint_at(float(full.times[cut]))
         path = tmp_path / f"cut-{cut}"
@@ -355,13 +659,13 @@ def test_runtime_disk_windows_and_clock(trajectories, tmp_path):
         common.bits(suffix.history, model.STATE_TYPE(*(v[cut:] for v in full.history)))
         if cut == 32:
             assert_windows(
-                list(iter_windows(saved.spec, WindowPolicy(37), saved.checkpoint)), suffix
+                list(iter_windows(saved.spec, WindowPolicy(173), saved.checkpoint)), suffix
             )
             with pytest.raises(ConfigError, match="event position"):
                 validate_checkpoint(full.spec, replace(checkpoint, event_index=0))
-    assert_windows(list(iter_windows(full.spec, WindowPolicy(13))), full)
+    assert_windows(list(iter_windows(full.spec, WindowPolicy(137))), full)
     write_run(tmp_path / "run", full)
-    write_windowed_run(tmp_path / "windows", full.spec, WindowPolicy(23, "full"))
+    write_windowed_run(tmp_path / "windows", full.spec, WindowPolicy(127, "full"))
     for folder in ("run", "windows"):
         common.bits(
             load_snapshot(tmp_path / folder / "checkpoint_final").checkpoint.state, full.final.state
@@ -369,7 +673,7 @@ def test_runtime_disk_windows_and_clock(trajectories, tmp_path):
     sparse = full.spec.to_dict()
     sparse["experiment"]["observation_times"] = [0, sparse["experiment"]["end_time"]]
     sparse_spec = parse_spec(sparse)
-    assert_windows(list(iter_windows(sparse_spec, WindowPolicy(13))), run(sparse_spec))
+    assert_windows(list(iter_windows(sparse_spec, WindowPolicy(137))), run(sparse_spec))
     common.evidence(
         "junction-runtime-disk-windows",
         dict(
@@ -377,7 +681,7 @@ def test_runtime_disk_windows_and_clock(trajectories, tmp_path):
             state_arrays=14,
             comparison="bitwise",
             cuts=cuts,
-            windows=[13, 37, 23],
+            windows=[137, 173, 127],
             empty_observation_windows=True,
             stale_event_rejected=True,
         ),
@@ -418,7 +722,7 @@ def test_runtime_worlds(tmp_path):
         common.bits(
             target, run_batch(replace(batch, worlds=(world,))).worlds[world.world_id].history
         )
-    rounds = list(iter_batch_windows(batch, WindowPolicy(23)))
+    rounds = list(iter_batch_windows(batch, WindowPolicy(137)))
     for world in batch.worlds:
         assert_windows(
             [r.worlds[world.world_id] for r in rounds if world.world_id in r.worlds],
@@ -439,6 +743,7 @@ def test_runtime_worlds(tmp_path):
         dict(
             status="passed",
             worlds=3,
+            durations_s=[world.simulation.experiment.end_time for world in batch.worlds],
             comparison="bitwise",
             independent_clocks=True,
             reordered=True,

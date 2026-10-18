@@ -1,0 +1,51 @@
+{
+  "kind": "source_order_calibration_observation_design@1",
+  "status": "planned_not_run",
+  "purpose": "Test whether the fixed 15-feature observation budget can separate order from unknown cue strength better, selecting times from calibration responses only.",
+  "scientific_risk_addressed": "The evaluation cases have already been inspected. Keep them out of candidate ranking and require new strengths before making another confirmation claim.",
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-spanning-20261014-01",
+    "registration_sha256": "8f433511edd3cc23ffa549af6e1ebaecda4f8fc05bbde8957e4e55e08111a476",
+    "completion_sha256": "de34473c969630b0807f8123d3daea7655a8f29b8e8d8d1fc12e28ca22c544f4"
+  },
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-spanning-diagnosis-20261015-01",
+    "completion_sha256": "f3f0f09662ea8f02f149e8a37f70490fca64a46ba5cef33078183094edfa12f4",
+    "result_sha256": "18bbf2d235fc01ddc67245189f3b8858efd74f65e7f5b33a35a1d1c713233415"
+  },
+  "design": {
+    "available_postcue_times_us": [128, 160, 192, 256, 320, 384, 512],
+    "candidate_rule": "All increasing triples from the seven already-recorded times; no new integration or search outside this declared grid.",
+    "candidate_count": 35,
+    "incumbent_times_us": [128, 256, 512],
+    "late_comparator_times_us": [320, 384, 512],
+    "cell_ids": [2, 3, 5, 6, 7],
+    "feature_count": 15,
+    "feature_scaling": "Unchanged area-weighted voltages; no rescaling or source-cell features.",
+    "calibration_strengths": [0.4, 0.6, 0.8],
+    "dt_s": [0.00000025, 0.000000125, 0.0000000625],
+    "reader": "Unchanged nearest-calibrated-polyline reader and 2-nV margin.",
+    "selection_inputs": "Load calibration feature arrays only. Heldout vectors, targets, scores and resolution counts cannot enter ranking or tie breaking.",
+    "objective": "Maximize half the minimum distance between fitted curves carrying opposite task labels, taking the minimum over both joint tasks, the relevant single-task controls and all three timesteps. Include all segment interiors and endpoints, not only same-strength or calibration-vertex distances.",
+    "objective_scope": "A geometry criterion for the fitted calibration curves, not a bound on continuous physical responses or a measured biological noise model.",
+    "ties": "Scores within 1e-15 V of the maximum are tied; prefer the incumbent, otherwise the lexicographically earliest triple. This is a ranking tolerance, not a change to the reader margin.",
+    "null_controls": "Report calibration-only no-cue and disconnected-reader behavior separately; their zero separation does not enter the discrimination objective.",
+    "backend_check": "Use the same rule independently on saved CPU and L4 calibration data and retain every candidate score and any winner disagreement.",
+    "freeze": "Write the selected schedule, scores, source hashes and rule before any later evaluation analysis. Keep incumbent and late-only comparisons and the original 29/32 result unchanged."
+  },
+  "verification_before_selection": [
+    "Authenticate saved feature arrays, completed evidence bindings and unchanged relevant sources.",
+    "Test segment distances independently for crossing, parallel, skew, endpoint and degenerate cases, including scale and offset sensitivity.",
+    "Demonstrate that changing or removing heldout arrays and metadata cannot alter the ranking.",
+    "Check time/cell identity, the 15-feature budget, fixed tie handling and CPU/L4 selection agreement."
+  ],
+  "followup": {
+    "decision": "If the study finds a reproducible geometric improvement, declare a separate CPU/L4 confirmation using new strengths spanning both calibration intervals, including weak cues near 0.4. Otherwise retain the present result and review physical encoding or observation support.",
+    "confirmation_protocol_ready": false,
+    "automatic_launch": false,
+    "unchanged_requirements": "Same production physics, cue doses, reader margin, three timesteps, five arms, full histories, conservation checks and restart/CPU-L4 comparisons. Record both utilization measurements and actual arm timings."
+  },
+  "maintenance": "An older concentration-to-voltage helper uses pre-repair arithmetic. This study must read archived observed features directly; repair and verify that helper before using reconstructed histories.",
+  "new_simulations_in_design_study": 0,
+  "automatic_followup": false
+}

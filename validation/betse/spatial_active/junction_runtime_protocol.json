@@ -1,37 +1,58 @@
 {
-  "kind": "betse_spatial_dynamic_junction_runtime@1",
-  "scope": "Ordinary CPU/L4 configured dynamic junctions: all fourteen state arrays, accepted-step controls, disk restart, windows and independent worlds against completed component histories.",
+  "kind": "betse_spatial_dynamic_junction_runtime@3",
+  "scope": "Ordinary CPU/L4 dynamic junctions through 512 us at 1/0.5/0.25 us: fresh native BETSE observed/bare captures, complete state/field comparisons, archived 64/256-us prefixes, disk restart, windows and independent worlds.",
   "scope_exclusions": [
     "Native per-moving-ion outer-dt updates and stored-opening blocking; the separate physical-time junction law is unchanged.",
-    "Fixed synthetic geometry, maintained ATP/ADP/Pi and Kv1p5, through 64 us at 1 and 0.5 us; no longer-time or spatial-convergence claim.",
+    "Fixed synthetic geometry, maintained ATP/ADP/Pi and Kv1p5, through 512 us; no longer-time, spatial-convergence or new temporal-order claim.",
+    "Half-block remains the dt-dependent native prescription; no fixed-physical-law refinement claim for fractional blocking.",
     "Mixed pump/channel/junction control mapping is checked against the unchanged component; new mixed-control native comparisons remain separate.",
     "CPU/L4 correctness with counters; no Jupiter execution, distributed interacting tissue or throughput claim."
   ],
   "automatic_followup": false,
   "prior_binding": {
-    "root": "/mnt/workspaces/Cells/betse-spatial-junction-20261011-01",
-    "completion_sha256": "ac21110df98ef9d31a6450b0b5327eff9c06be9859fed866b27e7544f08cddfc",
-    "registration_sha256": "f892edad6a2d37f36e2847eafae5bd74d860b1f4f0da243e914ff467b654171a",
+    "root": "/mnt/workspaces/Cells/betse-spatial-junction-refinement-20261011-01",
+    "completion_sha256": "375c9045fb6c652ef4b18e702ca89aa4adb7fccb59249d8cc41a850fc8af158c",
+    "registration_sha256": "bc27577b60c9ff5a3b61ab3864afafddabe8c9c320cf8b40505c7c9ce58ab11c",
+    "require_completed_cpu_and_gpu": true
+  },
+  "prefix_binding": {
+    "root": "/mnt/workspaces/Cells/betse-junction-runtime-20261011-02",
+    "completion_sha256": "2be7d4306bb6ae9adec8396a3101a86cacc8a9d985231be00fca44b1f72471e4",
+    "registration_sha256": "0c7ec32e0e014d90170063ec9f7fa97bb72d14d1d01b121f9af9cffca9ab2882",
+    "require_completed_cpu_and_gpu": true
+  },
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-20261013-01",
+    "completion_sha256": "8d1c86534d8177f564cae552935314b439f7669420f0bcef687847a97a9e0211",
+    "registration_sha256": "759633af71bb9f9d797501f1ae5f44db268a5a2d456709579294ffbb53d688ec",
     "require_completed_cpu_and_gpu": true
   },
   "allowed_prior_source_changes": [
-    "src/cells/core/specs.py",
-    "src/cells/core/schedule.py",
-    "src/cells/models/registry.py"
-  ],
-  "new_production_files": [
+    "src/cells/core/betse_spatial_spec.py",
     "src/cells/core/betse_junction_spec.py",
-    "src/cells/models/betse_junction.py"
+    "src/cells/models/betse_junction.py",
+    "validation/betse/spatial_active/junction_runtime.py",
+    "validation/betse/spatial_active/junction_runtime_protocol.json",
+    "tests/unit/test_betse_junction_runtime.py"
+  ],
+  "new_production_files": [],
+  "duration_s": 0.000512,
+  "default_duration_s": 6.4e-05,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
   ],
   "resources": {
-    "max_wall_seconds": 5400,
-    "native_timeout_seconds": 1800,
+    "max_wall_seconds": 10800,
+    "native_timeout_seconds": 3600,
     "artifact_and_cache_bytes": 4294967296,
     "free_disk_reserve_bytes": 4294967296,
     "max_worker_rss_bytes": 12884901888,
     "gpu_memory_fraction": 0.2,
-    "max_retained_array_estimate_bytes": 3221225472,
-    "batch_max_working_bytes": 1073741824
+    "max_retained_array_estimate_bytes": 6442450944,
+    "batch_max_working_bytes": 4294967296,
+    "long_trace_max_bytes": 2147483648
   },
   "tolerances": {
     "concentration_atol_mM": 5e-12,
@@ -66,7 +87,8 @@
   ],
   "step_indices": [
     0,
-    1
+    1,
+    2
   ],
   "native_species_inventory": [
     "Na",
@@ -117,27 +139,87 @@
     "junction-runtime-mixed-controls",
     "junction-runtime-cli",
     "junction-runtime-legacy-schedules",
+    "junction-runtime-original-prefixes",
+    "junction-runtime-native-negative-controls",
     "junction-runtime-qualified-coupled-0",
     "junction-runtime-qualified-coupled-1",
+    "junction-runtime-qualified-coupled-2",
     "junction-runtime-qualified-reversed-0",
     "junction-runtime-qualified-reversed-1",
+    "junction-runtime-qualified-reversed-2",
     "junction-runtime-qualified-half_block-0",
     "junction-runtime-qualified-half_block-1",
+    "junction-runtime-qualified-half_block-2",
     "junction-runtime-qualified-block_release-0",
     "junction-runtime-qualified-block_release-1",
+    "junction-runtime-qualified-block_release-2",
     "junction-runtime-qualified-disconnected-0",
     "junction-runtime-qualified-disconnected-1",
+    "junction-runtime-qualified-disconnected-2",
     "junction-runtime-qualified-single_pair-0",
-    "junction-runtime-qualified-single_pair-1"
+    "junction-runtime-qualified-single_pair-1",
+    "junction-runtime-qualified-single_pair-2",
+    "junction-runtime-native-capture",
+    "junction-runtime-256-prefixes",
+    "junction-runtime-horizon-branch-64",
+    "junction-runtime-horizon-branch-256"
   ],
   "required_gpu_evidence": [
     "runtime-cpu-gpu",
     "junction-runtime-cpu-gpu"
   ],
   "checks": [
-    "Authenticate completed component source/results and allow only three dispatch additions; preserve old numerical kernels and qualified tests.",
-    "Compare full histories and fields to saved CPU/L4 component evidence with unchanged tolerances; initial/static data only as inputs.",
-    "Preserve all fourteen arrays and fixed-step control timing through checkpoints/windows/branches/reordered world partitions; reject corrupt gates, clocks and material.",
-    "Retain legacy configured runtime and scheduled histories, shared batch/window/spec regressions and measured GPU-busy/SM-active with coverage."
-  ]
+    "Authenticate completed component, original 64-us runtime, 256-us runtime and latest assay against their frozen trees; preserve additional diagnostic sources. Permit only declared parser-bound/scope production edits and three runtime validation updates.",
+    "Derive native inputs from the completed 256-us component by changing only the horizon and capture metadata. Run all eighteen pinned FULL INIT observed/bare pairs through 512 us; authenticate their files and observer neutrality, and independently reconstruct every native per-ion gate/flux and active/material update on CPU.",
+    "Compare all eighteen ordinary fourteen-state/seven-field histories directly with fresh native targets on CPU and L4 using unchanged physical tolerances and inventory-scaled roundoff. Only archived initial/static values feed Cells; no evolving native state is injected.",
+    "Compare all 256-us native trace prefixes bitwise except raw native sample labels, whose linspace labeling depends on duration. Compare all eighteen 256-us component and ordinary runtime prefixes and all twelve original 64-us prefixes; retain the 64-us default export and the legacy static runtime 256-us bound. Reject dynamic horizons beyond 512 us.",
+    "Preserve all fourteen arrays and completed-step controls through long checkpoints/windows/branches/reordered world partitions, including 64/256-to-512-us disk continuations and checkpoints beyond the former limit; reject corrupt gates, clocks and material.",
+    "Retain legacy configured and scheduled histories, shared batch/window/spec regressions and measured GPU-busy/SM-active with coverage. Native traces are loaded one case at a time; retain explicit array, process, disk and wall-time budgets. No automatic follow-up."
+  ],
+  "runtime_prefix_binding": {
+    "root": "/mnt/workspaces/Cells/betse-junction-runtime-20261013-01",
+    "completion_sha256": "b35082cc474f245d0643309ba8864612aaebc2528b53de70bb7c00365fa5d8f0",
+    "registration_sha256": "eb5aa5bcadb0acfd8fb2de4b844385f03ea94164c2e548d9c4954c75d0b8281f",
+    "require_completed_cpu_and_gpu": true
+  },
+  "additional_source_sha256": {
+    "tests/unit/test_source_order_diagnostic.py": "16420e8f3c831a7e49c9c80d044dd4a59754449d6ba5aa83b74eb32499c706e6",
+    "validation/assays/source_order_diagnostic.py": "c3c355370b8f0fc8465f6f4d03abb54191bb4e9f51a57de332ea209207571a3e"
+  },
+  "production_source_replacements": {
+    "src/cells/core/betse_spatial_spec.py": [
+      [
+        "def parse(data):",
+        "def parse(data, *, horizon_s=256e-6):"
+      ],
+      [
+        "if not 0 < end <= 256e-6 or steps > execution.max_steps:",
+        "if not 0 < end <= horizon_s or steps > execution.max_steps:"
+      ],
+      [
+        "\"Initial BETSE runner requires a positive horizon up to 256 us within max_steps\"",
+        "f\"Initial BETSE runner requires a positive horizon up to {horizon_s * 1e6:g} us \"\n            \"within max_steps\""
+      ]
+    ],
+    "src/cells/core/betse_junction_spec.py": [
+      [
+        "parsed = base.parse(raw)",
+        "parsed = base.parse(raw, horizon_s=512e-6)"
+      ],
+      [
+        "> 256e-6:",
+        "> 512e-6:"
+      ],
+      [
+        "bounded to 256 us",
+        "bounded to 512 us"
+      ]
+    ],
+    "src/cells/models/betse_junction.py": [
+      [
+        "compatibility through 256 us",
+        "compatibility through 512 us"
+      ]
+    ]
+  }
 }

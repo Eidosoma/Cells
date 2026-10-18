@@ -132,5 +132,5 @@ def summarize(history, diagnostics, spec):
         intervention_scope="held pump/channel/junction fractions on completed step boundaries",
         junction_clock="one outer dt per moving ion, in explicit moving_order",
         junction_blocking="multiply stored opening after each implicit update",
-        qualification_scope="synthetic native dynamic junction compatibility through 64 us",
+        qualification_scope="synthetic native dynamic junction compatibility through 512 us",
     )

@@ -1,0 +1,356 @@
+{
+  "kind": "source_order_channel_compensation@1",
+  "scope": "Calibration-only remote Kv1p5 compensation with junction permeability fixed at 0.9x in one synthetic tissue.",
+  "purpose": "Test whether changing Kv1p5 availability away from the cue sources improves two-task response separation while junction permeability remains impaired.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01",
+    "registration_sha256": "2db4e2789212ed6fce1432db58338631a8690c9f94a336c884f84f364f516130",
+    "completion_sha256": "a258d0108e77eb54414a35459e5639639e7908a66d0f072eed931730c4ab4ddb",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/source_order_long/coupling_transfer_protocol.json",
+  "source_protocol_sha256": "cc2b8b7193b60f13c2a11e9bbb9705b0f057de322519894b6a5b8e9a05164f7a",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000512,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4,
+    "long512": 8,
+    "spanning512": null,
+    "selected320": null
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ],
+    "long512": [
+      320,
+      384,
+      512
+    ],
+    "spanning512": [
+      128,
+      256,
+      512
+    ],
+    "selected320": [
+      128,
+      160,
+      320
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Unchanged three-strength polyline per arm, panel and timestep; all location/order combinations calibrated. Evaluation strengths never fit curves. The wire key timing now means source order.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "Calibration geometry on selected320: minimum opposite-label curve half-distance across tasks, active arms and all three timesteps. Condition-calibrated geometry selects a candidate; raw frozen-source and shared-reference-assisted readings of calibration points are separate diagnostics, never fresh confirmation.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "Three conditions (sham, remote channels 0.9x and 1.1x), three calibration strengths, five arms and four label combinations at three timesteps. No held-out responses are loaded or simulated.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "All sham histories match the prior weaker-coupling calibration cases bitwise. Candidates with altered channels match initial states only, including disconnected and no-cue arms.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 137438953472,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_channel_compensation.py"
+  ],
+  "expected_cpu_skips": 3,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_channel_compensation.py::test_cpu_gpu[sham]",
+    "tests/unit/test_channel_compensation.py::test_cpu_gpu[channel_lower]",
+    "tests/unit/test_channel_compensation.py::test_cpu_gpu[channel_higher]"
+  ],
+  "required_evidence": [
+    "channel-compensation-sham-reader-isolation",
+    "channel-compensation-sham-archive",
+    "channel-compensation-sham-support",
+    "channel-compensation-sham-calibration-isolation",
+    "channel-compensation-sham-geometry-known-answers",
+    "channel-compensation-sham-binding",
+    "channel-compensation-sham-design",
+    "channel-compensation-sham-history-boundaries",
+    "channel-compensation-sham-decision-known-answers",
+    "channel-compensation-sham-reader-views-known-answers",
+    "channel-compensation-sham-prerequisite",
+    "channel-compensation-sham-panel",
+    "channel-compensation-sham-controls",
+    "channel-compensation-sham-contrasts",
+    "channel-compensation-sham-replay",
+    "channel-compensation-sham-historical-reproduction",
+    "channel-compensation-sham-calibration",
+    "channel-compensation-channel_lower-reader-isolation",
+    "channel-compensation-channel_lower-archive",
+    "channel-compensation-channel_lower-support",
+    "channel-compensation-channel_lower-calibration-isolation",
+    "channel-compensation-channel_lower-geometry-known-answers",
+    "channel-compensation-channel_lower-binding",
+    "channel-compensation-channel_lower-design",
+    "channel-compensation-channel_lower-history-boundaries",
+    "channel-compensation-channel_lower-decision-known-answers",
+    "channel-compensation-channel_lower-reader-views-known-answers",
+    "channel-compensation-channel_lower-prerequisite",
+    "channel-compensation-channel_lower-panel",
+    "channel-compensation-channel_lower-controls",
+    "channel-compensation-channel_lower-contrasts",
+    "channel-compensation-channel_lower-replay",
+    "channel-compensation-channel_lower-historical-reproduction",
+    "channel-compensation-channel_lower-calibration",
+    "channel-compensation-channel_higher-reader-isolation",
+    "channel-compensation-channel_higher-archive",
+    "channel-compensation-channel_higher-support",
+    "channel-compensation-channel_higher-calibration-isolation",
+    "channel-compensation-channel_higher-geometry-known-answers",
+    "channel-compensation-channel_higher-binding",
+    "channel-compensation-channel_higher-design",
+    "channel-compensation-channel_higher-history-boundaries",
+    "channel-compensation-channel_higher-decision-known-answers",
+    "channel-compensation-channel_higher-reader-views-known-answers",
+    "channel-compensation-channel_higher-prerequisite",
+    "channel-compensation-channel_higher-panel",
+    "channel-compensation-channel_higher-controls",
+    "channel-compensation-channel_higher-contrasts",
+    "channel-compensation-channel_higher-replay",
+    "channel-compensation-channel_higher-historical-reproduction",
+    "channel-compensation-channel_higher-calibration"
+  ],
+  "required_gpu_evidence": [
+    "channel-compensation-sham-cpu-gpu",
+    "channel-compensation-channel_lower-cpu-gpu",
+    "channel-compensation-channel_higher-cpu-gpu",
+    "channel-compensation-selection"
+  ],
+  "scope_exclusions": [
+    "One static synthetic bioelectric fixture and existing 512-us horizon. No new native BETSE parity, general polycomputing, heredity, biological replication or multi-GPU scaling claim.",
+    "This pilot can select a candidate for confirmation. Fitted calibration curves are not continuous-response bounds, fresh-strength outcomes, empirical noise tolerance or biological recovery.",
+    "Retain the raw frozen source reader, shared-no-cue-reference assistance, and condition-calibrated geometry separately. A gain in the geometric objective does not establish unassisted transfer or overwrite the preceding transfer failures.",
+    "Per-source fractional inhibition, patch areas, cue-source maximal permeability and pulse timing are unchanged. Network feedback can still change voltages and actual ionic currents; integrated transported charge is not constrained to match.",
+    "Same synthetic initial state; sham replay and backend/timestep repetitions are numerical controls, not independent biological replicates.",
+    "The intervention is present from the initial instant. It is not recovery after damage, an autonomous controller, or assembly-mediated adaptation.",
+    "Retain every valid negative result and invalid failure. A failed qualification cannot nominate a candidate.",
+    "Track GPU busy and measured SM-active with coverage and equal planned per-arm work. No automatic audit, retry or follow-up."
+  ],
+  "automatic_followup": false,
+  "cue_timing": {
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "late_pulse_us": [
+      112,
+      120
+    ],
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "pulse_width_us": 8,
+    "onset_separation_us": 104,
+    "selection": "Only declared change: shift second pulse by 8 us, preserving its channel amplitudes and width. No pulse-time search.",
+    "source_allocation": "Each source retains amplitude * its 75/25 location share * minimum source membrane area integrated over 8 us. Order-only uses 50/50; no-cue uses zero. Compare dose with the common-pulse encoding at the SAME new strength.",
+    "comparison_panels": "short64 precedes the second pulse; middle128 straddles it. Only selected320 chooses the pulse protocol."
+  },
+  "replay": {
+    "snapshot_world": "joint/calibration_low/location=0/order=1",
+    "snapshot_step": 1663,
+    "snapshot_time_us": 103.9375,
+    "purpose": "Resume at 103.9375 us before the shifted second pulse, crossing its 112/120-us events with 257-step windows, reordering and partitioning four calibration worlds."
+  },
+  "source_cell_ids": [
+    1,
+    4
+  ],
+  "task_meanings": {
+    "location": "0: source 1 receives 75% of dose, source 4 receives 25%; 1: reverse allocation.",
+    "timing": "Internal reader key for source_order: 0 = source 1 early and source 4 late; 1 = source 4 early and source 1 late. This is NOT the preceding common early/late cue task.",
+    "timing_only": "Internal arm key for order-only: 50/50 source doses with the same opposite pulse orders."
+  },
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    }
+  ],
+  "max_steps": 8192,
+  "primary_panel": "selected320",
+  "work": {
+    "worlds_per_timestep": 180,
+    "worlds_per_backend": 540,
+    "world_steps_per_backend": 2580480,
+    "world_steps_per_arm_per_backend": 516096
+  },
+  "paired_comparator_panels": [
+    "spanning512",
+    "long512"
+  ],
+  "execution_estimate": {
+    "wall_hours": [
+      3,
+      4
+    ],
+    "basis": "540 worlds/backend versus the preceding 660-world 4 h 33 min confirmation; source authentication, archive I/O and per-condition setup can change this estimate."
+  },
+  "work_per_condition": {
+    "worlds_per_timestep": 60,
+    "worlds_per_backend": 180,
+    "world_steps_per_backend": 860160,
+    "world_steps_per_arm_per_backend": 172032
+  },
+  "design_plan": "validation/assays/source_order_long/channel_compensation_plan.json",
+  "design_plan_sha256": "de53521b7845b5687bd5a463f80a2d7fc658bdfb35b06f588fd8abc042f37468",
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01",
+    "completion_sha256": "7c10dfc1f7287cd38ec3478ec649fb09d02180922403267fe4d1749f75f70e0d",
+    "result_sha256": "ac06cfb470dc04c54ce8634d9c765f1f450dc9dd7f96d63c7ed253a80a63cedb",
+    "status": "completed_subset_diagnosis",
+    "whole_source_campaign_accepted": false
+  },
+  "conditions": [
+    {
+      "id": "sham",
+      "channel_scale": 1.0,
+      "world_id_offset": 540000
+    },
+    {
+      "id": "channel_lower",
+      "channel_scale": 0.9,
+      "world_id_offset": 560000
+    },
+    {
+      "id": "channel_higher",
+      "channel_scale": 1.1,
+      "world_id_offset": 580000
+    }
+  ],
+  "calibration_only": true
+}

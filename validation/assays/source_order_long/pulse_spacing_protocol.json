@@ -1,0 +1,293 @@
+{
+  "kind": "source_order_pulse_spacing_calibration@1",
+  "scope": "Calibration-only CPU/L4 test of moving the second source pulse from 104-112 to 112-120 us at unchanged dose and fixed observations.",
+  "purpose": "Test whether a wider separation between source pulses separates source order from unknown cue strength using unchanged post-cue observations.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01",
+    "registration_sha256": "3dbef1145db62fcc84dc3cfc075170057b7aa9c930c6336d53149c98d78aad37",
+    "completion_sha256": "405e0656c945544f661a2f88beda9971b2f99b4650ef48772318da0abc1e30cf",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/source_order_long/selected_protocol.json",
+  "source_protocol_sha256": "3f12f98dc825f5a25c015d672ca25e43e5a8bd6417270255c495c496d33a290d",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000512,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4,
+    "long512": 8,
+    "spanning512": null,
+    "selected320": null
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ],
+    "long512": [
+      320,
+      384,
+      512
+    ],
+    "spanning512": [
+      128,
+      256,
+      512
+    ],
+    "selected320": [
+      128,
+      160,
+      320
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Unchanged three-strength polyline per arm, panel and timestep; all location/order combinations calibrated. Evaluation strengths never fit curves. The wire key timing now means source order.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "Calibrated opposite-label curve separation at fixed 128/160/320-us observations. No held-out case is generated or evaluated; the existing 29/32 result remains unchanged.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "60 calibration cases per timestep: three strengths, all four label combinations and five arms. Geometry uses unique single-task inputs; unused labels remain numerical duplication checks.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "Full no-cue and location-only calibration histories through 512 us reproduce the bound baseline bitwise. Ordered arms reproduce their shared prefix through 104 us, before the original second pulse changes the state.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 51539607552,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_source_order_pulse_spacing.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_source_order_pulse_spacing.py::test_cpu_gpu"
+  ],
+  "required_evidence": [
+    "source-order-pulse-spacing-reader-isolation",
+    "source-order-pulse-spacing-archive",
+    "source-order-pulse-spacing-support",
+    "source-order-pulse-spacing-design",
+    "source-order-pulse-spacing-history-boundaries",
+    "source-order-pulse-spacing-calibration-isolation",
+    "source-order-pulse-spacing-geometry-known-answers",
+    "source-order-pulse-spacing-decision-known-answers",
+    "source-order-pulse-spacing-plan-binding",
+    "source-order-pulse-spacing-prerequisite",
+    "source-order-pulse-spacing-replay",
+    "source-order-pulse-spacing-panel",
+    "source-order-pulse-spacing-controls",
+    "source-order-pulse-spacing-historical-reproduction",
+    "source-order-pulse-spacing-calibration",
+    "source-order-pulse-spacing-contrasts"
+  ],
+  "required_gpu_evidence": [
+    "source-order-pulse-spacing-cpu-gpu",
+    "source-order-pulse-spacing-selection"
+  ],
+  "scope_exclusions": [
+    "Unchanged production model, geometry, source amplitudes, integrated doses, event width, initial state, 15-feature observation support, reader margin and numerical tolerances.",
+    "Only the second source pulse changes, from 104-112 to 112-120 us. Source order and location meanings are unchanged. All primary samples follow both pulses.",
+    "Generate and rank calibration strengths 0.4/0.6/0.8 only. Hash historical archives for integrity, but decode no held-out features or responses.",
+    "The baseline comes from authenticated calibration arrays. Three observation panels are reported; only fixed selected320 geometry chooses a pulse protocol.",
+    "A fitted-curve geometric gain is neither a new resolution count nor biological calibration. No native BETSE captures are rerun.",
+    "CPU/L4 history tolerances, conservation/domain checks, bitwise restart/reordering/partition checks and shared baseline history checks are retained.",
+    "Record both GPU-busy and measured SM-active with coverage and actual arm timing. One L4 provides no multi-GPU scaling claim.",
+    "Freeze the backend-combined geometric decision before any later fresh-strength confirmation; no automatic follow-up or retry."
+  ],
+  "automatic_followup": false,
+  "cue_timing": {
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "late_pulse_us": [
+      112,
+      120
+    ],
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "pulse_width_us": 8,
+    "onset_separation_us": 104,
+    "selection": "Only declared change: shift second pulse by 8 us, preserving its channel amplitudes and width. No pulse-time search.",
+    "source_allocation": "Each source retains amplitude * its 75/25 location share * minimum source membrane area integrated over 8 us. Order-only uses 50/50; no-cue uses zero. Compare dose with the common-pulse encoding at the SAME new strength.",
+    "comparison_panels": "short64 precedes the second pulse; middle128 straddles it. Only selected320 chooses the pulse protocol."
+  },
+  "replay": {
+    "snapshot_world": "joint/calibration_low/location=0/order=1",
+    "snapshot_step": 1663,
+    "snapshot_time_us": 103.9375,
+    "purpose": "Resume at 103.9375 us before the shifted second pulse, crossing its 112/120-us events with 257-step windows, reordering and partitioning four calibration worlds."
+  },
+  "world_id_offset": 460000,
+  "source_cell_ids": [
+    1,
+    4
+  ],
+  "task_meanings": {
+    "location": "0: source 1 receives 75% of dose, source 4 receives 25%; 1: reverse allocation.",
+    "timing": "Internal reader key for source_order: 0 = source 1 early and source 4 late; 1 = source 4 early and source 1 late. This is NOT the preceding common early/late cue task.",
+    "timing_only": "Internal arm key for order-only: 50/50 source doses with the same opposite pulse orders."
+  },
+  "preparations": [
+    {
+      "id": "calibration_low",
+      "split": "calibration",
+      "amplitude": 0.4
+    },
+    {
+      "id": "calibration_middle",
+      "split": "calibration",
+      "amplitude": 0.6
+    },
+    {
+      "id": "calibration_high",
+      "split": "calibration",
+      "amplitude": 0.8
+    }
+  ],
+  "max_steps": 8192,
+  "primary_panel": "selected320",
+  "work": {
+    "worlds_per_timestep": 60,
+    "worlds_per_backend": 180,
+    "world_steps_per_backend": 860160,
+    "world_steps_per_arm_per_backend": 172032
+  },
+  "paired_comparator_panels": [
+    "spanning512",
+    "long512"
+  ],
+  "execution_estimate": {
+    "wall_hours": [
+      1,
+      1.5
+    ],
+    "basis": "180 versus 660 worlds per backend in the last 3 h 39 min confirmation, plus full prerequisite authentication and saved-history comparison."
+  },
+  "design_plan": "validation/assays/source_order_long/pulse_spacing_plan.json",
+  "design_plan_sha256": "763bd87ebf5e2aaa12c205be665c8ebcc88f691a2b98e2568f163d1f79f1cd8b",
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-selected-diagnosis-20261016-01",
+    "completion_sha256": "4ae3dda92ed60e831944a049706de696aa3008a217bf545499735c249fa743c7",
+    "result_sha256": "8e95ec5bd42d52396b937f65b7212de8055808aef756ef7496727142cc4f423b"
+  },
+  "calibration_only": true
+}

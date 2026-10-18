@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-12 UTC.
+Last updated: 2026-10-18 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,6 +9,1148 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Local flank-channel pilot running (18 October).**
+  [Launched detached at 11:34:46 UTC](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/launch.json),
+  worker **1156416**, with **1,038 frozen source files**. The single
+  [startup check](/mnt/workspaces/Cells/local-channel-development-20261018-01/startup.json)
+  confirmed the CPU phase running, empty stderr and no failure artifact.
+  The L4 phase follows CPU qualification. Estimated total runtime is **6–8 hours**
+  (**17:35–19:35 UTC**), within a **10-hour cap**; completion is still pending.
+  The [execution protocol](validation/assays/source_order_long/local_channel_protocol.json)
+  and [CPU/L4 harness](tests/unit/test_local_channel.py) retain all five conditions,
+  the fixed margins and numerical checks, both GPU utilization measures and
+  per-arm timings. No automatic polling, retry or follow-up.
+
+  The [saved-calibration analysis](/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01/result.json)
+  finished in **4.9 s**, after **eight passing analytic/isolation checks**.
+  It reads **3,240 named calibration arrays** from the completed CPU/L4 pilot,
+  reproduces all archived geometry scores exactly and gives **zero CPU/L4
+  diagnostic difference**. [Inputs](/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01/inputs.json),
+  [completion](/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01/completion.json)
+  and the [diagnostic code](validation/assays/channel_compensation_diagnostic.py)
+  preserve provenance. No new simulation, held-out response, reader or observation
+  schedule entered this diagnosis; full trajectory archives were not re-audited.
+
+  **Location and source order share the same limiting joint pair**, labels
+  **[0,1] versus [1,0]**; these are not two independent failures. At the finest
+  sham timestep, **92.57%** of that pair's squared separation is at **320 us**,
+  and cells **3/5 contribute 62.42%**, cells **2/6 35.98%**, and cell **7 1.60%**.
+  At strength **0.4**, the location/order effect vectors have cosine **0.842**;
+  their opposed-label difference has half-distance **1.9380 nV**, already below
+  the **2-nV** margin before allowing different fitted strengths. The closest
+  fitted pair is **0.429292 versus 0.4**, with half-distance **1.921477 nV**.
+  Feature contributions locate the observed separation, not causal channel
+  sensitivities; factorial interactions can also reflect the joint cue encoding.
+
+  Uniform channel changes move the 15-feature no-cue vector by about **301 µV
+  in L2 norm**, while the largest joint cue-relative change is **0.0564 nV**.
+  The uniform decrease changes the joint separation score by **−0.00629,
+  −0.00344, +0.00561 nV** across the three timesteps; its direction is not stable.
+  The increase gives **−0.00899, −0.000340, −0.000614 nV**. These finite-step
+  comparisons are not continuum error bounds. The
+  [summary](/mnt/workspaces/Cells/channel-compensation-diagnosis-development-20261018-01/diagnosis-summary.json)
+  retains all conditions and keeps background shifts separate from cue effects.
+
+  The [plan](validation/assays/source_order_long/local_channel_plan.json) and
+  [input builder](validation/assays/local_channel_design.py) specify **five
+  calibration conditions**: sham, **±10% Kv1p5 permeability on cells 2/6**, and
+  **±10% on cells 3/5**. These are the opposite flanks beside sources 1 and 4;
+  both source cells, shared central cell 7 and **0.9× junction coupling** remain
+  fixed. Both signs and both flanks are included because uniform perturbations
+  do not identify local effects. Slightly unequal flank membrane areas are recorded;
+  equal relative permeability changes are not equal absolute channel capacities.
+
+  [Preparation](/mnt/workspaces/Cells/local-channel-design-20261018-01/preparation.json)
+  records **33 passing input checks in 33 s**, clean lint, **360 authenticated
+  archived inputs**, and **1,800 CPU/GPU input variants** matching those inputs
+  except for the declared flank channels. All **1,030 frozen pilot sources** remain
+  unchanged. Registered work is **900 worlds / 4,300,800 world-steps per backend**,
+  equally allocated across five arms, using the existing support, margins,
+  reader views and numerical requirements. These remain calibration cases in
+  one synthetic tissue; backend/timestep repeats are numerical checks, and no
+  held-out cases enter this pilot.
+
+  [Harness preparation](/mnt/workspaces/Cells/local-channel-development-20261018-01/launch-preparation.json)
+  records **50 passing host checks in 71 s**, clean lint and exact reproduction
+  of the archived CPU sham calibration through the new harness. The original
+  unperturbed CPU reader remains fixed; the completed uniform-channel sham is
+  the historical reference. [Checks](/mnt/workspaces/Cells/local-channel-development-20261018-01/checks.json)
+  bind **90 test nodes per backend**: expected **85 CPU passes plus five GPU-only
+  skips**, **90 L4 passes**, and **176 required reports** overall. They also retain
+  a corrected verification-driver report-count assumption and its failed record;
+  no simulation or host test failed during preparation. Full prior-archive
+  authentication runs inside the detached worker before simulation. The earlier
+  input preparation retains its original pre-launch status.
+
+- **Channel-compensation pilot completed at 22:14:11 UTC on 17 October.**
+  **CPU: 51 passed and three expected GPU-only skips; L4: all 54 passed.**
+  The [result](/mnt/workspaces/Cells/two-task-channel-compensation-20261017-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-channel-compensation-20261017-01/completion.json)
+  record **6,260 evidence entries, 106 required reports and 1,030 frozen sources**.
+  The worker has exited, stderr is empty and no failure artifact is present.
+  Launch-to-completion took **4 h 00 min 07 s**, including **3 min 29 s** of final
+  archive hashing after the numerical suites finished at **22:10:42 UTC**.
+
+  **Neither tested channel adjustment improves the predeclared separation score;
+  the unchanged-channel sham remains selected.** The
+  [plan](validation/assays/source_order_long/channel_compensation_plan.json) and
+  [protocol](validation/assays/source_order_long/channel_compensation_protocol.json)
+  hold junction permeability at **0.9×**, testing **0.9× and 1.1× Kv1p5 maximal
+  permeability in remote cells 2,3,5,6,7**, against a **1.0× sham**. Cue-source
+  channels, initial states, timing, observations and the margin remain fixed.
+  The [selection](/mnt/workspaces/Cells/two-task-channel-compensation-20261017-01/evidence/gpu/channel-compensation-selection.json)
+  gives identical CPU/L4 primary scores: **1.921477 nV sham, 1.919229 nV lower,
+  1.916530 nV higher**, all below the fixed **2-nV** criterion. The limiting
+  calibration-curve comparison concerns location in the joint arm. This tests
+  two uniform channel changes in one synthetic tissue; it does not rule out
+  other channel interventions or establish biological recovery.
+
+  On the **12 joint calibration cases**, raw frozen-source readings resolve both
+  tasks in **0/12 sham, 3/12 lower, 0/12 higher**. The separately labelled
+  reference-assisted view gives **8/12**, and condition-calibrated readings
+  **9/12**, for every condition. These counts agree at all three timesteps on
+  CPU/L4. The limited raw-reader gain does not meet the predeclared selection
+  objective. No-cue/disconnected controls remain unresolved; all 24 primary joint
+  task scores per condition and reader view meet finest-step stability checks.
+  **No held-out cases were evaluated**, and no candidate advances to fresh-case
+  confirmation. The intervention is present from initialization, not a recovery
+  process after damage; backend/timestep repetitions are numerical checks.
+
+  Each backend completed **540 worlds / 2,580,480 world-steps**, equally planned
+  across five arms. CPU/L4 comparisons passed **6,548,199,120 state/field scalar
+  comparisons** at unchanged tolerances, with exact reader-score/decision agreement
+  and zero paired-contrast differences. Conservation/domain, full recordings and
+  restart/reordering/partition checks passed. Sham histories reproduce the archived
+  weaker-coupling calibration bitwise across **840 window comparisons per backend**;
+  each changed-channel condition matches **180 initial states per backend**.
+
+  **Whole L4 phase: 28.98% GPU busy and 9.90% measured SM-active**, with over
+  **99.9999% busy coverage and 100% SM coverage**, across **1.902 GPU-hours**.
+  These averages include compilation, host checks and archive handling. Aggregated
+  arm execution times were **419–428 s**; batch totals were **911–1,012 s**,
+  including **416–517 s** of archive handling per arm. Artifacts/cache occupy
+  **28.14 GB**, and peak child RSS was **1.65 GB**.
+
+  [Launch preparation](/mnt/workspaces/Cells/channel-compensation-development-20261017-01/launch-preparation.json)
+  binds the preceding 30 passing host checks and three final source-binding checks.
+  The [completion review](/mnt/workspaces/Cells/channel-compensation-development-20261017-01/completion-status-20261018.json)
+  verified all 106 required reports against the completion manifest, exact test
+  inventories/skips, metric records and all 1,030 unchanged frozen sources.
+  This status review did not repeat the full archive audit or launch a follow-up.
+
+- **Weaker-coupling diagnosis completed on 17 October.**
+  The [saved-feature diagnosis](/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01/result.json)
+  completed in **40 s**, replaying all three reader views at three timesteps for
+  the primary and two comparator panels. Saved CPU/L4 diagnoses agree exactly.
+  [Inputs](/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01/inputs.json),
+  the [reproduction script](/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01/analyze.py)
+  and [completion](/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01/completion.json)
+  retain the completed lower-coupling subset and every inspected case. This was
+  a host analysis of saved responses while the full coupling campaign continued;
+  it ran no simulations and does not accept the whole campaign.
+
+  All four unresolved **reference-assisted** joint cases use strength **0.403125**,
+  and their own-source-curve projections hit the **0.4 calibration endpoint**.
+  Their unresolved task scores fall **0.119–0.512 nV** below the fixed 2-nV margin;
+  the largest corresponding finest-step change is **0.0159 nV**. However,
+  **target recalibration still leaves five cases unresolved**, with interior
+  own-curve projections: deficits **0.0584–0.0694 nV**, versus finest-step changes
+  no larger than **0.00216 nV**. Calibration-edge effects are present, but
+  recalibration alone has not restored sufficient separation in this assay.
+  These finite-step comparisons are not continuum error bounds. Raw transfer,
+  reference assistance, recalibration and true-label/strength oracle probes
+  remain separate; none supplies fresh cases or changes the original outcomes.
+
+  Initial [input preparation](/mnt/workspaces/Cells/channel-compensation-design-20261017-01/preparation.json)
+  records **21 passing host checks in 25 s**, clean lint and **1,080 validated
+  CPU/GPU input variants**. These are input checks, not new backend simulations.
+  [Harness preparation](/mnt/workspaces/Cells/channel-compensation-development-20261017-01/preparation.json)
+  records **30 passing host checks in 91 s**, clean lint, **540 generated CPU
+  inputs checked against their archived counterparts**, and all **1,024 existing
+  frozen sources unchanged**. The resulting pilot is now complete, as recorded
+  above; these preparation records retain their original pre-launch status.
+
+- **Coupling-transfer study completed at 17:42:06 UTC on 17 October.**
+  **CPU: 36 passed and two expected GPU-only skips; L4: all 38 passed.**
+  Numerical suites finished at **17:29:52 UTC**; final archive hashing took
+  another **12 min 14 s**. Total launch-to-completion time was **6 h 11 min**.
+  The [result](/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01/completion.json)
+  bind **15,060 evidence entries, 72 required reports and 1,024 frozen sources**.
+  The worker has exited, stderr is empty and no failure artifact is present.
+
+  **The primary unassisted transfer fails: 0/32 joint cases resolve both tasks
+  at either coupling strength**, on both CPU and L4 at all three timesteps.
+  The [protocol](validation/assays/source_order_long/coupling_transfer_protocol.json)
+  changed only junction permeability to **0.9× or 1.1×**, holding the archived
+  source calibration, cue doses, observation support and **2-nV margin** fixed.
+  The no-cue voltage vector shifts by about **13.85 µV in L2 norm**. The separately
+  labelled shared-reference-assisted diagnostic gives **28/32 at 0.9× and 32/32
+  at 1.1×**; target-condition recalibration gives **27/32 and 32/32**, respectively.
+  These outcomes agree on CPU/L4 at all three timesteps and do not replace the
+  failed primary transfer. Reference-assisted finest-step stability passes all
+  64 joint task scores per condition. All 64 raw stronger-coupling scores miss
+  that diagnostic despite unchanged decisions; the failures remain recorded.
+
+  Each backend completed **1,320 worlds / 6,307,840 world-steps**, equally planned
+  across five arms. The [lower](/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01/evidence/gpu/source-order-coupling-lower-cpu-gpu.json)
+  and [higher](/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01/evidence/gpu/source-order-coupling-higher-cpu-gpu.json)
+  comparisons passed **16,006,708,960 state/field scalar comparisons combined**,
+  at unchanged tolerances, with exact frozen-reader decision agreement and zero
+  paired-contrast backend differences. Conservation/domain, full recordings,
+  restart/reordering/partition and historical checks passed. Disconnected histories
+  reproduce the source; connected cases share initial states but can evolve
+  differently immediately. These reuse the same 32 joint input cases per condition
+  for paired parameter transfer, not fresh-strength validation or independent
+  biological replication. No broader BETSE equivalence or biological claim follows.
+
+  **Whole L4 phase: 44.34% GPU busy and 15.04% measured SM-active**, with over
+  **99.9999% busy coverage and 100% SM coverage**, across **2.890 GPU-hours**.
+  These averages include compilation, host comparisons and archive handling;
+  per-arm timings remain in the panel reports. Artifacts/cache occupy **69.08 GB**
+  and peak child RSS was **1.77 GB**. The
+  [completion review](/mnt/workspaces/Cells/source-order-coupling-transfer-development-20261017-01/completion-status-20261017.json)
+  checked all 72 required reports against the completion manifest, exact test
+  inventories/skips and all 1,024 unchanged source files. This status review did
+  not repeat the full archive audit or launch another simulation. The weaker
+  condition's diagnosis and completed channel-compensation pilot are recorded above.
+
+- **Fresh-strength pulse confirmation completed at 20:02:20 UTC on 16 October.**
+  **The primary target is met: 32/32 fresh joint cases correctly resolve both
+  location and source order**, with matched calibration at all three timesteps
+  on CPU and L4. The [readouts](/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01/evidence/gpu/source-order-pulse-confirmation-readouts.json)
+  retain every case, control and comparator. Primary **128/160/320-us** and
+  spanning **128/256/512-us** observations both give **32/32**; late-only
+  **320/384/512 us** gives **23/32**, with nine paired gains and no regressions
+  for primary versus late-only. Single-task arms give **16/16 each**; no-cue,
+  disconnected and input-only readers remain unresolved.
+
+  The weakest primary score is **2.139881 nV**, **0.139881 nV above the fixed
+  2-nV margin**. All 64 joint task scores meet the declared finest-step stability
+  checks; the largest finest-step change is **0.015210 nV**, without a continuum
+  error bound. The [protocol](validation/assays/source_order_long/pulse_confirmation_protocol.json)
+  froze **104-us onset separation**, second pulse **112–120 us**, unchanged dose,
+  five remote cells and 15 features before simulating eight new strengths
+  **0.403125–0.796875**. Only **0.4/0.6/0.8** fitted readers. This confirms strength
+  interpolation in one synthetic tissue. The earlier **29/32** remains a
+  separate cohort; backend/timestep repetitions are numerical checks, not
+  independent biological cases or a paired estimate of the pulse-timing effect.
+
+  **CPU: 16 passed and one expected GPU-only skip; L4: 17 passed.** Each backend
+  completed **660 worlds / 3,153,920 world-steps**, with equal work across five
+  arms. The [result](/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01/completion.json)
+  record **7,535 evidence entries, 33 required passing reports and 1,021 frozen
+  sources**. The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-source-order-pulse-confirmation-20261016-01/evidence/gpu/source-order-pulse-confirmation-cpu-gpu.json)
+  passed **8,003,354,480 scalar comparisons** at unchanged tolerances, with exact
+  reader-decision agreement. Conservation/domain, bitwise restart/reordering/
+  partition, **1,672 historical window comparisons**, **117,576 feature scalars**
+  and **90 calibration readers** passed. All 220 paired contrasts missing the
+  finest-step stability criterion belong to disconnected controls below the
+  declared signal floor; active-arm contrasts meet it.
+
+  Total elapsed time was **4 h 33 min**, exceeding the **3–4 h** estimate.
+  **Whole L4 phase: 28.20% GPU busy and 9.67% measured SM-active**, with over
+  **99.99% coverage**, across **2.248 GPU-hours** including compilation, host
+  checks and archive handling. Per-arm kernel execution was **537–584 s**;
+  total batch time was **1,211–1,512 s**, including **557–880 s** in archive
+  handling. The CPU/L4 comparison took **19 min 17 s**. Artifacts/cache occupy
+  **34.51 GB** and peak child RSS was **1.77 GB**.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-pulse-confirmation-development-20261016-01/preparation.json)
+  retains nine passing preflight checks. The
+  [completion status](/mnt/workspaces/Cells/source-order-pulse-confirmation-development-20261016-01/completion-status-20261017.json)
+  binds the reviewed reports and records per-case minima, controls, timings and
+  scope; no full archive audit or new simulation was run for this status check.
+  That worker has exited. Its passing cohort and archived readers remain frozen
+  as the reference for the paired coupling-transfer study recorded above.
+
+- **Pulse-spacing calibration completed at 13:55:22 UTC on 16 October**, in
+  **1 h 22 min** including finalization. **CPU: 16 passed and one expected
+  GPU-only skip; L4: 17 passed.** The
+  [result](/mnt/workspaces/Cells/two-task-source-order-pulse-spacing-20261016-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-pulse-spacing-20261016-01/completion.json)
+  record **2,096 evidence entries and 34 required passing reports**, with
+  **1,018 frozen sources**. Each backend completed **180 calibration worlds and
+  860,160 world-steps**, following the
+  [protocol](validation/assays/source_order_long/pulse_spacing_protocol.json).
+  [Preparation](/mnt/workspaces/Cells/source-order-pulse-spacing-development-20261016-01/preparation.json)
+  retained 10 passing checks, clean lint and full baseline authentication.
+
+  **The later second pulse improves fitted calibration separation:** the fixed
+  **128/160/320-us** primary score rises **1.953404 → 2.133483 nV (+9.219%)**,
+  placing the minimum across both tasks, relevant arms and all three timesteps
+  **0.133483 nV above the unchanged 2-nV margin**. CPU and L4 scores and choices
+  agree exactly. The
+  [selection](/mnt/workspaces/Cells/two-task-source-order-pulse-spacing-20261016-01/evidence/gpu/source-order-pulse-spacing-selection.json)
+  freezes **104-us onset separation**, moving the second pulse from **104–112
+  to 112–120 us** at unchanged width, per-source dose, observation support and
+  reader. Comparator scores rise **1.854889 → 2.026129 nV** for spanning
+  observations and **1.447416 → 1.590572 nV** for late-only observations; neither
+  enters selection. **No held-out cases were evaluated: the prior 29/32 result
+  remains unchanged.** Fitted-curve geometry is not a continuum or noise bound.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-source-order-pulse-spacing-20261016-01/evidence/gpu/source-order-pulse-spacing-cpu-gpu.json)
+  passed **2,182,733,040 state/field scalar comparisons** at unchanged tolerances.
+  Conservation/domain, bitwise restart/reordering/partition, **480 historical
+  window comparisons** and **38,340 unchanged feature scalars** passed. No-cue
+  and disconnected calibration readers remain unresolved. All 57 paired
+  contrasts missing the finest-step stability criterion belong to disconnected
+  controls below the declared reader scale; active-arm contrasts meet it.
+
+  **Whole L4 phase: 28.63% GPU busy and 9.65% measured SM-active**, both with
+  **over 99.95% coverage**, across **0.651 GPU-hours**. These include compilation,
+  host checks and archive handling. Per-arm kernel execution was **131–133 s**;
+  total batch time was **266–365 s**, including **114–205 s** in archive handling.
+  The [completion status](/mnt/workspaces/Cells/source-order-pulse-spacing-development-20261016-01/completion-status-20261016.json)
+  binds the reviewed reports and records scores, checks and timings; it does
+  not rerun the full archive audit. That worker has exited. The fresh-strength
+  confirmation of this frozen timing is recorded above.
+
+- **Selected-schedule diagnosis completed at 11:58:37 UTC on 16 October**, in
+  **6 min 1 s**. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-selected-diagnosis-20261016-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-selected-diagnosis-20261016-01/completion.json)
+  authenticate **7,535 evidence files, 1,012 unchanged sources and 33 required
+  passing reports**. All six panels, seven reader modes, fixed shuffles, both
+  paired comparisons and reference-transfer reports replay exactly. CPU and
+  saved L4 diagnoses are identical. No simulation or new reader candidate ran.
+
+  **The three unresolved cases compete with opposite source order at a
+  different strength, at the same location.** Supplying true strength as a
+  diagnostic probe resolves **32/32**; supplying true location leaves **29/32**.
+  Moving observations onto their known fitted curve gives **29/30/30** resolved
+  cases across the three timesteps. That probe uses unavailable true labels and
+  strength; it does not improve the accepted **29/32** result. Its extra finest-step
+  case clears the margin by only **0.000104 nV**. The actual weakest-case deficit
+  is **0.007081 nV**, against a finest-step score change of **0.006029 nV**;
+  numerical sensitivity remains relevant, without a continuum-accuracy claim.
+  The other two deficits are **0.045746 and 0.012165 nV**, with corresponding
+  step changes **0.003175 and 0.003941 nV**.
+
+  The gain is source-order 1 at strength **0.409375**: its incumbent-to-selected
+  score rises **1.977897 → 2.040669 nV**. The regression is source-order 1 at
+  **0.509375**: **2.046131 → 1.987835 nV**. Both have location 0, and both paired
+  outcomes persist across all three timesteps. The timing change trades which
+  cases clear the margin; it does not resolve the remaining strength ambiguity.
+
+  The diagnosis motivated the
+  [pulse-spacing plan](validation/assays/source_order_long/pulse_spacing_plan.json);
+  its implementation and launch are recorded above. It tests a physical
+  encoding change at unchanged dose, without guaranteeing full resolution.
+
+  The [implementation](validation/assays/source_order_selected_diagnostic.py)
+  reuses the existing geometry and timestep probes, adding identity-checked
+  gain/regression summaries. [Preparation](/mnt/workspaces/Cells/source-order-selected-diagnosis-development-20261016-01/preparation.json)
+  records **29 passing targeted checks**, clean lint and the preserved initial
+  test-fixture failure. The
+  [completion review](/mnt/workspaces/Cells/source-order-selected-diagnosis-development-20261016-01/completion-review.json)
+  retains per-case scores, competing strengths, timestep sensitivity and source
+  bindings. This saved-response diagnosis itself used no GPU workload and has
+  no utilization measurement.
+
+- **Fresh-strength confirmation completed at 18:23:03 UTC on 15 October**, in
+  **3 h 39 min** including finalization. **CPU: 16 passed and one expected
+  GPU-only skip; L4: 17 passed.** The
+  [result](/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01/completion.json)
+  record **7,535 evidence entries**, following the
+  [protocol](validation/assays/source_order_long/selected_protocol.json) and
+  [registration](/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01/registration.json)
+  freezing **1,012 sources**. Each backend completed **660 worlds and 3,153,920
+  world-steps**. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01/evidence/gpu/source-order-selected-cpu-gpu.json)
+  passed **8,003,354,480 scalar comparisons** at unchanged tolerances, with
+  exact decision agreement. Conservation/domain, bitwise replay, restart,
+  reordering, partition and historical-reproduction checks passed.
+
+  **Confirmed outcome:** **128/160/320-us observations resolve both tasks in
+  29/32 fresh joint cases**, matching **29/32** for **128/256/512 us** on the
+  same cohort, with **one gain and one regression**. Late-only **320/384/512 us**
+  gives **20/32**; selected versus late-only has **nine gains and no regressions**.
+  Both backends agree across all three timesteps. Location resolves **32/32**,
+  single-task arms resolve **16/16 each**, and no-cue/disconnected readers remain
+  unresolved. The three remaining source-order cases have correct forced
+  predictions but finest-step score magnitudes of **1.954–1.993 nV**, below the
+  unchanged **2-nV margin**. Finest-step scores and decisions meet stability
+  checks. The **32/32 joint target remains unmet**: the calibration geometry
+  gain did not increase this cohort's resolved count. Eight new strengths
+  **0.409375–0.790625**, the same five remote cells and the same 15-feature budget
+  keep this comparison separate from the earlier frozen cohort.
+
+  **Whole L4 qualification phase:** **33.51% GPU busy, 11.40% measured SM-active**,
+  both with **over 99.98% coverage**, over **1.906 GPU-hours**. These averages
+  include compilation, archive handling and host checks. Per-arm kernel
+  execution was **467–486 s**; total batch time was **918–1,204 s**, including
+  **381–660 s** in archive handling. The CPU/L4 comparison alone took
+  **21 min 33 s**. These are single-L4 measurements, without a multi-GPU scaling
+  claim. Recorded artifacts/cache occupy **34.51 GB**, and peak child RSS was
+  **1.70 GB**.
+
+  [Completion status](/mnt/workspaces/Cells/source-order-selected-development-20261015-01/completion-status-20261016.json)
+  records the requested review, report-to-manifest bindings, outcomes, timings
+  and utilization; it does not rerun the archive audit. The
+  [preflight](/mnt/workspaces/Cells/source-order-selected-development-20261015-01/preparation.json)
+  retained **nine passing checks** and the prior evidence/source authentication.
+  The worker has exited and the L4 is idle. The completed saved-response
+  diagnosis and next experimental design are recorded above.
+
+- **Calibration-only observation-schedule study completed at 14:15:44 UTC on
+  15 October**, in **4 min 32 s**, following **32 passing targeted checks** and
+  a clean lint check. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-observation-design-20261015-01/result.json),
+  [frozen selection](/mnt/workspaces/Cells/two-task-source-order-observation-design-20261015-01/selection.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-observation-design-20261015-01/completion.json)
+  bind the comparison to **7,533 authenticated evidence files, 1,004 unchanged
+  sources and 31 required passing reports**. Both saved backends independently
+  select **128/160/320 us** from all **35 schedules**, with identical candidate
+  reports and no tie. Each backend loads **720 calibration arrays**, with
+  **zero held-out response arrays decoded or evaluated**.
+
+  The worst opposite-label fitted-curve half-distance improves from
+  **1.854889 nV** for 128/256/512 us to **1.953404 nV** (**5.31%**); late-only
+  320/384/512 us gives **1.447416 nV**. This uses the same five remote cells,
+  15 features, calibration strengths and **2-nV reader margin**. The limiting
+  pair is joint source order at location 0: strength **0.4** competes with
+  opposite-order strength **0.47117**, at the coarsest timestep. The selected
+  schedule's joint-order minimum remains **1.953–1.955 nV** across timesteps,
+  below the margin. Thus this is a reproducible geometric improvement, without
+  full-range fitted-curve separation or a new confirmed accuracy result.
+  Calibration-only no-cue/disconnected controls remain unresolved throughout;
+  their largest absolute score is **0.001500 nV** and they do not enter ranking.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-observation-design-development-20261015-01/preparation.json)
+  covers closed-segment geometry, time/cell identity, the 35-schedule grid,
+  fixed ties, backend disagreement reporting and unchanged rankings when
+  held-out arrays and metadata are removed or made inaccessible. The
+  [implementation](validation/assays/source_order_observation_design.py)
+  uses saved observed voltages, avoiding the legacy reconstruction helper.
+  [Inputs](/mnt/workspaces/Cells/two-task-source-order-observation-design-20261015-01/inputs.json),
+  [log](/mnt/workspaces/Cells/source-order-observation-design-development-20261015-01/analysis.log)
+  and [completion review](/mnt/workspaces/Cells/source-order-observation-design-development-20261015-01/completion-review.json)
+  retain the rule, code, checks and selected-schedule binding. No simulation or
+  new GPU workload ran; there is no new utilization measurement.
+
+  The separate CPU/L4 confirmation on new strengths, including weak cues near
+  0.4, is recorded above. The existing **29/32 versus 20/32** result and all
+  unresolved cases remain unchanged. The geometric gain does not promise that
+  every fresh case will clear the margin.
+
+- **Saved-response diagnosis completed at 13:40:33 UTC on 15 October**, in
+  **5 min 25 s**. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-spanning-diagnosis-20261015-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-spanning-diagnosis-20261015-01/completion.json)
+  authenticate **7,533 evidence files, 1,004 unchanged sources and 31 required
+  passing reports** from the fresh-strength experiment. All five observation
+  panels, seven reader modes, fixed shuffles, paired comparisons and
+  reference-assisted reports replay exactly. CPU and saved L4 diagnoses are
+  identical. The [diagnostic](validation/assays/source_order_spanning_diagnostic.py)
+  uses saved voltage features; no simulation or new reader candidate ran.
+
+  **All three unresolved cases compete with the opposite order at the same
+  location but a different strength.** Supplying true strength as a diagnostic
+  probe resolves **32/32**, while supplying true location leaves **29/32**, at
+  every timestep. Moving each response onto its known calibration curve also
+  leaves **29/32**. At the finest step, the three true-curve scores remain
+  **1.889–1.945 nV**, below the unchanged **2-nV margin**. The finest-step score
+  changes are **0.0017–0.0080 nV**, compared with margin deficits of
+  **0.0649–0.1149 nV**. These probes support improving separation of order from
+  unknown strength; they do not provide a new decoder result or a continuum
+  bound. The accepted **29/32 versus 20/32** comparison remains unchanged.
+
+  The [declared study plan](validation/assays/source_order_long/calibration_observation_plan.json)
+  fixes **35 three-time schedules** drawn from seven already-recorded times
+  after both cues. It ranks them using **calibration cases only**, by the
+  worst separation of opposite-label fitted curves across tasks and timesteps,
+  retaining the same five remote cells, 15 features and margin. The schedule
+  must be frozen before any later evaluation analysis; another confirmation
+  requires new strengths, including weak cues. The
+  [plan check](/mnt/workspaces/Cells/source-order-spanning-diagnosis-development-20261015-01/design-plan-check.json)
+  verified the candidate grid, feature budget and evidence bindings. The
+  implementation, independent checks and comparison are recorded above.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-spanning-diagnosis-development-20261015-01/preparation.json)
+  records **23 passing checks and one legacy reconstruction failure**: the old
+  `unstimulated_diagnostic.voltage_history` helper still uses pre-repair charge
+  arithmetic and differs from the current field by up to **4.52e-13 V** in its
+  exact-equality test. This analysis uses recorded voltage features directly
+  and does not call that helper. The failed evidence is preserved; updating
+  the helper remains a separate maintenance item.
+
+- **Fresh-strength confirmation passed CPU/L4 validation at 21:36:09 UTC on
+  14 October; evidence finalization completed at 21:39:00 UTC**, after
+  **2 h 28 min 36 s** from launch. The
+  [run](/mnt/workspaces/Cells/two-task-source-order-spanning-20261014-01/launch.json)
+  froze **1,004 sources and 16 checks per backend** under the
+  [execution protocol](validation/assays/source_order_long/spanning_protocol.json).
+  CPU passed **15 checks with one expected GPU-only skip** in **1 h 00 min 54 s**;
+  L4 passed **all 16 checks** in **1 h 24 min 41 s**. Both completed **660 worlds
+  and 3,153,920 world-steps**, with **630,784 world-steps per arm**. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-spanning-20261014-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-spanning-20261014-01/completion.json)
+  are present, no failure artifact was issued, and the worker has exited.
+
+  **The new-strength result confirms an improvement, with three cases still
+  unresolved.** Early/late observations at **128/256/512 us** resolve both tasks
+  in **29/32 cases**, versus **20/32** for late-only **320/384/512-us** observations:
+  **nine gains, zero regressions**, at all three timesteps on both backends.
+  Location resolves **32/32**. Both panels use the same trajectories, 15 remote
+  voltages, calibration and **2-nV margin**. All forced joint predictions are
+  correct, but worlds **432030, 432031 and 432041** have order-score magnitudes
+  **1.885–1.935 nV** at the finest step, below the required margin. These are weak
+  cues at strengths **0.41875 and 0.46875**; the all-32-cases target remains unmet.
+  Finest-step score/decision stability passes. Single-task controls each resolve
+  **16/16**, while no-cue and disconnected controls remain unresolved. This is
+  deterministic strength generalization in the same synthetic tissue.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-source-order-spanning-20261014-01/evidence/gpu/source-order-spanning-cpu-gpu.json)
+  passes for **8,003,354,480 scalar values**, with unchanged tolerances and exact
+  reader-decision agreement. Each backend passes **1,672 bitwise history
+  comparisons**, **97,980 exact feature values**, **75 unchanged calibration
+  readers**, and restart/reordering checks. Maximum material error remains below
+  **0.007 of budget**. Production physics is unchanged; accepted native BETSE
+  evidence remains the calibration reference. The
+  [requested status review](/mnt/workspaces/Cells/source-order-spanning-development-20261014-01/status-20261015-132059.json)
+  authenticated result/registration bindings and **40 summary files**, including
+  **31 required passing reports**; it did not repeat the full archive comparison.
+
+  Whole L4-phase averages were **45.47% GPU-busy** and **15.37% measured
+  SM-active**, with approximately **100% and 99.97% coverage**, over **1 h 24 min
+  43 s** (**1.4120 GPU-hours**). These include compilation, host checks and archive
+  I/O. GPU execution time per arm was closely matched at **452.88–453.09 s**;
+  total arm times were **13 min 06 s–16 min 09 s**, with additional archive/check
+  time in the no-cue arm. These are sequential L4 measurements, not concurrent
+  multi-GPU results. The saved-response diagnosis is recorded above.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-spanning-development-20261014-01/preparation.json)
+  completed **eight distinct checks** without simulating fresh responses.
+  Seven passed initially; the resource check found the **119.26-GiB uncompressed
+  archive estimate** exceeded the provisional 96-GiB cap. The
+  [recorded correction](/mnt/workspaces/Cells/source-order-spanning-development-20261014-01/resource-revision.json)
+  raises the cap to **144 GiB**, with about **408 GiB free** before launch.
+  The [targeted recheck](/mnt/workspaces/Cells/source-order-spanning-development-20261014-01/preflight-02/pytest.xml)
+  passed; the original failed log and check remain preserved. Complete unchanged
+  calibration/null histories, common pre-cue histories, CPU/L4 agreement,
+  conservation and bitwise restart/reordering checks are required in the run.
+  Outputs stay under `/mnt/workspaces/Cells`; no automatic follow-up is scheduled.
+
+- **Saved-response diagnosis completed at 17:50:11 UTC on 14 October** in
+  **6 min 21 s**, following **24 targeted checks**. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-long-diagnosis-20261014-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-long-diagnosis-20261014-01/completion.json)
+  bind the analysis to the accepted precision repair: **4,887 evidence files**,
+  **998 unchanged sources** and **69 required passing reports** authenticated.
+  All four original readout panels and reference-assisted reports replay
+  exactly; CPU and saved L4 diagnostic results are also identical. No new
+  simulation or GPU workload ran.
+
+  **The remaining late-only ambiguity is between source order and cue strength.**
+  All eight unresolved order cases compete with the opposite order at the same
+  location but another strength. Supplying the true location still resolves
+  **8/16**; supplying the true strength resolves **16/16**, at every timestep.
+  Moving observations onto their known calibration curves still resolves only
+  **8/16**, so interpolation error does not explain the missing cases. These
+  are diagnostic probes using unavailable information, not new reader results.
+
+  One explicitly exploratory panel at **128/256/512 us**, using the same **15
+  remote-cell voltages**, unchanged reader and **2-nV margin**, resolves both
+  tasks in **15/16 cases** on all three timesteps and both saved backends.
+  Location resolves **16/16**; single-task controls resolve **8/8** each; no-cue
+  and disconnected controls remain unresolved. World **412031** still fails
+  the margin, with finest-step order score **1.858 nV**. All original cases,
+  shuffles and the original **8/16 late-only primary result** remain recorded.
+  This improvement on already-inspected cases is not a fresh confirmation.
+
+  The [saved confirmation design](validation/assays/source_order_long/spanning_confirmation_plan.json)
+  fixed eight new strengths across both calibration intervals, including weak
+  cues near 0.4, before generating any of their responses.
+  [Design checks](/mnt/workspaces/Cells/source-order-long-diagnosis-development-20261014-01/confirmation-plan-check.json)
+  verified the disjoint strengths, identities, counts and evidence bindings
+  without simulating responses. Its implementation, resource-cap correction
+  and launch are recorded above; the saved design remains unchanged.
+
+- **Charge-precision repair passed full CPU/L4 validation at 14:47:59 UTC on
+  14 October**, after **2 h 28 min 43 s**; evidence finalization completed at
+  **14:50:45 UTC**. The detached
+  [run](/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01/launch.json)
+  launched at **12:19:15 UTC**, freezing **998 sources and 35 checks per backend**.
+  CPU passed **34 checks with one expected GPU-only skip** in **1 h 15 min 56 s**;
+  L4 passed **all 35 checks** in **1 h 12 min 35 s**. Both completed all **420
+  assay worlds**, or **2,007,040 world-steps per backend**. The previously failing
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01/evidence/gpu/source-order-long-cpu-gpu.json)
+  now passes for **5,093,043,760 scalar values**, with unchanged tolerances.
+  [Result](/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01/completion.json)
+  are present; no failure artifact was issued. The
+  [requested status review](/mnt/workspaces/Cells/source-order-long-numerics-20261014-01/status-20261014-173500.json)
+  verified the result/registration bindings and **75 completed JSON report
+  hashes**. It did not repeat the completed runner's full archive comparison.
+
+  All **18 native BETSE reference comparisons passed on each backend**:
+  **64,038,912 values per backend**, with maximum error **0.3086 of budget on
+  CPU** and **0.3090 on L4**. The corresponding **64,092,516 CPU/L4 values**
+  also pass. The primary scientific result remains **16/16 location cases**
+  and **8/16 source-order/both-task cases** above the unchanged margin at all
+  three timesteps on both backends. All **960 matched/frozen reader comparisons**
+  have identical CPU/L4 scores and decisions. Longer observation has therefore
+  not met the combined-task target, despite successful numerical validation.
+  The completed diagnosis and controlled follow-up design are recorded above.
+
+  All **980 older prefix-window comparisons** and **89,460 earlier feature
+  values per backend** pass their physical tolerances; they are no longer
+  bitwise identical. Earlier reader-decision changes are confined to the
+  disconnected control (**29 CPU and 28 L4 comparison groups**); the earlier
+  primary joint decisions remain unchanged. New restart, windowing, reordering
+  and partition checks pass bitwise. Maximum material error remains below
+  **0.007 of budget**.
+
+  Whole L4-phase averages were **34.10% GPU-busy** and **11.68% measured
+  SM-active**, both with approximately **100% coverage**, over **1 h 12 min 39 s**
+  (**1.2107 GPU-hours**). The
+  [telemetry](/mnt/workspaces/Cells/two-task-source-order-precision-20261014-01/gpu-metrics/result.json)
+  includes compilation, host verification and archive I/O; no single warmed
+  interval is defined. Sequential GPU arm totals range from **10 min 11 s to
+  11 min 26 s**; these are not measurements of concurrent multi-GPU execution.
+
+  The [archive audit](/mnt/workspaces/Cells/source-order-long-numerics-20261014-01/full-archive-audit.json)
+  compared **5,093,043,760 scalar values** and authenticated **4,760 archive
+  inputs**. Failures were confined to the activation gate in **30 of 420 worlds**;
+  every other state/field passed its existing tolerance. The first failure was
+  joint world **412043**, at **473.25 us** with **0.125-us** steps. The worst gate
+  discrepancy was **1.1059 times its allowed error**. Higher-precision replay
+  and focused experiments traced this to cancellation in the ionic charge sum
+  driving voltage; changing the gate recurrence alone did not resolve it.
+
+  [Compensated charge summation](src/cells/numerics/betse_spatial.py) now sums
+  signed concentrations before multiplying by Faraday's constant, with compiler
+  barriers retaining the cancellation residuals. This is the same physical
+  equation; no physical parameter, control, gate law, clock, state or tolerance
+  changed. It is the **only production file changed**. In three representative
+  failing worlds, every corrected CPU/L4 state/field comparison passed; the
+  largest gate discrepancy fell below **0.5% of its allowed error**. A difference
+  from one already-failed original L4 history remains explicitly recorded.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-long-numerics-20261014-01/preparation.json)
+  passed **10 checks in 3 min 54 s**, including independent **80-digit Decimal**
+  charge answers, compiled cancellation cases, assay input/resource checks and
+  evidence authentication. A corrected 512-us native BETSE comparison passed
+  for **6,098,944 values**, with maximum error **0.2711 of budget**. The full run
+  compared against all 18 authenticated native captures using unchanged tolerances.
+
+  The [repair protocol](validation/assays/source_order_long/precision_protocol.json)
+  retains the same assay cases, pulses, observations, reader and **2-nV margin**.
+  Older accepted 256-us prefixes must satisfy their existing physical tolerances;
+  exactness and every earlier reader-decision difference are reported separately.
+  New restart/reorder/partition checks remain bitwise. Original failed evidence
+  stays frozen. Both GPU-busy and measured SM-active, their coverage and arm
+  timings are recorded. Outputs remain under `/mnt/workspaces/Cells`; the worker
+  has exited and no automatic follow-up is scheduled.
+
+- **512-us source-order follow-up failed its final CPU/L4 comparison at
+  01:06:00 UTC on 14 October**, after **2 h 3 min 30 s**. CPU passed **14
+  tests with one expected GPU-only skip** in **58 min 55 s**. L4 completed all
+  **420 simulation worlds**, then finished with **14 passed, one failed** in
+  **1 h 4 min 23 s**. The
+  [failure artifact](/mnt/workspaces/Cells/two-task-source-order-long-20261013-01/failure.json),
+  [pytest failure](/mnt/workspaces/Cells/two-task-source-order-long-20261013-01/gpu.stdout.log)
+  and [requested status verification](/mnt/workspaces/Cells/source-order-long-development-20261013-01/failed-status-20261014-01.json)
+  preserve the outcome. **No result/completion certificate was issued.**
+
+  The first reported mismatch is the dimensionless channel activation variable
+  `active__m_gate`: **1,184 of 30,750 values** in the reported chunk exceed
+  `atol=2e-13, rtol=2e-12`, with maximum absolute discrepancy among those
+  violations **7.54674101e-13**. The comparison stopped there; this is not a
+  full-archive maximum from that stopped comparison. The subsequent complete
+  audit, diagnosis and correction are recorded above. Tolerances and the frozen
+  failed evidence remain unchanged.
+
+  **Preliminary scientific result:** at the later observations, location clears
+  the unchanged margin in **16/16** joint cases, but source order and both tasks
+  together clear it in **8/16**, on both backends at all three timesteps. Forced
+  predictions are correct for all 16; eight source-order scores remain below
+  the required margin. Score stability and decisions agree across the finest
+  timesteps. Thus longer observation alone has not met the combined-task target;
+  the earlier primary resolved both tasks in 11/16 at the finest step. Single-task
+  controls still resolve **8/8** each. Both backends reproduced all **980 old
+  history-window comparisons bitwise**, all **89,460 earlier feature values**
+  exactly, and the complete earlier reader reports. Material error remains below
+  **0.007 of budget**. These partial scientific reports survive the failed final
+  acceptance check; complete CPU/L4 agreement is not certified.
+
+  Whole L4-phase averages were **35.80% GPU-busy** and **13.00% measured SM-active**,
+  both with **100% coverage**, over **1 h 4 min 28 s** (**1.0745 GPU-hours**).
+  [Telemetry](/mnt/workspaces/Cells/two-task-source-order-long-20261013-01/gpu-metrics/result.json)
+  includes compilation, host verification and archive I/O; no single warmed
+  interval is defined. That worker exited without an automatic retry.
+
+  The experiment launched at **23:02:29 UTC on 13 October**. Its
+  [registration](/mnt/workspaces/Cells/two-task-source-order-long-20261013-01/registration.json)
+  froze **994 source files and 15 checks**. The status verification confirmed
+  those sources unchanged, both test inventories, all **28 earlier passing
+  reports** unchanged and the telemetry hashes. It did not repeat the full
+  state-archive comparison. The earlier
+  [in-progress snapshot](/mnt/workspaces/Cells/source-order-long-development-20261013-01/status-20261014-010344.json)
+  remains preserved.
+
+  The [protocol](validation/assays/source_order_long/protocol.json) fixes new
+  primary observations at **320/384/512 us**, with the same pulses, per-source
+  doses, strengths, reader, **15 unstimulated-cell voltages** and **2-nV margin**.
+  It asks whether longer observation separates the previously overlapping
+  responses. These are reused cases in a paired follow-up, not fresh holdouts.
+  Complete histories and restart/partition checks extend through 512 us.
+  Scientific resolution remains separate from numerical acceptance.
+
+  [Preparation](/mnt/workspaces/Cells/source-order-long-development-20261013-01/preparation.json)
+  passed **seven host checks in 1 min 40 s**, including predecessor authentication,
+  exact physical inputs/doses, resource bounds and synthetic reader/archive checks.
+  All **991 preceding sources** remain unchanged; no response simulation ran
+  before registration. Each backend has **2,007,040 world-steps**, equally divided
+  across five arms (**401,408 each**). Actual arm timings, both utilization
+  measurements, complete state archives and failure logs remain under
+  `/mnt/workspaces/Cells`.
+
+- **512-us dynamic-junction qualification completed at 21:24:26 UTC on 13 October**,
+  after **2 h 44 min 29 s**; evidence finalization finished at **21:24:37 UTC**.
+  The [result](/mnt/workspaces/Cells/betse-junction-runtime-20261013-02/result.json),
+  [completion](/mnt/workspaces/Cells/betse-junction-runtime-20261013-02/completion.json)
+  and [completed-status check](/mnt/workspaces/Cells/junction-runtime-512-development-20261013-01/completed-status.json)
+  preserve the outcome. CPU passed **365 tests with two expected GPU-only skips**
+  in **2 h 4 min 5 s**; L4 passed **all 367** in **39 min 48 s**. No failure
+  artifact or worker/test stderr output was produced. The read-only completion
+  check verified **378 evidence hashes, 991 frozen/current sources and 104
+  required passing reports**, including the test inventories and telemetry.
+
+  All **18 native BETSE observed/bare pairs** completed. Each backend passed
+  **64,038,912 native state/field comparisons** through 512 us, with unchanged
+  physical tolerances; maximum error was **0.3922 of budget** across CPU/L4.
+  Material error stayed below **0.007 of budget**. The direct CPU/L4 comparison
+  passed for **64,092,516 scalar values**. All twelve original 64-us and eighteen
+  256-us ordinary-runtime prefixes were **bitwise identical** on each backend.
+  Native trace prefixes also matched bitwise, excluding the duration-dependent
+  native sample labels; completed-step controls remained exact. All fourteen
+  state arrays passed disk restart, windows, changed-future branches and world
+  reordering/partition checks, including **64/256-to-512-us continuations**.
+
+  **The configured dynamic-junction runtime is now qualified through 512 us**
+  for these six fixed synthetic cases at **1/0.5/0.25-us timesteps**. This retains
+  BETSE's per-moving-ion junction clock, maintained ATP/ADP/Pi and one Kv1p5
+  population; it adds no longer-time, spatial-convergence or new temporal-order
+  claim. Half-block remains the timestep-dependent native prescription. The
+  [preparation](/mnt/workspaces/Cells/junction-runtime-512-development-20261013-01/preparation.json)
+  preserves 62 passing host checks, the CPU smoke, and the initial rejected
+  padded-storage estimate and its correction. Physics and tolerances are unchanged.
+
+  Whole L4-phase averages were **1.69% GPU-busy** and **0.573% measured SM-active**,
+  with **99.99997% / 100% coverage** respectively, over **40 min 4 s**. These
+  include compilation, host verification, restart/I/O checks and idle intervals;
+  no single warmed interval is defined. GPU-phase use was **0.6677 GPU-hours**.
+
+- **Saved-data source-order diagnosis completed at 17:47:35 UTC on 13 October**,
+  after **3 min 22 s** on CPUs 4/5 with an attached watcher. The
+  [result](/mnt/workspaces/Cells/two-task-source-order-diagnosis-20261013-01/result.json),
+  [completed-status check](/mnt/workspaces/Cells/source-order-diagnosis-development-20261013-01/completed-status.json)
+  and [diagnostic figure](/mnt/workspaces/Cells/source-order-diagnosis-development-20261013-01/source-order-diagnosis.png)
+  preserve the findings. The
+  [preparation](/mnt/workspaces/Cells/source-order-diagnosis-development-20261013-01/preparation.json)
+  passed **39 checks: 11 new known answers and 28 inherited checks**. Full
+  predecessor authentication verified **989 sources, 2,853 evidence hashes and
+  29 passing reports**. All preceding sources and the two diagnostic sources
+  remain unchanged. No simulation or GPU workload ran.
+
+  **The joint task is limited by overlapping remote responses.** At the finest
+  timestep, the mean location and order contrasts have cosine similarity
+  **0.9596–0.9598**. Reversing both labels can therefore produce similar
+  observations. Four weak cases (**412031/32 and 412041/42**) have a nearest
+  competing curve with both labels reversed. The weakest pair, **412031/32**,
+  is separated by only **3.371 nV L2** across the 15 primary features, below
+  the **4-nV necessary separation** for both opposite-label cases to clear
+  this reader's 2-nV margin. It remains below that condition at all three
+  timesteps. Pair distance is a necessary condition, not a sufficient decoder.
+
+  Strength ambiguity also matters. Supplying true strength in an oracle probe
+  resolves **14/16 for each task**; supplying the true other label resolves
+  **16/16 location and 13/16 order**. These probes use withheld information and
+  are not replacement readers. Moving observations onto their known calibration
+  curves changes finest-step scores by at most **0.0168 nV**, leaving the
+  **12 location / 11 order** counts unchanged. Case **412052** retains a weak
+  order score with a same-location, different-order/strength competitor.
+
+  The borderline case **412051** remains timestep-sensitive after no-cue
+  reference subtraction. Its middle-to-finest feature drift falls from
+  **49.463 nV** to **0.03152 nV L2**, but the signed score magnitude still moves
+  **1.997535 → 2.005961 nV** across the unchanged threshold. The existing
+  **11/16 joint**, and **10/16 joint at every timestep**, result remains fixed.
+  All original readers, shuffles and reference transfers replay with **zero
+  numeric difference** within each backend. Reconstructing **84 joint
+  trajectories per backend** reproduces patch observations exactly and reader
+  features within **6.94e-18 V**. CPU/L4 diagnostic counts and case identities agree.
+
+  **A longer observation window is now a supported follow-up hypothesis for
+  this source-order task:** the crossed-label remote contrast grows
+  **2.667–2.686 times from 192 to 256 us**, and its largest saved value occurs
+  at the 256-us endpoint. This describes the observed interval; it does not
+  establish growth beyond it. The method and limitations are in
+  [the assay document](docs/TWO_TASK_READOUT_ASSAY.md#location-allocation-and-source-pulse-order).
+  This motivates the **512-us runtime qualification above**, followed by a paired
+  source-order experiment with fixed later observations, unchanged pulses/doses
+  and the same margin. That experiment has not yet launched.
+
+- **Location and source-pulse order completed at 17:10:35 UTC on 13 October**,
+  after **65 min 6 s**; evidence finalization finished at **17:11:30 UTC**.
+  The [result](/mnt/workspaces/Cells/two-task-source-order-20261013-01/result.json),
+  [completion](/mnt/workspaces/Cells/two-task-source-order-20261013-01/completion.json)
+  and [completed-status check](/mnt/workspaces/Cells/source-order-development-20261013-01/completed-status.json)
+  preserve the outcome. CPU acceptance passed **14 tests with one expected
+  GPU-comparison skip in 31 min 30 s**; L4 passed **all 15 in 33 min 25 s**.
+  No failure artifact or stderr output was produced. All **989 current and
+  frozen sources**, **29 required reports**, XML inventories and telemetry
+  hashes passed the status check. Completion binds **2,853 evidence files**;
+  this status check did not re-read the full state archives.
+
+  **Scientific target remains unmet.** Both backends give correct forced
+  choices for both labels in **16/16** primary cases. At the fixed **2-nV**
+  margin, **12/16 location**, **11/16 source-order**, and **11/16 jointly** are
+  correct and resolved. Only **10/16** pass both tasks at every tested timestep.
+  Borderline case **412051** changes from **1.997535 nV** at the middle timestep
+  to **2.005961 nV** at the finest for both tasks. Scores meet the declared
+  change limits, but these resolution decisions change. The two single-task
+  arms each resolve **8/8**; disconnected and no-cue primary readouts resolve
+  none. Combining the tasks remains the weak point. This is the new
+  [source-order task](docs/TWO_TASK_READOUT_ASSAY.md#location-allocation-and-source-pulse-order),
+  preserving the preceding common early/late classification as a separate result.
+
+  Numerical acceptance covers **420 worlds and 1,003,520 world steps per
+  backend**, with equal steps per arm. The CPU/L4 comparison passed for
+  **2,547,081,320 scalar values** with unchanged tolerances. All **580**
+  historical comparisons per backend were bitwise equal, including **120**
+  unchanged full worlds and **300** common prefixes; unchanged features and
+  restart/reordering/partition replay also passed. Conservation remained
+  within budget. Primary decisions and joint shuffle metrics agree across
+  backends. One forced label differs in an alternative disconnected-arm
+  centroid reader, and two disconnected contrast stability flags differ;
+  these nonprimary discrepancies remain explicit in the saved comparison.
+
+  Baseline subtraction leaves matched distances, scores and decisions
+  **exactly unchanged** at all three timesteps on both backends. All nine
+  reference-assisted timestep transfers agree in CPU/L4 decisions; they
+  resolve **10 or 11 joint cases**, supplying target-timestep no-cue information.
+  They do not complete the primary target. The
+  [preparation](/mnt/workspaces/Cells/source-order-development-20261013-01/preparation.json)
+  fixed the new evaluation strengths before response simulation and passed
+  seven checks; all **986 predecessor assay and diagnostic sources** remain
+  unchanged.
+
+  Whole L4-phase utilization was **34.65% GPU-busy** and **12.53% measured
+  SM-active**, with **99.99999% / 99.9355% coverage**, respectively. These include
+  compilation, host checks and idle intervals; no single warmed interval is
+  defined. GPU-phase use was **0.5578 GPU-hours**. The L4 is now idle.
+
+  The saved-data diagnosis above follows up the five unresolved joint cases
+  and the shared timestep-borderline case.
+
+- **No-cue baseline transfer diagnosis completed at 14:49:26 UTC on 13 October**,
+  after **2 min 46 s**, with an attached watcher. The
+  [result](/mnt/workspaces/Cells/two-task-baseline-transfer-20261013-01/result.json)
+  and [completed-evidence check](/mnt/workspaces/Cells/baseline-transfer-development-20261013-01/completed-status.json)
+  preserve all nine timestep transfers on CPU and L4 saved data. The
+  [preparation](/mnt/workspaces/Cells/baseline-transfer-development-20261013-01/preparation.json)
+  passed **seven known-answer checks**. All **982 assay sources**, the preceding
+  diagnosis's **two sources**, and the **two new diagnostic sources** match their
+  saved hashes; predecessor authentication verified **2,849 evidence hashes and
+  25 passing reports**. No simulation or GPU workload ran.
+
+  **Shared background drift accounts for almost all of the apparent timestep
+  change in the joint evaluation features.** Between **0.125 and 0.0625 us**,
+  the no-cue background changes by **49.487 nV L2**. Raw joint-case drift is
+  **49.464–49.520 nV L2**; subtracting the reference leaves **0.02129–0.06203 nV**,
+  reducing its norm by **99.875–99.957%**. Both backends give these same ranges.
+  The reference is calibration control **314000** at each timestep; all **28
+  duplicate no-cue controls** match exactly. Stimulated responses, strengths
+  and evaluation labels do not fit the reference.
+
+  Reference-assisted transfer gives **16/16 correct forced choices for both
+  tasks in every timestep combination**, and **16/16 resolved location cases**.
+  For a coarsest-step reader applied to finest-step data, cases with both tasks
+  correct and resolved improve from **3/16 to 8/16**. Timing remains **8 or 9/16**
+  across transfers: borderline case **312043** scores **1.998862 nV** with the
+  coarsest reader and **2.002869 nV** with the middle-step reader on finest data.
+  These comparisons use a target-timestep no-cue control, not transfer without
+  target-domain information. Joint transfer counts and borderline scores agree
+  on CPU and L4; all control-arm outcomes remain in the result.
+
+  Matched calibration is **exactly invariant**: distances, scores and decisions
+  are unchanged for all five arms at all three steps on both backends. Original
+  matched/frozen-coarse reports also replay with **zero numeric difference**.
+  Therefore the original primary result stays **16/16 location and 9/16 timing**,
+  with only **eight timing cases** resolved at every tested step. This diagnoses
+  numerical background drift; it does not solve timing/strength ambiguity or
+  establish a continuum bound. The
+  [method and checks](docs/TWO_TASK_READOUT_ASSAY.md#wider-cue-separation-at-fixed-dose)
+  document that distinction. The source-order experiment above follows this
+  diagnosis; this early/late classification remains an incomplete result.
+
+- **Saved-data timing diagnosis completed at 14:19:00 UTC on 13 October**,
+  after **4 min 6 s** on CPUs 4/5. The
+  [result](/mnt/workspaces/Cells/two-task-cue-separation-diagnosis-20261013-01/result.json)
+  and [completed-evidence check](/mnt/workspaces/Cells/cue-separation-diagnosis-development-20261013-01/completed-status.json)
+  bind the saved inputs, diagnostic sources and reconstructed histories.
+  All **982 predecessor sources and two diagnostic sources** remain unchanged;
+  [preparation](/mnt/workspaces/Cells/cue-separation-diagnosis-development-20261013-01/preparation.json)
+  passed **21 host checks**. The diagnosis authenticated the preceding run's
+  **2,849 evidence hashes and 25 required reports**. No failure artifact or
+  stderr output was produced.
+
+  **Timing is strongly confounded with cue strength in this encoding.** On both
+  backends, all eight evaluation timing pairs exceed the necessary **4-nV**
+  separation, with feature distances **5.573–12.571 nV**. Nevertheless,
+  **83.96–95.69% of squared timing contrast** lies along the opposing curve's
+  local strength direction. The closest wrong-timing curve always keeps the
+  correct location label. Its projection reaches a calibration-segment endpoint
+  in **14/16 cases**, so the restricted calibration range also matters.
+  Removing the same-strength calibration residual in an oracle probe changes
+  scores by at most **0.02381 nV** and still resolves only **9/16** timing cases.
+  Known labels and strengths enter these probes only; they are not new readers.
+
+  The timing contrast peaks around **111.375–112.750 us**, near the late cue's
+  end, and decreases **1.11–2.57%** between 192 and 256 us. This observed interval
+  supplies no evidence that simply waiting longer will resolve timing. The
+  **seven unresolved cases and one timestep-borderline case remain unchanged**;
+  only **eight timing cases** clear the margin at all three tested steps.
+
+  The borderline case **312043** moves from **1.99423 to 2.00186 nV** between
+  the finest steps. Its voltage-feature change is **49.477 nV L2**. Holding the
+  earlier reader fixed changes its score by **-6.33191 nV**; changing calibration
+  then contributes **+6.33953 nV**. Reversing the order gives **+0.206615** and
+  **-0.198988 nV**. Both paths yield the same **+0.007626 nV** net change.
+  Matched-calibration score stability therefore does not establish fixed-reader
+  transfer across timesteps, and neither decomposition is a continuum bound.
+
+  All seven original reader modes, shuffles and matched/frozen reports across
+  three panels and three timesteps reproduce with **zero numeric difference**
+  within each backend. Reconstruction covers **84 joint histories per backend**:
+  saved patch voltages match exactly; area-weighted reader features differ by
+  at most **6.94e-18 V**, within the inherited replay tolerance. The
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#wider-cue-separation-at-fixed-dose)
+  describes these post-hoc limits. No new simulation or GPU workload ran;
+  the L4 remains idle and the original scientific target remains unmet.
+
+  **Next: use the saved no-cue controls to measure shared background drift and
+  test fixed-reader transfer after referencing that baseline.** This diagnostic
+  must preserve matched-reader scores and cannot itself remove timing/strength
+  ambiguity. A new cue/readout experiment must be specified separately before
+  claiming better timing discrimination. The subsequently authorized baseline
+  transfer diagnosis is completed above.
+
+- **The fixed-dose cue-separation assay completed at 05:25:05 UTC on 13 October**,
+  after **57 min 48 s**; evidence finalization finished at **05:26:05 UTC**.
+  The [result](/mnt/workspaces/Cells/two-task-cue-separation-20261013-01/result.json)
+  records **12 CPU passes / one expected GPU-comparison deferral** and
+  **13 L4 passes**, with **420/420 worlds complete on each backend** and no
+  failures or errors. CPU tests took **24 min 45 s**, L4 tests **32 min 54 s**.
+
+  The [completed-evidence check](/mnt/workspaces/Cells/cue-separation-development-20261013-01/completed-status.json)
+  authenticates **2,849 evidence hashes**, all **25 required passing reports**
+  and **982 unchanged current sources**, including all **141 production files**.
+
+  **Both backends confirm improved timing, but the complete two-task target
+  remains unmet.** At the fixed primary finest-step endpoint, location resolves
+  **16/16 cases** and timing **9/16**, up from **0/16 timing cases** in the prior
+  assay. Both tasks give **16/16 correct forced choices**. Location scores span
+  **2.399–8.479 nV** and timing **1.009–5.958 nV** against the fixed **2-nV margin**.
+  Eight timing cases clear the margin at both finest steps; one borderline case
+  moves from **1.9942 to 2.0019 nV**, changing resolved status without changing
+  its predicted label. Score-stability limits pass, but finest-step decision
+  agreement does not. The earlier panels cannot replace the primary endpoint.
+
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-cue-separation-20261013-01/evidence/gpu/cue-separation-cpu-gpu.json)
+  passes across **2,547,081,320 values** with unchanged physical tolerances.
+  Primary joint decisions and all **288 shuffle comparisons** agree. Overall
+  exact decision agreement is **false**: some forced labels in disconnected
+  controls differ at scores below **0.00051 nV**, remaining unresolved on both
+  backends. Three near-zero disconnected timing contrasts also differ in their
+  relative-stability flags. These differences remain in the report. The largest
+  decoder-score discrepancy is **0.000610 nV**, and the worst paired-contrast
+  discrepancy uses **0.227%** of its physical allowance.
+
+  All **812 historical window/prefix comparisons per backend** are bitwise,
+  covering **294 unchanged full worlds** and **126 changed-world common prefixes**
+  across the three timesteps. Unchanged features and unchanged-arm reader reports
+  reproduce exactly. Controls, conservation/domain checks and replay of all
+  **14 state arrays** pass, including a disk restart at **103.9375 us** across
+  the delayed on/off events with **257-step** windows. The largest material
+  residual uses **0.653%** of its allowance.
+
+  [GPU measurements](/mnt/workspaces/Cells/two-task-cue-separation-20261013-01/gpu-metrics/result.json)
+  cover **1,976.39 s / 0.5490 GPU-hours**: mean GPU-busy **35.123%** and measured
+  SM-active **12.727%**, with **99.99996% / 99.94965%** coverage respectively.
+  These whole-phase averages include compilation, host checks and idle time;
+  there is no separate warmed-throughput interval. Peak worker RSS was
+  **1.419 GiB** and retained artifacts/cache **10.069 GiB**, within limits.
+
+  The [protocol](validation/assays/cue_separation_protocol.json) changes only
+  the late pulse in **42 of 140 inspected case inputs**, from **24–32 us to
+  104–112 us**, preserving the early **8–16-us** cue, each source's integrated
+  dose and the reader algorithm. Primary observation times stay **160/192/256 us**,
+  with **15 unstimulated-cell features**. Every arm has the same **200,704
+  world-step** budget per backend. Earlier panels contain pre-late-cue samples
+  and remain descriptive comparisons. The
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#wider-cue-separation-at-fixed-dose)
+  records these limits; these are synthetic results on inspected strengths.
+  [Preparation](/mnt/workspaces/Cells/cue-separation-development-20261013-01/preparation.json)
+  preserves five passing host checks and the temporary-directory failure/retry.
+
+  **Next: diagnose the seven unresolved timing cases and the borderline case
+  using saved trajectories before choosing another intervention.** Keep this
+  endpoint, scores and failed scientific target frozen. The L4 was idle at
+  closeout. The subsequently authorized saved-data diagnosis is recorded above.
+
+- **The longer-observation assay completed at 03:49:55 UTC on 13 October**,
+  after **1 h 5 min 55 s**; evidence finalization finished at **03:50:57 UTC**.
+  The [result](/mnt/workspaces/Cells/two-task-long-observation-20261013-01/result.json)
+  records **11 CPU passes / one expected GPU-comparison deferral** and
+  **12 L4 passes**, with **420/420 worlds complete on each backend** and no
+  failures. The [registration](/mnt/workspaces/Cells/two-task-long-observation-20261013-01/registration.json)
+  binds **979 sources, 12 test nodes per backend and 23 required reports**.
+  The [completed-evidence check](/mnt/workspaces/Cells/long-observation-development-20261013-01/completed-status-20261013T040626Z.json)
+  authenticates **2,841 evidence hashes**, all **23 passing reports** and
+  **979 unchanged current sources**, including all **141 production files**.
+
+  **Longer observation resolves location, but the two-task target remains unmet.**
+  On both CPU and L4, the short/middle/long panels resolve **0/12/16 of 16
+  location cases**, while timing remains **0/16** throughout, at every tested
+  timestep. At the finest step, primary long-panel location scores are
+  **4.121–8.476 nV** and timing scores **0.092–0.457 nV**, against the unchanged
+  **2-nV margin**. Both tasks give correct forced choices in all 16 cases;
+  timing does not clear the margin. Primary finest-pair score stability and
+  decisions pass the registered criteria. These are synthetic results on
+  previously inspected cases, not fresh generalization or biological validation.
+
+  [CPU/L4 comparison](/mnt/workspaces/Cells/two-task-long-observation-20261013-01/evidence/gpu/long-observation-cpu-gpu.json)
+  passes across **2,547,081,320 values** with unchanged physical tolerances;
+  decoding decisions and all **288 shuffle comparisons** agree exactly.
+  The worst paired-contrast discrepancy uses **0.227%** of its allowance.
+  All **140 original 64-us prefixes per backend** reproduce bitwise, with exact
+  historical reader/shuffle reports. Controls, conservation/domain checks and
+  long disk/window/reorder/partition replay of all **14 state arrays** pass.
+  The largest material residual uses **0.653%** of its allowance.
+
+  The [protocol](validation/assays/long_observation_protocol.json) keeps the
+  same **140 cue cases**, doses, tissue, initial state and reader algorithm,
+  at **0.25/0.125/0.0625-us** timesteps through **256 us**. Each backend executes
+  **1,003,520 world-steps**, equally divided among five arms. Each observation
+  panel has **15 unstimulated-cell features**: primary **160/192/256 us** and
+  comparison **40/48/64 us** / **80/96/128 us**. Matched and frozen-coarse
+  calibration and all inherited reader modes remain reported. The
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#longer-observations-with-the-same-cues)
+  separates numerical acceptance from the scientific outcome.
+
+  [GPU measurements](/mnt/workspaces/Cells/two-task-long-observation-20261013-01/gpu-metrics/result.json)
+  cover **1,913.22 s / 0.5314 GPU-hours**: mean GPU-busy **36.009%** and measured
+  SM-active **13.136%**, with **99.99984% / 100%** coverage respectively.
+  These whole-phase averages include compilation, host checks and idle time;
+  there is no separate warmed-throughput interval. Peak worker RSS was
+  **1.412 GiB** and retained artifacts/cache **10.068 GiB**, within limits.
+  [Preflight and development evidence](/mnt/workspaces/Cells/long-observation-development-20261013-01)
+  retain the five passing preparation checks and earlier failed evidence.
+
+  **Next: separately test greater cue-timing separation at fixed dose.** Waiting
+  longer improved location but did not resolve timing. Keep this result and
+  the decision margin frozen. The L4 was idle at closeout; no follow-up job
+  was launched or scheduled automatically. The subsequently authorized
+  cue-separation assay is now completed above.
+
+- **The 256-us ordinary dynamic-junction qualification completed at 02:11:52 UTC
+  on 13 October**, after **42 min 41 s**. The
+  [result](/mnt/workspaces/Cells/betse-junction-runtime-20261013-01/result.json)
+  records **356 CPU passes / two expected GPU deferrals** and **358 L4 passes**,
+  with no failures or errors. The
+  [completed-evidence check](/mnt/workspaces/Cells/betse-junction-runtime-development-20261013-01/completed-status-20261013T022050Z.json)
+  authenticates **976 unchanged sources, 168 evidence hashes and 98 passing
+  reports**, including the frozen test inventory and GPU counter records.
+
+  All **18 long junction trajectories pass on both backends**, including
+  **32,019,456 values per backend** against each of the saved native and component
+  targets. The worst native discrepancy uses **18.38% of its tolerance on CPU**
+  and **22.39% on L4**. All **12 original 64-us prefixes per backend** are bitwise
+  unchanged; long disk/window/world replay and the 64-to-256-us continuation pass.
+  Direct CPU/L4 agreement passes across **32,073,060 junction-runtime values**,
+  plus **17,994,704 values** from the existing active runtime. All shared
+  regressions pass. The largest material residual uses **0.653% of its registered
+  physical/roundoff allowance**.
+
+  The [updated runtime protocol](validation/betse/spatial_active/junction_runtime_protocol.json)
+  covers all **six cases at three timesteps** through **256 us**, comparing
+  complete ordinary state/field histories directly with authenticated saved
+  BETSE captures and the completed array component. It also checks the twelve
+  original **64-us** prefixes, all **14 state arrays** through long restarts,
+  windows, branches and independent-world replay, and existing shared regressions.
+  Production changes are limited to the parser horizon and summary wording;
+  numerical kernels, physical tolerances and the **64-us example** are unchanged.
+
+  [Preflight](/mnt/workspaces/Cells/betse-junction-runtime-development-20261013-01/preparation.json)
+  passed **31 host checks** and a **36.66-s CPU probe**; earlier resource-estimate
+  failures remain preserved. Five deliberately corrupted native comparisons are
+  rejected on both backends. Peak worker RSS was **3.74 GiB** and retained
+  artifacts/cache **0.471 GiB**, within unchanged limits.
+
+  The [GPU measurements](/mnt/workspaces/Cells/betse-junction-runtime-20261013-01/gpu-metrics/result.json)
+  cover **1,411.76 s / 0.3922 GPU-hours**: mean GPU-busy **1.178%** and measured
+  SM-active **0.4866%**, with **99.99994% / 100%** coverage respectively. These
+  whole-phase averages include compilation, host checks and idle time; there is
+  no separate warmed-throughput interval. The L4 was idle at closeout.
+
+  The subsequently authorized longer-observation assay is now completed above.
+  This runtime result does not change the earlier unresolved readout outcome;
+  no follow-up was launched at the runtime closeout itself.
+
+- **Saved-trajectory diagnosis completed at 00:20:56 UTC on 13 October**,
+  using **26.01 s** of CPU analysis and no new simulations. The
+  [result](/mnt/workspaces/Cells/two-task-unstimulated-diagnosis-20261013-01/result.json)
+  authenticates the preceding run's **974 unchanged sources, 591 evidence
+  hashes and 19 passing reports**, then examines all 140 saved worlds on each
+  backend. Original readouts and their failed primary margin target remain frozen.
+
+  **The remote observations are too close for both members of any tested pair
+  to clear the current margin.** Across the eight held-out joint pairs per task,
+  three-time feature distances are **1.258–3.528 nV for location** and
+  **0.951–2.166 nV for timing**. Both are below the necessary **4-nV separation**
+  for two opposite-label decisions to exceed the fixed reader's **2-nV margin**.
+  The [diagnostic](validation/assays/unstimulated_diagnostic.py) records this as
+  a necessary pair condition, not a sufficient decoding or sensing criterion.
+
+  The [time-course figure](/mnt/workspaces/Cells/two-task-unstimulated-diagnosis-development-20261013-01/figures/signal-propagation.png)
+  shows different trends: unstimulated-cell location contrasts grow **44–80%**
+  from **48 to 64 us** in all eight pairs, while timing is nearly flat
+  (**0.9924–0.9988 times** its 48-us magnitude). These are descriptive trends
+  at the saved timestep, not a convergence certificate or an extrapolation.
+  Timing also overlaps the strength-response direction: **82.8–93.8%** of its
+  squared contrast norm lies along the alternative curve's local strength tangent.
+  Calibration residuals are only **0.0035–0.0457 nV**; removing each point's
+  known-strength residual changes timing scores by at most **0.0227 nV** and
+  leaves **0/16 resolved** for both tasks. These known-label probes do not
+  replace the original predictions.
+
+  All **seven reader modes and 32 shuffles** reproduce exactly on both backends.
+  Reconstructed patch voltages match all archived observation samples exactly;
+  area-weighted reader reconstruction differs by at most **3.47e-18 V**.
+  Full reconstructed CPU/L4 voltage histories differ by at most **5.94e-13 V**.
+  The **28 disconnected pairs** remain exactly zero at the original observation
+  times; tiny unsampled differences reach only **2.95e-13 V** and do not establish
+  resolved transport. All 28 no-cue pairs remain zero throughout.
+  [Seven known-answer checks](/mnt/workspaces/Cells/two-task-unstimulated-diagnosis-development-20261013-01/checks-01.log)
+  passed in **4.07 s**; peak analysis RSS was **250 MiB**. Full histories,
+  geometry, inputs, source snapshots and checks are linked from the
+  [method](docs/TWO_TASK_READOUT_ASSAY.md#diagnosing-weak-unstimulated-signals)
+  and [development evidence](/mnt/workspaces/Cells/two-task-unstimulated-diagnosis-development-20261013-01).
+
+  **The recommended runtime extension is now completed above**, bringing the
+  qualified **256-us array component** into ordinary execution with native
+  comparisons and 64-us prefix checks. Longer observation is justified for investigating location
+  propagation, but the current data do not support assuming it will fix timing.
+  A later timing experiment should separately test cue separation at fixed dose.
+  No follow-up was launched at the diagnosis closeout; the runtime qualification
+  above was subsequently authorized.
+
 - **Unstimulated-cell qualification completed at 23:20:15 UTC on 12 October**
   after **14 min 27 s**. The
   [result](/mnt/workspaces/Cells/two-task-unstimulated-20261012-01/result.json)
@@ -16,7 +1158,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   with no failures or errors. The
   [completed-evidence check](/mnt/workspaces/Cells/two-task-unstimulated-development-20261012-01/completed-status-20261012T234817Z.json)
   authenticates **974 unchanged sources, 591 evidence hashes and 19 passing
-  reports**. The GPU is idle; this status check launched no new computation.
+  reports**. At that closeout the GPU was idle and no new computation was launched.
 
   **The primary scientific target was not met.** Reading only unstimulated
   cells **2, 3, 5, 6 and 7** gives both labels correct in **16/16 forced choices**,
@@ -52,9 +1194,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   compilation and host checks; there is no single warmed interval. Summed
   execution per arm is **21.62–22.06 s**, excluding compilation and host work.
 
-  Next proposed work: inspect the saved time courses and response geometry to
-  understand the weak remote margins, then decide whether to qualify a longer
-  observation window. No follow-up run is scheduled.
+  This result motivated the saved time-course and response-geometry diagnosis
+  above. The completed qualification scheduled no automatic follow-up.
 
 - **Distributed-cue timestep qualification completed at 19:52:06 UTC on
   12 October**, after **19 min 37 s** of recorded execution. The

@@ -1,0 +1,104 @@
+{
+  "kind": "source_order_local_channel_design@1",
+  "status": "input_design_prepared_not_simulated",
+  "purpose": "Measure paired flank-specific channel effects after uniform remote-channel changes failed the separation objective.",
+  "scientific_risk_addressed": "Readout-feature contributions do not identify local channel sensitivity. Probe both flanks and both signs to avoid treating the larger observed contribution of cells 3/5 as evidence that changing those cells will rescue the tasks.",
+  "source_protocol": "validation/assays/source_order_long/channel_compensation_protocol.json",
+  "source_protocol_sha256": "ef693771434fa705bbef9231a0fc5008e9f1c2c94cbcd7ac0f89a3c33d9d4520",
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-channel-compensation-20261017-01",
+    "status": "completed",
+    "registration_sha256": "4bc140eebaa3cdfc88e485b47dfc9e6df901779cc355f4575ab0f6c0bccb7b8b",
+    "component_protocol_sha256": "2546c75842d51db73155fc9728e180ea08c88b991dcccdd7b06bdc389afdd7d0",
+    "completion_sha256": "327837575900507f09ead0d07aa6f6578e1ca90000494264e2f23a16a3687cc3",
+    "result_sha256": "a26d7edd79b59941805fa4aeff8179e98aca7477a0d6965a9725621570724089",
+    "condition": "sham"
+  },
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01",
+    "status": "completed_calibration_diagnosis",
+    "completion_sha256": "20389f0063faeaa6b0b2bd5ae369ab42ff51b31f10b40137af76ffe6abb3d26f",
+    "result_sha256": "751e85d65f262212e5562e6ff2615ab8e29fcc5925e23799db73c3bb6f1d55c0"
+  },
+  "motivation": {
+    "limiting_labels": [[0, 1], [1, 0]],
+    "meaning": "Location and order share the same limiting pair; this is one joint ambiguity, not two independent failures.",
+    "observed_sham_finest_320us_squared_fraction": 0.9257132810743035,
+    "observed_sham_finest_cells_3_5_squared_fraction": 0.6242367949350875,
+    "uniform_change_result": "Uniform +/-10% changes mainly move the background voltage; small separation changes have different signs across timesteps. No local effect direction has been established.",
+    "hypothesis": "A spatially restricted channel change may alter location/order overlap differently from a uniform change. This remains untested.",
+    "groups": "The existing tissue has source-1 flank neighbours 2/6, source-4 flank neighbours 3/5, and shared central neighbour 7. Test both flank pairs symmetrically in sign; keep sources and centre unchanged.",
+    "effect_interpretation": "Each probe changes two cells together. It measures that group intervention, not independent single-cell derivatives or a general spatial controller."
+  },
+  "conditions": [
+    {"id": "sham", "cell_ids": [], "channel_scale": 1.0, "world_id_offset": 600000},
+    {"id": "source1_flank_lower", "cell_ids": [2, 6], "channel_scale": 0.9, "world_id_offset": 620000},
+    {"id": "source1_flank_higher", "cell_ids": [2, 6], "channel_scale": 1.1, "world_id_offset": 640000},
+    {"id": "source4_flank_lower", "cell_ids": [3, 5], "channel_scale": 0.9, "world_id_offset": 660000},
+    {"id": "source4_flank_higher", "cell_ids": [3, 5], "channel_scale": 1.1, "world_id_offset": 680000}
+  ],
+  "intervention": {
+    "parameter": "model.channel_permeability",
+    "channel": "Kv1p5",
+    "bounds_rationale": "Retain the exploratory +/-10% bound; it is not a measured biological range.",
+    "mask": "Scale all membrane patches whose zero-based cell_owner plus one is in the condition's cell_ids. No other patches change.",
+    "time": "Present from initialization; not a post-damage recovery or adaptive controller.",
+    "dose_caveat": "Source channel availability, fractional cue inhibition and timing stay fixed. Network feedback may change ionic currents and transported charge.",
+    "area_caveat": "The two flank groups have slightly different membrane areas. Equal relative permeability changes are not equal absolute channel-capacity changes; report each area-weighted change."
+  },
+  "fixed_assay": {
+    "junction_permeability_scale": 0.9,
+    "source_cell_ids": [1, 4],
+    "central_cell_id": 7,
+    "calibration_strengths": [0.4, 0.6, 0.8],
+    "dt_s": [2.5e-7, 1.25e-7, 6.25e-8],
+    "duration_s": 0.000512,
+    "primary_panel": "selected320",
+    "primary_times_us": [128, 160, 320],
+    "comparator_panels": ["spanning512", "long512"],
+    "readout_cell_ids": [2, 3, 5, 6, 7],
+    "reader_margin_V": 2e-9,
+    "arms": ["location_only", "timing_only", "joint", "disconnected", "no_cue"],
+    "unchanged": "Initial states, gate laws, tissue geometry, source cues, source channels, central-cell channels, solver, observations and numerical tolerances."
+  },
+  "selection": {
+    "objective": "Existing half-minimum opposite-label fitted-polyline distance, including segment interiors, minimized across joint tasks, relevant single-task arms and all three timesteps on selected320.",
+    "requirements": "A unique candidate on CPU and L4, score above 2 nV and above sham by more than 1e-15 V on both backends, backend score agreement within 1e-15 V, and complete numerical/domain/null-control qualification. Otherwise retain sham.",
+    "tie_atol_V": 1e-15,
+    "reader_views": "Retain raw frozen-source, shared-no-cue-reference-assisted and condition-calibrated views separately. A geometric gain does not establish raw transfer.",
+    "negative_results": "Keep every valid negative outcome and every invalid failure. Do not replace candidates or tune support, margins or strengths after seeing responses.",
+    "confirmation": "Freeze any selected candidate before a separate fresh-strength experiment. No held-out responses enter this pilot."
+  },
+  "work": {
+    "conditions": 5,
+    "worlds_per_condition_per_backend": 180,
+    "worlds_per_backend": 900,
+    "world_steps_per_backend": 4300800,
+    "world_steps_per_arm_per_backend": 860160,
+    "new_heldout_worlds": 0
+  },
+  "verification": [
+    "Compare all generated inputs to the archived channel-sham calibration input; only the declared flank patch permeabilities may differ.",
+    "Authenticate completed-source evidence before execution. Keep the same windowed full-state runner, conservation/domain checks and CPU/L4 tolerances.",
+    "Require bitwise full-history sham reproduction. Other candidates reproduce initial states only, including no-cue and disconnected arms.",
+    "Retain restart, reordered/partitioned-world checks, complete recordings, null controls and per-case timestep score diagnostics.",
+    "Report paired changes at each timestep, both flank groups and both signs. Readout contributions are not local sensitivity estimates.",
+    "Record GPU busy, measured SM-active, coverage and per-arm kernel/archive timings; equal planned world steps need not give identical runtimes."
+  ],
+  "execution": {
+    "input_builder_ready": true,
+    "qualification_harness_ready": false,
+    "remaining": "Adapt the existing five-arm qualification harness to the five local-channel conditions and verify its historical source binding before launch.",
+    "estimated_wall_hours": [6, 8],
+    "estimate_basis": "900 worlds/backend versus the completed 540-world four-hour uniform-channel pilot; includes CPU then L4 and archive handling.",
+    "estimated_uncompressed_archive_bytes": 174618643200,
+    "proposed_artifact_and_cache_budget_bytes": 206158430208,
+    "proposed_max_wall_seconds": 36000,
+    "free_disk_reserve_bytes": 4294967296,
+    "detached": true,
+    "automatic_polling": false,
+    "automatic_followup": false
+  },
+  "scope": "Calibration-only intervention design for one synthetic tissue. No local rescue, biological replication, whole-organ validation, new BETSE/BITSEY parity or multi-GPU scaling result.",
+  "automatic_followup": false
+}

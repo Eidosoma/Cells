@@ -1,0 +1,221 @@
+{
+  "kind": "unstimulated_cue_separation@1",
+  "scope": "Fixed-dose change from 16-us to 96-us early/late onset separation on the inspected 140-case panel; unchanged 256-us CPU/L4 runtime and primary remote readout.",
+  "purpose": "Test whether a sixfold increase in cue-timing separation improves remote timing resolution while preserving location, pulse width, dose, primary observation times, feature count, reader algorithm and decision margin.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-long-observation-20261013-01",
+    "registration_sha256": "7b4f5613710694ea4f199e4eccbea349402404bfa43bce278aea0076e5d53a3f",
+    "completion_sha256": "746334757d17e5830740330d1deca24039b2e00633609842a9d084bf7f1e6f36",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/long_observation_protocol.json",
+  "source_protocol_sha256": "ab77bb6e0cf4bcc7aae57a8633fdb19f7fd16b903f03e9fbac9c55ef926ee265",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000256,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Fit the inherited three-strength polyline separately for every arm, observation panel and integration step; also report curves frozen at 0.25 us for voltage, final-voltage and all-cell modes.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "long256, resolution-matched calibration, dt=0.0625 us, 15 unstimulated-cell voltage features; report both correct-and-resolved labels in all 16 joint cases and finest-step score/decision stability. Other panels and modes are comparisons, not substitutes.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "Reuse the same 140 identities, labels and seven strengths. Shift only the 42 late-cue rows in timing-only, joint and disconnected arms. Re-run all five arms with equal world-step budgets and compare 98 unchanged inputs against saved evidence. Previously inspected strengths are not fresh holdout.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "For 98 unchanged inputs at every timestep, compare every full history window and sampled field with authenticated long-observation evidence. For 42 shifted inputs, compare the full common prefix strictly before the old 24-us onset. Compare unchanged readout features and location-only/no-cue reader reports. Report bitwise equality and reader differences explicitly; keep original scientific outcomes frozen.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 51539607552,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_cue_separation.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_cue_separation.py::test_cue_separation_cpu_gpu"
+  ],
+  "required_evidence": [
+    "cue-separation-prerequisite",
+    "cue-separation-design",
+    "cue-separation-support",
+    "cue-separation-reader-isolation",
+    "cue-separation-archive",
+    "cue-separation-history-boundaries",
+    "cue-separation-panel",
+    "cue-separation-historical-reproduction",
+    "cue-separation-readouts",
+    "cue-separation-contrasts",
+    "cue-separation-controls",
+    "cue-separation-replay"
+  ],
+  "required_gpu_evidence": [
+    "cue-separation-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "No production-source, numerical-law, physical-tolerance, pulse-width, integrated-dose, tissue-geometry, initial-state, strength-panel, observation-time, feature-count, decoder-algorithm or margin changes.",
+    "Only late-pulse time changes for timing-coded arms. The primary endpoint is the same long256 panel at 0.0625 us, after both cues; earlier comparison panels include pre-cue observations and cannot establish post-cue decoding.",
+    "Only calibration rows fit new timing-response curves; every observation panel has three times and identical feature count. Matched and frozen-coarse calibration remain explicit. No label, strength or identity input to prediction.",
+    "Scientific failures, unresolved signals and decision/stability changes remain outcomes, not reasons to fail numerical execution or retune the experiment. Three finite timesteps are diagnostics, not a continuum bound.",
+    "Disconnected junctions retain extracellular/electrical routes; remote decoding alone does not establish junction necessity, causal biological consumers, polycomputing, memory, reconstruction or heredity.",
+    "No new native mixed pump/channel/junction-event correspondence or biological calibration claim; this is a synthetic assay on the qualified ordinary runtime.",
+    "Every arm executes the same world-step budget. Track GPU-busy and measured SM-active with coverage, including compilation and host work; no utilization gate or Jupiter throughput claim.",
+    "Nonintegrating controls/resource checks and inherited synthetic known answers precede frozen launch. No new scientific responses are inspected during development. All 979 prior source files remain unchanged."
+  ],
+  "automatic_followup": false,
+  "cue_timing": {
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "original_late_pulse_us": [
+      24,
+      32
+    ],
+    "late_pulse_us": [
+      104,
+      112
+    ],
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "original_onset_separation_us": 16,
+    "onset_separation_us": 96,
+    "pulse_width_us": 8,
+    "selection": "One fixed sixfold separation, chosen before simulating new responses. The late cue ends 48 us before the first primary observation. No sweep, stronger stimulus or outcome-selected endpoint.",
+    "source_allocation": "Same 75/25 location shares (reversed for opposite location); timing-only remains 50/50. Each source retains its original area-integrated inhibition.",
+    "comparison_panels": "short64 precedes the late cue; middle128 straddles it. They are descriptive and cannot replace the all-post-cue long256 primary panel."
+  },
+  "replay": {
+    "snapshot_world": "joint/calibration_low/location=0/timing=1",
+    "snapshot_step": 1663,
+    "snapshot_time_us": 103.9375,
+    "purpose": "Resume the shifted late world immediately before the 104-us onset and cross both the 104-us and 112-us events using 257-step windows; also reorder and partition all four joint calibration worlds."
+  }
+}

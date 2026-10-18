@@ -1,0 +1,127 @@
+{
+  "kind": "source_order_pulse_spacing_design_plan@1",
+  "status": "planned_not_run",
+  "purpose": "Test whether a wider separation between source pulses separates source order from unknown cue strength using unchanged post-cue observations.",
+  "scientific_risk_addressed": "Observation-time selection improved fitted calibration separation but left the fresh cohort at 29/32, trading one gain for one regression. Avoid tuning readers or lowering the margin on inspected cases; test one controlled physical input change using calibration cases only.",
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-selected-20261015-01",
+    "registration_sha256": "3dbef1145db62fcc84dc3cfc075170057b7aa9c930c6336d53149c98d78aad37",
+    "completion_sha256": "405e0656c945544f661a2f88beda9971b2f99b4650ef48772318da0abc1e30cf"
+  },
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-selected-diagnosis-20261016-01",
+    "completion_sha256": "4ae3dda92ed60e831944a049706de696aa3008a217bf545499735c249fa743c7",
+    "result_sha256": "8e95ec5bd42d52396b937f65b7212de8055808aef756ef7496727142cc4f423b"
+  },
+  "design": {
+    "baseline_onset_separation_us": 96,
+    "candidate_onset_separation_us": 104,
+    "early_pulse_us": [
+      8,
+      16
+    ],
+    "baseline_late_pulse_us": [
+      104,
+      112
+    ],
+    "candidate_late_pulse_us": [
+      112,
+      120
+    ],
+    "pulse_width_us": 8,
+    "location_only_pulse_us": [
+      16,
+      24
+    ],
+    "source_order": "Unchanged: source 1 first/source 4 second, or the reverse.",
+    "dose": "Same integrated inhibition per source, cue strength and location; 75/25 versus 25/75 shares and equal 50/50 order-only control. No increase in dose or pulse width.",
+    "primary_times_us": [
+      128,
+      160,
+      320
+    ],
+    "comparator_times_us": [
+      [
+        128,
+        256,
+        512
+      ],
+      [
+        320,
+        384,
+        512
+      ]
+    ],
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "feature_count": 15,
+    "reader_margin_V": 2e-09,
+    "reader": "Same nearest-calibrated-polyline reader; independent calibration for each physical protocol, no rescaling or feature search.",
+    "calibration_strengths": [
+      0.4,
+      0.6,
+      0.8
+    ],
+    "dt_s": [
+      2.5e-07,
+      1.25e-07,
+      6.25e-08
+    ],
+    "duration_s": 0.000512,
+    "arms": [
+      "location_only",
+      "timing_only",
+      "joint",
+      "disconnected",
+      "no_cue"
+    ],
+    "label_combinations": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "candidate_worlds_per_timestep": 60,
+    "candidate_worlds_per_backend": 180,
+    "candidate_world_steps_per_backend": 860160,
+    "candidate_world_steps_per_arm_per_backend": 172032,
+    "baseline": "Reuse authenticated baseline calibration trajectories; do not resimulate or score the inspected held-out cohort.",
+    "selection_inputs": "Only the three calibration strengths. Load and rank no held-out response arrays, targets or resolution counts.",
+    "objective": "Reuse half the minimum distance between opposite-label fitted curves, including segment interiors and endpoints; take the minimum across joint tasks, relevant single-task controls and all three timesteps. Null controls are reported separately.",
+    "decision": "Report both protocols. Prefer the baseline for ties within 1e-15 V or any backend winner disagreement; consider the candidate for fresh confirmation only for reproducible improvement. Report separately whether the fitted-curve minimum exceeds 2 nV and by how much.",
+    "no_guarantee": "A fitted-curve improvement, including one above 2 nV, is not a bound on continuous physical responses or biological noise. The earlier 29/32 result remains unchanged."
+  },
+  "verification": [
+    "Authenticate the completed baseline and unchanged production physics before the new run.",
+    "Check exact physical event indices and per-source integrated doses at all three timesteps; all primary observation times must follow cue removal.",
+    "Compare unchanged no-cue and location-only calibration histories bitwise, and the common pre-104-us prefix for other arms, using saved baseline identities.",
+    "Retain full state archives, conservation/domain checks, CPU/L4 tolerances, reordered/partitioned worlds and restart across the changed second pulse.",
+    "Retain independent curve-geometry and calibration-isolation tests; fixed coarse/fine criteria and controls cannot be relaxed for improved resolution.",
+    "Report both GPU-busy and measured SM-active with coverage, actual per-arm kernel/archive timing and equal world-step budgets."
+  ],
+  "followup": {
+    "decision": "If justified by calibration geometry, freeze the chosen pulse protocol before a separate confirmation on new strengths, including weak cues near 0.4. Do not reuse the diagnosed cohort as fresh evidence.",
+    "automatic_launch": false,
+    "implementation_ready": false
+  },
+  "execution": "Reuse the existing bounded windowed runner. Expected runs of at least 10 minutes must be detached with durable result/failure artifacts, without automatic polling or follow-up.",
+  "scope": "Synthetic input-encoding experiment using the verified bioelectric layer. No new native BETSE parity or biological calibration claim.",
+  "automatic_followup": false
+}

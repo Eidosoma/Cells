@@ -1,0 +1,175 @@
+{
+  "kind": "source_order_channel_compensation_design@1",
+  "status": "prepared_not_run",
+  "purpose": "Test whether changing Kv1p5 availability away from the cue sources improves two-task response separation while junction permeability remains impaired.",
+  "scientific_risk_addressed": "At 0.9x coupling, background correction leaves four known joint cases unresolved; target recalibration leaves five. Separate physical response separation from reader refitting, background correction and direct amplification of the cue-source channel population.",
+  "source_protocol": "validation/assays/source_order_long/coupling_transfer_protocol.json",
+  "source_protocol_sha256": "cc2b8b7193b60f13c2a11e9bbb9705b0f057de322519894b6a5b8e9a05164f7a",
+  "source_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-source-order-coupling-transfer-20261017-01",
+    "registration_sha256": "2db4e2789212ed6fce1432db58338631a8690c9f94a336c884f84f364f516130",
+    "component_protocol_sha256": "34f7669c991dda976e1c1abdeb3b812b2b9750c5b58dad9d2c27cc6801a3a017",
+    "completion_sha256": null,
+    "completion_required_before_execution": true,
+    "condition": "lower"
+  },
+  "diagnostic_binding": {
+    "root": "/mnt/workspaces/Cells/coupling-transfer-diagnosis-20261017-01",
+    "completion_sha256": "7c10dfc1f7287cd38ec3478ec649fb09d02180922403267fe4d1749f75f70e0d",
+    "result_sha256": "ac06cfb470dc04c54ce8634d9c765f1f450dc9dd7f96d63c7ed253a80a63cedb",
+    "status": "completed_subset_diagnosis",
+    "whole_source_campaign_accepted": false
+  },
+  "impairment": {
+    "parameter": "model.tissue.junction_permeability",
+    "scale": 0.9,
+    "gate_law_and_parameters_fixed": true,
+    "held_fixed_in_all_conditions": true
+  },
+  "alternative_control": {
+    "parameter": "model.channel_permeability",
+    "channel": "Kv1p5",
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ],
+    "scales": [
+      0.9,
+      1.0,
+      1.1
+    ],
+    "mask": "Apply to membrane patches whose zero-based cell_owner plus one is in cell_ids; all cue-source patches remain unchanged.",
+    "meaning": "Static scaling of maximal permeability on the selected patches. Gate kinetics, initial m/h values and cue-time fractional inhibition remain fixed. This is not an adaptive controller.",
+    "bounds_rationale": "A bounded symmetric 10% local pilot, not an empirically measured biological range.",
+    "dose_caveat": "Per-source fractional inhibition, patch areas, cue-source maximal permeability and pulse timing are unchanged. Network feedback can still change voltages and actual ionic currents; integrated transported charge is not constrained to match."
+  },
+  "conditions": [
+    {
+      "id": "sham",
+      "channel_scale": 1.0,
+      "world_id_offset": 540000
+    },
+    {
+      "id": "channel_lower",
+      "channel_scale": 0.9,
+      "world_id_offset": 560000
+    },
+    {
+      "id": "channel_higher",
+      "channel_scale": 1.1,
+      "world_id_offset": 580000
+    }
+  ],
+  "calibration": {
+    "strengths": [
+      0.4,
+      0.6,
+      0.8
+    ],
+    "arms": [
+      "location_only",
+      "timing_only",
+      "joint",
+      "disconnected",
+      "no_cue"
+    ],
+    "label_combinations": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "dt_s": [
+      2.5e-07,
+      1.25e-07,
+      6.25e-08
+    ],
+    "duration_s": 0.000512,
+    "primary_panel": "selected320",
+    "primary_times_us": [
+      128,
+      160,
+      320
+    ],
+    "comparator_panels": [
+      "spanning512",
+      "long512"
+    ],
+    "remote_cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "feature_count": 15,
+    "reader_margin_V": 2e-09,
+    "reader": "Reuse the nearest-calibrated-polyline reader and the existing calibration_geometry implementation. Fit each condition separately for this geometric diagnostic only.",
+    "selection_inputs": "Only calibration responses; do not load, simulate or rank the inspected evaluation cohort as new evidence.",
+    "objective": "Half the minimum opposite-label fitted-curve distance, including segment interiors and endpoints, minimized across joint tasks, relevant single-task arms and all three timesteps on selected320. Comparators and null controls do not enter ranking.",
+    "tie_atol_V": 1e-15,
+    "selection": "Require all numerical/domain/null-control checks, a unique winner on each backend, CPU/L4 score agreement within 1e-15 V, improvement over sham beyond that tolerance on both backends, and a minimum above 2 nV on both. Retain sham for ties or disagreement. Report every candidate, including valid negative results and invalid failures.",
+    "distinct_reader_views": "Retain the raw frozen source reader, shared-no-cue-reference assistance, and condition-calibrated geometry separately. A gain in the geometric objective does not establish unassisted transfer or overwrite the preceding transfer failures.",
+    "no_recovery_claim": "This pilot can select a candidate for confirmation. Fitted calibration curves are not continuous-response bounds, fresh-strength outcomes, empirical noise tolerance or biological recovery."
+  },
+  "controls": {
+    "reference": "Reuse authenticated unperturbed calibration histories from the passing pulse-confirmation study.",
+    "impairment_only": "Reuse the completed lower-coupling calibration subset, after the whole source run is authenticated.",
+    "sham": "Run channel scale 1.0 at coupling scale 0.9 through the same intervention path. All full histories must reproduce archived lower-coupling calibration histories bitwise. This is a numerical control, not an independent biological replicate.",
+    "nulls": "Run no-cue and disconnected arms for every condition. Even disconnected remote histories can change under a local channel intervention; do not require them to equal the unimpaired channel case.",
+    "shared_initial_state": "All candidates start from the same archived initial state. Only initial states must match historical lower-coupling candidates with different channel availability; post-start histories can differ immediately.",
+    "failed_candidates": "Keep complete durable inputs, finished windows, task outcomes and failure artifacts; no replacement candidate or silent retry."
+  },
+  "work": {
+    "conditions": 3,
+    "worlds_per_condition_per_timestep": 60,
+    "worlds_per_condition_per_backend": 180,
+    "worlds_per_backend": 540,
+    "world_steps_per_condition_per_backend": 860160,
+    "world_steps_per_backend": 2580480,
+    "world_steps_per_arm_per_backend": 516096,
+    "new_heldout_worlds": 0
+  },
+  "verification": [
+    "Before execution, bind the source completion and evidence manifest and authenticate frozen sources. A completed-condition diagnosis is insufficient to accept the whole source campaign.",
+    "Verify every input against its paired lower-coupling calibration input: only permitted channel patches differ; junction impairment, source patches, cues, initial states, geometry, solver and observations remain fixed.",
+    "Use the qualified bounded windowed runner and unchanged conservation/domain checks, CPU/L4 tolerances, three timesteps and full 14-array state archives.",
+    "Check bitwise sham history reproduction, common initial states, restart, reordered/partitioned worlds, and candidate-control isolation without imposing false post-start historical equality.",
+    "Keep calibration-only loading and geometry checks. Report each task, null controls, geometry, background drift and all reader views independently.",
+    "Retain GPU-busy and measured SM-active with coverage and per-arm kernel/archive times. Equal planned world-step budgets do not imply equal measured runtimes."
+  ],
+  "execution": {
+    "implementation_ready": false,
+    "remaining": "Bind the completed coupling study and adapt the existing windowed qualification harness; this file and the input builder do not launch a run.",
+    "wall_hours_estimate": [
+      3,
+      4
+    ],
+    "estimate_basis": "540 worlds/backend versus the preceding 660-world 4 h 33 min confirmation; source authentication, archive I/O and per-condition setup can change this estimate.",
+    "detached": true,
+    "automatic_polling": false,
+    "automatic_followup": false
+  },
+  "followup": "Freeze any selected setting before a separate fresh-strength confirmation. Recovery across other initial states, intervention after impairment, robustness, assembly-mediated replacement and autonomous adaptation remain later questions.",
+  "scope": "One static synthetic bioelectric fixture and existing 512-us horizon. No new native BETSE parity, general polycomputing, heredity, biological replication or multi-GPU scaling claim.",
+  "automatic_followup": false
+}

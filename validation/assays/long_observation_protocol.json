@@ -1,0 +1,197 @@
+{
+  "kind": "unstimulated_long_observation@1",
+  "scope": "Same 140 previously inspected cue cases through 256 us, at three timesteps and three predeclared equal-dimension observation panels; streamed CPU/L4 qualification and descriptive reader outcomes.",
+  "purpose": "Test whether longer observation makes remote location/timing contrasts readable without stronger cues, more features or a lower reader margin; check timestep sensitivity and preserve the original 64-us result.",
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-junction-runtime-20261013-01",
+    "registration_sha256": "eb5aa5bcadb0acfd8fb2de4b844385f03ea94164c2e548d9c4954c75d0b8281f",
+    "completion_sha256": "b35082cc474f245d0643309ba8864612aaebc2528b53de70bb7c00365fa5d8f0",
+    "require_completed_cpu_and_gpu": true
+  },
+  "historical_binding": {
+    "root": "/mnt/workspaces/Cells/two-task-unstimulated-20261012-01",
+    "registration_sha256": "7db8efc66e6f56d4d0b8beb8026e26fe0cc64e2b990a30ebabea76d493783d0a",
+    "completion_sha256": "29f0b9ae8fb6ade45f4907a614d03d62fccc4a817575c440ef072377b35b3e61",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/assays/unstimulated_readout_protocol.json",
+  "source_protocol_sha256": "324546378eaa88467024085a8a539cb4625d3fd7a17e845f7222ec1356944045",
+  "dt_s": [
+    2.5e-07,
+    1.25e-07,
+    6.25e-08
+  ],
+  "duration_s": 0.000256,
+  "observation_panels": {
+    "short64": 1,
+    "middle128": 2,
+    "long256": 4
+  },
+  "observation_times_us": {
+    "short64": [
+      40,
+      48,
+      64
+    ],
+    "middle128": [
+      80,
+      96,
+      128
+    ],
+    "long256": [
+      160,
+      192,
+      256
+    ]
+  },
+  "readout": {
+    "cell_ids": [
+      2,
+      3,
+      5,
+      6,
+      7
+    ],
+    "all_cell_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "excluded_source_cell_ids": [
+      1,
+      4
+    ]
+  },
+  "reader": {
+    "type": "nearest_calibrated_polyline",
+    "calibration": "Fit the inherited three-strength polyline separately for every arm, observation panel and integration step; also report curves frozen at 0.25 us for voltage, final-voltage and all-cell modes.",
+    "features": "Every primary panel contains exactly 15 area-weighted voltages from unstimulated cells 2,3,5,6,7, in time-first order. All-cell comparators contain 21 values and never enter primary calibration.",
+    "prediction": "Project each observed vector onto each adjacent calibration segment with its coordinate clipped to [0,1]. For each task, take the minimum distance among curves with label 0 and label 1. Score=(distance_0-distance_1)/2; positive predicts 1, otherwise 0. Prediction accepts features only: no evaluation strength, labels, IDs or paired counterpart.",
+    "margin": "Resolved only when abs(score) exceeds the declared margin. Half the distance gap is in feature units and is 1-Lipschitz for fixed curves; it is not a biological noise model or a guarantee of correct generalization. Distances and inferred segment coordinates are retained.",
+    "voltage_margin_V": 2e-09,
+    "coarse_voltage_margin_V": 1e-06,
+    "input_margin": 1e-09,
+    "modes": [
+      "voltage",
+      "final_voltage",
+      "all_cell_voltage",
+      "voltage_1uV_margin",
+      "input_at_readout",
+      "input_history",
+      "balanced_centroid_voltage"
+    ],
+    "primary_mode": "voltage",
+    "shuffle_seeds": [
+      4200,
+      4201,
+      4202,
+      4203,
+      4204,
+      4205,
+      4206,
+      4207,
+      4208,
+      4209,
+      4210,
+      4211,
+      4212,
+      4213,
+      4214,
+      4215,
+      4216,
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231
+    ],
+    "shuffles": "Permute whole curve label pairs with the fixed seeds after fitting vertices. This preserves each physical response curve and the balanced label set. Duplicate permutations and the identity are retained; no significance claim."
+  },
+  "primary": "long256, resolution-matched calibration, dt=0.0625 us, 15 unstimulated-cell voltage features; report both correct-and-resolved labels in all 16 joint cases and finest-step score/decision stability. Other panels and modes are comparisons, not substitutes.",
+  "scientific_target_is_not_an_acceptance_gate": true,
+  "panel": "Reuse all 140 rows and physical world identities from the frozen unstimulated assay, including all five arms and seven strengths. This is a controlled extension of inspected cases, not fresh holdout or independent biological replication.",
+  "fixed_cues": "Sources 1 and 4; 75/25 or reversed location shares; equal timing-only shares; same area-integrated 8-us inhibition dose. Location-only pulse at 16-24 us, other cued arms at 8-16 or 24-32 us. All cue controls return to baseline after 32 us and remain there through 256 us.",
+  "score_stability": {
+    "absolute_score_change_limit_V": 2e-09,
+    "relative_score_change_limit": 0.1
+  },
+  "contrast": {
+    "definition": "Label 1 minus label 0 area-weighted voltage, paired at fixed arm, other label and cue strength; 15 unstimulated-cell features in each predeclared observation panel",
+    "absolute_change_limit_l2_V": 2e-09,
+    "relative_change_limit": 0.1,
+    "resolved_signal_min_l2_V": 4e-09,
+    "criteria_rationale": "The absolute stability limit uses the original synthetic reader margin; the signal floor is twice that margin. The 10% limit requires small relative change as well. These are declared numerical diagnostics, not measured sensor precision or a continuum error bound.",
+    "stable_at_finest_steps": "The 0.125-to-0.0625-us contrast change must satisfy BOTH the inherited 2-nV absolute and 10% relative limits. Separately report the signal floor and whether the 0.25-us contrast meets the same limits against 0.0625 us.",
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 3e-10,
+    "resolved_error_multiple": 5,
+    "ratio_min": 1.5,
+    "ratio_max": 2.5,
+    "order_resolution": "For each coordinate, a difference of two paired contrasts uses four inherited voltage comparison allowances: 4*atol + 2*rtol*(max_abs_early + max_abs_late). The two successive L2 changes must each exceed five times its L2 norm before interpreting their ratio as resolved first-order refinement. This comparison allowance is not a statistical noise estimate.",
+    "performance_is_not_an_acceptance_gate": true
+  },
+  "contrasts": "For both labels, pair opposite labels at fixed arm, strength and other label. Report all pairs, including redundant single-task controls; they are not independent samples. Compare all three timestep contrasts using the inherited thresholds.",
+  "historical_reproduction": "Compare all 140 finest-step first windows against authenticated complete 64-us trajectories under unchanged physical tolerances; report bitwise equality, reader score/decision differences and shuffle agreement explicitly. Historical evidence and outcomes remain frozen.",
+  "batch_worlds": 4,
+  "window_steps": 1024,
+  "storage": "Write complete 14-array state histories and sampled fields per world/window; retain only the current batch window and compact readout vectors. Compare CPU/L4 and changed-window replay by reading archive segments. Per-world inputs and completed windows remain durable on failure.",
+  "resources": {
+    "max_wall_seconds": 10800,
+    "artifact_and_cache_bytes": 51539607552,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 8589934592,
+    "gpu_memory_fraction": 0.2,
+    "max_batch_working_bytes": 4294967296,
+    "max_retained_array_estimate_bytes": 2147483648
+  },
+  "tests": [
+    "tests/unit/test_long_observation.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_long_observation.py::test_long_observation_cpu_gpu"
+  ],
+  "required_evidence": [
+    "long-observation-prerequisite",
+    "long-observation-design",
+    "long-observation-support",
+    "long-observation-reader-isolation",
+    "long-observation-archive",
+    "long-observation-panel",
+    "long-observation-historical-reproduction",
+    "long-observation-readouts",
+    "long-observation-contrasts",
+    "long-observation-controls",
+    "long-observation-replay"
+  ],
+  "required_gpu_evidence": [
+    "long-observation-cpu-gpu"
+  ],
+  "scope_exclusions": [
+    "No production-source, numerical-law, physical-tolerance, cue-dose, pulse-time, tissue-geometry, initial-state, strength-panel, decoder-algorithm or margin changes.",
+    "Observation panels and primary endpoint are fixed before new responses are simulated; no feature search, response-driven endpoint selection, threshold tuning or label/strength input to prediction.",
+    "Only calibration rows fit readers; every observation panel has three times and identical feature count. Recalibration across horizons is explicit; frozen-coarse comparisons expose timestep-dependent calibration shifts.",
+    "Scientific failures, unresolved signals and decision/stability changes are retained as outcomes, not reasons to fail valid numerical execution. Three finite timesteps provide diagnostics, not a continuum bound.",
+    "Disconnected junctions retain extracellular/electrical routes; remote decoding alone does not establish junction necessity or causal biological consumers, polycomputing, memory, reconstruction or heredity.",
+    "No new native mixed pump/channel/junction-event correspondence or biological calibration claim; this is a synthetic assay on the qualified ordinary runtime.",
+    "Every arm executes the same world-step budget at each resolution. Track GPU-busy and measured SM-active with coverage; compilation and host work are included, with no utilization gate or Jupiter throughput claim.",
+    "Nonintegrating controls/resource checks and synthetic known answers precede frozen launch; no new scientific responses are inspected during development."
+  ],
+  "automatic_followup": false
+}
