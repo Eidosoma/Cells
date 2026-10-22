@@ -140,8 +140,19 @@ def summary(spec, state):
         "final_voltage_V": voltage.tolist(),
         **voltage_axes,
         "channel_transferred_fmol": state.ionic.channel_transferred[
-            :, : len(spec.ionic.model.channels)
+            ..., : len(spec.ionic.model.channels)
         ].tolist(),
+        **(
+            {
+                "channel_transfer_axes": ["world", "species", "channel"],
+                "channel_species_ids": list(spec.ionic.model.species_ids),
+                "channel_relative_permeability": layout.channel_relative_permeability[
+                    :, : len(spec.ionic.model.channels)
+                ].tolist(),
+            }
+            if hasattr(layout, "channel_relative_permeability")
+            else {}
+        ),
         "availability_exposure_s": state.availability_exposure_s.tolist(),
         "coupling": {p.cell_id: p.to_dict()["coupling"] for p in spec.pools},
         **(

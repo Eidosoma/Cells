@@ -1,0 +1,193 @@
+{
+  "kind": "resolved_hcn_channel_qualification@2",
+  "scope": "resolved_tissue@5 with HCN1/2/4, NaV1.2, Kv1.5 and Kir2.1. One intrinsic gate pair and availability per population, with separate Na/K/Ca routes and transfer/energy ledgers. Four synthetic 2-ms two-cell/four-patch/five-outside cases; ten populations, finite calcium ions and maintained Na/K pumps. Source/numerical qualification on CPU/L4, not measured physiology or full native BETSE tissue equivalence.",
+  "source_baseline": {
+    "project": "BETSE",
+    "version": "1.5.0",
+    "commit": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "sha256": {
+      "vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+    }
+  },
+  "tests": [
+    "tests/unit/test_surface_hcn.py",
+    "tests/unit/test_specs.py",
+    "tests/unit/test_batch_identity.py"
+  ],
+  "test_groups": [
+    {
+      "name": "shared-regressions",
+      "tests": [
+        "tests/unit/test_specs.py",
+        "tests/unit/test_batch_identity.py"
+      ]
+    },
+    {
+      "name": "hcn-laws-and-ownership",
+      "tests": [
+        "tests/unit/test_surface_hcn.py::test_design_and_rejections",
+        "tests/unit/test_surface_hcn.py::test_native_laws_and_discrete_clock",
+        "tests/unit/test_surface_hcn.py::test_continuous_clamps_and_shared_gate_power",
+        "tests/unit/test_surface_hcn.py::test_shared_gate_ownership_charge_and_energy",
+        "tests/unit/test_surface_hcn.py::test_legacy_catalog_reduction",
+        "tests/unit/test_surface_hcn.py::test_execution_plan",
+        "tests/unit/test_surface_hcn.py::test_independent_stage_rates",
+        "tests/unit/test_surface_hcn.py::test_compiled_invalid_trials_keep_complete_state",
+        "tests/unit/test_surface_hcn.py::test_compiled_smoke"
+      ]
+    },
+    {
+      "name": "hcn-trajectories-and-refinement",
+      "tests": [
+        "tests/unit/test_surface_hcn.py::test_reference_accuracy",
+        "tests/unit/test_surface_hcn.py::test_independent_trajectories",
+        "tests/unit/test_surface_hcn.py::test_refinement",
+        "tests/unit/test_surface_hcn.py::test_release_refinement"
+      ]
+    },
+    {
+      "name": "hcn-restart",
+      "tests": [
+        "tests/unit/test_surface_hcn.py::test_restart_branch_windows_and_identity"
+      ]
+    },
+    {
+      "name": "hcn-worlds",
+      "tests": [
+        "tests/unit/test_surface_hcn.py::test_worlds_ensemble_and_independent_restart"
+      ]
+    },
+    {
+      "name": "hcn-world-laws-and-cpu-gpu",
+      "tests": [
+        "tests/unit/test_surface_hcn.py::test_heterogeneous_world_laws_and_species",
+        "tests/unit/test_surface_hcn.py::test_cpu_gpu"
+      ]
+    }
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_hcn.py::test_cpu_gpu"
+  ],
+  "required_evidence": [
+    "resolved-hcn-design",
+    "resolved-hcn-native",
+    "resolved-hcn-clamps",
+    "resolved-hcn-ownership",
+    "resolved-hcn-legacy",
+    "resolved-hcn-plan",
+    "resolved-hcn-guard",
+    "resolved-hcn-smoke",
+    "resolved-hcn-stage-open-compact",
+    "resolved-hcn-stage-open-padded",
+    "resolved-hcn-stage-closed-compact",
+    "resolved-hcn-stage-closed-padded",
+    "resolved-hcn-stage-clamped-compact",
+    "resolved-hcn-stage-clamped-padded",
+    "resolved-hcn-stage-release-compact",
+    "resolved-hcn-stage-release-padded",
+    "resolved-hcn-trajectory-open",
+    "resolved-hcn-trajectory-closed",
+    "resolved-hcn-trajectory-clamped",
+    "resolved-hcn-trajectory-release",
+    "resolved-hcn-refinement",
+    "resolved-hcn-refinement-release",
+    "resolved-hcn-restart",
+    "resolved-hcn-worlds",
+    "resolved-hcn-world-laws",
+    "resolved-hcn-reference-accuracy-clamped",
+    "resolved-hcn-reference-accuracy-release"
+  ],
+  "required_gpu_evidence": [
+    "resolved-hcn-cpu-gpu"
+  ],
+  "checks": [
+    "Distinct resolved_tissue@5 schema/layout: one m/h gate pair per channel population, permeability matrix indexed species/population, and nineteen state arrays with species/population axes for channel transfer and heat. Legacy layouts retain their original shapes and catalogs.",
+    "Explicit law-specific ordered permeability routes. Na:K:Ca is 0.2:1:0.05 for HCN1/2/4, valences 1/1/2. Invalid species, ratios, ordering, gates, capacity, controls, temperature, model identity and timestep reject. cAMP variants are unsupported.",
+    "Unmodified pinned BETSE capture in a separate environment, checked file hashes and version; 61 voltages per family across -120 to +60 mV, target/time constants against native and independent 80-digit Decimal. Three 32-update native semi-implicit clocks per family at 25 us, 100 us and 1 ms. The clocks do not define the coupled RK4 solver.",
+    "Continuous 200-ms analytic clamps at 1/0.5/0.25 ms, finite autodiff, correct hyperpolarization sign and opening m independent of h. This extends gate-only relaxation checks, not the two-millisecond coupled horizon.",
+    "Eight compact/padded stage comparisons against independent full-node roots, Decimal gates/transport/pumps and separate owner arithmetic. Shared population blocking stops all three ion routes while intrinsic gates continue. Calcium contributes divalent charge and its own heat.",
+    "Missing species routes and hidden transfer/heat reject. Equal-valence opposite ledger corruption must fail material accounting despite zero net charge. Species-route heat decreases must fail even when summed heat is unchanged. Unknown and nonzero padded law codes reject.",
+    "Legacy sodium/potassium initial fields and derivatives reduce bitwise after explicit ledger reindexing. Existing schema/batch tests are separate regressions. Earlier sodium/calcium compiled and independent-rate preflights are tracked in Progress, not counted as new biological cases.",
+    "The HCN independent adaptive reference uses rtol 1e-13, amount/energy/gate atol 1e-16 and charge atol 5e-32, while earlier families retain their previous defaults. Clamped/release references must agree with a further fourfold tightening within 3e-14 per non-charge state and 3e-28 C, below the unchanged refinement floors. GPU reuses these CPU controls only after exact inputs, settings, state and passed-status checks. The failed predecessor and original reference are preserved; no production equation or acceptance threshold changes.",
+    "Four complete coupled trajectories versus segmented DOP853, full-state conservation/energy/source-work checks, release gates evolve before transport starts, and clamped/release refinement at 2.5/1.25/0.625 us. Independent CPU references reused on GPU only with exact serialized-input and passed-status checks.",
+    "Complete disk/fresh-process/terminal restart, future branch, changed window sizes, independent-world reorder/partition/restart clocks and ordinary ionic ensemble. Changed HCN law or transported species/law keeps a distinct physical identity. Heterogeneous worlds match their standalone histories bitwise and an independent full-state reference.",
+    "Invalid controls and failed compiled trial steps retain all state arrays. Complete CPU/L4 histories/readouts use the inherited physical tolerances; exact same-backend replay is required.",
+    "Host planning checks twelve arm/timestep grids and two-world aggregate work before integration. Two-world allowance 2048 padded steps, 512 MiB working storage; 2 GiB trace bound. These are resource bounds, not accuracy changes.",
+    "Fresh serial process groups bound compilation memory; all registered tests execute exactly once per backend. Repeated fixtures retain original group artifacts and are not independent cases. Source/evidence hashes, durable completion/failure, GPU busy and measured SM-active with coverage/time. No automatic follow-up.",
+    "Each refinement timestep saves exact inputs, observed/reference state arrays, field shapes and signed maximum discrepancies before accuracy assertions. Failed refinement reports preserve available values and remain failed; they cannot count as passing evidence."
+  ],
+  "tolerances": {
+    "native_law_rtol": 5e-14,
+    "native_law_atol": 5e-15,
+    "analytic_clamp_coarse_gate_atol": 1e-08,
+    "analytic_clamp_refined_to_coarse_limit": 0.02,
+    "analytic_clamp_roundoff_floor": 2e-14,
+    "initial_rate_rtol": 3e-10,
+    "initial_amount_energy_rate_atol": 3e-12,
+    "initial_charge_rate_atol_A": 3e-23,
+    "reference_state_rtol": 3e-09,
+    "reference_amount_energy_gate_atol": 2e-11,
+    "reference_electrode_charge_atol_C": 3e-25,
+    "reference_voltage_atol_V": 2e-08,
+    "independent_dop853_rtol": 1e-13,
+    "independent_amount_energy_gate_atol": 1e-16,
+    "independent_electrode_charge_atol_C": 5e-32,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": 2e-11,
+    "charge_atol_C": 3e-25,
+    "charge_rtol": 2e-12,
+    "energy_atol_pJ": 2e-08,
+    "source_work_atol_pJ": 3e-12,
+    "refinement_dt_s": [
+      2.5e-06,
+      1.25e-06,
+      6.25e-07
+    ],
+    "refinement_final_to_initial_error_limit": 0.2,
+    "refinement_amount_energy_gate_roundoff_floor": 3e-13,
+    "refinement_electrode_charge_roundoff_floor_C": 3e-27,
+    "same_backend_replay": "bitwise",
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "field_newton_target_fraction": 0.01,
+    "decimal_gate_rtol": 5e-14,
+    "decimal_gate_atol": 5e-15,
+    "analytic_clamp_duration_s": 0.2,
+    "analytic_clamp_dt_s": [
+      0.001,
+      0.0005,
+      0.00025
+    ],
+    "instantaneous_energy_balance_atol_pJ_s": 1e-10,
+    "dissipation_monotonicity_atol_pJ": 1e-12,
+    "independent_check_dop853_rtol": 2.5e-14,
+    "independent_check_amount_energy_gate_atol": 2.5e-17,
+    "independent_check_electrode_charge_atol_C": 1.25e-32,
+    "independent_reference_stability_atol": 3e-14,
+    "independent_reference_charge_stability_atol_C": 3e-28
+  },
+  "resources": {
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 6442450944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 17179869184,
+    "min_available_host_memory_bytes": 4294967296,
+    "resource_sample_seconds": 0.25,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "Finite calcium ions are transported by the HCN routes; this family does not compose owned ER/calcium/IP3 chemistry, CaV, plasma calcium transport or assembly regulation. Those require a separately checked composition.",
+    "Pinned coefficients and permeability ratios are source correspondence, not new biological measurements. No cAMP modulation, temperature fitting, action-potential validation or measured pacemaking claim.",
+    "Fixed small manufactured geometry and calcium background, maintained ATP/ADP/Pi, 298.15 K, voltage domain -120 to +60 mV and RK4 step cap 2.5 us. No arbitrary-regime, long-time coupled or spatial-convergence claim.",
+    "The source constant reversal-voltage attribute is not used; each route uses concentration-dependent GHK transport. Native isolated gate/clock agreement is distinct from continuous RK4 tissue verification.",
+    "Numerical clamps, refinements, legacy reductions, tamper/replay controls and repeated group fixtures are not independent biological cases. Parked two-task/channel-compensation research is not resumed.",
+    "Independent GPU worlds use shared execution and full checkpoints. No Jupiter or interacting-tissue multi-GPU qualification. Whole-phase utilization includes compilation/host work, with no throughput or 70-percent utilization gate."
+  ],
+  "automatic_followup": false
+}

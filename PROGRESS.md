@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-18 UTC.
+Last updated: 2026-10-22 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,17 +9,895 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Local flank-channel pilot running (18 October).**
-  [Launched detached at 11:34:46 UTC](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/launch.json),
-  worker **1156416**, with **1,038 frozen source files**. The single
-  [startup check](/mnt/workspaces/Cells/local-channel-development-20261018-01/startup.json)
-  confirmed the CPU phase running, empty stderr and no failure artifact.
-  The L4 phase follows CPU qualification. Estimated total runtime is **6–8 hours**
-  (**17:35–19:35 UTC**), within a **10-hour cap**; completion is still pending.
+- **Two-task/channel-compensation research parked on 18 October.** The final
+  local-channel run has completed; its result, controls, negative outcomes and
+  frozen inputs are preserved below, as requested.
+  Further two-task/channel-compensation searches, reader changes and fresh-case
+  confirmations are deferred until more of the simulator is built and verified.
+  Existing results and reproducible artifacts remain available for that return.
+  Platform work has resumed with the combined pump/channel/junction comparison
+  below. No further research-branch job is scheduled.
+
+- **HCN with owned calcium/ER and assembly qualified on CPU and L4;
+  completed at 17:42 UTC on 21 October in 2 h 53 min 14 s.**
+  The [result](/mnt/workspaces/Cells/resolved-calcium-hcn-20261021-01/result.json)
+  records **172 CPU passes plus one expected skip and 173 L4 passes**, with
+  no failures or errors across seven groups per backend. All **46 CPU / 47
+  GPU required reports passed**, including four coupled trajectories,
+  independent-reference accuracy, baseline/release refinement, complete
+  restart, heterogeneous worlds, assembly event reconstruction/replay and
+  complete CPU/L4 agreement. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-calcium-hcn-20261021-01/completion.json)
+  binds the result and **456 evidence files**. The 22 October status check
+  confirmed that result binding and the passed status of every required report.
+  The [startup verification](/mnt/workspaces/Cells/resolved-calcium-hcn-development-20261021-01/startup.json)
+  records **1,092 frozen source/configuration files**, exact protocol contents
+  and registered tests. Frozen inputs, results and earlier failed evidence
+  remain intact. The worker has exited and the L4 is idle; no follow-up job
+  was launched during this status check.
+
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-calcium-hcn-20261021-01/gpu-metrics/result.json)
+  covers **1 h 55 min 19 s** (**1.922 GPU-hours**). Whole-phase averages were
+  **5.128% GPU busy** and **0.06976% measured SM-active**, with **99.9999%**
+  and **99.9861%** coverage respectively. These include compilation, host
+  checks and idle time; no separate warmed-throughput interval is defined.
+  Sampled peak process-tree memory was **9.50 GiB**, below the 16-GiB limit.
+
+  `resolved_calcium@4` composes the separately qualified HCN catalog with
+  the existing free cytosol, ER, buffers, IP3, CaV, PMCA and synthetic NCX.
+  One shared population gate/availability controls its Na/K/Ca routes.
+  Each species keeps its own transfer and heat records; external transport
+  updates the chemical owner, while internal binding/ER exchange leaves
+  plasma capacitor charge unchanged. The
+  [design and correspondence](docs/TISSUE_RETURN_CURRENT.md#shared-hcn-populations-with-owned-calcium-and-assembly)
+  and [GPU examples](configs/assembly_resolved_calcium_hcn_tissue.json) describe
+  the scoped composition. Earlier model identities and array layouts remain.
+
+  Assembly reports and aggregation now retain explicit world/species/channel
+  axes, species IDs and route weights. Missing or inconsistent route metadata
+  and malformed transfer tensors reject; complete states remain checkpointed.
+  Neutral assembly pools still provide a one-way channel-availability
+  hypothesis, without protein energy or chemical feedback into assembly.
+
+  [14 initial CPU checks](/mnt/workspaces/Cells/resolved-calcium-hcn-development-20261021-01/preflight-01/qualified.json)
+  passed in **18.54 s**, covering independent compact/padded rates, free-ion
+  ownership, population blocking, route accounting/heat, old-model reduction
+  and initial assembly reports/planning. Another
+  [146 host checks](/mnt/workspaces/Cells/resolved-calcium-hcn-development-20261021-01/preflight-03/qualified.json)
+  passed in **38.93 s**, including conservation/domain failures, evolved rates,
+  event clocks, execution budgets, shared regressions and earlier sodium/calcium
+  rate/report checks. These are numerical controls, not 160 biological cases.
+
+  The [compiled CPU preflight](/mnt/workspaces/Cells/resolved-calcium-hcn-development-20261021-01/preflight-02/qualified.json)
+  passed **two checks in 329.01 s**: a 50-us independent trajectory comparison
+  and complete checkpoint round trip, plus rejection of invalid compiled trial
+  steps without changing state. The
+  [preparation receipt](/mnt/workspaces/Cells/resolved-calcium-hcn-development-20261021-01/preparation.json)
+  binds these short checks, the completed HCN prerequisite, source consistency,
+  lint, formatting, exact collection and disjoint test groups. Production code
+  is unchanged since the first preflight; all checked Python sources remain
+  semantically identical to their frozen versions.
+
+  The [full protocol](validation/tissue/surface_calcium_hcn_protocol.json)
+  registers **173 tests per backend**, one expected CPU skip and
+  **46 CPU / 47 GPU required reports**, in seven fresh serial process groups.
+  It requires four synthetic 2-ms histories, tighter independent-reference
+  controls, unchanged physical/refinement thresholds, complete restart,
+  heterogeneous worlds and independently reconstructed assembly events.
+  Per-timestep inputs/arrays/field errors are saved before refinement assertions.
+  Six-hour wall and 16-GiB process-tree limits retain a 4-GiB host reserve;
+  GPU busy and measured SM-active are observations, not correctness gates.
+  This qualifies the scoped synthetic composition on CPU/L4. Measured
+  physiology, cAMP modulation, longer coupled histories, additional channel
+  families, full native BETSE equivalence and Jupiter scaling remain outside
+  this result. Assembly remains a one-way coupling hypothesis.
+
+- **HCN1/2/4 qualification completed at 14:05:57 UTC on 21 October,
+  after 1 h 15 min 50 s.**
+  The [result](/mnt/workspaces/Cells/resolved-hcn-20261021-02/result.json)
+  records **79 CPU passes plus one expected skip and 80 L4 passes**, with
+  no failures or errors across six groups per backend. All **27 CPU / 28 GPU
+  required reports passed**, including reference accuracy, four complete
+  trajectories, clamped/release refinement, restart, independent worlds and
+  CPU/L4 agreement. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-hcn-20261021-02/completion.json)
+  binds the result and 280 evidence files. This qualifies the scoped synthetic
+  HCN implementation; measured physiology, longer coupled histories and full
+  BETSE equivalence remain outside this result. Numerical controls and shared
+  regressions are not additional biological cases.
+
+  The [GPU telemetry](/mnt/workspaces/Cells/resolved-hcn-20261021-02/gpu-metrics/result.json)
+  covers **43 min 12 s** (**0.720 GPU-hours**), averaging **8.214% GPU busy**
+  and **0.1021% measured SM-active**, both with effectively full coverage.
+  These whole-phase values include compilation, host checks and idle time;
+  there is no separately defined warmed-throughput interval. Sampled peak
+  process-tree memory was **6.24 GiB**. The worker has exited and the L4 is idle;
+  no follow-up job was launched during this status check.
+
+  The [run](/mnt/workspaces/Cells/resolved-hcn-20261021-02/launch.json)
+  started at 12:50:06 UTC after isolating insufficient reference accuracy. The
+  [startup check](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/retry-startup.json)
+  confirmed that **1,085 frozen source/configuration files**, exact test groups
+  and protocol contents matched preparation.
+
+  The [diagnostic](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/diagnosis.json)
+  reproduced the failed case, with the coarse complete history matching the
+  failed parent bitwise. It located the discrepancy in a sodium activation
+  gate. Tightening only the independent adaptive reference made the unchanged
+  production trajectories converge: maximum non-charge errors at
+  **2.5/1.25/0.625 us** are **2.3565e-12 / 1.5745e-13 / 2.0765e-14**.
+  Both the original state and charge refinement requirements pass on these
+  retained arrays. The earlier apparent improvement at the coarsest step
+  reflected cancellation with reference error.
+
+  HCN references now use **rtol 1e-13**, state absolute tolerance **1e-16**
+  and charge absolute tolerance **5e-32 C**. Two new independent-reference
+  controls tighten these another fourfold and require agreement within
+  **3e-14** per non-charge state and **3e-28 C**. The
+  [CPU preflight](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/preflight-04/qualified.json)
+  passed both controls in **195.39 s**: maximum non-charge differences were
+  **6.2311e-15** for clamped and **2.4841e-15** for release. GPU checks reuse
+  these CPU references only after exact input/settings/state and passed-status
+  checks. These controls are numerical evidence, not additional biological cases.
+
+  **All 149 production Python modules, physical inputs, timestep grids and
+  acceptance thresholds are unchanged.** Earlier reference families retain
+  their original default integration settings. The shared refinement check
+  now saves each timestep's inputs, observed/reference arrays and signed
+  per-field errors before assertions. An
+  [evidence-writing check](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/refinement-evidence-check-01/result.json)
+  verified both the preserved failure with the old reference and the pass with
+  the tighter reference, using saved trajectories without new simulation.
+  [Preparation](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/retry-preparation.json)
+  binds the diagnostics, checks and source hashes; lint, formatting and exact
+  collection passed. The failed run below remains untouched. HCN with owned
+  calcium/ER and assembly is the separate composition recorded above.
+
+- **HCN1/2/4 qualification stopped at 10:25:20 UTC on 21 October,
+  after 6 min 28 s, on clamped-case timestep refinement.**
+  The [failure receipt](/mnt/workspaces/Cells/resolved-hcn-20261021-01/failure.json)
+  and [status verification](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/status-20261021-1218/status.json)
+  record **72 CPU passes, one failure and five unexecuted tests**. The
+  worker has exited; **that run's GPU phase never started**.
+  That run's HCN qualification was **incomplete**. No new simulation or retry
+  was launched during that status check; the later retry is recorded above.
+
+  The 52 shared regressions, 16 HCN law/ownership checks and all four
+  **2-ms independent trajectory comparisons passed**, including their
+  conservation and energy checks. The clamped refinement loop also passed
+  the full-state comparison at all three timesteps, then failed its stricter
+  refinement requirement: maximum non-charge state discrepancy increased
+  from **4.4958e-13 at 2.5 us** to **2.0338e-12 at 0.625 us**, exceeding
+  the **3e-13** refinement floor. The error's state field and intermediate
+  timestep metrics were not saved before the assertion. The subsequent
+  diagnosis above identifies insufficient reference accuracy; the failed
+  evidence and original thresholds are preserved.
+
+  **20 of 25 required CPU reports have passed status**; the four trajectory
+  reports remain in the failed group's original evidence directory, separate
+  from the 16 published reports. Both refinement reports, full restart,
+  independent-world and heterogeneous-world reports remain missing, along
+  with every GPU comparison. All **1,085 frozen source files** and the
+  protocol bindings were reverified. Sampled process-tree peak was **3.27 GiB**,
+  with at least **18.68 GiB** host memory available; no resource stop occurred.
+  The [failed run's protocol](/mnt/workspaces/Cells/resolved-hcn-20261021-01/component-protocol.json) retains 78 tests
+  per backend, one named CPU skip and 25 CPU / 26 GPU required reports.
+
+  `resolved_tissue@5` implements one intrinsic gate pair and availability per
+  population, shared across the pinned HCN **Na:K:Ca = 0.2:1:0.05** routes.
+  Each species retains its own transfer and heat records; calcium has valence
+  +2. NaV1.2/Kv1.5/Kir2.1 remain available, and previous model versions retain
+  their schemas and layouts. The [source correspondence table](docs/TISSUE_RETURN_CURRENT.md#shared-hcn-gates-and-multi-ion-transport)
+  records native voltage shifts, time constants, gate powers, permeability
+  ratios and the distinction between native gate clocks and continuous RK4.
+  An [ordinary GPU example](configs/resolved_hcn_cluster.json) is included.
+
+  Short CPU preflights passed: [28 source/rate checks](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/preflight-01/qualified.json)
+  in 24.40 s, [three compiled checks](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/preflight-02/qualified.json)
+  in 304.89 s, and [53 ownership/schema/batch checks](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/preflight-03/qualified.json)
+  in 5.96 s. These **84 test executions include one repeated ownership
+  control**, extended to catch charge-neutral species-ledger corruption and
+  decreasing per-route heat hidden by an unchanged total. They are numerical
+  checks, not independent biological cases. Compiled tests cover invalid-step
+  rejection, complete HCN checkpoint storage and the existing sodium/calcium
+  composition. Earlier independent rate controls also pass.
+  [Preparation](/mnt/workspaces/Cells/resolved-hcn-development-20261021-01/preparation.json)
+  retains inputs, logs, JUnit, evidence and frozen-source hashes; lint and exact
+  test-group collection passed.
+
+  The protocol compares four synthetic **2-ms** open/closed/clamped/release
+  tissue histories with independent field roots and adaptive integration,
+  plus refinement, complete restart, heterogeneous-world ownership and CPU/L4
+  agreement. Gate-only analytic clamps cover **200 ms**; they do not extend
+  the coupled-tissue horizon. The runner retains its live memory guard,
+  durable failures and separate GPU busy/SM-active telemetry, with a six-hour
+  wall ceiling. Utilization optimization remains parked.
+
+  The refinement diagnosis and successful CPU/L4 retry are recorded above.
+  It transports finite calcium ions; HCN composition with owned ER/calcium/IP3
+  chemistry and assembly follows that qualification.
+  Source correspondence does not establish experimental
+  calibration, physiological pacemaking, full BETSE tissue equivalence or
+  Jupiter scaling. cAMP-modulated HCN variants remain outside this slice.
+
+- **Combined sodium and owned-calcium qualification completed at 21:34:31 UTC
+  on 20 October, in 2 h 57 min 17 s.**
+  The [result](/mnt/workspaces/Cells/resolved-sodium-calcium-20261020-02/result.json)
+  and [completion receipt](/mnt/workspaces/Cells/resolved-sodium-calcium-20261020-02/completion.json)
+  record **194 CPU passes plus two expected skips**, followed by **196 L4
+  passes**, with no failures or errors. All **69 CPU and 71 GPU required
+  reports passed** across the nine serial groups per backend.
+  The [21 October status verification](/mnt/workspaces/Cells/qualification-runner-fix-20261020-01/status-20261021-0925/status.json)
+  checked the result/registration bindings, **1,077 frozen source files**,
+  **582 completion evidence files**, all group receipts and exact test coverage.
+
+  This qualifies the declared synthetic `resolved_tissue@4` sodium/potassium
+  panel and `resolved_calcium@3` composition with owned calcium/ER/IP3,
+  plasma transport, junctions, resolved fields and assembly regulation on CPU/L4.
+  The previously unfinished release refinement, heterogeneous law/species
+  worlds and changed-population checkpoint checks now pass. Full-state
+  restart, conservation/energy, independent trajectories, assembly replay and
+  CPU/L4 comparisons pass within the registered tolerances. These are scoped
+  numerical/source comparisons, not measured biological validation, full
+  native BETSE tissue equivalence or Jupiter qualification.
+
+  [Preparation](/mnt/workspaces/Cells/qualification-runner-fix-20261020-01/preparation.json)
+  confirms the same **196 tests per backend**, exactly once, the same **two
+  named CPU skips**, and **69 CPU / 71 GPU required reports**. All physical
+  equations, scientific tests, inputs and acceptance tolerances are unchanged.
+  Each group keeps its own logs, JUnit and original evidence; repeated fixtures
+  are not additional cases. The first published CPU copies supply the later
+  GPU comparisons, with an integrity check after that phase.
+
+  The [runner checks](/mnt/workspaces/Cells/qualification-runner-fix-20261020-01/checks-02/result.json)
+  passed **153 tests in 15.18 s**, including real small-process memory and
+  timeout stops, descendant cleanup, failed sampling, exact group coverage,
+  skip/error handling and evidence preservation. Collection and lint also
+  passed; total checking time was **22.46 s**. An
+  [initial failed check](/mnt/workspaces/Cells/qualification-runner-fix-20261020-01/checks-01/failure.json)
+  exposed a race between signalling descendants and their exit; the runner
+  now waits for their termination, including recorded children in separate
+  sessions. No simulation failure was involved in that harness check.
+
+  The [protocol](/mnt/workspaces/Cells/resolved-sodium-calcium-20261020-02/component-protocol.json)
+  retains an **eight-hour ceiling**, **6 GiB artifacts/cache** and **4 GiB
+  disk reserve**. Process-tree RSS is sampled every **0.25 s**, with stops at
+  **16 GiB RSS** or below **4 GiB available host memory**; this is sampled
+  enforcement, not a kernel allocation cap. A resource stop writes a durable
+  receipt and cleans up that test's descendants. The completed run's sampled
+  process-tree peak was **12.29 GiB**, with **9.40 GiB** maximum observed
+  individual-process high-water memory; available host memory stayed above
+  **12.68 GiB**. No resource stop occurred, and all error logs were empty.
+
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-sodium-calcium-20261020-02/gpu-metrics/result.json)
+  covers **1 h 50 min 17 s** of the L4 phase (**1.838 allocated GPU-hours**):
+  **7.30% GPU busy** and **0.0968% SM-active**, with approximately **100%
+  coverage** for both. These whole-phase averages include compilation, host
+  checks and idle periods; no fully warmed throughput interval is claimed.
+  Further utilization optimization remains parked. The worker has exited and
+  the L4 is idle; no follow-up run was launched during this status check.
+
+- **Previous combined qualification terminated by host out-of-memory
+  handling at 18:12:16 UTC on 20 October, after 64 min 13 s.**
+  The [status diagnosis](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/status-20261020-1820/status.json)
+  and [kernel log](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/status-20261020-1820/kernel-oom.log)
+  identify the CPU test process at **20.8 GiB anonymous resident memory**.
+  The enclosing systemd scope also ended with `oom-kill`; both worker and
+  test process are gone. The original status file is stale, and no worker
+  completion/failure receipt was written. The diagnosis is stored separately
+  from the [unchanged run](/mnt/workspaces/Cells/resolved-sodium-calcium-20261020-01/launch.json).
+
+  The CPU log records **138 passes and two expected skips**, with no assertion
+  failure or error output; these are progress markers, not a completed JUnit
+  suite. **65 of 69 required CPU reports passed**, including the sodium
+  regression, all four coupled calcium trajectories, baseline refinement,
+  complete restart/world partition and the independent assembly/replay checks.
+  The next registered test was calcium **release refinement**. Its report,
+  heterogeneous law/species-world report and two changed-population branch
+  rejection reports are missing; the final shared regressions also remain
+  unfinished. **The GPU phase never started. Full qualification is incomplete.**
+
+  The previous [combined job failed](/mnt/workspaces/Cells/resolved-sodium-composition-20261020-01/failure.json)
+  at **15:53:39 UTC**, after **14 min 7 s**: **23 CPU tests passed**, then the
+  two-world test rejected its frozen **1,024-step** allowance where **1,606**
+  padded steps were required. The [status record](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/parent-status-before-full-qualification.json)
+  confirms that worker exited and no GPU phase ran. Its source and failed
+  evidence remain unchanged. The new run uses the already checked **2,048-step**
+  allowance and chemical-event fix; physical equations and acceptance
+  tolerances are unchanged.
+
+  [Original preparation](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/full-qualification-preparation.json)
+  binds the failed parent, completed short checks and **1,075 frozen
+  source/configuration files**, all reverified before the new launch.
+  The frozen runner checks peak RSS **only after a test phase returns**;
+  it did not enforce that memory allowance while the process was running.
+  The rerun above replaces that execution strategy without reusing these
+  partial results as acceptance.
+
+- **Full sodium/calcium verification suite prepared on 20 October; 109 short
+  CPU checks and three event/restart simulations passed.**
+  The [suite](tests/unit/test_surface_calcium_sodium_full.py)
+  and [protocol](validation/tissue/surface_calcium_sodium_protocol.json)
+  collect **170 tests per backend**, requiring **85 reports** across CPU/L4.
+  They cover four complete 2-ms cases, baseline and release refinement,
+  conservation/energy, complete restart and independent-world replay,
+  heterogeneous channel law/species arrays, assembly dynamics and CPU/L4
+  agreement. Three additional 50-us controls exercise chemical-only events
+  and restart at the event boundary. Numerical controls remain distinct from
+  biological cases.
+  This prepared suite is included in the combined qualification above.
+
+  Building these checks exposed and fixed a validation bug: projecting the
+  sodium/calcium definition to its ionic component discarded chemical-only
+  event times. Validation now uses the complete clock while retaining the
+  **2.5-us sodium step cap**. Store-only, plasma-only and calcium-channel-only
+  observation boundaries pass, including earlier-model regressions; unsupported
+  off-grid observations still reject.
+
+  Host planning now checks all twelve arm/timestep grids and both batch
+  variants before integration. Sodium two-world tests allow **2,048 aggregate
+  padded steps**. The full calcium composition also allows **2 GiB** for
+  trace storage and aggregate batch working arrays: maximum planned estimates
+  are **1.85 GB / 1.86 GB**, respectively. Older test defaults, physical
+  equations and numerical tolerances remain unchanged.
+
+  The [bounded CPU preflight](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-03/result.json)
+  passed **109 tests in 32.30 s**, **48.88 s** including collection.
+  Its [inputs and source hashes](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-03/inputs.json),
+  [protocol collections](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-03/protocol-collection.json)
+  and [evidence](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-03/evidence/cpu)
+  retain the exact checks. Failed preflights for the
+  [old trace allowance](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-01/failure.json)
+  and [chemical-event clock](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-02/failure.json)
+  remain preserved. These CPU checks cover planning, initial/evolved rates,
+  ownership, domain rejection and compatibility; they do not establish full
+  trajectories, replay or GPU execution.
+
+  The subsequent [bounded event-execution check](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-04/result.json)
+  passed **all three 50-us cases in 164.91 s**, **180.03 s** including
+  collection, with empty error logs. Each local intervention at **37 us**
+  stopped its selected transfer while another owner/patch continued; CaV gates
+  continued under channel block. All 34 observed state fields matched the
+  independent segmented reference, using at most **1.88% of the numerical error
+  budget**, and every complete disk restart was **bitwise identical**.
+  [Inputs and frozen sources](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-04/inputs.json)
+  and [per-case evidence](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/preflight-04/evidence/cpu)
+  preserve the controls, references, checks and timings. Compilation took
+  **158.3 s**; subsequent cases reused those compiled kernels.
+  The [source/lint checks](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/checks.json)
+  confirm unchanged production sources since the 109-test preflight.
+  These short CPU execution controls do not qualify the complete 2-ms
+  trajectories, heterogeneous worlds, assembly dynamics or L4 execution.
+
+  A separate [read-only reproduction](/mnt/workspaces/Cells/resolved-calcium-sodium-development-20261020-01/frozen-sodium-batch-budget.json)
+  found that the existing detached sodium job's frozen two-world test needs
+  **1,606 padded steps**, exceeding its **1,024-step** allowance. The later
+  status check confirmed this exact failure, recorded above.
+  The checkout correction adds an early planning check;
+  the frozen job and evidence remain untouched. **No job-status poll, GPU use
+  or follow-up long run occurred during this development work.**
+
+- **Sodium release correction and initial sodium/calcium composition implemented;
+  initial combined job launched at 15:39:31 UTC and failed on the batch-budget
+  check at 15:53:39 UTC on 20 October.** The
+  failed parent below
+  remains unchanged. Its largest error was the second NaV population's
+  activation gate at **0.73 ms**. Tightening the independent reference by
+  100-fold shifted that gate by only **4.42e-13**, or **0.449% of the acceptance
+  budget**; the
+  [diagnostic](/mnt/workspaces/Cells/resolved-sodium-development-20261020-02/diagnostic-02/saved-release-diagnostic.json)
+  retains both references and the exact failing state.
+
+  With unchanged production equations, the
+  [bounded boundary refinement](/mnt/workspaces/Cells/resolved-sodium-development-20261020-02/release-refinement/result.json)
+  passed in **193.4 s**. Steps of **2.5/1.25 us** reduced the maximum gate error
+  to **6.74e-12 / 4.15e-13**, using **6.85% / 0.422%** of the original error
+  budget. The approximately sixteen-fold reduction at each halving identifies
+  RK4 truncation error as the explanation for the original failure. The sodium
+  model/example now cap steps at **2.5 us**. Acceptance tolerances and physical
+  equations are unchanged; full checks now include **2.5/1.25/0.625-us**
+  refinement for both clamped and release histories.
+
+  The next composition, [resolved_calcium@3](src/cells/models/surface_calcium_sodium.py),
+  is also implemented: NaV1.2/Kv1.5/Kir2.1 with owned cytosol/ER calcium, buffers,
+  IP3, CaV1.2, PMCA and synthetic NCX. The explicit ionic view uses free
+  cytosolic sodium and preserves channel identity through checkpoints and
+  assembly reporting. Earlier model catalogs retain their identities. The
+  [ordinary](configs/resolved_calcium_sodium_tissue.json) and
+  [assembly](configs/assembly_resolved_calcium_sodium_tissue.json) examples
+  select the GPU backend.
+
+  The [bounded preflight](/mnt/workspaces/Cells/resolved-sodium-development-20261020-02/preflight-01/result.json)
+  passed **17 CPU checks in 195.38 s**, including eight
+  independent initial composition stages, owned sodium/blocking controls,
+  earlier-model reduction, assembly reporting/planning and a 50-us compiled
+  trajectory/checkpoint. The latter used **1.93% of the state error budget**.
+  **Both L4 checks passed in 248.23 s**: the corrected sodium smoke/checkpoint
+  and the new sodium/calcium smoke/reference/checkpoint. Total preflight time
+  was **454.3 s**. Its whole GPU phase averaged **0.0290% GPU busy /
+  0.0104% SM-active** over **252.2 s**, with **100% / 99.54% coverage**.
+  These include compilation and host checks; no warmed throughput interval
+  is claimed. Both error logs were empty.
+
+  The
+  [frozen combined protocol](/mnt/workspaces/Cells/resolved-sodium-composition-20261020-01/component-protocol.json)
+  collects **90 tests per backend** and requires **79 passing reports** across
+  CPU/L4: full sodium regression plus these initial calcium integration checks.
+  Each component retains separate evidence. The
+  [detached launch](/mnt/workspaces/Cells/resolved-sodium-composition-20261020-01/launch.json)
+  freezes **1,073 source/configuration files**, runs CPU before L4 with one
+  expected CPU comparison skip, and has a **six-hour wall limit** and
+  **3–5-hour runtime estimate**.
+  [Preparation](/mnt/workspaces/Cells/resolved-sodium-development-20261020-02/preparation.json)
+  binds the failed parent, diagnosis, preflight and candidate; the only
+  post-preflight changes are an equivalent public-import spelling and a
+  reduced worker-memory cap. The single
+  [startup check](/mnt/workspaces/Cells/resolved-sodium-development-20261020-02/launch-status.json)
+  at **15:40 UTC** confirms an independent detached session, exact source
+  agreement, an active CPU phase and empty error logs.
+
+  Full sodium/calcium qualification remains subsequent; its prepared suite
+  and development results are recorded above. Initial wiring checks do not
+  establish full trajectories, refinement, replay or assembly dynamics.
+  Compatible additions can share one frozen run while further
+  implementation proceeds in the checkout. Ruff and whitespace checks passed;
+  generated outputs remain under `/mnt/workspaces`. Both GPU metrics are enabled
+  for the full run, and no automatic follow-up is scheduled.
+
+- **NaV1.2 sodium/potassium integration implemented; qualification failed
+  a CPU trajectory comparison at 13:47:10 UTC on 20 October.** The new
+  [model](src/cells/models/surface_sodium.py), `resolved_tissue@4`, combines
+  independently controlled NaV1.2, Kv1.5 and Kir2.1 populations with the existing
+  resolved fields, Na/K pumps and intrinsic junctions. Sodium and potassium
+  populations can share a patch while retaining separate gates and transfer/
+  energy ledgers. A distinct layout preserves law/species identity through
+  ordinary configuration, checkpoints and independent GPU worlds. Existing
+  potassium/calcium models keep their prior catalogs. The
+  [GPU example](configs/resolved_sodium_cluster.json) and
+  [guide](docs/TISSUE_RETURN_CURRENT.md#sodium-and-potassium-channels-in-resolved-tissue)
+  describe the supported inputs.
+
+  The [frozen protocol](/mnt/workspaces/Cells/resolved-sodium-20261020-01/component-protocol.json) checks the
+  pinned native law and clock separately from analytic singular limits and
+  continuous coupled trajectories. It covers four synthetic 2-ms tissue cases
+  with seven populations, 5/2.5/1.25-us refinement, conservation, complete
+  replay and CPU/L4 comparisons at existing physical tolerances. Source
+  [provenance](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/source-provenance.json)
+  records byte agreement with the pinned upstream file. No biological
+  excitability, NaV/calcium composition or multi-GPU execution is established.
+
+  The [first preflight](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/preflight-01/failure.json)
+  preserves one pass and one failure in **14.49 s**: a finite native NaV
+  time constant at −65 mV differs by **7.53e-14 s** because of direct
+  exponential subtraction near a removable zero. The revised comparison
+  retains all native samples, replays their source arithmetic, and checks the
+  stable production values against an independent 80-digit Decimal reference.
+  Direct native parameter agreement covers 34 well-conditioned sweep points;
+  the remaining point is an explicit precision diagnostic. Native gate-clock
+  checks retain all 35 finite points at the original tolerances. Production
+  equations and coupled trajectory/CPU-GPU tolerances are unchanged.
+
+  The [second bounded preflight](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/preflight-02/failure.json)
+  passed **14 CPU checks in 119.46 s** and completed **three GPU checks**:
+  native correspondence, continuous limits/clamps and the compiled run with
+  checkpoint round trip. The final heterogeneous-world GPU check exceeded
+  the **570-s total preflight limit**; no numerical assertion failed in that
+  attempt, but batching remains unqualified. Both failed attempts and their
+  frozen sources are retained. The
+  [observed GPU window](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/preflight-02-gpu-observed-window.json)
+  averaged **0.0734% GPU busy / 0.00125% SM-active** over **443.8 s**.
+  This covers first-to-last telemetry samples, not exact whole-phase boundaries.
+  [Preparation](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/preparation.json)
+  verifies unchanged production code after the first preflight and exact source
+  agreement with the second preflight.
+
+  The [full detached job](/mnt/workspaces/Cells/resolved-sodium-20261020-01/launch.json)
+  freezes **1,067 source/configuration files**, **76 tests per backend** and
+  **51 required reports**, including the unfinished batching check. It started
+  from fresh inputs at **13:31:57 UTC**, with CPU before L4 and a
+  **four-hour wall limit**.
+  [Startup](/mnt/workspaces/Cells/resolved-sodium-development-20261020-01/launch-status.json)
+  records its own detached session and the initial CPU phase. The
+  [failure](/mnt/workspaces/Cells/resolved-sodium-20261020-01/failure.json)
+  records **15 min 11 s** elapsed; the
+  [CPU log](/mnt/workspaces/Cells/resolved-sodium-20261020-01/cpu.stdout.log)
+  reports **19 passed and one failed in 14 min 52 s**. The open, closed and
+  clamped independent trajectories passed; the release trajectory exceeded the
+  unchanged full-state error budget, with a maximum error/budget ratio of
+  **1.10473**. This is a **10.47% exceedance of the allowed numerical error**,
+  not a 10.47% physical-state error. The later diagnosis is recorded above.
+  The remaining CPU checks and entire L4 phase were not executed, and no
+  result/completion artifact was produced. Full qualification remains pending;
+  the failure and frozen inputs are preserved, with no automatic retry or
+  follow-up. The later timestep/reference convergence check preserves this
+  failed result and its existing tolerances.
+  Both GPU metrics remain registered for a future GPU phase. Ruff and whitespace
+  checks passed before launch. Generated outputs remain under `/mnt/workspaces`;
+  the two-task research stays parked.
+
+- **Mixed potassium/calcium CPU/L4 qualification completed at 20:32:39 UTC
+  on 19 October: CPU 160 passed and one expected skip; L4 all 161 passed.** The
+  [model wrapper](src/cells/models/surface_calcium_channels.py) now exports the
+  five existing helpers needed for owned calcium and IP3 assembly reports.
+  Aggregation also rejects missing calcium sections. Initial and evolved report
+  checks reconstruct free-ion amounts, IP3 concentration/release fraction and
+  ER voltage directly from the declared owners and complete saved state.
+  Solver/process equations, conservation and trajectory tolerances are unchanged.
+
+  The [bounded preflight](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-02/preflight-02/result.json)
+  passed **three tests** plus before/after saved-state reporting checks in
+  **20.1 s**. The original frozen code reproduced the missing readouts; the
+  fixed code produced a complete
+  [restored report](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-02/preflight-02/restored-report.json)
+  and passed aggregation and both missing-section guards. All **57 saved state
+  arrays** and existing scientific report values were unchanged. This was a
+  read-only report regression, not checkpoint continuation across changed code.
+  [Preparation](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-02/preparation.json)
+  preserves the original failed run and the short preflight's missing-timing
+  fixture failure; the corrected initial-state fixture records zero integration
+  time, while the saved-state check retains its original measured execution time.
+
+  The [detached job](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/launch.json)
+  freezes **1,059 source/configuration files**, **161 tests per backend** and
+  **67 required reports**, with one expected CPU skip before the L4 comparison.
+  The [result](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/result.json)
+  records **2 h 13 min 34 s** elapsed, within the original 2–3-hour estimate;
+  the [completion artifact](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/completion.json)
+  binds the result and evidence. CPU tests took **51 min 17 s**, and L4 tests
+  took **1 h 20 min 59 s**. At the 20 October status check, the worker had
+  exited, error logs were empty, no failure artifact was present and the L4
+  was idle. No follow-up job was launched.
+
+  The corrected assembly aggregation/readout checks, four independent tissue
+  trajectory comparisons, conservation, refinement, restart and world checks
+  all passed on both backends. All
+  [120,563 CPU/L4 scalar comparisons](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/evidence/gpu/resolved-calcium-channels-cpu-gpu.json)
+  passed at the unchanged tolerances. The
+  [assembly reference](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/evidence/gpu/resolved-calcium-channels-assembly-reference.json)
+  used **9.12% of the state tolerance budget**, and
+  [assembly replay](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-02/evidence/gpu/resolved-calcium-channels-assembly-replay.json)
+  remained bitwise reproducible with unchanged random events under the IP3
+  perturbation. Qualification covers the declared four synthetic 2-ms cases;
+  it does not establish full native BETSE equivalence or biological calibration.
+
+  Whole GPU phase averaged **0.454% GPU busy / 0.00673% SM-active** over
+  **4,887.8 s**, with **greater than 99.99% coverage** for both metrics.
+  This correctness suite includes compilation, host checks and sampler overhead;
+  no fully warmed throughput interval was defined. Ruff and whitespace checks
+  passed; generated outputs remain under `/mnt/workspaces`.
+
+- **Mixed potassium/calcium qualification stopped on a reporting integration
+  failure at 17:15:26 UTC on 19 October**, after **53 min 28 s**. The new
+  [model](src/cells/models/surface_calcium_channels.py), `resolved_calcium@2`,
+  combines the accepted Kv1.5/Kir2.1 population laws with owned cytosol/ER
+  chemistry, buffered calcium/IP3, Cav1.2, PMCA and synthetic reversible NCX.
+  Per-population law codes survive the ionic projection, chemical ownership
+  view, ordinary snapshots, independent worlds and cell-owned assembly
+  controls. `resolved_calcium@1` retains its Kv1.5-only identity and layout.
+  [Ordinary](configs/resolved_calcium_channels_tissue.json) and
+  [assembly](configs/assembly_resolved_calcium_channels_tissue.json) examples
+  select the GPU backend; the
+  [guide](docs/TISSUE_RETURN_CURRENT.md#mixed-potassium-channels-with-owned-calcium-chemistry)
+  describes the composition and limits.
+
+  The [protocol](validation/tissue/surface_calcium_channel_protocol.json)
+  reuses the established calcium checks and tolerances for four synthetic
+  closed 2-ms tissue cases, independent full-node/Decimal/scalar trajectories,
+  all 34 state arrays, conservation, complete replay, assembly event references
+  and CPU/L4 comparison. Additional controls check internal potassium
+  ownership, selective Kir blocking, rejected law changes and distinct law
+  arrays in two batched worlds. These numerical controls and legacy reductions
+  are not independent biological cases. One-versus-sixteen-GPU planning is
+  checked locally; remote execution and a distributed interacting tissue are
+  outside this run. Both GPU busy and SM-active are registered for the GPU
+  phase, which was not reached in this attempt.
+
+  The [failed job](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-01/failure.json)
+  freezes **1,059 source/configuration files**, **159 tests per backend** and
+  **67 required reports**. Its
+  [CPU test log](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-01/cpu.stdout.log)
+  records **103 passed, one expected GPU-only skip and one failure**; the
+  remaining 54 CPU tests and the entire L4 phase were not executed. On the
+  17:54 UTC status check the worker had exited, no result/completion artifact
+  was present and the L4 was idle. No automatic retry or follow-up was started.
+
+  All four independent 2-ms trajectories, conservation, timestep refinement,
+  complete restart, world partition/reordering and ordinary ensemble checks
+  passed on CPU. Refinement reduced the maximum state error from
+  **7.56e-11** to **2.92e-13** over the three declared timesteps. The
+  [assembly reference](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-01/evidence/cpu/resolved-calcium-channels-assembly-reference.json)
+  passed at **9.12% of the state tolerance budget**, and
+  [assembly replay](/mnt/workspaces/Cells/resolved-calcium-channels-20261019-01/evidence/cpu/resolved-calcium-channels-assembly-replay.json)
+  passed restart/window/partition checks. The IP3 perturbation changed calcium
+  by **7.04e-5 fmol** while assembly random events remained unchanged.
+
+  Failure occurred when aggregating the assembly report: the new model wrapper
+  does not export the existing `ip3_readouts` and store-reporting helpers, so
+  the summary omitted its `ip3` and `calcium` sections. The strict aggregator
+  rejected the missing ligand readout. Complete chemical state and the passing
+  trajectory evidence remain saved; reporting and full qualification are
+  incomplete for this attempt. The reporting fix and fresh qualification are
+  recorded above. Frozen sources, failed evidence and numerical tolerances
+  remain untouched.
+
+  The [bounded CPU preflight](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-01/preflight-02/result.json)
+  passed **all 23 checks in 5 min 2 s**, including the compiled ordinary run
+  and saved-checkpoint round trip. Its
+  [first attempt](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-01/preflight-01/failure.json)
+  preserves two passes followed by an overly strict bitwise flux assertion:
+  re-solving the shared field changed the unchanged cell's reported flux by
+  about **2.7e-19 fmol/s**. That new control now uses the existing independent
+  rate tolerance, while unchanged inventory and plasma-voltage checks remain
+  exact. Production code and conservation/trajectory tolerances were unchanged.
+  [Preparation](/mnt/workspaces/Cells/resolved-calcium-channels-development-20261019-01/preparation.json)
+  records that production sources match the passing preflight; the added
+  different-law world-routing check and its protocol entry run in the full suite.
+  Ruff and whitespace checks passed. All generated outputs are under
+  `/mnt/workspaces`.
+  Full qualification remains pending; no research-branch work was resumed.
+
+- **Mixed Kv1.5/Kir2.1 resolved-tissue qualification completed at 15:33:49 UTC
+  on 19 October.** **CPU: 74 passed and one expected GPU-only skip; L4: all
+  75 passed.** The new [model](src/cells/models/surface_channels.py),
+  `resolved_tissue@3`, adds independently controlled Kir2.1 populations alongside
+  Kv1.5, including two populations on one membrane patch. Gates, ionic transfers
+  and dissipated energy retain separate population ownership. Numeric law codes
+  use the existing GPU array path; ordinary configuration, checkpoint, window
+  and independent-world execution share the existing infrastructure. The
+  [example](configs/resolved_channels_cluster.json) selects the GPU backend;
+  [the guide](docs/TISSUE_RETURN_CURRENT.md#mixed-potassium-channels-in-resolved-tissue)
+  explains the declared laws and limits.
+
+  The [detached job](/mnt/workspaces/Cells/resolved-channels-20261019-01/launch.json)
+  freezes **1,053 source/configuration files**, **75 tests per backend** and
+  **45 required reports**, with one expected CPU skip before the L4 comparison.
+  Its [protocol](/mnt/workspaces/Cells/resolved-channels-20261019-01/component-protocol.json)
+  checks four synthetic **2-ms** tissue cases, independent adaptive trajectories,
+  three timesteps, conservation, full replay and CPU/L4 agreement. Pinned BETSE
+  law/discrete-clock comparisons are separate from this continuous-time resolved
+  model; this is not native full-tissue equivalence or biological calibration.
+  Existing calcium composition remains Kv1.5-only. The
+  [result](/mnt/workspaces/Cells/resolved-channels-20261019-01/result.json)
+  records **53 min 46 s** elapsed, below the original 2–3-hour estimate; the
+  [completion artifact](/mnt/workspaces/Cells/resolved-channels-20261019-01/completion.json)
+  binds the result and evidence. The worker has exited, error logs are empty
+  and no failure artifact is present. No automatic follow-up is scheduled.
+
+  All four independent 2-ms trajectory comparisons, conservation checks,
+  timestep refinement and the
+  [restart/branch/window checks](/mnt/workspaces/Cells/resolved-channels-20261019-01/evidence/cpu/resolved-channels-restart.json)
+  passed on both backends. The
+  [world/ensemble checks](/mnt/workspaces/Cells/resolved-channels-20261019-01/evidence/gpu/resolved-channels-worlds.json)
+  preserved bitwise results under world reordering, partitioning and independent
+  restart clocks. All
+  [55,194 CPU/L4 scalar comparisons](/mnt/workspaces/Cells/resolved-channels-20261019-01/evidence/gpu/resolved-channels-cpu-gpu.json)
+  passed across four histories and 19 state arrays. Prior-model and ordinary
+  configuration/identity regressions also passed.
+
+  Whole GPU phase averaged **0.480% GPU busy / 0.00790% SM-active** over
+  **1,915.8 s**, with **greater than 99.99% coverage** for both metrics. This
+  correctness suite includes compilation, host checks and sampler overhead;
+  no fully warmed throughput interval was defined. The L4 is now idle.
+
+  [Preparation](/mnt/workspaces/Cells/resolved-channels-development-20261019-01/preparation.json)
+  preserves both preflight failures. The first passed **13 checks**, including
+  native laws, analytic relaxation and eight independent stage comparisons,
+  then exposed a checkpoint-layout registration error. An explicit model module
+  corrected that integration issue; its original sources and failure remain
+  saved. The second preflight passed **four CPU tests**, including the ordinary
+  short run and disk checkpoint plus prior resolved/calcium rate regressions.
+  **Four GPU checks completed**, covering native equations/clocks, analytic
+  relaxation, rejected controls/trials and Kv1.5-only reduction. Its final GPU
+  end-to-end short run was unfinished when the fixed **570-s** budget expired;
+  GPU end-to-end verification subsequently passed in the detached suite. Native
+  comparisons cover 37 voltages and **21,756 scalar checks per backend**, with
+  maximum gate difference **4.56e-15**. These numerical checks are not additional
+  independent biological cases.
+
+  Both GPU metrics were retained for that timed-out preflight. Its
+  [recorded monitor window](/mnt/workspaces/Cells/resolved-channels-development-20261019-01/preflight-02-gpu-observed.json)
+  averaged **0.00760% GPU busy / 0.00338% SM-active**, with **99.83% / 99.76%
+  coverage** over **427.6 s**, including compilation, host checks and sampler
+  startup/shutdown. This is partial-run telemetry, not a completed benchmark.
+  The [launch receipt](/mnt/workspaces/Cells/resolved-channels-development-20261019-01/launch-status.json)
+  binds the detached worker and frozen sources; only the full-run wall budget
+  changed after preflight. Numerical criteria and production code were unchanged.
+  Ruff and whitespace checks passed. Outputs and durable logs are under
+  `/mnt/workspaces`; the two-task/channel-compensation branch remains parked.
+
+- **The 512-us comparison with revised gate accounting completed at 13:48:56 UTC
+  on 19 October.** **CPU: 33 passed and one expected GPU-only skip; L4: all
+  34 passed.** The [result](/mnt/workspaces/Cells/betse-mixed-interventions-roundoff-20261019-01/result.json)
+  records **1 h 39 min 51 s** elapsed; the
+  [completion artifact](/mnt/workspaces/Cells/betse-mixed-interventions-roundoff-20261019-01/completion.json)
+  binds the result and evidence. The worker has exited, error logs are empty
+  and no failure artifact is present. Its
+  [registered protocol](/mnt/workspaces/Cells/betse-mixed-interventions-roundoff-20261019-01/component-protocol.json)
+  freezes **1,045 sources**, **34 tests per backend** and **69 required reports**,
+  all reports now present. All 18 completed observed/bare native pairs
+  from the failed run are authenticated and reused with unchanged physical
+  inputs. All **18 native comparisons passed on each backend**: six schedules
+  at three timesteps through 512 us. These cover combined pump/channel/junction
+  controls on the fixed seven-cell geometry with maintained ATP/ADP/Pi and one
+  Kv1p5 population; broader BETSE equivalence is not established.
+
+  All [67,318,116 CPU/L4 scalar comparisons](/mnt/workspaces/Cells/betse-mixed-interventions-roundoff-20261019-01/evidence/gpu/mixed-cpu-gpu.json)
+  passed across 18 histories, 14 state arrays and seven fields. Native-update,
+  conservation, restart, future-branch, independent-world and negative-control
+  checks passed. Disk continuation from 64 and 256 us to 512 us remained
+  bitwise. Whole GPU phase averaged **3.52% GPU busy / 1.31% SM-active** over
+  **956.0 s**, with **100.00% / 99.88% coverage** respectively, including
+  compilation and host checks. These are correctness-suite measurements;
+  no fully warmed throughput interval was defined. The L4 is now idle and
+  no automatic follow-up is scheduled.
+
+  **Native m/h acceptance is explicitly revised.** The
+  [derivation and safeguards](validation/betse/spatial_active/gate_roundoff.md)
+  propagate the separately checked voltage difference through the gate
+  equations. Each recorded gate history must also pass an independent full
+  recurrence replay using its own voltages at the original kinetic tolerances.
+  Original violations and per-sample bounds remain in the reports. This is
+  conditional voltage-error accounting, not a global proof of roundoff in the
+  coupled simulation. Production code, base scalar tolerances, other fields,
+  junction gates, CPU/L4 parity and restart criteria are unchanged. The v2
+  failure below remains a failure under its original criterion.
+
+  [Preflight](/mnt/workspaces/Cells/mixed-interventions-roundoff-development-20261019-01/preparation.json)
+  passed seven checks, including 80-digit bound tests and injected kinetic,
+  voltage and clock errors; an affected diagnostic-summary check was repeated
+  cleanly after a warning fix. A fresh regional CPU/L4 comparison then passed
+  all state/field/rate and native-update checks in **5 min 21 s**, including
+  **1,604,514 backend scalar comparisons**. Its original **604 gate violations**
+  remain recorded; maximum error uses **49.31%** of the accounted budget.
+  A deliberately wrong gate that fits inside that budget is rejected by the
+  independent kinetic replay. Setup-failure evidence is retained in the
+  preparation record. Whole preflight GPU phase averaged **0.566% GPU busy /
+  0.147% SM-active**, both with **100% coverage** over 99.8 s.
+  The [startup receipt](/mnt/workspaces/Cells/mixed-interventions-roundoff-development-20261019-01/launch-status.json)
+  verifies the detached worker and that every frozen source matches the
+  successful preflight. Outputs and durable logs are under `/mnt/workspaces`.
+
+- **The 512-us combined-control extension stopped at 23:05:19 UTC on 18 October.**
+  The [failure](/mnt/workspaces/Cells/betse-mixed-interventions-long-20261018-01/failure.json)
+  followed **1 h 4 min 38 s** of execution. **CPU: 15 tests passed, one failed**;
+  the GPU phase did not start, so this run has no GPU utilization measurements.
+  All **18 observed/bare native pairs** were recorded. Twelve full native
+  comparisons passed: sham, junction-only, simultaneous block/release and
+  staggered changes at all three timesteps. `regional-0` (1-us steps) failed;
+  the remaining regional/partial comparisons and later suite checks were not
+  reached. This run remains failed under its original v2 gate criterion.
+  The 64-us baseline below and the revised 512-us qualification above retain
+  their separately documented acceptance criteria.
+
+  The failing quantity is Kv1p5 activation (`m_gate`), first outside tolerance
+  after **362 us**. **604 / 15,360** gate samples fail; the maximum difference is
+  **9.3994e-13** against a local allowance of **6.5535e-13** (**1.4343 times** the
+  allowed error). Frozen inputs, traces and failure logs are preserved under the
+  [registered protocol](/mnt/workspaces/Cells/betse-mixed-interventions-long-20261018-01/component-protocol.json).
+
+  A [focused CPU reproduction](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/regional-diagnostic-20261019-01/result.json)
+  on 19 October reproduced the failure in ten seconds with unchanged sources
+  and tolerances. All other checked state/field quantities and the ordinary
+  conservation/domain diagnostics remained within their budgets for this case.
+  Replaying Cells' gate formula with native voltages stays within **1%** of the
+  gate error budget; replaying with Cells voltages reproduces the failure. The
+  [field decomposition](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/regional-diagnostic-20261019-01/field-decomposition.json)
+  finds the first bulk difference at **61 us**: K in zero-based cell 3 differs by
+  one floating-point increment (**2.8422e-14 mM**). Field arithmetic also differs
+  on identical concentrations; maximum trajectory voltage difference is
+  **8.1126e-13 V**. This localizes the issue upstream of gate kinetics, without
+  establishing a correction or passing the remaining comparisons.
+
+  The subsequent [80-digit arithmetic diagnosis](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/update-probe-20261019-01/precision-result.json)
+  identifies the first difference in the **channel transfer at 61 us**.
+  Substituting only the voltage, with concentrations and gates held fixed,
+  moves the exact update across a floating-point rounding midpoint. Both saved
+  fluxes round correctly to their respective concentration values; this does
+  not justify changing the concentration updater. On identical native
+  concentrations, the [charge check](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/update-probe-20261019-01/result.json)
+  finds maximum error against the independent Decimal answer of **2.84e-14
+  C/m³ for Cells**, versus **3.49e-9 C/m³ for native BETSE**. Reverting the
+  compensated charge calculation would sacrifice accuracy to imitate reference
+  rounding.
+
+  The [focused CPU/L4 check](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/roundoff-check-20261019-01/closeout.json)
+  completed in **103 s**: two charge known-answer tests passed on each backend,
+  and all **1,604,514 CPU/L4 scalar comparisons** passed at unchanged tolerances.
+  Maximum backend gate difference was **1.67e-15**. Both backends reproduce the
+  same **604 native activation-gate violations** and **1.4343-times-budget**
+  maximum; the original v2 qualification remains failed. All **1,043 frozen/current
+  sources**, including **141 production files**, match. Measured whole GPU phase
+  averaged **0.376% GPU busy / 0.174% SM-active**, with **100% / 98.86% coverage**
+  over 84.8 s, including compilation and host analysis.
+
+  This diagnosis led to the explicitly revised comparison completed
+  above. The research side quest remains parked. The original
+  [failure status](/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/failure-status-20261019.json)
+  and all failed evidence remain intact.
+
+- **Combined-control BETSE qualification completed at 21:20:30 UTC on 18 October.**
+  **CPU: 27 passed and one expected GPU-only skip; L4: all 28 passed.** The
+  [result](/mnt/workspaces/Cells/betse-mixed-interventions-20261018-01/result.json)
+  and [completion](/mnt/workspaces/Cells/betse-mixed-interventions-20261018-01/completion.json)
+  bind **307 evidence entries, 57 required reports and 1,043 frozen sources**.
+  Runtime from launch to completion was **18 min 52 s**; the worker has exited,
+  error logs are empty and no failure artifact is present.
+
+  Six schedules passed—sham, junction-only, simultaneous block/release,
+  staggered changes, regional pump/channel targets and partial inhibition—at
+  **1, 0.5 and 0.25 us** timesteps through **64 us**. The
+  [frozen protocol](/mnt/workspaces/Cells/betse-mixed-interventions-20261018-01/component-protocol.json)
+  checked **18 fresh
+  observed/bare native pairs**, all 14 state arrays and seven fields, independent
+  rates and conservation, disk restart, future branches, and reordered/partitioned
+  independent worlds on CPU/L4. All **8,461,668 CPU/L4 scalar comparisons** passed;
+  replay remained bitwise. Worst native state/field error used **18.90%** of its
+  allowed numerical budget; maximum membrane-voltage difference was
+  **6.0841e-13 V**. Production physics is unchanged; all 998 sources
+  from the accepted precision baseline match. Fractional junction blocking keeps
+  BETSE's per-update semantics; the three timesteps do not establish continuum
+  convergence or biological recovery.
+
+  [Preflight](/mnt/workspaces/Cells/mixed-interventions-development-20261018-01/preparation.json)
+  passed three host/compiled checks and one fresh native simultaneous-control
+  pair, including observer neutrality, full state/field/rate comparison and
+  rejection of corrupt evidence. Whole-GPU-phase telemetry averaged
+  **0.8672% GPU busy / 0.4386% SM-active**, with effectively **100% coverage** over
+  **5 min 20 s**. These averages include compilation, host checks and idle time
+  for this small seven-cell correctness suite. The
+  [completion status](/mnt/workspaces/Cells/mixed-interventions-development-20261018-01/completion-status.json)
+  records receipt/report checks and comparison summaries. All outputs are under
+  `/mnt/workspaces`; no automatic follow-up is scheduled.
+
+- **Local flank-channel pilot completed at 16:34:21 UTC on 18 October.**
+  **CPU: 85 passed and five expected GPU-only skips; L4: all 90 passed.** The
+  [result](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/result.json)
+  and [completion](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/completion.json)
+  bind **10,422 evidence entries, 176 required reports and 1,038 frozen sources**.
+  The worker has exited, error logs are empty and no failure artifact is present.
+  Total runtime was **4 h 59 min 35 s** from the
+  [11:34:46 UTC launch](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/launch.json),
+  including **6 min 16 s** of finalization after the numerical suites finished
+  at **16:28:05 UTC**.
+
+  **No local intervention reaches the fixed 2-nV separation criterion; the
+  unchanged-channel sham remains selected.** Identical CPU/L4 primary scores
+  are **1.921477 nV sham**, **1.918118 / 1.920637 nV** for lower/higher channels
+  on cells **2/6**, and **1.922045 / 1.920066 nV** on cells **3/5**. Lowering
+  cells 3/5 gives a small **0.000568-nV** increase over sham, but remains below
+  the required margin. The
+  [selection](/mnt/workspaces/Cells/two-task-local-channel-20261018-01/evidence/gpu/local-channel-selection.json)
+  retains all five conditions; no candidate advances to fresh-case confirmation.
+  On twelve joint calibration cases, each lower-channel condition resolves
+  **3/12** with the raw frozen-source reader, versus **0/12** for sham and both
+  higher conditions. Reference-assisted and condition-calibrated readings remain
+  **8/12 and 9/12**, respectively, in every condition, timestep and backend.
+  These fitting-point diagnostics are not held-out recovery results.
+
+  Both backends completed **900 worlds / 4,300,800 world-steps**, equally planned
+  across five arms. All **10,913,665,200 CPU/L4 state/field scalar comparisons**,
+  conservation/domain, replay and historical checks passed; maximum material
+  error stayed below **0.007 of budget**, and paired-contrast backend errors
+  were zero. No-cue/disconnected calibration controls remained unresolved.
+  This completes four fixed local interventions in one synthetic tissue, not
+  a general compensation result or broader BETSE qualification.
+
+  **Whole L4 phase: 37.96% GPU busy and 12.95% measured SM-active**, both with
+  **100% coverage**, across **2.425 GPU-hours**. These include compilation, host
+  checks and archive handling. Aggregated GPU arm execution times were
+  **643–650 s**; total batch times were **1,290–1,417 s**, including **550–683 s**
+  of archive handling per arm. Artifacts/cache occupy **46.88 GB** and peak
+  child RSS was **1.62 GB**. These are sequential L4 measurements.
+
+  The [requested completion check](/mnt/workspaces/Cells/local-channel-development-20261018-01/completion-status-20261018.json)
+  verified result/registration bindings, all 176 required reports, exact test
+  inventories/skips, metric records and all 1,038 unchanged frozen/current sources.
+  It did not repeat the full trajectory archive audit or launch a follow-up.
   The [execution protocol](validation/assays/source_order_long/local_channel_protocol.json)
   and [CPU/L4 harness](tests/unit/test_local_channel.py) retain all five conditions,
   the fixed margins and numerical checks, both GPU utilization measures and
-  per-arm timings. No automatic polling, retry or follow-up.
+  per-arm timings. The following diagnosis and preparation retain their original
+  pre-launch context.
 
   The [saved-calibration analysis](/mnt/workspaces/Cells/channel-compensation-diagnosis-20261018-01/result.json)
   finished in **4.9 s**, after **eight passing analytic/isolation checks**.
@@ -79,7 +957,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   skips**, **90 L4 passes**, and **176 required reports** overall. They also retain
   a corrected verification-driver report-count assumption and its failed record;
   no simulation or host test failed during preparation. Full prior-archive
-  authentication runs inside the detached worker before simulation. The earlier
+  authentication ran inside the detached worker before simulation. The earlier
   input preparation retains its original pre-launch status.
 
 - **Channel-compensation pilot completed at 22:14:11 UTC on 17 October.**

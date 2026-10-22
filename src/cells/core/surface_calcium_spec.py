@@ -23,6 +23,9 @@ from cells.processes import calcium_gates, ip3_release, plasma_calcium
 from cells.processes.er_calcium import METABOLISM
 
 MODEL_ID = "resolved_calcium@1"
+CHANNEL_MODEL_ID = "resolved_calcium@2"
+SODIUM_MODEL_ID = "resolved_calcium@3"
+HCN_MODEL_ID = "resolved_calcium@4"
 
 
 @dataclass(frozen=True)
@@ -33,6 +36,31 @@ class SurfaceCalciumModel(ionic.SurfaceKineticModel):
     plasma_routes: tuple[PlasmaRoute, ...]
     calcium_channels: tuple[ChannelSpec, ...]
     ip3_release: tuple[IP3Release, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumChannelModel(SurfaceCalciumModel):
+    """Explicit composition of owned calcium stores and named potassium laws."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumSodiumModel(SurfaceCalciumChannelModel):
+    """Owned calcium stores with the explicit sodium/potassium channel catalog."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumHCNModel(SurfaceCalciumSodiumModel):
+    """Owned calcium stores with shared multi-ion channel populations."""
+
+    channels: tuple[ionic.ChannelPopulation, ...]
+
+
+def model_id(model):
+    if isinstance(model, SurfaceCalciumHCNModel):
+        return HCN_MODEL_ID
+    if isinstance(model, SurfaceCalciumSodiumModel):
+        return SODIUM_MODEL_ID
+    return CHANNEL_MODEL_ID if isinstance(model, SurfaceCalciumChannelModel) else MODEL_ID
 
 
 @dataclass(frozen=True)
@@ -84,7 +112,16 @@ class Experiment(ionic.Experiment):
 
 def ionic_spec(spec):
     return SimulationSpec(
-        project(spec.model, ionic.SurfaceKineticModel),
+        project(
+            spec.model,
+            ionic.SurfaceHCNModel
+            if isinstance(spec.model, SurfaceCalciumHCNModel)
+            else ionic.SurfaceSodiumModel
+            if isinstance(spec.model, SurfaceCalciumSodiumModel)
+            else ionic.SurfaceChannelModel
+            if isinstance(spec.model, SurfaceCalciumChannelModel)
+            else ionic.SurfaceKineticModel,
+        ),
         project(spec.experiment, ionic.Experiment),
         project(spec.execution, ionic.Execution),
     )
@@ -96,7 +133,7 @@ def to_dict(spec):
     raw = ionic.to_dict(ionic_spec(spec))
     m, e = spec.model, spec.experiment
     raw["model"] = dict(
-        id=MODEL_ID,
+        id=model_id(m),
         ionic=raw["model"],
         stores=[],
         plasma_transport=dict(
@@ -169,12 +206,24 @@ def parse(data):
     x = _fields(
         data["execution"], set(Execution.__dataclass_fields__), "resolved calcium execution"
     )
+    hcn = m["id"] == HCN_MODEL_ID
+    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID)
+    mixed = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+    ionic_id = (
+        ionic.HCN_MODEL_ID
+        if hcn
+        else ionic.SODIUM_MODEL_ID
+        if sodium
+        else ionic.CHANNEL_MODEL_ID
+        if mixed
+        else ionic.MODEL_ID
+    )
     if (
-        m["id"] != MODEL_ID
+        m["id"] not in (MODEL_ID, CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
         or not isinstance(m["ionic"], dict)
-        or m["ionic"].get("id") != ionic.MODEL_ID
+        or m["ionic"].get("id") != ionic_id
     ):
-        raise ConfigError("Resolved calcium requires resolved_tissue@2 ionic ownership")
+        raise ConfigError("Resolved calcium requires matching ionic ownership: " + ionic_id)
     ion = ionic.parse(
         dict(
             schema_version=1,
@@ -392,7 +441,15 @@ def parse(data):
             )
         )
     spec = SimulationSpec(
-        SurfaceCalciumModel(
+        (
+            SurfaceCalciumHCNModel
+            if hcn
+            else SurfaceCalciumSodiumModel
+            if sodium
+            else SurfaceCalciumChannelModel
+            if mixed
+            else SurfaceCalciumModel
+        )(
             **vars(ion.model),
             stores=tuple(stores),
             calcium_species=ca,

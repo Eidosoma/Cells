@@ -31,8 +31,18 @@ from cells.core.specs import (
     SpatialJunctionSpec,
     VoltageGatedSpec,
 )
-from cells.core.surface_calcium_spec import SurfaceCalciumModel
-from cells.core.surface_kinetic_spec import SurfaceKineticModel
+from cells.core.surface_calcium_spec import (
+    SurfaceCalciumChannelModel,
+    SurfaceCalciumHCNModel,
+    SurfaceCalciumModel,
+    SurfaceCalciumSodiumModel,
+)
+from cells.core.surface_kinetic_spec import (
+    SurfaceChannelModel,
+    SurfaceHCNModel,
+    SurfaceKineticModel,
+    SurfaceSodiumModel,
+)
 from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.core.tissue_spec import TissueModel
@@ -60,7 +70,13 @@ from cells.models import (
     spatial_extracellular,
     spatial_junction,
     surface_calcium,
+    surface_calcium_channels,
+    surface_calcium_hcn,
+    surface_calcium_sodium,
+    surface_channels,
+    surface_hcn,
     surface_kinetic,
+    surface_sodium,
     surface_tissue,
     tissue,
     tissue_calcium,
@@ -73,8 +89,20 @@ def get_model(spec):
         return betse_junction
     if isinstance(spec, BetseSpatialModel):
         return betse_spatial
+    if isinstance(spec, SurfaceCalciumHCNModel):
+        return surface_calcium_hcn
+    if isinstance(spec, SurfaceCalciumSodiumModel):
+        return surface_calcium_sodium
+    if isinstance(spec, SurfaceCalciumChannelModel):
+        return surface_calcium_channels
     if isinstance(spec, SurfaceCalciumModel):
         return surface_calcium
+    if isinstance(spec, SurfaceHCNModel):
+        return surface_hcn
+    if isinstance(spec, SurfaceSodiumModel):
+        return surface_sodium
+    if isinstance(spec, SurfaceChannelModel):
+        return surface_channels
     if isinstance(spec, SurfaceKineticModel):
         return surface_kinetic
     if isinstance(spec, SurfaceTissueModel):

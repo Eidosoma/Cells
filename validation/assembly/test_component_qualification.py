@@ -3,6 +3,7 @@
 import json
 import subprocess
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 
@@ -70,12 +71,19 @@ def prepared(tmp_path, monkeypatch):
         suites = ET.Element("testsuites")
         suite = ET.SubElement(suites, "testsuite", tests="1", failures="0", errors="0", skipped="0")
         ET.SubElement(suite, "testcase", classname="tests.unit.test_field", name="test_root")
-        ET.ElementTree(suites).write(output / f"{backend}.xml")
-        evidence = output / "evidence" / backend
+        directory = kwargs["directory"]
+        ET.ElementTree(suites).write(directory / "tests.xml")
+        (directory / "stdout.log").write_text("1 passed\n")
+        (directory / "stderr.log").write_text("")
+        evidence = Path(kwargs["env"]["CELLS_COMPONENT_EVIDENCE"]) / backend
         evidence.mkdir(parents=True)
         runner.write_json(evidence / "root.json", {"status": "passed"})
+        return {
+            "observed_process_high_water_bytes": 4096,
+            "sampled_peak_process_tree_rss_bytes": 8192,
+        }
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_bounded", execute)
     return output, record, started, execute
 
 
@@ -101,7 +109,7 @@ def test_failed_phase_keeps_failure_and_prevents_followup(prepared, monkeypatch,
             raise subprocess.CalledProcessError(1, command)
         return execute(command, **kwargs)
 
-    monkeypatch.setattr(runner.subprocess, "run", fail)
+    monkeypatch.setattr(runner, "run_bounded", fail)
     with pytest.raises(subprocess.CalledProcessError):
         runner.component_worker(output, record)
     assert started == ([] if backend == "cpu" else ["gpu"])
@@ -122,11 +130,114 @@ def test_equal_test_count_cannot_hide_a_missing_registered_test(prepared, monkey
     output, record, started, execute = prepared
 
     def wrong_name(command, **kwargs):
-        execute(command, **kwargs)
-        path = output / "cpu.xml"
+        result = execute(command, **kwargs)
+        path = kwargs["directory"] / "tests.xml"
         path.write_text(path.read_text().replace("test_root", "test_unregistered"))
+        return result
 
-    monkeypatch.setattr(runner.subprocess, "run", wrong_name)
+    monkeypatch.setattr(runner, "run_bounded", wrong_name)
     with pytest.raises(ValueError, match="omitted"):
         runner.component_worker(output, record)
     assert not started
+
+
+@pytest.mark.parametrize("fault", ["duplicate", "missing", "unknown", "overlap", "name", "skip"])
+def test_groups_reject_omissions_duplicates_and_unregistered_skips(fault):
+    nodes = ["tests/test_a.py::test_one[a]", "tests/test_a.py::test_one[b]"]
+    groups = [
+        {"name": "first", "tests": [nodes[0]]},
+        {"name": "second", "tests": [nodes[1]]},
+    ]
+    protocol = {"test_groups": groups, "expected_cpu_skip_nodes": []}
+    if fault == "duplicate":
+        groups[1]["tests"] = [nodes[0]]
+    elif fault == "missing":
+        groups.pop()
+    elif fault == "unknown":
+        groups[1]["tests"] = ["tests/test_a.py::test_unknown"]
+    elif fault == "overlap":
+        groups[0]["tests"].append("tests/test_a.py")
+    elif fault == "name":
+        groups[0]["name"] = "../escape"
+    else:
+        protocol["expected_cpu_skip_nodes"] = ["tests/test_a.py::test_unknown"]
+    with pytest.raises(ValueError):
+        runner.component_groups(protocol, nodes)
+
+
+def test_groups_resolve_parametrized_tests_without_prefix_collisions():
+    nodes = [
+        "tests/test_a.py::test_one[a]",
+        "tests/test_a.py::test_one[b]",
+        "tests/test_a.py::test_one_more",
+        "tests/test_b.py::test_two",
+    ]
+    protocol = {
+        "test_groups": [
+            {"name": "first", "tests": ["tests/test_a.py::test_one"]},
+            {"name": "second", "tests": [nodes[2], "tests/test_b.py"]},
+        ],
+        "expected_cpu_skip_nodes": [nodes[-1]],
+    }
+    groups = runner.component_groups(protocol, nodes)
+    assert groups[0]["test_nodes"] == nodes[:2] and groups[1]["test_nodes"] == nodes[2:]
+
+
+@pytest.mark.parametrize("fault", ["hidden_failure", "hidden_error", "hidden_skip", "duplicate"])
+def test_suite_checks_cases_instead_of_trusting_summary(prepared, fault):
+    output, record, _, _ = prepared
+    suites = ET.Element("testsuites")
+    suite = ET.SubElement(suites, "testsuite", tests="1", failures="0", errors="0", skipped="0")
+    case = ET.SubElement(suite, "testcase", classname="tests.unit.test_field", name="test_root")
+    if fault == "duplicate":
+        suite.append(case)
+    else:
+        ET.SubElement(
+            case,
+            {"hidden_failure": "failure", "hidden_error": "error", "hidden_skip": "skipped"}[fault],
+        )
+    path = output / "test.xml"
+    ET.ElementTree(suites).write(path)
+    with pytest.raises(ValueError, match="omitted or failed"):
+        runner.component_suite(path, record["test_nodes"], [])
+
+
+def test_groups_preserve_earlier_evidence_and_aggregate_exact_coverage(prepared, monkeypatch):
+    output, record, _, execute = prepared
+    protocol = record["component_protocol"]
+    protocol["tests"].append("tests/unit/test_second.py")
+    record["test_nodes"].append("tests/unit/test_second.py::test_second")
+    runner.write_json(output / "component-protocol.json", protocol, replace=True)
+    record["component_protocol_sha256"] = runner.digest(output / "component-protocol.json")
+    record["test_groups"] = runner.component_groups(protocol, record["test_nodes"])
+    runner.write_json(output / "registration.json", record, replace=True)
+
+    def grouped(command, **kwargs):
+        resources = execute(command, **kwargs)
+        directory = kwargs["directory"]
+        if directory.name == "part-02":
+            path = directory / "tests.xml"
+            path.write_text(
+                path.read_text()
+                .replace("test_field", "test_second")
+                .replace("test_root", "test_second")
+            )
+            backend = kwargs["env"]["CELLS_COMPONENT_BACKEND"]
+            evidence = Path(kwargs["env"]["CELLS_COMPONENT_EVIDENCE"]) / backend / "root.json"
+            runner.write_json(
+                evidence, {"status": "passed", "repeated_fixture": True}, replace=True
+            )
+        return resources
+
+    monkeypatch.setattr(runner, "run_bounded", grouped)
+    runner.component_worker(output, record)
+    for backend in ("cpu", "gpu"):
+        row, _ = runner.component_suite(output / f"{backend}.xml", record["test_nodes"], [])
+        assert row == dict(tests=2, errors=0, failures=0, skipped=0)
+        assert json.loads((output / "evidence" / backend / "root.json").read_text()) == {
+            "status": "passed"
+        }
+        local = output / "groups" / backend / "part-02" / "evidence" / backend / "root.json"
+        assert json.loads(local.read_text())["repeated_fixture"]
+        done = json.loads((output / "completion.json").read_text())
+        assert str(local.relative_to(output)) in done["evidence_sha256"]

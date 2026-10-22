@@ -207,7 +207,7 @@ def evaluate(c, state, time, *, channel_levels=None):
     )
 
 
-def integrate(raw, *, channel_segments=None):
+def integrate(raw, *, channel_segments=None, rtol=2e-11, state_atol=2e-14, charge_atol=1e-29):
     c = bind(raw)
     e = raw["experiment"]
     segments = channel_segments or [(0.0, None)]
@@ -223,7 +223,7 @@ def integrate(raw, *, channel_segments=None):
     atols = flatten(
         c,
         {
-            k: np.full(shape, 1e-29 if k.endswith("_C") else 2e-14)
+            k: np.full(shape, charge_atol if k.endswith("_C") else state_atol)
             for k, shape in c["shapes"].items()
         },
     )
@@ -235,7 +235,7 @@ def integrate(raw, *, channel_segments=None):
             (left, right),
             state,
             method="DOP853",
-            rtol=2e-11,
+            rtol=rtol,
             atol=atols,
             max_step=5e-5,
             dense_output=True,
@@ -256,7 +256,7 @@ def integrate(raw, *, channel_segments=None):
         potential_V=np.stack(potentials).tolist(),
         rhs_evaluations=evaluations,
         method="segmented DOP853, full-node roots, Decimal ions, scalar ER/PMCA/NCX/Cav",
-        rtol=2e-11,
-        amount_energy_gate_atol=2e-14,
-        electrode_charge_atol_C=1e-29,
+        rtol=rtol,
+        amount_energy_gate_atol=state_atol,
+        electrode_charge_atol_C=charge_atol,
     )

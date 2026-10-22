@@ -38,6 +38,12 @@ from validation.tissue import surface_calcium_reference as reference
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
 EVIDENCE = os.environ.get("CELLS_COMPONENT_EVIDENCE")
 ARMS = fixtures.ARMS
+PREFIX = "resolved-calcium"
+REFINEMENT_STEPS = (2.5e-5, 1.25e-5, 6.25e-6)
+BATCH_STEP_BUDGET = 200
+SINGLE_WORLD_STEP_BUDGET = 100
+BATCH_WORKING_BYTES = 2**29
+REPLAY_WINDOW_STEPS = 7
 
 
 def evidence(name, value, arrays=None):
@@ -65,7 +71,7 @@ def test_registered_roundtrip_and_ensemble(backend):
     assert (
         ionic.parse_spec(dict(model="ionic_worlds@1", simulation=raw, worlds=2)).simulation == spec
     )
-    for dt in (2.5e-5, 1.25e-5, 6.25e-6):
+    for dt in REFINEMENT_STEPS:
         timeline(parse_spec(raw | {"execution": raw["execution"] | {"dt": dt}}))
     assert len(model.STATE_TYPE._fields) == 34
 
@@ -99,7 +105,7 @@ def test_independent_stage_rates_and_accounting(arm, padded):
     assert abs(proof["physical_energy_balance_pJ_s"]) < 1e-10
     assert model.check_values(state, spec)["max_energy_error"] == 0
     evidence(
-        f"resolved-calcium-stage-{arm}-{'padded' if padded else 'compact'}",
+        f"{PREFIX}-stage-{arm}-{'padded' if padded else 'compact'}",
         dict(
             status="passed",
             inputs=spec.to_dict(),
@@ -227,12 +233,19 @@ def test_failed_field_and_actual_controls_reject(monkeypatch):
     assert all(np.isnan(v).all() for v in model.rhs(state, control, p, p.active, xp=np))
 
 
-def test_chemical_event_is_an_accepted_observation_boundary():
+@pytest.mark.parametrize("family", ["store", "plasma", "calcium_channel"])
+def test_chemical_event_is_an_accepted_observation_boundary(family):
     raw = fixtures.definition()
     raw["experiment"]["observation_times"].insert(1, 0.000037)
-    changes = raw["experiment"]["store_controls"][0]["controls"]
+    field = "controls" if family == "store" else "schedule"
+    changes = raw["experiment"][family + "_controls"][0][field]
     control = copy.deepcopy(changes[0]) | {"time": 0.000037}
-    control["reactions"]["ip3_binding"] = 0.0
+    if family == "store":
+        control["reactions"]["ip3_binding"] = 0.0
+    elif family == "plasma":
+        control["pump"] = 0.0
+    else:
+        control["availability"] = 0.0
     changes.append(control)
     assert 0.000037 in timeline(parse_spec(raw))
 
@@ -281,7 +294,7 @@ def test_evolved_stage_preserves_owned_charge_and_independent_rates(arm):
     )
     assert abs(proof["physical_energy_balance_pJ_s"]) < 1e-10
     evidence(
-        "resolved-calcium-evolved-stage-" + arm,
+        PREFIX + "-evolved-stage-" + arm,
         dict(
             status="passed",
             checks=model.check_values(y, spec),
@@ -339,14 +352,14 @@ def test_absent_routes_and_zero_reaction_capacity_keep_zero_ledgers():
 
 @pytest.fixture(scope="module")
 def trajectories(tmp_path_factory):
-    directory = tmp_path_factory.mktemp("resolved-calcium-trajectories")
+    directory = tmp_path_factory.mktemp(PREFIX + "-trajectories")
     values = {}
     for arm in ARMS:
         value = run(parse_spec(fixtures.definition(arm, backend=BACKEND)))
         assert all(v.device.platform == BACKEND for v in value.final.state)
         write_run(directory / arm, value, checkpoint_times=(0.001,))
         evidence(
-            "resolved-calcium-saved-" + arm,
+            PREFIX + "-saved-" + arm,
             dict(status="passed", inputs=value.spec.to_dict(), diagnostics=value.diagnostics),
             {
                 **{k: np.asarray(v) for k, v in value.history._asdict().items()},
@@ -397,9 +410,10 @@ def test_independent_trajectories_and_complete_accounting(arm, trajectories, ref
             assert not np.any(getattr(value.history, k)[before])
         assert np.any(value.history.calcium_gate[before][-1] != value.history.calcium_gate[0])
     evidence(
-        "resolved-calcium-trajectory-" + arm,
+        PREFIX + "-trajectory-" + arm,
         dict(
             status="passed",
+            inputs=value.spec.to_dict(),
             max_state_error_over_budget=ratio,
             independent_reference=expected,
             diagnostics=value.diagnostics,
@@ -407,27 +421,65 @@ def test_independent_trajectories_and_complete_accounting(arm, trajectories, ref
     )
 
 
-def test_timestep_refinement(trajectories, references):
-    raw = trajectories["baseline"].spec.to_dict()
+def refinement_case(trajectories, references, arm):
+    raw = trajectories[arm].spec.to_dict()
     c = reference.bind(raw)
-    expected = np.asarray(references["baseline"]["state"])
-    errors = []
-    for dt in (2.5e-5, 1.25e-5, 6.25e-6):
-        raw["execution"]["dt"] = dt
-        value = trajectories["baseline"] if dt == 2.5e-5 else run(parse_spec(raw))
-        actual = reference.flatten(c, vars(value.observations))
-        assert_states(c, actual, expected)
-        errors.append(float(np.max(np.abs(actual - expected))))
-    assert errors[-1] <= max(errors[0] * 0.2, 3e-13)
-    evidence(
-        "resolved-calcium-refinement",
-        dict(
-            status="passed",
-            dt_s=[2.5e-5, 1.25e-5, 6.25e-6],
-            max_errors=errors,
-            roundoff_floor=3e-13,
-        ),
-    )
+    expected = np.asarray(references[arm]["state"])
+    errors, rows = [], []
+    name = PREFIX + "-refinement" + ("" if arm == "baseline" else "-" + arm)
+
+    def record(status, **extra):
+        evidence(
+            name,
+            dict(
+                status=status,
+                arm=arm,
+                dt_s=list(REFINEMENT_STEPS),
+                max_errors=errors,
+                roundoff_floor=3e-13,
+                timesteps=rows,
+                reference_settings={
+                    k: references[arm][k]
+                    for k in ("rtol", "amount_energy_gate_atol", "electrode_charge_atol_C")
+                },
+                **extra,
+            ),
+        )
+
+    try:
+        for index, dt in enumerate(REFINEMENT_STEPS):
+            raw["execution"]["dt"] = dt
+            value = trajectories[arm] if dt == REFINEMENT_STEPS[0] else run(parse_spec(raw))
+            actual = reference.flatten(c, vars(value.observations))
+            differences = reference.unpack(c, actual - expected)
+            metrics = {}
+            for field, delta in differences.items():
+                position = np.unravel_index(np.argmax(np.abs(delta)), delta.shape)
+                metrics[field] = dict(
+                    max_absolute_error=float(np.max(np.abs(delta))),
+                    signed_error=float(delta[position]),
+                    index=list(map(int, position)),
+                )
+            errors.append(float(np.max(np.abs(actual - expected))))
+            row = dict(
+                dt_s=dt,
+                inputs=value.spec.to_dict(),
+                errors_by_field=metrics,
+                arrays=name + f"-{index}.npz",
+            )
+            rows.append(row)
+            evidence(name + f"-{index}", row, dict(observed=actual, reference=expected))
+            record("running")
+            assert_states(c, actual, expected)
+        assert errors[-1] <= max(errors[0] * 0.2, 3e-13)
+    except Exception as exc:
+        record("failed", error=repr(exc))
+        raise
+    record("passed")
+
+
+def test_timestep_refinement(trajectories, references):
+    refinement_case(trajectories, references, "baseline")
 
 
 def test_compiled_guard_rejects_actual_invalid_control_without_changing_state():
@@ -439,7 +491,7 @@ def test_compiled_guard_rejects_actual_invalid_control_without_changing_state():
     compute = jax.jit(
         lambda y, c, dt: rk4_checked_step(model.rhs, model.domain_valid, y, dt, c, p, p.active)
     )
-    kept, valid = compute(state, control, 0.000025)
+    kept, valid = compute(state, control, REFINEMENT_STEPS[0])
     assert not valid
     exact(kept, state)
     # The initial state/control is valid here; an unresolved physical trial
@@ -495,7 +547,7 @@ def test_complete_disk_fresh_process_restart_branch_and_windows(trajectories, tm
     assert np.any(changed.history.channel_gate[-1] != checkpoint.state.channel_gate)
     assert np.any(changed.history.junction_gate[-1] != checkpoint.state.junction_gate)
     assert np.any(changed.history.calcium_gate[-1] != checkpoint.state.calcium_gate)
-    parts = list(iter_windows(value.spec, WindowPolicy(7, "full"), checkpoint))
+    parts = list(iter_windows(value.spec, WindowPolicy(REPLAY_WINDOW_STEPS, "full"), checkpoint))
     merged = tuple(
         np.concatenate([getattr(w.history, k)[0 if i == 0 else 1 :] for i, w in enumerate(parts)])
         for k in model.STATE_TYPE._fields
@@ -521,7 +573,7 @@ def test_complete_disk_fresh_process_restart_branch_and_windows(trajectories, tm
     process.check_returncode()
     exact(load_snapshot(tmp_path / "fresh/checkpoint_final").checkpoint.state, resumed.final.state)
     evidence(
-        "resolved-calcium-restart",
+        PREFIX + "-restart",
         dict(
             status="passed",
             state_fields=list(model.STATE_TYPE._fields),
@@ -538,20 +590,31 @@ def test_complete_disk_fresh_process_restart_branch_and_windows(trajectories, tm
 def test_world_partition_reorder_and_independent_restart(trajectories, tmp_path):
     expected = [trajectories[a] for a in ("baseline", "release")]
     batch = BatchSpec(
-        tuple(WorldSpec(i + 10, v.spec) for i, v in enumerate(expected)), 2, 200, 2**29
+        tuple(WorldSpec(i + 10, v.spec) for i, v in enumerate(expected)),
+        2,
+        BATCH_STEP_BUDGET,
+        BATCH_WORKING_BYTES,
     )
     result = run_batch(batch)
     for identity, value in result.worlds.items():
         exact(value.history, expected[identity - 10].history)
-    reordered = run_batch(BatchSpec(tuple(reversed(batch.worlds)), 2, 200, 2**29))
+    reordered = run_batch(
+        BatchSpec(tuple(reversed(batch.worlds)), 2, BATCH_STEP_BUDGET, BATCH_WORKING_BYTES)
+    )
     for identity in (10, 11):
         exact(reordered.worlds[identity].history, result.worlds[identity].history)
-        single = BatchSpec((batch.worlds[identity - 10],), 1, 100, 2**29)
+        single = BatchSpec(
+            (batch.worlds[identity - 10],), 1, SINGLE_WORLD_STEP_BUDGET, BATCH_WORKING_BYTES
+        )
         exact(run_batch(single).worlds[identity].history, result.worlds[identity].history)
     checkpoints = result.checkpoint_at({10: 0.001, 11: 0.002})
     write_batch_snapshot(tmp_path / "batch", batch, checkpoints)
     loaded = load_batch_snapshot(tmp_path / "batch")
-    parts = list(iter_batch_windows(loaded.spec, WindowPolicy(7, "full"), loaded.checkpoints))
+    parts = list(
+        iter_batch_windows(
+            loaded.spec, WindowPolicy(REPLAY_WINDOW_STEPS, "full"), loaded.checkpoints
+        )
+    )
     for identity in (10, 11):
         rows = [p.worlds[identity] for p in parts if identity in p.worlds]
         merged = tuple(
@@ -565,7 +628,7 @@ def test_world_partition_reorder_and_independent_restart(trajectories, tmp_path)
             tuple(v[checkpoints[identity].step_index :] for v in result.worlds[identity].history),
         )
     evidence(
-        "resolved-calcium-partition",
+        PREFIX + "-partition",
         dict(
             status="passed",
             world_ids=[10, 11],
@@ -580,7 +643,11 @@ def test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state(trajec
     raw = trajectories["baseline"].spec.to_dict()
     spec = ionic.parse_spec(
         dict(
-            model="ionic_worlds@1", simulation=raw, worlds=1, window_steps=7, max_wall_seconds=2400
+            model="ionic_worlds@1",
+            simulation=raw,
+            worlds=1,
+            window_steps=REPLAY_WINDOW_STEPS,
+            max_wall_seconds=2400,
         )
     )
     checkpoints, report = ionic.run(spec, backend=BACKEND)
@@ -592,7 +659,7 @@ def test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state(trajec
         rtol=0,
         atol=3e-13,
     )
-    evidence("resolved-calcium-ensemble", dict(status="passed", report=report))
+    evidence(PREFIX + "-ensemble", dict(status="passed", report=report))
 
 
 def test_cpu_gpu_complete_saved_states_and_observations(trajectories, coupled):
@@ -606,7 +673,7 @@ def test_cpu_gpu_complete_saved_states_and_observations(trajectories, coupled):
             **{"observed_" + k: v for k, v in vars(value.observations).items()},
         }
         with np.load(
-            Path(EVIDENCE) / "cpu" / ("resolved-calcium-saved-" + arm + ".npz"),
+            Path(EVIDENCE) / "cpu" / (PREFIX + "-saved-" + arm + ".npz"),
             allow_pickle=False,
         ) as saved:
             assert set(actual) == set(saved.files)
@@ -621,7 +688,7 @@ def test_cpu_gpu_complete_saved_states_and_observations(trajectories, coupled):
                 )
                 np.testing.assert_allclose(values, saved[name], rtol=3e-10, atol=atol)
                 count += values.size
-    with np.load(Path(EVIDENCE) / "cpu/resolved-calcium-assembly.npz", allow_pickle=False) as saved:
+    with np.load(Path(EVIDENCE) / "cpu" / (PREFIX + "-assembly.npz"), allow_pickle=False) as saved:
         arrays = flatten(coupled[1])
         assert set(arrays) == set(saved.files)
         for name, value in arrays.items():
@@ -632,7 +699,7 @@ def test_cpu_gpu_complete_saved_states_and_observations(trajectories, coupled):
                 np.testing.assert_allclose(value, saved[name], rtol=3e-10, atol=atol, err_msg=name)
             count += value.size
     evidence(
-        "resolved-calcium-cpu-gpu",
+        PREFIX + "-cpu-gpu",
         dict(
             status="passed",
             physical_scalars=count,
@@ -649,7 +716,7 @@ def test_cpu_gpu_complete_saved_states_and_observations(trajectories, coupled):
 def coupled():
     spec = parse_assembly(fixtures.assembly_definition(backend=BACKEND))
     state, report = assembly.run(spec, backend=BACKEND)
-    evidence("resolved-calcium-assembly", report | {"status": "passed"}, flatten(state))
+    evidence(PREFIX + "-assembly", report | {"status": "passed"}, flatten(state))
     return spec, state, report
 
 
@@ -685,7 +752,7 @@ def test_assembly_event_reference(coupled):
     assert np.asarray(report["final_voltage_V"]).shape == (spec.pool.worlds, 4)
     assert len(report["calcium_channels"]["gate"][0][0]) == 4
     evidence(
-        "resolved-calcium-assembly-reference",
+        PREFIX + "-assembly-reference",
         dict(
             status="passed",
             max_state_error_over_budget=ratio,
@@ -724,7 +791,7 @@ def test_assembly_restart_partition_and_ligand_response(coupled, tmp_path):
     )
     assert difference > 1e-10
     evidence(
-        "resolved-calcium-assembly-replay",
+        PREFIX + "-assembly-replay",
         {
             "status": "passed",
             "comparison": "bitwise",
@@ -744,23 +811,73 @@ def test_sixteen_gpu_planning_keeps_worlds_and_model():
     assert local["tasks"] == future["tasks"]
     assert future["deployment"]["maximum_target_gpus"] == 16
     assert not future["deployment"]["remote_execution_qualified"]
-    assert all(
-        t["definition"]["ionic"]["model"]["id"] == "resolved_calcium@1" for t in future["tasks"]
+    assert all(t["definition"]["ionic"]["model"]["id"] == model.MODEL_ID for t in future["tasks"])
+
+
+def assert_owned_assembly_readouts(spec, state, report):
+    """Reconstruct report values directly from complete state and declared owners."""
+    m = spec.ionic.model
+    delta = np.asarray(state.ionic.chemical_amount_increment)
+    free_ions, er_voltages, ligand, fractions = [], [], [], []
+    for i, (store, binding) in enumerate(zip(m.stores, m.ip3_release, strict=True)):
+        ids = [s.id for s in store.species]
+        compartments = [c.id for c in store.compartments]
+        cy = compartments.index(store.membrane.cytosol)
+        er = compartments.index(store.membrane.er)
+        free = np.asarray(store.compartments[cy].initial_amount_fmol) + delta[:, i, :, cy]
+        free_ions.append(free[:, [ids.index(k) for k in m.species_ids]])
+        concentration = free[:, ids.index(binding.species_id)] / store.compartments[cy].volume_pL
+        ratio = (concentration / binding.activation_mM) ** binding.activation_n
+        ligand.append(concentration)
+        fractions.append(ratio / (1 + ratio))
+        membrane = store.membrane
+        charge = (
+            reference.F
+            * 1e-15
+            * np.sum(np.asarray([s.valence for s in store.species]) * delta[:, i, :, er], axis=-1)
+        )
+        er_voltages.append(
+            membrane.initial_voltage_V
+            + charge / (membrane.area_m2 * membrane.specific_capacitance_F_per_m2)
+        )
+    assert report["ip3"]["cell_ids"] == [c.id for c in m.cells]
+    assert report["calcium"]["species_ids"] == list(m.species_ids)
+    for field, expected in (("cytosol_mM", ligand), ("release_fraction", fractions)):
+        np.testing.assert_allclose(
+            report["ip3"][field], np.stack(expected, axis=-1), rtol=3e-10, atol=3e-13
+        )
+    np.testing.assert_allclose(
+        report["calcium"]["cytosol_amounts_fmol"],
+        np.stack(free_ions, axis=-1),
+        rtol=3e-10,
+        atol=3e-13,
+    )
+    np.testing.assert_allclose(
+        report["calcium"]["er_voltage_V"],
+        np.stack(er_voltages, axis=-1),
+        rtol=3e-10,
+        atol=3e-11,
     )
 
 
 def test_assembly_aggregation_retains_owned_ligand(coupled):
     from cells.ensemble.cluster import aggregate
 
-    _, _, report = coupled
+    spec, state, report = coupled
+    assert_owned_assembly_readouts(spec, state, report)
     row = report | {"arm": "tissue", "wall_start": 0.0, "wall_end": 1.0}
     result = aggregate([row, row])["tissue"]
-    assert result["physical_model"] == "resolved_calcium@1"
+    assert result["physical_model"] == model.MODEL_ID
     for k in ("cytosol_mM", "release_fraction"):
         np.testing.assert_array_equal(
             result["ip3"][k + "_sum_over_worlds"], 2 * np.sum(report["ip3"][k], axis=0)
         )
-    missing = dict(row)
-    missing.pop("ip3")
-    with pytest.raises(ValueError, match="IP3"):
-        aggregate([row, missing])
+    for k in ("cytosol_amounts_fmol", "er_voltage_V"):
+        np.testing.assert_array_equal(
+            result["calcium"][k + "_sum_over_worlds"], 2 * np.sum(report["calcium"][k], axis=0)
+        )
+    for key, message in (("ip3", "IP3"), ("calcium", "calcium")):
+        missing = dict(row)
+        missing.pop(key)
+        with pytest.raises(ValueError, match=message):
+            aggregate([row, missing])

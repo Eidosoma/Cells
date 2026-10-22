@@ -15,7 +15,15 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_calcium_spec import MODEL_ID, ionic_spec, store_spec
+from cells.core.surface_calcium_spec import (
+    MODEL_ID,  # noqa: F401 - public model identity used by ordinary execution
+    SurfaceCalciumChannelModel,
+    SurfaceCalciumHCNModel,
+    SurfaceCalciumSodiumModel,
+    ionic_spec,
+    model_id,
+    store_spec,
+)
 from cells.coupling.selective import selective_flux
 from cells.models import compartment_reactions as chemistry
 from cells.models import er_calcium as er
@@ -72,6 +80,27 @@ LAYOUT_TYPE = NamedTuple(
 )
 IonicView = NamedTuple(
     "IonicView", [(k, object) for k in (*kinetic.LAYOUT_TYPE._fields, "cytosol_amount")]
+)
+CHANNEL_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
+)
+SODIUM_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumSodiumLayout", [(k, object) for k in CHANNEL_LAYOUT_TYPE._fields]
+)
+HCN_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumHCNLayout",
+    [
+        (k, object)
+        for k in (*SODIUM_LAYOUT_TYPE._fields, "channel_relative_permeability")
+        if k != "channel_species"
+    ],
+)
+HCN_STATE_AXES = STATE_AXES | {
+    "channel_transferred": ["species", "channel_slot"],
+    "channel_dissipated_energy_pJ": ["species", "channel_slot"],
+}
+ChannelIonicView = NamedTuple(
+    "ChannelIonicView", [(k, object) for k in (*IonicView._fields, "channel_laws")]
 )
 BATCH_CAPACITIES = (*kinetic.BATCH_CAPACITIES, "chemical_capacity", "reaction_capacity")
 OBSERVER_ID = "resolved_owned_calcium_ip3_accepted_grid@1"
@@ -190,6 +219,15 @@ def initial_values(spec):
         ip3_activation=np.array([b.activation_mM for b in m.ip3_release]),
         ip3_power=np.array([b.activation_n for b in m.ip3_release], dtype=float),
     )
+    layout_type = (
+        HCN_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumHCNModel)
+        else SODIUM_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumSodiumModel)
+        else CHANNEL_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumChannelModel)
+        else LAYOUT_TYPE
+    )
     return STATE_TYPE(
         *state,
         *states,
@@ -201,7 +239,7 @@ def initial_values(spec):
         np.zeros(nm),
         np.zeros(nm),
         np.zeros(len(pairs)),
-    ), LAYOUT_TYPE(**v)
+    ), layout_type(**v)
 
 
 def ionic_state(state):
@@ -209,9 +247,18 @@ def ionic_state(state):
 
 
 def ionic_layout(state, p, *, xp=jnp):
-    return IonicView(
-        *(getattr(p, k) for k in kinetic.LAYOUT_TYPE._fields), cytosol_amount(state, p, xp=xp)
-    )
+    if isinstance(p, HCN_LAYOUT_TYPE):
+        return kinetic.HCN_OWNED_VIEW_TYPE(
+            **{k: getattr(p, k) for k in kinetic.HCN_LAYOUT_TYPE._fields},
+            cytosol_amount=cytosol_amount(state, p, xp=xp),
+        )
+    values = {k: getattr(p, k) for k in kinetic.LAYOUT_TYPE._fields}
+    values["cytosol_amount"] = cytosol_amount(state, p, xp=xp)
+    if isinstance(p, SODIUM_LAYOUT_TYPE):
+        return kinetic.SODIUM_OWNED_VIEW_TYPE(**values, channel_laws=p.channel_laws)
+    if hasattr(p, "channel_laws"):
+        return ChannelIonicView(**values, channel_laws=p.channel_laws)
+    return IonicView(**values)
 
 
 def physical_amounts(state, p):
@@ -524,8 +571,14 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     # Keep chemical-only event boundaries in the accepted observation grid.
+    # ionic_spec() projects away store/plasma/calcium-channel schedules, so it
+    # cannot be used to validate this composition's observation clock.
     kinetic.check_steps(spec, steps, controls)
     h = np.max(steps, initial=0)
+    if isinstance(spec.model, SurfaceCalciumSodiumModel) and h > 2.5e-6 + 1e-16:
+        raise ConfigError("Resolved sodium/potassium/calcium requires RK4 steps <= 2.5 us")
+    if isinstance(spec.model, SurfaceCalciumChannelModel) and h > 25e-6 + 1e-16:
+        raise ConfigError("Resolved mixed potassium/calcium requires RK4 steps <= 25 us")
     if (
         h > er.MAX_STEP + 16 * np.finfo(float).eps
         or h * loss_bound(spec) > 0.25
@@ -641,7 +694,8 @@ def check_values(state, spec):
             diagnostics["max_" + k + "_error"] = max(
                 diagnostics.get("max_" + k + "_error", 0), float(np.max(np.abs(value), initial=0))
             )
-    for k, axes in STATE_AXES.items():
+    state_axes = HCN_STATE_AXES if isinstance(p, HCN_LAYOUT_TYPE) else STATE_AXES
+    for k, axes in state_axes.items():
         if k.endswith("_dissipated_energy_pJ"):
             value = getattr(state, k)
             if (
@@ -676,7 +730,7 @@ Observations = make_dataclass(
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Resolved calcium observations require accepted times")
@@ -736,7 +790,7 @@ def observe_history(times, history, layout, requested, spec):
 def ensemble_voltage(state, layout, spec, time):
     # Patch voltage depends on conserved capacitor charge, not the floating
     # component gauge or instantaneous assembly-controlled conductance.
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     state = STATE_TYPE(*(np.asarray(v) for v in state))
     _, _, dv = base.capacitor_change(state, p, xp=np)
     return (p.initial_membrane_voltage_V + dv)[p.membrane_active]
@@ -745,8 +799,8 @@ def ensemble_voltage(state, layout, spec, time):
 def summarize(history, diagnostics, spec):
     _, p = initial_values(spec)
     concentration, fraction = ip3_readouts(history, p, xp=np)
-    return kinetic.summarize(history, diagnostics, spec) | dict(
-        model=MODEL_ID,
+    return kinetic.summarize(history, diagnostics, ionic_spec(spec)) | dict(
+        model=model_id(spec.model),
         state_fields=list(STATE_TYPE._fields),
         final_ip3_cytosol_mM=concentration[-1].tolist(),
         final_ip3_release_fraction=fraction[-1].tolist(),

@@ -9,6 +9,7 @@ import numpy as np
 
 from validation.betse.junction_transport.check import decimal_flux
 from validation.betse.pump_contact.pump_reference import oracle
+from validation.betse.spatial_active import gate_roundoff
 from validation.betse.spatial_trajectory import reference as spatial
 from validation.betse.tissue_contact import reference as updates
 
@@ -159,7 +160,7 @@ def native_check(row, trace, protocol, *, step_rows=None):
     return report
 
 
-def compare(row, trace, tol, tissue, active, rates, observed):
+def compare(row, trace, tol, tissue, active, rates, observed, *, gate_allowance=None):
     k, area = row["species"]["K"], np.asarray(row["geometry"]["mem_sa"])
     indices = np.flatnonzero((trace["method"] == 3) & trace["after"])
     projected_trace = dict(trace)
@@ -181,11 +182,25 @@ def compare(row, trace, tol, tissue, active, rates, observed):
             and np.isfinite(actual).all()
             and np.isfinite(expected).all()
         )
-        np.testing.assert_allclose(actual, expected, atol=atol, rtol=rtol, err_msg=name)
+        budget = atol + rtol * abs(expected)
+        allowance = gate_roundoff.addition(gate_allowance, name, expected)
+        if gate_allowance is not None and name in gate_roundoff.NAMES:
+            report.setdefault("gate_original_comparison", {})[name] = dict(
+                max_error_over_budget=float(np.max(abs(actual - expected) / budget)),
+                violations=int(np.count_nonzero(abs(actual - expected) > budget)),
+                max_voltage_allowance=float(np.max(allowance)),
+            )
+        budget = budget + allowance
+        if gate_allowance is None or name not in gate_roundoff.NAMES:
+            np.testing.assert_allclose(actual, expected, atol=atol, rtol=rtol, err_msg=name)
+        else:
+            np.testing.assert_allclose(
+                (actual - expected) / budget, 0, atol=1, rtol=0, err_msg=name
+            )
         errors[name] = float(np.max(abs(actual - expected), initial=0))
         report["max_error_over_budget"] = max(
             report["max_error_over_budget"],
-            float(np.max(abs(actual - expected) / (atol + rtol * abs(expected)), initial=0)),
+            float(np.max(abs(actual - expected) / budget, initial=0)),
         )
         count += actual.size
 

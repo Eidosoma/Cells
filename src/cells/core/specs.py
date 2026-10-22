@@ -1020,11 +1020,21 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.core.betse_spatial_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium@1":
+    if isinstance(data["model"], dict) and data["model"].get("id") in (
+        "resolved_calcium@1",
+        "resolved_calcium@2",
+        "resolved_calcium@3",
+        "resolved_calcium@4",
+    ):
         from cells.core.surface_calcium_spec import parse
 
         return parse(data)
-    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@2":
+    if isinstance(data["model"], dict) and data["model"].get("id") in (
+        "resolved_tissue@2",
+        "resolved_tissue@3",
+        "resolved_tissue@4",
+        "resolved_tissue@5",
+    ):
         from cells.core.surface_kinetic_spec import parse
 
         return parse(data)

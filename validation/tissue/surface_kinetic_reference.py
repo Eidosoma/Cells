@@ -11,6 +11,7 @@ from scipy.integrate import solve_ivp
 
 from validation.betse.pump_contact.pump_reference import oracle as pump_oracle
 from validation.betse.voltage_gate_audit.gate_independent import kinetics as channel_kinetics
+from validation.tissue import hcn_reference, kir_reference, sodium_reference
 from validation.tissue import surface_dynamics_reference as base
 from validation.tissue import surface_field_reference as electrical
 from validation.tissue import surface_reference as transport
@@ -23,10 +24,11 @@ def bind(raw):
     c = base.bind(raw)
     m = raw["model"]
     nc, ne, nm = len(m["channels"]), len(m["junctions"]), len(m["membranes"])
+    transfer = (len(m["species"]), nc) if m["id"] == "resolved_tissue@5" else (nc,)
     c["shapes"].update(
         channel_gate=(2, nc),
-        channel_transferred=(nc,),
-        channel_dissipated_energy_pJ=(nc,),
+        channel_transferred=transfer,
+        channel_dissipated_energy_pJ=transfer,
         junction_gate=(ne,),
         pump_cycles=(nm,),
         pump_dissipated_energy_pJ=(nm,),
@@ -76,35 +78,55 @@ def evaluate(c, state, time, *, inside_amount=None, channel_levels=None):
             outside[species, o] += outward
 
     for k, ch in enumerate(m["channels"]):
-        j, s = mids.index(ch["membrane_id"]), ids.index(ch["species_id"])
+        j = mids.index(ch["membrane_id"])
         i, o = p["membrane_cell"][j], p["membrane_outside"][j]
         voltage = phi[i] - phi[n + o]
         with localcontext() as context:
             context.prec = 65
-            target, tau = channel_kinetics(float(voltage))
+            if ch["kinetic_law"] == "betse_kv1p5_mh@1":
+                target, tau = channel_kinetics(float(voltage))
+                opened = np.prod(d["channel_gate"][:, k])
+            elif ch["kinetic_law"] == "betse_kir2p1_mh2@1":
+                target, tau = kir_reference.kinetics(float(voltage))
+                opened = float(kir_reference.opening(d["channel_gate"][:, k]))
+            elif ch["kinetic_law"] == "betse_nav1p2_m3h_regularized@1":
+                target, tau = sodium_reference.kinetics(float(voltage))
+                opened = float(sodium_reference.opening(d["channel_gate"][:, k]))
+            elif ch["kinetic_law"] in ("betse_hcn1_m@1", "betse_hcn2_m@1", "betse_hcn4_m@1"):
+                family = int(ch["kinetic_law"][9])
+                target, tau = hcn_reference.kinetics(float(voltage), family)
+                opened = float(hcn_reference.opening(d["channel_gate"][:, k]))
+            else:
+                raise ValueError("Unsupported independent channel law")
             result["channel_gate"][:, k] = [
                 (float(a) - g) / float(t)
                 for a, t, g in zip(target, tau, d["channel_gate"][:, k], strict=True)
             ]
-        flux = transport.decimal_flux(
-            raw["ci"][s, i],
-            raw["co"][s, o],
-            voltage,
-            p["valence"][s][0],
-            p["temperature"],
-            p["membrane_area"][j],
-            ch["max_permeability_m_per_s"] * ch["abundance"],
-            1.0,
-            np.prod(d["channel_gate"][:, k])
-            * availability(c, "channel", ch["id"], time)
-            * (1.0 if channel_levels is None else channel_levels[i]),
-            {"F": F, "R": R},
-        )
-        result["channel_transferred"][k] = flux
-        result["channel_dissipated_energy_pJ"][k] = (
-            1e-3 * flux * rates["membrane_delta_mu_J_mol"][s, j]
-        )
-        transfer(s, j, flux)
+        routes = ch.get("permeant_ions")
+        if routes is None:
+            routes = [dict(species_id=ch["species_id"], relative_permeability=1.0)]
+        for route in routes:
+            s = ids.index(route["species_id"])
+            flux = transport.decimal_flux(
+                raw["ci"][s, i],
+                raw["co"][s, o],
+                voltage,
+                p["valence"][s][0],
+                p["temperature"],
+                p["membrane_area"][j],
+                ch["max_permeability_m_per_s"] * ch["abundance"] * route["relative_permeability"],
+                1.0,
+                opened
+                * availability(c, "channel", ch["id"], time)
+                * (1.0 if channel_levels is None else channel_levels[i]),
+                {"F": F, "R": R},
+            )
+            index = (s, k) if m["id"] == "resolved_tissue@5" else k
+            result["channel_transferred"][index] = flux
+            result["channel_dissipated_energy_pJ"][index] = (
+                1e-3 * flux * rates["membrane_delta_mu_J_mol"][s, j]
+            )
+            transfer(s, j, flux)
     for j, membrane in enumerate(m["membranes"]):
         pump = membrane["pump"]
         if pump is None:
@@ -174,7 +196,8 @@ def evaluate(c, state, time, *, inside_amount=None, channel_levels=None):
     return flatten(c, result), phi, proof
 
 
-def integrate(raw):
+def integrate(raw, *, rtol=2e-11, state_atol=2e-14, charge_atol=1e-29):
+    """Expose independent accuracy while retaining earlier panels' default settings."""
     c, e = bind(raw), raw["experiment"]
     events = sorted(
         {
@@ -193,7 +216,7 @@ def integrate(raw):
     atols = flatten(
         c,
         {
-            k: np.full(shape, 1e-29 if k.endswith("_C") else 2e-14)
+            k: np.full(shape, charge_atol if k.endswith("_C") else state_atol)
             for k, shape in c["shapes"].items()
         },
     )
@@ -203,7 +226,7 @@ def integrate(raw):
             (left, right),
             state,
             method="DOP853",
-            rtol=2e-11,
+            rtol=rtol,
             atol=atols,
             max_step=0.0001,
             dense_output=True,
@@ -220,7 +243,7 @@ def integrate(raw):
         potential_V=np.stack([evaluate(c, result[t], t)[1] for t in times]).tolist(),
         rhs_evaluations=evaluations,
         method="DOP853, full-node roots, Decimal transport/gates/pumps",
-        rtol=2e-11,
-        amount_energy_gate_atol=2e-14,
-        electrode_charge_atol_C=1e-29,
+        rtol=rtol,
+        amount_energy_gate_atol=state_atol,
+        electrode_charge_atol_C=charge_atol,
     )

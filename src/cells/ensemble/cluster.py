@@ -45,11 +45,25 @@ def aggregate(rows):
             raise ValueError("Cluster arm changed physical owners")
         if (
             row["physical_model"]
-            in ("spatial_calcium@4", "spatial_calcium@5", "resolved_calcium@1")
+            in (
+                "spatial_calcium@4",
+                "spatial_calcium@5",
+                "resolved_calcium@1",
+                "resolved_calcium@2",
+                "resolved_calcium@3",
+                "resolved_calcium@4",
+            )
             and "ip3" not in row
         ):
             raise ValueError("Cluster IP3 model requires ligand readouts")
-        if row["physical_model"] == "resolved_calcium@1":
+        if row["physical_model"] in (
+            "resolved_calcium@1",
+            "resolved_calcium@2",
+            "resolved_calcium@3",
+            "resolved_calcium@4",
+        ):
+            if "calcium" not in row:
+                raise ValueError("Resolved cluster requires calcium readouts")
             for key in ("final_voltage_axis", "voltage_owner_ids"):
                 if key not in row or arm.setdefault(key, row[key]) != row[key]:
                     raise ValueError("Resolved cluster voltage owners changed or missing")
@@ -100,6 +114,23 @@ def aggregate(rows):
                 if name in target and np.asarray(target[name]).shape != value.shape:
                     raise ValueError("Cluster calcium channel shape changed")
                 target[name] = (np.asarray(target.get(name, np.zeros_like(value))) + value).tolist()
+        if row["physical_model"] == "resolved_calcium@4":
+            for key in (
+                "channel_transfer_axes",
+                "channel_species_ids",
+                "channel_relative_permeability",
+            ):
+                if key not in row or arm.setdefault(key, row[key]) != row[key]:
+                    raise ValueError("Cluster channel species/routes changed or missing")
+            species = row["channel_species_ids"]
+            shape = (len(species), len(row["channel_ids"]))
+            if (
+                row["channel_transfer_axes"] != ["world", "species", "channel"]
+                or species != row["calcium"]["species_ids"]
+                or np.asarray(row["channel_relative_permeability"]).shape != shape
+                or np.asarray(row["channel_transferred_fmol"]).shape != (row["worlds"], *shape)
+            ):
+                raise ValueError("Cluster channel species/transfer axes invalid")
         for key in ("worlds", "committed_events", "execute_seconds"):
             arm[key] += row[key]
         wall = row["wall_end"] - row["wall_start"]
@@ -109,9 +140,14 @@ def aggregate(rows):
         add_ionic_observables(arm, {k: v for k, v in row.items() if k not in arrays})
         for source in arrays:
             destination = source + "_sum_by_owner"
-            totals = [math.fsum(v) for v in zip(*row[source], strict=True)]
-            previous = arm.setdefault(destination, [0.0] * len(totals))
-            arm[destination] = [a + b for a, b in zip(previous, totals, strict=True)]
+            values = np.asarray(row[source], dtype=float)
+            totals = np.array(
+                [math.fsum(values[(slice(None), *i)]) for i in np.ndindex(values.shape[1:])]
+            ).reshape(values.shape[1:])
+            previous = np.asarray(arm.setdefault(destination, np.zeros_like(totals).tolist()))
+            if previous.shape != totals.shape:
+                raise ValueError("Cluster channel/availability shape changed")
+            arm[destination] = (previous + totals).tolist()
         for owner, cell in row["assembly_cells"].items():
             target = arm["assembly_cells"].setdefault(owner, {})
             for key in ("model", "stream_id", "seed"):

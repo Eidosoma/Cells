@@ -1,0 +1,788 @@
+{
+  "species": [
+    "Na",
+    "K",
+    "Cl"
+  ],
+  "base_concentration_mM": [
+    12.0,
+    140.0,
+    10.0
+  ],
+  "concentration_gradient_mM": [
+    4.0,
+    -8.0,
+    2.0
+  ],
+  "outside_mM": [
+    145.0,
+    4.0,
+    120.0
+  ],
+  "gj_surface_fraction": 1e-08,
+  "initial_voltage_extent_V": 0.02,
+  "native_update_tolerances": {
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "field_atol_V": 2e-10,
+    "field_rtol": 2e-12,
+    "field_gradient_atol_V_m": 2e-08,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_atol_fmol_s": 2e-11,
+    "cpu_gpu_rtol": 3e-10
+  },
+  "tolerances": {
+    "concentration_atol_mM": 5e-12,
+    "concentration_rtol": 2e-13,
+    "voltage_atol_V": 2e-10,
+    "voltage_rtol": 2e-12,
+    "boundary_atol_V": 3e-13,
+    "field_atol_V_m": 2e-08,
+    "field_rtol": 2e-12,
+    "charge_density_atol_C_m3": 2e-08,
+    "flux_atol_fmol_s": 2e-11,
+    "flux_rtol": 2e-12,
+    "environment_flux_atol_mol_m2_s": 2e-16,
+    "material_atol_fmol": 2e-11,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_concentration_atol_mM": 5e-12,
+    "cpu_gpu_ledger_atol_fmol": 2e-11,
+    "same_backend_replay": "bitwise",
+    "material_roundoff_ops_per_step": 32,
+    "clock_atol_s": 6e-17,
+    "gate_atol": 2e-13,
+    "gate_rtol": 2e-12,
+    "current_atol_A_m2": 2e-10
+  },
+  "temperature_K": 298.15,
+  "initial_gate": [
+    0.2,
+    0.6
+  ],
+  "pump_parameters": {
+    "cATP": 1.5,
+    "cADP": 0.1,
+    "cPi": 0.1,
+    "KmNK_Na": 12.0,
+    "KmNK_K": 0.2,
+    "KmNK_ATP": 0.5,
+    "deltaGATP": -37000.0
+  },
+  "junction": {
+    "threshold_voltage_V": 0.015,
+    "minimum_open_fraction": 0.1,
+    "initial_open": 0.35,
+    "native_source_sha256": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd"
+  },
+  "cases": [
+    {
+      "id": "sham",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    },
+    {
+      "id": "junction_only",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    },
+    {
+      "id": "coupled_block",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    },
+    {
+      "id": "staggered",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 8e-06,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 2.4e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 3.2e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 4.8e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 8e-06,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 2.4e-05,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 3.2e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 4.8e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    },
+    {
+      "id": "regional",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": [
+            0,
+            3
+          ],
+          "pump_fraction": 0.25,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    },
+    {
+      "id": "partial",
+      "fixture": "mixed",
+      "topology": "all",
+      "outside_pulse_mM": {
+        "Na": 0.001,
+        "K": 0.5,
+        "Cl": 0.5
+      },
+      "membrane_permeability_m_s": [
+        1e-10,
+        2e-10,
+        8e-11
+      ],
+      "boundary_voltage_V": {
+        "L": -0.001,
+        "R": 0.001,
+        "T": 0.0,
+        "B": 0.0
+      },
+      "pump_density_mol_m2_s": 1e-07,
+      "pump_availability_pattern": [
+        1.0
+      ],
+      "channel_permeability_m_s": 2e-08,
+      "moving_order": [
+        "Na",
+        "K",
+        "Cl"
+      ],
+      "junction_changes": [
+        {
+          "time_s": 0.0,
+          "fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "fraction": 0.5
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "fraction": 0
+        }
+      ],
+      "interventions": [
+        {
+          "time_s": 0.0,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 1.6e-05,
+          "target_cells": "all",
+          "pump_fraction": 0.5,
+          "channel_fraction": 0.25,
+          "junction_fraction": 0.5
+        },
+        {
+          "time_s": 3.9999999999999996e-05,
+          "target_cells": "all",
+          "pump_fraction": 1,
+          "channel_fraction": 1,
+          "junction_fraction": 1
+        },
+        {
+          "time_s": 0.000512,
+          "target_cells": "all",
+          "pump_fraction": 0,
+          "channel_fraction": 0,
+          "junction_fraction": 0
+        }
+      ]
+    }
+  ],
+  "kind": "betse_mixed_interventions@3",
+  "scope": "Ordinary CPU/L4 combined pump/channel/junction controls through 512 us, with explicitly revised native gate comparison using conditional voltage-error propagation and independent kinetic replays; production and base tolerances unchanged.",
+  "automatic_followup": false,
+  "prior_binding": {
+    "root": "/mnt/workspaces/Cells/betse-mixed-interventions-20261018-01",
+    "registration_sha256": "a1d2d7276ee7bb669e2dc885de9f7e48c4caa41dcc4b10c89f6fd7888f0a0669",
+    "completion_sha256": "ae70b0f613774a731428d1e0211522b11e2a523adb0e9cdfe5761d53fa6225b2",
+    "require_completed_cpu_and_gpu": true
+  },
+  "template": "configs/betse_spatial_junction.json",
+  "template_sha256": "b391164ec9c5c4eb4d9bda721220359072ea41e8e94b4ae9883920774b5f4155",
+  "source_protocol": "validation/betse/spatial_active/junction_protocol.json",
+  "source_protocol_sha256": "286f593c7422f130bf70c807b7e63372fbcc0447e4553e1e09ede10ab0224042",
+  "duration_s": 0.000512,
+  "native_steps_s": [
+    1e-06,
+    5e-07,
+    2.5e-07
+  ],
+  "resources": {
+    "max_wall_seconds": 10800,
+    "native_timeout_seconds": 5400,
+    "artifact_and_cache_bytes": 8589934592,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2,
+    "max_retained_array_estimate_bytes": 6442450944,
+    "batch_max_working_bytes": 4294967296,
+    "scalar_max_trace_bytes": 4294967296
+  },
+  "tests": [
+    "tests/unit/test_betse_gate_roundoff.py",
+    "tests/unit/test_betse_mixed_interventions.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_betse_mixed_interventions.py::test_cpu_gpu"
+  ],
+  "required_evidence": [
+    "mixed-prerequisite",
+    "mixed-design",
+    "mixed-input-known-answers",
+    "mixed-native-capture",
+    "mixed-static-compatibility",
+    "mixed-effects",
+    "mixed-replay",
+    "mixed-branches",
+    "mixed-worlds",
+    "mixed-negative-controls",
+    "mixed-native-sham-0",
+    "mixed-native-sham-1",
+    "mixed-native-sham-2",
+    "mixed-native-junction_only-0",
+    "mixed-native-junction_only-1",
+    "mixed-native-junction_only-2",
+    "mixed-native-coupled_block-0",
+    "mixed-native-coupled_block-1",
+    "mixed-native-coupled_block-2",
+    "mixed-native-staggered-0",
+    "mixed-native-staggered-1",
+    "mixed-native-staggered-2",
+    "mixed-native-regional-0",
+    "mixed-native-regional-1",
+    "mixed-native-regional-2",
+    "mixed-native-partial-0",
+    "mixed-native-partial-1",
+    "mixed-native-partial-2",
+    "mixed-prefixes",
+    "mixed-horizon-continuations",
+    "mixed-gate-known-answers",
+    "mixed-gate-negative-inputs",
+    "mixed-gate-saved-regression",
+    "mixed-gate-fault-rejection"
+  ],
+  "required_gpu_evidence": [
+    "mixed-cpu-gpu"
+  ],
+  "checks": [
+    "Authenticate the completed 64-us qualification, unchanged production/native captures and scalar update oracles; declare the conditional gate comparison revision and preserve the original failed comparison.",
+    "Authenticate all eighteen completed observed/bare pairs from the failed longer comparison under their original protocol; do not recapture or change native inputs.",
+    "Reconstruct controls independently, then check scalar pump/channel laws, per-ion junction recurrence/flux, field updates and material accounting.",
+    "Compare all fourteen ordinary state arrays and seven fields with authenticated native targets. Only m/h receive the analytic voltage-propagation allowance, after independent full gate replays pass at the original kinetic tolerances; record original gate violations and per-sample bounds.",
+    "Keep all applied early controls unchanged and move the unexecuted final event from 64 to 512 us. Compare all 18 old native prefixes bitwise except duration-dependent raw labels, and all saved Cells prefixes at inherited tolerances with exact differences recorded.",
+    "Check disk restart before/at/after control boundaries and at later 64/256/512-us boundaries; extend terminal 64/256-us checkpoints with execution budgets reserved beforehand, future branches, changed windows and independent worlds.",
+    "Reject corrupt control/clock/state evidence; compare complete CPU/L4 arrays at inherited tolerances and record GPU busy, SM-active and per-case timing.",
+    "Verify the analytic bound against 80-digit independent trajectories, zero-difference known answers, invalid-input rejection and kinetic faults that fit inside the expanded gate budget; keep the default legacy comparison strict."
+  ],
+  "scope_exclusions": [
+    "Fixed seven-cell geometry, maintained ATP/ADP/Pi and one Kv1p5 population; no biological recovery, finite-energy or new channel family claim.",
+    "Prescribed external inputs to pinned FULL INIT; not built-in SIM tissue events or inhibitor chemistry.",
+    "Native junction opening updates once per moving ion per outer dt. Fractional blocking multiplies stored opening and changes effective physical-time blocking when dt changes; no continuum or formal convergence claim.",
+    "Three timesteps test native correspondence separately; no extension beyond 512 us, spatial convergence, Jupiter or distributed interacting-tissue qualification.",
+    "Two-task/channel-compensation research remains parked; no reader, rescue search or automatic follow-up.",
+    "Native gate acceptance differs from the failed v2 comparison: this is conditional voltage sensitivity accounting, not a global numerical-error certificate, bitwise BETSE parity or evidence that every upstream discrepancy is rounding."
+  ],
+  "allowed_prior_source_changes": [
+    "tests/unit/test_betse_mixed_interventions.py",
+    "validation/betse/spatial_active/mixed_interventions.py",
+    "validation/betse/spatial_active/mixed_protocol.json",
+    "validation/betse/spatial_active/junction_runtime.py",
+    "validation/betse/spatial_active/junction_reference.py",
+    "validation/betse/spatial_active/reference.py"
+  ],
+  "prefix_duration_s": 6.4e-05,
+  "replay": {
+    "cases": [
+      "staggered",
+      "partial"
+    ],
+    "checkpoint_steps": [
+      15,
+      16,
+      17,
+      39,
+      40,
+      41,
+      63,
+      64,
+      65,
+      255,
+      256,
+      257,
+      511,
+      512
+    ],
+    "window_steps": [
+      137,
+      173
+    ],
+    "continuation_case": "partial",
+    "continuation_step_index": 1,
+    "continuation_horizons_s": [
+      6.4e-05,
+      0.000256
+    ]
+  },
+  "world_checks": {
+    "cases": [
+      "coupled_block",
+      "regional",
+      "sham"
+    ],
+    "step_indices": [
+      0,
+      1,
+      0
+    ],
+    "durations_s": [
+      0.000512,
+      0.000256,
+      0.000256
+    ],
+    "checkpoint_steps": [
+      64,
+      384,
+      256
+    ],
+    "window_steps": 137
+  },
+  "native_capture_binding": {
+    "root": "/mnt/workspaces/Cells/betse-mixed-interventions-long-20261018-01",
+    "registration_sha256": "1374b49b55b22a83fc257ba246eb09c2d644a8fd6e6212a4fe7c88c1499dcb07",
+    "protocol_sha256": "764f9bfd89ffac13a93560d708ff6512f45454309f66831c4233cfdc6c800bf1",
+    "failure_sha256": "0151d6053ba4164ec579c8a70485be9c2c2523c2be28bbc0860128d9e71f9190",
+    "completion_sha256": "36eab37a499a40f08829cb93ba09d6badeb058be2e8888d31db1a352cdba98e9",
+    "panel_sha256": "5391205f8cf21de8a82d73fecdede336c77ccc8bafbbaad2974f82ec37acedcb"
+  },
+  "gate_comparison": {
+    "policy": "kv1p5_voltage_propagation_with_independent_replay@1",
+    "acceptance_criteria_changed": true,
+    "independent_kinetic_replay_required": true,
+    "base_tolerances_unchanged": true,
+    "production_unchanged": true,
+    "original_violations_retained": true,
+    "allowance": "E_next = a_max E + L abs(delta_V); E_initial = 0; only Kv1p5 m/h",
+    "limits": "Conditional propagation of separately checked voltage histories, not proof that all coupled differences are roundoff; no allowance for other fields, rates, junction gates, CPU/GPU parity or replay.",
+    "regression_binding": {
+      "root": "/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/roundoff-check-20261019-01",
+      "closeout_sha256": "dc3a326a9eec47ee9c0cd1dfa2e5d6c98222b130809e3ecdb0a0a499d01009d8",
+      "arrays": {
+        "cpu": "/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/regional-diagnostic-20261019-01/regional-cpu.npz",
+        "gpu": "/mnt/workspaces/Cells/mixed-interventions-long-development-20261018-01/roundoff-check-20261019-01/gpu/regional-gpu.npz"
+      }
+    }
+  }
+}

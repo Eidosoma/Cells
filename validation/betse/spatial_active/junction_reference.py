@@ -97,8 +97,12 @@ def native_check(row, trace, protocol):
     )
 
 
-def compare(row, trace, tol, tissue, active, rates, observed, opening, calls):
-    report = reference.compare(row, trace, tol, tissue, active, rates, observed)
+def compare(
+    row, trace, tol, tissue, active, rates, observed, opening, calls, *, gate_allowance=None
+):
+    report = reference.compare(
+        row, trace, tol, tissue, active, rates, observed, gate_allowance=gate_allowance
+    )
     final = np.flatnonzero((trace["method"] == 3) & trace["after"])
     ids = [row["species"][name] for name in row["case"]["moving_order"]]
     per_ion = np.stack(

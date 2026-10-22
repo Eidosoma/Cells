@@ -5,6 +5,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import resource
 import shutil
 import subprocess
@@ -17,6 +18,7 @@ from pathlib import Path
 
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import digest, write_json
+from validation.assembly.component_process import run_bounded
 
 ROOT = Path(__file__).resolve().parents[2]
 DRIVER = "validation/assembly/qualify_cell.py"
@@ -160,6 +162,90 @@ def collection_nodes(path):
     return [line for line in path.read_text().splitlines() if "::test_" in line]
 
 
+def component_groups(protocol, nodes):
+    """Resolve selectors to a disjoint, complete partition of collected node IDs."""
+    declared = protocol.get("test_groups")
+    if declared is None:
+        declared = [
+            {"name": f"part-{i:02d}", "tests": [path]}
+            for i, path in enumerate(protocol["tests"], 1)
+        ]
+    if not declared or not nodes or len(nodes) != len(set(nodes)):
+        raise ValueError("Incomplete component test groups or collection")
+    names, assigned, groups = set(), [], []
+    for group in declared:
+        name = group["name"]
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) or name in names:
+            raise ValueError("Component group names must be unique safe identifiers")
+        names.add(name)
+        selected = []
+        for selector in group["tests"]:
+            matches = [
+                node
+                for node in nodes
+                if node == selector
+                or node.startswith(selector + "::")
+                or ("::" in selector and node.startswith(selector + "["))
+            ]
+            if not matches:
+                raise ValueError("Component group selector matches no collected tests: " + selector)
+            selected.extend(matches)
+        if not selected:
+            raise ValueError("Empty component test group")
+        assigned.extend(selected)
+        groups.append({"name": name, "test_nodes": selected})
+    if len(assigned) != len(set(assigned)) or set(assigned) != set(nodes):
+        raise ValueError("Component test groups must cover every test exactly once")
+    skips = protocol["expected_cpu_skip_nodes"]
+    if len(skips) != len(set(skips)) or not set(skips) <= set(nodes):
+        raise ValueError("Component CPU skips must name unique collected tests")
+    if protocol.get("expected_cpu_skips", len(skips)) != len(skips):
+        raise ValueError("Component CPU skip count differs from named skips")
+    return groups
+
+
+def component_suite(path, nodes, expected_skips):
+    """Check actual cases and outcomes, not just the reported JUnit totals."""
+    suite = ET.parse(path).getroot().find("testsuite")
+    if suite is None:
+        raise ValueError("Component suite omitted its test results")
+    row = {k: int(suite.attrib[k]) for k in ("tests", "failures", "errors", "skipped")}
+    cases = suite.findall("testcase")
+
+    def node(case):
+        return case.attrib["classname"].replace(".", "/") + ".py::" + case.attrib["name"]
+
+    skipped = [node(c) for c in cases if c.find("skipped") is not None]
+    if (
+        sorted(node(c) for c in cases) != sorted(nodes)
+        or row["tests"] != len(nodes)
+        or row["failures"]
+        or row["errors"]
+        or any(c.find("failure") is not None or c.find("error") is not None for c in cases)
+        or row["skipped"] != len(skipped)
+        or sorted(skipped) != sorted(expected_skips)
+    ):
+        raise ValueError("Component suite omitted or failed a registered check")
+    return row, cases
+
+
+def publish_component_evidence(output, directory, backend):
+    """Keep every group's originals and bind the first copy of shared fixtures."""
+    source = directory / "evidence" / backend
+    destination = output / "evidence" / backend
+    destination.mkdir(parents=True, exist_ok=True)
+    evidence = {}
+    for path in sorted(source.rglob("*")):
+        if path.is_file():
+            name = path.relative_to(source)
+            target = destination / name
+            evidence[str(name)] = digest(path)
+            if not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(path, target)
+    return evidence
+
+
 def launch_component(output, protocol_path, dcgm_root):
     """Use the same frozen-source CPU/L4 runner for a new numerical component."""
     from cells.ensemble.telemetry import devices
@@ -179,7 +265,9 @@ def launch_component(output, protocol_path, dcgm_root):
         for line in Path("/proc/meminfo").read_text().splitlines()
         if line.startswith("MemAvailable:")
     )
-    if available < limits["max_worker_rss_bytes"] + 4 * 1024**3:
+    if available < limits["max_worker_rss_bytes"] + limits.get(
+        "min_available_host_memory_bytes", 4 * 1024**3
+    ):
         raise ValueError("Component qualification host-memory reserve")
     if (
         shutil.disk_usage(workspace).free
@@ -234,11 +322,13 @@ def launch_component(output, protocol_path, dcgm_root):
     nodes = collection_nodes(output / "collection.log")
     if len(nodes) < 1 or len(nodes) != len(set(nodes)):
         raise ValueError("Incomplete component test collection")
+    groups = component_groups(protocol, nodes)
     record = {
         "component_protocol": protocol,
         "component_protocol_sha256": digest(output / "component-protocol.json"),
         "sources_sha256": files(source),
         "test_nodes": nodes,
+        "test_groups": groups,
         "workspace": str(workspace),
         "cpu_affinity": [4, 5],
         "gpu": gpu,
@@ -272,6 +362,7 @@ def component_worker(output, record):
     began = time.monotonic()
     protocol = record["component_protocol"]
     observer = None
+    active = {}
     try:
         if (
             files(output / "source") != record["sources_sha256"]
@@ -279,11 +370,17 @@ def component_worker(output, record):
             or json.loads((output / "component-protocol.json").read_text()) != protocol
         ):
             raise ValueError("Component qualification frozen input changed")
+        groups = component_groups(protocol, record["test_nodes"])
+        if record.get("test_groups", groups) != groups:
+            raise ValueError("Component registered test groups changed")
         os.sched_setaffinity(0, record["cpu_affinity"])
         write_json(output / "started.json", {"pid": os.getpid(), "utc": utc()})
         rows, metrics = {}, None
+        group_results = {}
+        peak, tree_peak = 0, 0
         for backend in ("cpu", "gpu"):
             cluster_budget(output, protocol)
+            active = {"phase": backend}
             write_json(
                 output / "status.json",
                 {"status": "running", "phase": backend, "utc": utc()},
@@ -303,7 +400,6 @@ def component_worker(output, record):
                 JAX_PLATFORMS="cpu" if backend == "cpu" else "cuda,cpu",
                 JAX_ENABLE_X64="1",
                 CELLS_COMPONENT_BACKEND=backend,
-                CELLS_COMPONENT_EVIDENCE=str(output / "evidence"),
                 XLA_PYTHON_CLIENT_PREALLOCATE="false",
                 XLA_PYTHON_CLIENT_MEM_FRACTION=str(protocol["resources"]["gpu_memory_fraction"]),
                 CUDA_VISIBLE_DEVICES=record["gpu"]["uuid"],
@@ -329,12 +425,29 @@ def component_worker(output, record):
                     timeout=30,
                 )
                 write_json(output / f"{backend}.runtime.json", json.loads(runtime))
+                cases = []
+                group_results[backend] = {}
                 with (
                     (output / f"{backend}.stdout.log").open("x") as out,
                     (output / f"{backend}.stderr.log").open("x") as err,
                 ):
-                    subprocess.run(
-                        [
+                    for group in groups:
+                        name = group["name"]
+                        active = {"phase": backend, "group": name}
+                        directory = output / "groups" / backend / name
+                        directory.mkdir(parents=True)
+                        evidence = directory / "evidence"
+                        evidence.mkdir()
+                        # References and CPU/GPU comparisons read the completed
+                        # CPU phase. New outputs stay local to this fresh group.
+                        if backend == "gpu":
+                            (evidence / "cpu").symlink_to(output / "evidence" / "cpu")
+                        write_json(
+                            output / "status.json",
+                            {"status": "running", **active, "utc": utc()},
+                            replace=True,
+                        )
+                        command = [
                             python,
                             "-B",
                             "-m",
@@ -343,18 +456,78 @@ def component_worker(output, record):
                             "-q",
                             "-p",
                             "no:cacheprovider",
-                            *protocol["tests"],
-                            "--basetemp=" + str(output / f"{backend}-tmp"),
-                            "--junitxml=" + str(output / f"{backend}.xml"),
-                        ],
-                        cwd=source,
-                        env=environment,
-                        stdout=out,
-                        stderr=err,
-                        stdin=subprocess.DEVNULL,
-                        timeout=max(1, record["max_wall_seconds"] - (time.monotonic() - began)),
-                        check=True,
-                    )
+                            *group["test_nodes"],
+                            "--basetemp=" + str(directory / "tmp"),
+                            "--junitxml=" + str(directory / "tests.xml"),
+                        ]
+                        try:
+                            remaining = record["max_wall_seconds"] - (time.monotonic() - began)
+                            if remaining <= 0:
+                                raise TimeoutError(
+                                    "Component qualification wall allowance exhausted"
+                                )
+                            resources = run_bounded(
+                                command,
+                                directory=directory,
+                                cwd=source,
+                                env=environment | {"CELLS_COMPONENT_EVIDENCE": str(evidence)},
+                                timeout=remaining,
+                                max_rss_bytes=protocol["resources"]["max_worker_rss_bytes"],
+                                min_available_bytes=protocol["resources"].get(
+                                    "min_available_host_memory_bytes", 4 * 1024**3
+                                ),
+                            )
+                        finally:
+                            for stream, filename in ((out, "stdout.log"), (err, "stderr.log")):
+                                path = directory / filename
+                                if path.exists():
+                                    with path.open() as log:
+                                        shutil.copyfileobj(log, stream)
+                                    stream.flush()
+                        expected = (
+                            [
+                                n
+                                for n in protocol["expected_cpu_skip_nodes"]
+                                if n in group["test_nodes"]
+                            ]
+                            if backend == "cpu"
+                            else []
+                        )
+                        row, group_cases = component_suite(
+                            directory / "tests.xml", group["test_nodes"], expected
+                        )
+                        if (directory / "stderr.log").stat().st_size:
+                            raise ValueError("Unexpected component stderr")
+                        cases.extend(group_cases)
+                        peak = max(peak, resources["observed_process_high_water_bytes"])
+                        tree_peak = max(tree_peak, resources["sampled_peak_process_tree_rss_bytes"])
+                        group_results[backend][name] = row
+                        write_json(
+                            directory / "qualified.json",
+                            {
+                                "status": "passed",
+                                "test_nodes": group["test_nodes"],
+                                "suite": row,
+                                "resources": resources,
+                                "evidence_sha256": publish_component_evidence(
+                                    output, directory, backend
+                                ),
+                                "utc": utc(),
+                            },
+                        )
+                        cluster_budget(output, protocol)
+                # Preserve the historical aggregate XML, while keeping original
+                # per-process XML and receipts available for partial failures.
+                suites = ET.Element("testsuites")
+                totals = {
+                    key: sum(row[key] for row in group_results[backend].values())
+                    for key in ("tests", "failures", "errors", "skipped")
+                }
+                suite = ET.SubElement(
+                    suites, "testsuite", name=backend, **{k: str(v) for k, v in totals.items()}
+                )
+                suite.extend(cases)
+                ET.ElementTree(suites).write(output / f"{backend}.xml", encoding="utf-8")
             finally:
                 if observer is not None:
                     metrics = observer.finish(
@@ -364,28 +537,8 @@ def component_worker(output, record):
                         )
                     )
                     observer = None
-            suite = ET.parse(output / f"{backend}.xml").getroot().find("testsuite")
-            row = {k: int(suite.attrib[k]) for k in ("tests", "failures", "errors", "skipped")}
-            actual_nodes = [
-                c.attrib["classname"].replace(".", "/") + ".py::" + c.attrib["name"]
-                for c in suite.findall("testcase")
-            ]
-            skipped = [
-                c.attrib["classname"].replace(".", "/") + ".py::" + c.attrib["name"]
-                for c in suite.findall("testcase")
-                if c.find("skipped") is not None
-            ]
             expected = protocol["expected_cpu_skip_nodes"] if backend == "cpu" else []
-            if (
-                sorted(actual_nodes) != sorted(record["test_nodes"])
-                or row["tests"] != len(record["test_nodes"])
-                or row["failures"]
-                or row["errors"]
-                or sorted(skipped) != sorted(expected)
-            ):
-                raise ValueError("Component suite omitted or failed a registered check")
-            if (output / f"{backend}.stderr.log").stat().st_size:
-                raise ValueError("Unexpected component stderr")
+            row, _ = component_suite(output / f"{backend}.xml", record["test_nodes"], expected)
             for name in protocol["required_evidence"] + (
                 protocol["required_gpu_evidence"] if backend == "gpu" else []
             ):
@@ -397,20 +550,27 @@ def component_worker(output, record):
                 ):
                     raise ValueError("Missing passing component evidence: " + name)
             rows[backend] = row
-            peak = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss * 1024
-            if peak > protocol["resources"]["max_worker_rss_bytes"]:
-                raise ValueError("Component peak child memory allowance exceeded")
             cluster_budget(output, protocol)
+            if backend == "cpu":
+                cpu_hashes = {
+                    str(p.relative_to(output)): digest(p)
+                    for p in (output / "evidence" / "cpu").rglob("*")
+                    if p.is_file()
+                }
         if files(source) != record["sources_sha256"]:
             raise ValueError("Component source changed during execution")
+        if any(digest(output / name) != expected for name, expected in cpu_hashes.items()):
+            raise ValueError("Component CPU evidence changed during GPU comparison")
         result = {
             "status": "completed",
             "scope": protocol["scope"],
             "scope_exclusions": protocol["scope_exclusions"],
             "suites": rows,
+            "group_suites": group_results,
             "gpu_metrics": metrics,
             "gpu_phase_gpu_hours": metrics["whole_job"]["gpu_busy"]["seconds"] / 3600,
             "peak_child_rss_bytes": peak,
+            "sampled_peak_process_tree_rss_bytes": tree_peak,
             "elapsed_seconds": time.monotonic() - began,
             "registration_sha256": digest(output / "registration.json"),
             "finished_utc": utc(),
@@ -419,6 +579,11 @@ def component_worker(output, record):
         }
         write_json(output / "result.json", result)
         evidence_paths = list((output / "evidence").rglob("*"))
+        for backend in ("cpu", "gpu"):
+            for group in groups:
+                directory = output / "groups" / backend / group["name"]
+                evidence_paths += [p for p in directory.iterdir() if p.is_file()]
+                evidence_paths += list((directory / "evidence" / backend).rglob("*"))
         evidence_paths += [
             output / name
             for name in (
@@ -456,13 +621,16 @@ def component_worker(output, record):
             output / "failure.json",
             {
                 "status": "failed",
+                **active,
                 "traceback": failure,
                 "elapsed_seconds": time.monotonic() - began,
                 "utc": utc(),
                 "automatic_retry": False,
             },
         )
-        write_json(output / "status.json", {"status": "failed", "utc": utc()}, replace=True)
+        write_json(
+            output / "status.json", {"status": "failed", **active, "utc": utc()}, replace=True
+        )
         raise
 
 

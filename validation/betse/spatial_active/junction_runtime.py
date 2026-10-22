@@ -8,8 +8,8 @@ import numpy as np
 from cells.core.betse_junction_spec import MODEL_ID, SOLVER_ID
 from cells.core.betse_spatial_spec import INITIAL_FIELDS
 from cells.numerics import betse_active as active
+from validation.betse.spatial_active import gate_roundoff, junctions, refinement
 from validation.betse.spatial_active import junction_refinement as long
-from validation.betse.spatial_active import junctions, refinement
 from validation.betse.spatial_trajectory.reference import material_roundoff
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -224,7 +224,7 @@ def definition(case="block_release", index=0, *, backend="cpu", steps=None):
     )
 
 
-def compare_native(actual, row, trace):
+def compare_native(actual, row, trace, *, gate_allowance=None):
     """Compare ordinary state/fields directly with frozen native captures.
 
     The existing independent ledger reconstruction and inventory-scaled
@@ -272,12 +272,20 @@ def compare_native(actual, row, trace):
         assert values.shape == expected.shape, key
         assert np.isfinite(values).all() and np.isfinite(expected).all(), key
         budget = atol + rtol * abs(expected) + (rounding.get(name, 0) if section == "state" else 0)
+        original_budget = budget
+        budget = budget + gate_roundoff.addition(gate_allowance, name, expected)
         difference = abs(values - expected)
         np.testing.assert_allclose(difference / budget, 0, atol=1, rtol=0, err_msg=key)
         fields[key] = dict(
             max_absolute_error=float(np.max(difference)),
             max_error_over_budget=float(np.max(difference / budget)),
         )
+        if gate_allowance is not None and name in gate_roundoff.NAMES:
+            fields[key].update(
+                original_max_error_over_budget=float(np.max(difference / original_budget)),
+                original_violations=int(np.count_nonzero(difference > original_budget)),
+                max_voltage_allowance=float(np.max(gate_allowance[name])),
+            )
         count += values.size
     return dict(
         status="passed",

@@ -18,7 +18,12 @@ from cells.core.schedule import control_values
 from cells.core.spatial_calcium_spec import CalciumModel
 from cells.core.specs import SpatialJunctionSpec
 from cells.core.specs import parse_spec as parse_ionic
-from cells.core.surface_calcium_spec import SurfaceCalciumModel
+from cells.core.surface_calcium_spec import (
+    SurfaceCalciumChannelModel,
+    SurfaceCalciumHCNModel,
+    SurfaceCalciumModel,
+    SurfaceCalciumSodiumModel,
+)
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.models.registry import get_model
 
@@ -102,6 +107,9 @@ def parse_spec(data):
         IP3CalciumModel,
         TissueCalciumModel,
         SurfaceCalciumModel,
+        SurfaceCalciumChannelModel,
+        SurfaceCalciumSodiumModel,
+        SurfaceCalciumHCNModel,
     ):
         raise AssemblyError("Assembly cluster requires a qualified spatial ionic or calcium family")
     if len(ion.experiment.changes) != 1 or ion.experiment.changes[0].time != 0:

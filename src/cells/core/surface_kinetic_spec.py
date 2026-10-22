@@ -19,9 +19,12 @@ from cells.core.specs import (
     _number,
 )
 from cells.core.voltage_gated_spec import fraction
-from cells.processes import voltage_gates
+from cells.processes import hcn_channels, potassium_channels, sodium_channels, voltage_gates
 
 MODEL_ID = "resolved_tissue@2"
+CHANNEL_MODEL_ID = "resolved_tissue@3"
+SODIUM_MODEL_ID = "resolved_tissue@4"
+HCN_MODEL_ID = "resolved_tissue@5"
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,48 @@ class Junction(base.Junction):
 @dataclass(frozen=True)
 class SurfaceKineticModel(base.SurfaceTissueModel):
     channels: tuple[ChannelSpec, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceChannelModel(SurfaceKineticModel):
+    """Explicit mixed Kv1.5/Kir2.1 identity; v2 remains Kv1.5-only."""
+
+
+@dataclass(frozen=True)
+class SurfaceSodiumModel(SurfaceChannelModel):
+    """Explicit NaV1.2/Kv1.5/Kir2.1 identity; v3 remains potassium-only."""
+
+
+@dataclass(frozen=True)
+class PermeantIon:
+    species_id: str
+    relative_permeability: float
+
+
+@dataclass(frozen=True)
+class ChannelPopulation:
+    id: str
+    membrane_id: str
+    kinetic_law: str
+    max_permeability_m_per_s: float
+    abundance: float
+    initial_gate: tuple[float, float]
+    permeant_ions: tuple[PermeantIon, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceHCNModel(SurfaceSodiumModel):
+    """Shared gates with explicit per-species transfer and dissipation ledgers."""
+
+    channels: tuple[ChannelPopulation, ...]
+
+
+def model_id(model):
+    if isinstance(model, SurfaceHCNModel):
+        return HCN_MODEL_ID
+    if isinstance(model, SurfaceSodiumModel):
+        return SODIUM_MODEL_ID
+    return CHANNEL_MODEL_ID if isinstance(model, SurfaceChannelModel) else MODEL_ID
 
 
 @dataclass(frozen=True)
@@ -101,7 +146,7 @@ def to_dict(spec):
         raise ConfigError("Resolved kinetics requires its own experiment and execution")
     raw = base.to_dict(passive_spec(spec))
     m, e = spec.model, spec.experiment
-    raw["model"]["id"] = MODEL_ID
+    raw["model"]["id"] = model_id(m)
     for target, p in zip(raw["model"]["membranes"], m.membranes, strict=True):
         target["pump"] = pump_to_dict(p, m.species_ids)
     for target, p in zip(raw["model"]["junctions"], m.junctions, strict=True):
@@ -110,7 +155,14 @@ def to_dict(spec):
             for k in ("law", "threshold_voltage_V", "minimum_open_fraction", "initial_gate")
         }
     raw["model"]["channels"] = [
-        asdict(p) | {"initial_gate": list(p.initial_gate)} for p in m.channels
+        asdict(p)
+        | {"initial_gate": list(p.initial_gate)}
+        | (
+            {"permeant_ions": [asdict(ion) for ion in p.permeant_ions]}
+            if isinstance(p, ChannelPopulation)
+            else {}
+        )
+        for p in m.channels
     ]
     raw["experiment"]["channel_controls"] = [
         dict(channel_id=p.id, schedule=[asdict(c) for c in g])
@@ -170,8 +222,21 @@ def parse(data):
             _fields(c, {"time", "availability"}, "junction control change")
             fraction(c["availability"], "junction availability")
     channels = m.pop("channels", None)
-    if m["id"] != MODEL_ID or type(channels) is not list:
-        raise ConfigError("Require resolved_tissue@2 with an explicit channel list")
+    hcn = m["id"] == HCN_MODEL_ID
+    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID)
+    catalog = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+    laws = (
+        hcn_channels.LAW_CODES
+        if hcn
+        else sodium_channels.LAW_CODES
+        if sodium
+        else potassium_channels.LAW_CODES
+    )
+    if (
+        m["id"] not in (MODEL_ID, CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+        or type(channels) is not list
+    ):
+        raise ConfigError("Require resolved_tissue@2, @3, @4 or @5 with an explicit channel list")
     for p in m["membranes"]:
         _fields(p, set(base.Membrane.__dataclass_fields__) | {"law", "pump"}, "membrane")
     gates = []
@@ -206,7 +271,7 @@ def parse(data):
     passive = base.parse(raw)
     m0 = passive.model
     if m0.temperature_K != voltage_gates.TEMPERATURE_K:
-        raise ConfigError("Resolved Kv1.5 composition requires 298.15 K; no temperature scaling")
+        raise ConfigError("Resolved channels require 298.15 K; no temperature scaling")
     membranes = tuple(
         Membrane(**asdict(p), pump=parse_pump(q, ids, m0.valence))
         for p, q in zip(m0.membranes, pumps, strict=True)
@@ -223,20 +288,67 @@ def parse(data):
     )
     parsed = []
     for p in channels:
+        if hcn:
+            _fields(p, set(ChannelPopulation.__dataclass_fields__), "shared-gate channel")
+            law = p["kinetic_law"]
+            if type(law) is not str or law not in laws or type(p["permeant_ions"]) is not list:
+                raise ConfigError("Shared-gate channel requires a named law and permeant ions")
+            ions = []
+            for ion in p["permeant_ions"]:
+                _fields(ion, set(PermeantIon.__dataclass_fields__), "permeant ion")
+                species = identifier(ion["species_id"])
+                weight = _number(ion["relative_permeability"], "relative permeability")
+                if species not in ids or m0.valence[
+                    ids.index(species)
+                ] != hcn_channels.SPECIES_VALENCE.get(species):
+                    raise ConfigError("Shared-gate ion requires its law's species and valence")
+                ions.append(PermeantIon(species, weight))
+            if (
+                tuple((ion.species_id, ion.relative_permeability) for ion in ions)
+                != hcn_channels.LAW_PERMEABILITIES[law]
+            ):
+                raise ConfigError(
+                    "Shared-gate ions must exactly match the named law's "
+                    "ordered permeability ratios"
+                )
+            if (
+                p["membrane_id"] not in {v.id for v in membranes}
+                or type(p["initial_gate"]) is not list
+                or len(p["initial_gate"]) != 2
+            ):
+                raise ConfigError(
+                    "Shared-gate channel requires a named patch and explicit m/h gates"
+                )
+            parsed.append(
+                ChannelPopulation(
+                    identifier(p["id"]),
+                    identifier(p["membrane_id"]),
+                    law,
+                    _number(p["max_permeability_m_per_s"], "channel permeability"),
+                    _number(p["abundance"], "channel abundance"),
+                    tuple(fraction(v, "initial channel gate") for v in p["initial_gate"]),
+                    tuple(ions),
+                )
+            )
+            continue
         _fields(p, set(ChannelSpec.__dataclass_fields__), "channel")
         if (
-            p["kinetic_law"] != voltage_gates.LAW_ID
+            type(p["kinetic_law"]) is not str
+            or p["kinetic_law"] not in (laws if catalog else (voltage_gates.LAW_ID,))
             or p["membrane_id"] not in {v.id for v in membranes}
             or p["species_id"] not in ids
             or m0.valence[ids.index(p["species_id"])] != 1
+            or (catalog and p["species_id"] != sodium_channels.LAW_SPECIES[p["kinetic_law"]])
             or type(p["initial_gate"]) is not list
             or len(p["initial_gate"]) != 2
         ):
-            raise ConfigError("Channel requires a named patch, +1 species and explicit m/h gates")
+            raise ConfigError(
+                "Channel requires a named patch, its law's +1 species and explicit m/h gates"
+            )
         parsed.append(
             ChannelSpec(
                 *(identifier(p[k]) for k in ("id", "membrane_id", "species_id")),
-                voltage_gates.LAW_ID,
+                p["kinetic_law"],
                 _number(p["max_permeability_m_per_s"], "channel permeability"),
                 _number(p["abundance"], "channel abundance"),
                 tuple(fraction(v, "initial channel gate") for v in p["initial_gate"]),
@@ -288,7 +400,15 @@ def parse(data):
     cs = schedules(controls["channel"], "channel", [p.id for p in parsed])
     ps = schedules(controls["pump"], "pump", [p.pump.id for p in membranes if p.pump is not None])
     js = schedules(original, "junction", [p.id for p in junctions])
-    model = SurfaceKineticModel(
+    model = (
+        SurfaceHCNModel
+        if hcn
+        else SurfaceSodiumModel
+        if sodium
+        else SurfaceChannelModel
+        if catalog
+        else SurfaceKineticModel
+    )(
         **{
             k: getattr(m0, k)
             for k in base.SurfaceTissueModel.__dataclass_fields__

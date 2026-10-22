@@ -1,0 +1,111 @@
+{
+  "kind": "resolved_mixed_potassium_channels@1",
+  "scope": "resolved_tissue@3 with Kv1.5 and Kir2.1 populations: isolated pinned BETSE law and gate-clock comparison, then independent continuous-time resolved tissue validation on CPU/L4. Four synthetic 2-ms two-cell/four-patch/five-outside cases, five channel populations including two on one patch.",
+  "tests": [
+    "tests/unit/test_surface_channels.py",
+    "tests/unit/test_specs.py",
+    "tests/unit/test_batch_identity.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_channels.py::test_cpu_gpu"
+  ],
+  "required_evidence": [
+    "resolved-channels-batch-plan",
+    "resolved-channels-design",
+    "resolved-channels-native",
+    "resolved-channels-clamps",
+    "resolved-channels-stage-open-compact",
+    "resolved-channels-stage-open-padded",
+    "resolved-channels-stage-closed-compact",
+    "resolved-channels-stage-closed-padded",
+    "resolved-channels-stage-clamped-compact",
+    "resolved-channels-stage-clamped-padded",
+    "resolved-channels-stage-release-compact",
+    "resolved-channels-stage-release-padded",
+    "resolved-channels-controls",
+    "resolved-channels-legacy",
+    "resolved-channels-prior-models",
+    "resolved-channels-smoke",
+    "resolved-channels-trajectory-open",
+    "resolved-channels-trajectory-closed",
+    "resolved-channels-trajectory-clamped",
+    "resolved-channels-trajectory-release",
+    "resolved-channels-refinement",
+    "resolved-channels-restart",
+    "resolved-channels-worlds"
+  ],
+  "required_gpu_evidence": [
+    "resolved-channels-cpu-gpu"
+  ],
+  "checks": [
+    "Host planning verifies that the unchanged aggregate padded-work allowance covers the trajectory batches before execution.",
+    "Explicit model version and law identity; v2 remains Kv1.5-only with unchanged layout. Mixed-law schema binds only K at +1, 298.15 K, explicit gates and per-population controls.",
+    "Unmodified BETSE 1.5.0 Kv1p5 and Kir2p1 in a separate environment, pinned module hashes verified against commit 5269a714aa2593ed2a6708c4516289977d8ae1a2. 37 voltages, three native step sizes and 32 updates each; native init, SI parameters and m*h versus m*h^2 opening retained.",
+    "70-digit independent Kir2.1 equations and analytic continuous clamp trajectories; three RK4 refinements with CPU/GPU arrays.",
+    "Eight compact/padded initial-stage comparisons use independent full-node roots, Decimal GHK/gates/pumps and separately assembled owner transfers.",
+    "Four complete resolved trajectories versus segmented DOP853, with same-stage fields, intrinsic junctions, maintained Na/K pump, species/charge/energy/source-work checks.",
+    "Shared-patch populations add through distinct ledgers; unavailable channels keep evolving. Invalid control/trial preserves full state, corrupt transfer ledger and invalid law code are rejected.",
+    "Three coupled timesteps, complete disk/fresh-process/terminal restart, future branch, changed windows, changed channel identity rejection.",
+    "World reordering/partition and independent restart clocks, batch disk snapshots, ordinary ionic-world ensemble and full CPU/L4 state/observation comparison.",
+    "Separate GPU busy and measured SM-active with coverage; frozen source registration, complete failure evidence, no automatic follow-up."
+  ],
+  "tolerances": {
+    "native_law_rtol": 5e-14,
+    "native_law_atol": 5e-15,
+    "decimal_gate_rtol": 3e-14,
+    "decimal_gate_atol": 3e-15,
+    "analytic_clamp_coarse_gate_atol": 1e-08,
+    "analytic_clamp_refined_to_coarse_limit": 0.02,
+    "analytic_clamp_roundoff_floor": 2e-14,
+    "initial_rate_rtol": 3e-10,
+    "initial_amount_energy_rate_atol": 3e-12,
+    "initial_charge_rate_atol_A": 3e-23,
+    "reference_state_rtol": 3e-09,
+    "reference_amount_energy_gate_atol": 2e-11,
+    "reference_electrode_charge_atol_C": 3e-25,
+    "reference_voltage_atol_V": 2e-08,
+    "independent_dop853_rtol": 2e-11,
+    "independent_amount_energy_gate_atol": 2e-14,
+    "independent_electrode_charge_atol_C": 1e-29,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": 2e-11,
+    "charge_atol_C": 3e-25,
+    "charge_rtol": 2e-12,
+    "energy_atol_pJ": 2e-08,
+    "source_work_atol_pJ": 3e-12,
+    "refinement_dt_s": [
+      2.5e-05,
+      1.25e-05,
+      6.25e-06
+    ],
+    "refinement_final_to_initial_error_limit": 0.2,
+    "refinement_amount_energy_gate_roundoff_floor": 3e-13,
+    "refinement_electrode_charge_roundoff_floor_C": 3e-27,
+    "same_backend_replay": "bitwise",
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "field_newton_target_fraction": 0.01
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 12884901888,
+    "gpu_memory_fraction": 0.2
+  },
+  "scope_exclusions": [
+    "The isolated native discrete gate clock is checked separately from the continuous RK4 coupled model; no native BETSE full-tissue trajectory equivalence or inherited mixed-control gate allowance.",
+    "Synthetic small fixed geometry and maintained ATP/ADP/Pi; no measured-parameter fit, finite metabolic supply, biological function or general long-time convergence claim.",
+    "Kir2.1 expression uses the pinned source coefficients, m*h^2 opening, no voltage offset and no temperature scaling; it is not a new fit to Makary et al. measurements.",
+    "Existing resolved_calcium@1 composition remains Kv1.5-only. Adding Kir2.1 to it requires its own explicit model/composition qualification.",
+    "Independent worlds use the shared GPU/ensemble path; no Jupiter measurements or distributed interacting-tissue qualification.",
+    "Numerical refinements, padding, native gate checks and replay controls are not independent biological cases. Two-task/channel-compensation research remains parked.",
+    "Correctness-suite GPU metrics include compilation and host work; no invented fully warmed interval or utilization acceptance threshold."
+  ],
+  "automatic_followup": false
+}

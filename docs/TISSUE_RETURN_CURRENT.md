@@ -570,3 +570,337 @@ world replay. Geometry, metabolic pools and the Kv1p5 population retain the
 previous scope. This component currently exposes the array API; integration
 into the ordinary configuration and snapshot registry is a subsequent task.
 Current qualification results belong in `PROGRESS.md`.
+
+## Mixed potassium channels in resolved tissue
+
+`resolved_tissue@3` extends the physical-time resolved model with independently
+declared Kv1.5 and Kir2.1 populations. Each population names its membrane patch,
+K species, maximum permeability, abundance, initial m/h gates and availability
+schedule. Two populations may share a patch; their signed ionic transfers and
+dissipated energy add through that patch's actual cell/outside owners. Intrinsic
+gates continue evolving while availability blocks transport. All nineteen state
+arrays, including each population's gates and ledgers, remain ordinary snapshot
+state. The numeric layout carries the per-population law codes for GPU execution.
+
+[The GPU example](../configs/resolved_channels_cluster.json) declares five
+populations in a synthetic two-cell tissue. It uses the ordinary runner:
+
+```sh
+PYTHONPATH=src /mnt/workspaces/Cells/venv-gpu/bin/python -m cells run \
+  configs/resolved_channels_cluster.json \
+  --output /mnt/workspaces/Cells/resolved-channels-example-01
+```
+
+The new law `betse_kir2p1_mh2@1` uses the coefficients and **m × h²** opening in
+[pinned BETSE's Kir2p1](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_k.py#L730-L779).
+Cells expresses those equations independently in volts and seconds and integrates
+`dg/dt = (g_inf(V) - g)/tau(V)` with its existing guarded RK4 solver. The
+coefficient provenance is BETSE's implementation; its cited Makary experiment
+has not been independently refitted here. No upstream source is vendored and
+normal simulation does not import BETSE. Its unmodified channel methods run
+only in the separate validation environment, with pinned source hashes.
+
+This identity requires 298.15 K, patch voltages within [-0.120, 0.060] V and
+steps at most 25 us. These are declared implementation bounds, not a claim of
+temperature calibration or accuracy in every allowed configuration. Gates are
+explicit initial conditions; there is no implicit equilibration. Invalid state,
+law code, field solve or trial is rejected without clipping or state repair.
+`resolved_tissue@2` and `resolved_calcium@1` retain their Kv1.5-only
+identities; changing a channel law cannot be disguised as a checkpoint restart.
+
+The [qualification protocol](../validation/tissue/surface_channel_protocol.json)
+separates native law/discrete-clock correspondence from the continuous coupled
+model. It checks 37 clamp voltages against native and independent Decimal
+equations, analytic relaxation, and four synthetic 2-ms tissue cases against
+independent field roots and adaptive integration. It also checks timestep
+refinement, conservation, control boundaries, disk/fresh-process restart,
+branches, windows, independent worlds and CPU/L4 agreement. Refinements and
+replay controls are not extra biological cases. Native full-tissue equivalence,
+experimental validation and Jupiter scaling require separate evidence. The
+calcium/assembly composition is described below. Current run status belongs in
+[Progress](../PROGRESS.md), including both GPU utilization measurements.
+
+## Mixed potassium channels with owned calcium chemistry
+
+`resolved_calcium@2` composes `resolved_tissue@3` with the existing finite
+cytosol/ER stores, buffered calcium and IP3, Cav1.2, PMCA and synthetic NCX.
+Each potassium population retains its own Kv1.5 or Kir2.1 law, intrinsic gates,
+availability and transfer/energy ledgers. The shared membrane voltage couples
+potassium transport to calcium-channel kinetics. Only free cytosolic ions enter
+transport laws; binding and ER exchange do not create a second plasma inventory
+or charge the plasma capacitors. The 34 complete state arrays retain all
+chemical, ionic and maintained-source work accounting.
+
+The new model identity and checkpoint layout retain the numeric potassium law
+codes through GPU execution, windows and independent-world batches. Ordinary
+and assembly examples are provided in
+[resolved_calcium_channels_tissue.json](../configs/resolved_calcium_channels_tissue.json)
+and [assembly_resolved_calcium_channels_tissue.json](../configs/assembly_resolved_calcium_channels_tissue.json).
+Cell-owned assembly pools control both potassium channel types, including
+multiple populations on one patch. Assembly remains the existing one-way
+neutral-protein availability hypothesis; this composition adds no biochemical
+feedback to assembly and makes no experimental assembly/calcium claim.
+
+The [composition protocol](../validation/tissue/surface_calcium_channel_protocol.json)
+targets lost channel-law identity, duplicated ion ownership, missed ATP work
+and event/restart errors. It reuses the independent full-node electrical roots,
+Decimal potassium equations and scalar calcium chemistry, then compares all
+four synthetic 2-ms histories with segmented adaptive integration. Assembly
+events, timestep refinement, legacy reductions and replay are numerical
+controls, not additional biological cases. CPU and L4 compare complete saved
+states and readouts; GPU busy and SM-active are recorded separately.
+
+The bounds remain a closed finite exterior, 298.15 K, patch voltages within
+[-0.120, 0.060] V and guarded RK4 steps at most 25 us, also subject to the
+chemical loss bound. This is a continuous-time composition, not native BETSE
+coupled calcium/tissue equivalence or a parameter fit. Held baths, finite
+metabolic supply and interacting tissue distributed across GPUs remain open.
+Qualification results belong in [Progress](../PROGRESS.md).
+
+## Sodium and potassium channels in resolved tissue
+
+`resolved_tissue@4` adds independently owned NaV1.2 populations alongside Kv1.5
+and Kir2.1. The channel declaration binds NaV to sodium and Kv/Kir to potassium.
+Different species and channel types may share a membrane patch while retaining
+separate gates, material transfers and dissipated-energy ledgers. The ordinary
+runner, complete nineteen-array checkpoints, windows and independent-world GPU
+batches use a distinct model/layout identity. The previous potassium and calcium
+model identities keep their existing catalogs.
+
+The law `betse_nav1p2_m3h_regularized@1` independently expresses the coefficients,
+voltage shifts and **m³ × h** opening in
+[pinned BETSE's Nav1p2](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_na.py).
+Gate inputs use volts; time constants use seconds. The existing GHK law determines
+ionic flux from concentrations and voltage; the source's nominal reversal-voltage
+attribute does not replace that calculation. This is source-model correspondence,
+not a new fit to the measurements cited by BETSE.
+
+The native rate expressions have removable singularities at **−25, −40 and
+−65.000123 mV**. Cells evaluates the continuous limits with its existing
+mask-safe Bernoulli function. For the three vanishing rate numerators, the
+limits are respectively 1.638/1.116, 0.12 and 0.0455 per millisecond. The
+independent 80-digit Decimal reference uses the direct exponential expressions
+and analytic limits. Native nonfinite probes are retained separately from finite
+native comparisons; they are not silently treated as successful comparisons.
+The finite −65-mV source sample also loses precision through `1-exp` subtraction.
+It remains in the capture and native clock checks. A separate replay of native
+float arithmetic explains that value; the stable implementation is checked
+against Decimal at every finite sample. Direct native parameter agreement uses
+the remaining sweep points, with the dimensionless rate argument at least
+`1e-4` from a removable zero. Neither diagnostic changes coupled-trajectory
+or CPU/GPU tolerances.
+
+The unmodified native methods run only in the separate validation environment.
+Their native semi-implicit gate clock is checked separately from Cells' continuous
+RK4 integration. The inspected `vg_na.py` SHA-256 at BETSE commit
+`5269a714aa2593ed2a6708c4516289977d8ae1a2` is
+`6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831`;
+`channelsabc.py` retains
+`ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4`.
+No upstream source is vendored or imported by ordinary simulation.
+
+[The GPU example](../configs/resolved_sodium_cluster.json) declares seven
+populations in a synthetic two-cell, four-patch tissue. It uses 298.15 K,
+patch voltages within [−0.120, 0.060] V, explicit initial gates and RK4 steps
+no larger than **2.5 us**. These declared bounds do not guarantee accuracy for
+every possible configuration. Invalid state, fields and trials are rejected
+without clipping. The ordinary runner accepts the example as follows:
+
+```sh
+PYTHONPATH=src /mnt/workspaces/Cells/venv-gpu/bin/python -m cells run \
+  configs/resolved_sodium_cluster.json \
+  --output /mnt/workspaces/Cells/resolved-sodium-example-01
+```
+
+The [qualification protocol](../validation/tissue/surface_sodium_protocol.json)
+checks source equations, singular limits and analytic clamps, then four synthetic
+2-ms open/closed/clamped/release histories against independent field roots and
+adaptive integration. Sodium-only ablation exposes species/owner mistakes;
+potassium-only reduction, complete replay, heterogeneous worlds and CPU/L4
+comparison guard the shared execution paths. Existing physical tolerances remain
+unchanged, with 2.5/1.25/0.625-us refinement of both clamped and release cases.
+These controls do not establish measured excitability or native full-tissue
+equivalence. Run results and both GPU utilization measurements belong in
+[Progress](../PROGRESS.md).
+
+## Sodium and potassium channels with owned calcium chemistry
+
+`resolved_calcium@3` composes the sodium/potassium catalog from
+`resolved_tissue@4` with the existing owned cytosol/ER, calcium buffers, IP3,
+CaV1.2, PMCA and synthetic NCX. It adds no new fitted channel or transport law.
+An explicit layout carries the catalog through the free-cytosol view:
+NaV uses its owner's free sodium, including changes from internal chemistry.
+The complete state retains the existing 34 arrays and per-population transfer
+and energy ledgers. Earlier calcium versions keep their restricted catalogs.
+
+The [ordinary example](../configs/resolved_calcium_sodium_tissue.json) and
+[assembly example](../configs/assembly_resolved_calcium_sodium_tissue.json)
+use the GPU backend. They retain the closed-exterior, temperature, voltage and
+chemical-loss restrictions of the earlier calcium family, with sodium steps
+at most 2.5 us. Assembly regulation remains one-way and cell-owned.
+
+The initial [composition checks](../tests/unit/test_surface_calcium_sodium.py)
+cover independent rates, sodium ownership and selective blocking, earlier-model
+reduction, a 50-us compiled trajectory/checkpoint and initial assembly reporting
+and planning. They are bundled with the sodium regression in the
+[combined protocol](../validation/tissue/sodium_composition_protocol.json),
+with separate evidence requirements.
+
+The [full composition suite](../tests/unit/test_surface_calcium_sodium_full.py)
+and [qualification protocol](../validation/tissue/surface_calcium_sodium_protocol.json)
+extend these checks to four complete 2-ms trajectories, baseline and release
+refinement at 2.5/1.25/0.625 us, conservation and energy accounting, complete
+restart/world replay, assembly dynamics and CPU/L4 agreement. The suite reuses
+the calcium family's physical tolerances. Host planning checks the finer grids
+and aggregate batch work before integration; the two-world allowance is 2,048
+padded steps, with 1,024 for a single world. Earlier models retain their
+original test settings. This composition allows 2 GiB for a single trace
+and 2 GiB for aggregate batch working arrays, covering the finer grids'
+conservative storage estimates. These are resource bounds, not changes
+to numerical tolerances.
+
+Additional controls check that each cell's assembly pool regulates its own
+sodium and potassium populations, that heterogeneous worlds keep distinct
+law/species arrays, and that checkpoints reject a changed channel law or
+transported species. These controls and refinements are numerical checks,
+not independent biological cases. The full protocol requires independent
+trajectory evidence and complete replay; initial rates and successful planning
+alone cannot qualify the composition. Current results and pending runs are
+recorded in [Progress](../PROGRESS.md). Local planning does not establish
+multi-GPU or Jupiter execution.
+
+Store, plasma-transport and calcium-channel changes share the complete accepted
+event clock. A chemical-only event can therefore be an observation boundary
+even when it falls between nominal electrical steps. Observations at other
+off-grid times remain invalid, and the 2.5-us sodium step cap still applies.
+Three 50-us execution controls apply these events at 37 us, compare all
+observed state fields with segmented independent integration, check local
+transfer stopping and continuing intrinsic gates, and resume complete state
+from a disk checkpoint at the event. They supplement the longer qualification
+cases; their results remain scoped to event handling and replay.
+
+## Shared HCN gates and multi-ion transport
+
+`resolved_tissue@5` adds HCN1, HCN2 and HCN4 alongside the existing NaV1.2,
+Kv1.5 and Kir2.1 populations. One HCN population owns one intrinsic `m/h`
+gate pair and one availability schedule. Its sodium, potassium and calcium
+routes share that opening; they do not evolve as three separate channels.
+Transfer and dissipated-energy records have explicit `[species, channel_slot]`
+axes, while gates retain `[gate, channel_slot]`. Calcium contributes charge
+with valence **+2**. The distinct layout and complete nineteen-array checkpoints
+retain that ownership through ordinary runs, windows and independent worlds.
+Older model versions retain their existing schemas and array shapes.
+
+The implementation follows the isolated laws in
+[pinned BETSE's HCN source](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_funny.py)
+and its [gate update](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/channelsabc.py).
+With membrane voltage `V` in volts, activation is
+`m_inf = 1 / (1 + exp((V - midpoint) / slope))`:
+
+| Source feature | Cells correspondence | Check or scope boundary |
+| --- | --- | --- |
+| HCN1 | `betse_hcn1_m@1`: midpoint −94 mV, slope 8.1 mV, activation time constant 30 ms | Native and independent Decimal gate parameters; no voltage shift |
+| HCN2 | `betse_hcn2_m@1`: effective midpoint −89 mV, slope 6.2 mV, activation time constant 184 ms | Includes the source's −10-mV input shift |
+| HCN4 | `betse_hcn4_m@1`: effective midpoint −90 mV, slope 9.6 mV, activation time constant 461 ms | Includes the source's −10-mV input shift |
+| Shared opening | `m¹ h⁰ = m`; unused `h` relaxes to 1 with a 1-ms time constant | Blocking transport leaves both intrinsic gate states evolving |
+| Relative permeability | Na:K:Ca = **0.2:1:0.05**, multiplied by the population's maximum permeability, abundance, opening and availability | Strict named species and valences; separate material/heat records; no extra chloride route |
+| Native gate clock | Semi-implicit update with millisecond time units | Captured unchanged in the separate BETSE environment; distinct from Cells' continuous RK4 tissue solver |
+| Ionic current | Concentration-dependent GHK for each ion, summed using its valence | The source's nominal −45-mV reversal attribute does not replace this calculation |
+| cAMP and temperature dependence | Not included in this family | No ligand modulation, temperature fit or physiological pacemaking claim |
+
+These coefficients and ratios are source-model correspondence, not new fits
+to experimental measurements. At BETSE commit
+`5269a714aa2593ed2a6708c4516289977d8ae1a2`, the inspected `vg_funny.py`
+SHA-256 is `254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7`;
+`channelsabc.py` is
+`ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4`.
+Native code is invoked only by the validation capture; ordinary Cells runs
+do not import BETSE.
+
+The [GPU example](../configs/resolved_hcn_cluster.json) has ten populations
+on two cells and four membrane patches. The calcium pools and compatible
+fixed background charge are manufactured inputs. Calcium moves through the
+HCN routes; its other passive routes are zero in this panel. This finite-ion
+model does **not** compose HCN with owned ER/calcium/IP3 chemistry,
+CaV, plasma calcium transport or assembly regulation. The separate
+[`resolved_calcium@4` composition](#shared-hcn-populations-with-owned-calcium-and-assembly)
+adds those owners and has its own qualification requirements.
+
+```sh
+PYTHONPATH=src /mnt/workspaces/Cells/venv-gpu/bin/python -m cells run \
+  configs/resolved_hcn_cluster.json \
+  --output /mnt/workspaces/Cells/resolved-hcn-example-01
+```
+
+The [qualification protocol](../validation/tissue/surface_hcn_protocol.json)
+separates 61 native voltage samples per family and native gate-clock traces
+from 200-ms analytic gate-only clamps and four coupled **2-ms** tissue cases.
+The tissue comparisons use independent field roots, Decimal rates and adaptive
+integration, with clamped/release refinement at 2.5/1.25/0.625 us. Per-species
+conservation and heat checks detect errors that would cancel in total charge
+or total energy. Complete restart, heterogeneous-world ownership and CPU/L4
+comparisons cover execution and storage. The inherited temperature/voltage
+bounds and 2.5-us step cap still apply; longer coupled trajectories need their
+own checks. Numerical controls, refinements and repeated process-group fixtures
+are not additional biological cases. Results and GPU busy/SM-active readings
+belong in [Progress](../PROGRESS.md); this protocol makes no full native BETSE
+tissue, experimental or Jupiter scaling claim.
+
+HCN reference trajectories use adaptive relative tolerance **1e-13**,
+amount/energy/gate absolute tolerance **1e-16**, and charge absolute tolerance
+**5e-32 C**. Clamped and release references are checked against a further
+fourfold tightening, with agreement required within **3e-14** for each
+non-charge state and **3e-28 C** for charge. This resolves reference error
+below the existing refinement floors; the simulator's physical equations,
+timestep grids and acceptance thresholds are unchanged. Earlier reference
+panels retain their original default settings. Per-timestep inputs, comparison
+arrays and field errors are written before refinement assertions, so a failed
+comparison retains the values needed to diagnose it.
+
+## Shared HCN populations with owned calcium and assembly
+
+`resolved_calcium@4` composes the `resolved_tissue@5` channel catalog with
+the existing cell-owned free cytosol, ER stores, calcium buffers, IP3, CaV1.2,
+PMCA and synthetic reversible NCX. HCN's sodium, potassium and calcium routes
+all read that same free cytosol. Binding or ER exchange can change an HCN flux
+without charging the plasma capacitor; external transport updates the chemical
+owner and the matching transfer records together. One population still owns
+one intrinsic gate pair and one availability schedule.
+
+The distinct layout retains 34 state fields, with `[species, channel_slot]`
+axes for population transfer and heat. Older calcium versions retain their
+catalogs and single-ion array layouts. Shared-population blocking stops all
+three HCN routes while intrinsic gates continue. Conservation checks retain
+species identity, including errors that cancel in total charge or heat.
+
+| Component | Correspondence and interpretation |
+| --- | --- |
+| HCN1/2/4, NaV1.2, Kv1.5 and Kir2.1 | Reuses the separately checked pinned BETSE laws and HCN permeability ratios in the table above; this composition requires its own trajectory checks |
+| Calcium/ER, buffering and IP3 | Reuses independently checked owned-chemistry equations and free-ion accounting; these synthetic inputs are not a measured tissue fit |
+| CaV1.2, PMCA and NCX | Retains the existing plasma-calcium equations and maintained energy sources; NCX remains a named synthetic reversible law |
+| Assembly | Separate neutral protein pools regulate every channel population owned by their cell, including all HCN routes through one shared availability; this is a one-way coupling hypothesis |
+
+The [ordinary GPU example](../configs/resolved_calcium_hcn_tissue.json) and
+[assembly GPU example](../configs/assembly_resolved_calcium_hcn_tissue.json)
+use ten populations, two owned cells and four membrane patches. Assembly
+reports carry `[world, species, channel]` transfers, ordered species IDs and
+relative permeability matrices. Aggregation preserves these axes and rejects
+missing or inconsistent route metadata. Complete checkpoints retain every
+chemical, electrical, gate and assembly state; independent-world planning
+supports the existing one-to-sixteen-GPU execution design.
+
+The [qualification protocol](../validation/tissue/surface_calcium_hcn_protocol.json)
+requires four synthetic 2-ms cases, independent initial/evolved rates, baseline
+and release timestep refinement, complete restart, heterogeneous worlds and
+assembly event reconstruction. Baseline/release reference controls use the
+tighter HCN settings above and another fourfold accuracy check. The physical
+acceptance tolerances remain those of the earlier calcium composition.
+Per-timestep inputs, arrays and field errors are preserved before assertions.
+Old-model reductions, reference controls, replay and shared regressions remain
+numerical checks rather than additional biological cases.
+
+Results are recorded in [Progress](../PROGRESS.md). This composition retains
+the finite closed exterior, 2.5-us step cap and maintained ATP/ADP/Pi sources.
+It does not yet establish longer-time physiology, cAMP modulation, protein
+energy feedback, experimental calcium/assembly causation, full native BETSE
+equivalence or a distributed single tissue across GPUs.

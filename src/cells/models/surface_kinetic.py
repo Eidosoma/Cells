@@ -14,13 +14,25 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_kinetic_spec import MODEL_ID
+from cells.core.surface_kinetic_spec import (
+    MODEL_ID,  # noqa: F401
+    SurfaceChannelModel,
+    SurfaceHCNModel,
+    SurfaceSodiumModel,
+    model_id,
+)
 from cells.coupling.selective import selective_flux
 from cells.models import kinetic_finite_extracellular as kinetic
 from cells.models import surface_tissue as base
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes import junction_gate, voltage_gates
+from cells.processes import (
+    hcn_channels,
+    junction_gate,
+    potassium_channels,
+    sodium_channels,
+    voltage_gates,
+)
 from cells.processes import kinetic_pump as pump
 from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
@@ -61,6 +73,40 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
+CHANNEL_LAYOUT_TYPE = NamedTuple(
+    "SurfaceChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
+)
+SODIUM_LAYOUT_TYPE = NamedTuple(
+    "SurfaceSodiumLayout", [(k, object) for k in CHANNEL_LAYOUT_TYPE._fields]
+)
+SODIUM_OWNED_VIEW_TYPE = NamedTuple(
+    "SurfaceSodiumOwnedView",
+    [(k, object) for k in (*SODIUM_LAYOUT_TYPE._fields, "cytosol_amount")],
+)
+HCN_LAYOUT_TYPE = NamedTuple(
+    "SurfaceHCNLayout",
+    [
+        (k, object)
+        for k in (*SODIUM_LAYOUT_TYPE._fields, "channel_relative_permeability")
+        if k != "channel_species"
+    ],
+)
+HCN_OWNED_VIEW_TYPE = NamedTuple(
+    "SurfaceHCNOwnedView",
+    [(k, object) for k in (*HCN_LAYOUT_TYPE._fields, "cytosol_amount")],
+)
+
+
+def channel_process(layout):
+    # Layout type is static through JAX transformations and complete checkpoints.
+    # Older potassium/calcium layouts retain their restricted law catalog.
+    if isinstance(layout, (HCN_LAYOUT_TYPE, HCN_OWNED_VIEW_TYPE)):
+        return hcn_channels
+    return (
+        sodium_channels
+        if isinstance(layout, (SODIUM_LAYOUT_TYPE, SODIUM_OWNED_VIEW_TYPE))
+        else potassium_channels
+    )
 
 
 class Values(NamedTuple):
@@ -94,6 +140,7 @@ def initial_values(spec):
     state, layout = base.initial_values(spec)
     v, m, x = layout._asdict(), spec.model, spec.execution
     nc, nm, ne = x.channel_capacity, x.membrane_capacity, x.edge_capacity
+    multi_ion = isinstance(m, SurfaceHCNModel)
     v.update(
         channel_active=np.arange(nc) < len(m.channels),
         channel_membranes=np.zeros(nc, dtype=np.int64),
@@ -106,11 +153,20 @@ def initial_values(spec):
         pump_capacity=np.zeros(nm),
         pump_drive=np.zeros(nm),
     )
+    if multi_ion:
+        del v["channel_species"]
+        v["channel_relative_permeability"] = np.zeros((len(m.species_ids), nc))
     cg, jg = np.zeros((2, nc)), np.zeros(ne)
     mids = [p.id for p in m.membranes]
     for i, p in enumerate(m.channels):
         v["channel_membranes"][i] = mids.index(p.membrane_id)
-        v["channel_species"][i] = m.species_ids.index(p.species_id)
+        if multi_ion:
+            for ion in p.permeant_ions:
+                v["channel_relative_permeability"][m.species_ids.index(ion.species_id), i] = (
+                    ion.relative_permeability
+                )
+        else:
+            v["channel_species"][i] = m.species_ids.index(p.species_id)
         v["channel_permeability"][i], v["channel_abundance"][i] = (
             p.max_permeability_m_per_s,
             p.abundance,
@@ -123,15 +179,44 @@ def initial_values(spec):
         )
         jg[i] = p.initial_gate
     kinetic.bind_pumps(spec, v)
+    layout_type = LAYOUT_TYPE
+    if isinstance(m, SurfaceChannelModel):
+        v["channel_laws"] = np.zeros(nc, dtype=np.int64)
+        laws = (
+            hcn_channels.LAW_CODES
+            if multi_ion
+            else sodium_channels.LAW_CODES
+            if isinstance(m, SurfaceSodiumModel)
+            else potassium_channels.LAW_CODES
+        )
+        for i, channel in enumerate(m.channels):
+            v["channel_laws"][i] = laws[channel.kinetic_law]
+        layout_type = (
+            HCN_LAYOUT_TYPE
+            if multi_ion
+            else SODIUM_LAYOUT_TYPE
+            if isinstance(m, SurfaceSodiumModel)
+            else CHANNEL_LAYOUT_TYPE
+        )
+    transfer_shape = (len(m.species_ids), nc) if multi_ion else (nc,)
     return (
         STATE_TYPE(
-            *state, cg, np.zeros(nc), np.zeros(nc), jg, np.zeros(nm), np.zeros(nm), np.zeros(nm)
+            *state,
+            cg,
+            np.zeros(transfer_shape),
+            np.zeros(transfer_shape),
+            jg,
+            np.zeros(nm),
+            np.zeros(nm),
+            np.zeros(nm),
         ),
-        LAYOUT_TYPE(**v),
+        layout_type(**v),
     )
 
 
 def channel_to_membrane(value, p, *, xp):
+    if hasattr(p, "channel_relative_permeability"):
+        return scatter(value, xp.zeros_like(p.membrane_permeability), (p.channel_membranes,), xp=xp)
     return scatter(
         value,
         xp.zeros_like(p.membrane_permeability),
@@ -156,25 +241,45 @@ def readouts(state, control, p, *, xp=jnp):
         xp.where(p.active, ci / p.volume, 1.0),
         xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
     )
-    patch, species = p.channel_membranes, p.channel_species
+    patch = p.channel_membranes
     cv = xp.where(p.channel_active, r.membrane_voltage_V[patch], 0.0)
-    target, tau = voltage_gates.kinetics(cv, xp=xp)
+    if hasattr(p, "channel_laws"):
+        process = channel_process(p)
+        target, tau = process.kinetics(cv, p.channel_laws, xp=xp)
+        opened = process.opening(state.channel_gate, p.channel_laws, xp=xp)
+    else:
+        target, tau = voltage_gates.kinetics(cv, xp=xp)
+        opened = state.channel_gate[0] * state.channel_gate[1]
     gate_rate = xp.where(p.channel_active, (target - state.channel_gate) / tau, 0.0)
+    if hasattr(p, "channel_relative_permeability"):
+        inside, outside = ci[:, p.membrane_cell[patch]], co[:, p.membrane_outside[patch]]
+        valence = p.valence
+        permeability = p.channel_permeability * p.channel_relative_permeability
+        affinity = r.membrane_delta_mu_J_mol[:, patch]
+    else:
+        species = p.channel_species
+        inside, outside = (
+            ci[species, p.membrane_cell[patch]],
+            co[species, p.membrane_outside[patch]],
+        )
+        valence = p.valence[species, 0]
+        permeability = p.channel_permeability
+        affinity = r.membrane_delta_mu_J_mol[species, patch]
     channel = selective_flux(
-        ci[species, p.membrane_cell[patch]],
-        co[species, p.membrane_outside[patch]],
+        inside,
+        outside,
         cv,
-        p.valence[species, 0],
+        valence,
         p.temperature,
         p.membrane_area[patch],
-        p.channel_permeability,
+        permeability,
         0.0,
         p.channel_abundance,
-        state.channel_gate[0] * state.channel_gate[1] * control.channel,
+        opened * control.channel,
         xp=xp,
     )
     channel = xp.where(p.channel_active, channel, 0.0)
-    channel_d = 1e-3 * channel * r.membrane_delta_mu_J_mol[species, patch]
+    channel_d = 1e-3 * channel * affinity
     args = (
         *kinetic.role_inputs(
             ci[:, p.membrane_cell],
@@ -204,8 +309,13 @@ def readouts(state, control, p, *, xp=jnp):
     outside = r.outside_rate_fmol_s + xp.where(p.reservoir, 0.0, out_extra)
     supplied = r.reservoir_supply_fmol_s - xp.where(p.reservoir, out_extra, 0.0)
     total_flux = r.membrane_flux_fmol_s + extra
+    channel_heat = (
+        xp.sum(channel_d, axis=0) if hasattr(p, "channel_relative_permeability") else channel_d
+    )
     total_membrane_d = (
-        r.membrane_dissipation_pJ_s + pump_d + scatter(channel_d, p.membrane_area, (patch,), xp=xp)
+        r.membrane_dissipation_pJ_s
+        + pump_d
+        + scatter(channel_heat, p.membrane_area, (patch,), xp=xp)
     )
     total_rates = r._replace(
         cell_rate_fmol_s=cell,
@@ -317,6 +427,9 @@ def rhs(state, control, p, active, *, xp=jnp):
 
 def domain_valid(state, p, active, *, xp=jnp):
     valid = base.domain_valid(passive_state(state), p, active, xp=xp)
+    if hasattr(p, "channel_laws"):
+        valid &= channel_process(p).valid_codes(p.channel_laws, xp=xp)
+        valid &= xp.all(xp.where(p.channel_active, True, p.channel_laws == 0))
     masks = (
         p.channel_active,
         p.channel_active,
@@ -335,6 +448,11 @@ def domain_valid(state, p, active, *, xp=jnp):
             p.channel_permeability * p.channel_abundance > 0, True, state.channel_transferred == 0
         )
     )
+    if hasattr(p, "channel_relative_permeability"):
+        # Absent species routes must never carry hidden transfers or heat.
+        route = p.channel_relative_permeability * p.channel_permeability * p.channel_abundance
+        valid &= xp.all(xp.where(route > 0, True, state.channel_transferred == 0))
+        valid &= xp.all(xp.where(route > 0, True, state.channel_dissipated_energy_pJ == 0))
     valid &= xp.all(xp.where(p.pump_capacity > 0, True, state.pump_cycles == 0))
     return valid
 
@@ -385,6 +503,10 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     base.check_steps(spec, steps, controls)
+    if isinstance(spec.model, SurfaceSodiumModel) and np.max(steps, initial=0) > 2.5e-6 + 1e-16:
+        raise ConfigError("Resolved sodium/potassium channels require RK4 steps <= 2.5 us")
+    if isinstance(spec.model, SurfaceChannelModel) and np.max(steps, initial=0) > 25e-6 + 1e-16:
+        raise ConfigError("Resolved mixed potassium channels require RK4 steps <= 25 us")
     bound = max(
         (1.3 * np.exp(77 * p.threshold_voltage_V) + 20 for p in spec.model.junctions), default=0.0
     )
@@ -461,7 +583,7 @@ def check_values(state, spec):
     for name in (k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ")):
         value = getattr(state, name)
         if np.min(value, initial=0) < -1e-12 or (
-            value.ndim == 2 and np.min(np.diff(value, axis=0), initial=0) < -1e-12
+            state.amount_increment.ndim == 3 and np.min(np.diff(value, axis=0), initial=0) < -1e-12
         ):
             raise NumericalError("Resolved kinetic dissipation cannot be negative or decrease")
     return diagnostics
@@ -488,7 +610,7 @@ Observations = make_dataclass(
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Resolved kinetic observations require accepted times")
@@ -548,7 +670,7 @@ def ensemble_voltage(state, layout, spec, time):
 
     controls = control_values(spec, [time])
     control = type(controls)(*(v[0] for v in controls))
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     v = field_values(STATE_TYPE(*(np.asarray(v) for v in state)), control, p, xp=np)
     if not v.converged:
         raise NumericalError("Resolved kinetic ensemble endpoint invalid")
@@ -557,9 +679,13 @@ def ensemble_voltage(state, layout, spec, time):
 
 def summarize(history, diagnostics, spec):
     return base.summarize(history, diagnostics, spec) | {
-        "model": MODEL_ID,
+        "model": model_id(spec.model),
         "state_fields": list(STATE_TYPE._fields),
-        "channel_law": voltage_gates.LAW_ID,
+        **(
+            {"channel_laws": {c.id: c.kinetic_law for c in spec.model.channels}}
+            if isinstance(spec.model, SurfaceChannelModel)
+            else {"channel_law": voltage_gates.LAW_ID}
+        ),
         "junction_law": junction_gate.LAW_ID,
         "pump_law": pump.LAW_ID,
         "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
