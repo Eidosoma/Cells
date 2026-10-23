@@ -16,8 +16,10 @@ from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.core.surface_kinetic_spec import (
     MODEL_ID,  # noqa: F401
+    SurfaceCavModel,
     SurfaceChannelModel,
     SurfaceHCNModel,
+    SurfaceKv1Model,
     SurfaceSodiumModel,
     model_id,
 )
@@ -25,10 +27,12 @@ from cells.coupling.selective import selective_flux
 from cells.models import kinetic_finite_extracellular as kinetic
 from cells.models import surface_tissue as base
 from cells.numerics import surface_field as field
-from cells.numerics.extracellular_field import scatter
+from cells.numerics.extracellular_field import ordered_scatter, scatter
 from cells.processes import (
+    cav_channels,
     hcn_channels,
     junction_gate,
+    kv1_channels,
     potassium_channels,
     sodium_channels,
     voltage_gates,
@@ -95,11 +99,24 @@ HCN_OWNED_VIEW_TYPE = NamedTuple(
     "SurfaceHCNOwnedView",
     [(k, object) for k in (*HCN_LAYOUT_TYPE._fields, "cytosol_amount")],
 )
+KV1_LAYOUT_TYPE = NamedTuple("SurfaceKv1Layout", [(k, object) for k in HCN_LAYOUT_TYPE._fields])
+KV1_OWNED_VIEW_TYPE = NamedTuple(
+    "SurfaceKv1OwnedView", [(k, object) for k in HCN_OWNED_VIEW_TYPE._fields]
+)
+
+CAV_LAYOUT_TYPE = NamedTuple("SurfaceCavLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields])
+CAV_OWNED_VIEW_TYPE = NamedTuple(
+    "SurfaceCavOwnedView", [(k, object) for k in HCN_OWNED_VIEW_TYPE._fields]
+)
 
 
 def channel_process(layout):
     # Layout type is static through JAX transformations and complete checkpoints.
     # Older potassium/calcium layouts retain their restricted law catalog.
+    if isinstance(layout, (CAV_LAYOUT_TYPE, CAV_OWNED_VIEW_TYPE)):
+        return cav_channels
+    if isinstance(layout, (KV1_LAYOUT_TYPE, KV1_OWNED_VIEW_TYPE)):
+        return kv1_channels
     if isinstance(layout, (HCN_LAYOUT_TYPE, HCN_OWNED_VIEW_TYPE)):
         return hcn_channels
     return (
@@ -183,7 +200,11 @@ def initial_values(spec):
     if isinstance(m, SurfaceChannelModel):
         v["channel_laws"] = np.zeros(nc, dtype=np.int64)
         laws = (
-            hcn_channels.LAW_CODES
+            cav_channels.LAW_CODES
+            if isinstance(m, SurfaceCavModel)
+            else kv1_channels.LAW_CODES
+            if isinstance(m, SurfaceKv1Model)
+            else hcn_channels.LAW_CODES
             if multi_ion
             else sodium_channels.LAW_CODES
             if isinstance(m, SurfaceSodiumModel)
@@ -192,7 +213,11 @@ def initial_values(spec):
         for i, channel in enumerate(m.channels):
             v["channel_laws"][i] = laws[channel.kinetic_law]
         layout_type = (
-            HCN_LAYOUT_TYPE
+            CAV_LAYOUT_TYPE
+            if isinstance(m, SurfaceCavModel)
+            else KV1_LAYOUT_TYPE
+            if isinstance(m, SurfaceKv1Model)
+            else HCN_LAYOUT_TYPE
             if multi_ion
             else SODIUM_LAYOUT_TYPE
             if isinstance(m, SurfaceSodiumModel)
@@ -216,8 +241,10 @@ def initial_values(spec):
 
 def channel_to_membrane(value, p, *, xp):
     if hasattr(p, "channel_relative_permeability"):
-        return scatter(value, xp.zeros_like(p.membrane_permeability), (p.channel_membranes,), xp=xp)
-    return scatter(
+        return ordered_scatter(
+            value, xp.zeros_like(p.membrane_permeability), (p.channel_membranes,), xp=xp
+        )
+    return ordered_scatter(
         value,
         xp.zeros_like(p.membrane_permeability),
         (p.channel_species, p.channel_membranes),
@@ -315,7 +342,7 @@ def readouts(state, control, p, *, xp=jnp):
     total_membrane_d = (
         r.membrane_dissipation_pJ_s
         + pump_d
-        + scatter(channel_heat, p.membrane_area, (patch,), xp=xp)
+        + ordered_scatter(channel_heat, p.membrane_area, (patch,), xp=xp)
     )
     total_rates = r._replace(
         cell_rate_fmol_s=cell,
@@ -503,6 +530,8 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     base.check_steps(spec, steps, controls)
+    if isinstance(spec.model, SurfaceCavModel) and np.max(steps, initial=0) > 1.25e-6 + 1e-16:
+        raise ConfigError("Resolved shared CaV channels require RK4 steps <= 1.25 us")
     if isinstance(spec.model, SurfaceSodiumModel) and np.max(steps, initial=0) > 2.5e-6 + 1e-16:
         raise ConfigError("Resolved sodium/potassium channels require RK4 steps <= 2.5 us")
     if isinstance(spec.model, SurfaceChannelModel) and np.max(steps, initial=0) > 25e-6 + 1e-16:

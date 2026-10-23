@@ -904,3 +904,197 @@ the finite closed exterior, 2.5-us step cap and maintained ATP/ADP/Pi sources.
 It does not yet establish longer-time physiology, cAMP modulation, protein
 energy feedback, experimental calcium/assembly causation, full native BETSE
 equivalence or a distributed single tissue across GPUs.
+
+## Complete Kv1 catalog with shared populations and owned calcium
+
+`resolved_tissue@6` and `resolved_calcium@5` add the remaining five Kv1 laws
+from the same pinned BETSE source to the existing Kv1.5/Kir2.1/NaV1.2/HCN
+catalog. Gates, population availability, species transfer and dissipation
+retain the shared-population ownership described above. The calcium model
+uses the existing free cytosol/ER owner, and neutral assembly regulates every
+population belonging to its cell. Earlier model identities keep their
+restricted catalogs; a change of channel law cannot silently continue a
+checkpoint.
+
+The correspondence is to
+[BETSE 1.5.0 `vg_k.py`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_k.py),
+SHA-256 `89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f`.
+All six classes have two intrinsic gates, K-only relative permeability 1,
+and source time constants in milliseconds. Cells evaluates the corresponding
+continuous equations in volts and seconds, using concentration-dependent GHK
+transport. The source's nominal reversal attribute is not a fixed reversal
+voltage in this calculation.
+
+| Pinned source class | Cells law | Opening and distinguishing kinetics |
+| --- | --- | --- |
+| `Kv1p1` | `betse_kv1p1_mh2@1` | `m h²`; voltage-dependent sigmoid activation and inactivation time constants |
+| `Kv1p2` | `betse_kv1p2_mh@1` | `m h`; its own sigmoid targets and time constants |
+| `Kv1p3` | `betse_kv1p3_mh@1` | `m h`; both time constants are affine functions of voltage |
+| `Kv1p4` | `betse_kv1p4_mh@1` | `m h`; constant activation/inactivation time constants of 3/119 ms |
+| `Kv1p5` | `betse_kv1p5_mh@1` | Existing law retained; independent source capture includes it as a continuity control |
+| `Kv1p6` | `betse_kv1p6_mh@1` | `m h`; its own sigmoid targets and time constants |
+
+The [protocol](../validation/tissue/surface_calcium_kv1_protocol.json) executes
+the unchanged source classes in the separate BETSE environment. It compares
+initialization, targets, time constants, powers and 32 updates at each of three
+native clocks across 61 voltages per family. Independent 80-digit Decimal
+equations and analytic continuous gate clamps provide separate numerical
+checks. Source semi-implicit updates and Cells' coupled RK4 remain distinct.
+
+The [ordinary GPU example](../configs/resolved_calcium_kv1_tissue.json) and
+[assembly GPU example](../configs/assembly_resolved_calcium_kv1_tissue.json)
+use fifteen populations across two cells and four patches. Full qualification
+requires four synthetic 2-ms coupled cases, baseline/release refinement,
+independent reference accuracy, complete replay, heterogeneous worlds and
+CPU/L4 agreement. World-routing controls change a Kv1 gate power alongside
+the existing HCN and species/law changes. Source samples, old-model reductions,
+clamps and repeated fixtures are numerical controls, not biological cases.
+Standalone tissue is checked at initial rates here; the full trajectory panel
+exercises the owned-calcium composition. Results and pending checks live only
+in [Progress](../PROGRESS.md).
+
+The inherited **−120 to +60 mV**, **298.15 K** and **2.5-us maximum step**
+bounds remain. This extends source-model coverage without fitting experimental
+tissue measurements. Longer histories, other channel families, dynamic ligand
+modulation, finite metabolism, mechanics and multi-GPU execution require their
+own work; complete Kv1 source coverage is not full BETSE equivalence.
+
+## Shared calcium-channel populations
+
+`resolved_tissue@7` and `resolved_calcium@6` add CaV1.3, CaV2.1, CaV2.2,
+CaV2.3, CaV3.1 and CaV3.3 to the shared population catalog, and make the
+existing CaV1.2 law available through that same interface. Multiple calcium
+populations can occupy one membrane patch. Each has its own `m/h` gates,
+availability and Ca-only route with valence **+2**. The owned-calcium model
+uses the same free cytosol as HCN, binding, ER exchange and plasma transport;
+no additional calcium inventory is created.
+
+The correspondence is to
+[pinned BETSE `vg_ca.py`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_ca.py),
+SHA-256 `843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6`.
+The native capture executes unchanged classes in the separate BETSE environment.
+Cells uses their continuous gate equations with GHK transport, rather than
+interpreting their nominal reversal attributes as fixed reversal voltages.
+Source milliseconds are converted to seconds; no temperature refit is applied.
+
+| Source class | Cells law | Opening and correspondence boundary |
+| --- | --- | --- |
+| `Cav1p2` | `betse_cav1p2_m2h@1` | `m² h`; retains the source's −10-mV input shift and the existing dedicated-route kinetics |
+| `Cav1p3` | `betse_cav1p3_m2h@1` | `m² h`; unshifted L-type source equations |
+| `Cav2p1` | `betse_cav2p1_m@1` | `m`; unused `h` still relaxes to 1 with a 1-ms time constant |
+| `Cav2p2` | `betse_cav2p2_m2h_regularized@1` | `m² h`; analytic limit at +20 mV, where the unchanged source produces nonfinite activation values |
+| `Cav2p3` | `betse_cav2p3_mh@1` | `m h`; source activation/inactivation rate equations |
+| `Cav3p1` | `betse_cav3p1_mh_source_branch@1` | `m h`; retains the literal source branch at **−0.01 mV**, including its time-constant discontinuity |
+| `Cav3p3` | `betse_cav3p3_mh@1` | `m h`; source sigmoid activation and exponential inactivation time constants |
+
+Two source details have explicit tests. CaV2.2's activation rate has a removable
+zero at +20 mV; its limit is **1 ms⁻¹**. Stable Bernoulli evaluation supplies
+that limit and finite derivatives. The native nonfinite values and warnings
+are retained separately, outside passing finite-source comparisons. CaV3.1
+compares its millivolt argument with `-10e-3`, so its threshold is −0.01 mV.
+The named source-branch law preserves this instead of silently changing it to
+−10 mV. Neither choice is a new physiological calibration.
+
+The [ordinary GPU example](../configs/resolved_calcium_cav_tissue.json) and
+[assembly GPU example](../configs/assembly_resolved_calcium_cav_tissue.json)
+have 22 shared populations. The legacy dedicated CaV1.2 patch routes remain
+separate, explicitly configured populations. Adding a shared population never
+implicitly copies a dedicated route. A replacement control disables one
+dedicated route and represents it once through the shared interface, requiring
+the same physical rates and distinct, correct transfer records.
+
+Assembly regulates the new shared calcium populations through their owning
+cell's availability, alongside its Na/K/HCN populations. It does not thereby
+regulate the separate legacy dedicated CaV1.2 routes. Binding or ER exchange
+changes free calcium without instantly charging the plasma capacitor; CaV
+transport updates the chemical owner and its divalent charge accounting.
+Reports and checkpoints preserve the existing world/species/population axes.
+
+The [qualification protocol](../validation/tissue/surface_calcium_cav_protocol.json)
+uses source captures, independent 80-digit Decimal equations, analytic clamps,
+four synthetic 2-ms coupled histories, reference-accuracy checks, refinement,
+complete restart and assembly reconstruction. Heterogeneous worlds vary CaV
+gate power as well as HCN, Kv1 and transported-species identities. CPU/L4
+agreement and GPU busy/SM-active measurements are required separately from
+successful CPU development checks. [Progress](../PROGRESS.md) records those
+results and whether the full qualification has started.
+
+The gate-only refinement probe spans 100 us at 0.625/0.3125/0.15625-us steps,
+resolving fast calcium relaxation before rounding in very slow source
+inactivation gates dominates the endpoint error. The failed 2-ms development
+probe and its Decimal rounding diagnosis remain preserved. Gate error and
+refinement limits were not loosened. Full coupled histories use 2 ms and a
+1.25/0.625/0.3125-us grid. Arrays and errors are saved before assertions.
+
+These models retain the −120 to +60 mV domain at 298.15 K, with a **1.25-us
+maximum ordinary step**. A retained 50-us development trajectory at 2.5 us
+exceeded the existing accuracy budget in CaV2.1 activation. Halving the step
+resolved that transient without relaxing the tolerance; earlier Kv1/HCN
+identities keep their 2.5-us cap. The new two-world work allowance is 4,096
+padded steps, and the 2-ms assembly example has 1,600 ticks. These are resource
+and numerical choices, not physiological parameters.
+
+They do not include `Ca_L2`, `Ca_L3`, `Cav_G`, `CaLeak`,
+dynamic calcium-dependent inactivation, measured tissue fits or longer-time
+validation. Static/native-clock CaV3.1 branch checks do not qualify adaptive
+event localization in coupled threshold-crossing trajectories. Assembly remains
+a one-way hypothesis, and multi-GPU execution requires its own qualification.
+
+## Fixed-geometry injury and prescribed resealing
+
+`resolved_repair@1` composes the shared CaV/Na/K/HCN catalog and owned
+cytosol/ER chemistry with a dimensionless damage fraction `D` on each membrane
+patch. Stable membrane IDs bind the model parameters and intervention schedules.
+For held injury and resealing controls `u` and `v` in `[0, 1]`, its named law
+`prescribed_patch_injury_resealing@1` is
+
+```text
+dD/dt = a u (1 - D) - k v D
+injury permeability[species, patch] = P_max[species, patch] D[patch]
+```
+
+`a` and `k` have units s⁻¹, `P_max` has units m/s, and `0 <= D <= 1`.
+After the injury pulse, `u = 0` gives exponential resealing; setting `v = 0`
+holds the existing damage open. Events change the held rates at exact accepted
+boundaries. They never reset damage, ion amounts, voltage, stores or intrinsic
+channel gates. An injury pulse has a finite duration; an instantaneous cut or
+damage jump is outside this model.
+
+The first injury route admits the explicitly identified monovalent Na/K pair.
+It uses the same outward-positive GHK flux as the shared channel populations,
+with separate `[species, membrane_slot]` transfer and heat ledgers. Transport
+reads the owned free cytosol and finite exterior, updates the chemical owner,
+and changes capacitor charge once. Ordinary channel or passive-membrane
+availability controls do not silently close an injury route. Chloride, calcium
+and other wound permeabilities are rejected in this version.
+
+The complete state adds `damage`, cumulative `damage_opened` and `damage_closed`,
+`injury_transferred`, and `injury_dissipated_energy_pJ`. The damage balance is
+`D - D_initial = opened - closed`. Inactive patch padding remains zero;
+invalid damage, route ledgers or trial states reject without clipping. Existing
+material, charge, energy and chemical-ownership checks include injury transport.
+This model does **not** assign energetic or material costs to structural
+resealing. Its transport energy balance is not a metabolic repair model.
+
+The [example](../configs/resolved_repair_tissue.json) selects the GPU backend
+through the ordinary runner. Pure JAX state updates, checkpoint arrays and
+independent-world planning use the existing execution stack; actual CPU/GPU
+and multiple-GPU qualification status is recorded in [Progress](../PROGRESS.md).
+Assembly-driven injury or closure is not yet exposed. Earlier model identities
+and their array layouts are preserved.
+
+The numerical panel uses uninjured, sham, held-injury and resealing controls
+on the same event grid, analytic damage evolution, and an independently
+assembled scalar-ion/full-node-field DOP853 reference. The new model limits
+steps to **0.625 us**, `step * (a + k) <= 0.015`, and the declared combined
+transport-loss bound. A retained development failure and refinement diagnosis
+motivate this finer grid for the closure integral; previous model limits and
+acceptance tolerances remain unchanged. The 20–50-us checks and their fast
+injury/closure rates are manufactured numerical probes, not measured tissue
+repair times or independent biological cases.
+
+This is an independently specified phenomenological component, not a runnable
+copy of BETSE's old wound-channel fragment. The
+[source review and later cutting/regrowth work](ROADMAP.md#injury-and-repair)
+remain distinct. Declining damage alone does not establish restoration of
+physiological function, sustained recovery, regeneration or BETSE cutting parity.

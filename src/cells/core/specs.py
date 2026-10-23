@@ -780,6 +780,10 @@ class SimulationSpec:
 
         if isinstance(m, BetseSpatialModel):
             return to_dict(self)
+        from cells.core.surface_repair_spec import SurfaceRepairModel, to_dict
+
+        if isinstance(m, SurfaceRepairModel):
+            return to_dict(self)
         from cells.core.surface_calcium_spec import SurfaceCalciumModel, to_dict
 
         if isinstance(m, SurfaceCalciumModel):
@@ -1020,11 +1024,17 @@ def parse_spec(data: dict) -> SimulationSpec:
         from cells.core.betse_spatial_spec import parse
 
         return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_repair@1":
+        from cells.core.surface_repair_spec import parse
+
+        return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") in (
         "resolved_calcium@1",
         "resolved_calcium@2",
         "resolved_calcium@3",
         "resolved_calcium@4",
+        "resolved_calcium@5",
+        "resolved_calcium@6",
     ):
         from cells.core.surface_calcium_spec import parse
 
@@ -1034,6 +1044,8 @@ def parse_spec(data: dict) -> SimulationSpec:
         "resolved_tissue@3",
         "resolved_tissue@4",
         "resolved_tissue@5",
+        "resolved_tissue@6",
+        "resolved_tissue@7",
     ):
         from cells.core.surface_kinetic_spec import parse
 

@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-22 UTC.
+Last updated: 2026-10-23 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -8,6 +8,299 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 [Decisions](docs/DECISIONS.md).
 
 ## Current position
+
+- **Fixed-geometry injury and prescribed resealing implemented; 79 CPU
+  development checks passed, including compiled replay at 21:16 UTC on
+  22 October.**
+  `resolved_repair@1` adds patch damage, finite injury pulses, first-order
+  closure, and separate Na/K transfer/heat records to the owned calcium tissue.
+  It preserves existing geometry, chemistry owners, channel gates and earlier
+  model identities. [Equations and scope](docs/TISSUE_RETURN_CURRENT.md#fixed-geometry-injury-and-prescribed-resealing)
+  and a [GPU configuration](configs/resolved_repair_tissue.json) are available.
+
+  [77 CPU development checks passed](/mnt/workspaces/Cells/repair-development-20261022-01/preflight-03/qualified.json),
+  including four synthetic 20-us uninjured/sham/held/resealing controls,
+  independent coupled reference rates/trajectories, material/charge/energy and
+  damage balances, padding, input rejection, analytic damage refinement,
+  bitwise no-injury reduction, prior-model compatibility, and host planning
+  for CPU/GPU independent worlds. These are numerical controls, not independent
+  biological cases. No GPU executed these new injury checks.
+
+  The [first failed trajectory](/mnt/workspaces/Cells/repair-development-20261022-01/preflight-01/check-failure.json)
+  and its frozen sources remain intact. [Refinement diagnosis](/mnt/workspaces/Cells/repair-development-20261022-01/timestep-diagnostic.json)
+  locates the largest error in the closure integral: **5.291 / 0.339 / 0.0222**
+  times the unchanged error budget at 1.25/0.625/0.3125 us. The new model caps
+  steps at **0.625 us** and bounds the damage-rate product; previous model caps
+  and physical tolerances are unchanged.
+
+  The [two compiled checks passed](/mnt/workspaces/Cells/repair-development-20261022-01/compiled-01/qualified.json)
+  in **6 min 48 s**. The 50-us trajectory uses **0.339** of its unchanged
+  error budget. Complete saved restart at the off-grid injury boundary is
+  bitwise; a future closure-disabled branch preserves its boundary state;
+  two independent worlds match their respective scalar runs bitwise. Actual
+  invalid damage, controls and trial steps reject without changing the state.
+  Sampled peak process memory was **4.58 GiB**, below the 6-GiB allowance.
+  [Closeout](/mnt/workspaces/Cells/repair-development-20261022-01/compiled-closeout.json)
+  verifies the reports and all **1,122 frozen source/configuration files**.
+  [Preparation](/mnt/workspaces/Cells/repair-development-20261022-01/preparation.json)
+  binds the passed checks, unchanged production/reference sources, failed
+  evidence and example configuration. No automatic follow-up or repeated
+  polling is scheduled. GPU repair qualification waits for resolution of the
+  separate CaV reproducibility failure below; both sets of frozen evidence
+  remain untouched.
+
+  Remaining: full CPU/L4 qualification, longer functional
+  recovery checks, and later topology-changing cutting and resource-supported
+  regrowth. The closure law is prescribed and has no structural repair-energy
+  model or experimental fit. Decreasing damage alone is not demonstrated
+  physiological recovery. The parked research branch remains parked.
+
+- **Shared CaV catalog: the GPU addition-order fix passed complete-history
+  L4 replay at 12:19 UTC on 23 October; full qualification is next.**
+  The [isolated probe](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/probe-01/diagnostic-result.json)
+  captures 42 ownership additions from the saved state immediately before the
+  first discrepancy. Repeating identical inputs produced **six different
+  rounded channel-flux sums and four channel-heat sums**. All other captured
+  additions were stable in this probe. A separate manufactured cancellation
+  control also exposed variability. Ordered addition matched NumPy exactly
+  across **2,048 comparisons per captured operation**; this is a numerical
+  scheduling probe, not additional biological evidence or full trajectory
+  validation.
+
+  Only channel-population flux and heat accumulation now use declared route
+  order with a single destination write per iteration, avoiding conflicting
+  GPU additions. Other ownership sums, physical laws, integration grids and
+  tolerances are unchanged. The implementation retains independent species
+  and worlds and uses storage proportional to its inputs/outputs.
+  [33 CPU checks passed](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/cpu-01/qualified.json)
+  in 23 seconds, including prior-model reductions and injury compatibility;
+  [11 L4 checks passed](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/gpu-unit-01/diagnostic-result.json)
+  in 4.8 seconds including process overhead. They cover cancellation, repeated
+  destinations, empty routes, padding, single/shared species and independent
+  world reordering. The qualification test now also repeats identical scalar
+  input and saves complete heterogeneous histories before replay assertions.
+
+  The [complete replay passed](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/replay-01/diagnostic-result.json)
+  using the failed parent's complete source with exactly the **two diagnosed
+  production files changed**. All **seven same-source comparisons**, each
+  covering **882,151 saved state values**, are bitwise: identical scalar runs,
+  scalar versus batch, repeated batches and reversed world order. The older
+  executable's baseline also matches bitwise, as a separate informational
+  comparison. All nine complete 2-ms histories were saved before comparison;
+  no identical-input variability was observed and no tolerance was relaxed.
+
+  The [completion receipt](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/replay-01/completion.json)
+  records **16 min 44 s** and **3.88 GiB** peak process memory. Completion
+  bindings, all **1,115 frozen source files**, the two changed files against
+  the checkout, and nine saved-history manifests (45 payloads) were verified.
+  [Telemetry](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/replay-01/gpu-metrics/result.json)
+  averaged **17.554% GPU busy / 0.21194% SM-active**, with **99.9999% / 99.8790%**
+  coverage. Compilation and host time are included; no warmed benchmark
+  interval was defined. Logged scalar execution increased from **20–24 s to
+  43–45 s** in these small cases; this is a measured cost of the correction,
+  not a general throughput estimate. The worker has exited; no follow-up job
+  has been launched. Next is the full 193-test CPU/L4 CaV qualification,
+  including assembly, followed by repair qualification. This focused replay
+  does not itself complete either qualification.
+
+  The short probe's [telemetry](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/probe-01/gpu-metrics/result.json)
+  was **3.048% GPU busy / 0.01601% SM-active** over 6.1 seconds; the unit-check
+  [telemetry](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/gpu-unit-01/gpu-metrics/result.json)
+  was **0.000% / 0.006213%** over 4.8 seconds. Coverage was essentially complete;
+  these include startup, compilation and host time and are not throughput
+  benchmarks.
+
+  The original
+  [failure](/mnt/workspaces/Cells/resolved-calcium-cav-20261022-01/failure.json)
+  occurred at 19:13 UTC after **3 h 18 min 8 s**. All **181 CPU checks passed
+  plus one expected skip**; L4 reached **177 passes and one failure**. The
+  final four assembly checks were not reached. This is not a completed CaV
+  qualification.
+
+  The failed heterogeneous-world check requires bit-for-bit scalar/batch
+  agreement. Its first failing array differs by at most **3.388e-21**; that
+  small magnitude does not satisfy the declared replay contract. This was a
+  test assertion failure, not the wall or memory guard. The
+  [review](/mnt/workspaces/Cells/calcium-cav-world-replay-20261022-01/parent-review.json)
+  binds the original failure, frozen source and saved baseline.
+
+  The [diagnostic result](/mnt/workspaces/Cells/calcium-cav-world-replay-20261022-01/diagnostic-result.json)
+  compares two scalar worlds, an identical scalar repeat, the heterogeneous
+  batch, an identical batch and reversed batch order, with all nine complete
+  histories saved before comparison. **Two identical scalar runs differ in
+  306 values of `extracellular_amount_increment`, by one ULP at most
+  (3.388e-21).** The first difference is at step 1,174 / 1.4675 ms; every other
+  saved state field matches bitwise. The seven other comparisons are bitwise,
+  including the original saved baseline, scalar/batch pairs, repeated batches
+  and reversed ordering. The result's `finding: not_reproduced` refers only
+  to the selected scalar/batch pair: `identical_input_variability_observed`
+  is true. Batching is not required to trigger the discrepancy. The underlying
+  channel additions were subsequently isolated by the probe above; the
+  corrected complete replay now passes, while full qualification remains
+  pending.
+
+  The [completion receipt](/mnt/workspaces/Cells/calcium-cav-world-replay-20261022-01/completion.json)
+  records **12 minutes** and **3.84 GiB** peak process memory, below the
+  registered limits. Completion bindings and all nine saved-history manifests
+  (45 payload files) were verified on 23 October. The failed parent's physics,
+  runtime and inputs were unchanged, and no tolerance was relaxed.
+  [Telemetry](/mnt/workspaces/Cells/calcium-cav-world-replay-20261022-01/gpu-metrics/result.json)
+  averaged **18.801% GPU busy / 0.2592% SM-active**, both with full coverage;
+  compilation and host time are included, without a warmed benchmark interval.
+  That diagnostic worker exited. The separate frozen candidate replay above
+  passed; the original diagnostic and failed qualification remain unchanged.
+
+  The failed qualification's [GPU metrics](/mnt/workspaces/Cells/resolved-calcium-cav-20261022-01/gpu-metrics/result.json)
+  cover **95 min 17 s**: **9.794% GPU busy** and **0.1350% SM-active**, with
+  essentially complete coverage. These include compilation and host/idle time;
+  no warmed performance interval was defined.
+
+  `resolved_tissue@7` / `resolved_calcium@6` add BETSE CaV1.3, 2.1, 2.2,
+  2.3, 3.1 and 3.3, with existing CaV1.2 available through shared populations.
+  The [source correspondence](docs/TISSUE_RETURN_CURRENT.md#shared-calcium-channel-populations)
+  records each equation family, gate power, CaV2.2's analytic singularity limit
+  and CaV3.1's literal source branch. All share the existing owned free-calcium
+  inventory, divalent charge/transfer records and cell-owned assembly controls.
+  The [ordinary](configs/resolved_calcium_cav_tissue.json) and
+  [assembly](configs/assembly_resolved_calcium_cav_tissue.json) GPU examples
+  contain 22 explicitly configured shared populations.
+
+  [Four source checks passed](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-03/qualified.json),
+  including unchanged native BETSE capture, independent Decimal equations,
+  source edge cases, analytic clamps and preservation of earlier laws.
+  [82 host checks passed](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-07/qualified.json),
+  covering ownership, independent rates, assembly controls, declared work and
+  memory budgets, and earlier Kv1/HCN compatibility.
+  [109 shared schema/chemistry checks passed](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-09/qualified.json).
+  The [two compiled checks passed at 14:10 UTC](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-08/qualified.json):
+  the 50-us coupled trajectory uses **0.111 of its error budget**, the complete
+  checkpoint round trip is bitwise, and an invalid trial step is refused
+  without changing state. Those checks took **9 min 29 s** including process
+  overhead, below their 570-s bound; sampled peak process memory was
+  **2.68 GiB**, below the 4-GiB development limit. The final set totals
+  **197 passing CPU development checks**. Full CPU/L4 qualification subsequently
+  stopped at the GPU replay comparison described above.
+
+  Two numerical failures remain preserved. The
+  [gate-only probe](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-01/check-failure.json)
+  reached rounding error in very slow inactivation gates;
+  [Decimal diagnosis](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/clamp-diagnostic.json)
+  supports a shorter fast-gate probe with unchanged acceptance limits.
+  The [first coupled smoke check](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-04/check-failure.json)
+  exceeded the state budget in CaV2.1 activation at 2.5 us.
+  [Saved NumPy RK4/reference diagnosis](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/coupled-diagnostic.json)
+  reproduced its peak and showed convergence on halving the step. The new
+  models therefore cap accepted steps at **1.25 us**; earlier identities keep
+  their own caps. Physical tolerances remain unchanged. A
+  [configuration failure](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preflight-06/check-failure.json)
+  exposed the reaction parser's 2-GiB ceiling; it now accepts an explicit larger
+  budget, with insufficient or invalid budgets still rejected. The full
+  refinement grid needs a 4-GiB trace allowance; the worker resource limits
+  remain separate.
+
+  The [preparation receipt](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/preparation.json)
+  binds these checks, source hashes, preserved failures/diagnoses, lint,
+  formatting and exact test collection. At development closeout, all
+  **1,115 source/configuration files** matched the three final frozen checks.
+  The earlier source-law check
+  retains identical process/reference code; later timestep and resource-guard
+  changes were tested separately. The
+  [launch preparation](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/launch-preparation.json)
+  verifies Kv1's completed result and every required report against its
+  completion receipt. It binds two resource-only changes: an eight-hour wall
+  allowance for the larger catalog/finer grid, and a 14-GiB worker ceiling.
+  The [first launch attempt](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/launch-failure.json)
+  was rejected before starting because available host memory could not cover
+  the original 16-GiB ceiling plus the 4-GiB reserve. The lower ceiling preserves
+  that reserve; numerical tolerances, cases and production code are unchanged.
+  The [startup verification](/mnt/workspaces/Cells/resolved-calcium-cav-development-20261022-01/startup.json)
+  confirms 1,115 frozen files, exact protocol/test groups and a live worker.
+
+  The [registered protocol](validation/tissue/surface_calcium_cav_protocol.json)
+  now registers **193 tests per backend**, including 11 ordered-addition
+  regressions, one expected CPU skip and **55 CPU / 56 GPU required reports**.
+  [Collection](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/qualification-collection.json)
+  verifies disjoint coverage by eight groups; it is not execution evidence.
+  The original failed qualification used 182 tests per backend.
+  Four synthetic 2-ms histories use
+  1.25/0.625/0.3125-us refinement; assembly has 1,600 ticks. Complete replay,
+  independent worlds, CPU/L4 agreement and GPU busy/SM-active telemetry remain
+  required. These development checks are numerical controls, not biological
+  cases or measured physiology. Kv1's completed evidence remains unchanged.
+
+  **Repair review:** the [component](docs/ROADMAP.md#injury-and-repair)
+  is localized membrane injury/prescribed resealing with explicit damage state,
+  owned ion transfer and complete replay on fixed geometry. Actual cutting,
+  conservative topology changes and resource-supported regrowth follow later.
+  [Pinned-source inspection](/mnt/workspaces/Cells/repair-review-20261022.json)
+  distinguishes BETSE's cutting/boundary machinery from its older wound-channel
+  fragment, whose mismatched method signatures and commented transport require
+  executable reference work before a native-parity claim. Implementation and
+  development evidence are recorded above; full repair qualification is pending.
+
+- **Complete Kv1 catalog qualified on CPU and L4; completed at
+  15:50 UTC on 22 October in 3 h 56 min 12 s.** The
+  [result](/mnt/workspaces/Cells/resolved-calcium-kv1-20261022-01/result.json)
+  records **176 CPU passes plus one expected skip and 177 L4 passes**, with
+  no failures or errors. All **50 CPU / 51 GPU required reports passed**,
+  including coupled histories, reference accuracy, refinement, complete
+  restart, independent worlds, assembly reconstruction/replay and complete
+  CPU/L4 state agreement. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-calcium-kv1-20261022-01/completion.json)
+  binds the result and **472 evidence files**; result binding and every required
+  report were verified before launching CaV. The
+  [run](/mnt/workspaces/Cells/resolved-calcium-kv1-20261022-01/launch.json)
+  began at 11:53:54 UTC. The worker exited and released the L4.
+
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-calcium-kv1-20261022-01/gpu-metrics/result.json)
+  covers **2 h 33 min 12 s** (**2.553 GPU-hours**), averaging
+  **3.789% GPU busy** and **0.05144% measured SM-active**. Coverage is
+  **99.99997%** and **99.9871%** respectively. These include host checks,
+  compilation and idle time; no warmed-throughput interval is defined. Sampled
+  peak process-tree memory was **9.55 GiB**, below the 16-GiB run limit.
+
+  `resolved_tissue@6` / `resolved_calcium@5` add pinned BETSE Kv1.1, 1.2,
+  1.3, 1.4 and 1.6 to the shared HCN/NaV/Kv1.5/Kir2.1 catalog. Earlier
+  catalogs, array layouts and checkpoint identities remain restricted.
+  The [source correspondence](docs/TISSUE_RETURN_CURRENT.md#complete-kv1-catalog-with-shared-populations-and-owned-calcium)
+  preserves Kv1.1's `m h²` opening and the other families' `m h` openings,
+  source time constants and K-only routes. The
+  [ordinary](configs/resolved_calcium_kv1_tissue.json) and
+  [assembly](configs/assembly_resolved_calcium_kv1_tissue.json) GPU examples
+  contain fifteen populations, two owned cells and four membrane patches.
+
+  Short checks passed: [17 source/wiring checks in 33.77 s](/mnt/workspaces/Cells/resolved-calcium-kv1-development-20261022-01/preflight-01/qualified.json),
+  [147 host/compatibility checks in 16.95 s](/mnt/workspaces/Cells/resolved-calcium-kv1-development-20261022-01/preflight-03/qualified.json),
+  and [two compiled checks in 158.48 s](/mnt/workspaces/Cells/resolved-calcium-kv1-development-20261022-01/preflight-02/qualified.json).
+  These include unchanged native BETSE Kv1.1–1.6 capture, independent Decimal
+  equations, analytic gate refinement, complete independent initial/evolved
+  rates, assembly owner controls, old-model reduction, a 50-us coupled
+  trajectory/checkpoint and rejection of invalid compiled trial steps.
+  Native gate differences are at most **5.22e-15**. Analytic clamp errors
+  at 50/25/12.5 us are **1.140e-8 / 6.891e-10 / 4.236e-11**.
+  The 166 short checks and source samples are numerical controls, not
+  independent biological cases.
+
+  The [preparation receipt](/mnt/workspaces/Cells/resolved-calcium-kv1-development-20261022-01/preparation.json)
+  binds the successful prerequisites, unchanged production sources, source
+  hashes, lint/formatting and exact disjoint test collection. The first
+  preparation attempt used the wrong status label for the previous top-level
+  receipt; that script failure is retained separately, and no numerical result
+  or acceptance tolerance was changed. The
+  [startup verification](/mnt/workspaces/Cells/resolved-calcium-kv1-development-20261022-01/startup.json)
+  confirms the frozen checkout, protocol and registered tests.
+
+  The [protocol](validation/tissue/surface_calcium_kv1_protocol.json) registers
+  **177 tests per backend**, one expected CPU skip, and **50 CPU / 51 GPU
+  required reports** in seven serial process groups. It requires four synthetic
+  coupled 2-ms histories, owned calcium/ER, assembly reconstruction, baseline
+  and release refinement, independent-reference accuracy, complete restart,
+  heterogeneous worlds and CPU/L4 agreement. A 16-GiB process limit, 4-GiB
+  host reserve and GPU busy/SM-active telemetry were enabled. This qualifies
+  the scoped synthetic composition on CPU/L4. Standalone tissue is checked at initial rates;
+  the complete trajectory panel exercises the owned-calcium composition.
+  No experimental physiology, longer-time, full native BETSE or Jupiter
+  execution claim follows from these checks. The research branch stays parked.
 
 - **Two-task/channel-compensation research parked on 18 October.** The final
   local-channel run has completed; its result, controls, negative outcomes and

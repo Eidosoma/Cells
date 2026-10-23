@@ -18,7 +18,7 @@ from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
 from cells.core.resources import trace_bytes
 from cells.core.runner import branch_checkpoint, run, timeline
 from cells.core.specs import ConfigError, parse_spec
-from cells.io import load_snapshot, write_snapshot
+from cells.io import load_snapshot, write_run, write_snapshot
 from cells.models import surface_calcium_hcn as model
 from tests.unit import test_surface_calcium as shared
 from tests.unit import test_surface_calcium_hcn as wiring
@@ -36,6 +36,7 @@ REFINEMENT_STEPS = (2.5e-6, 1.25e-6, 0.625e-6)
 BATCH_STEP_BUDGET = 2048
 SINGLE_WORLD_STEP_BUDGET = 1024
 BATCH_WORKING_BYTES = 2**31
+ASSEMBLY_TICKS = 800
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -116,7 +117,7 @@ def test_execution_grids_and_work_budgets():
             )
         )
     spec = shared.parse_assembly(fixtures.assembly_definition())
-    assert spec.ticks == 800
+    assert spec.ticks == ASSEMBLY_TICKS
     assert spec.ionic.execution.dt == REFINEMENT_STEPS[0]
     evidence(
         "execution-plan",
@@ -330,6 +331,15 @@ def test_restart_rejects_changed_population(trajectories, change):
 def test_channel_species_and_laws_remain_owned_by_each_world(trajectories):
     baseline = trajectories["baseline"]
     alternate = run(parse_spec(heterogeneous_definition(backend=BACKEND)))
+
+    def save(name, value):
+        if EVIDENCE:
+            write_run(Path(EVIDENCE) / BACKEND / (PREFIX + "-world-history") / name, value)
+
+    # Keep complete failed histories: a comparison must not discard its inputs.
+    save("alternate", alternate)
+    repeated = run(alternate.spec)
+    save("alternate-repeat", repeated)
     assert np.any(alternate.history.channel_gate != baseline.history.channel_gate)
     assert np.any(
         alternate.history.chemical_amount_increment != baseline.history.chemical_amount_increment
@@ -341,6 +351,9 @@ def test_channel_species_and_laws_remain_owned_by_each_world(trajectories):
         BATCH_WORKING_BYTES,
     )
     batch = run_batch(spec)
+    for identity, value in batch.worlds.items():
+        save(f"batch-{identity}", value)
+    exact(repeated.history, alternate.history)
     exact(batch.worlds[23].history, baseline.history)
     exact(batch.worlds[41].history, alternate.history)
     evidence(
@@ -348,6 +361,8 @@ def test_channel_species_and_laws_remain_owned_by_each_world(trajectories):
         dict(
             status="passed",
             comparison="bitwise against each standalone world",
+            identical_scalar_repeat="bitwise complete history",
+            saved_world_histories=bool(EVIDENCE),
             world_ids=[23, 41],
             populations=[
                 [

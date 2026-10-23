@@ -1,0 +1,280 @@
+{
+  "kind": "resolved_owned_calcium_cav_assembly_qualification@1",
+  "scope": "resolved_calcium@6 / resolved_tissue@7 add CaV1.2/1.3/2.1/2.2/2.3/3.1/3.3 as explicit shared populations alongside the existing Kv1/Kir/NaV/HCN catalog. Seven unchanged pinned BETSE classes are captured; CaV2.2 is analytically regularized at +20 mV and CaV3.1 retains its literal -0.01-mV source branch. Four synthetic closed two-cell/four-patch/five-outside 2-ms histories with twenty-two shared populations, owned cytosol/ER, buffers, IP3, dedicated CaV1.2 patch routes, PMCA and synthetic reversible NCX. Neutral assembly controls all shared populations of each cell. Numerical source/composition qualification, not a measured physiological fit or full native BETSE equivalence. Standalone tissue has initial-rate coverage; full histories exercise owned-calcium composition.",
+  "tests": [
+    "tests/unit/test_ordered_scatter.py",
+    "tests/unit/test_surface_reference.py",
+    "tests/unit/test_cav_channels.py",
+    "tests/unit/test_surface_calcium_cav.py",
+    "tests/unit/test_surface_calcium_cav_full.py",
+    "tests/unit/test_specs.py",
+    "tests/unit/test_batch_identity.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_calcium_cav_full.py::test_cpu_gpu_complete_saved_states_and_observations"
+  ],
+  "required_evidence": [
+    "resolved-calcium-cav-stage-baseline-compact",
+    "resolved-calcium-cav-stage-blocked-compact",
+    "resolved-calcium-cav-stage-release-compact",
+    "resolved-calcium-cav-stage-weak_ip3-compact",
+    "resolved-calcium-cav-stage-baseline-padded",
+    "resolved-calcium-cav-stage-blocked-padded",
+    "resolved-calcium-cav-stage-release-padded",
+    "resolved-calcium-cav-stage-weak_ip3-padded",
+    "resolved-calcium-cav-evolved-stage-baseline",
+    "resolved-calcium-cav-evolved-stage-blocked",
+    "resolved-calcium-cav-evolved-stage-release",
+    "resolved-calcium-cav-evolved-stage-weak_ip3",
+    "resolved-calcium-cav-saved-baseline",
+    "resolved-calcium-cav-saved-blocked",
+    "resolved-calcium-cav-saved-release",
+    "resolved-calcium-cav-saved-weak_ip3",
+    "resolved-calcium-cav-trajectory-baseline",
+    "resolved-calcium-cav-trajectory-blocked",
+    "resolved-calcium-cav-trajectory-release",
+    "resolved-calcium-cav-trajectory-weak_ip3",
+    "resolved-calcium-cav-refinement",
+    "resolved-calcium-cav-restart",
+    "resolved-calcium-cav-partition",
+    "resolved-calcium-cav-ensemble",
+    "resolved-calcium-cav-assembly",
+    "resolved-calcium-cav-assembly-reference",
+    "resolved-calcium-cav-assembly-replay",
+    "resolved-calcium-cav-design",
+    "resolved-calcium-cav-legacy",
+    "resolved-calcium-cav-smoke",
+    "resolved-calcium-cav-world-laws",
+    "resolved-calcium-cav-ownership",
+    "resolved-calcium-cav-assembly-wiring",
+    "resolved-calcium-cav-execution-plan",
+    "resolved-calcium-cav-heterogeneous-stage",
+    "resolved-calcium-cav-assembly-owner-control",
+    "resolved-calcium-cav-chemical-event-store",
+    "resolved-calcium-cav-chemical-event-plasma",
+    "resolved-calcium-cav-chemical-event-calcium_channel",
+    "resolved-calcium-cav-refinement-release",
+    "resolved-calcium-cav-identity-law",
+    "resolved-calcium-cav-identity-species_and_law",
+    "resolved-calcium-cav-route-heat",
+    "resolved-calcium-cav-assembly-species-report",
+    "resolved-calcium-cav-reference-accuracy-baseline",
+    "resolved-calcium-cav-reference-accuracy-release",
+    "resolved-calcium-cav-native",
+    "resolved-calcium-cav-clamps",
+    "resolved-calcium-cav-standalone-stage",
+    "resolved-calcium-cav-identity-kv1_gate_power",
+    "resolved-calcium-cav-edge-cases",
+    "resolved-calcium-cav-retained-laws",
+    "resolved-calcium-cav-calcium-owner",
+    "resolved-calcium-cav-cav1p2-route-reduction",
+    "resolved-calcium-cav-identity-cav_gate_power"
+  ],
+  "required_gpu_evidence": [
+    "resolved-calcium-cav-cpu-gpu"
+  ],
+  "checks": [
+    "Channel flux and heat contributions use declared population order, with one destination write per loop iteration instead of conflicting GPU scatter-adds. Ordered-addition regressions require bitwise NumPy/CPU/L4 agreement under cancellation, repeated ownership, empty routes, padding, species routing and independent world reordering. The heterogeneous-world test also repeats the same scalar input and saves complete histories before replay assertions. Physical tolerances and integration grids are unchanged.",
+    "Host planning checks all twelve arm/timestep grids and both independent-clock and heterogeneous-law batches before trajectories. Two-world aggregate padded-work allowance is 4096; single-world allowance is 2048. Trace and aggregate batch working-storage allowances are 4 GiB each; the composed reaction parser accepts this explicit budget and the runner still rejects insufficient storage before trace allocation. The obsolete 200-step calcium budget must reject. Resource allowances do not alter numerical or physical tolerances.",
+    "Explicit resolved_calcium@6 with nested resolved_tissue@7; seven named CaV laws in the shared population catalog. One gate pair/availability and Ca-only valence +2 routes; complete species/population ledgers. Older model/catalog identities remain restricted. Existing Kv1/HCN/calcium rates reduce bitwise; moving one dedicated CaV1.2 patch route into a shared population preserves physical rates with separate transfer ledgers and no duplicated current.",
+    "Internal free calcium binding, calcium/ER transfer and sodium/ER transfer alter their HCN routes without charging plasma capacitors or duplicating ionic ownership. Blocking a shared population stops Na/K/Ca together while intrinsic gates continue. Absent chloride routes, charge-neutral species-ledger corruption and decreasing per-route heat must reject.",
+    "Batched worlds vary HCN law, transported-species/law, Kv1 inactivation power and CaV inactivation power. Complete histories match the respective standalone worlds bitwise. Changed population identities reject checkpoint continuation. These are numerical routing controls, not independent biological cases.",
+    "Capture unchanged pinned CaV1.2/1.3/2.1/2.2/2.3/3.1/3.3 initialization, targets, time constants, gate powers and Ca permeability over a voltage sweep with source-branch probes. Three native semi-implicit clocks each retain 32 changing-voltage updates. Finite source values agree with independent 80-digit Decimal and JIT gates. The exact +20-mV CaV2.2 nonfinite source probe and warnings are retained separately; finite analytic-limit/autodiff checks do not relabel it a passing native comparison. CaV3.1 branches at the literal -0.01 mV, not an inferred -10 mV.",
+    "CPU independent references are reused on GPU only after checking passed status, exact serialized inputs and exact reference settings. New CaV/calcium references use rtol 1e-13, state atol 1e-16 and charge atol 5e-32 C; earlier calcium families retain their defaults. Baseline/release controls require stability under another fourfold tolerance tightening within 3e-14 per non-charge state and 3e-28 C, below the unchanged refinement floor.",
+    "Reference logarithmic means checked against 90-digit Decimal arithmetic; the previous calcium family's four small-initial-probe cases remain numerical reference regressions, separate from the new composition cases.",
+    "Strict identity/ownership/initial-pool declarations; conserved global chemical loss bounds require finite closed exterior; rejection of held baths and unsafe timesteps",
+    "Independent full-node field roots and scalar/Decimal ion, ER, PMCA/NCX and Cav rates on compact/padded states and evolved stages; independently differentiated whole-system free energy",
+    "Internal calcium binding, ER exchange and IP3 binding cannot charge plasma capacitors; only owned free cytosolic concentrations drive membrane and junction transport",
+    "Local/global external transport, intracellular chemical reaction/ER ledgers, conserved ionic and nonionic moieties, charge increments and three maintained ATP-source work identities",
+    "Four complete thirty-four-field trajectories against segmented adaptive DOP853; blocked/released flux histories retain evolving intrinsic gates. Store-only, plasma-only and calcium-channel-only events remain accepted observation boundaries while unsupported off-grid observations and oversized sodium steps reject.",
+    "Three 50-us event-clock controls apply a local store/plasma/calcium-channel change at 37 us, compare complete observed states with segmented independent integration, require the selected transfer ledger to stop while another owner/patch continues, and require bitwise complete restart from a disk checkpoint at the event. Intrinsic CaV gates continue under channel block. These are numerical controls, not additional biological cases.",
+    "Every state-field corruption rejected; actual invalid held controls, invalid RK4 trials and unconverged field solves refuse advancement; no clipping or hidden repair",
+    "Three timesteps (1.25/0.625/0.3125 us) for both baseline and release; unchanged physical error budgets. Exact disk/fresh-process/terminal continuation; future transport branches preserve state and evolving gates; changed integration windows.",
+    "Two neutral cell-owned assembly pools control every NaV/Kv1/Kir/HCN/CaV population belonging to the cell, including all three HCN ion routes through one availability. Initial owner-control rates are checked independently; independently reconstructed random event histories drive segmented electrical/chemical references.",
+    "Exact complete assembly restart, changed windows and world partition; IP3 perturbation changes calcium without changing one-way assembly random events; owned ligand, calcium and patch readouts survive aggregation. Initial and evolved reports are checked directly against cell-owned state; missing ligand or calcium sections must be rejected",
+    "One versus sixteen GPU planning preserves world definitions and identity; no remote execution claim",
+    "Complete CPU/L4 state and readout comparisons, with separate charge/current/voltage tolerances and exact discrete event state; shared schema and checkpoint regressions",
+    "GPU busy and measured SM-active, per-counter coverage, allocated phase time, resource bounds, frozen sources and durable failure/completion receipts",
+    "Assembly reports and aggregation retain explicit world/species/channel axes, ordered species IDs, route weights and all active channel transfers. Missing or changed route metadata and malformed tensor shapes reject; padding is excluded. Evolved report values are reconstructed directly from complete state.",
+    "Each refinement timestep preserves exact inputs, observed/reference arrays, signed per-field errors and settings before assertions; failures remain failed. These numerical controls do not add independent biological cases.",
+    "Fresh serial process groups bound compilation memory; registered tests execute exactly once per backend. Duplicated fixtures preserve their original evidence and are not extra cases. Automatic follow-up is disabled.",
+    "Analytic gate-only clamps use 100 us and 0.625/0.3125/0.15625-us steps to resolve fast CaV relaxation before rounding in hours-long low-voltage inactivation gates dominates. The failed 2-ms development probe and Decimal diagnosis are retained. Gate absolute/refinement bounds are unchanged; coupled histories retain 2 ms and 1.25/0.625/0.3125-us steps. Clamp inputs, observed/reference arrays and signed errors are saved before acceptance assertions.",
+    "Calcium binding alters a new CaV flux through the same free chemical owner without changing instantaneous plasma voltage. Blocking a CaV population leaves intrinsic gates evolving and stops its divalent transfer; chemical, ionic and charge changes agree. Each assembly owner controls all its new CaV populations. Existing dedicated CaV1.2 patch routes remain separate and are never implicitly duplicated or controlled as shared populations.",
+    "The new catalog caps accepted RK4 steps at 1.25 us: a retained 50-us development trajectory at 2.5 us exceeded the unchanged state budget in CaV2.1 activation. NumPy RK4 and tighter independent-reference diagnosis localize truncation error; halved steps converge. Older Kv1/HCN identities retain their 2.5-us cap. The short compiled control saves arrays/checkpoints before accuracy assertions and uses the same tighter reference settings as full trajectories."
+  ],
+  "tolerances": {
+    "initial_and_evolved_rate_rtol": 3e-10,
+    "amount_energy_gate_rate_atol": 3e-12,
+    "charge_rate_atol_A": 3e-23,
+    "instantaneous_energy_balance_atol_pJ_s": 1e-10,
+    "reference_state_rtol": 3e-09,
+    "reference_amount_energy_gate_atol": 2e-11,
+    "reference_charge_atol_C": 3e-25,
+    "reference_voltage_atol_V": 2e-08,
+    "independent_dop853_rtol": 1e-13,
+    "independent_amount_energy_gate_atol": 1e-16,
+    "independent_charge_atol_C": 5e-32,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "material_atol_fmol": 2e-11,
+    "chemical_ledger_and_ownership_atol_fmol": 9.094947017729282e-13,
+    "charge_atol_C": 3e-25,
+    "charge_rtol": 2e-12,
+    "integrated_energy_atol_pJ": 1e-09,
+    "source_work_atol_pJ": 3e-12,
+    "dissipation_monotonicity_atol_pJ": 9.094947017729282e-13,
+    "same_backend_complete_replay": "bitwise through production lax.map",
+    "refinement_dt_s": [
+      1.25e-06,
+      6.25e-07,
+      3.125e-07
+    ],
+    "refinement_final_to_initial_error_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "field_current_atol_A": 1e-23,
+    "field_current_rtol": 2e-12,
+    "field_newton_target_fraction": 0.01,
+    "independent_check_dop853_rtol": 2.5e-14,
+    "independent_check_amount_energy_gate_atol": 2.5e-17,
+    "independent_check_charge_atol_C": 1.25e-32,
+    "independent_reference_stability_atol": 3e-14,
+    "independent_reference_charge_stability_atol_C": 3e-28,
+    "native_gate_rtol": 5e-14,
+    "native_gate_atol": 5e-15,
+    "analytic_clamp_max_gate_error": 1e-08,
+    "analytic_clamp_final_to_initial_error_limit": 0.02,
+    "analytic_clamp_roundoff_floor": 2e-14,
+    "analytic_clamp_dt_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "analytic_clamp_duration_s": 0.0001
+  },
+  "resources": {
+    "max_wall_seconds": 28800,
+    "artifact_and_cache_bytes": 6442450944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 15032385536,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 4294967296,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "Finite closed exterior only. Held-bath calcium input needs an independently bounded nonconserved chemical inventory and is deferred; standalone resolved_tissue models retain their separate reservoir capabilities.",
+    "Synthetic manufactured charge backgrounds and concentrations, including exterior Ca=0.02 mM for bounded conserved-pool verification; no measured tissue dataset or biological calibration",
+    "Pinned process equations are reused; this does not establish native full BETSE tissue trajectory or screened/finite-difference field equivalence",
+    "Maintained ATP/ADP/Pi sources, not a finite metabolic reaction network; synthetic NCX and buffer kinetics",
+    "Assembly is a one-way neutral-protein channel-availability hypothesis. No biochemical feedback into assembly, protein energy, or experimentally established calcium/assembly link",
+    "Accepted-grid observations only. No interpolation guarantee, moving boundaries, water flow, deformation or growth",
+    "Dense resolved electrical closure and up to sixteen owned cells per world. Sixteen-GPU readiness concerns independent worlds; no multi-GPU execution or distributed single tissue is qualified here",
+    "GPU counters include compilation and host correctness work. No single warmed interval or utilization/throughput target is claimed",
+    "Old resolved_calcium@1/@2 catalogs remain restricted to potassium; resolved_calcium@3 retains the earlier single-ion sodium/potassium catalog. Numerical controls, refinement, old-model reductions and replay are not independent biological cases. The two-task/channel-compensation research remains parked. The earlier shared HCN catalog remains fixed as resolved_tissue@5 / resolved_calcium@4.",
+    "Named CaV catalog correspondence is not experimental calcium physiology, a calibrated action potential, dynamic calcium-dependent channel inactivation or longer-time validation. Source time constants are not temperature-refitted. The inherited -120 to +60 mV domain at 298.15 K remains.",
+    "Ca_L2, Ca_L3, Cav_G and CaLeak are not included. CaV3.1 retains a literal source discontinuity at -0.01 mV; static/native-clock branch probes do not establish adaptive event localization or physiological validity for coupled threshold-crossing trajectories.",
+    "Assembly regulates the explicitly shared CaV populations, not the separate legacy dedicated CaV1.2 patch routes. One-way neutral assembly still has no ionic/protein energy feedback."
+  ],
+  "automatic_followup": false,
+  "execution_checks": {
+    "two_world_max_padded_steps": 4096,
+    "single_world_max_padded_steps": 2048,
+    "max_trace_bytes": 4294967296,
+    "batch_max_working_bytes": 4294967296,
+    "replay_window_steps": 17,
+    "refinement_arms": [
+      "baseline",
+      "release"
+    ]
+  },
+  "source_baseline": {
+    "project": "BETSE",
+    "version": "1.5.0",
+    "commit": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "sha256": {
+      "vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    }
+  },
+  "test_groups": [
+    {
+      "name": "shared-regressions",
+      "tests": [
+        "tests/unit/test_ordered_scatter.py",
+        "tests/unit/test_surface_reference.py",
+        "tests/unit/test_specs.py",
+        "tests/unit/test_batch_identity.py"
+      ]
+    },
+    {
+      "name": "source-laws",
+      "tests": [
+        "tests/unit/test_cav_channels.py"
+      ]
+    },
+    {
+      "name": "calcium-contracts",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav.py",
+        "tests/unit/test_surface_calcium_cav_full.py::test_execution_grids_and_work_budgets",
+        "tests/unit/test_surface_calcium_cav_full.py::test_heterogeneous_population_independent_rates",
+        "tests/unit/test_surface_calcium_cav_full.py::test_chemical_only_event_trajectory_and_restart",
+        "tests/unit/test_surface_calcium_cav_full.py::test_registered_roundtrip_and_ensemble",
+        "tests/unit/test_surface_calcium_cav_full.py::test_internal_chemistry_uses_free_ions_without_charging_plasma",
+        "tests/unit/test_surface_calcium_cav_full.py::test_corrupt_complete_ledgers_or_inventories_are_rejected",
+        "tests/unit/test_surface_calcium_cav_full.py::test_inconsistent_definitions_reject",
+        "tests/unit/test_surface_calcium_cav_full.py::test_failed_field_and_actual_controls_reject",
+        "tests/unit/test_surface_calcium_cav_full.py::test_chemical_event_is_an_accepted_observation_boundary",
+        "tests/unit/test_surface_calcium_cav_full.py::test_existing_resolved_kinetics_preserve_rates_and_energy",
+        "tests/unit/test_surface_calcium_cav_full.py::test_evolved_stage_preserves_owned_charge_and_independent_rates",
+        "tests/unit/test_surface_calcium_cav_full.py::test_new_model_rejects_held_bath_with_explicit_scope",
+        "tests/unit/test_surface_calcium_cav_full.py::test_absent_routes_and_zero_reaction_capacity_keep_zero_ledgers",
+        "tests/unit/test_surface_calcium_cav_full.py::test_compiled_guard_rejects_actual_invalid_control_without_changing_state",
+        "tests/unit/test_surface_calcium_cav_full.py::test_sixteen_gpu_planning_keeps_worlds_and_model"
+      ]
+    },
+    {
+      "name": "calcium-trajectories",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav_full.py::test_reference_accuracy",
+        "tests/unit/test_surface_calcium_cav_full.py::test_independent_trajectories_and_complete_accounting",
+        "tests/unit/test_surface_calcium_cav_full.py::test_restart_rejects_changed_population"
+      ]
+    },
+    {
+      "name": "calcium-refinement",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav_full.py::test_timestep_refinement",
+        "tests/unit/test_surface_calcium_cav_full.py::test_release_refinement"
+      ]
+    },
+    {
+      "name": "calcium-restart",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav_full.py::test_complete_disk_fresh_process_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "calcium-worlds",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav_full.py::test_world_partition_reorder_and_independent_restart",
+        "tests/unit/test_surface_calcium_cav_full.py::test_ensemble_endpoint_reports_real_patch_voltages_and_complete_state",
+        "tests/unit/test_surface_calcium_cav_full.py::test_channel_species_and_laws_remain_owned_by_each_world"
+      ]
+    },
+    {
+      "name": "calcium-assembly",
+      "tests": [
+        "tests/unit/test_surface_calcium_cav_full.py::test_cpu_gpu_complete_saved_states_and_observations",
+        "tests/unit/test_surface_calcium_cav_full.py::test_assembly_event_reference",
+        "tests/unit/test_surface_calcium_cav_full.py::test_assembly_restart_partition_and_ligand_response",
+        "tests/unit/test_surface_calcium_cav_full.py::test_assembly_aggregation_retains_owned_ligand"
+      ]
+    }
+  ]
+}

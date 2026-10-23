@@ -1,0 +1,1978 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "resolved_calcium@6",
+    "ionic": {
+      "id": "resolved_tissue@7",
+      "temperature_K": 298.15,
+      "species": [
+        {
+          "id": "Na",
+          "valence": 1
+        },
+        {
+          "id": "K",
+          "valence": 1
+        },
+        {
+          "id": "Cl",
+          "valence": -1
+        },
+        {
+          "id": "Ca",
+          "valence": 2
+        }
+      ],
+      "cells": [
+        {
+          "id": "cell_0",
+          "volume_pL": 2.0,
+          "initial_amount_fmol": {
+            "Na": 24.0,
+            "K": 280.0,
+            "Cl": 20.0,
+            "Ca": 0.004
+          },
+          "fixed_charge_equivalent_fmol": -284.0115964015707,
+          "initial_charge_C": -3.4700000000000004e-13
+        },
+        {
+          "id": "cell_1",
+          "volume_pL": 3.0,
+          "initial_amount_fmol": {
+            "Na": 45.0,
+            "K": 390.0,
+            "Cl": 39.0,
+            "Ca": 0.006
+          },
+          "fixed_charge_equivalent_fmol": -396.01865904325416,
+          "initial_charge_C": -6.425e-13
+        }
+      ],
+      "extracellular": [
+        {
+          "id": "outside_0",
+          "volume_pL": 4.0,
+          "initial_amount_fmol": {
+            "Na": 580.0,
+            "K": 16.0,
+            "Cl": 480.0,
+            "Ca": 0.08
+          },
+          "fixed_charge_equivalent_fmol": -116.15853656512454,
+          "initial_charge_C": 1.4120000000000002e-13,
+          "reservoir": false,
+          "boundary_potential_V": 0.0
+        },
+        {
+          "id": "outside_1",
+          "volume_pL": 4.5,
+          "initial_amount_fmol": {
+            "Na": 639.0,
+            "K": 20.25,
+            "Cl": 562.5,
+            "Ca": 0.09
+          },
+          "fixed_charge_equivalent_fmol": -96.92786703330475,
+          "initial_charge_C": 2.0580000000000004e-13,
+          "reservoir": false,
+          "boundary_potential_V": 0.0
+        },
+        {
+          "id": "outside_2",
+          "volume_pL": 5.0,
+          "initial_amount_fmol": {
+            "Na": 735.0,
+            "K": 25.0,
+            "Cl": 620.0,
+            "Ca": 0.1
+          },
+          "fixed_charge_equivalent_fmol": -140.19794787460805,
+          "initial_charge_C": 1.9800000000000001e-13,
+          "reservoir": false,
+          "boundary_potential_V": 0.0
+        },
+        {
+          "id": "outside_3",
+          "volume_pL": 5.5,
+          "initial_amount_fmol": {
+            "Na": 764.5,
+            "K": 23.1,
+            "Cl": 649.0,
+            "Ca": 0.11
+          },
+          "fixed_charge_equivalent_fmol": -138.81539308213777,
+          "initial_charge_C": 4.445e-13,
+          "reservoir": false,
+          "boundary_potential_V": 0.0
+        },
+        {
+          "id": "outside_4",
+          "volume_pL": 7.0,
+          "initial_amount_fmol": {
+            "Na": 1050.0,
+            "K": 28.699999999999996,
+            "Cl": 854.0,
+            "Ca": 0.14
+          },
+          "fixed_charge_equivalent_fmol": -224.98,
+          "initial_charge_C": 0.0,
+          "reservoir": false,
+          "boundary_potential_V": 0.0
+        }
+      ],
+      "membranes": [
+        {
+          "id": "membrane_0",
+          "inside": "cell_0",
+          "outside": "outside_0",
+          "area_m2": 4e-10,
+          "capacitance_F": 4e-12,
+          "permeability_m_per_s": {
+            "Na": 1e-09,
+            "K": 2e-09,
+            "Cl": 8e-10,
+            "Ca": 1e-09
+          },
+          "law": "constant_field@1",
+          "pump": {
+            "id": "pump_0",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.02,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          }
+        },
+        {
+          "id": "membrane_1",
+          "inside": "cell_0",
+          "outside": "outside_1",
+          "area_m2": 6e-10,
+          "capacitance_F": 6e-12,
+          "permeability_m_per_s": {
+            "Na": 1e-09,
+            "K": 2e-09,
+            "Cl": 8e-10,
+            "Ca": 1e-09
+          },
+          "law": "constant_field@1",
+          "pump": {
+            "id": "pump_1",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.025,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          }
+        },
+        {
+          "id": "membrane_2",
+          "inside": "cell_1",
+          "outside": "outside_2",
+          "area_m2": 3e-10,
+          "capacitance_F": 3e-12,
+          "permeability_m_per_s": {
+            "Na": 1e-09,
+            "K": 2e-09,
+            "Cl": 8e-10,
+            "Ca": 1e-09
+          },
+          "law": "constant_field@1",
+          "pump": {
+            "id": "pump_2",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.03,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          }
+        },
+        {
+          "id": "membrane_3",
+          "inside": "cell_1",
+          "outside": "outside_3",
+          "area_m2": 7e-10,
+          "capacitance_F": 7e-12,
+          "permeability_m_per_s": {
+            "Na": 1e-09,
+            "K": 2e-09,
+            "Cl": 8e-10,
+            "Ca": 1e-09
+          },
+          "law": "constant_field@1",
+          "pump": {
+            "id": "pump_3",
+            "law": "nak_atp_mass_action_positive@1",
+            "roles": {
+              "sodium": "Na",
+              "potassium": "K"
+            },
+            "stoichiometry": {
+              "Na": -3,
+              "K": 2
+            },
+            "capacity_fmol_per_s": 0.035,
+            "km_na_mM": 12.0,
+            "km_k_mM": 0.2,
+            "km_atp_mM": 0.5,
+            "metabolism": {
+              "kind": "maintained_chemical_reservoirs@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            }
+          }
+        }
+      ],
+      "junctions": [
+        {
+          "id": "junction_0",
+          "sender": "cell_0",
+          "receiver": "cell_1",
+          "area_m2": 1e-11,
+          "permeability_m_per_s": {
+            "Na": 1e-09,
+            "K": 2e-09,
+            "Cl": 1e-09,
+            "Ca": 1e-09
+          },
+          "law": "constant_field@1",
+          "gate": {
+            "law": "betse_rate_junction_relaxation@1",
+            "threshold_voltage_V": 0.015,
+            "minimum_open_fraction": 0.1,
+            "initial_gate": 0.6
+          }
+        }
+      ],
+      "faces": [
+        {
+          "id": "face_0",
+          "sender": "outside_0",
+          "receiver": "outside_1",
+          "area_m2": 1e-10,
+          "length_m": 1e-05,
+          "diffusivity_m2_per_s": {
+            "Na": 1e-14,
+            "K": 2e-14,
+            "Cl": 1.5000000000000002e-14,
+            "Ca": 1e-10
+          },
+          "law": "logmean_electrodiffusion@1"
+        },
+        {
+          "id": "face_1",
+          "sender": "outside_2",
+          "receiver": "outside_3",
+          "area_m2": 1e-10,
+          "length_m": 1e-05,
+          "diffusivity_m2_per_s": {
+            "Na": 2e-14,
+            "K": 3.0000000000000005e-14,
+            "Cl": 1e-14,
+            "Ca": 1e-10
+          },
+          "law": "logmean_electrodiffusion@1"
+        },
+        {
+          "id": "face_2",
+          "sender": "outside_1",
+          "receiver": "outside_4",
+          "area_m2": 1e-10,
+          "length_m": 1e-05,
+          "diffusivity_m2_per_s": {
+            "Na": 1e-14,
+            "K": 2e-14,
+            "Cl": 2e-14,
+            "Ca": 1e-10
+          },
+          "law": "logmean_electrodiffusion@1"
+        },
+        {
+          "id": "face_3",
+          "sender": "outside_4",
+          "receiver": "outside_2",
+          "area_m2": 1e-10,
+          "length_m": 1e-05,
+          "diffusivity_m2_per_s": {
+            "Na": 2e-14,
+            "K": 1e-14,
+            "Cl": 1e-14,
+            "Ca": 1e-10
+          },
+          "law": "logmean_electrodiffusion@1"
+        },
+        {
+          "id": "face_4",
+          "sender": "outside_0",
+          "receiver": "outside_3",
+          "area_m2": 1e-10,
+          "length_m": 1e-05,
+          "diffusivity_m2_per_s": {
+            "Na": 1e-14,
+            "K": 3.0000000000000005e-14,
+            "Cl": 2e-14,
+            "Ca": 1e-10
+          },
+          "law": "logmean_electrodiffusion@1"
+        }
+      ],
+      "closure": {
+        "law": "resolved_capacitor_components_current_continuity@1",
+        "gauge_reference": "outside_4"
+      },
+      "channels": [
+        {
+          "id": "channel_0",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.5,
+          "initial_gate": [
+            0.2,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "channel_1",
+          "membrane_id": "membrane_1",
+          "kinetic_law": "betse_kir2p1_mh2@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.6,
+          "initial_gate": [
+            0.25,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "channel_2",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_kv1p5_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.7,
+          "initial_gate": [
+            0.30000000000000004,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "channel_3",
+          "membrane_id": "membrane_3",
+          "kinetic_law": "betse_kir2p1_mh2@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.8,
+          "initial_gate": [
+            0.35000000000000003,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "channel_4",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_kir2p1_mh2@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.5,
+          "initial_gate": [
+            0.65,
+            0.35
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "sodium_0",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.2,
+          "initial_gate": [
+            0.15,
+            0.8
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "sodium_1",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_nav1p2_m3h_regularized@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.30000000000000004,
+          "initial_gate": [
+            0.35,
+            0.6000000000000001
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "hcn_1",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_hcn1_m@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.12,
+          "initial_gate": [
+            0.35,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 0.2
+            },
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            },
+            {
+              "species_id": "Ca",
+              "relative_permeability": 0.05
+            }
+          ]
+        },
+        {
+          "id": "hcn_2",
+          "membrane_id": "membrane_1",
+          "kinetic_law": "betse_hcn2_m@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.2,
+          "initial_gate": [
+            0.44999999999999996,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 0.2
+            },
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            },
+            {
+              "species_id": "Ca",
+              "relative_permeability": 0.05
+            }
+          ]
+        },
+        {
+          "id": "hcn_4",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_hcn4_m@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.28,
+          "initial_gate": [
+            0.55,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Na",
+              "relative_permeability": 0.2
+            },
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            },
+            {
+              "species_id": "Ca",
+              "relative_permeability": 0.05
+            }
+          ]
+        },
+        {
+          "id": "kv1_1",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_kv1p1_mh2@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.1,
+          "initial_gate": [
+            0.25,
+            0.65
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "kv1_2",
+          "membrane_id": "membrane_1",
+          "kinetic_law": "betse_kv1p2_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.14,
+          "initial_gate": [
+            0.35,
+            0.6
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "kv1_3",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_kv1p3_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.18,
+          "initial_gate": [
+            0.45,
+            0.55
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "kv1_4",
+          "membrane_id": "membrane_3",
+          "kinetic_law": "betse_kv1p4_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.22,
+          "initial_gate": [
+            0.55,
+            0.5
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "kv1_6",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_kv1p6_mh@1",
+          "max_permeability_m_per_s": 3e-10,
+          "abundance": 0.26,
+          "initial_gate": [
+            0.65,
+            0.45
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "K",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_0",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_cav1p2_m2h@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.1,
+          "initial_gate": [
+            0.2,
+            0.7
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_1",
+          "membrane_id": "membrane_1",
+          "kinetic_law": "betse_cav1p3_m2h@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.12000000000000001,
+          "initial_gate": [
+            0.25,
+            0.6599999999999999
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_2",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_cav2p1_m@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.14,
+          "initial_gate": [
+            0.30000000000000004,
+            0.62
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_3",
+          "membrane_id": "membrane_3",
+          "kinetic_law": "betse_cav2p2_m2h_regularized@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.16,
+          "initial_gate": [
+            0.35000000000000003,
+            0.58
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_4",
+          "membrane_id": "membrane_0",
+          "kinetic_law": "betse_cav2p3_mh@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.18,
+          "initial_gate": [
+            0.4,
+            0.5399999999999999
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_5",
+          "membrane_id": "membrane_1",
+          "kinetic_law": "betse_cav3p1_mh_source_branch@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.2,
+          "initial_gate": [
+            0.45,
+            0.49999999999999994
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        },
+        {
+          "id": "cav_population_6",
+          "membrane_id": "membrane_2",
+          "kinetic_law": "betse_cav3p3_mh@1",
+          "max_permeability_m_per_s": 1e-09,
+          "abundance": 0.22,
+          "initial_gate": [
+            0.5,
+            0.45999999999999996
+          ],
+          "permeant_ions": [
+            {
+              "species_id": "Ca",
+              "relative_permeability": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    "stores": [
+      {
+        "cell_id": "cell_0",
+        "model": {
+          "id": "er_calcium@1",
+          "law": "ideal_detailed_balance_mass_action@1",
+          "temperature_K": 298.15,
+          "standard_concentration_mM": 1.0,
+          "moieties": [
+            "B",
+            "Ca",
+            "Cl",
+            "K",
+            "Na",
+            "IP3",
+            "IP3_site"
+          ],
+          "species": [
+            {
+              "id": "Ca",
+              "valence": 2,
+              "moieties": {
+                "B": 0,
+                "Ca": 1,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "B",
+              "valence": -2,
+              "moieties": {
+                "B": 1,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "CaB",
+              "valence": 0,
+              "moieties": {
+                "B": 1,
+                "Ca": 1,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": -6.907755278982137
+            },
+            {
+              "id": "Ca2B",
+              "valence": 2,
+              "moieties": {
+                "B": 1,
+                "Ca": 2,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": -11.512925464970229
+            },
+            {
+              "id": "K",
+              "valence": 1,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 1,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "Na",
+              "valence": 1,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 1,
+                "IP3": 0,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "Cl",
+              "valence": -1,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 1,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "IP3",
+              "valence": -3,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 1,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "IP3_buffer",
+              "valence": 0,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 1
+              }
+            },
+            {
+              "id": "IP3_bound",
+              "valence": -3,
+              "standard_mu_RT": -9.210340371976184,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 1,
+                "IP3_site": 1
+              }
+            }
+          ],
+          "compartments": [
+            {
+              "id": "cytosol",
+              "volume_pL": 2.0,
+              "initial_amount_fmol": {
+                "Ca": 0.004,
+                "B": 0.1,
+                "CaB": 0.02,
+                "Ca2B": 0.002,
+                "K": 280.0,
+                "Na": 24.0,
+                "Cl": 20.0,
+                "IP3": 0.0002,
+                "IP3_buffer": 0.002,
+                "IP3_bound": 0.0004
+              }
+            },
+            {
+              "id": "er",
+              "volume_pL": 0.2,
+              "initial_amount_fmol": {
+                "Ca": 0.04,
+                "B": 0.01,
+                "CaB": 0.002,
+                "Ca2B": 0.0002,
+                "K": 28.0,
+                "Na": 2.4000000000000004,
+                "Cl": 2.0,
+                "IP3": 8.000000000000001e-06,
+                "IP3_buffer": 0.0002,
+                "IP3_bound": 4e-05
+              }
+            }
+          ],
+          "reactions": [
+            {
+              "id": "bind_0_first",
+              "compartment": "cytosol",
+              "reactants": {
+                "Ca": 1,
+                "B": 1
+              },
+              "products": {
+                "CaB": 1
+              },
+              "forward_rate_per_s": 1000.0
+            },
+            {
+              "id": "bind_0_second",
+              "compartment": "cytosol",
+              "reactants": {
+                "Ca": 1,
+                "CaB": 1
+              },
+              "products": {
+                "Ca2B": 1
+              },
+              "forward_rate_per_s": 100.0
+            },
+            {
+              "id": "bind_1_first",
+              "compartment": "er",
+              "reactants": {
+                "Ca": 1,
+                "B": 1
+              },
+              "products": {
+                "CaB": 1
+              },
+              "forward_rate_per_s": 1000.0
+            },
+            {
+              "id": "bind_1_second",
+              "compartment": "er",
+              "reactants": {
+                "Ca": 1,
+                "CaB": 1
+              },
+              "products": {
+                "Ca2B": 1
+              },
+              "forward_rate_per_s": 100.0
+            },
+            {
+              "id": "ip3_binding",
+              "compartment": "cytosol",
+              "forward_rate_per_s": 20000.0,
+              "reactants": {
+                "IP3": 1,
+                "IP3_buffer": 1
+              },
+              "products": {
+                "IP3_bound": 1
+              }
+            }
+          ],
+          "membrane": {
+            "id": "er_membrane",
+            "cytosol": "cytosol",
+            "er": "er",
+            "calcium_species": "Ca",
+            "area_m2": 4e-09,
+            "specific_capacitance_F_per_m2": 0.01,
+            "initial_voltage_V": 0.0,
+            "permeability_m_per_s": {
+              "Ca": 1e-08,
+              "B": 0.0,
+              "CaB": 0.0,
+              "Ca2B": 0.0,
+              "K": 1e-07,
+              "Na": 0,
+              "Cl": 0,
+              "IP3": 0.0,
+              "IP3_buffer": 0.0,
+              "IP3_bound": 0.0
+            },
+            "pump": {
+              "law": "betse_1_5_er_calcium_pump_positive@1",
+              "capacity_fmol_per_s": 0.012,
+              "km_ca_mM": 0.001,
+              "km_atp_mM": 0.5,
+              "metabolism": "betse_1_5_maintained_mM_quotient@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            },
+            "release": {
+              "law": "betse_1_5_er_calcium_release@1",
+              "permeability_m_per_s": 1e-07,
+              "activation_mM": 0.001,
+              "activation_n": 2,
+              "inhibition_mM": 0.02,
+              "inhibition_n": 2
+            }
+          }
+        }
+      },
+      {
+        "cell_id": "cell_1",
+        "model": {
+          "id": "er_calcium@1",
+          "law": "ideal_detailed_balance_mass_action@1",
+          "temperature_K": 298.15,
+          "standard_concentration_mM": 1.0,
+          "moieties": [
+            "B",
+            "Ca",
+            "Cl",
+            "K",
+            "Na",
+            "IP3",
+            "IP3_site"
+          ],
+          "species": [
+            {
+              "id": "Ca",
+              "valence": 2,
+              "moieties": {
+                "B": 0,
+                "Ca": 1,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "B",
+              "valence": -2,
+              "moieties": {
+                "B": 1,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "CaB",
+              "valence": 0,
+              "moieties": {
+                "B": 1,
+                "Ca": 1,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": -6.907755278982137
+            },
+            {
+              "id": "Ca2B",
+              "valence": 2,
+              "moieties": {
+                "B": 1,
+                "Ca": 2,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": -11.512925464970229
+            },
+            {
+              "id": "K",
+              "valence": 1,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 1,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              },
+              "standard_mu_RT": 0.0
+            },
+            {
+              "id": "Na",
+              "valence": 1,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 1,
+                "IP3": 0,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "Cl",
+              "valence": -1,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 1,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "IP3",
+              "valence": -3,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 1,
+                "IP3_site": 0
+              }
+            },
+            {
+              "id": "IP3_buffer",
+              "valence": 0,
+              "standard_mu_RT": 0,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 0,
+                "IP3_site": 1
+              }
+            },
+            {
+              "id": "IP3_bound",
+              "valence": -3,
+              "standard_mu_RT": -9.210340371976184,
+              "moieties": {
+                "B": 0,
+                "Ca": 0,
+                "Cl": 0,
+                "K": 0,
+                "Na": 0,
+                "IP3": 1,
+                "IP3_site": 1
+              }
+            }
+          ],
+          "compartments": [
+            {
+              "id": "cytosol",
+              "volume_pL": 3.0,
+              "initial_amount_fmol": {
+                "Ca": 0.006,
+                "B": 0.14999999999999997,
+                "CaB": 0.029999999999999995,
+                "Ca2B": 0.003,
+                "K": 390.0,
+                "Na": 45.0,
+                "Cl": 39.0,
+                "IP3": 0.00039,
+                "IP3_buffer": 0.003,
+                "IP3_bound": 0.0006
+              }
+            },
+            {
+              "id": "er",
+              "volume_pL": 0.29999999999999993,
+              "initial_amount_fmol": {
+                "Ca": 0.05999999999999999,
+                "B": 0.014999999999999998,
+                "CaB": 0.003,
+                "Ca2B": 0.0003,
+                "K": 38.99999999999999,
+                "Na": 4.499999999999999,
+                "Cl": 3.899999999999999,
+                "IP3": 1.1999999999999999e-05,
+                "IP3_buffer": 0.0003,
+                "IP3_bound": 5.9999999999999995e-05
+              }
+            }
+          ],
+          "reactions": [
+            {
+              "id": "bind_0_first",
+              "compartment": "cytosol",
+              "reactants": {
+                "Ca": 1,
+                "B": 1
+              },
+              "products": {
+                "CaB": 1
+              },
+              "forward_rate_per_s": 1000.0
+            },
+            {
+              "id": "bind_0_second",
+              "compartment": "cytosol",
+              "reactants": {
+                "Ca": 1,
+                "CaB": 1
+              },
+              "products": {
+                "Ca2B": 1
+              },
+              "forward_rate_per_s": 100.0
+            },
+            {
+              "id": "bind_1_first",
+              "compartment": "er",
+              "reactants": {
+                "Ca": 1,
+                "B": 1
+              },
+              "products": {
+                "CaB": 1
+              },
+              "forward_rate_per_s": 1000.0
+            },
+            {
+              "id": "bind_1_second",
+              "compartment": "er",
+              "reactants": {
+                "Ca": 1,
+                "CaB": 1
+              },
+              "products": {
+                "Ca2B": 1
+              },
+              "forward_rate_per_s": 100.0
+            },
+            {
+              "id": "ip3_binding",
+              "compartment": "cytosol",
+              "forward_rate_per_s": 20000.0,
+              "reactants": {
+                "IP3": 1,
+                "IP3_buffer": 1
+              },
+              "products": {
+                "IP3_bound": 1
+              }
+            }
+          ],
+          "membrane": {
+            "id": "er_membrane",
+            "cytosol": "cytosol",
+            "er": "er",
+            "calcium_species": "Ca",
+            "area_m2": 5.999999999999999e-09,
+            "specific_capacitance_F_per_m2": 0.01,
+            "initial_voltage_V": 0.0,
+            "permeability_m_per_s": {
+              "Ca": 1e-08,
+              "B": 0.0,
+              "CaB": 0.0,
+              "Ca2B": 0.0,
+              "K": 1e-07,
+              "Na": 0,
+              "Cl": 0,
+              "IP3": 0.0,
+              "IP3_buffer": 0.0,
+              "IP3_bound": 0.0
+            },
+            "pump": {
+              "law": "betse_1_5_er_calcium_pump_positive@1",
+              "capacity_fmol_per_s": 0.018,
+              "km_ca_mM": 0.001,
+              "km_atp_mM": 0.5,
+              "metabolism": "betse_1_5_maintained_mM_quotient@1",
+              "atp_mM": 1.5,
+              "adp_mM": 0.1,
+              "pi_mM": 0.1,
+              "delta_g0_J_per_mol": -37000.0
+            },
+            "release": {
+              "law": "betse_1_5_er_calcium_release@1",
+              "permeability_m_per_s": 1e-07,
+              "activation_mM": 0.001,
+              "activation_n": 2,
+              "inhibition_mM": 0.02,
+              "inhibition_n": 2
+            }
+          }
+        }
+      }
+    ],
+    "plasma_transport": {
+      "calcium_species": "Ca",
+      "sodium_species": "Na",
+      "membranes": [
+        {
+          "membrane_id": "membrane_0",
+          "pump": {
+            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "capacity_fmol_per_s": 0.002,
+            "km_ca_mM": 0.001,
+            "km_atp_mM": 0.5,
+            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "atp_mM": 1.5,
+            "adp_mM": 0.1,
+            "pi_mM": 0.1,
+            "delta_g0_J_per_mol": -37000.0
+          },
+          "exchanger": {
+            "law": "ncx_3na_1ca_symmetric_barrier@1",
+            "capacity_fmol_per_s": 0.002,
+            "km_na_mM": 20.0,
+            "km_ca_mM": 0.001
+          }
+        },
+        {
+          "membrane_id": "membrane_1",
+          "pump": {
+            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "capacity_fmol_per_s": 0.002,
+            "km_ca_mM": 0.001,
+            "km_atp_mM": 0.5,
+            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "atp_mM": 1.5,
+            "adp_mM": 0.1,
+            "pi_mM": 0.1,
+            "delta_g0_J_per_mol": -37000.0
+          },
+          "exchanger": {
+            "law": "ncx_3na_1ca_symmetric_barrier@1",
+            "capacity_fmol_per_s": 0.002,
+            "km_na_mM": 20.0,
+            "km_ca_mM": 0.001
+          }
+        },
+        {
+          "membrane_id": "membrane_2",
+          "pump": {
+            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "capacity_fmol_per_s": 0.0028,
+            "km_ca_mM": 0.001,
+            "km_atp_mM": 0.5,
+            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "atp_mM": 1.5,
+            "adp_mM": 0.1,
+            "pi_mM": 0.1,
+            "delta_g0_J_per_mol": -37000.0
+          },
+          "exchanger": {
+            "law": "ncx_3na_1ca_symmetric_barrier@1",
+            "capacity_fmol_per_s": 0.0028,
+            "km_na_mM": 20.0,
+            "km_ca_mM": 0.001
+          }
+        },
+        {
+          "membrane_id": "membrane_3",
+          "pump": {
+            "law": "betse_1_5_plasma_calcium_pump_positive@1",
+            "capacity_fmol_per_s": 0.0028,
+            "km_ca_mM": 0.001,
+            "km_atp_mM": 0.5,
+            "metabolism": "betse_1_5_maintained_mM_quotient@1",
+            "atp_mM": 1.5,
+            "adp_mM": 0.1,
+            "pi_mM": 0.1,
+            "delta_g0_J_per_mol": -37000.0
+          },
+          "exchanger": {
+            "law": "ncx_3na_1ca_symmetric_barrier@1",
+            "capacity_fmol_per_s": 0.0028,
+            "km_na_mM": 20.0,
+            "km_ca_mM": 0.001
+          }
+        }
+      ]
+    },
+    "calcium_channels": [
+      {
+        "id": "calcium_channel_0",
+        "membrane_id": "membrane_0",
+        "species_id": "Ca",
+        "kinetic_law": "betse_cav1p2_m2h@1",
+        "max_permeability_m_per_s": 2e-06,
+        "abundance": 0.5,
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.7
+        }
+      },
+      {
+        "id": "calcium_channel_1",
+        "membrane_id": "membrane_1",
+        "species_id": "Ca",
+        "kinetic_law": "betse_cav1p2_m2h@1",
+        "max_permeability_m_per_s": 2e-06,
+        "abundance": 0.5,
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.7
+        }
+      },
+      {
+        "id": "calcium_channel_2",
+        "membrane_id": "membrane_2",
+        "species_id": "Ca",
+        "kinetic_law": "betse_cav1p2_m2h@1",
+        "max_permeability_m_per_s": 2e-06,
+        "abundance": 0.6,
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.7
+        }
+      },
+      {
+        "id": "calcium_channel_3",
+        "membrane_id": "membrane_3",
+        "species_id": "Ca",
+        "kinetic_law": "betse_cav1p2_m2h@1",
+        "max_permeability_m_per_s": 2e-06,
+        "abundance": 0.6,
+        "initial_gate": {
+          "m": 0.2,
+          "h": 0.7
+        }
+      }
+    ],
+    "ip3_release": [
+      {
+        "cell_id": "cell_0",
+        "species_id": "IP3",
+        "law": "betse_1_5_ip3_er_release@1",
+        "activation_mM": 0.00015,
+        "activation_n": 2
+      },
+      {
+        "cell_id": "cell_1",
+        "species_id": "IP3",
+        "law": "betse_1_5_ip3_er_release@1",
+        "activation_mM": 0.00015,
+        "activation_n": 2
+      }
+    ]
+  },
+  "experiment": {
+    "end_time": 0.002,
+    "observation_times": [
+      0.0,
+      0.001,
+      0.002
+    ],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.5
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.75
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      }
+    ],
+    "junction_controls": [
+      {
+        "junction_id": "junction_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.6
+          }
+        ]
+      }
+    ],
+    "channel_controls": [
+      {
+        "channel_id": "channel_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "channel_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "channel_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "channel_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "channel_4",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "sodium_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "sodium_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "hcn_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "hcn_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "hcn_4",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "kv1_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "kv1_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "kv1_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "kv1_4",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "kv1_6",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_4",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_5",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "channel_id": "cav_population_6",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      }
+    ],
+    "pump_controls": [
+      {
+        "pump_id": "pump_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "pump_id": "pump_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "pump_id": "pump_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      },
+      {
+        "pump_id": "pump_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 0.8
+          }
+        ]
+      }
+    ],
+    "store_controls": [
+      {
+        "cell_id": "cell_0",
+        "controls": [
+          {
+            "time": 0,
+            "reactions": {
+              "bind_0_first": 1.0,
+              "bind_0_second": 1.0,
+              "bind_1_first": 1.0,
+              "bind_1_second": 1.0,
+              "ip3_binding": 1.0
+            },
+            "passive": {
+              "Ca": 1.0,
+              "B": 1.0,
+              "CaB": 1.0,
+              "Ca2B": 1.0,
+              "K": 1.0,
+              "Na": 1,
+              "Cl": 1,
+              "IP3": 1.0,
+              "IP3_buffer": 1.0,
+              "IP3_bound": 1.0
+            },
+            "pump": 1.0,
+            "release": 1.0
+          }
+        ]
+      },
+      {
+        "cell_id": "cell_1",
+        "controls": [
+          {
+            "time": 0,
+            "reactions": {
+              "bind_0_first": 1.0,
+              "bind_0_second": 1.0,
+              "bind_1_first": 1.0,
+              "bind_1_second": 1.0,
+              "ip3_binding": 1.0
+            },
+            "passive": {
+              "Ca": 1.0,
+              "B": 1.0,
+              "CaB": 1.0,
+              "Ca2B": 1.0,
+              "K": 1.0,
+              "Na": 1,
+              "Cl": 1,
+              "IP3": 1.0,
+              "IP3_buffer": 1.0,
+              "IP3_bound": 1.0
+            },
+            "pump": 1.0,
+            "release": 1.0
+          }
+        ]
+      }
+    ],
+    "plasma_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "pump": 1.0,
+            "exchanger": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "pump": 1.0,
+            "exchanger": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "pump": 1.0,
+            "exchanger": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "pump": 1.0,
+            "exchanger": 1.0
+          }
+        ]
+      }
+    ],
+    "calcium_channel_controls": [
+      {
+        "channel_id": "calcium_channel_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "channel_id": "calcium_channel_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "channel_id": "calcium_channel_2",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "channel_id": "calcium_channel_3",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      }
+    ]
+  },
+  "execution": {
+    "dt": 1.25e-06,
+    "capacity": 3,
+    "extracellular_capacity": 6,
+    "membrane_capacity": 5,
+    "edge_capacity": 2,
+    "face_capacity": 6,
+    "backend": "gpu",
+    "jit": true,
+    "precision": "float64",
+    "solver": "rk4",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "max_steps": 8192,
+    "max_trace_bytes": 4294967296,
+    "material_balance_atol_fmol": {
+      "Na": 2e-11,
+      "K": 2e-11,
+      "Cl": 2e-11,
+      "Ca": 2e-11
+    },
+    "channel_capacity": 23,
+    "chemical_capacity": 3,
+    "reaction_capacity": 6
+  }
+}

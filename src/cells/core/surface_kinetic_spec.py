@@ -19,12 +19,21 @@ from cells.core.specs import (
     _number,
 )
 from cells.core.voltage_gated_spec import fraction
-from cells.processes import hcn_channels, potassium_channels, sodium_channels, voltage_gates
+from cells.processes import (
+    cav_channels,
+    hcn_channels,
+    kv1_channels,
+    potassium_channels,
+    sodium_channels,
+    voltage_gates,
+)
 
 MODEL_ID = "resolved_tissue@2"
 CHANNEL_MODEL_ID = "resolved_tissue@3"
 SODIUM_MODEL_ID = "resolved_tissue@4"
 HCN_MODEL_ID = "resolved_tissue@5"
+KV1_MODEL_ID = "resolved_tissue@6"
+CAV_MODEL_ID = "resolved_tissue@7"
 
 
 @dataclass(frozen=True)
@@ -79,7 +88,21 @@ class SurfaceHCNModel(SurfaceSodiumModel):
     channels: tuple[ChannelPopulation, ...]
 
 
+@dataclass(frozen=True)
+class SurfaceKv1Model(SurfaceHCNModel):
+    """Shared population catalog including the complete pinned Kv1 family."""
+
+
+@dataclass(frozen=True)
+class SurfaceCavModel(SurfaceKv1Model):
+    """Shared calcium-channel populations with explicit source-law identity."""
+
+
 def model_id(model):
+    if isinstance(model, SurfaceCavModel):
+        return CAV_MODEL_ID
+    if isinstance(model, SurfaceKv1Model):
+        return KV1_MODEL_ID
     if isinstance(model, SurfaceHCNModel):
         return HCN_MODEL_ID
     if isinstance(model, SurfaceSodiumModel):
@@ -222,21 +245,38 @@ def parse(data):
             _fields(c, {"time", "availability"}, "junction control change")
             fraction(c["availability"], "junction availability")
     channels = m.pop("channels", None)
-    hcn = m["id"] == HCN_MODEL_ID
-    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID)
-    catalog = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+    cav = m["id"] == CAV_MODEL_ID
+    kv1 = m["id"] in (KV1_MODEL_ID, CAV_MODEL_ID)
+    hcn = m["id"] in (HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
+    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
+    catalog = m["id"] in (
+        CHANNEL_MODEL_ID,
+        SODIUM_MODEL_ID,
+        HCN_MODEL_ID,
+        KV1_MODEL_ID,
+        CAV_MODEL_ID,
+    )
+    shared_process = cav_channels if cav else kv1_channels if kv1 else hcn_channels
     laws = (
-        hcn_channels.LAW_CODES
+        shared_process.LAW_CODES
         if hcn
         else sodium_channels.LAW_CODES
         if sodium
         else potassium_channels.LAW_CODES
     )
     if (
-        m["id"] not in (MODEL_ID, CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+        m["id"]
+        not in (
+            MODEL_ID,
+            CHANNEL_MODEL_ID,
+            SODIUM_MODEL_ID,
+            HCN_MODEL_ID,
+            KV1_MODEL_ID,
+            CAV_MODEL_ID,
+        )
         or type(channels) is not list
     ):
-        raise ConfigError("Require resolved_tissue@2, @3, @4 or @5 with an explicit channel list")
+        raise ConfigError("Require resolved_tissue@2–@7 with an explicit channel list")
     for p in m["membranes"]:
         _fields(p, set(base.Membrane.__dataclass_fields__) | {"law", "pump"}, "membrane")
     gates = []
@@ -300,12 +340,12 @@ def parse(data):
                 weight = _number(ion["relative_permeability"], "relative permeability")
                 if species not in ids or m0.valence[
                     ids.index(species)
-                ] != hcn_channels.SPECIES_VALENCE.get(species):
+                ] != shared_process.SPECIES_VALENCE.get(species):
                     raise ConfigError("Shared-gate ion requires its law's species and valence")
                 ions.append(PermeantIon(species, weight))
             if (
                 tuple((ion.species_id, ion.relative_permeability) for ion in ions)
-                != hcn_channels.LAW_PERMEABILITIES[law]
+                != shared_process.LAW_PERMEABILITIES[law]
             ):
                 raise ConfigError(
                     "Shared-gate ions must exactly match the named law's "
@@ -401,7 +441,11 @@ def parse(data):
     ps = schedules(controls["pump"], "pump", [p.pump.id for p in membranes if p.pump is not None])
     js = schedules(original, "junction", [p.id for p in junctions])
     model = (
-        SurfaceHCNModel
+        SurfaceCavModel
+        if cav
+        else SurfaceKv1Model
+        if kv1
+        else SurfaceHCNModel
         if hcn
         else SurfaceSodiumModel
         if sodium

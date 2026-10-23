@@ -7,6 +7,7 @@ use the declared gauged_dense_kirchhoff@1 algorithm.
 
 from typing import NamedTuple
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -19,6 +20,29 @@ def scatter(values, target, indices, *, xp=jnp):
         np.add.at(result, (Ellipsis, *indices), values)
         return result
     return result.at[..., *indices].add(values)
+
+
+def ordered_scatter(values, target, indices, *, xp=jnp):
+    """Accumulate routes in declared order, without conflicting GPU updates.
+
+    Each index array describes the last (route) axis of ``values``. Leading
+    species/observation/world axes remain independent. A loop iteration writes
+    one destination per leading entry, so ``set`` needs no atomic addition.
+    This matches NumPy's sequential ``add.at`` for repeated destinations while
+    keeping storage proportional to the input and output arrays.
+    """
+    if xp is np:
+        return scatter(values, target, indices, xp=np)
+    result = xp.zeros_like(target)
+    if not values.shape[-1]:
+        return result
+
+    def add(i, accumulated):
+        key = (Ellipsis, *(index[i] for index in indices))
+        value = accumulated[key] + values[..., i]
+        return accumulated.at[key].set(value, unique_indices=True)
+
+    return jax.lax.fori_loop(0, values.shape[-1], add, result)
 
 
 def logmean(left, right, *, xp=jnp):

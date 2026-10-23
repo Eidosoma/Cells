@@ -28,6 +28,8 @@ from cells.core.specs import (
 from cells.core.surface_calcium_spec import Change as SurfaceCalciumChange
 from cells.core.surface_calcium_spec import ionic_spec as surface_ionic_spec
 from cells.core.surface_kinetic_spec import Change as SurfaceKineticChange
+from cells.core.surface_repair_spec import SurfaceRepairModel
+from cells.core.surface_repair_spec import base_spec as repair_base_spec
 from cells.core.surface_tissue_spec import SurfaceChange
 
 
@@ -63,6 +65,11 @@ SurfaceCalciumControl = NamedTuple(
             "calcium_channel",
         )
     ],
+)
+
+SurfaceRepairControl = NamedTuple(
+    "SurfaceRepairControl",
+    [(k, object) for k in (*SurfaceCalciumControl._fields, "injury", "resealing")],
 )
 
 
@@ -109,6 +116,16 @@ def event_index(spec, time):
 
 def control_values(spec, times):
     changes = spec.experiment.changes
+    if isinstance(spec.model, SurfaceRepairModel):
+        original = control_values(repair_base_spec(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        routes = []
+        for name in ("injury", "resealing"):
+            values = np.asarray([getattr(p, name) for p in changes], dtype=float)[indices]
+            array = np.zeros((len(times), spec.execution.membrane_capacity))
+            array[:, : values.shape[-1]] = values
+            routes.append(array)
+        return SurfaceRepairControl(*original, *routes)
     if isinstance(spec.model, BetseSpatialModel):
         control_type = (
             BetseJunctionControl

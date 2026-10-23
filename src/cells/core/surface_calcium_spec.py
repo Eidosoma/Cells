@@ -26,6 +26,8 @@ MODEL_ID = "resolved_calcium@1"
 CHANNEL_MODEL_ID = "resolved_calcium@2"
 SODIUM_MODEL_ID = "resolved_calcium@3"
 HCN_MODEL_ID = "resolved_calcium@4"
+KV1_MODEL_ID = "resolved_calcium@5"
+CAV_MODEL_ID = "resolved_calcium@6"
 
 
 @dataclass(frozen=True)
@@ -55,7 +57,21 @@ class SurfaceCalciumHCNModel(SurfaceCalciumSodiumModel):
     channels: tuple[ionic.ChannelPopulation, ...]
 
 
+@dataclass(frozen=True)
+class SurfaceCalciumKv1Model(SurfaceCalciumHCNModel):
+    """Owned calcium stores and the complete pinned Kv1 population catalog."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumCavModel(SurfaceCalciumKv1Model):
+    """Shared calcium-channel populations with one owned free cytosol/ER."""
+
+
 def model_id(model):
+    if isinstance(model, SurfaceCalciumCavModel):
+        return CAV_MODEL_ID
+    if isinstance(model, SurfaceCalciumKv1Model):
+        return KV1_MODEL_ID
     if isinstance(model, SurfaceCalciumHCNModel):
         return HCN_MODEL_ID
     if isinstance(model, SurfaceCalciumSodiumModel):
@@ -114,7 +130,11 @@ def ionic_spec(spec):
     return SimulationSpec(
         project(
             spec.model,
-            ionic.SurfaceHCNModel
+            ionic.SurfaceCavModel
+            if isinstance(spec.model, SurfaceCalciumCavModel)
+            else ionic.SurfaceKv1Model
+            if isinstance(spec.model, SurfaceCalciumKv1Model)
+            else ionic.SurfaceHCNModel
             if isinstance(spec.model, SurfaceCalciumHCNModel)
             else ionic.SurfaceSodiumModel
             if isinstance(spec.model, SurfaceCalciumSodiumModel)
@@ -206,11 +226,17 @@ def parse(data):
     x = _fields(
         data["execution"], set(Execution.__dataclass_fields__), "resolved calcium execution"
     )
-    hcn = m["id"] == HCN_MODEL_ID
-    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID)
-    mixed = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+    cav = m["id"] == CAV_MODEL_ID
+    kv1 = m["id"] in (KV1_MODEL_ID, CAV_MODEL_ID)
+    hcn = m["id"] in (HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
+    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
+    mixed = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
     ionic_id = (
-        ionic.HCN_MODEL_ID
+        ionic.CAV_MODEL_ID
+        if cav
+        else ionic.KV1_MODEL_ID
+        if kv1
+        else ionic.HCN_MODEL_ID
         if hcn
         else ionic.SODIUM_MODEL_ID
         if sodium
@@ -219,7 +245,15 @@ def parse(data):
         else ionic.MODEL_ID
     )
     if (
-        m["id"] not in (MODEL_ID, CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID)
+        m["id"]
+        not in (
+            MODEL_ID,
+            CHANNEL_MODEL_ID,
+            SODIUM_MODEL_ID,
+            HCN_MODEL_ID,
+            KV1_MODEL_ID,
+            CAV_MODEL_ID,
+        )
         or not isinstance(m["ionic"], dict)
         or m["ionic"].get("id") != ionic_id
     ):
@@ -442,7 +476,11 @@ def parse(data):
         )
     spec = SimulationSpec(
         (
-            SurfaceCalciumHCNModel
+            SurfaceCalciumCavModel
+            if cav
+            else SurfaceCalciumKv1Model
+            if kv1
+            else SurfaceCalciumHCNModel
             if hcn
             else SurfaceCalciumSodiumModel
             if sodium

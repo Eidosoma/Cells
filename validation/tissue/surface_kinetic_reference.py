@@ -11,7 +11,13 @@ from scipy.integrate import solve_ivp
 
 from validation.betse.pump_contact.pump_reference import oracle as pump_oracle
 from validation.betse.voltage_gate_audit.gate_independent import kinetics as channel_kinetics
-from validation.tissue import hcn_reference, kir_reference, sodium_reference
+from validation.tissue import (
+    cav_reference,
+    hcn_reference,
+    kir_reference,
+    kv1_reference,
+    sodium_reference,
+)
 from validation.tissue import surface_dynamics_reference as base
 from validation.tissue import surface_field_reference as electrical
 from validation.tissue import surface_reference as transport
@@ -24,7 +30,11 @@ def bind(raw):
     c = base.bind(raw)
     m = raw["model"]
     nc, ne, nm = len(m["channels"]), len(m["junctions"]), len(m["membranes"])
-    transfer = (len(m["species"]), nc) if m["id"] == "resolved_tissue@5" else (nc,)
+    transfer = (
+        (len(m["species"]), nc)
+        if m["id"] in ("resolved_tissue@5", "resolved_tissue@6", "resolved_tissue@7")
+        else (nc,)
+    )
     c["shapes"].update(
         channel_gate=(2, nc),
         channel_transferred=transfer,
@@ -96,6 +106,14 @@ def evaluate(c, state, time, *, inside_amount=None, channel_levels=None):
                 family = int(ch["kinetic_law"][9])
                 target, tau = hcn_reference.kinetics(float(voltage), family)
                 opened = float(hcn_reference.opening(d["channel_gate"][:, k]))
+            elif ch["kinetic_law"] in kv1_reference.LAWS:
+                family = kv1_reference.LAWS[ch["kinetic_law"]]
+                target, tau = kv1_reference.kinetics(float(voltage), family)
+                opened = float(kv1_reference.opening(d["channel_gate"][:, k], family))
+            elif ch["kinetic_law"] in cav_reference.LAWS:
+                family = cav_reference.LAWS[ch["kinetic_law"]]
+                target, tau = cav_reference.kinetics(float(voltage), family)
+                opened = float(cav_reference.opening(d["channel_gate"][:, k], family))
             else:
                 raise ValueError("Unsupported independent channel law")
             result["channel_gate"][:, k] = [
@@ -121,7 +139,11 @@ def evaluate(c, state, time, *, inside_amount=None, channel_levels=None):
                 * (1.0 if channel_levels is None else channel_levels[i]),
                 {"F": F, "R": R},
             )
-            index = (s, k) if m["id"] == "resolved_tissue@5" else k
+            index = (
+                (s, k)
+                if m["id"] in ("resolved_tissue@5", "resolved_tissue@6", "resolved_tissue@7")
+                else k
+            )
             result["channel_transferred"][index] = flux
             result["channel_dissipated_energy_pJ"][index] = (
                 1e-3 * flux * rates["membrane_delta_mu_J_mol"][s, j]

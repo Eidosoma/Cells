@@ -52,6 +52,8 @@ def aggregate(rows):
                 "resolved_calcium@2",
                 "resolved_calcium@3",
                 "resolved_calcium@4",
+                "resolved_calcium@5",
+                "resolved_calcium@6",
             )
             and "ip3" not in row
         ):
@@ -61,6 +63,8 @@ def aggregate(rows):
             "resolved_calcium@2",
             "resolved_calcium@3",
             "resolved_calcium@4",
+            "resolved_calcium@5",
+            "resolved_calcium@6",
         ):
             if "calcium" not in row:
                 raise ValueError("Resolved cluster requires calcium readouts")
@@ -114,7 +118,11 @@ def aggregate(rows):
                 if name in target and np.asarray(target[name]).shape != value.shape:
                     raise ValueError("Cluster calcium channel shape changed")
                 target[name] = (np.asarray(target.get(name, np.zeros_like(value))) + value).tolist()
-        if row["physical_model"] == "resolved_calcium@4":
+        if row["physical_model"] in (
+            "resolved_calcium@4",
+            "resolved_calcium@5",
+            "resolved_calcium@6",
+        ):
             for key in (
                 "channel_transfer_axes",
                 "channel_species_ids",

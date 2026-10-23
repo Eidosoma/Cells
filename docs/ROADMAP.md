@@ -78,6 +78,51 @@ programme; their proposed scope should not be confused with a fully audited list
 of mechanisms exercised by the pinned BETSE runtime. Jupiter execution remains a
 separate qualification track.
 
+## Injury and repair
+
+Start with **localized membrane injury and prescribed resealing on a fixed
+tissue geometry**. This adds a reusable physiological component before tackling
+cell removal, regrowth or adaptive recovery. Existing channel/junction schedules
+support reversible block/release, and complete checkpoints preserve their
+histories. They do not yet represent membrane damage, tissue cutting or growth;
+ordinary checkpoint branches deliberately reject a changed model/topology.
+
+The first component, `resolved_repair@1`, gives each membrane patch an explicit
+damage fraction between zero and one. A timed injury hazard opens the intact
+fraction; a declared first-order closure law lets damage decay. Damage controls
+additional Na/K permeability through the existing GHK transport and free-ion
+ownership machinery. Its [equations and boundaries](TISSUE_RETURN_CURRENT.md#fixed-geometry-injury-and-prescribed-resealing)
+are specified; current validation status stays in [Progress](../PROGRESS.md).
+The initial law is a **phenomenological closure model**, with explicit units and
+parameters, not an experimentally fitted repair mechanism. Structural repair
+costs and finite metabolic support remain to be modelled. No concentration,
+voltage, calcium store or intrinsic channel gate is reset to manufacture recovery.
+
+Use the analytic damage-decay solution and independently integrated coupled
+ion/field equations as references. Require uninjured, sham, held-injury
+(closure disabled) and resealing controls; event-boundary restart, complete
+ledgers, timestep convergence and CPU/L4 agreement. Recovery means returning
+to a declared functional range for a specified hold time, after a reference has
+demonstrated that function. Retain failures and separate passive relaxation,
+prescribed resealing and any later autonomous adaptation. The parked channel-
+compensation search is a separate research branch.
+
+Keep patch/world identities and damage arrays explicit, with masked device
+updates and complete checkpoint state. Independent worlds can use the existing
+GPU execution path; moving a single interacting tissue across devices requires
+the additional topology/communication work in the
+[multiscale architecture](MULTISCALE_EXECUTION_ARCHITECTURE.md).
+
+| Reference or later capability | What it contributes | Boundary of the first component |
+| --- | --- | --- |
+| Pinned BETSE [cutting configuration](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/data/yaml/sim_config.yaml) and [tissue handler](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/tissue/tishandler.py) | Removal of selected cells, rebuilt contacts/profiles and changed wound-boundary permeability | A separate topology-changing extension; fixed-geometry resealing does not establish cutting parity |
+| Pinned BETSE [wound-channel file](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/wound_channel.py) | A decaying wound factor and proposed Na/K route | Source inspection finds mismatched base/subclass method signatures and commented-out transport. It needs a runnable capture before any native correspondence claim; the proposed Cells closure law is independently specified |
+| Actual tissue cutting and replacement | Changed material ownership, exterior geometry, capacitance, contacts and field components | Requires explicit accounting for removed material/charge/energy, stable entity IDs and conservative state remapping |
+| Regrowth and autonomous repair | New tissue and sustained restoration | Requires growth/mechanics, water/volume, regulatory feedback and energetic/material supply, followed by suitable experimental calibration |
+
+Source inspection and implementation evidence are recorded separately in
+[Progress](../PROGRESS.md); neither establishes biological regeneration.
+
 ## BITSEY replication
 
 The first target is the Forms programme's corrected-clock BITSEY experiments,

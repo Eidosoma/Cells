@@ -282,7 +282,9 @@ def parse(data):
         jit=x["jit"],
         backend=x["backend"],
         max_steps=_integer(x["max_steps"], "max_steps", maximum=1000000),
-        max_trace_bytes=_integer(x["max_trace_bytes"], "max_trace_bytes", maximum=2**31),
+        # Explicit resource allowance, also used by larger composed models.
+        # The runner still checks estimated storage before allocating a trace.
+        max_trace_bytes=_integer(x["max_trace_bytes"], "max_trace_bytes", maximum=2**53 - 1),
     )
     spec = SimulationSpec(model, ReactionExperiment(end, times, tuple(changes)), execution)
     from cells.models.compartment_reactions import check_definition

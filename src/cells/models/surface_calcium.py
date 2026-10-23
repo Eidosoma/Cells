@@ -17,8 +17,10 @@ from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.core.surface_calcium_spec import (
     MODEL_ID,  # noqa: F401 - public model identity used by ordinary execution
+    SurfaceCalciumCavModel,
     SurfaceCalciumChannelModel,
     SurfaceCalciumHCNModel,
+    SurfaceCalciumKv1Model,
     SurfaceCalciumSodiumModel,
     ionic_spec,
     model_id,
@@ -94,6 +96,12 @@ HCN_LAYOUT_TYPE = NamedTuple(
         for k in (*SODIUM_LAYOUT_TYPE._fields, "channel_relative_permeability")
         if k != "channel_species"
     ],
+)
+KV1_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumKv1Layout", [(k, object) for k in HCN_LAYOUT_TYPE._fields]
+)
+CAV_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumCavLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields]
 )
 HCN_STATE_AXES = STATE_AXES | {
     "channel_transferred": ["species", "channel_slot"],
@@ -220,7 +228,11 @@ def initial_values(spec):
         ip3_power=np.array([b.activation_n for b in m.ip3_release], dtype=float),
     )
     layout_type = (
-        HCN_LAYOUT_TYPE
+        CAV_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumCavModel)
+        else KV1_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumKv1Model)
+        else HCN_LAYOUT_TYPE
         if isinstance(m, SurfaceCalciumHCNModel)
         else SODIUM_LAYOUT_TYPE
         if isinstance(m, SurfaceCalciumSodiumModel)
@@ -247,8 +259,15 @@ def ionic_state(state):
 
 
 def ionic_layout(state, p, *, xp=jnp):
-    if isinstance(p, HCN_LAYOUT_TYPE):
-        return kinetic.HCN_OWNED_VIEW_TYPE(
+    if isinstance(p, (HCN_LAYOUT_TYPE, KV1_LAYOUT_TYPE, CAV_LAYOUT_TYPE)):
+        view = (
+            kinetic.CAV_OWNED_VIEW_TYPE
+            if isinstance(p, CAV_LAYOUT_TYPE)
+            else kinetic.KV1_OWNED_VIEW_TYPE
+            if isinstance(p, KV1_LAYOUT_TYPE)
+            else kinetic.HCN_OWNED_VIEW_TYPE
+        )
+        return view(
             **{k: getattr(p, k) for k in kinetic.HCN_LAYOUT_TYPE._fields},
             cytosol_amount=cytosol_amount(state, p, xp=xp),
         )
@@ -575,6 +594,8 @@ def check_steps(spec, steps, controls):
     # cannot be used to validate this composition's observation clock.
     kinetic.check_steps(spec, steps, controls)
     h = np.max(steps, initial=0)
+    if isinstance(spec.model, SurfaceCalciumCavModel) and h > 1.25e-6 + 1e-16:
+        raise ConfigError("Resolved owned calcium with shared CaV requires RK4 steps <= 1.25 us")
     if isinstance(spec.model, SurfaceCalciumSodiumModel) and h > 2.5e-6 + 1e-16:
         raise ConfigError("Resolved sodium/potassium/calcium requires RK4 steps <= 2.5 us")
     if isinstance(spec.model, SurfaceCalciumChannelModel) and h > 25e-6 + 1e-16:
@@ -694,7 +715,11 @@ def check_values(state, spec):
             diagnostics["max_" + k + "_error"] = max(
                 diagnostics.get("max_" + k + "_error", 0), float(np.max(np.abs(value), initial=0))
             )
-    state_axes = HCN_STATE_AXES if isinstance(p, HCN_LAYOUT_TYPE) else STATE_AXES
+    state_axes = (
+        HCN_STATE_AXES
+        if isinstance(p, (HCN_LAYOUT_TYPE, KV1_LAYOUT_TYPE, CAV_LAYOUT_TYPE))
+        else STATE_AXES
+    )
     for k, axes in state_axes.items():
         if k.endswith("_dissipated_energy_pJ"):
             value = getattr(state, k)

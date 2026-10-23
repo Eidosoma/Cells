@@ -32,17 +32,22 @@ from cells.core.specs import (
     VoltageGatedSpec,
 )
 from cells.core.surface_calcium_spec import (
+    SurfaceCalciumCavModel,
     SurfaceCalciumChannelModel,
     SurfaceCalciumHCNModel,
+    SurfaceCalciumKv1Model,
     SurfaceCalciumModel,
     SurfaceCalciumSodiumModel,
 )
 from cells.core.surface_kinetic_spec import (
+    SurfaceCavModel,
     SurfaceChannelModel,
     SurfaceHCNModel,
     SurfaceKineticModel,
+    SurfaceKv1Model,
     SurfaceSodiumModel,
 )
+from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.core.tissue_spec import TissueModel
@@ -70,12 +75,17 @@ from cells.models import (
     spatial_extracellular,
     spatial_junction,
     surface_calcium,
+    surface_calcium_cav,
     surface_calcium_channels,
     surface_calcium_hcn,
+    surface_calcium_kv1,
     surface_calcium_sodium,
+    surface_cav,
     surface_channels,
     surface_hcn,
     surface_kinetic,
+    surface_kv1,
+    surface_repair,
     surface_sodium,
     surface_tissue,
     tissue,
@@ -89,6 +99,12 @@ def get_model(spec):
         return betse_junction
     if isinstance(spec, BetseSpatialModel):
         return betse_spatial
+    if isinstance(spec, SurfaceRepairModel):
+        return surface_repair
+    if isinstance(spec, SurfaceCalciumCavModel):
+        return surface_calcium_cav
+    if isinstance(spec, SurfaceCalciumKv1Model):
+        return surface_calcium_kv1
     if isinstance(spec, SurfaceCalciumHCNModel):
         return surface_calcium_hcn
     if isinstance(spec, SurfaceCalciumSodiumModel):
@@ -97,6 +113,10 @@ def get_model(spec):
         return surface_calcium_channels
     if isinstance(spec, SurfaceCalciumModel):
         return surface_calcium
+    if isinstance(spec, SurfaceCavModel):
+        return surface_cav
+    if isinstance(spec, SurfaceKv1Model):
+        return surface_kv1
     if isinstance(spec, SurfaceHCNModel):
         return surface_hcn
     if isinstance(spec, SurfaceSodiumModel):
