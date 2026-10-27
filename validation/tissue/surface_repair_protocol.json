@@ -1,0 +1,192 @@
+{
+  "kind": "resolved_injury_resealing_assembly_qualification@1",
+  "scope": "resolved_repair@1 on fixed two-cell/four-membrane-patch/five-exterior geometry, composing the qualified shared CaV/Kv1/NaV/HCN catalog and owned free cytosol/ER with prescribed patch injury and resealing. Four synthetic 50-us controls and a 50-us one-way assembly composition. This panel qualifies numerical integration, ownership, conservation, event timing, complete replay and CPU/L4 agreement in this bounded regime; it does not establish biological repair, longer-term recovery or full BETSE cutting equivalence.",
+  "tests": [
+    "tests/unit/test_ordered_scatter.py",
+    "tests/unit/test_surface_reference.py",
+    "tests/unit/test_specs.py",
+    "tests/unit/test_batch_identity.py",
+    "tests/unit/test_surface_repair.py",
+    "tests/unit/test_assembly_controls.py",
+    "tests/unit/test_assembly_repair.py",
+    "tests/unit/test_surface_repair_full.py"
+  ],
+  "expected_cpu_skips": 2,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_repair_full.py::test_cpu_gpu_complete_histories_and_observations",
+    "tests/unit/test_assembly_repair.py::test_cpu_gpu_complete_assembly_state_and_observations"
+  ],
+  "required_evidence": [
+    "resolved-repair-damage-law",
+    "resolved-repair-sham",
+    "resolved-repair-owned-rates-compact",
+    "resolved-repair-owned-rates-padded",
+    "resolved-repair-world-planning",
+    "resolved-repair-uninjured-trajectory",
+    "resolved-repair-sham-trajectory",
+    "resolved-repair-held-trajectory",
+    "resolved-repair-resealing-trajectory",
+    "resolved-repair-compiled-replay",
+    "resolved-repair-compiled-guard",
+    "assembly-repair-readouts",
+    "assembly-repair-rates",
+    "assembly-repair-planning",
+    "assembly-repair-reference",
+    "assembly-repair-replay",
+    "resolved-repair-full-grids",
+    "resolved-repair-full-uninjured",
+    "resolved-repair-full-sham",
+    "resolved-repair-full-held",
+    "resolved-repair-full-resealing",
+    "resolved-repair-full-reference-uninjured",
+    "resolved-repair-full-reference-sham",
+    "resolved-repair-full-reference-held",
+    "resolved-repair-full-reference-resealing",
+    "resolved-repair-full-reference-accuracy-held",
+    "resolved-repair-full-reference-accuracy-resealing",
+    "resolved-repair-full-refinement-held",
+    "resolved-repair-full-refinement-resealing",
+    "resolved-repair-full-restart",
+    "resolved-repair-full-worlds"
+  ],
+  "required_gpu_evidence": [
+    "resolved-repair-full-cpu-gpu",
+    "assembly-repair-cpu-gpu"
+  ],
+  "test_groups": [
+    {
+      "name": "shared-regressions",
+      "tests": [
+        "tests/unit/test_ordered_scatter.py",
+        "tests/unit/test_surface_reference.py",
+        "tests/unit/test_specs.py",
+        "tests/unit/test_batch_identity.py"
+      ]
+    },
+    {
+      "name": "repair-contracts",
+      "tests": [
+        "tests/unit/test_surface_repair.py::test_identity_schedules_padding_and_resource_guards",
+        "tests/unit/test_surface_repair.py::test_bad_definitions_reject",
+        "tests/unit/test_surface_repair.py::test_jitted_damage_law_vmap_and_analytic_refinement",
+        "tests/unit/test_surface_repair.py::test_sham_reduces_to_prior_without_state_resets",
+        "tests/unit/test_surface_repair.py::test_local_transport_ownership_independent_rates_and_controls",
+        "tests/unit/test_surface_repair.py::test_invalid_damage_control_and_ledger_refused",
+        "tests/unit/test_surface_repair.py::test_independent_worlds_and_gpu_definition_planning",
+        "tests/unit/test_surface_repair.py::test_short_numpy_trajectory_reference_and_damage_controls",
+        "tests/unit/test_assembly_controls.py",
+        "tests/unit/test_assembly_repair.py::test_schedule_roundtrip_boundaries_and_all_control_owners",
+        "tests/unit/test_assembly_repair.py::test_schedule_splits_enter_working_and_step_budgets",
+        "tests/unit/test_assembly_repair.py::test_initial_owned_readouts_and_ensemble_aggregation",
+        "tests/unit/test_assembly_repair.py::test_injury_and_assembly_rates_have_independent_owners",
+        "tests/unit/test_assembly_repair.py::test_complete_initial_checkpoint_clock_identity_and_segment_guards",
+        "tests/unit/test_assembly_repair.py::test_one_to_sixteen_gpu_planning_preserves_injury_schedules_and_worlds",
+        "tests/unit/test_surface_repair_full.py::test_declared_grids_and_existing_gpu_examples"
+      ]
+    },
+    {
+      "name": "repair-trajectories",
+      "tests": [
+        "tests/unit/test_surface_repair_full.py::test_reference_accuracy",
+        "tests/unit/test_surface_repair_full.py::test_complete_trajectories_independent_reference_and_damage",
+        "tests/unit/test_surface_repair_full.py::test_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "repair-refinement-held",
+      "tests": [
+        "tests/unit/test_surface_repair_full.py::test_coupled_timestep_refinement[held]"
+      ]
+    },
+    {
+      "name": "repair-refinement-resealing",
+      "tests": [
+        "tests/unit/test_surface_repair_full.py::test_coupled_timestep_refinement[resealing]"
+      ]
+    },
+    {
+      "name": "repair-replay",
+      "tests": [
+        "tests/unit/test_surface_repair.py::test_compiled_smoke_checkpoint_and_event_branch",
+        "tests/unit/test_surface_repair.py::test_compiled_guard_retains_complete_state",
+        "tests/unit/test_surface_repair_full.py::test_complete_identical_repeat_fresh_process_and_windows",
+        "tests/unit/test_surface_repair_full.py::test_independent_worlds_reordering_and_saved_windows"
+      ]
+    },
+    {
+      "name": "assembly-repair",
+      "tests": [
+        "tests/unit/test_assembly_repair.py::test_compiled_joint_trajectory_matches_independent_event_reference",
+        "tests/unit/test_assembly_repair.py::test_compiled_complete_restart_windows_and_world_partition",
+        "tests/unit/test_assembly_repair.py::test_cpu_gpu_complete_assembly_state_and_observations"
+      ]
+    }
+  ],
+  "checks": [
+    "Four controls share the exact 5.3-us onset and 15.3-us offset grid: zero hazard, sham input, injury with closure disabled, and prescribed resealing. Only the first patch is injured. They are mechanism/numerical controls, not independent biological cases.",
+    "Analytic damage evolution, independent compact/padded stage rates, explicit Na/K free-ion ownership and field energy accounting. Injury remains independent of ordinary membrane/channel availability. Damage, opened/closed integrals, transferred ions and route heat are complete state; no clipping, resets or structural repair energy is assumed.",
+    "Complete 39-field JAX histories and physical observations for all four 50-us controls, compared with independent segmented DOP853 and full-node electrical roots. Complete arrays, definitions and signed reference errors are saved before numerical assertions. Both held/resealing references must remain stable after fourfold tightening of all ODE tolerances.",
+    "Held and resealing trajectories refine at 0.625/0.3125/0.15625 us with unchanged physical error budgets and the existing absolute roundoff floors. Each refinement input, history and signed error remains preserved, including failures.",
+    "Same-input repeat, no-injury/sham equivalence, exact off-grid event checkpoint, fresh-process complete-history continuation, terminal restart and changed execution windows. A future closure-disabled branch keeps the complete boundary state and leaves damage open; it does not erase chemical/electrical/gate history.",
+    "Independent worlds use different resealing controls and preserve their full scalar histories under batching, reversed ordering and saved independent-clock window continuation. These are routing/reproducibility checks, not biological replication.",
+    "Pure JAX union clock stops at both stochastic per-cell assembly events and scheduled interventions. Exact ties use preceding controls for the completed segment. Earlier constant-input behavior, checkpoint clock identity, resource budgets, stable world/patch/species ownership and invalid trial/state rejection are checked.",
+    "Assembly-regulated injury checks independently reconstruct protein events, compare all five registered ionic observations to the independent reference, and test complete checkpoint/window/partition replay. Assembly affects only declared shared channel populations; injury and closure remain externally prescribed.",
+    "CPU/L4 comparisons cover all ordinary histories and observations plus complete coupled states at the five assembly observation boundaries. Coulombs, amperes and volts retain distinct tolerances; controls/times and discrete event state remain exact. Required CPU reports are authenticated before GPU comparison by the existing runner.",
+    "Reference calculations and NumPy contract checks remain host work during both backend phases. Compiled rollout and guard checks assert device placement. One-to-sixteen-GPU planning preserves world identities but does not execute a remote GPU.",
+    "Run related tests serially in fresh bounded process groups. Preserve failed runs, strict test identity/count checks, all required evidence, frozen source, runtime identity and both GPU busy/SM-active metrics. No automatic retry or follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "rate_rtol": 3e-10,
+    "rate_atol": 3e-12,
+    "rate_charge_atol_A": 3e-23,
+    "analytic_damage_atol": 2e-09,
+    "damage_ledger_atol": 9.094947017729282e-13,
+    "independent_dop853_rtol": 1e-12,
+    "independent_dop853_atol": 1e-16,
+    "independent_charge_atol_C": 5e-32,
+    "reference_tightening_factor": 0.25,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_steps_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11
+  },
+  "resources": {
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 6442450944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 15032385536,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 4294967296,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "Manufactured concentrations, charge backgrounds, injury rates (20000/s), closure rates (4000/s) and fast assembly events; no fitted tissue repair times or experimental calibration.",
+    "Finite closed exterior and fixed geometry; only Na/K injury permeability. No instantaneous cut, cell deletion/replacement, remeshing, volume/flow, mechanics or regrowth.",
+    "Prescribed closure has no finite metabolic or structural material cost. Declining damage is not demonstrated physiological recovery or autonomous repair.",
+    "One-way neutral protein assembly controls shared channel availability; no assembly-driven closure or ionic/energy feedback into protein pools.",
+    "Ordinary injury observations include intervention boundaries; coupled observations/checkpoints remain on nominal ionic ticks while internal steps split exactly at interventions and assembly events.",
+    "Numerical/source correspondence within 50 us, not long-duration validation, full native BETSE tissue behavior, BITSEY reproduction or biological regeneration. The channel-compensation research remains parked.",
+    "Independent-world planning supports one to sixteen GPUs; actual multi-GPU and distributed single-tissue execution remain unqualified. GPU counters include compilation and host checks, with no warmed throughput gate."
+  ],
+  "prerequisite": {
+    "family": "resolved_calcium@6",
+    "qualification": "/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/completion.json",
+    "completion_sha256": "569cbd87c3e72b75b1cbe9b9bc9ed8d5f033834e5bbc66635eecbadc615855a4",
+    "scope": "Completed CaV calibration prerequisite; new injury/assembly composition is checked afresh on CPU and L4"
+  },
+  "automatic_followup": false
+}

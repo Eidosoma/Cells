@@ -18,7 +18,7 @@ from pathlib import Path
 
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import digest, write_json
-from validation.assembly.component_process import run_bounded
+from validation.assembly.component_process import memory_metric, run_bounded
 
 ROOT = Path(__file__).resolve().parents[2]
 DRIVER = "validation/assembly/qualify_cell.py"
@@ -246,18 +246,176 @@ def publish_component_evidence(output, directory, backend):
     return evidence
 
 
-def launch_component(output, protocol_path, dcgm_root):
+def component_cpu_inputs(output, directory, group, cpu_hashes):
+    """Give a GPU group its CPU counterpart's references, with shared fallbacks.
+
+    Different groups may legitimately save different input representations under
+    the same filename. Keep the report and arrays from the matching CPU group,
+    rather than substituting the first globally published copy. Copy the view so
+    a consumer cannot mutate another group's inputs through a writable link.
+    """
+    selected = {}
+    for root in (output / "evidence/cpu", output / "groups/cpu" / group / "evidence/cpu"):
+        for source in sorted(root.rglob("*")):
+            if source.is_symlink():
+                raise ValueError("Component CPU inputs must not contain symbolic links")
+            if source.is_file():
+                relative = str(source.relative_to(output))
+                selected[str(source.relative_to(root))] = {
+                    "source": relative,
+                    "sha256": cpu_hashes[relative],
+                }
+    for name, item in selected.items():
+        if name.endswith(".json"):
+            arrays = selected.get(name[:-5] + ".npz")
+            if arrays and Path(arrays["source"]).parent != Path(item["source"]).parent:
+                raise ValueError("Component CPU reference report/arrays belong to different groups")
+    target = directory / "evidence/cpu"
+    if target.is_symlink() or not target.resolve().is_relative_to(output.resolve()):
+        raise ValueError("Component CPU input view must be a local directory")
+    target.mkdir()
+    binding = {"group": group, "selection": "matching_cpu_group_then_shared", "files": selected}
+    for name, item in selected.items():
+        source = output / item["source"]
+        if digest(source) != item["sha256"]:
+            raise ValueError("Component CPU evidence changed before reference selection")
+        destination = target / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
+    write_json(directory / "cpu-inputs.json", binding)
+    verify_component_cpu_inputs(output, directory, binding)
+    return binding
+
+
+def verify_component_cpu_inputs(output, directory, binding):
+    """Authenticate the selected JSON/array pairs and their original CPU sources."""
+    target = directory / "evidence/cpu"
+    if target.is_symlink() or not target.resolve().is_relative_to(output.resolve()):
+        raise ValueError("Component CPU input view must be a local directory")
+    if json.loads((directory / "cpu-inputs.json").read_text()) != binding:
+        raise ValueError("Component CPU input binding changed")
+    present = set()
+    for path in target.rglob("*"):
+        if path.is_symlink():
+            raise ValueError("Component CPU input view contains symbolic links")
+        if path.is_file():
+            present.add(str(path.relative_to(target)))
+    if present != set(binding["files"]):
+        raise ValueError("Component CPU input view has missing or unexpected files")
+    for name, item in binding["files"].items():
+        source, copied = output / item["source"], target / name
+        if (
+            not source.resolve().is_relative_to(output.resolve())
+            or not copied.resolve().is_relative_to(target.resolve())
+            or digest(source) != item["sha256"]
+            or digest(copied) != item["sha256"]
+        ):
+            raise ValueError("Component CPU input source or copied reference changed")
+
+
+def component_cache_environment(protocol):
+    """An optional frozen worker policy; leave other protocols' environment alone."""
+    resources = protocol["resources"]
+    if "persistent_compilation_cache" not in resources:
+        return {}
+    enabled = resources["persistent_compilation_cache"]
+    if type(enabled) is not bool:
+        raise ValueError("Component persistent_compilation_cache must be a boolean")
+    return {"JAX_ENABLE_COMPILATION_CACHE": str(enabled).lower()}
+
+
+def component_gpu_environment(protocol):
+    """Opt in to fixed GPU kernel selection and deterministic operation lowering."""
+    resources = protocol["resources"]
+    if "gpu_execution_policy" not in resources:
+        return {}
+    if resources["gpu_execution_policy"] != "deterministic":
+        raise ValueError("Unknown component GPU execution policy")
+    return {"XLA_FLAGS": ("--xla_gpu_exclude_nondeterministic_ops=true --xla_gpu_autotune_level=0")}
+
+
+def component_allocator_environment(protocol):
+    """Limit arena count and retained free memory without changing numerics.
+
+    https://sourceware.org/glibc/manual/latest/html_node/Malloc-Tunable-Parameters.html
+    """
+    resources = protocol["resources"]
+    if "host_allocator_policy" not in resources:
+        return {}
+    if resources["host_allocator_policy"] != "glibc_two_arenas_128k":
+        raise ValueError("Unknown component host allocator policy")
+    if os.environ.get("LD_PRELOAD"):
+        raise ValueError("Component glibc allocator policy cannot use LD_PRELOAD")
+    tunables = {
+        "glibc.malloc.arena_max": "2",
+        "glibc.malloc.mmap_threshold": "131072",
+        "glibc.malloc.trim_threshold": "131072",
+    }
+    for setting in os.environ.get("GLIBC_TUNABLES", "").split(":"):
+        key, _, value = setting.partition("=")
+        if key in tunables and value != tunables[key]:
+            raise ValueError("Component glibc allocator policy conflicts with GLIBC_TUNABLES")
+    return {
+        "MALLOC_ARENA_MAX": "2",
+        "MALLOC_MMAP_THRESHOLD_": "131072",
+        "MALLOC_TRIM_THRESHOLD_": "131072",
+    }
+
+
+def component_stderr_notices(text, protocol):
+    """Recognize only registered XLA compile-progress blocks; retain the raw log."""
+    allowed = protocol.get("allowed_stderr_notices", [])
+    if allowed not in ([], ["xla_slow_compilation"]):
+        raise ValueError("Unknown component stderr notice policy")
+    if not text:
+        return 0
+    if not allowed:
+        raise ValueError("Unexpected component stderr")
+    duration = r"(?:[0-9]+(?:\.[0-9]+)?(?:h|m|s|ms|us|ns))+"
+    message = (
+        "Very slow compile? If you want to file a bug, run with envvar "
+        "XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results."
+    )
+    pattern = (
+        r"(?m)^E[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+ +[0-9]+ "
+        r"slow_operation_alarm\.cc:[0-9]+\] "
+        rf"(?:The operation took {duration}\n)?\n"
+        r"\*{32}\n\[Compiling module [A-Za-z0-9_.-]+ for (?:CPU|GPU|CUDA)\] "
+        + re.escape(message)
+        + r"\n\*{32}(?:\n|$)"
+    )
+    remaining, count = re.subn(pattern, "", text)
+    if remaining.strip() or not count:
+        raise ValueError("Unexpected component stderr")
+    return count
+
+
+def launch_component(output, protocol_path, dcgm_root, *, parent=None):
     """Use the same frozen-source CPU/L4 runner for a new numerical component."""
     from cells.ensemble.telemetry import devices
+    from validation.assembly import component_recovery
     from validation.ensemble.qualification_metrics import registration
 
     protocol = json.loads(protocol_path.read_text())
+    component_recovery.validate_replay_timeout(protocol)
+    component_cache_environment(protocol)
+    component_gpu_environment(protocol)
+    component_allocator_environment(protocol)
+    component_stderr_notices("", protocol)
+    memory_metric(protocol["resources"].get("process_tree_memory_metric", "rss"))
+    recovery = component_recovery.parent_binding(parent) if parent is not None else None
+    test_adjustments = {}
+    if recovery:
+        component_recovery.protocol_change(
+            json.loads((parent / "component-protocol.json").read_text()), protocol
+        )
+    source_input = Path(recovery["path"]) / "source" if recovery else ROOT
     limits = protocol["resources"]
     if protocol.get("automatic_followup") is not False or not protocol["tests"]:
         raise ValueError("Component protocol must name its tests and prohibit automatic followup")
     for name in protocol["tests"]:
-        path = (ROOT / name).resolve()
-        if not path.is_relative_to(ROOT) or not path.is_file():
+        path = (source_input / name).resolve()
+        if not path.is_relative_to(source_input) or not path.is_file():
             raise ValueError("Component tests must be real repository files")
     workspace = Path("/mnt/workspaces/Cells")
     available = next(
@@ -275,19 +433,32 @@ def launch_component(output, protocol_path, dcgm_root):
     ):
         raise ValueError("Component qualification disk reserve")
     gpu = devices("0", 1)[0]
+    if recovery and gpu != recovery["gpu"]:
+        raise ValueError("Component recovery requires the registered GPU")
     subprocess.run(["sudo", "-n", "true"], check=True, timeout=10)
     settings = registration(dcgm_root, gpu["uuid"], limits["max_wall_seconds"] + 120)
     output = output_path(output)
     output.mkdir(parents=True)
     source = output / "source"
     for folder in ("src", "tests", "validation", "configs"):
-        for path in sorted((ROOT / folder).rglob("*")):
+        for path in sorted((source_input / folder).rglob("*")):
             if path.is_file() and path.suffix in (".py", ".json", ".toml", ".txt"):
-                target = source / path.relative_to(ROOT)
+                target = source / path.relative_to(source_input)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
     for name in ("pyproject.toml", "requirements-lock.txt"):
-        shutil.copyfile(ROOT / name, source / name)
+        shutil.copyfile(source_input / name, source / name)
+    if recovery:
+        for name in component_recovery.CONTROLLERS:
+            shutil.copyfile(ROOT / name, source / name)
+        replacements, test_adjustments = component_recovery.replay_timeout_adjustment(
+            source_input, json.loads((parent / "component-protocol.json").read_text()), protocol
+        )
+        for name, changed in replacements.items():
+            if (ROOT / name).read_bytes() != changed.encode("utf-8"):
+                raise ValueError("Recovery checkout test differs beyond registered timers")
+            (source / name).write_bytes(changed.encode("utf-8"))
+        component_recovery.copy_groups(output, recovery)
     (output / "cache").mkdir()
     write_json(output / "component-protocol.json", protocol)
     environment = dict(
@@ -337,6 +508,11 @@ def launch_component(output, protocol_path, dcgm_root):
         "max_wall_seconds": limits["max_wall_seconds"],
         "automatic_followup": False,
     }
+    if recovery:
+        record["component_recovery"] = recovery
+        if test_adjustments:
+            record["test_resource_adjustments"] = test_adjustments
+        component_recovery.verify(output, record)
     write_json(output / "registration.json", record)
     cluster_budget(output, protocol)
     with (output / "stdout.log").open("x") as out, (output / "stderr.log").open("x") as err:
@@ -357,12 +533,14 @@ def launch_component(output, protocol_path, dcgm_root):
 
 def component_worker(output, record):
     """Bounded correctness phases; GPU metrics are observations, not speed gates."""
+    from validation.assembly import component_recovery
     from validation.ensemble.qualification_metrics import GpuQualificationMetrics
 
     began = time.monotonic()
     protocol = record["component_protocol"]
     observer = None
     active = {}
+    recovery = record.get("component_recovery")
     try:
         if (
             files(output / "source") != record["sources_sha256"]
@@ -370,14 +548,25 @@ def component_worker(output, record):
             or json.loads((output / "component-protocol.json").read_text()) != protocol
         ):
             raise ValueError("Component qualification frozen input changed")
+        cache_environment = component_cache_environment(protocol)
+        component_recovery.validate_replay_timeout(protocol)
+        gpu_environment = component_gpu_environment(protocol)
+        allocator_environment = component_allocator_environment(protocol)
+        component_stderr_notices("", protocol)
+        metric = memory_metric(protocol["resources"].get("process_tree_memory_metric", "rss"))
         groups = component_groups(protocol, record["test_nodes"])
         if record.get("test_groups", groups) != groups:
             raise ValueError("Component registered test groups changed")
+        if recovery:
+            component_recovery.verify(output, record)
         os.sched_setaffinity(0, record["cpu_affinity"])
         write_json(output / "started.json", {"pid": os.getpid(), "utc": utc()})
         rows, metrics = {}, None
         group_results = {}
         peak, tree_peak = 0, 0
+        memory_groups = {}
+        cpu_input_bindings = {}
+        cpu_hashes = {}
         for backend in ("cpu", "gpu"):
             cluster_budget(output, protocol)
             active = {"phase": backend}
@@ -407,6 +596,33 @@ def component_worker(output, record):
                 OPENBLAS_NUM_THREADS="1",
                 MKL_NUM_THREADS="1",
             )
+            environment.update(cache_environment)
+            environment.update(allocator_environment)
+            if backend == "gpu":
+                environment.update(gpu_environment)
+            runtime_probe = "import json; from cells.assembly.io import runtime; result=runtime(); "
+            if cache_environment:
+                runtime_probe += (
+                    "import jax; result['qualification_jax_flags'] = "
+                    "{'enable_compilation_cache': bool(jax.config.jax_enable_compilation_cache)}; "
+                )
+            if backend == "gpu" and gpu_environment:
+                runtime_probe += (
+                    "import os, jax; result['qualification_gpu_execution'] = "
+                    "{'policy': 'deterministic', 'xla_flags': os.environ.get('XLA_FLAGS'), "
+                    "'device_platforms': [d.platform for d in jax.devices('gpu')]}; "
+                )
+            if allocator_environment:
+                runtime_probe += (
+                    "import os, platform; result['qualification_host_allocator'] = "
+                    "{'libc': list(platform.libc_ver()), "
+                    "'MALLOC_ARENA_MAX': os.environ.get('MALLOC_ARENA_MAX'), "
+                    "'MALLOC_MMAP_THRESHOLD_': os.environ.get('MALLOC_MMAP_THRESHOLD_'), "
+                    "'MALLOC_TRIM_THRESHOLD_': os.environ.get('MALLOC_TRIM_THRESHOLD_'), "
+                    "'GLIBC_TUNABLES': os.environ.get('GLIBC_TUNABLES'), "
+                    "'LD_PRELOAD': os.environ.get('LD_PRELOAD')}; "
+                )
+            runtime_probe += "print(json.dumps(result))"
             python = str(Path(record["workspace"]) / f"venv-{backend}/bin/python")
             if backend == "gpu":
                 observer = GpuQualificationMetrics(output / "gpu-metrics", record["gpu_metrics"])
@@ -417,14 +633,56 @@ def component_worker(output, record):
                         python,
                         "-B",
                         "-c",
-                        "import json; from cells.assembly.io import runtime; "
-                        "print(json.dumps(runtime()))",
+                        runtime_probe,
                     ],
                     env=environment,
                     text=True,
                     timeout=30,
                 )
-                write_json(output / f"{backend}.runtime.json", json.loads(runtime))
+                runtime = json.loads(runtime)
+                if allocator_environment:
+                    allocator = runtime.pop("qualification_host_allocator", None)
+                    expected = {
+                        key: environment.get(key)
+                        for key in (*allocator_environment, "GLIBC_TUNABLES", "LD_PRELOAD")
+                    }
+                    if (
+                        not isinstance(allocator, dict)
+                        or {key: allocator.get(key) for key in expected} != expected
+                        or not isinstance(allocator.get("libc"), list)
+                        or len(allocator["libc"]) != 2
+                        or allocator["libc"][0] != "glibc"
+                        or not allocator["libc"][1]
+                    ):
+                        raise ValueError("Component runtime host allocator policy differs")
+                    # Keep the numerical runtime comparison exact. Allocator
+                    # provenance is separate; reused groups keep old receipts.
+                    write_json(
+                        output / f"{backend}.host-allocator.json",
+                        allocator
+                        | {
+                            "policy": protocol["resources"]["host_allocator_policy"],
+                            "scope": (
+                                "Current worker environment; reused groups retain parent receipts"
+                            ),
+                        },
+                    )
+                if cache_environment and runtime.get("qualification_jax_flags") != {
+                    "enable_compilation_cache": protocol["resources"][
+                        "persistent_compilation_cache"
+                    ]
+                }:
+                    raise ValueError("Component runtime compilation-cache policy differs")
+                if backend == "gpu" and gpu_environment:
+                    if runtime.get("qualification_gpu_execution") != {
+                        "policy": "deterministic",
+                        "xla_flags": gpu_environment["XLA_FLAGS"],
+                        "device_platforms": ["gpu"],
+                    }:
+                        raise ValueError("Component runtime GPU execution policy differs")
+                if recovery and runtime != recovery["runtime"][backend]:
+                    raise ValueError("Component recovery runtime changed: " + backend)
+                write_json(output / f"{backend}.runtime.json", runtime)
                 cases = []
                 group_results[backend] = {}
                 with (
@@ -435,16 +693,21 @@ def component_worker(output, record):
                         name = group["name"]
                         active = {"phase": backend, "group": name}
                         directory = output / "groups" / backend / name
-                        directory.mkdir(parents=True)
+                        reused = recovery and name in recovery["groups"][backend]
+                        if not reused:
+                            directory.mkdir(parents=True)
                         evidence = directory / "evidence"
-                        evidence.mkdir()
-                        # References and CPU/GPU comparisons read the completed
-                        # CPU phase. New outputs stay local to this fresh group.
-                        if backend == "gpu":
-                            (evidence / "cpu").symlink_to(output / "evidence" / "cpu")
+                        if not reused:
+                            evidence.mkdir()
+                        # Local references come from the corresponding CPU group;
+                        # cross-group histories use the published-evidence path.
+                        if backend == "gpu" and not reused:
+                            cpu_input_bindings[name] = component_cpu_inputs(
+                                output, directory, name, cpu_hashes
+                            )
                         write_json(
                             output / "status.json",
-                            {"status": "running", **active, "utc": utc()},
+                            {"status": "running", **active, "reused": bool(reused), "utc": utc()},
                             replace=True,
                         )
                         command = [
@@ -466,17 +729,32 @@ def component_worker(output, record):
                                 raise TimeoutError(
                                     "Component qualification wall allowance exhausted"
                                 )
-                            resources = run_bounded(
-                                command,
-                                directory=directory,
-                                cwd=source,
-                                env=environment | {"CELLS_COMPONENT_EVIDENCE": str(evidence)},
-                                timeout=remaining,
-                                max_rss_bytes=protocol["resources"]["max_worker_rss_bytes"],
-                                min_available_bytes=protocol["resources"].get(
-                                    "min_available_host_memory_bytes", 4 * 1024**3
-                                ),
-                            )
+                            if reused:
+                                resources = json.loads((directory / "qualified.json").read_text())[
+                                    "resources"
+                                ]
+                            else:
+                                resources = run_bounded(
+                                    command,
+                                    directory=directory,
+                                    cwd=source,
+                                    env=environment
+                                    | {
+                                        "CELLS_COMPONENT_EVIDENCE": str(evidence),
+                                        "CELLS_COMPONENT_PUBLISHED_EVIDENCE": str(
+                                            output / "evidence"
+                                        ),
+                                    },
+                                    timeout=remaining,
+                                    max_rss_bytes=protocol["resources"]["max_worker_rss_bytes"],
+                                    min_available_bytes=protocol["resources"].get(
+                                        "min_available_host_memory_bytes", 4 * 1024**3
+                                    ),
+                                    process_tree_memory_metric=metric,
+                                    sample_interval=protocol["resources"].get(
+                                        "resource_sample_seconds", 0.25
+                                    ),
+                                )
                         finally:
                             for stream, filename in ((out, "stdout.log"), (err, "stderr.log")):
                                 path = directory / filename
@@ -496,25 +774,43 @@ def component_worker(output, record):
                         row, group_cases = component_suite(
                             directory / "tests.xml", group["test_nodes"], expected
                         )
-                        if (directory / "stderr.log").stat().st_size:
-                            raise ValueError("Unexpected component stderr")
+                        if backend == "gpu" and not reused:
+                            verify_component_cpu_inputs(output, directory, cpu_input_bindings[name])
+                        compile_notices = component_stderr_notices(
+                            (directory / "stderr.log").read_text(), protocol
+                        )
                         cases.extend(group_cases)
                         peak = max(peak, resources["observed_process_high_water_bytes"])
                         tree_peak = max(tree_peak, resources["sampled_peak_process_tree_rss_bytes"])
+                        memory_groups[f"{backend}/{name}"] = {
+                            "metric": resources.get("process_tree_memory_metric", "rss"),
+                            "sampled_peak_charged_memory_bytes": resources.get(
+                                "sampled_peak_charged_memory_bytes",
+                                resources["sampled_peak_process_tree_rss_bytes"],
+                            ),
+                            "reused": bool(reused),
+                        }
                         group_results[backend][name] = row
-                        write_json(
-                            directory / "qualified.json",
-                            {
-                                "status": "passed",
-                                "test_nodes": group["test_nodes"],
-                                "suite": row,
-                                "resources": resources,
-                                "evidence_sha256": publish_component_evidence(
-                                    output, directory, backend
-                                ),
-                                "utc": utc(),
-                            },
-                        )
+                        if not reused:
+                            write_json(
+                                directory / "qualified.json",
+                                {
+                                    "status": "passed",
+                                    "test_nodes": group["test_nodes"],
+                                    "suite": row,
+                                    "resources": resources,
+                                    "slow_compilation_notices": compile_notices,
+                                    **(
+                                        {"cpu_inputs_sha256": digest(directory / "cpu-inputs.json")}
+                                        if backend == "gpu"
+                                        else {}
+                                    ),
+                                    "evidence_sha256": publish_component_evidence(
+                                        output, directory, backend
+                                    ),
+                                    "utc": utc(),
+                                },
+                            )
                         cluster_budget(output, protocol)
                 # Preserve the historical aggregate XML, while keeping original
                 # per-process XML and receipts available for partial failures.
@@ -554,13 +850,21 @@ def component_worker(output, record):
             if backend == "cpu":
                 cpu_hashes = {
                     str(p.relative_to(output)): digest(p)
-                    for p in (output / "evidence" / "cpu").rglob("*")
+                    for root in [
+                        output / "evidence/cpu",
+                        *[output / "groups/cpu" / g["name"] / "evidence/cpu" for g in groups],
+                    ]
+                    for p in root.rglob("*")
                     if p.is_file()
                 }
         if files(source) != record["sources_sha256"]:
             raise ValueError("Component source changed during execution")
         if any(digest(output / name) != expected for name, expected in cpu_hashes.items()):
             raise ValueError("Component CPU evidence changed during GPU comparison")
+        for name, binding in cpu_input_bindings.items():
+            verify_component_cpu_inputs(output, output / "groups/gpu" / name, binding)
+        if recovery:
+            component_recovery.verify(output, record)
         result = {
             "status": "completed",
             "scope": protocol["scope"],
@@ -571,12 +875,33 @@ def component_worker(output, record):
             "gpu_phase_gpu_hours": metrics["whole_job"]["gpu_busy"]["seconds"] / 3600,
             "peak_child_rss_bytes": peak,
             "sampled_peak_process_tree_rss_bytes": tree_peak,
+            "process_tree_memory_by_group": memory_groups,
             "elapsed_seconds": time.monotonic() - began,
             "registration_sha256": digest(output / "registration.json"),
             "finished_utc": utc(),
             "automatic_followup": False,
             "artifact_and_cache_bytes": cluster_budget(output, protocol),
         }
+        if recovery:
+            policy_change = component_recovery.protocol_change(
+                json.loads((Path(recovery["path"]) / "component-protocol.json").read_text()),
+                protocol,
+            )
+            result["recovery"] = {
+                "parent": recovery["path"],
+                "reused_groups": recovery["groups"],
+                "executed_groups": {"cpu": [], "gpu": recovery["pending_gpu_groups"]},
+                "gpu_metrics_scope": (
+                    "This recovery's GPU interval only; parent telemetry is separate"
+                ),
+                "parent_gpu_metrics_sha256": recovery["parent_files_sha256"][
+                    "gpu-metrics/result.json"
+                ],
+                "scientific_sources_and_protocol_unchanged": policy_change is None,
+                "scientific_sources_unchanged": True,
+                "resource_policy_change": policy_change,
+                "test_resource_adjustments": record.get("test_resource_adjustments", {}),
+            }
         write_json(output / "result.json", result)
         evidence_paths = list((output / "evidence").rglob("*"))
         for backend in ("cpu", "gpu"):
@@ -584,6 +909,8 @@ def component_worker(output, record):
                 directory = output / "groups" / backend / group["name"]
                 evidence_paths += [p for p in directory.iterdir() if p.is_file()]
                 evidence_paths += list((directory / "evidence" / backend).rglob("*"))
+                if backend == "gpu" and (directory / "cpu-inputs.json").exists():
+                    evidence_paths += list((directory / "evidence/cpu").rglob("*"))
         evidence_paths += [
             output / name
             for name in (
@@ -596,6 +923,8 @@ def component_worker(output, record):
                 "gpu.stderr.log",
                 "cpu.runtime.json",
                 "gpu.runtime.json",
+                "cpu.host-allocator.json",
+                "gpu.host-allocator.json",
                 "gpu-metrics/result.json",
             )
         ]
@@ -1572,6 +1901,11 @@ def main():
         help="Bounded new-component CPU/L4 checks using the existing frozen-source runner",
     )
     parser.add_argument(
+        "--component-parent",
+        type=Path,
+        help="Reuse authenticated complete groups from an original component GPU resource stop",
+    )
+    parser.add_argument(
         "--dcgm-root", type=Path, default=Path("/mnt/workspaces/Cells/tools/dcgm-4.7.0")
     )
     parser.add_argument("--gpu-after", type=Path)
@@ -1623,12 +1957,17 @@ def main():
         print(
             json.dumps(
                 launch_component(
-                    output, args.component_protocol.resolve(), args.dcgm_root.resolve()
+                    output,
+                    args.component_protocol.resolve(),
+                    args.dcgm_root.resolve(),
+                    parent=args.component_parent.resolve() if args.component_parent else None,
                 ),
                 indent=2,
             )
         )
         return
+    if args.component_parent:
+        parser.error("--component-parent requires --component-protocol")
     if args.chemistry_case != "reactions" and not args.chemistry:
         parser.error("--chemistry-case er/spatial/plasma/gated/ip3 requires --chemistry")
     if args.cpu_baseline and (not args.chemistry or args.chemistry_case not in CPU_REUSE_CASES):

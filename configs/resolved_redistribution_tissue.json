@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "resolved_redistribution@1",
+    "temperature_K": 298.15,
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      }
+    ],
+    "cells": [
+      {
+        "id": "cell",
+        "volume_pL": 2.0,
+        "initial_amount_fmol": {
+          "Na": 30.0,
+          "K": 260.0,
+          "Cl": 290.0
+        },
+        "initial_charge_C": -8.5e-14,
+        "fixed_charge_equivalent_fmol": -0.0008809629207822847
+      }
+    ],
+    "extracellular": [
+      {
+        "id": "finite",
+        "volume_pL": 4.0,
+        "initial_amount_fmol": {
+          "Na": 520.0,
+          "K": 32.0,
+          "Cl": 552.0
+        },
+        "initial_charge_C": 4e-14,
+        "fixed_charge_equivalent_fmol": 0.00041457078625048693,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      },
+      {
+        "id": "bath",
+        "volume_pL": 5.0,
+        "initial_amount_fmol": {
+          "Na": 725.0,
+          "K": 20.0,
+          "Cl": 745.0
+        },
+        "initial_charge_C": 4.5e-14,
+        "fixed_charge_equivalent_fmol": 0.00046639213453179775,
+        "reservoir": true,
+        "boundary_potential_V": 0.005
+      }
+    ],
+    "membranes": [
+      {
+        "id": "patch_0",
+        "inside": "cell",
+        "outside": "finite",
+        "area_m2": 1e-10,
+        "capacitance_F": 1e-12,
+        "permeability_m_per_s": {
+          "Na": 0,
+          "K": 0,
+          "Cl": 1e-09
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "patch_1",
+        "inside": "cell",
+        "outside": "bath",
+        "area_m2": 1.5e-10,
+        "capacitance_F": 1.5e-12,
+        "permeability_m_per_s": {
+          "Na": 0,
+          "K": 0,
+          "Cl": 1e-09
+        },
+        "law": "constant_field@1"
+      }
+    ],
+    "junctions": [],
+    "faces": [],
+    "closure": {
+      "law": "resolved_capacitor_components_current_continuity@1",
+      "gauge_reference": null
+    },
+    "mobile_populations": [
+      {
+        "id": "sodium_pore",
+        "law": "neutral_mobile_leak@1",
+        "reference_density_fmol_per_um2": 0.0001,
+        "permeability_at_reference_density_m_per_s": {
+          "Na": 1e-08,
+          "K": 0,
+          "Cl": 0
+        },
+        "initial_amount_fmol": {
+          "patch_0": 0.02,
+          "patch_1": 0.005
+        },
+        "diffusivity_um2_per_s": 10000.0
+      },
+      {
+        "id": "potassium_pore",
+        "law": "neutral_mobile_leak@1",
+        "reference_density_fmol_per_um2": 0.0001,
+        "permeability_at_reference_density_m_per_s": {
+          "Na": 0,
+          "K": 2e-08,
+          "Cl": 0
+        },
+        "initial_amount_fmol": {
+          "patch_0": 0.004,
+          "patch_1": 0.016
+        },
+        "diffusivity_um2_per_s": 6000.0
+      }
+    ],
+    "surface_edges": [
+      {
+        "id": "along_cell",
+        "sender": "patch_0",
+        "receiver": "patch_1",
+        "width_um": 2.0,
+        "distance_um": 1.0
+      }
+    ]
+  },
+  "experiment": {
+    "end_time": 0.0004,
+    "observation_times": [
+      0.0,
+      0.0002,
+      0.0004
+    ],
+    "membrane_controls": [
+      {
+        "membrane_id": "patch_0",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "patch_1",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      }
+    ],
+    "junction_controls": []
+  },
+  "execution": {
+    "dt": 1.25e-05,
+    "capacity": 2,
+    "extracellular_capacity": 3,
+    "membrane_capacity": 3,
+    "edge_capacity": 1,
+    "face_capacity": 1,
+    "population_capacity": 3,
+    "surface_edge_capacity": 2,
+    "backend": "gpu",
+    "jit": true,
+    "precision": "float64",
+    "solver": "rk4",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "max_steps": 256,
+    "max_trace_bytes": 134217728,
+    "material_balance_atol_fmol": {
+      "Na": 2e-11,
+      "K": 2e-11,
+      "Cl": 2e-11
+    }
+  }
+}

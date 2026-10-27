@@ -5,6 +5,8 @@ import math
 import numpy as np
 
 from cells.assembly_cluster import MODEL_ID, engine
+from cells.assembly_cluster.mobile_channels import accumulate as accumulate_mobile_channels
+from cells.assembly_cluster.mobile_pumps import accumulate as accumulate_mobile_pumps
 from cells.ensemble.coupled import load_checkpoint, write_checkpoint  # noqa: F401
 
 
@@ -54,6 +56,9 @@ def aggregate(rows):
                 "resolved_calcium@4",
                 "resolved_calcium@5",
                 "resolved_calcium@6",
+                "resolved_repair@1",
+                "resolved_repair@2",
+                "resolved_repair@3",
             )
             and "ip3" not in row
         ):
@@ -65,6 +70,9 @@ def aggregate(rows):
             "resolved_calcium@4",
             "resolved_calcium@5",
             "resolved_calcium@6",
+            "resolved_repair@1",
+            "resolved_repair@2",
+            "resolved_repair@3",
         ):
             if "calcium" not in row:
                 raise ValueError("Resolved cluster requires calcium readouts")
@@ -122,6 +130,9 @@ def aggregate(rows):
             "resolved_calcium@4",
             "resolved_calcium@5",
             "resolved_calcium@6",
+            "resolved_repair@1",
+            "resolved_repair@2",
+            "resolved_repair@3",
         ):
             for key in (
                 "channel_transfer_axes",
@@ -139,6 +150,62 @@ def aggregate(rows):
                 or np.asarray(row["channel_transferred_fmol"]).shape != (row["worlds"], *shape)
             ):
                 raise ValueError("Cluster channel species/transfer axes invalid")
+        if row["physical_model"] in ("resolved_repair@1", "resolved_repair@2", "resolved_repair@3"):
+            if "injury" not in row:
+                raise ValueError("Repair cluster requires injury readouts")
+            injury = row["injury"]
+            metadata = (
+                "law",
+                "patch_ids",
+                "cell_ids",
+                "species_ids",
+                "transfer_axes",
+                "transfer_direction",
+                "structural_repair_energy",
+            )
+            if any(k not in injury for k in metadata):
+                raise ValueError("Incomplete cluster injury ownership")
+            patches, species = injury["patch_ids"], injury["species_ids"]
+            if (
+                patches != row["voltage_owner_ids"]
+                or len(set(patches)) != len(patches)
+                or species != row["calcium"]["species_ids"]
+                or len(injury["cell_ids"]) != len(patches)
+                or not set(injury["cell_ids"]) <= set(row["cell_ids"])
+                or injury["law"] != "prescribed_patch_injury_resealing@1"
+                or injury["transfer_axes"] != ["world", "species", "membrane_patch"]
+                or injury["transfer_direction"] != "outward positive"
+                or injury["structural_repair_energy"] != "not modelled"
+            ):
+                raise ValueError("Invalid cluster injury owners, axes or law")
+            target = arm.setdefault("injury", {k: injury[k] for k in metadata})
+            if any(target[k] != injury[k] for k in metadata):
+                raise ValueError("Cluster injury owners or law changed")
+            for key in (
+                "damage",
+                "damage_opened",
+                "damage_closed",
+                "injury_transferred",
+                "injury_dissipated_energy_pJ",
+            ):
+                shape = (row["worlds"], len(patches))
+                if key.startswith("injury_"):
+                    shape = (row["worlds"], len(species), len(patches))
+                values = np.asarray(injury.get(key), dtype=float)
+                if (
+                    values.shape != shape
+                    or not np.all(np.isfinite(values))
+                    or (key == "damage" and np.any((values < 0) | (values > 1)))
+                    or (key != "injury_transferred" and np.any(values < -(2**-40)))
+                ):
+                    raise ValueError("Invalid cluster injury shape or domain: " + key)
+                total = values.sum(axis=0)
+                name = key + "_sum_over_worlds"
+                target[name] = (np.asarray(target.get(name, np.zeros_like(total))) + total).tolist()
+        if row["physical_model"] in ("resolved_repair@2", "resolved_repair@3"):
+            accumulate_mobile_channels(arm, row)
+        if row["physical_model"] == "resolved_repair@3":
+            accumulate_mobile_pumps(arm, row)
         for key in ("worlds", "committed_events", "execute_seconds"):
             arm[key] += row[key]
         wall = row["wall_end"] - row["wall_start"]

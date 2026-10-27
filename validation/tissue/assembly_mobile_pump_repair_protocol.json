@@ -1,0 +1,172 @@
+{
+  "kind": "assembly_mobile_pump_calcium_repair_qualification@1",
+  "scope": "Cell-owned stochastic assembly modulates existing shared fixed channels and neutral mobile Kv1.5 conduction on resolved_repair@3; mobile 3Na/2K ATPases retain independent controls and respond through shared voltage and ions. Two cells, four membrane patches, five finite exterior regions, two mobile channel and two mobile pump populations (one of each absent on one cell), two keyed independent worlds, 50 us at 298.15 K and 0.625-us production steps. Preserve all 53 ionic fields, finite free cytosol/ER, dedicated calcium channels, PMCA/NCX, prescribed injury/resealing and complete protein/pending-event state. Assembly protein pools and membrane-bound inventories are separate; their material is not exchanged. This qualifies a synthetic one-way coupling hypothesis, not biological repair or native BETSE moving-protein correspondence.",
+  "tests": [
+    "tests/unit/test_assembly_mobile_pump_repair.py",
+    "tests/unit/test_assembly_controls.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_assembly_mobile_pump_repair.py::test_cpu_gpu_complete_joint_histories"
+  ],
+  "required_evidence": [
+    "assembly-mobile-pump-repair-owners",
+    "assembly-mobile-pump-repair-stage-0-0-0.0",
+    "assembly-mobile-pump-repair-stage-0-0-0.2",
+    "assembly-mobile-pump-repair-stage-0-0-1.0",
+    "assembly-mobile-pump-repair-stage-0-1-0.0",
+    "assembly-mobile-pump-repair-stage-0-1-0.2",
+    "assembly-mobile-pump-repair-stage-0-1-1.0",
+    "assembly-mobile-pump-repair-stage-1-0-0.0",
+    "assembly-mobile-pump-repair-stage-1-0-0.2",
+    "assembly-mobile-pump-repair-stage-1-0-1.0",
+    "assembly-mobile-pump-repair-stage-1-1-0.0",
+    "assembly-mobile-pump-repair-stage-1-1-0.2",
+    "assembly-mobile-pump-repair-stage-1-1-1.0",
+    "assembly-mobile-pump-repair-checkpoint-policy",
+    "assembly-mobile-pump-repair-planning",
+    "assembly-mobile-pump-repair-trajectory-mobile",
+    "assembly-mobile-pump-repair-trajectory-release",
+    "assembly-mobile-pump-repair-trajectory-uncoupled",
+    "assembly-mobile-pump-repair-reference-mobile-world-0-r1",
+    "assembly-mobile-pump-repair-reference-mobile-world-1-r1",
+    "assembly-mobile-pump-repair-reference-release-world-0-r1",
+    "assembly-mobile-pump-repair-reference-release-world-1-r1",
+    "assembly-mobile-pump-repair-reference-uncoupled-world-0-r1",
+    "assembly-mobile-pump-repair-reference-uncoupled-world-1-r1",
+    "assembly-mobile-pump-repair-reference-release-world-0-r4",
+    "assembly-mobile-pump-repair-reference-release-world-1-r4",
+    "assembly-mobile-pump-repair-coupling",
+    "assembly-mobile-pump-repair-refinement",
+    "assembly-mobile-pump-repair-replay",
+    "assembly-mobile-pump-repair-worlds",
+    "assembly-mobile-pump-repair-signed-pump-reports",
+    "assembly-mobile-pump-repair-reference-default"
+  ],
+  "required_gpu_evidence": [
+    "assembly-mobile-pump-repair-cpu-gpu"
+  ],
+  "test_groups": [
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_assembly_controls.py",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_roundtrip_full_state_and_readout_ownership",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_independent_rates_and_cell_owned_conduction",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_mobile_reports_reject_lost_ownership_or_invalid_state",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_checkpoint_retains_all_fields_and_rejects_changed_execution_policy",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_pump_reports_reject_invalid_ownership_and_ledgers",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_pump_report_preserves_signed_cycles_and_work",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_independent_reference_open_coupling_reduces_to_standalone"
+      ]
+    },
+    {
+      "name": "planning",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_event_clocks_and_one_to_sixteen_gpu_planning"
+      ]
+    },
+    {
+      "name": "trajectory-mobile",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_compiled_trajectory_against_independent_events_and_all_fields[mobile]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_compiled_trajectory_against_independent_events_and_all_fields[release]"
+      ]
+    },
+    {
+      "name": "trajectory-uncoupled",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_compiled_trajectory_against_independent_events_and_all_fields[uncoupled]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_one_way_coupling_preserves_assembly_and_damage",
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_cpu_gpu_complete_joint_histories"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_compiled_three_grid_refinement_with_unchanged_assembly_events"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_fresh_checkpoint_restart_changed_windows_and_terminal_state"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_assembly_mobile_pump_repair.py::test_independent_world_partition_and_reverse_order"
+      ]
+    }
+  ],
+  "checks": [
+    "Explicit fixed-channel and mobile-patch cell owners; all 53 stage derivatives agree with independent scalar calcium/ER/injury and 80-digit Kv1.5/GHK/ATPase calculations for blocked, unequal and open cell availability, compact/padded and reversed species layouts, and forward/reverse pump drive. Assembly scales channel conduction only; pump controls, gates, damage, protein motion and ion-store owners are preserved. Fully open reference coupling reduces exactly to the standalone evaluator.",
+    "Complete initial checkpoint and report ownership; independently retained channel and pump metadata, per-cell protein conservation, signed pump cycles, 3Na/2K ion transfers, ATP work and nonnegative dissipation. Reject missing/malformed arrays, inconsistent material/ion/work ledgers and changed GPU runtime policy; preserve signed reverse-pump reports. Existing constant-control arithmetic and simultaneous-event ordering remain checked. Six off-grid external control changes are retained. Independent-world IDs and schedules survive plans for one to sixteen GPUs; no remote execution is claimed.",
+    "Three complete compiled CPU/L4 controls: mobile coupling, scheduled mobile block/release with injury, and uncoupled availability. Each uses two independently keyed assembly worlds. Save every complete observation before assertions and reconstruct assembly events with the independent pool reference. Integrate the resulting cell availability segments with independent DOP853/full-node-field equations; compare all ionic fields and availability exposure. GPU references are reused only after exact normalized input and event-history checks.",
+    "Tighten reference tolerances and maximum step fourfold for both scheduled-release worlds. Preserve both references and signed production errors. Compare coupled and uncoupled controls for identical assembly event histories, prescribed damage and neutral pump protein histories; require nonzero synthetic conducted-ion, voltage and pump-cycle responses. Do not interpret these two worlds as independent biological measurements.",
+    "Compiled CPU and GPU three-grid refinement at 0.625/0.3125/0.15625 us for scheduled release, with the same keyed assembly histories and observation times. Compare all grids against tightened independent references; preserve charge, material, energy and state tolerances and roundoff floors.",
+    "Fresh-process checkpoint at 25 us, resume with changed window length, all 53 ionic fields plus complete protein, pending-event, exposure and clock arrays. Retain actual replay arrays before assertions. Terminal continuation and separately executed one-world partitions in reversed order must match saved joint histories bitwise. Each fresh prepare/resume subprocess has an 1800-second limit within the unchanged four-hour job limit.",
+    "Sequential fresh bounded workers for contracts, each trajectory, saved-data comparisons, refinement, fresh-process replay and world partitioning. One compiled world shape per replay worker. Explicit deterministic GPU kernel policy and disabled persistent compilation cache; unchanged 4-GiB charged process-tree/individual memory limits and 8-GiB host reserve. Both GPU-busy and SM-active are descriptive. Preserve failures and all logs, with no automatic retry or follow-up. Use two glibc arenas and fixed 128-KiB mmap/trim thresholds with recorded allocator identity."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "metabolic_work_atol_pJ": 3e-12,
+    "physical_energy_atol_pJ": 1e-09,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27,
+    "availability_exposure_atol_s": 2e-14,
+    "synthetic_voltage_contrast_min_V": 1e-10,
+    "synthetic_mobile_transfer_contrast_min_fmol": 1e-13,
+    "synthetic_pump_cycle_contrast_min_fmol": 1e-16,
+    "pump_report_material_ion_atol_fmol": 2e-13
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2153483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k"
+  },
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ],
+  "scope_exclusions": [
+    "One-way root-cycle channel availability law; no direct assembly modulation of pumps, protein exchange between assembly pools and membrane populations, bidirectional biochemical feedback, finite ATP supply or autonomous recovery.",
+    "Neutral mobile Kv1.5 and 3Na/2K ATPases only on fixed geometry; no charged-cargo field-work feedback, membrane growth, water/flow, cutting, remeshing, active trafficking or wider mobile-channel/pump catalog.",
+    "Phenomenological gating bias/closure and synthetic assembly rates; no measured kinetic fit, experimental regeneration, native BETSE redistribution trajectory or BITSEY lineage reproduction.",
+    "CPU/L4 independent worlds; planning for at most sixteen GPUs is separate from remote GPU execution or partitioning an interacting tissue across devices."
+  ],
+  "automatic_followup": false
+}

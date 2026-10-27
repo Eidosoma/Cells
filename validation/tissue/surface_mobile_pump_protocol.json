@@ -1,0 +1,128 @@
+{
+  "kind": "resolved_neutral_mobile_pump_qualification@1",
+  "scope": "Neutral conserved Na/K ATPase proteins plus neutral always-open populations on fixed resolved ionic surfaces. Two pump populations, unequal patch areas, a finite exterior and a maintained reservoir; independent open/closed two-cell stage checks. Synthetic 0.4-ms accelerated-diffusion controls, maintained ATP/ADP/Pi. This qualifies numerical composition, not physiological rates or native BETSE redistribution correspondence.",
+  "tests": [
+    "tests/unit/test_surface_mobile_pump.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_mobile_pump.py::test_cpu_gpu_complete_histories_and_observations"
+  ],
+  "required_evidence": [
+    "pump-mobile-stage-mobile-compact",
+    "pump-mobile-stage-immobile-compact",
+    "pump-mobile-stage-inhibited-compact",
+    "pump-mobile-stage-empty-compact",
+    "pump-mobile-stage-no_turnover-compact",
+    "pump-mobile-stage-reverse-compact",
+    "pump-mobile-stage-release-compact",
+    "pump-mobile-stage-pump_only-compact",
+    "pump-mobile-stage-uniform-compact",
+    "pump-mobile-stage-mobile-padded",
+    "pump-mobile-stage-immobile-padded",
+    "pump-mobile-stage-inhibited-padded",
+    "pump-mobile-stage-empty-padded",
+    "pump-mobile-stage-no_turnover-padded",
+    "pump-mobile-stage-reverse-padded",
+    "pump-mobile-stage-release-padded",
+    "pump-mobile-stage-pump_only-padded",
+    "pump-mobile-stage-uniform-padded",
+    "pump-mobile-multicell-open",
+    "pump-mobile-multicell-closed",
+    "pump-mobile-clocks",
+    "pump-mobile-compiled-guard",
+    "pump-mobile-trajectory-mobile",
+    "pump-mobile-trajectory-immobile",
+    "pump-mobile-trajectory-inhibited",
+    "pump-mobile-trajectory-reverse",
+    "pump-mobile-trajectory-release",
+    "pump-mobile-coupling",
+    "pump-mobile-refinement-mobile",
+    "pump-mobile-refinement-reverse",
+    "pump-mobile-refinement-release",
+    "pump-mobile-replay",
+    "pump-mobile-worlds"
+  ],
+  "required_gpu_evidence": [
+    "pump-mobile-cpu-gpu"
+  ],
+  "checks": [
+    "Current RK4-stage owned pump amount sets capacity in fmol cycles/s without an extra area factor. Pump motion, passive availability and pump availability are independent. Partial empty preparations and invalid chemistry/controls are rejected without clipping.",
+    "Independent Decimal Na/K ATPase oracle, diffusion and full-node electrical solve; compare all 21 derivatives in compact/padded controls and open/closed two-cell fields with one population absent on one cell and reordered named species.",
+    "Separate pump-protein, ion, capacitor, reservoir, electrode and work ledgers. Nonnegative pumping/mixing dissipation, signed reverse cycles/metabolic work and maintained ATP/ADP/Pi scope. Inhibited/empty/zero-turnover reduction to the prior ionic model.",
+    "Five complete ordinary trajectories and potentials compared with independent segmented DOP853. Analytic two-patch protein diffusion, observable changes in local pumping/voltage, three-timestep NumPy RK4 refinement and independent-reference tightening for forward/reverse/scheduled pumping.",
+    "Pump-only event times enter the ordinary grid. Compiled actual-control/negative-inventory rejection retains the complete input state. All 21 fields survive disk/fresh-process/terminal restart, future pump-inhibition branch, changed windows and reordered independent worlds with distinct clocks.",
+    "CPU/L4 comparison covers complete histories and observations with separate Coulomb, ampere and voltage budgets; compiled operations assert actual backend placement. Reference and NumPy calculations remain on the CPU in both phases.",
+    "Existing frozen-source runner, retained failures, 4-GiB worker and 8-GiB host-reserve guards. Contracts, trajectories, replay and world batches use separate sequential workers. Within replay, checkpoint preparation exits before the ordinary fresh CLI starts; a coordinator compares all saved state fields, layout, clock and complete history after both exit, without retaining compiled simulation graphs. Both children remain inside the existing process-tree guard. GPU busy and SM-active are recorded without a performance gate. No automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "metabolic_work_atol_pJ": 3e-12
+  },
+  "resources": {
+    "max_wall_seconds": 5400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "No transported gating state, charged pump cargo, endogenous tangential electric drift, finite ATP pools or new pump law.",
+    "No calcium/ER/injury/assembly coupling, synthesis/degradation, active trafficking, fluid flow, geometry change or biological rate calibration.",
+    "No native BETSE redistribution trajectory correspondence; its missing helper remains unresolved.",
+    "Independent-world batches only, without distributed single-tissue or measured multi-GPU scaling."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump.py::test_registration_roundtrip_and_ensemble",
+        "tests/unit/test_surface_mobile_pump.py::test_independent_stage_ion_and_energy_owners",
+        "tests/unit/test_surface_mobile_pump.py::test_current_pump_amount_sets_capacity_and_controls_do_not_remove_protein",
+        "tests/unit/test_surface_mobile_pump.py::test_multicell_resolved_field_and_absent_population",
+        "tests/unit/test_surface_mobile_pump.py::test_unequal_patch_areas_do_not_scale_turnover_twice",
+        "tests/unit/test_surface_mobile_pump.py::test_bad_definitions_rejected",
+        "tests/unit/test_surface_mobile_pump.py::test_corrupt_pump_material_cycle_and_energy_ledgers_rejected",
+        "tests/unit/test_surface_mobile_pump.py::test_empty_inhibited_and_no_turnover_reduce_to_prior_ionic_model",
+        "tests/unit/test_surface_mobile_pump.py::test_pump_only_events_enter_ordinary_grid_and_controls",
+        "tests/unit/test_surface_mobile_pump.py::test_compiled_stage_and_invalid_trial_guard"
+      ]
+    },
+    {
+      "name": "trajectories",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump.py::test_complete_trajectory_against_independent_reference",
+        "tests/unit/test_surface_mobile_pump.py::test_analytic_pump_diffusion_and_transport_effect",
+        "tests/unit/test_surface_mobile_pump.py::test_numpy_refinement_and_reference_accuracy",
+        "tests/unit/test_surface_mobile_pump.py::test_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump.py::test_independent_worlds_order_and_identity"
+      ]
+    }
+  ]
+}

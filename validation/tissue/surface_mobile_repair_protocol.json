@@ -1,0 +1,195 @@
+{
+  "kind": "resolved_mobile_calcium_repair_qualification@1",
+  "scope": "Conserved neutral joint-state Kv1.5 populations composed with finite free-cytosol/ER calcium, PMCA/NCX, dedicated CaV routes, representative immobile shared HCN2/CaV2.1 populations and prescribed fixed-geometry Na/K injury/resealing. Two cells, four patches, five finite exterior regions, two mobile populations with one absent on one cell. Synthetic 50-us controls at 298.15 K; 0.625-us production step. Separate lateral protein, gate-transition and conducted-ion ownership; gate bias is phenomenological work and closure has no resolved structural cost. This is numerical composition, not biological recovery or native BETSE redistribution equivalence.",
+  "tests": [
+    "tests/unit/test_surface_mobile_repair.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_mobile_repair.py::test_cpu_gpu_complete_histories_and_observations"
+  ],
+  "required_evidence": [
+    "mobile-repair-stage-mobile-compact",
+    "mobile-repair-stage-immobile-compact",
+    "mobile-repair-stage-blocked-compact",
+    "mobile-repair-stage-empty-compact",
+    "mobile-repair-stage-sham-compact",
+    "mobile-repair-stage-held-compact",
+    "mobile-repair-stage-release-compact",
+    "mobile-repair-stage-channel_only-compact",
+    "mobile-repair-stage-mobile-padded",
+    "mobile-repair-stage-immobile-padded",
+    "mobile-repair-stage-blocked-padded",
+    "mobile-repair-stage-empty-padded",
+    "mobile-repair-stage-sham-padded",
+    "mobile-repair-stage-held-padded",
+    "mobile-repair-stage-release-padded",
+    "mobile-repair-stage-channel_only-padded",
+    "mobile-repair-ownership",
+    "mobile-repair-clocks",
+    "mobile-repair-compiled-guard",
+    "mobile-repair-trajectory-mobile",
+    "mobile-repair-trajectory-immobile",
+    "mobile-repair-trajectory-sham",
+    "mobile-repair-trajectory-held",
+    "mobile-repair-trajectory-release",
+    "mobile-repair-reference-mobile-1",
+    "mobile-repair-reference-immobile-1",
+    "mobile-repair-reference-sham-1",
+    "mobile-repair-reference-held-1",
+    "mobile-repair-reference-release-1",
+    "mobile-repair-coupling",
+    "mobile-repair-reference-mobile-4",
+    "mobile-repair-refinement-mobile",
+    "mobile-repair-grid-mobile-6.25e-07",
+    "mobile-repair-grid-mobile-3.125e-07",
+    "mobile-repair-grid-mobile-1.5625e-07",
+    "mobile-repair-reference-release-4",
+    "mobile-repair-refinement-release",
+    "mobile-repair-grid-release-6.25e-07",
+    "mobile-repair-grid-release-3.125e-07",
+    "mobile-repair-grid-release-1.5625e-07",
+    "mobile-repair-replay",
+    "mobile-repair-worlds"
+  ],
+  "required_gpu_evidence": [
+    "mobile-repair-cpu-gpu"
+  ],
+  "checks": [
+    "Each mobile population conserves four joint Kv1.5 conformations under neutral lateral diffusion and gate transitions. The conducting m1h1 amount sets same-stage K flux using the shared resolved voltage and existing free-cytosol owner. Separate ion-flow and ionic-dissipation ledgers prevent double counting; protein motion never enters the free-ion inventory.",
+    "All 47 stage derivatives and resolved potentials against independently accumulated transport, 80-digit Kv1.5 kinetics, Decimal GHK, scalar calcium/ER/injury and a full-node field solve. Compact/padded mobile, immobile, blocked, empty, sham, held-lesion, scheduled and channel-only controls; one population absent on a whole cell.",
+    "Existing ionic/ER chemistry, capacitor, boundary, ATP, damage and work checks remain unchanged. Separate per-conformation and per-cell protein balances and ideal-mixture plus gate-dissipation minus rate-bias accounting. Rate-bias work is declared phenomenological bookkeeping, not measured gating heat or gating-charge work. Reject invalid states and controls without clipping or reset.",
+    "Independent mobile-channel and injury schedules enter the exact ordinary event grid. Compiled RHS matches NumPy on the requested backend, while negative control/inventory trials preserve the complete input state. Blocking conduction leaves gate transitions and lateral motion active; injury rates remain separately prescribed.",
+    "Five full 50-us trajectories against segmented independent DOP853: mobile/resealing, immobile/resealing, mobile/sham, mobile/held and mobile/scheduled-release. Save complete histories before assertions. Check analytic neutral total-protein diffusion and piecewise damage, plus voltage/calcium/mobile-gate responses across synthetic controls.",
+    "NumPy production RK4 refinement for mobile and scheduled-release cases at 0.625/0.3125/0.15625 us, together with fourfold tightening of independent-reference tolerances/max step. Preserve inputs, complete states and signed reference errors on every grid. Unchanged material, charge, energy and state tolerances.",
+    "All 47 fields survive saved/fresh-process/terminal restart, a future mobile-conduction blocking branch and seven 12-step windows covering the complete 84-step scheduled trajectory. Boundary state is exact; the branch leaves damage and total protein evolution unchanged. Separate preparation, resume/branch, windows and fresh-CLI processes retain all comparisons without retaining different-length compiled graphs. Independent worlds with different clocks retain scalar trajectories and bitwise identity under reordered batches.",
+    "Compare every CPU/L4 history and observation with unit-specific tolerances; assert actual compiled backend placement. GPU checks reuse registered CPU adaptive references only after normalized input/refinement checks. NumPy refinement and reference assertions remain host work.",
+    "Freeze source, protocol, inputs and runtime. Sequential fresh workers for contracts, compiled guard, each trajectory, saved-array comparisons, each refinement, replay and independent worlds. Comparisons and batched-world checks read input-verified, hash-bound scalar histories from completed workers rather than retaining their compiled graphs. Sequential replay phases and fresh CLI avoid overlapping compiled graphs. Keep 4-GiB worker and 8-GiB host-reserve guards, retained failures, GPU-busy and SM-active measurements. No performance gate, automatic retry or follow-up. Disable the persistent disk compilation cache for these bounded CPU/L4 workers after a reproduced CPU cached-executable deserialization memory stop. In-process JIT remains enabled; probe and record the effective cache setting in each backend runtime. Production and other qualification protocols retain their own cache policies. Retain and count only the exact registered XLA slow-compilation notice blocks, including elapsed-time completion blocks. Every other stderr diagnostic, nonzero exit, missing case, failed assertion and resource stop still fails qualification."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "metabolic_work_atol_pJ": 3e-12,
+    "physical_energy_atol_pJ": 1e-09,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic"
+  },
+  "scope_exclusions": [
+    "Mobile Kv1.5 only; existing other channels, Na/K pumps and calcium transporters remain assigned to fixed patches in this composition. Moving pump/leak models are separate validated compositions.",
+    "Fixed geometry, finite closed exterior, neutral cargo and Na/K lesion routes. No bound gating charge, charged-cargo drift feedback, volume/flow, cutting, remeshing or active trafficking.",
+    "Maintained ATP reservoirs, phenomenological gate-rate-bias work and prescribed closure without structural/finite-energy costs. No autonomous repair, demonstrated physiological recovery or biological rate fit.",
+    "No stochastic assembly coupling for this new composition, native BETSE redistribution trajectory correspondence, BITSEY lineage reproduction or wetlab validation.",
+    "Independent-world CPU/L4 execution only. No remote multi-GPU execution or distributed single-tissue scaling."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_registration_roundtrip_and_ensemble",
+        "tests/unit/test_surface_mobile_repair.py::test_independent_complete_stage_and_ownership",
+        "tests/unit/test_surface_mobile_repair.py::test_single_free_ion_owner_controls_and_ionic_energy",
+        "tests/unit/test_surface_mobile_repair.py::test_reduction_to_existing_repair",
+        "tests/unit/test_surface_mobile_repair.py::test_independent_clocks_and_zero_surface_edges",
+        "tests/unit/test_surface_mobile_repair.py::test_corrupt_mobile_material_and_ion_ledgers_rejected",
+        "tests/unit/test_surface_mobile_repair.py::test_invalid_definitions"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_compiled_stage_and_invalid_trial_guard"
+      ]
+    },
+    {
+      "name": "trajectory-mobile",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_trajectory_reference_and_analytic_material[mobile]"
+      ]
+    },
+    {
+      "name": "trajectory-immobile",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_trajectory_reference_and_analytic_material[immobile]"
+      ]
+    },
+    {
+      "name": "trajectory-sham",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_trajectory_reference_and_analytic_material[sham]"
+      ]
+    },
+    {
+      "name": "trajectory-held",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_trajectory_reference_and_analytic_material[held]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_trajectory_reference_and_analytic_material[release]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_bidirectional_voltage_calcium_coupling",
+        "tests/unit/test_surface_mobile_repair.py::test_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "refinement-mobile",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_numpy_trajectory_refinement_and_reference_accuracy[mobile]"
+      ]
+    },
+    {
+      "name": "refinement-release",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_numpy_trajectory_refinement_and_reference_accuracy[release]"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_mobile_repair.py::test_independent_worlds_order_and_identity"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

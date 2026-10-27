@@ -131,6 +131,11 @@ def parse_spec(data):
         "resolved_calcium@5",
         "resolved_calcium@6",
         "resolved_repair@1",
+        "resolved_repair@2",
+        "resolved_repair@3",
+        "resolved_redistribution@1",
+        "resolved_redistribution@2",
+        "resolved_redistribution@3",
     ):
         raise ValueError(
             "Ionic ensembles require a registered finite, spatial or tissue calcium family"

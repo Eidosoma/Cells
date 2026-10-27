@@ -155,8 +155,9 @@ def test_sham_reduces_to_prior_without_state_resets():
     )
 
 
-def test_local_transport_ownership_independent_rates_and_controls():
-    raw = fixtures.definition()
+@pytest.mark.parametrize("padded", [False, True])
+def test_local_transport_ownership_independent_rates_and_controls(padded):
+    raw = fixtures.definition(padded=padded)
     raw["model"]["injury_patches"][0]["initial_damage"] = 0.3
     spec, state, p = initial(raw)
     control = held(spec, 5.3e-6)
@@ -196,7 +197,7 @@ def test_local_transport_ownership_independent_rates_and_controls():
         blocked.derivative.injury_transferred, d.injury_transferred, atol=1e-12, rtol=1e-12
     )
     evidence(
-        "resolved-repair-owned-rates",
+        "resolved-repair-owned-rates-" + ("padded" if padded else "compact"),
         dict(
             status="passed",
             inputs=spec.to_dict(),
@@ -212,7 +213,9 @@ def test_invalid_damage_control_and_ledger_refused():
         ("damage", 0, -0.1),
         ("damage", -1, 0.2),
         ("damage_opened", 0, 1.0),
+        ("damage_closed", 0, 1.0),
         ("injury_transferred", (2, 0), 0.1),
+        ("injury_dissipated_energy_pJ", (0, 0), -1.0),
     ):
         invalid = model.STATE_TYPE(*(np.array(v) for v in state))
         getattr(invalid, field)[index] = value

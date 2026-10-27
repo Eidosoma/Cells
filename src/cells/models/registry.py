@@ -47,6 +47,11 @@ from cells.core.surface_kinetic_spec import (
     SurfaceKv1Model,
     SurfaceSodiumModel,
 )
+from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel
+from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairModel
+from cells.core.surface_mobile_pump_spec import SurfaceMobilePumpModel
+from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
+from cells.core.surface_redistribution_spec import SurfaceRedistributionModel
 from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.surface_tissue_spec import SurfaceTissueModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
@@ -85,6 +90,11 @@ from cells.models import (
     surface_hcn,
     surface_kinetic,
     surface_kv1,
+    surface_mobile_channel,
+    surface_mobile_pump,
+    surface_mobile_pump_repair,
+    surface_mobile_repair,
+    surface_redistribution,
     surface_repair,
     surface_sodium,
     surface_tissue,
@@ -99,6 +109,16 @@ def get_model(spec):
         return betse_junction
     if isinstance(spec, BetseSpatialModel):
         return betse_spatial
+    if isinstance(spec, SurfaceMobileChannelModel):
+        return surface_mobile_channel
+    if isinstance(spec, SurfaceMobilePumpModel):
+        return surface_mobile_pump
+    if isinstance(spec, SurfaceRedistributionModel):
+        return surface_redistribution
+    if isinstance(spec, SurfaceMobilePumpRepairModel):
+        return surface_mobile_pump_repair
+    if isinstance(spec, SurfaceMobileRepairModel):
+        return surface_mobile_repair
     if isinstance(spec, SurfaceRepairModel):
         return surface_repair
     if isinstance(spec, SurfaceCalciumCavModel):

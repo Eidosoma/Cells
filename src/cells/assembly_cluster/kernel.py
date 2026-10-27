@@ -6,6 +6,7 @@ import jax
 import jax.numpy as jnp
 
 from cells.assembly_cell.kernel import CoupledState
+from cells.assembly_cluster.controls import ScheduledControl, at, modulate
 from cells.assembly_pool.kernel import scheduled_event, step
 from cells.models import spatial_junction as ionic
 from cells.numerics.fixed_step import rk4_checked_step
@@ -45,11 +46,16 @@ def one_tick(
             current.pool, world_id, seeds, constants
         )
         end = jnp.minimum(target, jnp.min(when))
+        if isinstance(control, ScheduledControl):
+            external, next_change = at(control, current.pool.time_s[0])
+            end = jnp.minimum(end, next_change)
+        else:
+            external = control
         duration = end - current.pool.time_s[0]
         valid_clock = jnp.isfinite(duration) & (duration > 0)
         duration = jnp.where(valid_clock, duration, 0.0)
         opening = availability(current.pool, levels)
-        held = control._replace(channel=control.channel * opening[owners])
+        held = modulate(external, opening, owners)
         next_ionic, valid = rk4_checked_step(
             model.rhs, model.domain_valid, current.ionic, duration, held, layout, layout.active
         )

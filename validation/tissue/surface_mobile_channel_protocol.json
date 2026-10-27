@@ -1,0 +1,136 @@
+{
+  "kind": "resolved_mobile_joint_gate_qualification@1",
+  "scope": "Neutral mobile Kv1.5 proteins carrying four joint m/h conformations on fixed resolved ionic surfaces, alongside conserved leak and Na/K ATPase populations. Two channel populations on unequal patches, finite exterior and maintained bath, plus open/closed two-cell stages. Synthetic 0.4-ms accelerated-diffusion controls at 298.15 K, using a 6.25-us production step. Gate rate-bias work is an explicit phenomenological bookkeeping source, not calibrated heat, ATP use or resolved gating charge. This qualifies numerical composition, not physiological rates or native BETSE redistribution correspondence.",
+  "tests": [
+    "tests/unit/test_surface_mobile_channel.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_mobile_channel.py::test_cpu_gpu_complete_histories_and_observations"
+  ],
+  "required_evidence": [
+    "channel-mobile-stage-mobile-compact",
+    "channel-mobile-stage-immobile-compact",
+    "channel-mobile-stage-blocked-compact",
+    "channel-mobile-stage-frozen-compact",
+    "channel-mobile-stage-empty-compact",
+    "channel-mobile-stage-zero_permeability-compact",
+    "channel-mobile-stage-release-compact",
+    "channel-mobile-stage-counterflow-compact",
+    "channel-mobile-stage-channel_only-compact",
+    "channel-mobile-stage-mobile-padded",
+    "channel-mobile-stage-immobile-padded",
+    "channel-mobile-stage-blocked-padded",
+    "channel-mobile-stage-frozen-padded",
+    "channel-mobile-stage-empty-padded",
+    "channel-mobile-stage-zero_permeability-padded",
+    "channel-mobile-stage-release-padded",
+    "channel-mobile-stage-counterflow-padded",
+    "channel-mobile-stage-channel_only-padded",
+    "channel-mobile-multicell-open",
+    "channel-mobile-multicell-closed",
+    "channel-mobile-generator--0.1-factorized",
+    "channel-mobile-generator--0.04-factorized",
+    "channel-mobile-generator-0.03-factorized",
+    "channel-mobile-generator--0.1-correlated",
+    "channel-mobile-generator--0.04-correlated",
+    "channel-mobile-generator-0.03-correlated",
+    "channel-mobile-correlations",
+    "channel-mobile-clocks",
+    "channel-mobile-compiled-guard",
+    "channel-mobile-trajectory-mobile",
+    "channel-mobile-trajectory-immobile",
+    "channel-mobile-trajectory-blocked",
+    "channel-mobile-trajectory-counterflow",
+    "channel-mobile-trajectory-release",
+    "channel-mobile-coupling",
+    "channel-mobile-refinement-mobile",
+    "channel-mobile-refinement-counterflow",
+    "channel-mobile-refinement-release",
+    "channel-mobile-replay",
+    "channel-mobile-worlds"
+  ],
+  "required_gpu_evidence": [
+    "channel-mobile-cpu-gpu"
+  ],
+  "checks": [
+    "Four positive joint m/h conformation inventories move conservatively; conducting amount is N[m1h1], never the product of averaged gates. At each RK4 stage, current open density and independent channel controls determine potassium permeability and the resolved field. Empty/blocked/zero-permeability channels reduce to the existing pump model.",
+    "Independent 80-digit Kv1.5 kinetics and four-state generator/matrix exponential at three voltages test correlated and factorized populations. Marginals reduce to the existing m/h law; mixing may generate correlations. All 27 stage derivatives and potentials are compared to separately accumulated transport, Decimal ATPase/ion laws and a full-node solve, including open/closed two-cell and absent-population cases.",
+    "Separate channel conformation, per-cell total material, lateral transfer and gate-transition ledgers. Ideal-mixture energy plus lateral and gate dissipation minus signed rate-bias work closes independently from ionic, ATP and electrode energy. This is phenomenological accounting, with no measured gating heat or thermodynamic calibration claimed. Strict finite/domain rejection; no clipping or logarithm floors.",
+    "Five complete trajectories against independent segmented DOP853: mobile, immobile, conduction-blocked, correlated conformation counterflow with frozen gates, and scheduled release. Analytic total-protein diffusion and frozen conformation diffusion, nonzero channel/voltage coupling, NumPy RK4 refinement at 12.5/6.25/3.125 us and tightened-reference checks at unchanged tolerances.",
+    "Channel-only schedule boundaries enter the ordinary grid. Compiled negative-control and inventory rejection retains every input field. All 27 state fields survive saved/fresh-process/terminal restart, a future conduction-blocking branch, changed windows and reordered independent worlds with distinct clocks. Blocking does not freeze gates or protein motion.",
+    "CPU/L4 comparison covers complete histories and observations with separate Coulomb, ampere and voltage budgets; compiled operations assert actual backend placement. Independent references and NumPy calculations remain on the CPU in both phases.",
+    "Existing frozen-source runner and retained failures under 4-GiB worker and 8-GiB host-reserve guards. Contracts, trajectories, replay and independent worlds run in sequential processes. Replay preparation exits before the fresh CLI starts; the coordinator then compares complete history, final state, layout and clock. GPU busy and SM-active recorded without a performance gate. No automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "metabolic_work_atol_pJ": 3e-12
+  },
+  "resources": {
+    "max_wall_seconds": 5400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "Only the existing Kv1.5 law at 298.15 K in its declared voltage domain. No other mobile channel family or calcium/ER/injury/assembly coupling.",
+    "Neutral cargo and fixed geometry. No gating-charge displacement, charged-cargo field feedback, active trafficking, fluid flow, synthesis/degradation or changing geometry.",
+    "Maintained ATP/ADP/Pi plus a declared phenomenological gate-rate source; no finite metabolism, calibrated gating energy or autonomous thermodynamic closure.",
+    "No native BETSE redistribution trajectory correspondence; its missing helper remains unresolved. No biological diffusion-rate fit or independent wetlab validation.",
+    "Independent-world batches only; no distributed single-tissue or measured multi-GPU scaling."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_mobile_channel.py::test_registration_roundtrip_and_ensemble",
+        "tests/unit/test_surface_mobile_channel.py::test_independent_complete_stage_and_accounting",
+        "tests/unit/test_surface_mobile_channel.py::test_multicell_field_and_absent_population",
+        "tests/unit/test_surface_mobile_channel.py::test_fixed_voltage_joint_generator_and_mixing_identity",
+        "tests/unit/test_surface_mobile_channel.py::test_current_joint_distribution_changes_opening_at_fixed_gate_marginals",
+        "tests/unit/test_surface_mobile_channel.py::test_empty_blocked_and_zero_permeability_reduce_to_pump_model",
+        "tests/unit/test_surface_mobile_channel.py::test_channel_events_and_empty_surface_graph",
+        "tests/unit/test_surface_mobile_channel.py::test_corrupt_state_and_ledgers_rejected",
+        "tests/unit/test_surface_mobile_channel.py::test_invalid_definitions_rejected",
+        "tests/unit/test_surface_mobile_channel.py::test_compiled_stage_and_invalid_trial_guard"
+      ]
+    },
+    {
+      "name": "trajectories",
+      "tests": [
+        "tests/unit/test_surface_mobile_channel.py::test_complete_trajectory_against_independent_reference",
+        "tests/unit/test_surface_mobile_channel.py::test_analytic_diffusion_correlations_and_transport_effect",
+        "tests/unit/test_surface_mobile_channel.py::test_numpy_refinement_and_reference_accuracy",
+        "tests/unit/test_surface_mobile_channel.py::test_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_mobile_channel.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_mobile_channel.py::test_independent_worlds_order_and_identity"
+      ]
+    }
+  ]
+}

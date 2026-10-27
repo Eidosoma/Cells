@@ -9,12 +9,12 @@ from cells.assembly.engine import device_for
 from cells.assembly.spec import AssemblyError
 from cells.assembly_cell.kernel import CoupledState
 from cells.assembly_cell.spec import tick_at
-from cells.assembly_cluster import MODEL_ID
+from cells.assembly_cluster import MODEL_ID, mobile_channels, mobile_pumps
+from cells.assembly_cluster.controls import extra_boundaries, prepare
 from cells.assembly_cluster.kernel import advance
 from cells.assembly_cluster.spec import channel_owners, parse_spec
 from cells.assembly_pool import engine as pool
 from cells.assembly_pool.spec import AVOGADRO
-from cells.core.schedule import control_values
 from cells.models.registry import get_model
 
 
@@ -64,11 +64,13 @@ def validate_state(spec, state):
         & (state.pool.pending_time_s <= state.pool.time_s)
     ):
         raise AssemblyError("Cluster pending event must follow the observation boundary")
+    minimum_segments = state.tick.astype(np.uint64) + extra_boundaries(
+        spec.ionic, float(state.pool.time_s[0, 0])
+    )
     if (
-        np.any(state.segments < state.tick)
+        np.any(state.segments < minimum_segments)
         or np.any(
-            state.segments
-            > state.tick.astype(np.uint64) + state.pool.event_count.astype(np.uint64).sum(axis=1)
+            state.segments > minimum_segments + state.pool.event_count.astype(np.uint64).sum(axis=1)
         )
         or np.any(~np.isfinite(state.availability_exposure_s))
         or np.any(state.availability_exposure_s < 0)
@@ -196,6 +198,41 @@ def summary(spec, state):
         ),
         "experimental_validation": False,
         **ip3,
+        **(
+            {"mobile_channels": mobile_channels.summary(spec, state, layout)}
+            if hasattr(spec.ionic.model, "mobile_channels")
+            else {}
+        ),
+        **(
+            {"mobile_pumps": mobile_pumps.summary(spec, state, layout)}
+            if hasattr(spec.ionic.model, "mobile_pumps")
+            else {}
+        ),
+        **(
+            {
+                "injury": {
+                    "law": spec.ionic.model.injury_patches[0].law,
+                    "patch_ids": [p.membrane_id for p in spec.ionic.model.injury_patches],
+                    "cell_ids": [p.inside for p in spec.ionic.model.membranes],
+                    "species_ids": list(spec.ionic.model.species_ids),
+                    "transfer_axes": ["world", "species", "membrane_patch"],
+                    "transfer_direction": "outward positive",
+                    "structural_repair_energy": "not modelled",
+                    **{
+                        k: getattr(state.ionic, k)[..., : len(spec.ionic.model.membranes)].tolist()
+                        for k in (
+                            "damage",
+                            "damage_opened",
+                            "damage_closed",
+                            "injury_transferred",
+                            "injury_dissipated_energy_pJ",
+                        )
+                    },
+                }
+            }
+            if hasattr(spec.ionic.model, "injury_patches")
+            else {}
+        ),
         "scope": (
             "One-way assembly/channel hypothesis; separate neutral protein pools; "
             "explicitly owned extracellular regions; no protein energy or chemical feedback"
@@ -213,8 +250,7 @@ def run(spec, *, backend="cpu", device_index=0, state=None, until=None, callback
         raise AssemblyError("Cannot run a cluster state backward")
     device = device_for(backend, device_index)
     _, layout = ionic.initial_values(spec.ionic)
-    controls = control_values(spec.ionic, [0.0])
-    control = type(controls)(*(v[0] for v in controls))
+    control = prepare(spec.ionic)
     p = spec.pool
     rest = jax.device_put(
         (

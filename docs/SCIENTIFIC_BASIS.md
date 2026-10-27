@@ -29,7 +29,8 @@ design for SPEC-009; it is not new biology or executed upstream solver evidence.
 
 ## Calibration across the Cells stack
 
-Direction and resource review: **2026-10-12**. Cells' scientific scope is the
+Direction and resource review: **2026-10-12**, with the cortical-learning
+validation candidate added **2026-10-24**. Cells' scientific scope is the
 coupling of molecular assembly, regulation, bioelectricity, chemistry and future
 metabolism, mechanics and turnover within cells, tissues and organs. BETSE is
 inspiration and a calibration/verification instrument for the bioelectric layer;
@@ -64,6 +65,7 @@ paper notes; no dataset adapter, parameter fit or new biological run was made.
 | [Physiome Model Repository / CellML](https://physiomeproject.org/data-repositories/physiome-model-repository) and [BioModels](https://www.ebi.ac.uk/training/online/courses/biomodels-quick-tour/what-is-biomodels/) | Locate published electrophysiology, signalling, metabolic and physiological models; reproduce selected equations and then return to their experimental sources. | Pin individual model versions, curation status, units, conditions and numerical protocols. Repository inclusion is not validation for every cell type, and models are not raw measurements. |
 | [BioNumbers](https://bionumbers.hms.harvard.edu/aboutus.aspx) | Find literature constraints on cell size, molecular abundance, concentrations and characteristic times; use appropriate ranges to constrain model choices. | Read the cited original measurement, species, compartment and uncertainty. A literature number is not a universal default. |
 | [Corrected Beard mitochondrial model and primary measurement leads](PAPER_REVIEW_MITOCHONDRIA.md) | Start energetic coupling with isolated-mitochondria comparisons, then ATP supply/demand, oxygen consumption, membrane potential and calcium responses. | Reproduce corrected equations/parameters and identify fitting versus independent data before integrating an energy module. Existing maintained ATP pools are not a metabolism model. |
+| [Clawson et al. cortical culture learning, bioRxiv v1 (2026)](PAPER_REVIEW_CORTICAL_LEARNING.md) | Future wet-lab validation of burst-origin learning, persistence between sessions and error recovery; compare task function alongside ordinary electrical activity. | Planned, not implemented or validated. Obtain paper-linked recordings/code, reconcile age and preparation confounds, and qualify neural connectivity, synapses, slow plasticity and the electrode observation model. Keep source controls and proposed yoked controls distinct. [Experiment queue](EXPERIMENTS.md#cortical-culture-learning-and-error-recovery). |
 | [Karr et al., whole-cell modelling (2012)](https://pubmed.ncbi.nlm.nih.gov/22817898/) | A prospective design reference for coupling cellular processes and grounding them in multiple data sources. | This is a bacterial model; it supplies neither an animal-cell parameter set nor validation of Cells. Only the publication overview was reviewed here. |
 | [Human Protein Atlas](https://www.proteinatlas.org/about/introduction) | Constrain which proteins and compartments belong in a selected cell/tissue model, using expression and localization evidence. | Distinguish measured staining/proteomics from inferred expression, and relative signal from absolute abundance. Localization does not supply kinetic constants. |
 | [CCI-seq](PAPER_REVIEW_CCI_SEQ.md), [Human Cell Atlas](https://data.humancellatlas.org/), [HuBMAP](https://portal.hubmapconsortium.org/) and [Human Reference Atlas](https://humanatlas.io/asctb-tables) | Select cell types, heterogeneity, neighbourhoods and anatomical placement for tissue/organ definitions; compare predicted organisation with observed samples. | Select matching species, tissue, developmental state and samples. RNA counts or clump membership do not specify electrical junctions; reference anatomy is not a functional organ model. |
@@ -172,6 +174,7 @@ orientation below retains the title used at that review.
 | Mitochondrial biology, reviewed 2026-10-10 | [Literature note](PAPER_REVIEW_MITOCHONDRIA.md) | Proposed energy, calcium and inheritance mechanisms; no mitochondrial simulator implementation or new experimental result |
 | Quantum birthmarks, reviewed 2026-10-11 | [Literature note](PAPER_REVIEW_QUANTUM_BIRTHMARKS.md) | Quantum theory/simulation motivates proposed classical history, carrier and readout tests; no biological mechanism or simulator implementation follows from the analogy |
 | Hazan and Levin channel compensation, reviewed 2026-10-13 | [Paper and source review](PAPER_REVIEW_CHANNEL_COMPENSATION.md) | Computational recovery, robustness and GPU search methods; pinned-code checks distinguish intervention constraints and integration throughput from biological rescue and whole-job performance |
+| Clawson et al. cortical culture learning, reviewed 2026-10-24 | [Wet-lab review and validation plan](PAPER_REVIEW_CORTICAL_LEARNING.md) | Full v1 text and embedded supplement reviewed; prospective learning/recovery benchmark with source limitations, data-access prerequisites and no new Cells biological result |
 
 ## Current sources
 

@@ -124,7 +124,7 @@ def test_definition_owner_order_and_separate_streams():
         "bad_availability",
         "wrong_ionic_family",
         "off_grid",
-        "external_change",
+        "external_change_outside_horizon",
     ],
 )
 def test_invalid_definitions(case):
@@ -152,7 +152,7 @@ def test_invalid_definitions(case):
         raw["ionic"]["experiment"]["observation_times"] = [0.0, 0.000073, 0.02]
     else:
         raw["ionic"]["experiment"]["channel_controls"][0]["schedule"].append(
-            {"time": 0.01, "availability": 0.0}
+            {"time": raw["ionic"]["experiment"]["end_time"] + 0.01, "availability": 0.0}
         )
     with pytest.raises(ValueError):
         parse_spec(raw)

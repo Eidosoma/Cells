@@ -1,0 +1,181 @@
+{
+  "kind": "mobile_pump_channel_calcium_repair_qualification@1",
+  "scope": "Neutral mobile Na/K ATPases composed with mobile Kv1.5, owned free cytosol/ER/calcium and prescribed injury. Two cells, four patches, five finite exterior regions, two mobile channel populations and two mobile pump populations (one absent on one cell). 50 us at 298.15 K; all 53 state fields and maintained ATP work remain explicit. Fixed geometry and neutral protein inventories; no biological repair claim.",
+  "tests": [
+    "tests/unit/test_surface_mobile_pump_repair.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_mobile_pump_repair.py::test_cpu_gpu_complete_histories_and_observations"
+  ],
+  "required_evidence": [
+    "mobile-pump-repair-registration-cpu",
+    "mobile-pump-repair-registration-gpu",
+    "mobile-pump-repair-ownership",
+    "mobile-pump-repair-clocks",
+    "mobile-pump-repair-compiled-guard",
+    "mobile-pump-repair-stage-mobile-compact",
+    "mobile-pump-repair-stage-mobile-padded",
+    "mobile-pump-repair-stage-immobile-compact",
+    "mobile-pump-repair-stage-immobile-padded",
+    "mobile-pump-repair-stage-inhibited-compact",
+    "mobile-pump-repair-stage-inhibited-padded",
+    "mobile-pump-repair-stage-empty-compact",
+    "mobile-pump-repair-stage-empty-padded",
+    "mobile-pump-repair-stage-no_turnover-compact",
+    "mobile-pump-repair-stage-no_turnover-padded",
+    "mobile-pump-repair-stage-reverse-compact",
+    "mobile-pump-repair-stage-reverse-padded",
+    "mobile-pump-repair-stage-release-compact",
+    "mobile-pump-repair-stage-release-padded",
+    "mobile-pump-repair-trajectory-mobile",
+    "mobile-pump-repair-trajectory-immobile",
+    "mobile-pump-repair-trajectory-reverse",
+    "mobile-pump-repair-trajectory-release",
+    "mobile-pump-repair-reference-mobile-1",
+    "mobile-pump-repair-reference-immobile-1",
+    "mobile-pump-repair-reference-reverse-1",
+    "mobile-pump-repair-reference-release-1",
+    "mobile-pump-repair-reference-release-4",
+    "mobile-pump-repair-refinement-release",
+    "mobile-pump-repair-replay",
+    "mobile-pump-repair-worlds",
+    "mobile-pump-repair-grid-release-6.25e-07",
+    "mobile-pump-repair-grid-release-3.125e-07",
+    "mobile-pump-repair-grid-release-1.5625e-07",
+    "mobile-pump-repair-planning"
+  ],
+  "required_gpu_evidence": [
+    "mobile-pump-repair-cpu-gpu"
+  ],
+  "checks": [
+    "Independent complete 53-field stage derivatives and full-node fields for forward, reversed, inhibited, absent, nonturning, immobile and scheduled pumps. Compare compact and padded/reordered-species inputs with scalar owner loops and Decimal ATPase/GHK/gate equations. Current protein amount sets cycle capacity; pumping conserves protein and writes 3Na/2K transfer once into the chemical cytosol owner.",
+    "Retain all existing material, charge, capacitor, ER, gate, damage and work checks. Add explicit pump diffusion, cell totals, dissipation and signed ATP work. Extend calcium balance checking with separately declared outward transfer, heat and reservoir work; no replacement of fixed-pump or passive ledgers. Corrupt histories, absent routes, invalid controls and ensemble endpoints must fail.",
+    "Four complete compiled 50-us trajectories: moving pumps, immobile pumps, reversed ATPase and independently scheduled pump/channel release. Save histories before assertions. Compare every state and resolved potential against segmented DOP853; verify exact two-patch pump/channel total-protein diffusion and analytic prescribed damage. These are synthetic numerical cases, not biological replicates.",
+    "Three NumPy production RK4 grids at 0.625/0.3125/0.15625 us for the scheduled case, plus fourfold tightening of reference tolerances and maximum step. Preserve full states, signed errors and checks under unchanged tolerances. The compiled trajectory and compiled invalid-trial rejection are separate checks.",
+    "Complete fresh-process disk/terminal replay, a future pump reactivation branch at 25 us, equal changed windows covering every accepted step, and a fresh ordinary CLI resume. All 53 state fields, layout and clocks must agree exactly; pumping-control branches conserve the same neutral pump evolution and prescribed damage.",
+    "Independent worlds with separate clocks and reversed order, complete CPU/L4 histories and observations with unit-specific tolerances. GPU reference copies require normalized input/refinement equality and authenticated source files. Native BETSE redistribution correspondence and remote execution remain separate.",
+    "Fresh bounded workers, deterministic GPU policy, disabled persistent compilation cache, unchanged 4-GiB charged tree and individual limits with 8-GiB host reserve. Record GPU-busy and SM-active including compilation and host work. Preserve failures and exact registered slow-compilation notices. No automatic retry or follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "metabolic_work_atol_pJ": 3e-12,
+    "physical_energy_atol_pJ": 1e-09,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k",
+    "replay_subprocess_timeout_seconds": 1800
+  },
+  "scope_exclusions": [
+    "Fixed geometry and neutral mobile Na/K ATPase/Kv1.5 populations. Other channels, calcium pumps/exchangers and ER remain assigned to their existing owners; no charged-cargo field work, active trafficking, volume/flow, cutting or remeshing.",
+    "Maintained ATP/ADP/Pi reservoirs; no finite metabolic supply, structural repair costs, autonomous adaptation or measured recovery rate fit.",
+    "No assembly integration of this model version, protein exchange, native BETSE moving-channel trajectory, BITSEY lineage replication or wetlab validation.",
+    "CPU/L4 independent-world execution and planning only; no remote Jupiter qualification or single-tissue domain decomposition."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_registration_roundtrip_and_ensemble",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_independent_complete_stage_and_ownership",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_single_ion_owner_and_independent_controls",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_reduction_to_prior_ionic_model",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_corrupt_pump_ledgers_rejected",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_ensemble_readout_rejects_invalid_pump_owner",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_invalid_pump_definitions",
+        "tests/unit/test_surface_mobile_pump_repair.py::test_independent_clocks_and_empty_edges"
+      ]
+    },
+    {
+      "name": "planning",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_one_to_sixteen_gpu_planning_preserves_pump_worlds"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_compiled_stage_and_invalid_trial_guard"
+      ]
+    },
+    {
+      "name": "trajectory-mobile",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_complete_trajectory_reference_and_analytic_material[mobile]"
+      ]
+    },
+    {
+      "name": "trajectory-immobile",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_complete_trajectory_reference_and_analytic_material[immobile]"
+      ]
+    },
+    {
+      "name": "trajectory-reverse",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_complete_trajectory_reference_and_analytic_material[reverse]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_complete_trajectory_reference_and_analytic_material[release]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_numpy_trajectory_refinement_and_reference_accuracy[release]"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_mobile_pump_repair.py::test_independent_worlds_order_and_identity"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

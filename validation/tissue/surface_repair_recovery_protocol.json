@@ -1,0 +1,278 @@
+{
+  "kind": "resolved_injury_sampled_functional_recovery_qualification@1",
+  "scope": "Extend the qualified fixed-geometry resolved_repair@1 synthetic controls from 50 us to 2 ms, with unchanged injury/closure/ion parameters. Qualify all 39 state fields, conservation, long replay and a reusable sampled-return observer. Measure return of patch voltage and owned free cytosol/exterior concentrations to the matching independent uninjured trajectory. Every outcome, including incomplete recovery, is retained. These engineering bands are not measured physiological targets or a biological recovery claim.",
+  "tests": [
+    "tests/unit/test_recovery_readout.py",
+    "tests/unit/test_surface_repair_recovery.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_repair_recovery.py::test_long_cpu_gpu_complete_histories_and_observations"
+  ],
+  "required_evidence": [
+    "resolved-repair-recovery-grids",
+    "resolved-repair-recovery-owners",
+    "resolved-repair-recovery-uninjured",
+    "resolved-repair-recovery-sham",
+    "resolved-repair-recovery-held",
+    "resolved-repair-recovery-resealing",
+    "resolved-repair-recovery-reference-uninjured",
+    "resolved-repair-recovery-reference-sham",
+    "resolved-repair-recovery-reference-held",
+    "resolved-repair-recovery-reference-resealing",
+    "resolved-repair-recovery-reference-stability-held",
+    "resolved-repair-recovery-reference-stability-resealing",
+    "resolved-repair-recovery-functional",
+    "resolved-repair-recovery-refinement-held",
+    "resolved-repair-recovery-refinement-resealing",
+    "resolved-repair-recovery-replay",
+    "resolved-repair-recovery-worlds"
+  ],
+  "required_gpu_evidence": [
+    "resolved-repair-recovery-cpu-gpu"
+  ],
+  "test_groups": [
+    {
+      "name": "recovery-contracts",
+      "tests": [
+        "tests/unit/test_recovery_readout.py",
+        "tests/unit/test_surface_repair_recovery.py::test_registered_long_grids_and_gpu_example",
+        "tests/unit/test_surface_repair_recovery.py::test_initial_free_ion_and_voltage_readouts_match_independent_owners"
+      ]
+    },
+    {
+      "name": "recovery-histories",
+      "tests": [
+        "tests/unit/test_surface_repair_recovery.py::test_long_reference_stability",
+        "tests/unit/test_surface_repair_recovery.py::test_long_trajectory_reference_conservation_and_damage",
+        "tests/unit/test_surface_repair_recovery.py::test_sampled_functional_recovery_report_preserves_all_outcomes",
+        "tests/unit/test_surface_repair_recovery.py::test_long_cpu_gpu_complete_histories_and_observations"
+      ]
+    },
+    {
+      "name": "recovery-refinement-held",
+      "tests": [
+        "tests/unit/test_surface_repair_recovery.py::test_long_coupled_timestep_refinement[held]"
+      ]
+    },
+    {
+      "name": "recovery-refinement-resealing",
+      "tests": [
+        "tests/unit/test_surface_repair_recovery.py::test_long_coupled_timestep_refinement[resealing]"
+      ]
+    },
+    {
+      "name": "recovery-replay",
+      "tests": [
+        "tests/unit/test_surface_repair_recovery.py::test_long_complete_checkpoint_and_window_replay",
+        "tests/unit/test_surface_repair_recovery.py::test_long_independent_worlds_and_reordering"
+      ]
+    }
+  ],
+  "experiment": {
+    "arms": [
+      "uninjured",
+      "sham",
+      "held",
+      "resealing"
+    ],
+    "duration_s": 0.002,
+    "injury_onset_s": 5.3e-06,
+    "injury_offset_s": 1.53e-05,
+    "injury_rate_per_s": 20000.0,
+    "closure_rate_per_s": 4000.0,
+    "observation_times_s": [
+      0.0,
+      5.3e-06,
+      1.53e-05,
+      2.5e-05,
+      5e-05,
+      7.500000000000001e-05,
+      0.0001,
+      0.000125,
+      0.00015000000000000001,
+      0.00017500000000000003,
+      0.0002,
+      0.00022500000000000002,
+      0.00025,
+      0.000275,
+      0.00030000000000000003,
+      0.00032500000000000004,
+      0.00035000000000000005,
+      0.000375,
+      0.0004,
+      0.00042500000000000003,
+      0.00045000000000000004,
+      0.00047500000000000005,
+      0.0005,
+      0.0005250000000000001,
+      0.00055,
+      0.0005750000000000001,
+      0.0006000000000000001,
+      0.000625,
+      0.0006500000000000001,
+      0.000675,
+      0.0007000000000000001,
+      0.0007250000000000001,
+      0.00075,
+      0.0007750000000000001,
+      0.0008,
+      0.0008250000000000001,
+      0.0008500000000000001,
+      0.000875,
+      0.0009000000000000001,
+      0.000925,
+      0.0009500000000000001,
+      0.0009750000000000001,
+      0.001,
+      0.001025,
+      0.0010500000000000002,
+      0.001075,
+      0.0011,
+      0.0011250000000000001,
+      0.0011500000000000002,
+      0.001175,
+      0.0012000000000000001,
+      0.0012250000000000002,
+      0.00125,
+      0.001275,
+      0.0013000000000000002,
+      0.001325,
+      0.00135,
+      0.0013750000000000001,
+      0.0014000000000000002,
+      0.001425,
+      0.0014500000000000001,
+      0.0014750000000000002,
+      0.0015,
+      0.001525,
+      0.0015500000000000002,
+      0.0015750000000000002,
+      0.0016,
+      0.0016250000000000001,
+      0.0016500000000000002,
+      0.001675,
+      0.0017000000000000001,
+      0.0017250000000000002,
+      0.00175,
+      0.001775,
+      0.0018000000000000002,
+      0.0018250000000000002,
+      0.00185,
+      0.0018750000000000001,
+      0.0019000000000000002,
+      0.001925,
+      0.0019500000000000001,
+      0.001975,
+      0.002
+    ],
+    "time_steps_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "definition": "validation/tissue/surface_repair_recovery.py",
+    "gpu_example": "configs/resolved_repair_recovery_tissue.json",
+    "max_steps": 16384,
+    "max_trace_bytes": 8589934592,
+    "batch_max_working_bytes": 8589934592
+  },
+  "recovery_observer": {
+    "bands": {
+      "membrane_voltage_V": 1e-05,
+      "cytosol_free_mM": 1e-06,
+      "exterior_free_mM": 1e-06
+    },
+    "numerical_uncertainty": {
+      "membrane_voltage_V": 1e-07,
+      "cytosol_free_mM": 1e-08,
+      "exterior_free_mM": 1e-08
+    },
+    "intervention_s": 5.3e-06,
+    "release_s": 1.53e-05,
+    "hold_s": 0.0005,
+    "max_gap_s": 2.5e-05,
+    "scope": "Maximum absolute difference over every physical owner for each metric, simultaneous final hold on registered samples only. Disturbance must first be resolved beyond the band and uncertainty; no interpolation or assumption between observations. Baseline drift is reported, not interpreted as healthy rest. Reference agreement and original conservation checks must pass independently of recovery outcome.",
+    "outcomes": [
+      "no_resolved_departure",
+      "unresolved_departure",
+      "outside_at_end",
+      "unresolved_boundary",
+      "insufficient_hold",
+      "returned_with_hold"
+    ],
+    "success_does_not_require_recovery": true
+  },
+  "checks": [
+    "Host readout adversarial controls: no disturbance, sustained sampled return, late excursions, brief reentry, near-band uncertainty, mismatched modalities, baseline drift, release before hold, missing samples and malformed inputs. These are numerical/engineering controls, not biological cases.",
+    "Every 83-time observation grid is accepted exactly at all three timesteps. Both off-grid injury boundaries remain explicit. Fixed 16384-step allowance covers the finest grid without changing physical limits. The finest trace and two-world aggregate working declarations are 8 GiB; preflight must reject the old 4-GiB budgets. These conservative array estimates are distinct from the unchanged 14-GiB measured process-tree ceiling and 4-GiB host reserve.",
+    "Four complete compiled 2-ms histories, actual device placement, all 39 state fields and ordinary observations, preserved before assertions. Analytic damage and original material/charge/energy/domain checks remain mandatory.",
+    "Independent segmented DOP853, Decimal/scalar transport and full-node electrical roots. Held and resealing references are checked after fourfold tightening. Complete state and independent voltages/free concentrations are retained, including failed comparisons. CPU references are reused by GPU only after exact input/settings/status checks.",
+    "Sampled recovery is evaluated against the independent uninjured trajectory; labels must match independently integrated injury trajectories. Ordinary uninjured/sham histories and all pre-injury histories are exact. Held and resealing disturbance must be resolved. A diminishing damage fraction does not force a recovery label; every arm and per-metric outcome remains visible.",
+    "Held and resealing coupled trajectories refine at 0.625/0.3125/0.15625 us with original absolute/relative state budgets and roundoff floors. Complete inputs, histories and signed errors are saved before assertions.",
+    "Complete 1-ms disk checkpoint restart and changed 257-step windows match bitwise. Two independent 2-ms worlds with distinct closure controls match scalar histories under batching and reversed world order.",
+    "Complete CPU/L4 histories and readouts use unchanged unit-specific tolerances; times/external controls are exact. Recovery labels must agree. The earlier 50-us fresh-process and assembly qualification remains a prerequisite, not new long-duration assembly evidence.",
+    "Serial bounded process groups; all source/runtime/evidence checks and CPU/GPU counters are retained. No automatic follow-up or retries."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "rate_rtol": 3e-10,
+    "rate_atol": 3e-12,
+    "rate_charge_atol_A": 3e-23,
+    "analytic_damage_atol": 2e-09,
+    "damage_ledger_atol": 9.094947017729282e-13,
+    "independent_dop853_rtol": 1e-13,
+    "independent_dop853_atol": 1e-16,
+    "independent_charge_atol_C": 5e-32,
+    "reference_tightening_factor": 0.25,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_steps_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "readout_atol": {
+      "membrane_voltage_V": 1e-08,
+      "cytosol_free_mM": 1e-09,
+      "exterior_free_mM": 1e-09
+    },
+    "reference_readout_stability_atol": {
+      "membrane_voltage_V": 1e-09,
+      "cytosol_free_mM": 1e-10,
+      "exterior_free_mM": 1e-10
+    }
+  },
+  "resources": {
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 6442450944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 15032385536,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 4294967296,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "No parameter fitting or selection for a positive recovery result; synthetic rates and short physical horizon, not measured tissue times.",
+    "No autonomous adaptation, structural repair material/energy, topology change, cutting, regrowth or experimental biological claim. Channel-compensation research stays parked.",
+    "Return is relative to a matched evolving uninjured trajectory. Absolute healthy resting ranges and continuous-time functional recovery are not established.",
+    "Longer ordinary tissue execution only. Assembly remains qualified in the preceding 50-us panel; it is not included in this 2-ms extension.",
+    "Independent-world execution on local CPU/L4; multi-GPU execution and single-tissue distribution remain separate. Whole-phase utilization includes host references and compilation and is not a warmed throughput gate."
+  ],
+  "prerequisite": {
+    "qualification": "/mnt/workspaces/Cells/resolved-repair-20261023-01/completion.json",
+    "completion_sha256": "784a0adaef866d91e845ef6954f8f2a65773b39154f730d44afc1ab5b7697566",
+    "scope": "Passed 50-us CPU/L4 injury, replay and assembly qualification"
+  },
+  "automatic_followup": false
+}

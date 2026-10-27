@@ -44,6 +44,9 @@ def runtime():
         "machine": platform.machine(),
         "packages": {name: importlib.metadata.version(name) for name in ("jax", "jaxlib", "numpy")},
         "accelerator_packages": dict(sorted(accelerators.items())),
+        "numerical_environment": {
+            name: os.environ.get(name) for name in ("XLA_FLAGS", "JAX_DISABLE_JIT")
+        },
     }
 
 

@@ -10,6 +10,79 @@ Task status is maintained in [Progress](../PROGRESS.md). Scope reviewed
 prerequisites and separate model tests; they do not establish the proposed
 heredity/relay assays below. The engineering chronology retains its original dates.
 
+## Future experiments: pattern information, error sensing and corrective action
+
+Brainstorm recorded **2026-10-24**. These are proposed tests, not results or an
+automatic campaign. The motivating questions are: which aspects of a body's
+pattern are carried by bioelectric state; how does a tissue detect a deviation;
+and how does a detected change cause an appropriate correction?
+
+The working assertion should be **bioelectric signaling contributes causally to
+pattern formation and repair**, interacting with regulatory, chemical and
+mechanical processes. It does not establish that every anatomical pattern is
+stored as a voltage blueprint. In Xenopus, voltage perturbations alter eye
+development and can induce ectopic eyes; the study identifies calcium-dependent
+transduction into eye-field gene regulation. This supplies a concrete
+signal-to-action route, not a complete anatomical error detector.
+[Pai et al. (2012)](https://doi.org/10.1242/dev.073759)
+
+Wound experiments provide another causal example: electric fields direct
+epithelial migration, and PI3K/PTEN interventions alter that response. A local
+electrical cue can therefore guide an action without a cell explicitly measuring
+the distance from a complete target anatomy.
+[Zhao et al. (2006)](https://doi.org/10.1038/nature04925)
+Transient bioelectric interventions in planaria also change later regeneration
+outcomes, including latent differences in apparently normal animals. This
+motivates testing history-dependent repair separately from current appearance;
+it does not identify a universal biological comparator.
+[Durant et al. (2017)](https://doi.org/10.1016/j.bpj.2017.04.011)
+
+There are three distinct causal roles to identify: **retained organization or
+reference**, **signals accessible to the tissue**, and **actions those signals
+control**. A fourth role, the observer's reconstruction score, can remain outside
+the simulated dynamics. Distributed local feedback can restore a stable pattern
+without an explicit global error variable; naming an attractor alone does not
+specify its sensing and action mechanisms. Conversely, a controller explicitly
+given the correct anatomy is a useful positive control whose supplied information
+must be declared. Grodstein, McMillen and Levin construct a model that uses
+communicating cellular waves to count reaction–diffusion peaks and adjusts the
+pattern through feedback. That is a relevant constructive comparison, rather
+than a wetlab identification of a general natural controller.
+[Grodstein et al. (2023)](https://doi.org/10.3389/fcell.2023.1087650)
+
+| Proposed comparison | What it could distinguish |
+|---|---|
+| Match current appearance and physiological state as far as practicable, vary retained history, then apply the same damage. | Whether retained organization changes the subsequent response or endpoint beyond what current appearance predicts. Declare any unmatched state. |
+| Preserve the candidate record and actuators, but block or replay a candidate local error signal; include sham and viability controls. | Causal contributions of sensing, including whether a false injury signal triggers action or a clamped healthy signal suppresses it. Perturbation side effects need separate checks. |
+| Preserve the signal response while blocking migration, growth or the chosen repair actuator. | Detection without correction, versus failure to detect the disturbance. |
+| Compare local feedback with an externally supplied target controller and a timing-matched open-loop replay. | Whether correction depends on ongoing tissue-accessible feedback, a supplied answer, or a preset schedule. Keep the observer's score out of the local-feedback arm. |
+| Test current function, response after withdrawal, and reconstruction in a fresh recipient separately. | Immediate improvement versus retained competence and transferable reconstructibility. Preserve failures and ordinary-history controls. |
+
+Before interpreting these comparisons, declare each candidate signal, its
+physical sensor and actuator, the source of any setpoint, and how correction
+stops. Keep numerical refinement and CPU/GPU agreement separate from independent
+biological cases. The existing fixed-geometry Cells injury/resealing schedules
+are prescribed inputs: they do not demonstrate autonomous damage detection or
+selection of a repair response. Coupled voltage, calcium and channel dynamics
+provide prerequisites on which later explicit sensing/actuation models can build.
+
+For *How Forms Become Reconstructible*, the local **v2.2 working draft** already
+distinguishes observer from reader/writer in section 2.1, and explicitly leaves
+autonomous maintenance and valuation open in section 8.3. A possible discussion
+addition, not an amendment made to the manuscript, is:
+
+> Reconstructibility depends not only on retained information but on the
+> mechanisms through which present conditions alter corrective activity. A
+> decrease in observer-defined reconstruction error does not, by itself,
+> establish that the system represents that error or autonomously selects its
+> repair.
+
+This extends the existing [multiscale execution design](MULTISCALE_EXECUTION_ARCHITECTURE.md)
+distinction between read-only observers and causal feedback. The published
+[Forms preprint](https://doi.org/10.5281/zenodo.23327869) and the local working
+revision are distinct versions; this brainstorm does not attribute new results
+to either.
+
 ## First engineering assay
 
 E00 is the one-cell source-and-decay pulse fixture described in
@@ -451,6 +524,23 @@ replacement, persistence after removing external support, transmission and
 reconstruction remain later extensions with their own mechanisms and controls.
 Neither a successful optimizer nor matching outputs alone establishes heredity
 or polycomputing. Run status and evidence belong in [Progress](../PROGRESS.md).
+
+## Cortical culture learning and error recovery
+
+Future biological validation candidate added **2026-10-24**:
+[Clawson et al.'s cortical culture experiments](PAPER_REVIEW_CORTICAL_LEARNING.md).
+The linked review owns the measurement panel, source caveats, controls and data
+requirements. First recover and reproduce the per-culture analysis; then qualify
+the neural, synaptic, plasticity and electrode-observation components needed for
+a biological comparison. Evaluate error recovery alongside acquisition,
+stimulus-free persistence, spatial behaviour and ordinary activity, using held-out
+cultures and proposed matched-stimulation controls.
+
+This remains queued behind simulation-stack development. It neither extends the
+current injury run nor restarts the parked compensation search. Tissue retention,
+physical membrane repair and transmission/reconstruction are distinct outcomes.
+Numerical/device checks do not count as independent wet-lab cases. Implementation
+and run evidence, when available, belong in [Progress](../PROGRESS.md).
 
 ## Later experiments
 

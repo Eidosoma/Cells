@@ -53,8 +53,8 @@ def analytic_damage(damage, hazard, closure, elapsed):
     )
 
 
-def evaluate(c, state, time):
-    slope, phi, proof = base.evaluate(c, state, time)
+def evaluate(c, state, time, *, channel_levels=None):
+    slope, phi, proof = base.evaluate(c, state, time, channel_levels=channel_levels)
     result, d, p = unpack(c, slope), unpack(c, state), c["layout"]
     species = c["raw"]["model"]["species"]
     rt = base.R * p["temperature"]
@@ -112,10 +112,11 @@ def evaluate(c, state, time):
     )
 
 
-def integrate(raw, *, rtol=1e-12, atol=1e-16):
+def integrate(raw, *, channel_segments=None, rtol=1e-12, atol=1e-16, charge_atol=5e-32):
     c = bind(raw)
     e = raw["experiment"]
-    events = {0.0, e["end_time"]}
+    segments = channel_segments or [(0.0, None)]
+    events = {0.0, e["end_time"], *(t for t, _ in segments)}
     for kind, rows in e.items():
         if kind.endswith("_controls"):
             for row in rows:
@@ -125,13 +126,14 @@ def integrate(raw, *, rtol=1e-12, atol=1e-16):
     atols = flatten(
         c,
         {
-            k: np.full(shape, 5e-32 if k.endswith("_C") else atol)
+            k: np.full(shape, charge_atol if k.endswith("_C") else atol)
             for k, shape in c["shapes"].items()
         },
     )
     for left, right in zip(sorted(events), sorted(events)[1:], strict=False):
+        levels = next(level for time, level in reversed(segments) if time <= left)
         solution = solve_ivp(
-            lambda t, y, held=left: evaluate(c, y, held)[0],
+            lambda t, y, held=left, opened=levels: evaluate(c, y, held, channel_levels=opened)[0],
             (left, right),
             state,
             method="DOP853",
@@ -153,4 +155,35 @@ def integrate(raw, *, rtol=1e-12, atol=1e-16):
         method="segmented DOP853 with independent full-node roots and scalar injury/flux",
         rtol=rtol,
         atol=atol,
+        charge_atol=charge_atol,
+    )
+
+
+def measurements(raw, states, *, channel_segments=None):
+    """Independent full-node voltages and free concentrations at registered observations."""
+    c = bind(raw)
+    ids = [s["id"] for s in c["raw"]["model"]["species"]]
+    p = c["layout"]
+    membrane_cell = np.asarray(p["membrane_cell"], dtype=int)
+    membrane_outside = np.asarray(p["membrane_outside"], dtype=int)
+    segments = channel_segments or [(0.0, None)]
+    voltages, inside, outside = [], [], []
+    for time, state in zip(raw["experiment"]["observation_times"], states, strict=True):
+        d = unpack(c, state)
+        levels = next(level for start, level in reversed(segments) if start <= time)
+        _, phi, _ = evaluate(c, state, time, channel_levels=levels)
+        voltages.append(phi[membrane_cell] - phi[len(c["vi"]) + membrane_outside])
+        free = np.stack(
+            [
+                (s.n0 + d["chemical_amount_increment"][i])[[s.ids.index(k) for k in ids], s.cy]
+                for i, s in enumerate(c["stores"])
+            ],
+            axis=1,
+        )
+        inside.append(free / c["vi"])
+        outside.append((c["ao"] + d["extracellular_amount_increment"]) / c["vo"])
+    return dict(
+        membrane_voltage_V=np.stack(voltages),
+        cytosol_free_mM=np.stack(inside),
+        exterior_free_mM=np.stack(outside),
     )

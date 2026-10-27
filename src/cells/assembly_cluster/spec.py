@@ -10,6 +10,7 @@ import numpy as np
 from cells.assembly.spec import AssemblyError
 from cells.assembly_cell.spec import tick_at
 from cells.assembly_cluster import MODEL_ID
+from cells.assembly_cluster.controls import ChannelOwners, extra_boundaries, storage_bytes
 from cells.assembly_pool.spec import parse_spec as parse_pool
 from cells.core.gated_calcium_spec import GatedCalciumModel
 from cells.core.ip3_calcium_spec import IP3CalciumModel
@@ -26,6 +27,9 @@ from cells.core.surface_calcium_spec import (
     SurfaceCalciumModel,
     SurfaceCalciumSodiumModel,
 )
+from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairModel
+from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
+from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.models.registry import get_model
 
@@ -68,8 +72,10 @@ class ClusterSpec:
 
     @property
     def working_bytes(self):
-        return sum(p.pool.working_bytes for p in self.pools) + (
-            self.pool.worlds * 64 * get_model(self.ionic.model).working_size(self.ionic)
+        return (
+            sum(p.pool.working_bytes for p in self.pools)
+            + (self.pool.worlds * 64 * get_model(self.ionic.model).working_size(self.ionic))
+            + storage_bytes(self.ionic)
         )
 
     @property
@@ -80,6 +86,7 @@ class ClusterSpec:
             + len(self.ionic.experiment.observation_times)
             * len(self.pools)
             * (65536 + 1024 * self.pool.worlds)
+            + 16 * storage_bytes(self.ionic)
         )
 
     def to_dict(self):
@@ -114,10 +121,13 @@ def parse_spec(data):
         SurfaceCalciumHCNModel,
         SurfaceCalciumKv1Model,
         SurfaceCalciumCavModel,
+        SurfaceRepairModel,
+        SurfaceMobileRepairModel,
+        SurfaceMobilePumpRepairModel,
     ):
         raise AssemblyError("Assembly cluster requires a qualified spatial ionic or calcium family")
-    if len(ion.experiment.changes) != 1 or ion.experiment.changes[0].time != 0:
-        raise AssemblyError("Initial assembly cluster requires constant external controls")
+    if not ion.experiment.changes or ion.experiment.changes[0].time != 0:
+        raise AssemblyError("Assembly cluster controls must start at zero")
     cell_ids = [c.id for c in ion.model.cells]
     if isinstance(ion.model, SurfaceCalciumModel):
         owners = {p.id: p.inside for p in ion.model.membranes}
@@ -188,13 +198,17 @@ def parse_spec(data):
     for time in ion.experiment.observation_times:
         tick_at(spec, time)
     if (
-        spec.ticks > ion.execution.max_steps
-        or spec.ticks > 1000000
+        spec.ticks + extra_boundaries(ion) > ion.execution.max_steps
+        or spec.ticks + extra_boundaries(ion) > 1000000
         or spec.working_bytes > 2 * 1024**3
         or spec.output_bound > common.max_output_bytes
     ):
         raise AssemblyError("Cluster tick, working-memory or output budget exceeded")
-    get_model(ion.model).check_steps(ion, [ion.execution.dt], control_values(ion, [0.0]))
+    get_model(ion.model).check_steps(
+        ion,
+        [ion.execution.dt],
+        control_values(ion, [change.time for change in ion.experiment.changes]),
+    )
     return spec
 
 
@@ -204,6 +218,11 @@ def channel_owners(spec):
     result = np.zeros(spec.ionic.execution.channel_capacity, np.int32)
     for i, channel in enumerate(spec.ionic.model.channels):
         result[i] = cells.index(membranes[channel.membrane_id])
+    if isinstance(spec.ionic.model, SurfaceMobileRepairModel):
+        patches = np.zeros(spec.ionic.execution.membrane_capacity, np.int32)
+        for i, patch in enumerate(spec.ionic.model.membranes):
+            patches[i] = cells.index(patch.inside)
+        return ChannelOwners(result, patches)
     return result
 
 

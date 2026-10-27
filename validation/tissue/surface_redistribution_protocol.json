@@ -1,0 +1,74 @@
+{
+  "kind": "resolved_neutral_mobile_surface_qualification@1",
+  "scope": "Neutral always-open conserved membrane populations coupled to resolved_tissue@1 ionic surfaces. Two mobile populations, unequal patch areas, one finite exterior and one held reservoir; 0.4-ms synthetic accelerated-diffusion controls. Open/closed two-cell resolved-field stage checks. This qualifies a bounded numerical composition, not biological rates or native BETSE redistribution correspondence.",
+  "tests": [
+    "tests/unit/test_surface_redistribution.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_redistribution.py::test_cpu_gpu_complete_saved_states_and_observations"
+  ],
+  "required_evidence": [
+    "mobile-stage-mobile-compact",
+    "mobile-stage-immobile-compact",
+    "mobile-stage-uniform-compact",
+    "mobile-stage-blocked-compact",
+    "mobile-stage-empty-compact",
+    "mobile-stage-mobile-padded",
+    "mobile-stage-immobile-padded",
+    "mobile-stage-uniform-padded",
+    "mobile-stage-blocked-padded",
+    "mobile-stage-empty-padded",
+    "mobile-multicell-open",
+    "mobile-multicell-closed",
+    "mobile-trajectory-mobile",
+    "mobile-trajectory-immobile",
+    "mobile-trajectory-blocked",
+    "mobile-coupling-controls",
+    "mobile-refinement",
+    "mobile-replay",
+    "mobile-independent-worlds"
+  ],
+  "required_gpu_evidence": [
+    "mobile-cpu-gpu"
+  ],
+  "checks": [
+    "Independent stage equations, finite/held reservoir closure, per-cell conservation, surface ideal-mixing heat and unchanged ionic/electrode/work checks. No source or clipping of protein quantities.",
+    "Mobile, immobile, uniform, blocked-ion and empty initial controls. Complete mobile/immobile/blocked trajectories and observations compared with independently written abundance/diffusion equations, full-node electrical roots, Decimal ionic transport and DOP853.",
+    "Local permeability uses the current RK4-stage abundance. Analytic two-patch decay and NumPy production RK4 refinement at 50/25/12.5 us against a tightened independent reference. The 12.5-us grid is the trajectory test; failed coarser comparisons remain in development evidence.",
+    "Complete 15-field saved-state replay, fresh-process restart, terminal continuation, future ion-block branch, changed windows and stable independent-world order. Permeability and surface ledgers are part of the ordinary registered model/observer contract.",
+    "CPU/L4 complete saved histories and observations retain separate Coulomb, ampere and voltage tolerances. Compiled stage/rollout tests assert actual backend placement; independent reference and NumPy refinement remain CPU computations in both phases.",
+    "Reuse the existing frozen-source qualification runner, preserve all failures, bound worker RAM, and record both GPU busy and SM-active. No warmed performance target or automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "surface_material_atol_fmol": 2e-12,
+    "surface_energy_atol_pJ": 2e-10,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11
+  },
+  "resources": {
+    "max_wall_seconds": 3600,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "No channel gating-state transport, pumps, calcium/ER/injury or assembly composition.",
+    "No charged bound cargo, endogenous tangential field, protein turnover, active trafficking, fluid flow, changing geometry or biological parameter fit.",
+    "The missing native BETSE helper remains unresolved; this is an independent surface law.",
+    "Independent-world batch execution only; no distributed single-tissue qualification or measured multi-GPU scaling."
+  ],
+  "automatic_followup": false
+}

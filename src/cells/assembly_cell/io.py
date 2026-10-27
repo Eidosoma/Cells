@@ -22,7 +22,9 @@ def implementation(cluster):
     return engine, spec
 
 
-def clock_identity(cluster):
+def clock_identity(cluster, spec=None):
+    if cluster and spec is not None and len(spec.ionic.experiment.changes) > 1:
+        return "global_ionic_grid_split_at_union_of_cell_assembly_and_control_events@1"
     return (
         "global_ionic_grid_split_at_union_of_cell_assembly_events@1"
         if cluster
@@ -79,7 +81,7 @@ def write_checkpoint(path, spec, state, *, backend, provenance=None):
             "backend": backend,
             "state_sha256": digest(path / "state.npz"),
             "provenance": provenance,
-            "clock": clock_identity(cluster),
+            "clock": clock_identity(cluster, spec),
             "rng": rng_identity(cluster),
         },
     )
@@ -100,7 +102,7 @@ def load_checkpoint(path, *, backend):
         "runtime": runtime(),
         "backend": backend,
         "state_sha256": digest(path / "state.npz"),
-        "clock": clock_identity(cluster),
+        "clock": clock_identity(cluster, spec),
         "rng": rng_identity(cluster),
     }.items():
         if record.get(key) != expected:

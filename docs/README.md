@@ -50,6 +50,9 @@ the [project README](../README.md) gives the short feature overview.
 - [Ion channel compensation review](PAPER_REVIEW_CHANNEL_COMPENSATION.md)
   examines Hazan and Levin's search methods, released GPU benchmark and
   possible functional-recovery experiments in Cells.
+- [Cortical culture learning review](PAPER_REVIEW_CORTICAL_LEARNING.md) adds a
+  future wet-lab benchmark for learning, persistence and error recovery, with
+  data requirements, experimental limitations and missing simulator features.
 - [Decisions](DECISIONS.md) preserves dated design choices and stable decision IDs.
 - [Development history](DEVELOPMENT_HISTORY.md) contains the milestones moved
   out of the project README.

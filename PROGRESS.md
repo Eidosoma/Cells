@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-23 UTC.
+Last updated: 2026-10-27 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -8,6 +8,980 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 [Decisions](docs/DECISIONS.md).
 
 ## Current position
+
+- **Assembly integration of the 53-field mobile-pump/calcium/injury model is
+  implemented; qualification is being prepared.** The
+  [GPU example](configs/assembly_resolved_mobile_pump_repair_tissue.json),
+  [guide](docs/TISSUE_RETURN_CURRENT.md#assembly-with-mobile-pumps-channels-and-prescribed-repair)
+  and [protocol](validation/tissue/assembly_mobile_pump_repair_protocol.json)
+  describe cell-owned assembly control of fixed/mobile channel conduction.
+  Pumps retain independent schedules and respond through shared voltage and
+  ions. Reports retain pump protein, 3Na/2K transfers, signed cycles and maintained
+  reservoir work; no protein exchange or finite ATP supply is added.
+
+  [New contract checks](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/contracts-02/tests.xml)
+  passed **50 cases**, including all 53 stage derivatives for forward/reverse
+  pumping and compact/padded, reordered-species layouts. The initial
+  [development run](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/contracts-01/tests.xml)
+  also passed **46 compatibility/control cases**; its 36 report-construction
+  failures are preserved. The report incorrectly used the channel-style law
+  field; mapping the parsed pump law and role tuple fixed it. A bounded compiled
+  CPU trajectory and the one-to-sixteen-GPU planning check are now running.
+  The [collection receipt](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/protocol-collection.json)
+  registers **61 test cases**, nine sequential groups and **32 CPU / 33 GPU
+  required reports** for the upcoming complete qualification. These are numerical
+  and engineering checks, not independent biological cases.
+
+- **Mobile Na/K pumps with mobile Kv1.5, owned calcium/ER and prescribed injury,
+  `resolved_repair@3`, passed complete CPU/L4 qualification at 15:54 UTC on
+  27 October.** The [completed result](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/result.json)
+  records **44 CPU passes plus one expected skip and 45 GPU passes**, with all
+  **35 CPU / 36 GPU required reports** passed. The final recovery took
+  **25m 10s**, executing GPU replay and independent worlds while reusing all
+  11 CPU and nine completed GPU groups from the original qualification. These
+  are numerical/harness checks, not independent biological cases.
+
+  The [guide](docs/TISSUE_RETURN_CURRENT.md#mobile-pumps-with-owned-calcium-and-prescribed-repair),
+  [GPU example](configs/resolved_mobile_pump_repair_tissue.json) and
+  [protocol](validation/tissue/surface_mobile_pump_repair_protocol.json) describe
+  neutral mobile ATPases alongside the existing channels, transporters and
+  injury controls. Current pump amount sets local capacity; pumping updates
+  the existing Na/K owners once and conserves pump protein. Separate
+  protein/cycle/heat/work records bring the complete state to **53 fields**.
+  Maintained ATP reservoirs, fixed geometry and prescribed injury remain explicit.
+  Finite metabolic supply, autonomous biological repair, native BETSE moving-protein
+  correspondence, assembly integration of this version and remote Jupiter
+  execution remain outside this qualification.
+
+  All four trajectories, independent references, compiled invalid-trial
+  rejection, analytic protein diffusion/damage checks and three-grid host
+  refinement passed. Maximum trajectory error was **0.33914** of the unchanged
+  budget. The [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/evidence/gpu/mobile-pump-repair-cpu-gpu.json)
+  passed for **314,568 values**. [Complete GPU replay](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/evidence/gpu/mobile-pump-repair-replay.json)
+  now passes for all 53 fields: saved/fresh-process history, terminal restart,
+  future pump reactivation, **43 changed windows**, layout and clock.
+  [Two independent worlds](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/evidence/gpu/mobile-pump-repair-worlds.json)
+  agree with their scalar references and retain exact identity under reordering,
+  with independent control clocks.
+
+  The [registration](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/registration.json)
+  authenticates the original scientific source and completed groups. The only
+  test edits are the registered replay subprocess timers: 900/600 seconds became
+  **1,800 seconds**. Equations, commands, comparisons, deterministic GPU settings
+  and numerical tolerances remain unchanged. The overall **four-hour job limit**,
+  **4-GiB memory limits** and **8-GiB host reserve** also remain fixed. The host
+  allocator uses two glibc arenas and fixed 128-KiB mmap/trim thresholds, with
+  separate environment receipts; this is not remote execution qualification.
+
+  Across the combined panel, peak charged process-tree memory was **3.97809 GiB**,
+  individual peak RSS **3.99694 GiB**, and host availability stayed above
+  **13.74 GiB**. [Recovery GPU telemetry](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/gpu-metrics/result.json)
+  records **0.785% GPU busy / 0.00888% SM-active** over **1,501.8 seconds**, with
+  approximately 100% coverage. These averages include compilation and host work;
+  parent-run measurements remain separate. The [completion receipt](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-02/completion.json)
+  binds the result and **970 evidence files**. This status inspection verified
+  the result/registration hashes and all 71 required report hashes. At that completion inspection, controller
+  **662433** had exited and the L4 was idle.
+
+  Both interrupted runs remain preserved. The [original memory stop](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261026-01/failure.json)
+  recorded 4.01644 GiB charged memory during replay preparation. The
+  [first recovery](/mnt/workspaces/Cells/resolved-mobile-pump-repair-20261027-01/failure.json)
+  stayed within the memory limits and passed restart/branch/windows, but its
+  final CLI restart hit the 600-second timer while still compiling. Its main
+  worker accumulated 374.16 CPU seconds over about 600.86 observed wall seconds;
+  the [timeout inspection](/mnt/workspaces/Cells/mobile-pump-replay-timeout-20261027-01/analysis.json)
+  does not attribute every wait to a specific cause. The final recovery reran
+  that whole incomplete group, retaining these failed and partial artifacts.
+
+  Development evidence remains linked: [composition checks](/mnt/workspaces/Cells/mobile-pump-repair-development-20261026-01/development-result.json)
+  contain **202 passing test cases** plus a completed compiled-guard report,
+  with the earlier 480-second planning interruption preserved; the revised
+  16-GPU planning case passed separately. [Allocator/recovery checks](/mnt/workspaces/Cells/mobile-pump-recovery-development-20261027-01/development-result.json)
+  passed **142 tests**, and [timeout/recovery checks](/mnt/workspaces/Cells/mobile-pump-replay-timeout-20261027-01/development-result.json)
+  passed **163 tests**, retaining the corrected synthetic-fixture setup failure.
+  The [arena-only probe](/mnt/workspaces/Cells/mobile-pump-replay-memory-20261027-01/inspection.json)
+  and [selected allocator probe](/mnt/workspaces/Cells/mobile-pump-replay-memory-20261027-02/inspection.json)
+  preserve complete histories, resource data and both utilization measures;
+  all **71,949 state/clock values** matched the prior GPU trajectory bit-for-bit.
+  Their telemetry-finalization wrapper error and reconstruction from raw samples
+  are explicitly recorded. The allocator policy follows the
+  [GNU allocator settings](https://sourceware.org/glibc/manual/latest/html_node/Malloc-Tunable-Parameters.html).
+
+- **Mobile Kv1.5/calcium/injury passed complete CPU/L4 qualification at 23:19 UTC
+  on 25 October.** The [completed result](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-03/result.json)
+  records **57 CPU passes plus one expected skip and 58 GPU passes**, with all
+  **42 CPU and 43 GPU required reports** complete. These suite counts include
+  preliminary contracts, not 115 independent biological cases. The run took
+  **70m 22s** and reran all 12 groups per backend under the registered policy.
+  All five trajectories, independent references, both host refinement checks,
+  synthetic coupling contrasts and the **348,351-value CPU/L4 comparison** passed.
+  Equations and numerical tolerances remain unchanged.
+
+  [Complete replay](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-03/evidence/gpu/mobile-repair-replay.json)
+  now passes for all **47 fields**: disk/fresh-process history, terminal restart,
+  branching, seven changed windows, layout and clock. The saved window archive
+  matches the preceding deterministic diagnostic exactly.
+  [Independent worlds](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-03/evidence/gpu/mobile-repair-worlds.json)
+  agree with their scalar references and retain exact identity under reordering.
+  This qualifies the declared synthetic mobile Kv1.5/calcium/ER/injury composition
+  on CPU and this L4/software/policy combination. Native BETSE redistribution
+  correspondence, biological repair and remote multi-GPU execution remain separate.
+  The original intermittent replay failure is preserved; its precise cause is
+  still unconfirmed despite successful qualification with deterministic settings.
+
+  The [26 October receipt inspection](/mnt/workspaces/Cells/resolved-mobile-repair-closeout-20261026-01/inspection.json)
+  verified **1,177 frozen source files**, **1,264 completion payloads**, all 85
+  required reports, 12 CPU-input bindings with 780 selected files, the saved
+  replay archive hashes and all four telemetry hashes. Peak charged tree memory
+  was **3.52 GiB**, individual RSS **3.51 GiB**, and host availability stayed above
+  **15.90 GiB**, within the unchanged 4-GiB/8-GiB guards.
+  [Whole GPU-phase telemetry](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-03/gpu-metrics/result.json)
+  records **0.684% GPU busy / 0.00767% SM-active** over **2,574.3 seconds**, with
+  approximately 100% coverage. Compilation and host checks are included; this is
+  not a warmed throughput measurement. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-03/completion.json)
+  binds the result and evidence; the controller has exited.
+
+- **Assembly/mobile-channel integration passed complete CPU/L4 qualification
+  at 18:17 UTC on 26 October.** The [completed result](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/result.json)
+  records **36 CPU passes plus one expected skip and 37 GPU passes**, with all
+  **24 CPU and 25 GPU required reports** passed. The detached recovery took
+  **16m 16s** and executed only **GPU refinement, replay and world partitioning**.
+  Its [registration](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/registration.json)
+  authenticates the eight completed CPU groups and five completed GPU groups
+  copied from the original resource-stopped run. These include all three
+  two-world trajectories, independent references, synthetic coupling controls
+  and the [71,526-value CPU/GPU comparison](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/evidence/gpu/assembly-mobile-repair-cpu-gpu.json).
+  Maximum trajectory error was **0.34476** of the unchanged budget. Suite counts
+  include preliminary contracts, not independent biological cases.
+
+  GPU [three-grid refinement](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/evidence/gpu/assembly-mobile-repair-refinement.json)
+  reduced maximum noncharge error from **6.30e-11 to 2.56e-13**, with zero recorded
+  charge error, agreeing with the completed CPU refinement. [Fresh-process replay](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/evidence/gpu/assembly-mobile-repair-replay.json)
+  passed bitwise for all **47 ionic fields**, complete assembly/event state,
+  changed windows and terminal continuation. [Independent worlds](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/evidence/gpu/assembly-mobile-repair-worlds.json)
+  passed bitwise under separate execution and reversed ordering. The
+  [coupling control](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/evidence/gpu/assembly-mobile-repair-coupling.json)
+  retained identical assembly paths and prescribed damage while producing a
+  **1.174-mV synthetic voltage difference**. This qualifies the declared one-way
+  numerical interaction on CPU/L4, not biological recovery or measured effects.
+
+  The [resource-stop record](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-01/groups/gpu/refinement/resource-stop.json)
+  charged **6.69 GiB** against the **4-GiB process-tree allowance**. Its sample
+  contains a parent and newly appearing child with almost identical **3.34-GiB
+  PSS** values; peak individual RSS was **3.41 GiB**, below its separate limit.
+  The preceding samples show small short-lived children. This was a resource
+  stop with cleanup completed, rather than a failed numerical assertion. The
+  original sample contains no address-space identity check, so its precise cause
+  remains unproven. Its [failed evidence](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-01/failure.json)
+  is preserved.
+
+  The [memory diagnosis and checks](/mnt/workspaces/Cells/assembly-mobile-memory-20261026-01/development-result.json)
+  reproduce a matching double count: the old guard charges about **96.3 MiB** for
+  two processes sharing one roughly **48.2-MiB** address space, confirmed by the
+  kernel. Linux [KCMP_VM](https://man7.org/linux/man-pages/man2/kcmp.2.html) tests
+  this sharing directly; [vfork](https://man7.org/linux/man-pages/man2/vfork.2.html)
+  can create it temporarily. The corrected guard merges PSS only when unchanged
+  live identities and kernel comparisons confirm sharing before and after the
+  memory reads. It charges the largest observation per shared address space and
+  preserves all raw process readings and comparison results. Unavailable,
+  changing or ambiguous comparisons remain fully charged.
+
+  **119 guard/controller/recovery checks passed** in **12.6 seconds**, including
+  real shared-memory children, separate private growth, exec into a new address
+  space, denied inspection, PID/exit races and individual high-water enforcement.
+  [Frozen check inputs](/mnt/workspaces/Cells/assembly-mobile-memory-20261026-01/checks-01/inputs.json),
+  [JUnit](/mnt/workspaces/Cells/assembly-mobile-memory-20261026-01/checks-01/tests.xml)
+  and the [original-guard reproduction](/mnt/workspaces/Cells/assembly-mobile-memory-20261026-01/reproduction.json)
+  retain the evidence. Only the process-monitor controller changes in recovery;
+  scientific source, test panel, protocol and tolerances remain frozen. The
+  **4-GiB tree/individual limits and 8-GiB host reserve** are unchanged. Native
+  syscall checks ran on Linux x86-64; the included arm64 ABI selection is not
+  yet qualified on Jupiter. Live sampling remains non-atomic and can still stop
+  conservatively when sharing cannot be established.
+
+  Qualification peak charged tree memory was **3.56 GiB**, individual RSS
+  **3.52 GiB**, and available host memory stayed above **15.58 GiB**. The three
+  new workers recorded **zero shared-address-space merges** and **19 conservative
+  RSS-fallback samples**; successful recovery does not itself establish the
+  original stop's cause. [Recovery GPU-phase telemetry](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/gpu-metrics/result.json)
+  records **2.136% GPU busy / 0.02695% SM-active** over **970.2 seconds**, with
+  **100% / 99.89%** respective coverage. Compilation and host checks are included;
+  no warmed throughput interval is defined. Parent telemetry remains separate.
+  The [completion receipt](/mnt/workspaces/Cells/assembly-mobile-repair-20261026-02/completion.json)
+  binds the result and 988 evidence payloads. The 19:42 UTC status inspection
+  checked its result hash and all 49 required reports. Controller **299939** has
+  exited and the L4 is idle. No follow-up run or audit job was launched.
+
+  The [development result](/mnt/workspaces/Cells/assembly-mobile-repair-development-20261026-01/development-result.json)
+  records **159 distinct passing test nodes**: 48 ownership/rate/control checks,
+  one complete two-world CPU trajectory, and 110 compatibility/controller checks.
+  The latter include the existing assembly cell and spatial-cluster checkpoint,
+  changed-window and world-partition paths. Current production source hashes
+  match all three captured development versions. The
+  [CPU trajectory](/mnt/workspaces/Cells/assembly-mobile-repair-development-20261026-01/cpu-trajectory-01/evidence/cpu/assembly-mobile-repair-trajectory-mobile.json)
+  compares all 47 ionic fields against independent assembly-event/DOP853
+  references, with maximum errors **0.34301 and 0.34476** of the unchanged budget
+  for the two worlds. Their independently reconstructed cell event counts are
+  **4/2 and 3/4**. Integrated availability and all observed state checks pass.
+  That check took **144.9 seconds** of pytest time and **148.5 seconds** under
+  the bounded runner, with **3.37 GiB** peak individual RSS. These are numerical
+  and infrastructure checks, not independent biological cases or new GPU evidence.
+
+  The [guide](docs/TISSUE_RETURN_CURRENT.md#assembly-with-mobile-channels-and-prescribed-repair),
+  [GPU example](configs/assembly_resolved_mobile_repair_tissue.json) and
+  [protocol](validation/tissue/assembly_mobile_repair_protocol.json) specify the
+  new composition. Each cell's existing root-cycle assembly law now modulates
+  both shared fixed channels and mobile Kv1.5 conduction, preserving separate
+  assembly and membrane-protein inventories, ion/work ledgers, injury controls
+  and full pending-event state. Reports and aggregation retain explicit owners
+  and reject missing/invalid mobile data. Assembly checkpoints now include GPU
+  compiler flags in runtime identity and reject changed-policy continuation.
+  The one-way coupling does not add protein exchange, finite metabolic support,
+  autonomous repair or native BETSE redistribution correspondence. Planning
+  checks cover up to sixteen GPUs; remote execution remains unqualified.
+
+- **Replay diagnosis: deterministic full and windowed histories match byte for
+  byte; the original intermittent failure was not reproduced.** The
+  [diagnosis and authenticated artifacts](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/diagnosis.json)
+  bind inputs, source, full arrays, compiled graphs, resource records and telemetry.
+  Fresh unmodified [window](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/windows-01/comparison.json)
+  and [full](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/full-01/comparison.json)
+  executions both matched the original saved full history. A further unmodified
+  [window compilation and eight repeats](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/repeated-windows-02/repeat-comparison.json)
+  also matched. Thus neither persistent execution variability nor the precise
+  cause of the earlier mismatch was established.
+
+  Under the new GPU policy, separate full and seven-window compilations produced
+  identical archives across **all 47 state fields and accepted times**, covering
+  all 84 steps; each compiled calculation then passed **eight bytewise repeat
+  comparisons**. Both archives have SHA-256
+  `affea93dae25f260bcc820ff0cddee354f0c2a2554ef2554cd02eb6351ab17c1`.
+  These are fresh initial-state runs, not migration of an old-runtime checkpoint.
+  The new settings change final floating-point bits in 12 fields relative to the
+  old policy, with largest absolute difference **5.421e-20**; the subsequent full panel
+  above verified independent references, restart and independent worlds.
+  XLA documents compilation and execution sources of nondeterminism; controlling
+  those sources is a tested mitigation here, not proof of the original cause.
+  [OpenXLA GPU determinism](https://openxla.org/xla/determinism)
+
+  [105 controller/reference checks passed](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/controller-checks-01/tests.xml),
+  including policy validation, actual-backend/flag mismatches, failed GPU
+  initialization, preservation of CPU settings and rejection of policy changes
+  through the old recovery path. These are infrastructure checks, not independent
+  biological cases. A [diagnostic-wrapper failure](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/repeated-windows-01/failure.json)
+  is retained: it stopped before simulation because empty and absent `XLA_FLAGS`
+  differ in checkpoint identity. The corrected wrapper ran in a new directory.
+
+  The deterministic [full probe](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/strict-full-01/result.json)
+  took **232.4 seconds**, with **5.028% GPU busy / 0.0619% SM-active**; the
+  [window probe](/mnt/workspaces/Cells/resolved-mobile-repair-window-20261025-01/strict-windows-01/result.json)
+  took **240.1 seconds**, with **5.040% / 0.0602%**. Busy coverage was approximately
+  100%; SM coverage was 100% and 99.49%, respectively. These intervals include
+  compilation, nine executions and host comparisons, with no warmed throughput
+  interval. Peak charged tree memory was **3.43 GiB**, peak individual RSS
+  **3.47 GiB**. The diagnosis also retains both utilization measures for every
+  earlier probe, including the wrapper failure.
+
+- **Previous mobile Kv1.5/calcium/injury panel: 56 of 58 GPU-suite checks passed;
+  exact window replay failed.** The run
+  [stopped at 21:08 UTC on 25 October](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/failure.json)
+  after **30m 59s**. All five GPU trajectories and the **348,351-value CPU/L4
+  comparison** passed again. Both refinement checks now pass, confirming the
+  corrected reference routing. Their three-grid NumPy production errors fall
+  from approximately **6.33e-11** to **2.59e-13**, with separately tightened
+  reference stability inside its unchanged budget. These refinement calculations
+  are host work within the GPU suite, not GPU convergence measurements.
+  **41 of 43 required GPU reports** passed; all **42 CPU reports** remain complete.
+
+  Replay [preparation](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/groups/gpu/replay/tmp/test_complete_saved_restart_br0/prepare.json)
+  and [saved restart, terminal restart and branching](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/groups/gpu/replay/tmp/test_complete_saved_restart_br0/resume_branch.json)
+  passed. The [window failure](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/groups/gpu/replay/tmp/test_complete_saved_restart_br0/windows.stderr.log)
+  occurs when comparing seven 12-step GPU windows against the single-run history.
+  Accepted times match, but the first reported unequal array has **80/425** values
+  differing, with maximum absolute difference **5.421e-20** and relative difference
+  **4.125e-16**. These are the first array's differences, not a complete error
+  bound over all 47 fields. The strict bitwise check therefore fails; its cause
+  is still to be established. The separate fresh-CLI resume and independent-world
+  test were not reached. The diagnostics and new qualification above follow this
+  failure while preserving the exact replay requirement. No numerical tolerance
+  has been relaxed.
+
+  Peak charged process-tree memory was **3.36 GiB**, peak individual RSS **3.32 GiB**,
+  and available host memory stayed above **15.82 GiB**. The stop was an assertion,
+  not a resource limit. [Whole-phase telemetry](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/gpu-metrics/result.json)
+  records **0.455% GPU busy / 0.0168% SM-active** over **1,853.4 seconds**, with
+  approximately 100% coverage for both; compilation and host checks are included,
+  and no warmed throughput interval is defined. The **21:20 UTC status inspection**
+  verified **137 completed-group evidence hashes**, **nine CPU input bindings and
+  their 585 selected files**, and all four telemetry file hashes. The controller
+  had exited and the L4 was idle at that inspection. No follow-up job was launched
+  during that status check.
+
+  The
+  [launch receipt](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/launch.json)
+  records PID **4131644**; its
+  [registration](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-02/registration.json)
+  reused all **12 completed CPU groups** and the GPU contracts group from the
+  original resource-stopped run. Nine additional GPU groups passed with the
+  corrected input routing before the replay stop.
+  The earlier GPU passes and failure remain preserved in their original run.
+  The four-hour wall allowance was not exhausted. No automatic retry or follow-up
+  audit is scheduled.
+
+  The [reference-routing diagnosis](/mnt/workspaces/Cells/resolved-mobile-repair-reference-20261025-01/diagnosis.json)
+  records **90 passing runner/reference checks**. These include identical species
+  ownership, all 47 reference state-field layouts and derivative/potential values
+  for raw and serialized inputs, plus rejection of mixed report/array origins
+  and changed input files. The
+  [saved-reference preflight](/mnt/workspaces/Cells/resolved-mobile-repair-reference-20261025-01/reference-inputs-01/reference-checks.json)
+  reproduces the old input mismatch for both refinement arms, then loads all
+  **nine required references** through the unchanged test helper using the new
+  routing. Selected arrays are bitwise equal to their matching CPU originals.
+  This is host-only infrastructure/reference validation, not new GPU trajectory
+  evidence. Scientific source, model tests, reference calculations and tolerances
+  remain byte-identical to the original run; only controller source changed.
+
+  Each GPU worker now receives its corresponding CPU group's report/array pairs,
+  with shared files supplying other inputs. A copied view and `cpu-inputs.json`
+  bind sources and hashes; originals and copies are verified before and after
+  use. The exact input assertions remain unchanged. The existing recovery rule
+  still rejects assertion-failed parents: this rerun reuses the original CPU
+  resource-stop parent and rechecks the GPU panel instead of bypassing that rule.
+
+  The preceding GPU attempt passed **54 of 58 GPU-suite checks** before a
+  reference-input mismatch stopped refinement. That run
+  [failed at 18:31 UTC on 25 October](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/failure.json)
+  after **20m 03s**. All five complete L4 trajectories passed their independent
+  references, analytic checks and conservation/ownership checks, with maximum
+  error **0.33914** of the unchanged budget. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/evidence/gpu/mobile-repair-cpu-gpu.json)
+  passed across **348,351 physical scalar values**, and the synthetic coupling
+  contrasts passed. The 54 includes the 46 previously completed preliminary
+  contracts; it is not 54 independent physical cases. **31 of 43 required GPU
+  reports** passed. All **42 required CPU reports** remain complete.
+
+  The [refinement failure log](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/groups/gpu/refinement-mobile/stdout.log)
+  stops at the exact saved-input comparison, before refinement arithmetic.
+  Trajectory references store the parsed configuration, while refinement requests
+  the raw fixture under the same reference filename. Their store species and
+  moiety lists have different ordering; the saved inputs are otherwise identical
+  after sorting those lists. The routing and layout checks above address the
+  mismatch, and both refinement checks passed in the subsequent panel above.
+  Complete replay and independent worlds remain pending.
+  One GPU-suite test failed and three were not reached. This is an incomplete
+  qualification, not a passed refinement or an observed trajectory-tolerance failure.
+
+  The new resource policy passed all executed groups: peak charged tree memory
+  **3.29 GiB**, peak individual RSS high-water **3.32 GiB**, under the 4-GiB
+  allowances. The release worker retained a **6.33-GiB raw summed-RSS sample**
+  containing a compiler child already exited by the accounting read; charged
+  memory at that sample was **3.15 GiB**. Raw measurements and fallback events
+  remain in the [resource log](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/groups/gpu/trajectory-release/host-resources.jsonl).
+  [Whole-phase telemetry](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/gpu-metrics/result.json)
+  records **0.483% GPU busy / 0.0173% SM-active** over **1,199.5 seconds**, with
+  approximately 100% coverage for both. This includes compilation and host work;
+  no warmed throughput interval is defined. The **20:26 UTC status inspection**
+  verified **115 completed-group evidence-file hashes** and all four telemetry
+  file hashes. The controller has exited, the L4 is idle, and no retry or follow-up
+  job was launched during this status check.
+
+  The
+  [launch receipt](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/launch.json)
+  records controller PID **4088284**; the
+  [registration](/mnt/workspaces/Cells/resolved-mobile-repair-20261025-01/registration.json)
+  binds the original scientific source and authenticated completed evidence.
+  Recovery reused all **12 CPU groups** and the GPU contracts group, then passed
+  seven new GPU groups before the stop above. Its registered four-hour wall
+  allowance was not exhausted. Earlier failed evidence remains untouched.
+
+  The [accounting diagnosis and checks](/mnt/workspaces/Cells/resolved-mobile-repair-gpu-memory-20261025-01/diagnosis.json)
+  retain an unchanged GPU compiled-guard rerun that passed in **3m 03s**, with
+  **2.84 GiB summed RSS**, and identify observed compiler children as `ptxas`.
+  That rerun did **not** reproduce the original large fork sample, so shared-page
+  double counting remains an inference about that particular stop. No GPU
+  utilization sampler was attached to this isolated diagnostic.
+  **78 guard/controller/recovery checks passed**, including real shared-fork and
+  private-copy controls, fallback accounting, individual high-water enforcement,
+  cleanup and preservation of completed evidence. These are infrastructure checks,
+  not additional scientific cases.
+
+  This recovery registers one resource-policy change: **summed RSS → proportional
+  resident memory (PSS)** for the process tree, while preserving raw RSS logs,
+  the **4-GiB individual-process RSS high-water limit**, the **4-GiB tree allowance**
+  and the **8-GiB available-host-memory reserve**. Unreadable live-process PSS
+  falls back to RSS; explicit hugetlb pages are charged too. Old completed groups
+  retain their original summed-RSS receipts. Equations, cases, tolerances, numeric
+  resource allowances and the disabled persistent-cache policy are unchanged.
+  The [guide](docs/TISSUE_RETURN_CURRENT.md#mobile-kv15-with-owned-calcium-and-prescribed-repair)
+  documents the accounting semantics and sampled-limit caveats.
+
+  The preceding run stopped at the GPU memory guard at **22:55 UTC, 24 October**.
+  Its
+  [launch receipt](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/launch.json)
+  and [registration](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/registration.json)
+  bind the frozen source and updated worker policy. The
+  [CPU suite](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/cpu.xml)
+  records **57 passes, one expected CPU/GPU-comparison skip and no failures**;
+  all **42 required CPU reports** passed. All five trajectories agree with the
+  independent reference within **0.33914** of the unchanged error budget.
+  Both three-grid refinements pass. [Complete 47-field replay](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/evidence/cpu/mobile-repair-replay.json)
+  includes bitwise saved/fresh-process history, layout and clock, terminal restart,
+  branching and seven changed windows. [Independent worlds](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/evidence/cpu/mobile-repair-worlds.json)
+  agree with scalar runs and retain bitwise identity under reordering. CPU peak
+  sampled process-tree RSS was **3.27 GiB**, within the **4-GiB guard**.
+
+  The [retained GPU failure](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/failure.json)
+  occurred after **40m 58s** total. The GPU phase passed **46 preliminary contract
+  checks**, then stopped during `compiled-guard`, before any complete GPU
+  trajectory or CPU/L4 comparison passed. These preliminary checks include host
+  arithmetic and definition tests; they do not qualify L4 trajectory execution.
+  Its [worker resource log](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/groups/gpu/compiled-guard/host-resources.jsonl)
+  records **5.42 GiB summed process-tree RSS**: a roughly **2.70-GiB parent**, a
+  newly created child with identical RSS, and a small second child. This is
+  consistent with shared pages being counted in both parent and child after a
+  fork, but the saved RSS sample does not establish their distinct physical-memory
+  cost. The new accounting policy above addresses this sharing explicitly.
+  The host reserve remained available; the cache setting was
+  verified disabled on both backends.
+
+  [Telemetry for the interrupted GPU phase](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-02/gpu-metrics/result.json)
+  records **0.0522% GPU busy / 0.0230% SM-active** over **160 seconds**, with
+  approximately **100% / 99.22% coverage** respectively. This interval includes
+  compilation and host checks and has no warmed throughput interval. The
+  **17:15 UTC, 25 October** status inspection verified all **87 completed-group
+  evidence-file hashes**, the 42 passing required CPU reports and four telemetry
+  file hashes. That controller exited; its evidence remains untouched. Full
+  CPU/L4 qualification remains incomplete; the target is still **58 L4 passes
+  and 43 required GPU reports**. The recovery uses the explicit memory-accounting
+  adjustment above, retaining the numeric allowances and all scientific checks.
+
+  The [memory diagnosis](/mnt/workspaces/Cells/resolved-mobile-repair-memory-20261024-01/diagnosis.json)
+  reproduced the original stop and located the allocation inside JAX 0.11.1's
+  `backend.deserialize_executable`. The exact original **9,034,548-byte** cached
+  executable expands to **73,426,271 bytes**, then loading it exceeds the 4-GiB
+  guard. The instrumented failure and call stacks remain intact. With disk-cache
+  use disabled, the otherwise identical immobile control stayed below **2.99 GiB**
+  observed process high-water RAM, but exceeded its **480-second diagnostic wall
+  allowance while compiling**. That is a retained timeout, not a passed trajectory
+  or completed numerical qualification.
+
+  The updated protocol disables the persistent compilation cache in these bounded
+  CPU/L4 workers and verifies the effective setting in each runtime report.
+  In-process JIT remains enabled. It also registers only the exact XLA
+  slow-compilation notice blocks: those are counted and retained in authenticated
+  logs; all other stderr diagnostics, nonzero exits and failed checks still stop
+  qualification. The
+  [50 passing controller/recovery checks](/mnt/workspaces/Cells/resolved-mobile-repair-memory-20261024-01/controller-checks-06/result.json)
+  verify these policies, failure handling and complete evidence. These are runner
+  checks, not additional physical or biological cases. The diagnosis verifies that
+  production equations, model tests, fixtures and independent references are
+  byte-identical to the failed qualification. Only the controller, its tests and
+  the protocol's execution policy changed.
+
+  The earlier qualification's
+  [launch receipt](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-01/launch.json)
+  and [registration](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-01/registration.json)
+  preserve the original frozen protocol. **48 CPU checks passed** before its stop:
+  46 contracts, the compiled rejection guard and the
+  complete mobile trajectory. The
+  [mobile trajectory report](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-01/evidence/cpu/mobile-repair-trajectory-mobile.json)
+  includes independent-reference agreement within **0.33914** of its unchanged
+  error budget, analytic protein diffusion and analytic prescribed damage.
+  The **21:24 UTC** status inspection verified all **24 evidence-file hashes**
+  from those three completed groups.
+
+  That run's [retained failure](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-01/failure.json)
+  occurred at **18:26 UTC**, **6m 9s** after launch. Its
+  [immobile-arm worker](/mnt/workspaces/Cells/resolved-mobile-repair-20261024-01/groups/cpu/trajectory-immobile/failure.json)
+  reached **4.07 GiB** after approximately 40 seconds, crossing the unchanged
+  **4-GiB process-tree limit** before saving a trajectory or reporting a numerical
+  assertion. Host memory remained above its reserve. **No GPU-busy or SM-active
+  measurements exist for that stopped run**, because it never entered the GPU
+  phase. Its controller exited; its failed evidence remains unchanged.
+
+  [`resolved_repair@2`](src/cells/models/surface_mobile_repair.py) connects neutral
+  mobile Kv1.5 joint states to the existing free-cytosol/ER, calcium transport and
+  prescribed fixed-geometry injury/resealing model. The same stage voltage drives
+  channel gates, and conducted potassium updates the existing ion owners and
+  capacitors. Its **47 fields** distinguish protein motion, gate transitions and
+  conducted ions. The [guide](docs/TISSUE_RETURN_CURRENT.md#mobile-kv15-with-owned-calcium-and-prescribed-repair)
+  and [GPU example](configs/resolved_mobile_repair_tissue.json) specify its limits:
+  mobile Kv1.5 only in this composition, phenomenological gate-bias work, prescribed
+  closure, and no autonomous repair, wetlab validation or native BETSE moving-channel
+  trajectory equivalence.
+
+  The [development manifest](/mnt/workspaces/Cells/resolved-mobile-repair-development-20261024-01/development-result.json)
+  records **70 unique CPU passes: 50 new-model checks and 20 shared-parser checks**.
+  These include all 47 independent stage derivatives, ownership and invalid-state
+  checks, a compiled rejection guard, mobile-arm NumPy refinement with a tightened
+  independent reference, and saved-array coupling comparisons. The isolated
+  [scheduled-release trajectory](/mnt/workspaces/Cells/resolved-mobile-repair-development-20261024-01/cpu-trajectory-release-07/evidence/cpu/mobile-repair-trajectory-release.json)
+  passed in **2m 31s** with **3.13 GiB** peak sampled process-tree RAM and a maximum
+  **0.33914** fraction of its unchanged independent-reference error budget.
+  The completed CPU phase above now covers all five fresh trajectories, release
+  refinement, complete replay/windows and independent worlds. Their GPU counterparts
+  and CPU/L4 agreement remain pending.
+
+  The [initial contract failure](/mnt/workspaces/Cells/resolved-mobile-repair-development-20261024-01/cpu-contracts-01/failure.json)
+  retains test-adapter errors corrected by using the physical exterior mask and
+  recursive array comparison. The [five-arm worker failure](/mnt/workspaces/Cells/resolved-mobile-repair-development-20261024-01/cpu-coupling-04/failure.json)
+  retains a **4-GiB memory-guard stop** after saving four complete trajectories,
+  while compiling the fifth. A separately
+  [source-matched comparison](/mnt/workspaces/Cells/resolved-mobile-repair-development-20261024-01/cpu-coupling-06/evidence/cpu/mobile-repair-coupling.json)
+  uses those arrays as partial development evidence; the failed worker is not a
+  completed qualification. The new protocol runs each trajectory in a fresh
+  process and verifies saved-array inputs and hashes for comparisons. Replay
+  phases also run sequentially in fresh processes. The **4-GiB worker / 8-GiB
+  host-reserve guards**, tolerances and simulator equations remain unchanged.
+
+  The user's bioelectric pattern/error/correction brainstorm is retained as
+  [proposed future experiments](docs/EXPERIMENTS.md#future-experiments-pattern-information-error-sensing-and-corrective-action),
+  including primary sources and a possible Forms discussion addition. It builds
+  on the draft's existing observer/reader distinction; the manuscript was not
+  changed and no new biological experiment was launched.
+
+- **Mobile Kv1.5 gating-state transport passed CPU/L4 qualification at 16:43 UTC
+  on 24 October.** The
+  [completed result](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/result.json)
+  records **65 CPU passes plus one expected comparison skip and all 66 L4 passes**,
+  with no failures and all **40 CPU / 41 GPU required reports** passed. It finished
+  in **34m 32s**, using **3.22 GiB** peak process-tree RAM under the unchanged
+  **4-GiB worker / 8-GiB host-reserve guards**. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/completion.json)
+  matches the result and required-report hashes; the
+  [registration](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/registration.json)
+  binds **1,168 frozen source files** and the protocol.
+
+  [`resolved_redistribution@3`](src/cells/models/surface_mobile_channel.py)
+  transports four joint activation/inactivation conformations, preserving their
+  correlations as proteins move. Current open-channel density sets potassium
+  permeability at every RK4 stage. Its **27 state fields** retain separate protein,
+  ion, capacitor, ATP and electrode accounting. Gate-rate-bias work is declared
+  phenomenological bookkeeping, not measured gating heat or resolved gating charge.
+  The [guide](docs/TISSUE_RETURN_CURRENT.md#mobile-channels-carrying-joint-gating-states),
+  [GPU example](configs/resolved_mobile_channel_tissue.json) and
+  [protocol](validation/tissue/surface_mobile_channel_protocol.json) define the scope.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/evidence/gpu/channel-mobile-cpu-gpu.json)
+  passes **114,663 scalar values** at unchanged unit-specific tolerances. Five
+  complete GPU trajectories stay within **0.08571** of the independent-reference
+  error budget. [Complete 27-field replay](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/evidence/gpu/channel-mobile-replay.json)
+  includes bitwise fresh-process history, final state, layout and clock, plus disk,
+  terminal, conduction-blocking branch and changed-window checks.
+  [Independent-world reordering](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/evidence/gpu/channel-mobile-worlds.json)
+  is bitwise; compiled invalid-trial rejection also passes on both backends.
+
+  [Whole GPU-phase measurements](/mnt/workspaces/Cells/resolved-mobile-channel-20261024-01/gpu-metrics/result.json)
+  are **0.568% GPU busy / 0.00637% SM-active**, with over **99.92% coverage**.
+  These include compilation, host references and checks; no warmed throughput
+  interval is defined. The controller has exited and the L4 was idle at the
+  **17:13 UTC** status check. No follow-up run was launched. Broader mobile channel
+  families, calcium/injury/assembly composition and charged-cargo field work remain
+  open; native BETSE redistribution correspondence is still unresolved.
+
+  The [development result](/mnt/workspaces/Cells/resolved-mobile-channel-development-20261024-01/development-result.json)
+  records **86 unique CPU passes**: 62 new-model checks and 24 related mobile-pump
+  checks, plus one expected CPU/GPU-comparison skip. Five complete trajectories
+  pass the independent reference; the largest error uses **0.08571** of its
+  unchanged budget. Analytic diffusion, correlated-state controls and three-grid
+  refinement pass. The corrected trajectory worker took **6m 32s**, with about
+  **2.02 GiB** peak process-tree RAM. The full qualification above now includes
+  compiled invalid-trial rejection, complete replay, independent-world batching
+  and actual L4 execution. These are synthetic numerical controls, not
+  independent biological cases or a native BETSE redistribution comparison.
+
+  Both failures remain intact: the
+  [initial contract check](/mnt/workspaces/Cells/resolved-mobile-channel-development-20261024-01/cpu-contracts-01/failure.json)
+  correctly rejected two multicell fixtures at 310 K; those fixtures now use the
+  law's declared 298.15 K. The
+  [coarse-step trajectories](/mnt/workspaces/Cells/resolved-mobile-channel-development-20261024-01/cpu-trajectories-03/failure.json)
+  missed the surface-mixing dissipation budget in three arms. Halving the step
+  from **12.5 to 6.25 µs** reduced the error approximately 16-fold without changing
+  equations or tolerances; the coarse step remains in the refinement controls.
+  [Source comparison](/mnt/workspaces/Cells/resolved-mobile-channel-development-20261024-01/implementation-source-comparison.json)
+  binds the unchanged simulator and independent reference across those checks.
+
+- **Mobile Na/K ATPase CPU/L4 qualification completed at 14:36 UTC on
+  24 October.** The [completed result](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/result.json)
+  records **61 CPU passes plus one expected comparison skip and all 62 L4
+  passes**, with no failures and all **33 CPU / 34 GPU required reports** passed.
+  It finished in **24m 39s**, using **3.19 GiB** peak sampled process-tree RAM
+  under the unchanged **4-GiB worker / 8-GiB host-reserve guards**. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/completion.json)
+  matches the result and required-report hashes; the
+  [registration](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/registration.json)
+  binds **1,159 frozen source files** and the protocol.
+
+  The [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/evidence/gpu/pump-mobile-cpu-gpu.json)
+  passes **25,423 scalar values** with unchanged unit-specific tolerances. All
+  five GPU trajectories stay within **0.06397** of the independent-reference
+  error budget. [Complete replay](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/evidence/gpu/pump-mobile-replay.json)
+  includes bitwise fresh-process history, final state, layout and clocks, with
+  disk, terminal, branch and changed-window checks. [Independent-world reordering](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/evidence/gpu/pump-mobile-worlds.json)
+  is bitwise. This qualifies the synthetic neutral mobile ATPase composition;
+  it does not establish biological diffusion rates or native BETSE redistribution
+  correspondence.
+
+  [Whole GPU-phase measurements](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/gpu-metrics/result.json)
+  are **0.291% GPU busy / 0.00461% SM-active**, with over **99.99% coverage**.
+  These include compilation, host references and checks; no warmed throughput
+  interval is defined. The controller has exited. The next extension, joint
+  gating-state transport, is tracked separately above.
+
+  The
+  [restart preparation worker](validation/tissue/surface_mobile_pump_replay.py)
+  now exits before the ordinary fresh CLI starts. The test coordinator retains
+  no compiled simulation graphs while either child runs; both remain inside the
+  existing process-tree resource guard. The
+  [bounded CPU check](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-replay-05/result.json)
+  passed in **4m 27s**, using **2.59 GiB** peak combined RAM under the unchanged
+  **4-GiB worker / 8-GiB host-reserve limits**, with two-core affinity and a
+  persistent compilation cache. Its
+  [replay report](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-replay-05/evidence/cpu/pump-mobile-replay.json)
+  retains all disk, terminal, branch and window assertions and additionally
+  verifies the fresh process's **complete 21-field history, layout and clock
+  bitwise**. The [source comparison](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/sequential-replay-change.json)
+  confirms unchanged simulator code, other tests, resource limits and tolerances.
+
+  The [second launch](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-02/launch.json)
+  repeated the full panel with that resource fix. The failed first attempt below
+  remains intact.
+
+  [`resolved_redistribution@2`](src/cells/models/surface_mobile_pump.py) adds
+  conserved neutral pump proteins to the ordinary surface model. Their current
+  patch amount sets cycle capacity; the existing reversible Na/K ATPase law
+  retains separate ion, capacitor, reservoir, electrode and ATP-work accounting.
+  Its **21 complete state fields** include pump motion, cycles and dissipation.
+  Pump inhibition and passive-pore controls remain distinct from lateral motion.
+  The [guide](docs/TISSUE_RETURN_CURRENT.md#mobile-nak-atpase-populations),
+  [GPU example](configs/resolved_mobile_pump_tissue.json) and
+  [CPU/L4 protocol](validation/tissue/surface_mobile_pump_protocol.json) specify
+  the bounded synthetic scope; maintained ATP/ADP/Pi are not finite metabolism.
+
+  [The development result](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/development-result.json)
+  binds **94 unique CPU passes**: 61 new-model checks and 33 related checks on
+  the previous surface model, plus one expected CPU/GPU comparison skip. Five
+  trajectories cover mobile, fixed, inhibited, reverse and scheduled pumping;
+  their maximum independent-reference error uses **0.06397** of the unchanged
+  budget. Open/closed two-cell stages include an absent population and reordered
+  named species. Three-grid refinement reduces errors about 16-fold per halving.
+  [Complete 21-field replay](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-replay-04/evidence/cpu/pump-mobile-replay.json)
+  passes disk/fresh-process/terminal continuation, future inhibition and changed
+  windows; [independent world reordering](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-check-02/evidence/cpu/pump-mobile-worlds.json)
+  is bitwise. These are numerical controls, not biological cases or calibrated
+  diffusion rates.
+
+  Two failed attempts remain intact. The
+  [first](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-contracts-01/failure.json)
+  exposed a NumPy-scalar adapter incompatibility with the Decimal oracle's strict
+  native-number validator. The
+  [second](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/cpu-check-02/failure.json)
+  passed 58 checks but rejected a test branch that removed a future boundary while
+  retaining an observation there. Explicit scalar conversion and retaining the
+  boundary with pumping disabled resolved those test issues; production equations
+  and numerical tolerances are unchanged. The corrected replay took **4m 59s**
+  with peak process-tree RAM **3.65 GiB**, below the **4-GiB worker / 8-GiB
+  host-reserve guards**. The qualification
+  [moved its unchanged fresh-process check earlier](/mnt/workspaces/Cells/resolved-mobile-pump-development-20261024-01/replay-memory-order.json)
+  to avoid holding branch/window compilation graphs alongside the child. That
+  ordering change did not keep the qualification restart below its memory limit.
+
+  The [detached launch](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/launch.json)
+  and [registration](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/registration.json)
+  retain **1,158 frozen source files**, inputs and resource limits. The protocol
+  defines **62 checks per backend**
+  in sequential contracts, trajectory, replay and world-batch workers, requiring
+  **33 CPU / 34 GPU reports** and recording GPU-busy and SM-active.
+  The [contracts worker](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/groups/cpu/contracts/qualified.json)
+  passed all **50 checks**; the
+  [trajectory worker](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/groups/cpu/trajectories/qualified.json)
+  passed **nine checks plus one expected CPU/GPU comparison skip**. All five
+  trajectory comparisons and three refinement checks passed at unchanged budgets.
+
+  After **6m 09s**, the
+  [qualification failed](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/failure.json)
+  during the CPU fresh-process restart. Its
+  [resource failure](/mnt/workspaces/Cells/resolved-mobile-pump-20261024-01/groups/cpu/replay/failure.json)
+  records **4,295,081,984 bytes** of combined parent/child RSS, **112 KiB above
+  the 4-GiB guard**. At the peak sample the parent used about **2.44 GiB** and
+  the child **1.56 GiB**, with about **18 GiB** still available on the host.
+  This was the worker memory allowance, not exhaustion of host RAM. Replay did
+  not finish, the world-batch worker was not reached, and the L4 phase never
+  started; GPU utilisation measurements therefore do not exist for this attempt.
+  The controller has exited and the L4 was idle at the **13:17 UTC** status check.
+  Gating-state transport, charged cargo and calcium/injury/assembly coupling
+  remain outside this extension; native BETSE redistribution correspondence
+  remains unresolved.
+
+- **Neutral channel redistribution passed CPU/L4 qualification at 12:26 UTC
+  on 24 October.** The registered
+  [`resolved_redistribution@1` model](src/cells/models/surface_redistribution.py)
+  now moves conserved membrane-bound populations and uses their current patch
+  density to set local ion permeability at every RK4 stage. Its **15 state
+  fields** retain the resolved ionic/electrode/work ledgers and add surface
+  amount, transfer and ideal-mixing heat. The
+  [model guide](docs/TISSUE_RETURN_CURRENT.md#lateral-membrane-redistribution)
+  specifies units, ownership, equations and exclusions.
+
+  [The development evidence](/mnt/workspaces/Cells/resolved-redistribution-development-20261024-01/development-result.json)
+  records **49 CPU passes**: 41 new-model checks and eight existing passive
+  field-stage checks, plus one expected CPU/GPU-comparison skip. The final two
+  checks bind **1,150 frozen files**, identical production sources and unchanged
+  tests apart from the corrected batch work allowance. They took **3m 05s and
+  1m 14s**, with peak process-tree RAM **1.74 GiB and 0.89 GiB**, under the existing
+  resource guard's **4-GiB worker / 8-GiB host-reserve limits**.
+  [Three complete trajectories](/mnt/workspaces/Cells/resolved-redistribution-development-20261024-01/cpu-check-03/evidence/cpu/mobile-trajectory-mobile.json)
+  compare mobile, fixed and ion-blocked controls with independent DOP853/full-node
+  electrical references. The maximum state error uses **0.06397** of its unchanged
+  budget. Open/closed two-cell stage checks, separate material/energy balances,
+  [timestep refinement](/mnt/workspaces/Cells/resolved-redistribution-development-20261024-01/cpu-check-03/evidence/cpu/mobile-refinement.json),
+  [bitwise disk/fresh-process/branch/window replay](/mnt/workspaces/Cells/resolved-redistribution-development-20261024-01/cpu-check-03/evidence/cpu/mobile-replay.json)
+  and [reordered independent worlds](/mnt/workspaces/Cells/resolved-redistribution-development-20261024-01/cpu-worlds-04/evidence/cpu/mobile-independent-worlds.json)
+  pass. These are short synthetic controls with accelerated diffusion, not
+  measured biological rates or independent biological cases.
+
+  Failed development evidence is retained: the first check exposed cancellation
+  in the chemical-potential calculation; using the declared reference density
+  fixed it without changing tolerances. The 50-us grid missed charge/heat
+  comparison budgets; **12.5 us** passes and halving the step reduces error about
+  16-fold. One overbroad legacy test selection was stopped and narrowed. The
+  refined two-world test then hit its old work allowance; only that test's
+  allowance was updated and its successful rerun is included above. Production
+  work limits and numerical tolerances remain unchanged.
+
+  The [completed qualification](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/result.json)
+  passed **41 CPU checks plus one expected comparison skip and all 42 L4
+  checks**, with no failures and all **19 CPU / 20 GPU required reports** passed.
+  It finished in **7m 21s**, using **3.00 GiB** peak sampled process-tree RAM
+  under the unchanged **4-GiB worker / 8-GiB host-reserve guards**. The
+  [registration](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/registration.json)
+  binds **1,151 frozen files** and the [protocol](validation/tissue/surface_redistribution_protocol.json).
+  The [completion receipt](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/completion.json)
+  authenticates the result and report hashes. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/evidence/gpu/mobile-cpu-gpu.json)
+  passes **8,919 scalar values** with unchanged unit-specific tolerances.
+  GPU trajectories use at most **0.06397** of the independent-reference error
+  budget; [full restart/window/branch replay](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/evidence/gpu/mobile-replay.json)
+  and [world reordering](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/evidence/gpu/mobile-independent-worlds.json)
+  are bitwise. This qualifies the synthetic neutral always-open composition,
+  not native BETSE redistribution or biological diffusion rates.
+
+  [Whole GPU-phase measurements](/mnt/workspaces/Cells/resolved-redistribution-20261024-01/gpu-metrics/result.json)
+  are **0.302% GPU busy / 0.00450% SM-active**, with over **99.99% coverage**.
+  This tiny correctness panel includes compilation and CPU reference checks;
+  it provides no warmed throughput result. The L4 was idle at the **12:28 UTC**
+  status check. No follow-up job was launched. The
+  [GPU example](configs/resolved_redistribution_tissue.json), tolerances and
+  completed assembly evidence remain unchanged.
+  Pump/gated-state transport, charged-cargo field work and calcium/injury/assembly
+  composition remain pending. The earlier
+  [34 isolated component checks](/mnt/workspaces/Cells/membrane-redistribution-development-20261024-01/cpu-check-02/result.json)
+  remain separate evidence. The retained
+  [native BETSE probe](/mnt/workspaces/Cells/membrane-redistribution-development-20261024-01/native-source-probe.json)
+  still fails on the missing `single_cell_div_free` helper; native redistribution
+  trajectory correspondence is unresolved.
+
+- **The 2-ms assembly/injury qualification completed at 12:06 UTC on
+  24 October: numerical checks passed; functional return was not observed.**
+  The [result](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/result.json)
+  records **32 CPU passes plus one expected comparison skip, 33 L4 passes**,
+  no failures and all **24 CPU / 25 GPU required reports** passed. The
+  [completion receipt](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/completion.json)
+  matches the result hash. The run took **2h 20m 52s**, using **4.19 GiB** peak
+  child RAM and **4.18 GiB** sampled process-tree RAM. Its
+  [registration](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/registration.json)
+  retains 1,142 frozen source hashes and the unchanged
+  [protocol](validation/tissue/assembly_repair_recovery_protocol.json).
+
+  Four controls, each with two keyed worlds, cover all 39 ionic state fields
+  and complete protein/pending-event/clock state at **85 observations** through
+  2 ms. Independent event/ion/field references, reference tightening and
+  three-timestep checks pass. The
+  [saved 1-ms continuation](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/evidence/gpu/assembly-repair-recovery-replay.json)
+  with changed windows and
+  [separate worlds executed in reverse order](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/evidence/gpu/assembly-repair-recovery-worlds.json)
+  reproduce complete sampled histories bitwise. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/evidence/gpu/assembly-repair-recovery-cpu-gpu.json)
+  passes **554,960 scalar values** and identical recovery labels with unchanged
+  unit-specific tolerances.
+
+  The [functional report](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/evidence/gpu/assembly-repair-recovery-functional.json)
+  finds no resolved departure for uninjured/sham controls. Both held-injury and
+  resealing worlds remain outside the return bands at 2 ms. After resealing,
+  voltage differs from the matched uninjured trajectory by about **0.599 mV**
+  against a **0.010-mV** band; free cytosol/exterior differences are about
+  **2.23e-5 / 1.10e-5 mM**, against **1e-6 mM** bands. No 0.5-ms held return
+  is demonstrated. Assembly remains a one-way channel regulator with neutral
+  cell-owned protein pools; this does not establish autonomous repair or
+  experimental tissue recovery.
+
+  [Whole-qualification GPU measurements](/mnt/workspaces/Cells/assembly-repair-recovery-20261024-01/gpu-metrics/result.json)
+  are **50.41% GPU busy** and **0.600% SM-active**, with over 99.9% coverage.
+  They include compilation and host reference checks; no warmed throughput
+  interval is claimed. Earlier
+  [preflight results](/mnt/workspaces/Cells/assembly-repair-recovery-preparation-20261024-01/preflight-02/qualified.json)
+  and the [initial preflight failure](/mnt/workspaces/Cells/assembly-repair-recovery-preparation-20261024-01/preflight-01/check-failure.json)
+  remain preserved. No additional assembly experiment was launched.
+
+- **Cortical culture learning added to future biological validations,
+  24 October.** The [Clawson et al. wet-lab review](docs/PAPER_REVIEW_CORTICAL_LEARNING.md)
+  records the v1 findings, experimental limitations, data/code gaps and concrete
+  learning/persistence/error-recovery comparisons. It is indexed in the
+  [calibration inventory](docs/SCIENTIFIC_BASIS.md#candidate-resources-for-whole-cells-and-organs)
+  and [experiment queue](docs/EXPERIMENTS.md#cortical-culture-learning-and-error-recovery).
+  The [source and documentation record](/mnt/workspaces/Cells/paper-reviews/clawson-hal-20261024/review.json)
+  retains provenance. This is a literature/planning update; no simulation or
+  biological validation was performed and the active qualification was untouched.
+
+- **The 2-ms injury/recovery panel completed at 01:09 UTC on 24 October:
+  numerical qualification passed; functional return was not observed.** The
+  [completed CPU/L4 run](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/result.json)
+  passed **30 CPU checks plus one expected skip** and **31 L4 checks**, with no
+  failures and all **17 CPU / 18 GPU required reports** passed. The
+  [completion manifest](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/completion.json)
+  binds the result and evidence; its result hash matches. The
+  [registration and 1,138 frozen source hashes](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/registration.json)
+  retain all inputs and numerical/resource settings. The controller has exited;
+  the assembly-coupled follow-up is recorded above.
+
+  The [functional report](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/evidence/gpu/resolved-repair-recovery-functional.json)
+  retains all four controls. Uninjured and sham have no resolved departure;
+  held injury and resealing are both **outside the declared bands at 2 ms**.
+  Only **0.03566%** of the resealing arm's pulse-end damage remains, but its
+  final maximum voltage difference is **0.5984 mV**, above the **0.010-mV**
+  band; held injury is **5.0473 mV** away. Resealing's final free-ion differences
+  are **2.232e-5 mM** in cytosol and **1.098e-5 mM** outside, both above the
+  **1e-6-mM** band. All per-metric and combined outcomes agree with the
+  independent reference and across CPU/L4. This demonstrates why prescribed
+  membrane closure and functional restoration must be measured separately;
+  it does not establish biological recovery or an eventual failure to recover.
+
+  The new [sampled recovery observer](src/cells/assays/recovery.py) requires a
+  resolved disturbance followed by simultaneous return of patch voltage and
+  owned free cytosol/exterior concentrations to declared bands around the
+  independently integrated uninjured trajectory. The
+  [protocol](validation/tissue/surface_repair_recovery_protocol.json) fixes a
+  **0.5-ms final hold**, 83 observations, gaps no larger than 25 us, and
+  engineering bands of **10 uV / 1e-6 mM**, with explicit numerical uncertainty.
+  Quiet controls, ambiguous boundaries, brief reentry and incomplete recovery
+  remain distinct. Every arm is retained; numerical qualification does not
+  require injured tissue to recover. These are synthetic sampled-return
+  criteria, not fitted physiological ranges or evidence between observations.
+
+  Complete 39-field trajectories, independent-reference stability and three-grid
+  refinement passed at unchanged state/conservation tolerances.
+  [CPU/L4 agreement](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/evidence/gpu/resolved-repair-recovery-cpu-gpu.json)
+  covers **8,061,740 scalar values**, with identical recovery classifications.
+  [1-ms saved restart and changed windows](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/evidence/gpu/resolved-repair-recovery-replay.json)
+  and [independent-world reordering](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/evidence/gpu/resolved-repair-recovery-worlds.json)
+  match complete histories bitwise on both backends.
+  The [GPU example](configs/resolved_repair_recovery_tissue.json)
+  preserves the original physical parameters. Longer assembly execution and
+  autonomous repair are outside this extension; the research branch stays parked.
+
+  [All 19 preflight checks passed](/mnt/workspaces/Cells/repair-recovery-preparation-20261023-01/preflight-03/qualified.json)
+  in **8.85 seconds** of test time, using **0.224 GiB** of sampled worker RAM.
+  The [initial budget rejection](/mnt/workspaces/Cells/repair-recovery-preparation-20261023-01/preflight-01/check-failure.json)
+  and [reference-readout indexing failure](/mnt/workspaces/Cells/repair-recovery-preparation-20261023-01/preflight-02/check-failure.json)
+  remain frozen. The finest trace and two-world aggregate now explicitly allow
+  8 GiB of conservative array working storage; preflight verifies the old 4-GiB
+  declarations reject. The reference readout converts owner lists to index
+  arrays. Physical equations and state-error budgets were not changed.
+
+  The run took **2 h 12 min 8 s**, including a **57 min 38 s** GPU phase.
+  Sampled worker-tree RAM peaked at **9.16 GiB**; host availability stayed above
+  **11.88 GiB**, preserving the **14-GiB worker / 4-GiB host-reserve guards**.
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/gpu-metrics/result.json)
+  averaged **31.702% GPU busy / 0.37363% SM-active**, with essentially complete
+  busy coverage and **99.973%** SM coverage. These whole-phase averages include
+  compilation, host checks and idle periods; the longer workload is not a
+  controlled throughput comparison with the preceding 50-us panel.
+
+  The longer assembly-coupled qualification is recorded above. Topology-changing
+  cutting/regrowth remain later work. The parked research branch remains parked. No automatic
+  retry, follow-up run or repeated status polling is scheduled.
+
+- **Fixed-geometry injury, prescribed resealing and assembly integration
+  qualified on CPU and L4 at 21:20 UTC on 23 October.** The
+  [completed run](/mnt/workspaces/Cells/resolved-repair-20261023-01/result.json)
+  passed **130 CPU checks plus two expected comparison skips** and **132 L4
+  checks**, with no failures. All **31 CPU / 33 GPU required reports** passed.
+  The [completion manifest](/mnt/workspaces/Cells/resolved-repair-20261023-01/completion.json)
+  binds the result and evidence; its result hash matches. The
+  [registration](/mnt/workspaces/Cells/resolved-repair-20261023-01/registration.json)
+  retains all 1,132 frozen source hashes and the original numerical/resource
+  settings. The controller has exited; the longer follow-up is recorded above.
+
+  [CPU/L4 agreement for all four ordinary injury histories and observations passed](/mnt/workspaces/Cells/resolved-repair-20261023-01/evidence/gpu/resolved-repair-full-cpu-gpu.json)
+  across **218,684 scalar values** at the unchanged tolerances. The
+  [complete assembly-state comparison](/mnt/workspaces/Cells/resolved-repair-20261023-01/evidence/gpu/assembly-repair-cpu-gpu.json)
+  passed for another **9,300 values**, including all five observation times,
+  with exact discrete events. Held-injury and resealing timestep refinement
+  passed. On both backends, complete fresh-process restart, execution windows,
+  reordered independent worlds and assembly restart/partition replay are
+  bitwise. The [assembly reference](/mnt/workspaces/Cells/resolved-repair-20261023-01/evidence/gpu/assembly-repair-reference.json)
+  uses **0.2402** of its unchanged error budget.
+
+  The [registered protocol](validation/tissue/surface_repair_protocol.json)
+  covers all 39 state fields for four synthetic 50-us injury controls,
+  independent reference stability, coupled timestep refinement, complete
+  same-input/fresh-process/window/world replay, and CPU/L4 comparison. The
+  assembly comparison now checks all five observation times. Controls and
+  replay checks are numerical evidence, not independent biological cases;
+  longer functional recovery, autonomous repair and changing topology remain
+  outside this panel.
+
+  [CPU preflight passed all 34 selected checks](/mnt/workspaces/Cells/repair-qualification-preparation-20261023-01/host-01/qualified.json)
+  in **3 min 52 s** of test time, using less than 0.4 GiB of sampled worker RAM.
+  Final review added the GPU-phase receipt for reused CPU references;
+  [both reference-reuse reporting checks passed on the host](/mnt/workspaces/Cells/repair-qualification-preparation-20261023-01/reference-reuse-check/qualified.json).
+  No production physics or numerical tolerance changed for this qualification.
+  The run finished in **1 h 18 min 19 s**, including a **46 min 46 s** GPU phase.
+  Sampled worker-tree RAM peaked at **8.85 GiB**; available host memory stayed
+  above **8.44 GiB**, preserving the 14-GiB worker ceiling and 4-GiB host reserve.
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-repair-20261023-01/gpu-metrics/result.json)
+  averaged **1.460% GPU busy / 0.01931% SM-active**, with essentially complete
+  busy coverage and 100% SM coverage. These device-wide averages include
+  compilation, host checks and idle periods in this small correctness panel;
+  no warmed throughput interval or utilization target was tested.
+
+  The longer sampled-return checks of voltage and ion inventories are recorded
+  above. Topology-changing cutting and resource-supported regrowth remain later work.
+  The parked channel-compensation research remains parked. No automatic retry,
+  follow-up run or repeated status polling is scheduled.
+
+- **Scheduled interventions added to assembly-integrated tissue; all 49 CPU
+  development checks passed, including compiled reference/replay checks
+  completed at 16:19 UTC on 23 October.** The cluster clock now stops at external
+  interventions as well as cell-owned assembly events. This connects `resolved_repair@1` to the
+  assembly runner, including off-grid injury pulses, complete saved state and
+  membrane/species-owned damage and transfer reports. Assembly still regulates
+  channel availability; injury and resealing remain externally prescribed.
+  [Scope and timing](docs/TISSUE_RETURN_CURRENT.md#fixed-geometry-injury-and-prescribed-resealing)
+  and a [GPU example](configs/assembly_resolved_repair_tissue.json) are available.
+
+  The [46 passing checks](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/host-01/qualified.json)
+  took 79 seconds and cover exact event ties, prior constant controls,
+  independent rates/ownership, checkpoint rejection, resource bounds,
+  ordinary injury controls and one-to-sixteen-GPU planning.
+  [Inputs and frozen source hashes](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/host-01/inputs.json)
+  retain the evidence. These are CPU numerical/engineering checks; the planning
+  check executes no GPU and does not establish multi-GPU qualification.
+
+  The [three compiled checks passed](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/compiled-01/qualified.json)
+  in **9 min 4 s** of test time (**9 min 19 s** including process overhead).
+  The [joint 50-us reference comparison](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/compiled-01/evidence/cpu/assembly-repair-reference.json)
+  uses **0.112** of the unchanged error budget, with four and two independently
+  reconstructed assembly events in the two cells. Complete saved restart,
+  changed execution windows and partitioned worlds all
+  [match bitwise](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/compiled-01/evidence/cpu/assembly-repair-replay.json).
+  The existing constant-control event-tie check also passed. Sampled peak worker
+  memory was **3.44 GiB**, below its 8-GiB allowance; the host reserve stayed above
+  15 GiB. [Inputs and all 1,128 frozen source hashes](/mnt/workspaces/Cells/assembly-repair-development-20261023-01/compiled-01/inputs.json)
+  are retained, and the runner verified the frozen files were unchanged.
+  The development worker has exited. The full qualification is recorded above.
+  These synthetic numerical checks do not establish physiological recovery.
 
 - **Fixed-geometry injury and prescribed resealing implemented; 79 CPU
   development checks passed, including compiled replay at 21:16 UTC on
@@ -44,19 +1018,151 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   verifies the reports and all **1,122 frozen source/configuration files**.
   [Preparation](/mnt/workspaces/Cells/repair-development-20261022-01/preparation.json)
   binds the passed checks, unchanged production/reference sources, failed
-  evidence and example configuration. No automatic follow-up or repeated
-  polling is scheduled. GPU repair qualification waits for resolution of the
-  separate CaV reproducibility failure below; both sets of frozen evidence
-  remain untouched.
+  evidence and example configuration. The development series made no automatic
+  follow-up launches. Its frozen evidence remains untouched.
 
-  Remaining: full CPU/L4 qualification, longer functional
+  The full CPU/L4 qualification is recorded above. Remaining: longer functional
   recovery checks, and later topology-changing cutting and resource-supported
   regrowth. The closure law is prescribed and has no structural repair-energy
   model or experimental fit. Decreasing damage alone is not demonstrated
   physiological recovery. The parked research branch remains parked.
 
-- **Shared CaV catalog: the GPU addition-order fix passed complete-history
-  L4 replay at 12:19 UTC on 23 October; full qualification is next.**
+- **Shared CaV catalog qualified on CPU and L4 at 19:02 UTC on 23 October.**
+  The [completed recovery](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/result.json)
+  passed all **seven remaining GPU checks**, closing the full panel at
+  **192 CPU passes plus one expected skip** and **193 L4 passes**, with no failed
+  assertions. The recovery reused the authenticated CPU phase and first 186 L4
+  passes, then executed `calcium-worlds` and `calcium-assembly`. All **55 CPU / 56
+  GPU required reports** passed. The
+  [completion manifest](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/completion.json)
+  binds the result and complete evidence; the controller has exited.
+
+  This closes the previous GPU addition-order/replay issue in the full registered
+  panel. [Independent-world partition/reordering and restart](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/evidence/gpu/resolved-calcium-cav-partition.json),
+  [heterogeneous-world and identical-scalar complete-history replay](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/evidence/gpu/resolved-calcium-cav-world-laws.json),
+  and [assembly restart/partition replay](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/evidence/gpu/resolved-calcium-cav-assembly-replay.json)
+  are bitwise. The [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/evidence/gpu/resolved-calcium-cav-cpu-gpu.json)
+  covers **3,540,904 physical scalar values** within the unchanged registered
+  tolerances. The [independent assembly reference](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/evidence/gpu/resolved-calcium-cav-assembly-reference.json)
+  uses **0.000359** of its state-error budget.
+
+  The recovery finished in **1 h 6 min 52 s**. Its largest sampled worker tree
+  used **9.07 GiB**; available host RAM stayed above **8.55 GiB**, preserving the
+  14-GiB worker ceiling and 4-GiB host reserve. Shared host-RAM coordination was
+  followed by this successful attempt. [Telemetry](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/gpu-metrics/result.json)
+  averaged **13.017% GPU busy / 0.15516% SM-active**, with essentially complete
+  busy coverage and **99.974%** SM coverage. These measurements cover this recovery
+  interval, including compilation and host checks; they are not a warmed
+  throughput benchmark and do not include the parent's GPU interval.
+
+  The
+  [registration](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-03/registration.json)
+  retains the frozen simulation inputs, the tested recovery controller and the
+  original numerical and resource settings. It used the original completed
+  groups; partial trajectories from the second attempt are retained separately.
+  No simulation code or test was changed for this retry.
+
+  Qualification covers the named seven-CaV catalog in the declared synthetic,
+  closed, two-cell/four-patch **2-ms** regime, with owned cytosol/ER and one-way
+  assembly regulation. It establishes numerical/source correspondence within
+  that scope, not experimental calcium physiology or full native BETSE equivalence.
+  All failed evidence remains intact. Injury/resealing and assembly-integration
+  qualification are recorded above.
+
+  **Second attempt:** GPU recovery stopped at the host-memory reserve at
+  17:40 UTC on 23 October. The
+  [recovery failure](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/failure.json)
+  occurred after **22 min 2 s** in `calcium-worlds`. No additional GPU test
+  completed and no numerical assertion failure was recorded. Totals at that stop were
+  **192 CPU passes plus one expected skip**, **186 L4 passes**, and **seven
+  unfinished GPU checks**. Partial saved trajectories remain in the failed
+  group's evidence directory and are not counted as completed checks.
+
+  The [resource-stop sample](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/groups/gpu/calcium-worlds/resource-stop.json)
+  records available host RAM just below **4 GiB**, while the Cells worker used
+  **4.56 GiB**, within its 14-GiB allowance. The
+  [process failure receipt](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/groups/gpu/calcium-worlds/failure.json)
+  confirms the guard stopped the worker and cleanup completed. At the 17:46 UTC
+  status check, about **11 GiB** of host RAM was available, below the launch gate's
+  18 GiB; a separate Lean process then occupied about 10.7 GiB. That current
+  process listing does not identify the historical consumer at the stop.
+  That attempt's admission and qualification controllers have exited.
+  Sustained host-memory headroom is needed; its initial admission check alone
+  did not prevent later contention. The coordinated retry is recorded above.
+
+  [Recovery telemetry](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/gpu-metrics/result.json)
+  averaged **8.168% GPU busy / 0.09988% SM-active**, with **99.9996% / 100%**
+  coverage over the 21 min 49 s GPU interval. This includes compilation and
+  host work and is not a warmed throughput benchmark. All failed evidence and
+  the previously completed groups remain intact. The earlier ETA no longer
+  applies; the successful third attempt is recorded above.
+
+  The
+  [detached recovery](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/launch.json)
+  launched at 17:18 UTC and reused the authenticated complete groups. It was
+  registered to execute the remaining checks in `calcium-worlds` and
+  `calcium-assembly`, followed by the original complete-suite and required-evidence
+  checks; those completion checks were not reached.
+
+  The [registration](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/registration.json)
+  freezes **1,125 files**, binds **519 parent artifacts** and copies **504 verified
+  evidence/log files**. All simulation code, scientific tests, references,
+  parameters and the resource protocol match the interrupted parent. Only the
+  qualification controller and its new recovery helper differ. The new assembly/
+  injury development code is not included in this frozen CaV recovery.
+  [40 runner/recovery checks passed](/mnt/workspaces/Cells/component-recovery-development-20261023-01/host-02/qualified.json)
+  in 7.32 seconds, including refusal of changed source, test collection,
+  protocol, runtime or saved evidence, exact group coverage, detached launch,
+  and the existing live resource guards. [Inputs and frozen sources](/mnt/workspaces/Cells/component-recovery-development-20261023-01/host-02/inputs.json)
+  preserve those checks; the earlier 38-check development snapshot is also retained.
+
+  Initial launch waited **31 seconds** for the required **18 GiB of available
+  host RAM**, as recorded by the bounded
+  [admission controller](/mnt/workspaces/Cells/component-recovery-development-20261023-01/admission-status.json).
+  The qualification retained its **14-GiB worker ceiling**, **4-GiB live host
+  reserve** and eight-hour wall allowance. GPU busy and measured SM-active are
+  recorded for the recovery interval; the parent's telemetry remains separate.
+  Logs and completion/failure artifacts are under
+  `/mnt/workspaces/Cells/resolved-calcium-cav-20261023-02/`.
+  No repeated polling, automatic retry or follow-up qualification is scheduled.
+  Repair/integration GPU qualification follows a completed CaV result.
+
+  **Interrupted parent:** the L4 phase stopped at the host-memory reserve at
+  15:39 UTC on 23 October.
+  The [failure receipt](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/failure.json)
+  records a resource stop after **2 h 47 min 29 s**, with **192 CPU passes plus
+  one expected skip** and **186 L4 passes**. No numerical assertion failure was
+  recorded in this run. The three GPU independent-world checks were interrupted;
+  the four final GPU assembly/cross-backend checks were not reached. CaV
+  qualification was incomplete at that point; the recovery above closes the panel.
+
+  The [resource-stop sample](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/groups/gpu/calcium-worlds/resource-stop.json)
+  shows **3.91 GiB available host RAM**, below the required **4 GiB**, while the
+  qualification worker used **2.50 GiB**, below its 14-GiB ceiling. This happened
+  before the new assembly/injury development checks started. The sample records
+  host pressure but does not identify which other process consumed the memory.
+  The original workers have exited and the failed evidence remains untouched.
+  The recovery above retains the same limits and authenticates the successful
+  groups before reuse; it does not reuse partial results from the interrupted group.
+
+  The [detached run](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/launch.json)
+  registered **193 checks per backend** in eight groups, CPU first then L4,
+  with one expected CPU skip and **55 CPU / 56 GPU required reports**.
+  It includes source equations, owned-ion conservation and energy, refinement,
+  saved restart, identical-input replay, independent worlds, assembly, and
+  CPU/L4 agreement. The [preparation receipt](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/qualification-launch-preparation.json)
+  binds the passing replay/regressions and unchanged production sources.
+  The [registration](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/registration.json)
+  freezes source, inputs, exact collected tests and resource limits.
+
+  [Telemetry](/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/gpu-metrics/result.json)
+  averaged **13.802% GPU busy / 0.16375% SM-active**, with essentially complete
+  busy coverage and **99.974%** SM coverage. This includes compilation and host
+  checks; it is not a warmed throughput benchmark. Durable logs and failure
+  artifacts remain under `/mnt/workspaces/Cells/resolved-calcium-cav-20261023-01/`.
+  The launch ETA no longer applies because the job stopped. Repair qualification
+  follows a completed CaV result separately.
+
   The [isolated probe](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/probe-01/diagnostic-result.json)
   captures 42 ownership additions from the saved state immediately before the
   first discrepancy. Repeating identical inputs produced **six different
@@ -98,10 +1204,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   coverage. Compilation and host time are included; no warmed benchmark
   interval was defined. Logged scalar execution increased from **20–24 s to
   43–45 s** in these small cases; this is a measured cost of the correction,
-  not a general throughput estimate. The worker has exited; no follow-up job
-  has been launched. Next is the full 193-test CPU/L4 CaV qualification,
-  including assembly, followed by repair qualification. This focused replay
-  does not itself complete either qualification.
+  not a general throughput estimate. That replay worker has exited. The full
+  193-test CPU/L4 qualification launched above follows this focused check;
+  the replay does not itself complete CaV or repair qualification.
 
   The short probe's [telemetry](/mnt/workspaces/Cells/cav-reproducibility-fix-20261023-01/probe-01/gpu-metrics/result.json)
   was **3.048% GPU busy / 0.01601% SM-active** over 6.1 seconds; the unit-check

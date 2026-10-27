@@ -43,3 +43,15 @@ def definition(arm="resealing", *, backend="cpu", padded=True):
         for p in m["injury_patches"]:
             p["injury_rate_per_s"] = 0.0
     return raw
+
+
+def assembly_definition(arm="resealing", *, backend="cpu"):
+    """Short synthetic joint assembly/injury control with off-grid pulses."""
+    raw = base.assembly_definition(backend=backend)
+    raw["ionic"] = definition(arm, backend=backend)
+    # Coupled snapshots remain on ionic ticks; interventions split inner steps.
+    raw["ionic"]["experiment"]["observation_times"] = [0.0, 5e-6, 10e-6, 20e-6, 50e-6]
+    raw["window_ticks"] = 8
+    for row in raw["pools"]:
+        row["pool"].update(end_time_s=50e-6, k_off_s_inv=40000.0)
+    return raw

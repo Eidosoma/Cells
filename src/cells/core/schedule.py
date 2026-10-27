@@ -28,6 +28,16 @@ from cells.core.specs import (
 from cells.core.surface_calcium_spec import Change as SurfaceCalciumChange
 from cells.core.surface_calcium_spec import ionic_spec as surface_ionic_spec
 from cells.core.surface_kinetic_spec import Change as SurfaceKineticChange
+from cells.core.surface_mobile_channel_spec import Control as SurfaceMobileChannelControl
+from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel
+from cells.core.surface_mobile_channel_spec import prior_spec as mobile_channel_prior
+from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairModel
+from cells.core.surface_mobile_pump_repair_spec import prior_spec as mobile_pump_repair_prior
+from cells.core.surface_mobile_pump_spec import Control as SurfaceMobilePumpControl
+from cells.core.surface_mobile_pump_spec import SurfaceMobilePumpModel
+from cells.core.surface_mobile_pump_spec import prior_spec as mobile_pump_prior
+from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
+from cells.core.surface_mobile_repair_spec import prior_spec as mobile_repair_prior
 from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.surface_repair_spec import base_spec as repair_base_spec
 from cells.core.surface_tissue_spec import SurfaceChange
@@ -70,6 +80,16 @@ SurfaceCalciumControl = NamedTuple(
 SurfaceRepairControl = NamedTuple(
     "SurfaceRepairControl",
     [(k, object) for k in (*SurfaceCalciumControl._fields, "injury", "resealing")],
+)
+
+SurfaceMobileRepairControl = NamedTuple(
+    "SurfaceMobileRepairControl",
+    [(k, object) for k in (*SurfaceRepairControl._fields, "mobile_channel")],
+)
+
+SurfaceMobilePumpRepairControl = NamedTuple(
+    "SurfaceMobilePumpRepairControl",
+    [(k, object) for k in (*SurfaceMobileRepairControl._fields, "mobile_pump")],
 )
 
 
@@ -116,6 +136,50 @@ def event_index(spec, time):
 
 def control_values(spec, times):
     changes = spec.experiment.changes
+    if isinstance(spec.model, SurfaceMobileChannelModel):
+        original = control_values(mobile_channel_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.channel for p in changes], dtype=float)[indices]
+        padded = np.zeros(
+            (
+                len(times),
+                spec.execution.channel_population_capacity,
+                spec.execution.membrane_capacity,
+            )
+        )
+        padded[:, : len(spec.model.mobile_channels), : len(spec.model.membranes)] = values
+        return SurfaceMobileChannelControl(*original, padded)
+    if isinstance(spec.model, SurfaceMobilePumpModel):
+        original = control_values(mobile_pump_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.pump for p in changes], dtype=float)[indices]
+        padded = np.zeros(
+            (len(times), spec.execution.pump_population_capacity, spec.execution.membrane_capacity)
+        )
+        padded[:, : len(spec.model.mobile_pumps), : len(spec.model.membranes)] = values
+        return SurfaceMobilePumpControl(*original, padded)
+    if isinstance(spec.model, SurfaceMobilePumpRepairModel):
+        original = control_values(mobile_pump_repair_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.mobile_pump for p in changes], dtype=float)[indices]
+        padded = np.zeros(
+            (len(times), spec.execution.pump_population_capacity, spec.execution.membrane_capacity)
+        )
+        padded[:, : len(spec.model.mobile_pumps), : len(spec.model.membranes)] = values
+        return SurfaceMobilePumpRepairControl(*original, padded)
+    if isinstance(spec.model, SurfaceMobileRepairModel):
+        original = control_values(mobile_repair_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.mobile_channel for p in changes], dtype=float)[indices]
+        padded = np.zeros(
+            (
+                len(times),
+                spec.execution.channel_population_capacity,
+                spec.execution.membrane_capacity,
+            )
+        )
+        padded[:, : len(spec.model.mobile_channels), : len(spec.model.membranes)] = values
+        return SurfaceMobileRepairControl(*original, padded)
     if isinstance(spec.model, SurfaceRepairModel):
         original = control_values(repair_base_spec(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1

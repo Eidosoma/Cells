@@ -780,6 +780,26 @@ class SimulationSpec:
 
         if isinstance(m, BetseSpatialModel):
             return to_dict(self)
+        from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel, to_dict
+
+        if isinstance(m, SurfaceMobileChannelModel):
+            return to_dict(self)
+        from cells.core.surface_mobile_pump_spec import SurfaceMobilePumpModel, to_dict
+
+        if isinstance(m, SurfaceMobilePumpModel):
+            return to_dict(self)
+        from cells.core.surface_redistribution_spec import SurfaceRedistributionModel, to_dict
+
+        if isinstance(m, SurfaceRedistributionModel):
+            return to_dict(self)
+        from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairModel, to_dict
+
+        if isinstance(m, SurfaceMobilePumpRepairModel):
+            return to_dict(self)
+        from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel, to_dict
+
+        if isinstance(m, SurfaceMobileRepairModel):
+            return to_dict(self)
         from cells.core.surface_repair_spec import SurfaceRepairModel, to_dict
 
         if isinstance(m, SurfaceRepairModel):
@@ -1022,6 +1042,26 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "betse_spatial_nak_kv1p5@1":
         from cells.core.betse_spatial_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_redistribution@3":
+        from cells.core.surface_mobile_channel_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_redistribution@2":
+        from cells.core.surface_mobile_pump_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_redistribution@1":
+        from cells.core.surface_redistribution_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_repair@3":
+        from cells.core.surface_mobile_pump_repair_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_repair@2":
+        from cells.core.surface_mobile_repair_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_repair@1":

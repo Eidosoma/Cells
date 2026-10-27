@@ -68,6 +68,19 @@ coverage. A warm interval is explicitly unavailable for this correctness suite,
 which compiles different kernels throughout; it is not guessed from the first
 completed call. Utilization is descriptive and cannot fail a physics check.
 
+If an original component run completes CPU qualification and then stops at a
+GPU resource guard, the same launcher can recover into a fresh output with
+`--component-parent /mnt/workspaces/Cells/FAILED_RUN` and
+`--component-protocol /mnt/workspaces/Cells/FAILED_RUN/component-protocol.json`.
+It checks the parent's frozen source, test collection, complete group results,
+saved evidence and runtime identities before reusing completed groups. Only
+the interrupted and unstarted GPU groups execute. Numerical code, references,
+tests, parameters and resource limits stay identical; only the qualification
+controller is updated. The failed parent remains intact. The completion record
+identifies reused versus executed groups, and new GPU measurements describe
+only the recovery interval. Scientific failures and incomplete CPU phases are
+ineligible for this recovery path.
+
 For the evolving model, junction conductance uses the difference of absolute
 intracellular potentials, including when availability blocks transport. Every
 RK4 stage and combined endpoint uses its held controls for the field/domain
@@ -1080,8 +1093,26 @@ The [example](../configs/resolved_repair_tissue.json) selects the GPU backend
 through the ordinary runner. Pure JAX state updates, checkpoint arrays and
 independent-world planning use the existing execution stack; actual CPU/GPU
 and multiple-GPU qualification status is recorded in [Progress](../PROGRESS.md).
-Assembly-driven injury or closure is not yet exposed. Earlier model identities
-and their array layouts are preserved.
+Earlier model identities and their array layouts are preserved.
+
+The [assembly-integrated example](../configs/assembly_resolved_repair_tissue.json)
+combines this component with independent cell-owned protein pools. The cluster
+clock splits ionic steps at the union of scheduled external interventions and
+stochastic assembly events. An interval ending at a change uses the preceding
+controls; the new controls and assembly state drive the following interval,
+including when both change simultaneously. Channel, pump and calcium controls
+use the same scheduling path. Constant-input definitions retain their original
+execution path and clock identity.
+
+Assembly still regulates only its declared channel availability. Injury and
+closure remain externally prescribed; no assembly-driven membrane repair is
+assumed. Complete checkpoints retain damage, ion transfer and assembly state;
+cluster reports and ensemble reductions retain membrane/species ownership for
+the injury ledgers. Coupled observations and checkpoints stay on nominal ionic
+ticks, while off-grid interventions split internal steps exactly. The saved
+physical time selects the resumed controls without a separate schedule cursor.
+These changes use the existing JAX execution and independent-world planner;
+their validation status is tracked separately from the ordinary injury runner.
 
 The numerical panel uses uninjured, sham, held-injury and resealing controls
 on the same event grid, analytic damage evolution, and an independently
@@ -1092,9 +1123,620 @@ motivate this finer grid for the closure integral; previous model limits and
 acceptance tolerances remain unchanged. The 20–50-us checks and their fast
 injury/closure rates are manufactured numerical probes, not measured tissue
 repair times or independent biological cases.
+The integrated checks additionally reconstruct the assembly event history for
+the independent ion/field reference at all five registered observation times
+and compare complete restart, changed execution windows and partitioned-world
+states.
+
+The [CPU/L4 qualification protocol](../validation/tissue/surface_repair_protocol.json)
+adds complete **39-field, 50-us** histories for all four controls, with physical
+readouts and accepted times. Held and resealing controls refine at
+**0.625 / 0.3125 / 0.15625 us**; their independent references must remain stable
+under fourfold tighter ODE tolerances. Complete arrays and signed errors are
+saved before comparisons. Disk/fresh-process restart, terminal continuation,
+changed windows, heterogeneous injury controls, reversed world order and
+independent checkpoint times exercise the ordinary execution paths. CPU/L4
+checks retain distinct amount/energy, charge, current and voltage tolerances,
+and exact external controls and discrete event state. The assembled model also
+compares complete sampled states across backends. Current results belong in
+[Progress](../PROGRESS.md).
+
+Use the existing qualification launcher with
+`--component-protocol validation/tissue/surface_repair_protocol.json`.
+Related tests run in fresh, serial process groups with the established live
+memory guards, frozen inputs, durable failures and GPU busy/SM-active samplers.
+The completed CaV panel is a prerequisite; this composition receives fresh
+CPU and L4 checks rather than inheriting a qualification from its components.
 
 This is an independently specified phenomenological component, not a runnable
 copy of BETSE's old wound-channel fragment. The
 [source review and later cutting/regrowth work](ROADMAP.md#injury-and-repair)
 remain distinct. Declining damage alone does not establish restoration of
 physiological function, sustained recovery, regeneration or BETSE cutting parity.
+
+The [longer ordinary-tissue panel](../validation/tissue/surface_repair_recovery_protocol.json)
+extends the same four controls to **2 ms**, keeping the physical parameters and
+state-error budgets unchanged. Its [GPU example](../configs/resolved_repair_recovery_tissue.json)
+uses 83 observations, at most 25 us apart, including both injury boundaries.
+Run it with the same launcher and
+`--component-protocol validation/tissue/surface_repair_recovery_protocol.json`.
+The finest grid and two-world batch declare 8 GiB of conservative array working
+storage; the measured process-tree and host-memory guards remain separate.
+
+The reusable [sampled recovery observer](../src/cells/assays/recovery.py) compares
+every physical patch voltage and free cytosol/exterior ion concentration with
+the independently integrated, time-matched uninjured trajectory. This panel
+declares engineering bands of **10 uV** for voltage and **1e-6 mM** for free
+concentrations, with numerical uncertainty margins of **0.1 uV / 1e-8 mM**.
+They are deliberately explicit analysis settings, not fitted healthy-tissue
+ranges. Independent readout errors must remain below **0.01 uV / 1e-9 mM**,
+alongside the original complete-state and conservation checks.
+
+A sampled return requires a resolved disturbance followed by a simultaneous
+final **0.5-ms hold** inside all bands, after the injury pulse. Quiet controls,
+brief reentry, threshold ambiguity and incomplete recovery remain separate
+outcomes. The observer rejects excessive observation gaps and does not infer
+what happens between samples. Baseline drift is reported. Decreasing damage
+alone cannot satisfy the functional criterion, and numerical qualification
+does not require any injured arm to recover. The `resolved-repair-recovery-functional.json`
+report retains every arm and per-metric result, compared with the independent
+reference classification. Longer assembly coupling, autonomous repair and
+biological validation remain separate work; current results stay in
+[Progress](../PROGRESS.md).
+
+The [2-ms assembly-composition panel](../validation/tissue/assembly_repair_recovery_protocol.json)
+and [GPU example](../configs/assembly_resolved_repair_recovery_tissue.json)
+extend the same injury controls with the existing cell-owned protein pools.
+Each control uses two keyed worlds. Its 85 complete coupled snapshots remain
+on nominal ionic ticks, including **5 / 5.625 us** and **15 / 15.625 us** around
+the physical injury boundaries at **5.3 / 15.3 us**. Internal integration still
+splits at the exact interventions and protein events. The recovery observer
+accepts events between observations but begins eligibility at the first sample
+at or after the event; an unobserved interval after release earns no hold time.
+Existing cases with events on the observation grid retain their interpretation.
+
+Independent scalar reconstruction supplies each world's protein event history
+to the electrical/chemical reference. Injury and resealing are compared with
+the **matching uninjured world and assembly path**, using the same engineering
+bands and hold duration as the ordinary panel. The controls must preserve the
+one-way protein trajectories; they are numerical controls, not independent
+biological replications. Reference checks cover every observed ionic state,
+free concentration, membrane voltage and integrated channel availability in
+both worlds, with tighter-reference and three-timestep checks for held injury
+and resealing. CPU/L4 comparisons include the physical readouts and complete
+protein, pending-event, ionic and clock state.
+
+Complete 1-ms checkpoint continuation with changed execution windows and
+separately executed worlds must reproduce every subsequent sampled state and
+the final state byte-for-byte. Inputs and snapshots are retained before checks,
+including partial observations and the last callback state if execution fails.
+This panel saves complete state at declared observations, not every internal
+substep. Launch through the existing runner with
+`--component-protocol validation/tissue/assembly_repair_recovery_protocol.json`.
+Assembly still controls only shared channel availability; structural repair
+costs, autonomous closure, changing topology and experimental validation remain
+outside this composition. Current status and results belong in
+[Progress](../PROGRESS.md).
+
+## Lateral membrane redistribution
+
+The independent component
+[`cells.numerics.membrane_redistribution`](../src/cells/numerics/membrane_redistribution.py)
+implements `fixed_surface_conservative_drift_diffusion@1`: movement of
+membrane-bound populations between patches of the **same cell**, on a fixed
+surface graph. The ordinary `resolved_redistribution@1` composition now connects
+neutral always-open channel populations to local ionic transport. The
+[`resolved_redistribution@2` extension](../src/cells/models/surface_mobile_pump.py)
+adds neutral mobile Na/K ATPase populations, as specified below. Voltage-gated
+populations remain separate work. Scheduled availability and physical movement
+remain distinct; current qualification evidence is recorded in
+[Progress](../PROGRESS.md).
+
+Each population owns a nonnegative amount `N[k, patch]` in fmol. Patch area is
+in square micrometres, diffusivity `D` in square micrometres per second, edge
+width and distance in micrometres, supplied tangential potential `phi` in volts,
+and temperature in kelvin. Effective charge `z` controls drift. These are
+continuous amounts of membrane-bound material, separate from free ions and the
+assembly simulator's discrete pools; no conversion or exchange is implicit.
+
+For an oriented edge from patch `i` to patch `j`, the flux is
+
+```text
+x = z F (phi[j] - phi[i]) / (R T)
+g = D * edge_width / edge_distance
+B(x) = x / expm1(x), with B(0) = 1
+J = g * (B(x) * N[i]/area[i] - B(-x) * N[j]/area[j])
+dN[i]/dt -= J; dN[j]/dt += J
+```
+
+The component uses the existing stable Bernoulli function and ordered edge
+accumulation. The same flux leaves one patch and enters the other; population
+totals remain separate for every cell. Neutral diffusion equilibrates **density**,
+not amount on unequal patches. With a fixed imposed potential, detailed balance
+gives density proportional to `exp(-z F phi/(R T))`. The bounded numerical domain
+requires `abs(x) <= 50` on active edges. Zero diffusivity, isolated patches,
+empty populations and zero inactive padding are supported; cross-cell edges,
+duplicate edges, invalid geometry and negative material are rejected.
+
+`rates` supplies instantaneous derivatives, oriented fluxes, outgoing rate
+coefficients and per-cell conservation residuals. `explicit_step` is a small
+first-order primitive that retains nonnegative material only when
+`dt * total_outgoing_rate <= 1` at every patch and population. It counts all
+outgoing edges at a branch. Oversized steps are rejected without clipping;
+its transfer ledger uses the same flux as the update. This is not a replacement
+for the tissue integrator or a promise that an unchanged timestep is accurate.
+
+The [component checks](../tests/unit/test_membrane_redistribution.py) use
+independent 80-digit scalar equations, exact two-patch relaxation, step refinement,
+Boltzmann equilibrium, field/edge reversal, gauge shifts, patch subdivision,
+branched-graph positivity, per-cell conservation and passive free-energy decay
+under an imposed field. NumPy, CPU JIT and reordered independent-world batches
+are compared. Split continuation tests only this isolated deterministic state;
+it is not a complete tissue checkpoint test. GPU and coupled qualification
+results must be recorded separately in [Progress](../PROGRESS.md).
+
+**Source correspondence and integration boundary.** The pinned BETSE
+[`MoveChannel`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/physics/move_channels.py)
+updates dimensionless radial membrane weights relative to a centre value and
+calls `sim_toolbox.single_cell_div_free`. That helper is absent from the pinned
+module; the unmodified two-patch update probe fails with `AttributeError`.
+The [retained source probe](/mnt/workspaces/Cells/membrane-redistribution-development-20261024-01/native-source-probe.json)
+records inputs, loaded source and hashes. This conservative surface-edge law is
+independently specified and has not established native BETSE trajectory parity.
+No upstream code or missing helper was substituted into that probe.
+
+The [ordinary composition](../src/cells/models/surface_redistribution.py) adds
+three complete state fields to the resolved passive tissue model:
+`surface_amount_increment[population, patch]`,
+`surface_transferred[population, surface_edge]`, and
+`surface_dissipated_energy_pJ[population, surface_edge]`. Initial amounts,
+population IDs, reference densities/permeabilities and edge geometry are bound
+in the serialized definition and checkpoint layout. Material never crosses
+between cells or enters the free-ion inventory. At **every RK4 stage**, the
+current local amount determines permeability:
+
+```text
+density[k, m] = N[k, m] / area_um2[m]
+P_effective[s, m] = P_background[s, m]
+                  + sum_k P_reference[s, k] * density[k, m] / density_reference[k]
+```
+
+The ordinary membrane control scales the combined permeability. Closing it
+blocks ion flow without immobilizing or destroying the surface population.
+Background permeability remains separate from population contributions, and the
+same stage's permeability enters the resolved field/current calculation.
+The ionic material, capacitor, reservoir, electrode and work ledgers are retained.
+Neutral diffusion adds an independent ideal-mixing free-energy check, with
+`mu[k,m] = RT log(density[k,m]/density_reference[k])` and edge dissipation
+`1e-3 * J * (mu_sender - mu_receiver)` pJ/s. Fixed geometry and neutral cargo
+make this separate from electrical charge/work; no hidden active-energy source
+is introduced.
+
+For finite chemical potentials, this composition requires a population to be
+strictly positive on every patch of a cell where it is present, or wholly absent
+on that cell. It rejects partially empty preparations; it does not floor the
+logarithm. The standalone transport operator still supports partially empty
+patches. The ordinary RK4 grid must satisfy both the existing ionic step bound
+and `dt * max(total_outgoing_surface_rate) <= 0.05`. This conservative step
+guard does not replace trajectory comparison and refinement. Material residuals
+are checked per patch and per cell at `2e-12` fmol; the separate surface-energy
+residual is bounded by `2e-10` pJ. Existing ionic tolerances are unchanged.
+
+The [coupled checks](../tests/unit/test_surface_redistribution.py) compare
+mobile, immobile, uniform-density, blocked-ion-flow and empty populations.
+The [independent reference](../validation/tissue/surface_redistribution_reference.py)
+uses separately written diffusion/abundance equations, the established full-node
+and Decimal ionic reference, and adaptive DOP853 integration. Synthetic diffusion
+rates are accelerated to make coupling visible in a short test; they are not
+measurements or a fitted biological timescale. Ordinary saved state, observation,
+window and independent-world paths use the registered model contract. See
+[Progress](../PROGRESS.md) for the completed CPU/L4 qualification and its bounded scope.
+The [GPU example](../configs/resolved_redistribution_tissue.json) and
+[qualification protocol](../validation/tissue/surface_redistribution_protocol.json)
+use the existing `validation/assembly/qualify_cell.py launch` runner with
+`--component-protocol validation/tissue/surface_redistribution_protocol.json`.
+That protocol captures both GPU-busy and SM-active counters; the small correctness
+panel is not a warmed throughput benchmark.
+
+### Mobile Na/K ATPase populations
+
+`resolved_redistribution@2` retains the neutral leak populations and adds separately
+owned pump populations on the same fixed surface graph. A pump-only definition
+may omit leak populations. Each pump has an ID, positive reference density,
+initial amount in fmol on each patch, diffusivity in um²/s, turnover in 1/s, named
+sodium/potassium roles and explicit maintained ATP/ADP/phosphate reservoirs. The
+existing `nak_atp_mass_action_positive@1` law transports **three Na outward and
+two K inward per forward cycle**, with signed reverse cycles allowed inside its
+declared thermodynamic domain. It is the existing reversible ATPase law, not a
+new biological parameter fit.
+
+At every RK4 stage,
+
+```text
+capacity[k, patch] = turnover_per_s[k] * current_pump_amount_fmol[k, patch]
+cycles[k, patch] = capacity * availability * saturation * thermodynamic_factor
+```
+
+Capacity is in fmol cycles/s: patch area is **not multiplied again**. It enters
+surface density and lateral diffusion. Reference density defines the mixing
+chemical potential and does not set pump capacity. Pump turnover does not consume
+pump protein. Per-population, per-patch availability schedules have their own
+integration boundaries; inhibiting pumping leaves lateral motion intact. These
+controls also remain independent of the passive membrane availability.
+
+Six additional state fields bring the complete model to **21**: pump surface
+amount increments, lateral transfer and mixing dissipation; signed pump cycles,
+pump dissipation and metabolic work. The cycle ledger supplies stoichiometric
+ion transfer to the existing cell/exterior/reservoir balances. Total ion movement
+determines capacitor derivatives, electrode current and boundary work. Pump
+material is neutral and does not enter the free-ion charge inventory. The
+unchanged ionic/electric energy balance includes pump dissipation and subtracts
+signed ATP-reservoir input; neutral pump diffusion has its own mixing-energy
+balance. Forward and reverse pumping must dissipate nonnegative energy. ATP/ADP/Pi
+are maintained chemical reservoirs, **not finite metabolic pools**; signed work
+and cycles expose their use without claiming ATP synthesis machinery or whole-cell
+energetic closure.
+
+The positive-or-wholly-absent preparation rule and 0.05 outgoing-loss step bound
+apply independently to both leak and pump populations. Existing material, charge,
+field and energy tolerances are retained, with separate pump material/mixing
+checks and a `3e-12`-pJ metabolic-work identity check. Observations include current
+pump amount/density/capacity, cycle rate, thermodynamic driving energy, availability
+and all six extra state fields. Saved state, branches, windows and independent
+worlds use the ordinary registered model interfaces.
+
+The [checks](../tests/unit/test_surface_mobile_pump.py) and
+[independent reference](../validation/tissue/surface_mobile_pump_reference.py)
+combine the established Decimal ATPase oracle with separately accumulated ion
+owners, neutral diffusion, a full-node electrical solve and segmented DOP853.
+Controls distinguish mobile, immobile, inhibited, empty, zero-turnover, reverse,
+scheduled-release, pump-only and uniform-density preparations. Two-cell open/closed
+stages exercise distinct capacitor components and a population absent from one
+cell. Five complete trajectories, timestep/reference refinement, restart/window
+replay and independent clocks test the synthetic composition. CPU/L4 results and
+failed attempts belong in [Progress](../PROGRESS.md); the
+[protocol](../validation/tissue/surface_mobile_pump_protocol.json) also records
+GPU-busy and SM-active. The [GPU example](../configs/resolved_mobile_pump_tissue.json)
+uses accelerated synthetic rates for qualification. This extension does not resolve
+the missing native BETSE redistribution helper or establish biological diffusion
+rates. Calcium, injury and assembly coupling are not yet included.
+
+### Mobile channels carrying joint gating states
+
+`resolved_redistribution@3` adds neutral mobile **Kv1.5** populations to the pump
+and leak composition. Each population owns four conformation amounts on every
+patch: `m0h0`, `m0h1`, `m1h0` and `m1h1`. Only the last conducts. Transporting
+averaged activation and inactivation gates would lose correlations when channels
+from different patches mix: two populations can have identical average gates but
+different open fractions. The model therefore transports every conformation
+separately, without resetting gates or refactorizing the arriving distribution.
+
+The existing `betse_kv1p5_mh@1` law supplies `m_inf`, `h_inf` and their time
+constants at the current stage's membrane voltage. Its domain remains **298.15 K**
+and **−0.120 to +0.060 V**. Each gate's forward/reverse rates are
+`alpha = target/tau` and `beta = (1-target)/tau`. Four transitions connect the
+joint states: `m0h0 <-> m1h0`, `m0h1 <-> m1h1`, `m0h0 <-> m0h1` and
+`m1h0 <-> m1h1`. Their signed flows are `alpha*N_source - beta*N_destination`.
+The m/h marginals obey the existing gate law; the joint state also retains
+correlations introduced by transport or the initial preparation.
+
+At every RK4 stage, potassium permeability includes
+
+```text
+P_channel[K, patch] = sum_population (
+    P_reference * N_m1h1 / area_um2 / density_reference * channel_availability
+)
+P_total = P_passive_and_leaks * membrane_availability + P_channel
+```
+
+Channel, passive-membrane and pump controls are independent. Blocking channel
+conduction leaves gate transitions and lateral diffusion active. An explicitly
+declared `gate_mode: frozen` disables transitions for diagnostic controls; it
+does not immobilize the population. All conformations share the population's
+neutral diffusivity. The actual combined, controlled permeability is exposed as
+`effective_membrane_permeability_m_per_s`. Gate targets and time constants are
+law values; amounts, fluxes and work identify physical support, and those material
+quantities remain zero in absent populations and padding.
+
+Six new fields bring the complete state to **27**: conformation amount increments,
+lateral transfers and lateral dissipation; gate-transition transfers, gate
+dissipation and signed gate-rate-bias work. The latter two provide an explicit
+**phenomenological accounting identity**, not a calibration of physical gating
+heat or gating-charge work. For each transition,
+
+```text
+D_gate = 1e-3 * R*T * J * log(alpha*N_source / (beta*N_destination))
+W_bias = 1e-3 * R*T * J * log(alpha/beta)
+delta F_ideal_mixture + D_lateral + D_gate - W_bias = 0
+```
+
+The dissipation and work above are integrated into separate pJ ledgers. The
+ideal-mixture functional sums all four conformation densities. Rate bias is a
+declared external source representing the phenomenological gate law; it is not
+ATP consumption, experimentally measured heat or an autonomous molecular energy
+model. Ionic/capacitor/electrode and ATP-reservoir balances remain separate.
+Channel material is neutral and does not contribute bound gating charge.
+
+Every conformation must be positive on every patch of a cell where its population
+is present, or the entire population must be absent on that cell. There are no
+logarithm floors or state clipping. The conservative RK4 step guard includes both
+lateral outgoing rates and a bound on gate-transition exit rates, with the same
+0.05 maximum loss coefficient. It does not guarantee trajectory accuracy: the
+synthetic example uses **6.25 µs** after refinement showed that 12.5 µs exceeded
+the unchanged mixing-dissipation comparison budget. Local conformation and
+per-cell total-material checks retain `2e-12` fmol tolerance; the separate
+mixture/rate-bias energy identity retains `2e-10` pJ.
+
+The [checks](../tests/unit/test_surface_mobile_channel.py) use an independently
+assembled four-state generator and matrix exponential, the existing 80-digit
+Kv1.5 scalar reference, and an
+[independent full-tissue reference](../validation/tissue/surface_mobile_channel_reference.py).
+They distinguish correlated versus factorized populations, mobile versus fixed
+proteins, blocked conduction, frozen-gate conformation counterflow and scheduled
+release. Analytic diffusion, three-step refinement, saved/fresh-process replay,
+branches, windows and independent worlds test the complete model. The
+[GPU example](../configs/resolved_mobile_channel_tissue.json) and
+[CPU/L4 protocol](../validation/tissue/surface_mobile_channel_protocol.json)
+use accelerated synthetic diffusion over 0.4 ms. Qualification results and
+retained failures belong in [Progress](../PROGRESS.md).
+
+**Source correspondence:** the immobile factorized gate dynamics reduce to the
+existing BETSE-derived Kv1.5 law. Joint-state transport and its rate-bias accounting
+are separately specified Cells extensions. The missing pinned BETSE redistribution
+helper remains unresolved, so no native moving-channel trajectory equivalence is
+claimed. A calcium/injury composition is specified below. Other mobile channel
+families, assembly composition, charged-cargo field work, synthesis/degradation,
+active trafficking, membrane fluid flow, changing geometry and experimental rate
+calibration remain open.
+
+### Mobile Kv1.5 with owned calcium and prescribed repair
+
+`resolved_repair@2` composes the four-state mobile Kv1.5 populations above with
+the existing `resolved_repair@1` finite cytosol/ER and injury model. Its
+[GPU example](../configs/resolved_mobile_repair_tissue.json) has two cells, four
+membrane patches and five finite exterior regions. It retains buffering, ER/IP3
+chemistry, PMCA/NCX transport, dedicated calcium-channel routes and representative
+fixed HCN2/CaV2.1 populations. This composition moves **Kv1.5 only**; the separately
+implemented mobile leak and ATPase models are not implicitly included.
+
+At every RK4 stage, the resolved membrane voltage drives both mobile Kv1.5
+transitions and the existing voltage-dependent calcium routes. Each patch's
+current conducting `m1h1` amount sets an additional K permeability:
+
+```text
+P_mobile[population, patch] = P_reference * N_m1h1 / area_um2
+                              / density_reference * mobile_channel_availability
+```
+
+The resulting GHK potassium flow updates the existing free-cytosol owner and
+finite extracellular inventory exactly once. It contributes to the same
+capacitor voltage, ionic current and physical energy balance as the other
+transport routes. The next stage therefore sees their coupled response. Neutral
+channel-protein movement remains separate from this transmembrane ion flow.
+
+Eight additional fields bring the complete state from 39 to **47**: the six
+joint-conformation transport/transition fields above, plus per-population
+`mobile_channel_transferred` and `mobile_channel_dissipated_energy_pJ`. The last
+two retain conducted potassium and its ionic dissipation separately from protein
+motion. Conservation checks combine them with the existing membrane ledgers;
+that accounting projection never supplies an extra flux to the equations.
+Phenomenological gate-rate-bias work remains separate from physical ionic,
+capacitor and ATP accounting.
+
+`mobile_channel_controls` have their own population/patch schedules. Blocking
+conduction leaves lateral motion and gate transitions active. Injury/resealing,
+fixed-channel and mobile-channel controls all enter the exact shared event grid,
+including boundaries occurring between regular steps. Injury changes the
+voltage seen by channels; it does not directly prescribe their gate state. Damage
+and resealing rates are still externally specified, with no autonomous damage
+sensor, selected repair action, geometry change or resolved structural cost.
+
+The definition retains the Kv1.5 temperature/voltage domain and strict positive
+joint amounts on present cells, with whole-cell absence allowed. The step guard
+includes the existing calcium/repair bounds, lateral/gate exit rates and an
+additional ion-loss bound allowing all conserved channel protein on a cell to
+accumulate on any one of its patches. The example uses **0.625 µs** over a
+synthetic **50 µs** interval. Material checks retain `2e-12` fmol, the separate
+surface/gate-mixing identity `2e-10` pJ, and the parent physical energy budget
+`1e-9` pJ. Neither fast synthetic diffusion nor this short interval establishes a
+physiological repair timescale.
+
+The [independent reference](../validation/tissue/surface_mobile_repair_reference.py)
+combines explicitly accumulated transport, Decimal GHK/Kv1.5 laws, scalar
+calcium/ER/injury equations and a full-node field solve. The
+[checks](../tests/unit/test_surface_mobile_repair.py) cover all 47 derivatives,
+padding, absent populations, independent controls and invalid-state rejection;
+five complete trajectories; analytic total-protein diffusion and prescribed
+damage; three-grid refinement and a separately tightened adaptive reference;
+complete restart/branch/windows; and reordered independent worlds. The
+[CPU/L4 protocol](../validation/tissue/surface_mobile_repair_protocol.json) gives
+each trajectory a fresh process. Comparison workers verify inputs and bind
+saved-array hashes, avoiding simultaneous retention of compiled graphs. Each GPU
+group receives a copied view of its corresponding CPU group's references, with
+shared files supplying other inputs. This preserves the matching input report
+and arrays when different groups reuse a filename. `cpu-inputs.json` records
+the selected sources and hashes; the runner checks originals and copies before
+and after use and retains the binding in its completion evidence. Exact input
+comparisons remain in force. The
+4-GiB allowance applies both to the process tree's charged resident memory and
+to each process's observed RSS high-water mark; the 8-GiB host reserve and both
+GPU-utilization measurements remain in force. This protocol explicitly sets
+`resources.process_tree_memory_metric` to `pss`: shared resident pages are
+apportioned among processes, avoiding double charging the inherited address
+space of a CUDA compiler child. Raw summed RSS remains in every resource log.
+The guard also charges explicit hugetlb pages, falls back to RSS when a live
+process's PSS cannot be read, and records those fallbacks. These are sampled
+limits, not kernel allocation caps or an atomic snapshot of the process tree.
+[Linux process-memory accounting](https://docs.kernel.org/filesystems/proc.html)
+Other protocols default to their existing summed-RSS guard. Recovery can retain
+authenticated completed groups while changing only this registered accounting
+method; its report distinguishes old RSS groups from new PSS groups. Numerical
+allowances, scientific inputs, tests and tolerances must match the parent.
+
+This protocol sets `resources.persistent_compilation_cache`
+to `false` for its CPU/L4 qualification workers: they compile fresh instead of
+loading serialized executables from disk. In-process JIT remains enabled, and
+the runner checks and records the effective cache setting in each backend's
+runtime report. Other protocols and production jobs retain their own cache
+policies. This protocol also registers the exact XLA slow-compilation notice
+format: the runner retains and counts those blocks in authenticated logs, while
+other diagnostics and all failed checks still stop qualification. XLA deliberately
+uses error-level logging for these timing notices to make them visible; they do
+not themselves indicate a failed computation.
+[XLA alarm implementation](https://github.com/openxla/xla/blob/main/xla/service/slow_operation_alarm.cc)
+
+For exact GPU replay, the component runner accepts
+`resources.gpu_execution_policy: "deterministic"`, registered by this protocol. This sets
+`XLA_FLAGS="--xla_gpu_exclude_nondeterministic_ops=true --xla_gpu_autotune_level=0"`
+in GPU workers and their child processes. It replaces ambient GPU flags,
+initializes the requested GPU before testing, and records the flags and device
+platform in the runtime report. CPU workers retain their existing environment.
+XLA documents variability both in timed kernel selection during compilation and
+in the execution order of some GPU operations. These flags request deterministic
+lowering and disable live autotuning; they can affect compilation and throughput.
+[OpenXLA GPU determinism](https://openxla.org/xla/determinism)
+
+Replay qualification remains specific to the frozen source, software, device
+and execution policy. Checkpoints already bind `XLA_FLAGS`; changing this policy
+does not authorize cross-runtime checkpoint migration. Exact window/restart
+checks and all physical tolerances remain unchanged. The window worker saves
+all 47 actual histories before assertions and binds their archive hash in its
+passing report. A policy change requires a fresh qualification: the existing
+resource-stop recovery rule cannot relabel evidence from a different GPU policy.
+Other protocols opt in separately. Larger-run throughput under this policy
+remains to be measured.
+
+Results and retained failures belong in [Progress](../PROGRESS.md).
+
+**Source correspondence:** the constituent gate and transport laws reuse their
+existing source comparisons. Joint-state motion, its bookkeeping and this
+mobile-channel/calcium/injury composition are separately specified Cells work.
+They do not establish native BETSE moving-protein trajectory equivalence,
+autonomous anatomical repair, wetlab agreement or the Forms transmission assays.
+Assembly integration is described below; other mobile channel families remain extensions.
+
+### Mobile pumps with owned calcium and prescribed repair
+
+`resolved_repair@3` adds neutral mobile Na/K ATPase populations to the complete
+`resolved_repair@2` model. The [GPU example](../configs/resolved_mobile_pump_repair_tissue.json)
+uses the ordinary configuration, runner, checkpoint and independent-world APIs.
+Each population has an explicitly owned amount on every patch of its cell, a
+turnover rate, maintained ATP/ADP/Pi concentrations and its own intervention
+schedule. A population may be absent on an entire cell. The same conservative
+surface diffusion law moves pump proteins; pump cycles do not consume them.
+
+At each integration stage, local cycle capacity is the **current pump amount
+times turnover per second**, without applying patch area a second time. The
+existing signed `nak_atp_mass_action_positive@1` law reads free cytosolic sodium,
+exterior potassium and the shared resolved voltage. Positive cycles move three
+sodium ions out and two potassium ions in. Reverse cycles reverse those transfers
+and may return work to the declared chemical reservoirs. The added ion flux
+updates the existing chemical cytosol owner and capacitor charge once.
+
+Six new checkpoint arrays bring the full state to **53 fields**: pump-protein
+amount increments, surface transfer and mixing dissipation, plus pump cycles,
+ionic dissipation and signed metabolic work. Pump populations retain separate
+ledgers from immobile ATPases, channels and calcium transporters. Calcium balance
+validation accepts the additional outward ion transfer, dissipation and reservoir
+work explicitly; it does not encode pump work as negative passive dissipation.
+Local material, per-cell protein totals, chemical ownership, charge, physical
+energy and each population's metabolic-work identity remain checked.
+
+Pump controls affect cycling while leaving neutral diffusion active. They have
+independent exact event boundaries alongside channel controls and prescribed
+injury/resealing. Observations expose current amount, density, surface flux,
+cycle capacity, affinity, signed metabolic power and availability. Invalid
+inventory, padding, control, ledger or ensemble-readout states reject without
+clipping. The inherited **0.625-us step ceiling** and calcium/channel/injury
+checks remain; the pump surface diffusion bound is checked separately.
+
+The [qualification protocol](../validation/tissue/surface_mobile_pump_repair_protocol.json)
+compares all 53 derivatives with independent Decimal ATPase/GHK/gate calculations
+and scalar calcium/ER ownership, including reordered species and reverse pumping.
+Four complete synthetic 50-us trajectories cover mobile, immobile, reversed and
+independently scheduled pumps. Analytic protein diffusion, prescribed damage,
+three-grid refinement, tightened adaptive references, complete fresh-process
+restart, future pump reactivation, changed windows, reordered worlds and CPU/L4
+agreement supply separate checks. [Progress](../PROGRESS.md) records their status.
+
+This version retains finite closed extracellular compartments, fixed geometry,
+neutral protein cargo and maintained chemical reservoirs. It does not add finite
+ATP supply, structural repair costs, protein exchange or autonomous recovery.
+The assembly-cluster integration below adds separate pump reports and its own
+qualification. Native BETSE redistribution correspondence and remote Jupiter
+execution remain separate work.
+
+### Assembly with mobile channels and prescribed repair
+
+The assembly-cluster runner accepts `resolved_repair@2` through the
+[mobile-channel example](../configs/assembly_resolved_mobile_repair_tissue.json).
+Each cell's existing `root_component_has_cycle@1` coupling supplies an availability
+factor. A fixed channel uses its membrane's cell owner; each mobile population
+uses the owner of its current membrane patch. Effective conduction availability
+is the product of the external schedule and this cell-owned assembly factor.
+Padded slots remain inactive. Assembly does not directly change gate states,
+lateral protein motion, damage, pumps or the separately controlled dedicated
+calcium routes; voltage and chemistry continue to couple these processes through
+their existing equations.
+
+Assembly trimers and membrane-channel proteins retain separate inventories.
+There is no exchange between these pools. Reports preserve mobile population,
+joint-gate, transition, surface-edge, patch and cell identities; they include
+absolute channel amounts and all eight added mobile state arrays. Aggregation
+checks shapes, ownership, finite values, dissipation and each cell's conserved
+mobile inventory before summing independent worlds. All 47 ionic state arrays
+and complete assembly, pending-event, exposure and clock state remain in snapshots.
+External changes and stochastic assembly events split the inner integration
+steps; requested observations stay on nominal ionic ticks.
+
+The [qualification protocol](../validation/tissue/assembly_mobile_repair_protocol.json)
+specifies 50-us coupled, scheduled-release and uncoupled controls, each with two
+keyed worlds. Independently reconstructed assembly histories drive the scalar
+calcium/mobile-channel reference. It checks complete trajectories, tightened
+references, compiled timestep refinement, unchanged assembly/damage in the
+uncoupled control, fresh-process/window replay, reversed one-world partitions and
+CPU/L4 agreement. Current results and failures belong in [Progress](../PROGRESS.md).
+Assembly checkpoints now record `XLA_FLAGS` and `JAX_DISABLE_JIT` as part of their
+runtime identity, so an execution-policy change cannot silently cross a restart.
+The GPU qualification uses the deterministic policy described above.
+
+This remains a one-way assembly/conduction hypothesis with synthetic rates,
+phenomenological gate work and prescribed resealing. Protein exchange, finite
+metabolic support, autonomous repair and experimental validation require further
+models and evidence. Independent-world planning supports up to sixteen GPUs;
+remote execution and a tissue distributed across devices require separate checks.
+
+### Assembly with mobile pumps, channels and prescribed repair
+
+The assembly-cluster runner also accepts `resolved_repair@3`, illustrated by the
+[GPU example](../configs/assembly_resolved_mobile_pump_repair_tissue.json). The
+existing cell-owned assembly factor still controls fixed and mobile channel
+conduction. Mobile Na/K pumps retain their own schedules and use the shared ion
+concentrations and voltage. Assembly can therefore affect pump cycling through
+these physical variables without directly changing pump availability or protein
+amount. Assembly pools, membrane channels and membrane pumps remain separate
+material inventories.
+
+Snapshots retain all **53 ionic fields** alongside complete assembly, pending
+events, availability exposure and clocks. Pump reports preserve population,
+species, patch, cell and surface-edge identities, initial and current protein
+amounts, signed cycle counts, 3Na/2K ion transfers, dissipation and maintained
+reservoir work. Aggregation checks material and ion-transfer identities and the
+signed work-per-cycle relation before summing independent worlds. Reverse cycles
+and returned reservoir work retain their signs.
+
+The [qualification protocol](../validation/tissue/assembly_mobile_pump_repair_protocol.json)
+extends the coupled, scheduled-release and uncoupled controls to the complete
+pump composition. Independent assembly histories drive a scalar reference with
+Decimal ATPase/GHK/gate calculations. Checks cover forward and reverse pump
+stages, unchanged direct pump controls, all-field trajectories, tightened
+references, compiled timestep refinement, CPU/L4 agreement, fresh-process/window
+replay and reversed one-world partitions. The uncoupled comparison checks that
+assembly events, prescribed damage and neutral pump protein motion stay identical
+while channel currents, voltage and pump cycling respond. Results and retained
+failures are recorded in [Progress](../PROGRESS.md).
+
+This remains a synthetic, fixed-geometry composition with maintained ATP/ADP/Pi
+reservoirs and prescribed injury/resealing. Finite metabolism, protein exchange,
+feedback into assembly and autonomous repair require further models and evidence.
+One-to-sixteen-GPU planning is distinct from qualified remote execution.

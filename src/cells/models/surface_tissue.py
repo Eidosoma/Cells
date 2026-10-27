@@ -249,6 +249,11 @@ def field_values(state, control, p, *, xp=jnp):
 
 def rhs(state, control, p, active, *, xp=jnp):
     values = field_values(state, control, p, xp=xp)
+    return derivative_from_field(values, p, xp=xp)
+
+
+def derivative_from_field(values, p, *, xp=jnp):
+    """Complete ionic ledgers from one already solved stage field."""
     r = values.rates
     co = xp.where(p.outside_active, p.extracellular_amount_reference / p.extracellular_volume, 1.0)
     mu = R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V

@@ -610,7 +610,7 @@ def check_steps(spec, steps, controls):
         )
 
 
-def balances(state, p):
+def balances(state, p, *, additional_transport=None):
     chemical, electric = 0.0, 0.0
     residuals = []
     er_work = []
@@ -647,6 +647,12 @@ def balances(state, p):
         )
         - 3 * p.plasma_na_selector * state.plasma_exchange_cycles
     )
+    # An explicitly composed route supplies outward ion transfer, dissipation
+    # and maintained-reservoir work separately. Never disguise pump work as
+    # negative passive heat or alter the original fixed-pump ledgers.
+    if additional_transport is not None:
+        transfer, heat, work = additional_transport
+        total = total + transfer
     b = base.balances(
         kinetic.passive_state(state)._replace(membrane_transferred=total),
         p,
@@ -664,6 +670,8 @@ def balances(state, p):
         - np.sum(state.plasma_metabolic_work_pJ)
         - np.sum(state.er_metabolic_work_pJ)
     )
+    if additional_transport is not None:
+        b["energy"] += np.sum(heat) - np.sum(work)
     b["metabolic_work"] = state.metabolic_work_pJ + 1e-3 * p.pump_drive * state.pump_cycles
     b["plasma_metabolic_work"] = (
         state.plasma_metabolic_work_pJ
@@ -677,7 +685,7 @@ def balances(state, p):
     return b
 
 
-def check_values(state, spec):
+def check_values(state, spec, *, additional_transport=None):
     _, p = initial_values(spec)
     rows = (
         [state]
@@ -685,10 +693,13 @@ def check_values(state, spec):
         else [STATE_TYPE(*(v[i] for v in state)) for i in range(len(state.amount_increment))]
     )
     diagnostics = {}
-    for row in rows:
+    for i, row in enumerate(rows):
         if not domain_valid(row, p, p.active, xp=np):
             raise NumericalError("Invalid resolved calcium inventory, ownership, gate or padding")
-        b = balances(row, p)
+        extra = additional_transport
+        if extra is not None and state.amount_increment.ndim > 2:
+            extra = tuple(v[i] for v in extra)
+        b = balances(row, p, additional_transport=extra)
         tol = np.asarray(spec.execution.material_balance_atol_fmol)
         q = np.r_[p.initial_cell_charge_C, p.initial_outside_charge_C] + base.charge_increment(
             row, p, xp=np

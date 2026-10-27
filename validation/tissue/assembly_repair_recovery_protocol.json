@@ -1,0 +1,297 @@
+{
+  "kind": "resolved_assembly_injury_sampled_recovery_qualification@1",
+  "scope": "Extend the qualified one-way assembly/injury composition from 50 us to 2 ms on the same fixed two-cell/four-patch/five-exterior geometry and unchanged synthetic physical parameters. Four controls each use two keyed independent worlds with neutral cell-owned assembly pools. All 39 ionic state fields, complete protein/pending-event state, ownership/conservation, independent event-conditioned references and complete sampled replay are checked. Sampled-return outcomes use the matching uninjured world and assembly path. This is numerical composition qualification, not experimental repair or independent biological replication.",
+  "tests": [
+    "tests/unit/test_recovery_readout.py",
+    "tests/unit/test_assembly_controls.py",
+    "tests/unit/test_assembly_repair_recovery.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_assembly_repair_recovery.py::test_long_cpu_gpu_coupled_snapshots_and_functional_labels"
+  ],
+  "required_evidence": [
+    "assembly-repair-recovery-clocks",
+    "assembly-repair-recovery-owners",
+    "assembly-repair-recovery-planning",
+    "assembly-repair-recovery-trajectory-uninjured",
+    "assembly-repair-recovery-trajectory-sham",
+    "assembly-repair-recovery-trajectory-held",
+    "assembly-repair-recovery-trajectory-resealing",
+    "assembly-repair-recovery-reference-uninjured-world-0",
+    "assembly-repair-recovery-reference-uninjured-world-1",
+    "assembly-repair-recovery-reference-sham-world-0",
+    "assembly-repair-recovery-reference-sham-world-1",
+    "assembly-repair-recovery-reference-held-world-0",
+    "assembly-repair-recovery-reference-held-world-1",
+    "assembly-repair-recovery-reference-resealing-world-0",
+    "assembly-repair-recovery-reference-resealing-world-1",
+    "assembly-repair-recovery-reference-stability-held-world-0",
+    "assembly-repair-recovery-reference-stability-held-world-1",
+    "assembly-repair-recovery-reference-stability-resealing-world-0",
+    "assembly-repair-recovery-reference-stability-resealing-world-1",
+    "assembly-repair-recovery-functional",
+    "assembly-repair-recovery-refinement-held",
+    "assembly-repair-recovery-refinement-resealing",
+    "assembly-repair-recovery-replay",
+    "assembly-repair-recovery-worlds"
+  ],
+  "required_gpu_evidence": [
+    "assembly-repair-recovery-cpu-gpu"
+  ],
+  "test_groups": [
+    {
+      "name": "assembly-recovery-contracts",
+      "tests": [
+        "tests/unit/test_recovery_readout.py",
+        "tests/unit/test_assembly_controls.py",
+        "tests/unit/test_assembly_repair_recovery.py::test_long_definitions_observation_clocks_and_limits",
+        "tests/unit/test_assembly_repair_recovery.py::test_initial_readouts_and_independent_availability_integral",
+        "tests/unit/test_assembly_repair_recovery.py::test_long_one_to_sixteen_gpu_planning"
+      ]
+    },
+    {
+      "name": "assembly-recovery-trajectories",
+      "tests": [
+        "tests/unit/test_assembly_repair_recovery.py::test_long_coupled_trajectory_all_worlds_against_reference",
+        "tests/unit/test_assembly_repair_recovery.py::test_matched_assembly_functional_report_and_one_way_controls",
+        "tests/unit/test_assembly_repair_recovery.py::test_long_cpu_gpu_coupled_snapshots_and_functional_labels"
+      ]
+    },
+    {
+      "name": "assembly-recovery-refinement-held",
+      "tests": [
+        "tests/unit/test_assembly_repair_recovery.py::test_long_assembly_coupled_timestep_refinement[held]"
+      ]
+    },
+    {
+      "name": "assembly-recovery-refinement-resealing",
+      "tests": [
+        "tests/unit/test_assembly_repair_recovery.py::test_long_assembly_coupled_timestep_refinement[resealing]"
+      ]
+    },
+    {
+      "name": "assembly-recovery-replay",
+      "tests": [
+        "tests/unit/test_assembly_repair_recovery.py::test_long_complete_restart_windows_and_pending_events",
+        "tests/unit/test_assembly_repair_recovery.py::test_long_complete_world_partition_and_reverse_merge"
+      ]
+    }
+  ],
+  "experiment": {
+    "arms": [
+      "uninjured",
+      "sham",
+      "held",
+      "resealing"
+    ],
+    "world_ids": [
+      0,
+      1
+    ],
+    "duration_s": 0.002,
+    "injury_onset_s": 5.3e-06,
+    "injury_offset_s": 1.53e-05,
+    "injury_rate_per_s": 20000.0,
+    "closure_rate_per_s": 4000.0,
+    "assembly_k_off_s_inv": 40000.0,
+    "ionic_time_steps_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "observations_s": [
+      0.0,
+      5e-06,
+      5.625e-06,
+      1.5000000000000002e-05,
+      1.5625e-05,
+      2.5e-05,
+      5e-05,
+      7.500000000000001e-05,
+      0.0001,
+      0.000125,
+      0.00015000000000000001,
+      0.00017500000000000003,
+      0.0002,
+      0.00022500000000000002,
+      0.00025,
+      0.000275,
+      0.00030000000000000003,
+      0.00032500000000000004,
+      0.00035000000000000005,
+      0.000375,
+      0.0004,
+      0.00042500000000000003,
+      0.00045000000000000004,
+      0.00047500000000000005,
+      0.0005,
+      0.0005250000000000001,
+      0.00055,
+      0.0005750000000000001,
+      0.0006000000000000001,
+      0.000625,
+      0.0006500000000000001,
+      0.000675,
+      0.0007000000000000001,
+      0.0007250000000000001,
+      0.00075,
+      0.0007750000000000001,
+      0.0008,
+      0.0008250000000000001,
+      0.0008500000000000001,
+      0.000875,
+      0.0009000000000000001,
+      0.000925,
+      0.0009500000000000001,
+      0.0009750000000000001,
+      0.001,
+      0.001025,
+      0.0010500000000000002,
+      0.001075,
+      0.0011,
+      0.0011250000000000001,
+      0.0011500000000000002,
+      0.001175,
+      0.0012000000000000001,
+      0.0012250000000000002,
+      0.00125,
+      0.001275,
+      0.0013000000000000002,
+      0.001325,
+      0.00135,
+      0.0013750000000000001,
+      0.0014000000000000002,
+      0.001425,
+      0.0014500000000000001,
+      0.0014750000000000002,
+      0.0015,
+      0.001525,
+      0.0015500000000000002,
+      0.0015750000000000002,
+      0.0016,
+      0.0016250000000000001,
+      0.0016500000000000002,
+      0.001675,
+      0.0017000000000000001,
+      0.0017250000000000002,
+      0.00175,
+      0.001775,
+      0.0018000000000000002,
+      0.0018250000000000002,
+      0.00185,
+      0.0018750000000000001,
+      0.0019000000000000002,
+      0.001925,
+      0.0019500000000000001,
+      0.001975,
+      0.002
+    ],
+    "window_ticks": 40,
+    "restart_s": 0.001,
+    "restart_window_ticks": 17,
+    "definition": "validation/tissue/assembly_repair_recovery.py",
+    "gpu_example": "configs/assembly_resolved_repair_recovery_tissue.json"
+  },
+  "recovery_observer": {
+    "bands": {
+      "membrane_voltage_V": 1e-05,
+      "cytosol_free_mM": 1e-06,
+      "exterior_free_mM": 1e-06
+    },
+    "numerical_uncertainty": {
+      "membrane_voltage_V": 1e-07,
+      "cytosol_free_mM": 1e-08,
+      "exterior_free_mM": 1e-08
+    },
+    "intervention_s": 5.3e-06,
+    "release_s": 1.53e-05,
+    "hold_s": 0.0005,
+    "max_gap_s": 2.5e-05,
+    "matched_reference": "Independent uninjured trajectory for the same world and independently reconstructed assembly path",
+    "observation_rule": "85 nominal-grid observations bracket off-grid injury events. Eligibility starts at the first observation at or after the physical event; a release-to-next-sample gap earns no hold time. No interpolation or continuous-time recovery claim.",
+    "first_observed_after_injury_s": 5.625e-06,
+    "first_observed_after_release_s": 1.5625e-05,
+    "success_does_not_require_recovery": true
+  },
+  "checks": [
+    "Retain on-grid sampled-return behavior and add off-grid event support without crediting unobserved hold time. Unit controls reject missing/excessively spaced observations, malformed measurements and unbracketed events, and distinguish no disturbance, brief reentry, uncertainty and sustained final holds.",
+    "All 12 arm/timestep definitions keep physical injury boundaries at 5.3 and 15.3 us and 85 exact nominal observation ticks. Insufficient tick allowances and off-grid coupled snapshots reject. Host plans preserve identical tasks/world identities from one to sixteen GPUs; no remote GPU executes.",
+    "Capture complete coupled states at every registered observation, including protein inventories, pending random events, clocks, exposure and all 39 ionic fields. Inputs, final state, partial snapshots and last callback state are preserved on failure. Check all observation state domains, ledgers and clocks; stage guards remain in the kernel.",
+    "Independently reconstruct scalar graph event histories from the keyed uniforms in both worlds. Every arm uses the same protein event path per world, and sham/uninjured complete sampled states agree. Assembly influences only channel availability, never injury, closure or the protein energy pool.",
+    "Independent segmented DOP853 and full-node scalar electrical/chemical references are conditioned on those reconstructed event histories. Compare all observed ionic states, voltages, owned free cytosol/exterior concentrations and availability exposure. Held and resealing references in both worlds must remain stable after fourfold tolerance tightening. Save reference states and signed errors before assertions.",
+    "The sampled functional report retains all four controls and both keyed worlds separately. Compare production labels with independent references and CPU/L4 labels with each other. These eight controlled trajectories are not eight biological replications; no positive-recovery gate or adaptive parameter tuning.",
+    "Refine held and resealing composition at 0.625/0.3125/0.15625 us in both worlds. Protein trajectories stay unchanged; original state budgets and convergence floors remain fixed. Complete snapshots and signed state errors are saved at every refinement step.",
+    "Restart from a saved 1-ms complete checkpoint with 17-tick windows. Compare every subsequent complete sampled state and final state byte-for-byte. Execute each world separately in reverse order, merge by stable world ID, and compare all complete sampled and final states byte-for-byte.",
+    "CPU/L4 agreement checks every saved complete observation and final state, with exact discrete fields and the established unit-specific float tolerances. Read CPU references only after passed status and exact normalized full inputs/settings/event metadata match. Existing runner authenticates CPU payloads and frozen source/runtime.",
+    "Serial fresh bounded process groups; existing host-memory guards, disk/wall limits, durable evidence/failures and both GPU busy and SM-active metrics. No automatic follow-up or retries."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "rate_rtol": 3e-10,
+    "rate_atol": 3e-12,
+    "rate_charge_atol_A": 3e-23,
+    "analytic_damage_atol": 2e-09,
+    "damage_ledger_atol": 9.094947017729282e-13,
+    "independent_dop853_rtol": 1e-13,
+    "independent_dop853_atol": 1e-16,
+    "independent_charge_atol_C": 5e-32,
+    "reference_tightening_factor": 0.25,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_steps_s": [
+      6.25e-07,
+      3.125e-07,
+      1.5625e-07
+    ],
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "refinement_charge_floor_C": 3e-27,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_gate_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "readout_atol": {
+      "membrane_voltage_V": 1e-08,
+      "cytosol_free_mM": 1e-09,
+      "exterior_free_mM": 1e-09
+    },
+    "reference_readout_stability_atol": {
+      "membrane_voltage_V": 1e-09,
+      "cytosol_free_mM": 1e-10,
+      "exterior_free_mM": 1e-10
+    },
+    "availability_exposure_atol_s": 2e-14
+  },
+  "resources": {
+    "max_wall_seconds": 21600,
+    "artifact_and_cache_bytes": 6442450944,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 15032385536,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 4294967296,
+    "resource_sample_seconds": 0.25
+  },
+  "scope_exclusions": [
+    "Fixed geometry with synthetic injury/closure/assembly rates and engineering return bands, not a fitted physiological restoration target.",
+    "One-way neutral assembly regulation of shared channels; no assembly-driven closure, chemical feedback into proteins or structural repair material/energy cost.",
+    "Complete state at 85 observation boundaries and guarded intermediate integration. No saved full trace at every internal assembly/control substep, and no interpolation of missing observation states.",
+    "Prescribed closure or a qualified numerical result does not imply functional return, autonomous repair, regeneration, BETSE cutting parity or experimental tissue validation.",
+    "Local CPU and L4 independent-world execution only. One-to-sixteen-GPU planning is a host check; remote execution and a distributed single tissue remain separate.",
+    "Utilization includes compilation and host reference work. No warmed throughput threshold or optimization campaign; the channel-compensation research branch stays parked."
+  ],
+  "prerequisites": [
+    {
+      "qualification": "/mnt/workspaces/Cells/resolved-repair-20261023-01/completion.json",
+      "completion_sha256": "784a0adaef866d91e845ef6954f8f2a65773b39154f730d44afc1ab5b7697566"
+    },
+    {
+      "qualification": "/mnt/workspaces/Cells/resolved-repair-recovery-20261023-01/completion.json",
+      "completion_sha256": "0b19a8ea8d7e5cea63a1d990fd48b5c182cb2424702b42ac23565dcd6f376272"
+    }
+  ],
+  "automatic_followup": false
+}

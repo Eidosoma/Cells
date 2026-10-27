@@ -84,8 +84,9 @@ Start with **localized membrane injury and prescribed resealing on a fixed
 tissue geometry**. This adds a reusable physiological component before tackling
 cell removal, regrowth or adaptive recovery. Existing channel/junction schedules
 support reversible block/release, and complete checkpoints preserve their
-histories. They do not yet represent membrane damage, tissue cutting or growth;
-ordinary checkpoint branches deliberately reject a changed model/topology.
+histories. Explicit membrane damage is the component described below; tissue
+cutting and growth remain later work. Ordinary checkpoint branches deliberately
+reject a changed model/topology.
 
 The first component, `resolved_repair@1`, gives each membrane patch an explicit
 damage fraction between zero and one. A timed injury hazard opens the intact
@@ -97,6 +98,13 @@ The initial law is a **phenomenological closure model**, with explicit units and
 parameters, not an experimentally fitted repair mechanism. Structural repair
 costs and finite metabolic support remain to be modelled. No concentration,
 voltage, calcium store or intrinsic channel gate is reset to manufacture recovery.
+
+The assembly-integrated runner also supports scheduled interventions alongside
+cell-owned assembly events, with exact internal boundaries and complete damage
+and transfer records. This connects the existing assembly and injury components;
+assembly-driven closure, metabolic repair support and feedback into protein
+pools still require explicit laws and references. Current validation status
+belongs in [Progress](../PROGRESS.md).
 
 Use the analytic damage-decay solution and independently integrated coupled
 ion/field equations as references. Require uninjured, sham, held-injury
@@ -122,6 +130,38 @@ the additional topology/communication work in the
 
 Source inspection and implementation evidence are recorded separately in
 [Progress](../PROGRESS.md); neither establishes biological regeneration.
+
+## Membrane redistribution
+
+Use the [conservative surface-transport component](TISSUE_RETURN_CURRENT.md#lateral-membrane-redistribution)
+for explicitly owned membrane-bound populations. The first ordinary composition,
+`resolved_redistribution@1`, couples neutral always-open populations to patch
+permeability while preserving each cell's total. Its fixed/mobile controls,
+independent coupled references and full restart now pass on CPU/L4 in the
+documented synthetic regime. The `resolved_redistribution@2` extension adds
+conserved neutral Na/K ATPase populations whose current abundance sets capacity,
+with separate pump cycles, dissipation and maintained ATP-reservoir work. The
+[`resolved_redistribution@3` extension](TISSUE_RETURN_CURRENT.md#mobile-channels-carrying-joint-gating-states)
+transports four joint Kv1.5 gate conformations without discarding their
+correlations. Its declared rate-bias work is phenomenological accounting,
+not a measurement of gating energetics. The
+[`resolved_repair@2` composition](TISSUE_RETURN_CURRENT.md#mobile-kv15-with-owned-calcium-and-prescribed-repair)
+connects mobile Kv1.5 to owned calcium/ER and prescribed injury/resealing,
+retaining distinct protein and conducted-ion ledgers. The
+[`resolved_repair@3` extension](TISSUE_RETURN_CURRENT.md#mobile-pumps-with-owned-calcium-and-prescribed-repair)
+adds mobile Na/K ATPases with separate protein, ion and maintained-ATP work
+ledgers; its qualification status belongs in Progress. The
+[assembly integration](TISSUE_RETURN_CURRENT.md#assembly-with-mobile-channels-and-prescribed-repair)
+applies each cell's existing assembly availability to fixed and mobile conduction
+while preserving complete inventories and event clocks; its qualification status
+is recorded in Progress. The [mobile-pump assembly extension](TISSUE_RETURN_CURRENT.md#assembly-with-mobile-pumps-channels-and-prescribed-repair)
+retains independent pump controls and all 53 ionic fields, with separate protein,
+ion-transfer and signed reservoir-work reports and its own qualification.
+Broader mobile channel families and protein exchange
+between assembly and membrane pools remain extensions. Charged cargo still needs
+bound-charge and field-work accounting. Active trafficking, fluid motion, assembly
+exchange and changing surface geometry remain separate extensions. Implementation
+and qualification evidence belong in [Progress](../PROGRESS.md).
 
 ## BITSEY replication
 
