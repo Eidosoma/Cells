@@ -12,7 +12,7 @@ from cells.core.betse_spatial_spec import Control as BetseSpatialControl
 from cells.core.er_spec import ERChange
 from cells.core.gated_calcium_spec import GatedCalciumChange
 from cells.core.gated_calcium_spec import base_spec as plasma_spec
-from cells.core.plasma_calcium_spec import PlasmaChange, base_spec
+from cells.core.plasma_calcium_spec import PlasmaChange
 from cells.core.reaction_spec import ReactionChange
 from cells.core.spatial_calcium_spec import CalciumChange, ionic_spec, store_spec
 from cells.core.specs import (
@@ -33,6 +33,9 @@ from cells.core.surface_calcium_energy_spec import (
 )
 from cells.core.surface_calcium_energy_spec import (
     initial_prior_spec as calcium_energy_prior,
+)
+from cells.core.surface_calcium_energy_transport_spec import (
+    SurfaceCalciumEnergyTransportModel,
 )
 from cells.core.surface_calcium_energy_water_repair_spec import Control as JointRepairControl
 from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
@@ -194,6 +197,16 @@ def control_values(spec, times):
         padded = np.zeros((len(times), spec.execution.membrane_capacity))
         padded[:, : len(spec.model.membranes)] = values
         return SurfaceCalciumWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceCalciumEnergyTransportModel):
+        from cells.core.surface_calcium_energy_transport_spec import Control, base_spec
+
+        original = control_values(base_spec(spec), times)
+        changes = spec.experiment.changes
+        indices = np.searchsorted([c.time for c in changes], times, side="right") - 1
+        values = np.asarray([c.network_transport for c in changes])[indices]
+        padded = np.zeros((len(times), spec.execution.network_transport_capacity))
+        padded[:, : len(spec.model.network_transporters)] = values
+        return Control(*original, padded)
     if isinstance(spec.model, SurfaceCalciumEnergyModel):
         original = control_values(calcium_energy_prior(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1

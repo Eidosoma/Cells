@@ -818,6 +818,13 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceCalciumEnergyWaterModel):
             return to_dict(self)
+        from cells.core.surface_calcium_energy_transport_spec import (
+            SurfaceCalciumEnergyTransportModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyTransportModel):
+            return to_dict(self)
         from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyModel, to_dict
 
         if isinstance(m, SurfaceCalciumEnergyModel):
@@ -1115,6 +1122,13 @@ def parse_spec(data: dict) -> SimulationSpec:
         "resolved_repair@4",
     ):
         from cells.core.surface_repair_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_transport@1"
+    ):
+        from cells.core.surface_calcium_energy_transport_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") in (

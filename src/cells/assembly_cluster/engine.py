@@ -108,7 +108,7 @@ def summary(spec, state):
     else:
         voltage = ionic.cell_voltage(state.ionic.amount_increment, layout, xp=np)[:, :n]
         voltage_axes = {}
-    from cells.assembly_cluster import finite_energy
+    from cells.assembly_cluster import finite_energy, network_transport
 
     ncav = len(getattr(spec.ionic.model, "calcium_channels", ()))
     cells = {
@@ -240,6 +240,11 @@ def summary(spec, state):
         **(
             {"finite_energy": finite_energy.summary(spec, state, layout)}
             if hasattr(spec.ionic.model, "energy_pools")
+            else {}
+        ),
+        **(
+            {"network_transport": network_transport.summary(spec, state, layout)}
+            if hasattr(spec.ionic.model, "network_transporters")
             else {}
         ),
         **(

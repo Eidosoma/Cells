@@ -26,6 +26,7 @@ from cells.core.surface_calcium_energy_spec import (
     SurfaceCalciumEnergyModel,
     SurfaceCalciumEnergyMorrisLecarModel,
 )
+from cells.core.surface_calcium_energy_transport_spec import SurfaceCalciumEnergyTransportModel
 from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
 from cells.core.surface_calcium_energy_water_spec import SurfaceCalciumEnergyWaterModel
 from cells.core.surface_calcium_spec import (
@@ -149,6 +150,7 @@ def parse_spec(data):
         SurfaceCalciumEnergyActivatedModel,
         SurfaceCalciumEnergyMorrisLecarModel,
         SurfaceCalciumEnergyHCNExtraModel,
+        SurfaceCalciumEnergyTransportModel,
         SurfaceRepairModel,
         SurfaceMorrisLecarRepairModel,
         SurfaceMobileRepairModel,

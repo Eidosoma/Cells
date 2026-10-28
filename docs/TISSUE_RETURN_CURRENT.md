@@ -2537,3 +2537,57 @@ opening/resealing durations without claiming full-system recovery.
 [Progress](../PROGRESS.md) records development results and outstanding
 qualifications. Longer coupled recovery, stochastic assembly histories, GPU
 execution, changing topology and experimental validation require further evidence.
+
+### Configured transport with owned calcium and finite fuel
+
+[`resolved_calcium_energy_transport@1`](../configs/resolved_calcium_energy_network_transport.json)
+composes the pinned configurable BETSE transporter component with the 56-law
+`resolved_calcium_energy@5` model. Its **42 complete fields** include four new
+ledgers: signed reaction cycles, outward ion transfer by species and route,
+dissipated energy, and signed supplied work. It uses actual free cytosolic ions,
+finite extracellular owners and the solved membrane voltage at every stage.
+Transported calcium updates the existing chemical owner and its ionic accounting
+view once; it does not create a second calcium pool.
+
+This first physically accounted subset requires reversible, species-preserving
+transport. Reactant and product species/coefficient maps must match exactly;
+conversion reactions and irreversible native configurations are excluded.
+Each route binds an explicit membrane, and `ignore ECM` or profile-based targeting
+cannot bypass that owner. Native regulator algebra is retained, including the
+source's unused regulator-zone and voltage-star requests, but negative regulation
+is outside this physical model's domain even when the route is blocked.
+
+The configuration explicitly declares Cells' SI Faraday/gas constants. The frozen
+native captures used those constants too; this is not a comparison using BETSE's
+rounded factory constants. For this subset, matching substrate lists cancel the
+native quotient's per-item standard-concentration factors. If the configured
+standard energy is `G0`, supplied work per forward mole must be declared as
+`W = -G0`. With outward stoichiometry `nu`, inside-minus-outside voltage `Vm`, and
+current free concentrations, the physical transfer energy is
+`sum(nu * (R*T*log(c_out/c_in) - z*F*Vm))`. The native reaction energy is that
+transfer energy plus `G0`. For a signed cycle rate in fmol/s:
+
+- dissipated power is `-1e-3 * cycle_rate * reaction_energy`, in pJ/s;
+- supplied power is `1e-3 * cycle_rate * W`, in pJ/s;
+- chemical plus capacitor energy change, heat and supplied work balance once.
+
+The declared driving work represents a maintained external source. It does not
+silently consume ATP. Existing Na/K, plasma-calcium and ER pumps retain their
+shared finite fuel owner and live ATP feedback. A future ATP-driven configurable
+reaction needs an explicit chemical/pool stoichiometry contract.
+
+Route-only event boundaries join the existing channel, pump and fuel clocks.
+Parent timestep ceilings and an initial gross-transport turnover check are
+retained; every actual trial still checks positive inventories, rate finiteness,
+nonnegative dissipation and ledger/padding validity. The initial turnover bound
+is not a lifetime stability guarantee. Geometry and ER volume remain fixed.
+
+The [assembly example](../configs/assembly_resolved_calcium_energy_network_transport.json)
+retains channel-only assembly modulation and separate transporter metadata and
+ledgers in aggregate reports. All 42 fields and flat topology arrays participate
+in checkpointing. The [independent reference](../validation/tissue/calcium_energy_network_transport_reference.py)
+checks full coupled rates and histories; reduced long-duration transport checks
+remain distinct from short coupled trajectories. Current receipts and failures
+are recorded only in [Progress](../PROGRESS.md). Offline multi-GPU planning,
+compiled CPU evidence, native-source correspondence and experimental calibration
+are separate claims; this version does not establish whole-tissue BETSE parity.

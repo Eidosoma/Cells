@@ -1,0 +1,57 @@
+{
+  "kind": "cells.betse_tissue_cut_contracts@1",
+  "law_id": "conservative_tissue_removal_remap@1",
+  "purpose": "Resolve native ownership heuristics/resets and preserve explicit material/identity across a shape-changing cut",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177"
+    },
+    "scope": "Actual isolated _cut_cells, geometry/contact/environment/Poisson/diffusion and DEC cut/core methods on manufactured small polygons; profile hooks recorded; no native Voronoi seeding or full simulation"
+  },
+  "component_policy": {
+    "identities": "Explicit unique stable cell, membrane, edge and environment IDs, with old-to-new/new-to-old maps",
+    "removal": "Remove named cells, their owned membranes, and all incident edges; retain order and orientation of survivors",
+    "edge_roles": "Contact edges bind their two owned membranes; field edges are independent graph edges and do not imply wound exposure",
+    "exposure": "Surviving contact neighbors are hurt; surviving partner membranes of removed contacts become exposed",
+    "environment": "Retain declared environment node identities; no implicit release or new node creation",
+    "ownership": "Explicit ownership axes; no inference from matching array lengths",
+    "material": "Archive removed values and declared quantities by stable owner ID; original = survivor + removed at each declared quantity axis",
+    "material_precision": "Declared quantities/densities require finite float64 values and explicit units; nonmaterial state preserves its numeric dtype",
+    "density": "Explicit measure and scale convert density to amount; optional new survivor measure rescales density while preserving amount",
+    "state": "Non-material state remains bitwise unchanged on surviving owners when no measure conversion is requested",
+    "derived": "Topology, field operators, owner bindings, compiled layouts and checkpoint identity require explicit rebuild after an actual cut",
+    "checkpoint": "Bind layout and field declaration identities, owner axes, shapes, dtypes and units; model checkpoint I/O separately persists numeric state, measures and removed ledgers",
+    "empty": "No-op and complete removal are defined, with stable empty axes and unchanged global environment fields"
+  },
+  "native_limits": [
+    "Array lengths and a hardcoded special-name set infer ownership; equal axis lengths and unknown nested fields can be misclassified",
+    "List branches delete in place and then retain only data[index], or raise after partial mutation",
+    "The cut path recomputes geometry/environment/Poisson maps and reinitializes diffusion weights and current arrays",
+    "Gap-junction, profile, molecule/ER and fast-solver reinitialization hooks are conditional; they are not conservative remapping",
+    "Native cut_mesh documents an edge restructure index but returns removed edge indices; hanging field edges may remain without simplices",
+    "Empty/all/single-survivor geometry branches may fail; preserve actual failures without silently fixing native code",
+    "Extracellular volume maps can change while native extracellular concentration arrays survive unchanged",
+    "ATP/content release is commented out; no native material-release mechanism or conservation ledger is inferred"
+  ],
+  "scope_limits": [
+    "Pure removal/remapping and sparse owner/contact maps; no regeneration, mechanics, retessellation or creation of biological state",
+    "Conservative Cells behavior is distinct from native reset/ownership behavior",
+    "No whole-tissue parity, field-solver continuation, physical cut-energy or automatic checkpoint migration claim",
+    "Removed material remains an explicit sink ledger; no implicit ECM reservoir, heat, charge neutralization or ATP demand"
+  ],
+  "tolerances": {"relative": 5e-12, "material_atol": 2e-12, "charge_atol_C": 3e-22, "geometry_relative": 5e-13, "geometry_atol_m": 2e-19},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_process_tree_rss_bytes": 1073741824,
+                "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180,
+                "gpu": false, "persistent_compilation_cache": false},
+  "automatic_followup": false
+}

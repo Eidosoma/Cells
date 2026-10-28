@@ -1566,3 +1566,85 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   discrete Euler timing. No heat/ATP/water ledger is inferred. Shared files and
   earlier scientific evidence remain untouched; final handoff sent to Chief.
   All new scientific files are frozen; no follow-up computation or audit starts.
+
+## Native cutting and conservative topology remapping, 2026-10-28
+
+- Chief assigned the next larger feature after mitochondrial handoff. Own only
+  new `src/cells/processes/betse_tissue_cut.py`, `validation/topology/betse_tissue_cut*`,
+  matching unit tests and own workfiles/log. Root owns configurable transport
+  integration and all shared files/docs/PROGRESS. CPU7/one thread, <=1-GiB RSS,
+  >=8-GiB reserve, external logs/evidence; no GPU. Only blockers/final handoff
+  go to Chief. No earlier scientific file or active job is changed.
+- Reviewed actual `_cut_cells`, event callers, all geometric/contact/environment
+  rebuild methods, DEC `cut_mesh` and its core map/operator rebuilds, native
+  diffusion reinitialization and downstream molecular/ER/reset hooks. Native
+  cutting infers ownership from array length and a hardcoded special-field set;
+  list handling and equal-length axes require explicit failure evidence. Native
+  ATP release is commented out. No conservative material ledger is supplied.
+- Planned component uses stable cell/membrane/edge/environment IDs and explicit
+  ownership axes. It drops owned membranes and incident edges, preserves
+  surviving order/identity/orientation, distinguishes contact from abstract
+  field edges, and identifies surviving hurt/exposed faces. No new cells/edges,
+  mechanical geometry or regeneration is inferred. Operators/layout/checkpoint
+  bindings must be rebuilt. Fields retain exact values unless a declared density
+  measure changes, in which case amount is preserved and density rescaled.
+  Removed contents remain in a named ledger, never silently released to ECM.
+- Native capture design uses three manufactured adjacent 4/5/6-sided polygons,
+  actual source geometry/contact/environment/Poisson/diffusion methods, and
+  actual DEC vertex/edge cut/core operators. Profile-selection hooks are recorded
+  explicitly; native Voronoi seeding/full simulation are outside the claim.
+  Source reset/ownership/DEC hanging-edge limitations will remain distinct from
+  conservative Cells behavior. The mixed geometry also avoids silently repairing
+  native rectangular-object-index failures in equal-sided/single-cell cases.
+- [Source preflight 01](/mnt/workspaces/Cells/betse-tissue-cut-development-20261028-01/result.json)
+  passes all three left/middle/right native cuts. Captures execute actual cut,
+  geometry/contact/environment/mask/Poisson/DEC and diffusion-reinitialization
+  bodies; only profile selection is a recorded hook. Seven native limitations
+  and partially mutated failure states are retained. This receipt is explicitly
+  source-only and does not count component unit tests.
+- Implemented immutable stable topologies/plans, explicit old/new/removed maps,
+  distinct contact/field edge roles, hurt/exposed surviving IDs, linear-size CSR
+  owner maps, and explicit field-axis handling. State remains bitwise unchanged
+  on survivors; declared quantity/density fields carry removed-owner values,
+  quantities and totals. New measures rescale densities while preserving amount.
+  Finite/positive measures, float64 quantities and representable results are
+  checked before publication. No removed contents are implicitly released.
+- Checkpoint metadata binds topology and field-declaration identities, owner
+  axes, shapes, dtypes and units. It rejects stale layouts, altered units and
+  incompatible declarations. Numerical state, measures, clocks and removed
+  ledgers remain caller-owned checkpoint data. All derived field/operator and
+  compiled bindings are explicitly invalidated after a real cut.
+- [Complete component receipt 02](/mnt/workspaces/Cells/betse-tissue-cut-development-20261028-02/result.json)
+  passes **60 tests: 57 host / three CPU JAX**. Independent list/80-digit Decimal
+  checks cover graph sizes including empty/singleton layouts, no-op and complete
+  removal, signed charge/material accounting, density measure changes, explicit
+  equal-size axes, sequential cuts/checkpoint roundtrip, immutable plans and
+  rejection without input mutation. CPU compilation covers fixed-plan gathers,
+  new-measure density conversion, independent batches and complete removal.
+- Actual native topology and owner matrices match the three small cut outcomes.
+  The middle cut retains field edge **C>A** without a membrane contact. Native
+  diffusion/current resets are observed separately from conservative remapping.
+  Captured limitations: empty cut, all removal, single survivor, list-tail loss,
+  list-last index error, equal-length global deletion and unknown nested-owner
+  state left stale. No native ATP/content-release comment became a mechanism.
+- The middle cut archives **[17.82057854, 44.55144635] fmol** from the two ion
+  rows, with partition residual at most **7.10543e-15 fmol**. Native environment
+  volume rebuilding at unchanged concentration changes apparent material by
+  **[1.22000581, 1.83000871] fmol**. Explicit new measures preserve both amounts
+  in the conservative policy, with zero residual here and no ECM release.
+- Native/host/JAX guarded phases take **2.591 / 1.538 / 3.553 s**. Peak RSS
+  **248,418,304 B**, minimum available memory **19,199,733,760 B**, CPU7 and
+  one-thread execution satisfy the assigned limits. Source snapshots do not
+  drift during checks. The native child imports no production Cells or JAX.
+- [Frozen metadata handoff](/mnt/workspaces/Cells/betse-tissue-cut-handoff-20261028-01/result.json)
+  verifies **104 artifact hashes**, retains source preflight and full receipts,
+  binds all seven owned scientific files/upstream sources, and freezes the
+  [checkpoint/owner integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_TISSUE_CUT_HANDOFF.md).
+  SHA `5f25661a6d3af158984f3e968805c6e4bfdc3f076790e1d6392c562d17219e9e`.
+  Process SHA `2ca66f3f0e3c95b210586c85826668ff681579e908ba896e7c11201c868bc0b1`;
+  full receipt SHA `e90fed8be76ff2d41b82ac8ad282d38060124f15120908e51acdab4e5a752284`.
+- Final handoff sent to Chief. All new scientific files/evidence are frozen;
+  shared models/dispatch/docs/PROGRESS and earlier evidence remain untouched.
+  No regeneration/mechanics/whole-tissue parity, complete checkpoint migration
+  or cut-energy law is claimed. No follow-up computation, regression or audit
+  is running.

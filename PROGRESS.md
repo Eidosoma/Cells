@@ -59,9 +59,60 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   tolerances were retained. No HCN job remains active and no GPU job is queued.
   Longer coupled HCN recovery, 56-law water/repair integration, stochastic
   assembly, GPU execution and experimental calibration remain separate work.
-  **Next lead task:** integrate configurable transporters with explicit material
-  owners, constants and energy accounting. Key Dev independently builds the
-  mitochondrial ion/voltage component. The lead alone maintains this status file.
+  The lead's next integration, configured transport, is qualified below. Key Dev
+  independently owns native cutting/remapping after delivering mitochondria.
+  The lead alone maintains this status file.
+
+- **Reversible configured transport passes scoped CPU qualification.**
+  [`resolved_calcium_energy_transport@1`](docs/TISSUE_RETURN_CURRENT.md#configured-transport-with-owned-calcium-and-finite-fuel)
+  adds four transport/work ledgers to the 38-field, 56-law calcium/ER and finite
+  ATP composition. This first physical subset preserves each ionic species,
+  updates its actual cytosolic chemical owner and finite exterior, and declares
+  maintained work separately from ATP. The
+  [combined receipt](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/development-result.json)
+  binds **90 distinct passing checks**: 42 host/planning, two compiled CPU checks
+  and 46 independent checks, including six data-only clock checks. This combines
+  preserved runs, not one all-green batch; engineering controls are not extra
+  biological cases. The [host checks](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/host-04/tests.xml)
+  cover six arms, padding, material/energy contracts, actual free-calcium owners,
+  no implicit ATP demand, blocked/empty parent identity, assembly and checkpoints.
+  Corrected [offline 1/4/16-GPU planning](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/planning-02/result.json)
+  preserves task/owner identities and keeps every allocated slot assigned work.
+  The [two-world compiled check](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/compiled-stage-01/result.json)
+  took **2m 57s**, matched all 42 rates, and isolated an invalid world without
+  changing its neighbour. The [complete 50-us trajectory](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/compiled-trajectory-01/result.json)
+  took **5m 37s**, passed at **0.104 of its state-error budget**, and restored all
+  42 checkpoint fields exactly. Energy residual was **1.14e-17 pJ**, network
+  material-ledger residual **6.78e-21 fmol**, and pool-material residual
+  **2.20e-16 fmol**. Peak charged memory was **3.30 GiB**, with **13.37 GiB**
+  minimum host reserve. The [independent package](/mnt/workspaces/Cells/calcium-energy-network-transport-reference-20261028-01/HANDOFF.json)
+  includes full-state refinement and a **198.49-s K/Cl relaxation** at unchanged
+  physical rates, covering twelve equilibrium time constants in an isolated
+  finite owner pair. It does not establish full coupled settling.
+  [Clock corrections](/mnt/workspaces/Cells/calcium-energy-network-transport-reference-20261028-01/FIXTURE_CLOCK_CORRECTION_RECEIPT.json)
+  retain blocked-arm event timing and remove unsupported empty-arm observations.
+  Preserved `host-01`–`host-04` failures include signed-energy parsing, fixture
+  clock/control expectations, and a correctly rejected 16-GPU plan with only
+  eight tasks; equations and scientific tolerances were retained.
+  No transport qualification remains active and no GPU run is queued. Longer
+  coupled recovery, ATP-driven conversion reactions, water/mitochondrial coupling,
+  stochastic assembly and full native tissue correspondence remain open.
+  **Next:** integrate the independently developed cutting/topology and organelle
+  components under explicit material ownership; GPU qualifications stay deferred.
+
+- **Native mitochondrial ion/voltage component delivered.**
+  Key Dev's [receipt](/mnt/workspaces/Cells/betse-mitochondria-handoff-20261028-01/result.json)
+  records **85 passing checks** (81 host, four CPU JAX), **21 actual native cases**
+  and seven observed native limitations. A neutral relaxation covers **600,000 s**
+  (12 actual default-diffusion time constants), with first-order native Euler
+  refinement; a separate multi-ion trace covers source order and restart.
+  The lead [verified receipt/source identities](/mnt/workspaces/Cells/calcium-energy-network-transport-development-20261028-01/mitochondria-receipt-verification.json)
+  without repeating the qualification. The [integration contract](agent-work/cells-worker-01/workfiles/BETSE_MITOCHONDRIA_HANDOFF.md)
+  explicitly retains native initialization's extra inventory and cached voltage;
+  those are not a conservative organelle partition. ATP production, heat,
+  respiration, water and tissue coupling remain unimplemented for this component.
+  Key Dev now owns cell removal, material-removal records and topology rebuilding
+  in separate files. Coordination is limited to handoffs and concrete blockers.
 
 - **Native configurable transporter component delivered; tissue integration pending.**
   Cells Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-network-transport-handoff-20261028-01/result.json)
@@ -76,9 +127,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   ATP or water updates are supplied. Attempts 01–03 remain preserved. Final
   peak RSS was **331 MiB**, with **19.72 GiB** minimum host reserve.
   The lead verified the receipt and production-source identities on receipt;
-  this is component evidence, not coupled tissue qualification. Key Dev now
-  owns the separate mitochondrial ion/voltage component, with source captures
-  and CPU validation. Coordination stays limited to meaningful handoffs.
+  this is component evidence, not coupled tissue qualification. The lead is
+  integrating its reversible species-preserving subset, as recorded above.
 
 - **Joint calcium/ER, finite ATP, water and prescribed repair passes CPU integration.**
   [`resolved_calcium_energy_water_repair@1`](docs/TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water)

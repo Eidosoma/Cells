@@ -201,6 +201,12 @@ def get_model(spec):
         from cells.models import surface_calcium_energy_water
 
         return surface_calcium_energy_water
+    from cells.core.surface_calcium_energy_transport_spec import SurfaceCalciumEnergyTransportModel
+
+    if isinstance(spec, SurfaceCalciumEnergyTransportModel):
+        from cells.models import surface_calcium_energy_transport
+
+        return surface_calcium_energy_transport
     if isinstance(spec, SurfaceCalciumEnergyHCNExtraModel):
         from cells.models import surface_calcium_energy_hcn_extra
 

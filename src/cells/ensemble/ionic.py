@@ -157,6 +157,7 @@ def parse_spec(data):
         "resolved_calcium_energy@3",
         "resolved_calcium_energy@4",
         "resolved_calcium_energy@5",
+        "resolved_calcium_energy_transport@1",
         "resolved_repair@1",
         "resolved_repair@2",
         "resolved_repair@3",
