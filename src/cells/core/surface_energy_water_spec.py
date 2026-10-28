@@ -11,6 +11,7 @@ from cells.core import surface_water_spec as water
 from cells.core.specs import ConfigError, _fields
 
 MODEL_ID = "resolved_energy_water@1"
+MORRIS_LECAR_MODEL_ID = "resolved_energy_water@2"
 OSMOTIC_COUPLING_ID = "neutral_ideal_atp_adp_pi@1"
 
 
@@ -19,6 +20,17 @@ class SurfaceEnergyWaterModel(energy.SurfaceEnergyModel):
     energy_osmotic_coupling: str
     water_compartments: tuple[water.WaterCompartment, ...]
     water_membranes: tuple[water.WaterMembrane, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceEnergyWaterMorrisLecarModel(SurfaceEnergyWaterModel):
+    """53-law finite fuel and water with current owner-local concentrations."""
+
+
+def model_id(model):
+    return (
+        MORRIS_LECAR_MODEL_ID if isinstance(model, SurfaceEnergyWaterMorrisLecarModel) else MODEL_ID
+    )
 
 
 class Control(NamedTuple):
@@ -67,11 +79,14 @@ class Experiment(energy.Experiment):
 
 def energy_spec(spec):
     """Retain every finite-energy declaration, removing only water composition."""
+    kind = (
+        energy.SurfaceEnergyMorrisLecarModel
+        if isinstance(spec.model, SurfaceEnergyWaterMorrisLecarModel)
+        else energy.SurfaceEnergyModel
+    )
     return replace(
         spec,
-        model=energy.SurfaceEnergyModel(
-            **{k: getattr(spec.model, k) for k in energy.SurfaceEnergyModel.__dataclass_fields__}
-        ),
+        model=kind(**{k: getattr(spec.model, k) for k in kind.__dataclass_fields__}),
         experiment=energy.Experiment(
             **{k: getattr(spec.experiment, k) for k in energy.Experiment.__dataclass_fields__}
         ),
@@ -93,11 +108,14 @@ def water_spec(spec):
 
 
 def to_dict(spec):
-    if type(spec.model) is not SurfaceEnergyWaterModel or type(spec.experiment) is not Experiment:
+    if (
+        type(spec.model) not in (SurfaceEnergyWaterModel, SurfaceEnergyWaterMorrisLecarModel)
+        or type(spec.experiment) is not Experiment
+    ):
         raise ConfigError("Energy/water requires its own model and experiment")
     raw = energy.to_dict(energy_spec(spec))
     raw["model"].update(
-        id=MODEL_ID,
+        id=model_id(spec.model),
         energy_osmotic_coupling=spec.model.energy_osmotic_coupling,
         water_compartments=[asdict(v) for v in spec.model.water_compartments],
         water_membranes=[asdict(v) for v in spec.model.water_membranes],
@@ -112,8 +130,12 @@ def to_dict(spec):
 def parse(data):
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     raw = deepcopy(data)
-    if not isinstance(raw["model"], dict) or raw["model"].get("id") != MODEL_ID:
-        raise ConfigError("Require resolved_energy_water@1")
+    if not isinstance(raw["model"], dict) or raw["model"].get("id") not in (
+        MODEL_ID,
+        MORRIS_LECAR_MODEL_ID,
+    ):
+        raise ConfigError("Require resolved_energy_water@1/@2")
+    added = raw["model"]["id"] == MORRIS_LECAR_MODEL_ID
     try:
         coupling = raw["model"].pop("energy_osmotic_coupling")
         compartments = raw["model"].pop("water_compartments")
@@ -125,7 +147,7 @@ def parse(data):
         ) from error
     if coupling != OSMOTIC_COUPLING_ID:
         raise ConfigError("Require explicit neutral ideal ATP/ADP/Pi osmolyte coupling")
-    raw["model"]["id"] = energy.MODEL_ID
+    raw["model"]["id"] = energy.MORRIS_LECAR_MODEL_ID if added else energy.MODEL_ID
     original = energy.parse(raw)
     passive = kinetic.passive_spec(energy.initial_ionic_spec(original)).to_dict()
     passive["model"].update(
@@ -137,7 +159,7 @@ def parse(data):
     validated = water.parse(passive)
     spec = replace(
         original,
-        model=SurfaceEnergyWaterModel(
+        model=(SurfaceEnergyWaterMorrisLecarModel if added else SurfaceEnergyWaterModel)(
             **vars(original.model),
             energy_osmotic_coupling=coupling,
             water_compartments=validated.model.water_compartments,

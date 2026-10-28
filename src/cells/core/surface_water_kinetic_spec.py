@@ -10,12 +10,22 @@ from cells.core import surface_water_spec as water
 from cells.core.specs import ConfigError, _fields
 
 MODEL_ID = "resolved_water@2"
+MORRIS_LECAR_MODEL_ID = "resolved_water@3"
 
 
 @dataclass(frozen=True)
 class SurfaceWaterKineticModel(prior.SurfaceCavModel):
     water_compartments: tuple[water.WaterCompartment, ...]
     water_membranes: tuple[water.WaterMembrane, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceWaterMorrisLecarModel(SurfaceWaterKineticModel):
+    """53 shared laws sensing current compliant-volume concentrations."""
+
+
+def model_id(model):
+    return MORRIS_LECAR_MODEL_ID if isinstance(model, SurfaceWaterMorrisLecarModel) else MODEL_ID
 
 
 class Control(NamedTuple):
@@ -55,12 +65,15 @@ class Experiment(prior.Experiment):
 
 
 def prior_spec(spec):
-    """Lossless projection onto the existing resolved_tissue@7 ionic model."""
+    """Lossless ionic projection preserving the versioned channel catalog."""
+    kind = (
+        prior.SurfaceMorrisLecarModel
+        if isinstance(spec.model, SurfaceWaterMorrisLecarModel)
+        else prior.SurfaceCavModel
+    )
     return replace(
         spec,
-        model=prior.SurfaceCavModel(
-            **{k: getattr(spec.model, k) for k in prior.SurfaceCavModel.__dataclass_fields__}
-        ),
+        model=kind(**{k: getattr(spec.model, k) for k in kind.__dataclass_fields__}),
         experiment=prior.Experiment(
             **{k: getattr(spec.experiment, k) for k in prior.Experiment.__dataclass_fields__}
         ),
@@ -82,11 +95,14 @@ def water_spec(spec):
 
 
 def to_dict(spec):
-    if type(spec.model) is not SurfaceWaterKineticModel or type(spec.experiment) is not Experiment:
+    if (
+        type(spec.model) not in (SurfaceWaterKineticModel, SurfaceWaterMorrisLecarModel)
+        or type(spec.experiment) is not Experiment
+    ):
         raise ConfigError("Active water requires its own model and experiment")
     raw = prior.to_dict(prior_spec(spec))
     raw["model"].update(
-        id=MODEL_ID,
+        id=model_id(spec.model),
         water_compartments=[asdict(row) for row in spec.model.water_compartments],
         water_membranes=[asdict(row) for row in spec.model.water_membranes],
     )
@@ -100,8 +116,12 @@ def to_dict(spec):
 def parse(data):
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     raw = deepcopy(data)
-    if not isinstance(raw["model"], dict) or raw["model"].get("id") != MODEL_ID:
-        raise ConfigError("Require resolved_water@2")
+    if not isinstance(raw["model"], dict) or raw["model"].get("id") not in (
+        MODEL_ID,
+        MORRIS_LECAR_MODEL_ID,
+    ):
+        raise ConfigError("Require resolved_water@2/@3")
+    added = raw["model"]["id"] == MORRIS_LECAR_MODEL_ID
     try:
         compartments = raw["model"].pop("water_compartments")
         membranes = raw["model"].pop("water_membranes")
@@ -110,7 +130,7 @@ def parse(data):
         raise ConfigError(
             "Active water requires explicit water owners, interfaces and controls"
         ) from error
-    raw["model"]["id"] = prior.CAV_MODEL_ID
+    raw["model"]["id"] = prior.MORRIS_LECAR_MODEL_ID if added else prior.CAV_MODEL_ID
     original = prior.parse(raw)
     passive = prior.passive_spec(original).to_dict()
     passive["model"].update(
@@ -120,7 +140,7 @@ def parse(data):
     validated = water.parse(passive)
     spec = replace(
         original,
-        model=SurfaceWaterKineticModel(
+        model=(SurfaceWaterMorrisLecarModel if added else SurfaceWaterKineticModel)(
             **vars(original.model),
             water_compartments=validated.model.water_compartments,
             water_membranes=validated.model.water_membranes,

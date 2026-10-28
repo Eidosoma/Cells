@@ -14,7 +14,13 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_energy_water_spec import MODEL_ID, energy_spec, water_spec
+from cells.core.surface_energy_water_spec import (
+    MODEL_ID,  # noqa: F401
+    SurfaceEnergyWaterMorrisLecarModel,
+    energy_spec,
+    model_id,
+    water_spec,
+)
 from cells.models import surface_energy as prior
 from cells.models import surface_tissue as passive
 from cells.models import surface_water as water_model
@@ -37,6 +43,16 @@ LAYOUT_TYPE = NamedTuple(
         (k, object)
         for k in (
             *prior.LAYOUT_TYPE._fields,
+            *("water_" + k for k in water.Parameters._fields),
+        )
+    ],
+)
+MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceEnergyWaterMorrisLecarLayout",
+    [
+        (k, object)
+        for k in (
+            *prior.MORRIS_LECAR_LAYOUT_TYPE._fields,
             *("water_" + k for k in water.Parameters._fields),
         )
     ],
@@ -67,7 +83,12 @@ def energy_state(state):
 
 
 def energy_layout(p):
-    return prior.LAYOUT_TYPE(*(getattr(p, k) for k in prior.LAYOUT_TYPE._fields))
+    kind = (
+        prior.MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(p, MORRIS_LECAR_LAYOUT_TYPE)
+        else prior.LAYOUT_TYPE
+    )
+    return kind(*(getattr(p, k) for k in kind._fields))
 
 
 def water_state(state):
@@ -97,13 +118,18 @@ def working_size(spec):
 def initial_values(spec):
     state, p = prior.initial_values(energy_spec(spec))
     ws, wp = water_model.initial_values(water_spec(spec))
+    kind = (
+        MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(spec.model, SurfaceEnergyWaterMorrisLecarModel)
+        else LAYOUT_TYPE
+    )
     return (
         STATE_TYPE(
             *state,
             *(getattr(ws, k) for k in water_model.EXTRA_AXES),
             np.zeros(spec.execution.capacity),
         ),
-        LAYOUT_TYPE(*p, *water_parameters(wp)),
+        kind(*p, *water_parameters(wp)),
     )
 
 
@@ -241,7 +267,9 @@ def maximum_osmolyte_amount_fmol(state, p):
 
 
 def check_steps(spec, steps, controls):
-    prior.check_steps(spec, steps, controls)
+    # Catalog projection must not remove water-only accepted boundaries.
+    finite = replace(energy_spec(spec), experiment=spec.experiment)
+    prior.check_steps(finite, steps, controls)
     state, p = initial_values(spec)
     rate = water.relaxation_rate_bound(maximum_osmolyte_amount_fmol(state, p), water_parameters(p))
     if not np.isfinite(rate) or np.max(steps, initial=0) * rate > (
@@ -363,7 +391,7 @@ def check_values(state, spec):
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Finite-energy/water observations require accepted boundaries")
@@ -420,7 +448,7 @@ def ensemble_voltage(state, layout, spec, time):
     table = control_values(spec, [time])
     control = type(table)(*(v[0] for v in table))
     state = STATE_TYPE(*(np.asarray(v) for v in state))
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     if not domain_valid(state, p, p.active, xp=np):
         raise NumericalError("Finite-energy/water ensemble state outside domain")
     value = readouts(state, control, p, xp=np)
@@ -431,7 +459,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 def summarize(history, diagnostics, spec):
     return prior.summarize(history, diagnostics, energy_spec(spec)) | dict(
-        model=MODEL_ID,
+        model=model_id(spec.model),
         state_fields=list(STATE_TYPE._fields),
         water_law=water.LAW_ID,
         energy_osmotic_coupling=spec.model.energy_osmotic_coupling,

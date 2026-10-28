@@ -1,6 +1,6 @@
 # Roadmap
 
-Direction reviewed: **2026-10-18**. This document defines priorities and completion
+Direction reviewed: **2026-10-28**. This document defines priorities and completion
 criteria. [Progress](../PROGRESS.md) owns current status, active runs and results;
 [BETSE coverage](BETSE_CAPABILITY_ROADMAP.md) records the mechanism-level gaps.
 The [earlier roadmap](history/ROADMAP_BEFORE_2026-10-11.md) retains the original
@@ -22,6 +22,11 @@ preparation, interventions, numerical clocks and complete state. Each supported
 Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
 
 ## Current development priorities
+
+The current user priority is **BETSE scientific compatibility before moving
+Cells production runs to Jupiter**, with CPU development and validation first.
+The milestone below is an evidence gate; an allocation start date does not
+make unfinished mechanisms compatible.
 
 1. Extend the verified simulation stack: compose membrane transport, junctions,
    spatial fields, compartments and chemistry with explicit ownership and
@@ -90,6 +95,40 @@ Mitochondrial energetics and assembly feedback also serve the wider Cells resear
 programme; their proposed scope should not be confused with a fully audited list
 of mechanisms exercised by the pinned BETSE runtime. Jupiter execution remains a
 separate qualification track.
+
+## BETSE compatibility before Jupiter
+
+Compatibility concerns the pinned BETSE v1.5.0 scientific runtime, not its GUI,
+YAML syntax or serialized files. Use the [capability inventory](BETSE_CAPABILITY_ROADMAP.md)
+to map each supported native mechanism and option to a Cells implementation,
+source comparison and a coupled numerical test. Explicitly record unsupported
+mechanisms and source defects; they cannot silently count as passing coverage.
+
+The completion requirements are:
+
+1. Finish the source inventory, including channel variants, ligand/network
+   regulation, transporters, organelle branches and interventions. A complete
+   subset such as Kv1 is not a complete simulator catalog.
+2. Implement the missing reachable scientific mechanisms and compose them with
+   the shared material, charge, energy and geometry owners. Fixed-geometry
+   injury/resealing does not satisfy native cell removal and contact rebuilding.
+3. Compare aligned native laws and representative coupled histories, retaining
+   native initialization/update clocks and boundary conventions explicitly.
+   Where Cells deliberately uses different physics, document that distinction
+   and validate it independently rather than claiming source equivalence.
+4. Demonstrate relevant intervention/recovery times, timestep and spatial
+   convergence, conservation, complete observations/checkpoints and rejected
+   invalid states. Short rate checks alone do not close a coupled capability.
+5. Resolve or explicitly delimit source defects and loader-disabled features.
+   Any narrower compatibility claim must state the excluded capabilities;
+   full scientific feature parity remains the target.
+
+When GPU work resumes, local batches can qualify completed feature groups
+while broader source coverage continues. Jupiter qualification follows the
+compatibility milestone and establishes execution equivalence, memory limits
+and balanced independent-world throughput. Offline 1/4/16-GPU plans are
+preparation, not evidence of a completed remote run.
+Experimental biological validation remains a separate requirement.
 
 ## Injury and repair
 

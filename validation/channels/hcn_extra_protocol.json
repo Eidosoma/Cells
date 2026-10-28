@@ -1,0 +1,47 @@
+{
+  "kind": "cells.pinned_hcn_extra_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_version": "1.5.0",
+  "source_checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+  "source_files": {
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177"
+  },
+  "classes": ["HCNLeak", "HCN2_cAMP", "HCN4_cAMP"],
+  "laws": {
+    "HCNLeak": "betse_hcn_leak_open@1",
+    "HCN2_cAMP": "betse_hcn2_camp_m@1",
+    "HCN4_cAMP": "betse_hcn4_camp_m@1"
+  },
+  "voltage_domain_V": [-0.120, 0.060],
+  "source_contracts": {
+    "HCNLeak": {"time_unit": 1, "tau_s": [1, 1], "powers": [0, 0], "relative_permeability_Na_K_Ca": [0.33, 1, 0.05], "packed_production_state": "No dynamic gates; zero packed slots. Native source still evolves unused m/h."},
+    "HCN2_cAMP": {"time_unit": 1000, "tau_s": [0.184, 0.001], "powers": [1, 0], "init_shift_mV": -20, "update_shift_mV": -20, "relative_permeability_Na_K_Ca": [0.2, 1, 0.05]},
+    "HCN4_cAMP": {"time_unit": 1000, "tau_s": [0.461, 0.001], "powers": [1, 0], "init_shift_mV": -20, "update_shift_mV": -24, "relative_permeability_Na_K_Ca": [0.2, 1, 0.05]}
+  },
+  "native_clock": "ChannelsABC.update_mh uses dt=p.dt*self.time_unit and g_next=(raw_tau*g+dt*g_inf)/(raw_tau+dt). This is backward Euler, not an exact continuous solution. The function's time_unit parameter is unused; self.time_unit controls the clock.",
+  "native_capture": {
+    "ordinary_voltage_V": [-0.120, -0.080, -0.079, -0.076, -0.050, -0.020, 0, 0.060],
+    "vector_count": 61,
+    "target_indices": [[5, 1, 4], [4, 5, 1], []],
+    "step_dt_s": [0, 0.0002, 0.003],
+    "initial_update_gates": [0.2, 0.7],
+    "clamp_voltages_V": [-0.080, 0, -0.080],
+    "clamp_duration_max_tau": 12,
+    "clamp_native_grid": "Start min(tau)/4, grow step by 1.2, cap at 12*max(tau); subdivide each interval by refinement.",
+    "clamp_refinements": [1, 2, 4, 8],
+    "unchanged_imported_classes": true
+  },
+  "continuous_validation": "Independent 80-digit exact relaxation; separate scalar RK4 refinement and recovery for each native gate through 12 of its own taus. Native clamp errors are checked against backward-Euler products and convergence to continuous relaxation, never conflated with it.",
+  "tolerances": {"relative": 6e-12, "absolute": 8e-14, "native_gate_absolute": 1e-12, "native_gate_relative": 5e-11, "continuous_rk4_order": [3.7, 4.5]},
+  "scientific_limits": [
+    "cAMP classes are fixed shifts in voltage thresholds; no concentration-dependent ligand binding, cAMP dynamics, or parameter inference is implemented.",
+    "Retain literal HCN4 initialization/update asymmetry; do not silently replace one with the other.",
+    "Unused h remains a native 1-ms state for cAMP classes; it contributes no opening. Leak native m/h each have a 1-second clock and contribute no opening.",
+    "Nominal native vrev=-45 mV is metadata, not an imposed reversal potential for mixed-ion GHK currents.",
+    "Source-law and source-clock comparisons are component evidence, not whole-tissue equivalence, experimental calibration, or complete BETSE parity."
+  ],
+  "resources": {"cpu_affinity": [1], "blas_threads": 1, "max_worker_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_worker_seconds": 180, "gpu": false},
+  "automatic_followup": false
+}

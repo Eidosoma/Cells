@@ -22,11 +22,15 @@ ENERGY_FIELDS = (
     "regeneration_dissipated_energy_pJ",
     "regeneration_supplied_work_pJ",
 )
+MODEL_PROJECTIONS = {
+    "resolved_energy@1": "resolved_tissue@7",
+    "resolved_energy@2": "resolved_tissue@11",
+}
 
 
 def bind(raw):
-    if raw["model"]["id"] != "resolved_energy@1" or raw["model"]["temperature_K"] != 298.15:
-        raise ValueError("Require resolved_energy@1 and unscaled 298.15-K shared channels")
+    if raw["model"]["id"] not in MODEL_PROJECTIONS or raw["model"]["temperature_K"] != 298.15:
+        raise ValueError("Require a declared finite-energy version and unscaled 298.15-K channels")
     model = raw["model"]
     if any(row["reservoir"] for row in model["extracellular"]):
         raise ValueError("Finite-energy reference requires closed outside owners")
@@ -49,7 +53,7 @@ def bind(raw):
         chemistry.thermodynamics(initial_amount[:, i], volumes[i], model["temperature_K"], delta[i])
     projected = deepcopy(raw)
     m = projected["model"]
-    m["id"] = "resolved_tissue@7"
+    m["id"] = MODEL_PROJECTIONS[m["id"]]
     m.pop("energy_pools")
     ports = m.pop("regeneration_ports")
     projected["experiment"].pop("regeneration_controls")
@@ -107,6 +111,8 @@ def initial(c):
 
 def evaluate(c, state, time):
     d = unpack(c, state)
+    if c["raw"]["model"]["id"] == "resolved_energy@2" and not np.isfinite(state).all():
+        raise ValueError("The complete finite-energy state must be finite")
     amount = c["energy_initial"] + d["energy_amount_increment_fmol"]
     if not np.isfinite(amount).all() or np.any(amount <= 0):
         raise ValueError("Independent finite-energy stage exhausted its positive pools")

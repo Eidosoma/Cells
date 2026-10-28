@@ -74,6 +74,50 @@ SODIUM_CATALOG_FILES = (
     "agent-work/cells-worker-01/workfiles/capture_sodium_catalog_source.py",
     "agent-work/cells-worker-01/workfiles/check_water_schema.py",
 )
+POTASSIUM_CATALOG_FILES = (
+    "src/cells/processes/potassium_catalog.py",
+    "tests/unit/test_potassium_catalog.py",
+    "validation/channels/potassium_catalog_reference.py",
+    "validation/channels/potassium_catalog_protocol.json",
+    "docs/POTASSIUM_CHANNEL_CATALOG.md",
+    "agent-work/cells-worker-01/workfiles/capture_potassium_catalog_source.py",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py",
+)
+LEAK_CATALOG_FILES = (
+    "src/cells/processes/leak_channels.py",
+    "tests/unit/test_leak_channels.py",
+    "validation/channels/leak_channels_reference.py",
+    "validation/channels/leak_channels_protocol.json",
+    "docs/LEAK_CHANNEL_CATALOG.md",
+    "agent-work/cells-worker-01/workfiles/capture_leak_channels_source.py",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py",
+)
+FINITE_CALCIUM_FILES = (
+    "src/cells/processes/finite_calcium_pumps.py",
+    "tests/unit/test_finite_calcium_pumps.py",
+    "validation/chemistry/finite_calcium_pump_reference.py",
+    "validation/chemistry/finite_calcium_pump_protocol.json",
+    "docs/FINITE_CALCIUM_PUMPS.md",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py",
+)
+CALCIUM_EXTRA_FILES = (
+    "src/cells/processes/calcium_catalog_extra.py",
+    "tests/unit/test_calcium_catalog_extra.py",
+    "validation/channels/calcium_catalog_extra_reference.py",
+    "validation/channels/calcium_catalog_extra_protocol.json",
+    "docs/CALCIUM_CHANNEL_EXTRAS.md",
+    "agent-work/cells-worker-01/workfiles/capture_calcium_catalog_extra_source.py",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py",
+)
+CAGPOTASSIUM_FILES = (
+    "src/cells/processes/calcium_activated_potassium.py",
+    "tests/unit/test_calcium_activated_potassium.py",
+    "validation/channels/calcium_activated_potassium_reference.py",
+    "validation/channels/calcium_activated_potassium_protocol.json",
+    "docs/CALCIUM_ACTIVATED_POTASSIUM.md",
+    "agent-work/cells-worker-01/workfiles/capture_calcium_activated_potassium_source.py",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py",
+)
 
 
 def digest(path):
@@ -104,6 +148,21 @@ def main():
             "sodium-catalog",
             "sodium-catalog-jax",
             "sodium-catalog-all",
+            "potassium-catalog",
+            "potassium-catalog-jax",
+            "potassium-catalog-all",
+            "leak-catalog",
+            "leak-catalog-jax",
+            "leak-catalog-all",
+            "finite-calcium",
+            "finite-calcium-jax",
+            "finite-calcium-all",
+            "calcium-extra",
+            "calcium-extra-jax",
+            "calcium-extra-all",
+            "cagpotassium",
+            "cagpotassium-jax",
+            "cagpotassium-all",
         ),
         default="schema",
     )
@@ -118,6 +177,11 @@ def main():
             "cotransport-contracts-20261028-",
             "cotransport-tissue-development-20261028-",
             "sodium-catalog-contracts-20261028-",
+            "potassium-catalog-contracts-20261028-",
+            "leak-catalog-contracts-20261028-",
+            "finite-calcium-contracts-20261028-",
+            "calcium-extra-contracts-20261028-",
+            "cagpotassium-contracts-20261028-",
         )
     ):
         parser.error(
@@ -148,11 +212,21 @@ def main():
     transport_scope = args.scope in ("cotransport", "cotransport-jax", "cotransport-all")
     cotransport_tissue_scope = args.scope in ("cotransport-tissue", "cotransport-tissue-jax")
     sodium_scope = args.scope.startswith("sodium-catalog")
+    potassium_scope = args.scope.startswith("potassium-catalog")
+    leak_scope = args.scope.startswith("leak-catalog")
+    finite_calcium_scope = args.scope.startswith("finite-calcium")
+    calcium_extra_scope = args.scope.startswith("calcium-extra")
+    cagpotassium_scope = args.scope.startswith("cagpotassium")
     energy_scope = (
         args.scope.startswith("finite-energy")
         or transport_scope
         or cotransport_tissue_scope
         or sodium_scope
+        or potassium_scope
+        or leak_scope
+        or finite_calcium_scope
+        or calcium_extra_scope
+        or cagpotassium_scope
     )
     if energy_scope:
         overrides["JAX_ENABLE_COMPILATION_CACHE"] = "false"
@@ -163,7 +237,17 @@ def main():
         "cotransport-tissue",
         "cotransport-tissue-jax",
     )
-    if sodium_scope:
+    if cagpotassium_scope:
+        owned = CAGPOTASSIUM_FILES
+    elif calcium_extra_scope:
+        owned = CALCIUM_EXTRA_FILES
+    elif finite_calcium_scope:
+        owned = FINITE_CALCIUM_FILES
+    elif leak_scope:
+        owned = LEAK_CATALOG_FILES
+    elif potassium_scope:
+        owned = POTASSIUM_CATALOG_FILES
+    elif sodium_scope:
         owned = SODIUM_CATALOG_FILES
     elif cotransport_tissue_scope:
         owned = COTRANSPORT_TISSUE_FILES
@@ -226,7 +310,7 @@ def main():
         )
         if tissue_scope:
             steps[-2][1].append(owned[3])
-        if args.scope not in ("finite-energy-all", "cotransport-all", "sodium-catalog-all"):
+        if not args.scope.endswith("-all"):
             selector = (
                 ("jax" if args.scope.endswith("-jax") else "not jax")
                 if energy_scope
@@ -260,6 +344,76 @@ def main():
                     str(
                         ROOT
                         / "agent-work/cells-worker-01/workfiles/capture_sodium_catalog_source.py"
+                    ),
+                    "--output",
+                    str(output / "evidence" / "cpu" / "native-source"),
+                ],
+            ),
+        )
+    if potassium_scope and args.scope != "potassium-catalog-jax":
+        steps.insert(
+            -1,
+            (
+                "source",
+                [
+                    sys.executable,
+                    "-B",
+                    str(
+                        ROOT
+                        / "agent-work/cells-worker-01/workfiles/capture_potassium_catalog_source.py"
+                    ),
+                    "--output",
+                    str(output / "evidence" / "cpu" / "native-source"),
+                ],
+            ),
+        )
+    if leak_scope and args.scope != "leak-catalog-jax":
+        steps.insert(
+            -1,
+            (
+                "source",
+                [
+                    sys.executable,
+                    "-B",
+                    str(
+                        ROOT
+                        / "agent-work/cells-worker-01/workfiles/capture_leak_channels_source.py"
+                    ),
+                    "--output",
+                    str(output / "evidence" / "cpu" / "native-source"),
+                ],
+            ),
+        )
+    if calcium_extra_scope and args.scope != "calcium-extra-jax":
+        steps.insert(
+            -1,
+            (
+                "source",
+                [
+                    sys.executable,
+                    "-B",
+                    str(
+                        ROOT
+                        / "agent-work/cells-worker-01/workfiles"
+                        / "capture_calcium_catalog_extra_source.py"
+                    ),
+                    "--output",
+                    str(output / "evidence" / "cpu" / "native-source"),
+                ],
+            ),
+        )
+    if cagpotassium_scope and args.scope != "cagpotassium-jax":
+        steps.insert(
+            -1,
+            (
+                "source",
+                [
+                    sys.executable,
+                    "-B",
+                    str(
+                        ROOT
+                        / "agent-work/cells-worker-01/workfiles"
+                        / "capture_calcium_activated_potassium_source.py"
                     ),
                     "--output",
                     str(output / "evidence" / "cpu" / "native-source"),

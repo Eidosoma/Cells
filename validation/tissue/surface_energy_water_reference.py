@@ -18,6 +18,10 @@ from validation.tissue import water_volume_reference as water
 F, R = energy.F, energy.R
 flatten, unpack = energy.flatten, energy.unpack
 MODEL_ID = "resolved_energy_water@1"
+MODEL_PROJECTIONS = {
+    MODEL_ID: "resolved_energy@1",
+    "resolved_energy_water@2": "resolved_energy@2",
+}
 COUPLING = "neutral_ideal_atp_adp_pi@1"
 CONTROL_KINDS = (*energy.CONTROL_KINDS, "water")
 EXTRA_FIELDS = (
@@ -30,12 +34,16 @@ EXTRA_FIELDS = (
 
 
 def bind(raw):
-    if raw["model"]["id"] != MODEL_ID or raw["model"].get("energy_osmotic_coupling") != COUPLING:
+    if (
+        raw["model"]["id"] not in MODEL_PROJECTIONS
+        or raw["model"].get("energy_osmotic_coupling") != COUPLING
+    ):
         raise ValueError(
-            "Require resolved_energy_water@1 with explicit neutral ideal pool coupling"
+            "Require a declared finite-energy water version "
+            "with explicit neutral ideal pool coupling"
         )
     projected = deepcopy(raw)
-    projected["model"]["id"] = "resolved_energy@1"
+    projected["model"]["id"] = MODEL_PROJECTIONS[projected["model"]["id"]]
     for name in ("energy_osmotic_coupling", "water_compartments", "water_membranes"):
         projected["model"].pop(name)
     projected["experiment"].pop("water_controls")
@@ -84,6 +92,17 @@ def initial(c):
 
 def evaluate(c, state, time):
     d = unpack(c, state)
+    if c["raw"]["model"]["id"] == "resolved_energy_water@2":
+        supported = np.asarray(
+            [
+                1e15 * edge["area_m2"] * edge["hydraulic_permeability_m_per_Pa_s"] > 0
+                for edge in c["water_case"]["edges"]
+            ],
+            dtype=bool,
+        )
+        for name in ("water_transferred_pL", "water_dissipated_energy_pJ"):
+            if np.any(d[name][~supported] != 0):
+                raise ValueError("Permanently sealed water routes require exact zero ledgers")
     volume = np.r_[
         c["vi"] + d["volume_increment_pL"],
         c["vo"] + d["extracellular_volume_increment_pL"],

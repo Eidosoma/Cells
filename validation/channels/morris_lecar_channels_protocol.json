@@ -1,0 +1,40 @@
+{
+  "kind": "cells.pinned_morris_lecar_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2", "source_version": "1.5.0",
+  "classes": ["Kv_ML1", "Kv2p1_ML", "Kv1p3_ML", "Kv1p5_ML", "Kv1p5S_ML", "Nav_ML", "Cav_L_ML", "Cav_L_ML2", "Cav_N_ML", "Cav_T_ML", "Kir_ML", "HCN2_ML", "HCN4_ML"],
+  "law_codes": {
+    "betse_kv_ml1_dynamic_m@1": 40,
+    "betse_kv2p1_ml_dynamic_m@1": 41,
+    "betse_kv1p3_ml_dynamic_m@1": 42,
+    "betse_kv1p5_ml_dynamic_m@1": 43,
+    "betse_kv1p5s_ml_slow_dynamic_m@1": 44,
+    "betse_nav_ml_instantaneous@1": 45,
+    "betse_cav_l_ml_instantaneous@1": 46,
+    "betse_cav_l_ml2_instantaneous@1": 47,
+    "betse_cav_n_ml_instantaneous@1": 48,
+    "betse_cav_t_ml_instantaneous@1": 49,
+    "betse_kir_ml_instantaneous@1": 50,
+    "betse_hcn2_ml_source_sign_instantaneous@1": 51,
+    "betse_hcn4_ml_source_sign_instantaneous@1": 52
+  },
+  "padding_code": -1, "voltage_domain_V": [-0.120, 0.060],
+  "state_contract": "One m only for codes40-44; eight instantaneous laws and padding have absent state represented by exactly zero packed slots. No h",
+  "tau_contract": "tau_s=raw_tau/(1000*Phi) only for dynamic gates; returned zero marks no algebraic/padding clock, not a synthetic relaxation time",
+  "kinetic_parameters": {"Phi_fast": 0.066, "Phi_Kv1p5S": 0.00132, "slow_ratio": 50, "source_time_unit": 1000},
+  "native_clock": "m_next=(m+dt_seconds*1000*Phi*m_inf/raw_tau)/(1+dt_seconds*1000*Phi/raw_tau); compare separately from continuous dm/dt=(m_inf-m)/tau_s",
+  "algebraic_update": "Native kinetic_gate=False sets m=m_inf independently of dt, including dt0; raw_mTau1 and Phi1 are unused fields, not a1ms clock",
+  "source_quirks": {"HCN": "Positive source tanh sign increases opening with V; K/Na1/.2, no Ca", "Kir": "sech((V_mV+135)/37), not an inferred sigmoid", "Kv1p5S": "Retain literal Phi=.00066*2", "missing_comment_alias": "Kv_ML2 appears in configuration comments but no class exists", "vrev": "Nominal source metadata only, not imposed on ionic reversal", "temperature": "No gate T/Q10/Ca/ligand argument; mixed catalog context298.15K is not an experimental refit"},
+  "call_sites": {"factory": "chemistry/networks.py selects vgml for ion_string ML and getattr(type_string), then channel_core.init", "run_loop": "channel_core.run followed by P*relative_permeability*maxDm*moddy", "whole_network_simulation": false},
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+  },
+  "native_probe": {"installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages", "checkout": "/mnt/workspaces/Cells/betse-v1.5.0", "ordinary_voltage_V": [-0.120, -0.080, -0.050, -0.020, 0.0, 0.060], "initial_m_for_update": 0.2, "update_dt_s": 0.0002, "copy_upstream_into_repo": false},
+  "clamp_protocol": {"holding_voltage_V": -0.080, "depolarized_voltage_V": 0.0, "duration": "12 effective taus per phase for five dynamic gates; no invented duration for algebraic laws", "native_refinements": [2,4,8], "continuous_refinement_steps": [32,64,128], "native_grid": "Start tau/4, grow1.2, end12tau; subdivide2/4/8", "instantaneous_steps": [-0.080, 0.0, -0.020], "instantaneous_dt_s": [0.0, 0.0002, 123.0]},
+  "tolerances": {"relative": 6e-12, "opening_atol": 8e-14, "tau_atol_s": 4e-13, "rhs_atol_per_s": 2e-10, "native_relative": 5e-11, "native_atol": 1e-12, "derivative_relative": 3e-9, "derivative_atol": 3e-8, "rk4_order_bounds": [3.7,4.6]},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false, "compiled_cpu_authorization": "Chief conditionally authorized exactly two short CPU7 hybrid state/domain/vmap and analytic derivative checks after meaningful host/native checks pass; <=1GiB PSS/individualRSS, >=8GiB reserve, no GPU"},
+  "automatic_followup": false
+}

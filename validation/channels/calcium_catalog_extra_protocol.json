@@ -1,0 +1,52 @@
+{
+  "kind": "cells.pinned_calcium_extra_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_version": "1.5.0",
+  "classes": ["Ca_L2", "Ca_L3", "Cav_G", "CaLeak"],
+  "law_codes": {"betse_ca_l2_m2h@1": 35, "betse_ca_l3_shift15_m2h@1": 36, "betse_cav_g_m2h_regularized@1": 37, "betse_caleak_always_open@1": 38},
+  "padding_code": -1,
+  "padding": "Standalone sentinel only; V/gates/rates/opening zero,tau1s. Shared code0 stays unchanged and is invalid here",
+  "axes": "V/codes [...,population], gates/targets/tau [...,2,population]; leading independent worlds broadcast",
+  "raw_domain_checks": "Declared codes and finite bounded gate/voltage inputs checked before empty broadcasts can discard entries",
+  "voltage_domain_V": [-0.120, 0.060], "gate_domain": [0.0, 1.0],
+  "source_dependencies": "Selected class/base equations use V only; no Ca/ligand inputs or inferred concentration-dependent inactivation",
+  "source_quirks": {
+    "Ca_L2": {"shift_mV": 0, "tau_m_h_s": [0.01, 0.059], "target_overlap": "Cav1p3 targets only; fixed taus differ", "Texpt_C": 36, "qt": 1, "vrev_mV": 131},
+    "Ca_L3": {"shift_mV": 15, "tau_m_h_s": [0.01, 0.059], "target_overlap": "Ca_L2 at V-15mV; not full Cav1p2 alias", "Texpt_C": 36, "qt": 1, "vrev_mV": 131},
+    "Cav_G": {"singular_voltage_V": -0.027, "alpha_m_limit_per_ms": 0.209, "Texpt_C": 36, "qt": 1, "vrev_mV": 131},
+    "CaLeak": {"powers": [0, 0], "target": [1, 1], "tau_s": [1, 1], "Texpt_C": 23, "qt": 1, "vrev_mV": 30, "substance_modulation": "Label only in selected source; no ligand equation"}
+  },
+  "temperature": "Literal qt=1, no applied Q10 or experimental-temperature refit; tissue298.15K is not a source experimental calibration",
+  "vrev": "Source metadata only; ionic reversal belongs to electrochemistry",
+  "singularity": "Cav_G alpha_m=.055*3.8*x/expm1(x),x=(-27-V_mV)/3.8; analytic limit0.209/ms, not a voltage perturbation. Raw native init/calculate/run failure evidence kept separate",
+  "clock_distinction": "Continuous dg/dt=(target-g)/tau_seconds; inherited native backward Euler captured separately",
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "native_probe": {
+    "installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages", "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "ordinary_voltage_V": [-0.120, -0.080, -0.065, -0.020, 0.0, 0.060],
+    "initial_gates_for_update_probe": [0.2, 0.7], "update_dt_s": 0.0002,
+    "voltage_correction_mV": 2.0,
+    "whole_native_simulation": false, "copy_upstream_into_repo": false
+  },
+  "clamp_protocol": {
+    "holding_voltage_V": -0.080, "depolarized_voltage_V": 0.0,
+    "segment_duration": "12*max(tau_m,tau_h) at that segment's voltage; never truncate for wall time",
+    "CaLeak_initial_auxiliary_gates": [0.2, 0.7],
+    "native_clock_refinement": [2, 4, 8], "native_time_grid": "Start min(tau)/4,grow1.2,finish12max(tau),subdivide2/4/8",
+    "continuous_gate_refinement_steps": [32, 64, 128],
+    "continuous_gate_duration": "12*tau_gate, companion at exact production fixed point",
+    "scope": "Standalone gates/clocks; no coupled tissue qualification or invented leak voltage gating"
+  },
+  "tolerances": {
+    "relative": 5e-12, "gate_atol": 5e-14, "tau_atol_s": 3e-13, "opening_atol": 8e-14, "rate_atol_per_s": 1e-12,
+    "native_ordinary_relative": 5e-11, "native_gate_atol": 1e-12, "native_tau_atol_s": 4e-12,
+    "derivative_relative": 3e-9, "derivative_atol_per_V": 3e-8,
+    "continuous_order_bounds": [3.7, 4.6]
+  },
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false, "compiled_cpu_authorization": "Chief cleared exactly two CPU7 array/domain and analytic-limit/shift/leak derivative prototypes after the80-case host/source receipt; <=1GiB PSS/individualRSS, >=8GiB host reserve, BLAS1, no GPU"},
+  "automatic_followup": false
+}

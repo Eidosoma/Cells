@@ -1,0 +1,87 @@
+{
+  "kind": "cells.betse_mitochondria_contracts@1",
+  "law_id": "betse_mitochondrial_ion_voltage_source_v1_5_0@1",
+  "purpose": "Resolve native cached-voltage timing, nonce mutation and paired finite-volume charge ownership before integration",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/organelles/mitochondria.py": "68c313b172813ed86398b26cc311835e98aaf9d3085a4f3169bc0d90def08607",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    "executed_class": "Mito",
+    "executed_toolbox_functions": ["electroflux", "get_charge"],
+    "scope": "Authenticated isolated native class and helper AST execution; caller ordering reviewed from pinned source, without a full native simulation"
+  },
+  "native_initialization": {
+    "native_constants": "parameters.py defaults F=96485 C/mol and R=8.314 J/(mol K); component exposes both explicitly, preserving native defaults and supporting deliberate caller overrides",
+    "mitochondrial_volume": "0.5 * initial full cell volume",
+    "mitochondrial_area": "0.5 * initial cell surface area",
+    "capacitance": "mitochondrial_area * supplied specific capacitance",
+    "concentrations": "Copy all cytosolic ion concentrations; cytosolic concentration/full cell volume remain unchanged",
+    "default_diffusivity_m2_s": 1e-19,
+    "diffusivity_copies": "Current, base and channel arrays start at the same minimum; only current Dm_mit is read by update",
+    "voltage_and_charge_cache": "Zero without calling get_v, even if copied ions/extra charge would imply a nonzero charge",
+    "extra_charge_density": "Absent in raw Mito constructor; caller must supply it before refresh/update"
+  },
+  "native_update": {
+    "ordering": "Moving ion list order, explicit Euler concentration updates, one charge/voltage refresh after all ions",
+    "positive_flux": "Cytosol to mitochondrion",
+    "voltage": "Mitochondrial minus cytosolic potential, from the incoming cached Vmit",
+    "flux_density": "-(D*alpha/thickness)*(c_mito-c_cyto*exp(-alpha))/-expm1(-alpha)",
+    "alpha": "(z+1e-25)*(cached_voltage_after_in_place_nonce)*F/(R*T)",
+    "nonce": "Actual electroflux mutates Vmit by +1e-25 per moving ion, in order; valence nonce acts on a temporary array",
+    "cytosol_update": "c_cyto -= flux_density * fixed_mito_area/current_full_cell_volume * dt",
+    "mitochondrial_update": "c_mito += flux_density * fixed_mito_area/fixed_mito_volume * dt",
+    "charge_refresh": "sum(F*mito_volume*c_mito*z, species) + extra_charge_density*mito_volume",
+    "voltage_refresh": "refreshed_charge / fixed_mito_capacitance",
+    "units": "c in mM=mol/m3; D in m2/s; thickness in m; density in mol/(m2 s); volumes in m3; area in m2; charge in C; capacitance in F; dt in s"
+  },
+  "source_limits": [
+    "Ca uniporter, channels and ETC/ATP-related descriptions are inactive comments in this class; no ATP synthesis is implemented",
+    "Optimizer-only Vmit=-150mV override is not the constructor's initial voltage",
+    "Native update does not guard negative concentrations; this component rejects invalid predicted trials without clamping or retry",
+    "Vmit=-1e-25 before a first moving ion reaches alpha=0 and native 0/0; no regularized replacement is claimed",
+    "Raw constructor lacks extra_rho; get_v/update can raise AttributeError until the caller supplies it",
+    "remove_mits deletes geometry/concentration/D/valence arrays but leaves extra_rho unchanged; subsequent shapes can fail or silently broadcast",
+    "Caller redefine_dynamic_dics constructs a fresh Mito, resetting rather than preserving organelle state",
+    "Integer synthetic initial concentration arrays truncate minimum D to zero; float32 arrays lose diffusivity/concentration-update precision. Supported component precision is float64"
+  ],
+  "supported_domain": {
+    "topology": "One paired cytosol/mitochondrion per active cell, fixed integer species valences in [-8,8], unique ordered moving species; explicit zero padding",
+    "state": "Finite nonnegative float64 concentrations and finite float64 cached Q/V; incoming cached values are not forced to match a charge refresh",
+    "geometry": "Finite positive active volumes/area/capacitance/thickness; fixed mitochondrial geometry, independently supplied current cytosolic volume",
+    "parameters": "Finite nonnegative current/base/channel D, positive finite isothermal temperature, explicit finite extra charge density",
+    "dt": "Finite nonnegative scalar or per-world singleton, including a zero-time charge refresh",
+    "trial": "Finite nonnegative predicted concentrations, finite fluxes/charge/voltage; pure kernels do not mutate inputs or repair rejected trials"
+  },
+  "reference": "Independent 80-digit scalar Decimal flux, explicit per-ion Euler updates and molar charge sums; no Cells/NumPy/JAX imports",
+  "tolerances": {
+    "relative": 5e-12,
+    "concentration_atol_mM": 3e-12,
+    "density_atol_mol_m2_s": 1e-18,
+    "material_atol_fmol": 2e-12,
+    "charge_atol_C": 3e-22,
+    "voltage_atol_V": 3e-10
+  },
+  "reduced_physical_check": {
+    "purpose": "Resolve half-volume/half-area and diffusivity-versus-permeability units with an analytic finite two-volume relaxation",
+    "scope": "Single neutral moving species, fixed native geometry, default D, zero extra charge and cached voltage; not all-ion/full-cell mitochondrial settling",
+    "horizon": "Twelve actual linear diffusion time constants, with three explicit-Euler refinements and analytic profiles"
+  },
+  "resources": {
+    "cpu_affinity": [7], "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false, "persistent_compilation_cache": false
+  },
+  "integration_energy_limit": "Explicit ion amounts/charge and cached-voltage refresh only. No ATP/water/respiration or physical heat ledger is inferred. Source copy initialization and cache/external-charge work require explicit caller accounting.",
+  "automatic_followup": false
+}

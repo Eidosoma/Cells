@@ -1,0 +1,80 @@
+{
+  "kind": "cells.pinned_potassium_catalog_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_version": "1.5.0",
+  "classes": ["Kir2p1", "Kv2p1", "Kv2p2", "Kv3p1", "Kv3p2", "Kv3p3", "Kv3p4", "K_Fast", "KLeak"],
+  "law_codes": {
+    "betse_kir2p1_mh2@1": 1,
+    "betse_kv2p1_mh@1": 24,
+    "betse_kv2p2_mh@1": 25,
+    "betse_kv3p1_m@1": 26,
+    "betse_kv3p2_m2@1": 27,
+    "betse_kv3p3_m2h_source_tau@1": 28,
+    "betse_kv3p4_mh@1": 29,
+    "betse_k_fast_mh@1": 30,
+    "betse_kleak_always_open@1": 31
+  },
+  "padding_code": -1,
+  "padding": "Separate standalone sentinel: voltage/gates/rates/opening zero,tau1s; shared code0 remains unchanged and is invalid here",
+  "axes": "Voltage/codes [...,population], gates/targets/tau [...,2,population]; independent leading-world broadcasts",
+  "voltage_domain_V": [-0.120, 0.060],
+  "gate_domain": [0.0, 1.0],
+  "temperature": "No inferred temperature/Q10 scaling",
+  "clock_distinction": "Continuous dg/dt=(target-g)/tau_seconds; actual native inherited backward Euler is separate",
+  "accepted_overlap": "Kir2.1 kinetics AND opening evaluation order reused exactly; no existing source edits",
+  "singularities": "No removable exponential quotients in the nine selected classes; transition/edge continuity checked instead",
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "native_probe": {
+    "installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "ordinary_voltage_V": [-0.120, -0.080, -0.065, -0.020, 0.0, 0.060],
+    "initial_gates_for_update_probe": [0.2, 0.7],
+    "update_dt_s": 0.0002,
+    "voltage_correction_mV": 0.0,
+    "whole_native_simulation": false,
+    "copy_upstream_into_repo": false
+  },
+  "source_quirks": {
+    "Kv3p3_nominal_vrev_mV": 82.0,
+    "Kv3p3_vrev_status": "Source FIXME; recorded, never imposed as ionic reversal",
+    "Kv3p3_tau_h_seconds": "0.199786728+2.776119438*exp(-V_mV/7.309565), preserved literally",
+    "Kv3p3_tau_h_at_minus80mV_s": 157254.22936350378,
+    "Kv3p3_12tau_at_minus80mV_days": 21.840865189375528,
+    "Kv3p3_h_target_baseline": 0.25,
+    "biological_fit_claim": false
+  },
+  "clamp_protocol": {
+    "holding_voltage_V": -0.080,
+    "depolarized_voltage_V": 0.0,
+    "segment_duration": "12*max(tau_m,tau_h), including literal multi-day Kv3p3 recovery; wall time never truncates the physical horizon",
+    "native_clock_refinement": [2, 4, 8],
+    "native_time_grid": "Independent geometric clock: startmin(tau)/4,grow1.2,end12max(tau), subdivide2/4/8",
+    "continuous_gate_refinement_steps": [32, 64, 128],
+    "continuous_gate_duration": "12*tau_gate with the other independent gate exactly at its production fixed point",
+    "continuous_expected_order": 4,
+    "scope": "Selected independent component clamp/recovery equations and clocks; no coupled tissue qualification"
+  },
+  "tolerances": {
+    "relative": 5e-12,
+    "gate_atol": 5e-14,
+    "tau_atol_s": 3e-13,
+    "opening_atol": 8e-14,
+    "rate_atol_per_s": 1e-12,
+    "horizon_relative": 5e-12,
+    "horizon_atol_s": 1e-8,
+    "native_ordinary_relative": 5e-11,
+    "native_gate_atol": 1e-12,
+    "native_tau_atol_s": 4e-12
+  },
+  "resources": {
+    "cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180,
+    "gpu": false, "persistent_compilation_cache": false,
+    "compiled_cpu_authorization": "Chief cleared exactly two proposed CPU7 JAX array/domain/derivative checks after the144-case host receipt; <=1GiB PSS and individual RSS, >=8GiB host reserve, BLAS1, no GPU"
+  },
+  "automatic_followup": false
+}

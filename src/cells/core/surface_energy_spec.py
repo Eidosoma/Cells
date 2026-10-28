@@ -21,6 +21,7 @@ from cells.core.voltage_gated_spec import fraction
 from cells.processes import finite_energy as energy
 
 MODEL_ID = "resolved_energy@1"
+MORRIS_LECAR_MODEL_ID = "resolved_energy@2"
 METABOLISM_ID = "finite_energy_pool@1"
 
 
@@ -62,6 +63,15 @@ class Membrane(prior.Membrane):
 class SurfaceEnergyModel(prior.SurfaceCavModel):
     energy_pools: tuple[EnergyPool, ...]
     regeneration_ports: tuple[RegenerationPort, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceEnergyMorrisLecarModel(SurfaceEnergyModel):
+    """Finite fuel with the 53-law catalog and explicit zero/one/two gate states."""
+
+
+def model_id(model):
+    return MORRIS_LECAR_MODEL_ID if isinstance(model, SurfaceEnergyMorrisLecarModel) else MODEL_ID
 
 
 @dataclass(frozen=True)
@@ -112,6 +122,11 @@ def _project(value, cls):
 def initial_ionic_spec(spec):
     """Initial parser/layout projection only; finite pools evolve in the new model."""
     m = spec.model
+    kind = (
+        prior.SurfaceMorrisLecarModel
+        if isinstance(m, SurfaceEnergyMorrisLecarModel)
+        else prior.SurfaceCavModel
+    )
     pools = {pool.id: pool for pool in m.energy_pools}
     volumes = {cell.id: cell.volume_pL for cell in m.cells}
     membranes = []
@@ -128,7 +143,7 @@ def initial_ionic_spec(spec):
         membranes.append(prior.Membrane(**(vars(membrane) | dict(pump=pump))))
     return replace(
         spec,
-        model=replace(_project(m, prior.SurfaceCavModel), membranes=tuple(membranes)),
+        model=replace(_project(m, kind), membranes=tuple(membranes)),
         experiment=_project(spec.experiment, prior.Experiment),
         execution=_project(spec.execution, prior.Execution),
     )
@@ -136,7 +151,7 @@ def initial_ionic_spec(spec):
 
 def to_dict(spec):
     if (
-        type(spec.model) is not SurfaceEnergyModel
+        type(spec.model) not in (SurfaceEnergyModel, SurfaceEnergyMorrisLecarModel)
         or type(spec.experiment) is not Experiment
         or type(spec.execution) is not Execution
     ):
@@ -144,7 +159,7 @@ def to_dict(spec):
     raw = prior.to_dict(initial_ionic_spec(spec))
     m, e = spec.model, spec.experiment
     raw["model"].update(
-        id=MODEL_ID,
+        id=model_id(m),
         energy_pools=[
             asdict(pool)
             | dict(
@@ -297,8 +312,9 @@ def parse(data):
         "finite energy experiment",
     )
     x = _fields(raw["execution"], set(Execution.__dataclass_fields__), "finite energy execution")
-    if m["id"] != MODEL_ID or type(m["membranes"]) is not list:
-        raise ConfigError("Require resolved_energy@1 and an explicit membrane list")
+    if m["id"] not in (MODEL_ID, MORRIS_LECAR_MODEL_ID) or type(m["membranes"]) is not list:
+        raise ConfigError("Require resolved_energy@1/@2 and an explicit membrane list")
+    added = m["id"] == MORRIS_LECAR_MODEL_ID
     pools = _pools(m.pop("energy_pools"), m["cells"])
     ports = _ports(m.pop("regeneration_ports"), pools)
     schedules = e.pop("regeneration_controls")
@@ -334,10 +350,10 @@ def parse(data):
             ),
             delta_g0_J_per_mol=pool.delta_g0_J_per_mol,
         )
-    m["id"] = prior.CAV_MODEL_ID
+    m["id"] = prior.MORRIS_LECAR_MODEL_ID if added else prior.CAV_MODEL_ID
     original = prior.parse(raw)
     if any(owner.reservoir for owner in original.model.extracellular):
-        raise ConfigError("Resolved energy@1 requires finite closed outside owners")
+        raise ConfigError("Resolved energy requires finite closed outside owners")
     b = original.model
     membranes = tuple(
         Membrane(
@@ -377,7 +393,7 @@ def parse(data):
         )
     spec = replace(
         original,
-        model=SurfaceEnergyModel(
+        model=(SurfaceEnergyMorrisLecarModel if added else SurfaceEnergyModel)(
             **(vars(b) | dict(membranes=membranes)), energy_pools=pools, regeneration_ports=ports
         ),
         experiment=Experiment(

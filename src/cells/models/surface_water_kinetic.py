@@ -14,7 +14,13 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_water_kinetic_spec import MODEL_ID, prior_spec, water_spec
+from cells.core.surface_water_kinetic_spec import (
+    MODEL_ID,  # noqa: F401
+    SurfaceWaterMorrisLecarModel,
+    model_id,
+    prior_spec,
+    water_spec,
+)
 from cells.models import surface_kinetic as prior
 from cells.models import surface_tissue as passive
 from cells.models import surface_water as water_model
@@ -45,6 +51,16 @@ LAYOUT_TYPE = NamedTuple(
         for k in (*prior.CAV_LAYOUT_TYPE._fields, *("water_" + k for k in water.Parameters._fields))
     ],
 )
+MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceWaterMorrisLecarLayout",
+    [
+        (k, object)
+        for k in (
+            *prior.MORRIS_LECAR_LAYOUT_TYPE._fields,
+            *("water_" + k for k in water.Parameters._fields),
+        )
+    ],
+)
 OBSERVATION_FIELDS = (*prior.OBSERVATION_FIELDS, *EXTRA_AXES, *water_model.READOUTS)
 Observations = make_dataclass(
     "SurfaceWaterKineticObservations", [(k, np.ndarray) for k in OBSERVATION_FIELDS], frozen=True
@@ -69,7 +85,12 @@ def prior_state(state):
 
 
 def prior_layout(p):
-    return prior.CAV_LAYOUT_TYPE(*(getattr(p, k) for k in prior.CAV_LAYOUT_TYPE._fields))
+    kind = (
+        prior.MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(p, MORRIS_LECAR_LAYOUT_TYPE)
+        else prior.CAV_LAYOUT_TYPE
+    )
+    return kind(*(getattr(p, k) for k in kind._fields))
 
 
 def water_state(state):
@@ -100,9 +121,14 @@ def working_size(spec):
 def initial_values(spec):
     state, p = prior.initial_values(prior_spec(spec))
     ws, wp = water_model.initial_values(water_spec(spec))
+    kind = (
+        MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(spec.model, SurfaceWaterMorrisLecarModel)
+        else LAYOUT_TYPE
+    )
     return (
         STATE_TYPE(*state, *(getattr(ws, k) for k in EXTRA_AXES)),
-        LAYOUT_TYPE(*p, *water_parameters(wp)),
+        kind(*p, *water_parameters(wp)),
     )
 
 
@@ -191,7 +217,9 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     # Retain the union of water, channel, pump and junction clocks.
-    prior.check_steps(spec, steps, controls)
+    # Keep water-only off-grid boundaries while projecting the channel catalog.
+    ionic = replace(prior_spec(spec), experiment=spec.experiment)
+    prior.check_steps(ionic, steps, controls)
     state, p = initial_values(spec)
     maximum = np.sum(water_model.amounts(state, p)) + p.water_impermeant_amount_fmol
     rate = water.relaxation_rate_bound(maximum, water_parameters(p))
@@ -293,7 +321,7 @@ def check_values(state, spec):
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Active water observations require accepted integration boundaries")
@@ -344,7 +372,7 @@ def ensemble_voltage(state, layout, spec, time):
     controls = control_values(spec, [time])
     control = type(controls)(*(v[0] for v in controls))
     state = STATE_TYPE(*(np.asarray(v) for v in state))
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     if not domain_valid(state, p, p.active, xp=np):
         raise NumericalError("Active water ensemble state outside domain")
     w = readouts(state, control, p, xp=np)
@@ -355,7 +383,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 def summarize(history, diagnostics, spec):
     return prior.summarize(history, diagnostics, prior_spec(spec)) | dict(
-        model=MODEL_ID,
+        model=model_id(spec.model),
         state_fields=list(STATE_TYPE._fields),
         water_law=water.LAW_ID,
         volume_owner_ids=[v.id for v in (*spec.model.cells, *spec.model.extracellular)],

@@ -14,7 +14,12 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_energy_spec import MODEL_ID, initial_ionic_spec
+from cells.core.surface_energy_spec import (
+    MODEL_ID,  # noqa: F401
+    SurfaceEnergyMorrisLecarModel,
+    initial_ionic_spec,
+    model_id,
+)
 from cells.models import kinetic_finite_extracellular as pump_layout
 from cells.models import surface_cav as prior
 from cells.models import surface_kinetic as kinetic
@@ -53,6 +58,10 @@ LAYOUT_TYPE = NamedTuple(
             "regeneration_supplied_energy_J_mol",
         )
     ],
+)
+MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceEnergyMorrisLecarLayout",
+    [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_calcium_species")],
 )
 READOUTS = (
     "energy_amount_fmol",
@@ -93,7 +102,12 @@ def prior_state(state):
 
 
 def prior_layout(layout):
-    return prior.LAYOUT_TYPE(*(getattr(layout, k) for k in prior.LAYOUT_TYPE._fields))
+    kind = (
+        kinetic.MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(layout, MORRIS_LECAR_LAYOUT_TYPE)
+        else prior.LAYOUT_TYPE
+    )
+    return kind(*(getattr(layout, k) for k in kind._fields))
 
 
 def prior_control(control):
@@ -162,7 +176,12 @@ def initial_values(spec):
         values["regeneration_owner"][i] = pools[port.pool_id]
         values["regeneration_capacity_fmol_s"][i] = port.capacity_fmol_per_s
         values["regeneration_supplied_energy_J_mol"][i] = port.supplied_energy_J_per_mol
-    layout = LAYOUT_TYPE(**values)
+    kind = (
+        MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(spec.model, SurfaceEnergyMorrisLecarModel)
+        else LAYOUT_TYPE
+    )
+    layout = kind(**values)
     energy.validate_parameters(pool_parameters(layout))
     energy.validate_routes(pump_routes(layout), pool_parameters(layout))
     energy.validate_routes(regeneration_routes(layout), pool_parameters(layout))
@@ -170,7 +189,7 @@ def initial_values(spec):
 
 
 def stage_layout(state, p, *, xp=jnp):
-    """Retain the exact CAV layout type while gathering current cellular fuel."""
+    """Retain the versioned ionic layout while gathering current cellular fuel."""
     original = prior_layout(p)
     current = energy.pump_parameters(
         energy_amounts(state, p),
@@ -329,7 +348,8 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     # Keep the complete regeneration-clock grid and every existing ionic ceiling.
-    prior.check_steps(spec, steps, controls)
+    ionic = replace(initial_ionic_spec(spec), experiment=spec.experiment)
+    prior.check_steps(ionic, steps, controls)
     state, p = initial_values(spec)
     amount = np.where(p.active, energy_amounts(state, p), 1.0)
     from cells.core.schedule import control_values
@@ -473,7 +493,7 @@ def check_values(state, spec):
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Finite-energy observations require accepted integration boundaries")
@@ -528,7 +548,7 @@ def ensemble_voltage(state, layout, spec, time):
 
     table = control_values(spec, [time])
     control = type(table)(*(v[0] for v in table))
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    p = type(layout)(*(np.asarray(v) for v in layout))
     value = readouts(STATE_TYPE(*(np.asarray(v) for v in state)), control, p, xp=np)
     if not value.valid:
         raise NumericalError("Finite-energy ensemble endpoint outside domain")
@@ -537,7 +557,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 def summarize(history, diagnostics, spec):
     return passive.summarize(history, diagnostics, spec) | dict(
-        model=MODEL_ID,
+        model=model_id(spec.model),
         state_fields=list(STATE_TYPE._fields),
         energy_species=list(energy.SPECIES),
         energy_law=energy.LAW_ID,

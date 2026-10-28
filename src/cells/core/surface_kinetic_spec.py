@@ -20,10 +20,16 @@ from cells.core.specs import (
 )
 from cells.core.voltage_gated_spec import fraction
 from cells.processes import (
+    calcium_activated_catalog,
+    calcium_activated_potassium,
     cav_channels,
     hcn_channels,
+    hcn_extra_catalog,
     kv1_channels,
+    morris_lecar_catalog,
     potassium_channels,
+    shared_channel_catalog,
+    shared_channel_catalog_v2,
     sodium_channels,
     voltage_gates,
 )
@@ -34,6 +40,11 @@ SODIUM_MODEL_ID = "resolved_tissue@4"
 HCN_MODEL_ID = "resolved_tissue@5"
 KV1_MODEL_ID = "resolved_tissue@6"
 CAV_MODEL_ID = "resolved_tissue@7"
+CATALOG_MODEL_ID = "resolved_tissue@8"
+EXTENDED_CATALOG_MODEL_ID = "resolved_tissue@9"
+CALCIUM_ACTIVATED_MODEL_ID = "resolved_tissue@10"
+MORRIS_LECAR_MODEL_ID = "resolved_tissue@11"
+HCN_EXTRA_MODEL_ID = "resolved_tissue@12"
 
 
 @dataclass(frozen=True)
@@ -77,7 +88,7 @@ class ChannelPopulation:
     kinetic_law: str
     max_permeability_m_per_s: float
     abundance: float
-    initial_gate: tuple[float, float]
+    initial_gate: tuple[float, ...]
     permeant_ions: tuple[PermeantIon, ...]
 
 
@@ -98,7 +109,42 @@ class SurfaceCavModel(SurfaceKv1Model):
     """Shared calcium-channel populations with explicit source-law identity."""
 
 
+@dataclass(frozen=True)
+class SurfaceCatalogModel(SurfaceCavModel):
+    """Expanded Na/K/leak laws; earlier shared catalogs keep their identities."""
+
+
+@dataclass(frozen=True)
+class SurfaceExtendedCatalogModel(SurfaceCatalogModel):
+    """Adds Ca_L2/Ca_L3/Cav_G/CaLeak without changing the 35-law identity."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumActivatedModel(SurfaceExtendedCatalogModel):
+    """Adds a zero-state free-calcium potassium law to the 39-law catalog."""
+
+
+@dataclass(frozen=True)
+class SurfaceMorrisLecarModel(SurfaceCalciumActivatedModel):
+    """Adds thirteen Morris–Lecar laws with explicit dynamic/instantaneous state."""
+
+
+@dataclass(frozen=True)
+class SurfaceHCNExtraModel(SurfaceMorrisLecarModel):
+    """Adds HCNLeak and the fixed HCN2/4 cAMP-shift variants."""
+
+
 def model_id(model):
+    if isinstance(model, SurfaceHCNExtraModel):
+        return HCN_EXTRA_MODEL_ID
+    if isinstance(model, SurfaceMorrisLecarModel):
+        return MORRIS_LECAR_MODEL_ID
+    if isinstance(model, SurfaceCalciumActivatedModel):
+        return CALCIUM_ACTIVATED_MODEL_ID
+    if isinstance(model, SurfaceExtendedCatalogModel):
+        return EXTENDED_CATALOG_MODEL_ID
+    if isinstance(model, SurfaceCatalogModel):
+        return CATALOG_MODEL_ID
     if isinstance(model, SurfaceCavModel):
         return CAV_MODEL_ID
     if isinstance(model, SurfaceKv1Model):
@@ -245,18 +291,33 @@ def parse(data):
             _fields(c, {"time", "availability"}, "junction control change")
             fraction(c["availability"], "junction availability")
     channels = m.pop("channels", None)
-    cav = m["id"] == CAV_MODEL_ID
-    kv1 = m["id"] in (KV1_MODEL_ID, CAV_MODEL_ID)
-    hcn = m["id"] in (HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
-    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
-    catalog = m["id"] in (
-        CHANNEL_MODEL_ID,
-        SODIUM_MODEL_ID,
-        HCN_MODEL_ID,
-        KV1_MODEL_ID,
-        CAV_MODEL_ID,
+    hcn_extra = m["id"] == HCN_EXTRA_MODEL_ID
+    morris_lecar = hcn_extra or m["id"] == MORRIS_LECAR_MODEL_ID
+    calcium_activated = morris_lecar or m["id"] == CALCIUM_ACTIVATED_MODEL_ID
+    extended = calcium_activated or m["id"] == EXTENDED_CATALOG_MODEL_ID
+    expanded = extended or m["id"] == CATALOG_MODEL_ID
+    cav = expanded or m["id"] == CAV_MODEL_ID
+    kv1 = cav or m["id"] == KV1_MODEL_ID
+    hcn = kv1 or m["id"] == HCN_MODEL_ID
+    sodium = hcn or m["id"] == SODIUM_MODEL_ID
+    catalog = sodium or m["id"] == CHANNEL_MODEL_ID
+    shared_process = (
+        hcn_extra_catalog
+        if hcn_extra
+        else morris_lecar_catalog
+        if morris_lecar
+        else calcium_activated_catalog
+        if calcium_activated
+        else shared_channel_catalog_v2
+        if extended
+        else shared_channel_catalog
+        if expanded
+        else cav_channels
+        if cav
+        else kv1_channels
+        if kv1
+        else hcn_channels
     )
-    shared_process = cav_channels if cav else kv1_channels if kv1 else hcn_channels
     laws = (
         shared_process.LAW_CODES
         if hcn
@@ -273,10 +334,15 @@ def parse(data):
             HCN_MODEL_ID,
             KV1_MODEL_ID,
             CAV_MODEL_ID,
+            CATALOG_MODEL_ID,
+            EXTENDED_CATALOG_MODEL_ID,
+            CALCIUM_ACTIVATED_MODEL_ID,
+            MORRIS_LECAR_MODEL_ID,
+            HCN_EXTRA_MODEL_ID,
         )
         or type(channels) is not list
     ):
-        raise ConfigError("Require resolved_tissue@2–@7 with an explicit channel list")
+        raise ConfigError("Require resolved_tissue@2–@12 with an explicit channel list")
     for p in m["membranes"]:
         _fields(p, set(base.Membrane.__dataclass_fields__) | {"law", "pump"}, "membrane")
     gates = []
@@ -351,13 +417,19 @@ def parse(data):
                     "Shared-gate ions must exactly match the named law's "
                     "ordered permeability ratios"
                 )
+            instantaneous = calcium_activated and law == calcium_activated_potassium.LAW_ID
+            if instantaneous and ("Ca" not in ids or m0.valence[ids.index("Ca")] != 2):
+                raise ConfigError("Calcium-sensitive potassium requires a declared Ca +2 sensor")
+            count = (
+                shared_process.STATE_COUNTS[law] if morris_lecar else (0 if instantaneous else 2)
+            )
             if (
                 p["membrane_id"] not in {v.id for v in membranes}
                 or type(p["initial_gate"]) is not list
-                or len(p["initial_gate"]) != 2
+                or len(p["initial_gate"]) != count
             ):
                 raise ConfigError(
-                    "Shared-gate channel requires a named patch and explicit m/h gates"
+                    "Channel requires its patch and exactly the named law's declared gate state"
                 )
             parsed.append(
                 ChannelPopulation(
@@ -441,7 +513,17 @@ def parse(data):
     ps = schedules(controls["pump"], "pump", [p.pump.id for p in membranes if p.pump is not None])
     js = schedules(original, "junction", [p.id for p in junctions])
     model = (
-        SurfaceCavModel
+        SurfaceHCNExtraModel
+        if hcn_extra
+        else SurfaceMorrisLecarModel
+        if morris_lecar
+        else SurfaceCalciumActivatedModel
+        if calcium_activated
+        else SurfaceExtendedCatalogModel
+        if extended
+        else SurfaceCatalogModel
+        if expanded
+        else SurfaceCavModel
         if cav
         else SurfaceKv1Model
         if kv1

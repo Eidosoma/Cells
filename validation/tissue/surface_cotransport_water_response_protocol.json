@@ -1,0 +1,91 @@
+{
+  "kind": "coupled_salt_water_fuel_cpu_response@1",
+  "scope": "Half-second closed manufactured trajectories with finite ATP/ADP/Pi, Na/K pump demand, neutral KCC/NKCC cotransport and compliant volumes. Channels absent. No biological fitting, native BETSE trajectory correspondence or GPU qualification.",
+  "model": "resolved_cotransport_water@1",
+  "backend": "cpu",
+  "state_fields": 31,
+  "horizon_s": 0.5,
+  "intervention_s": 0.25,
+  "dt_s": 1.25e-05,
+  "refinement_factors": [
+    1,
+    2,
+    4
+  ],
+  "independent_reference": {
+    "method": "DOP853",
+    "max_step_s": 0.001,
+    "rtol": 2e-11,
+    "state_atol": 2e-14,
+    "charge_atol_C": 1e-29,
+    "tightening_factor": 2,
+    "events": "All seven declared control families; held controls on each interval"
+  },
+  "duration_basis": "Initial water linear time constant approximately 27 ms; each 250-ms interval spans about nine initial water time constants. Salt turnover and initial fuel demand are faster. Preserve rates and inventories; record actual late slopes before any settling claim.",
+  "arms": [
+    "supply_on",
+    "supply_off",
+    "supply_recovery",
+    "cotransport_blocked",
+    "cotransport_release",
+    "water_blocked"
+  ],
+  "controls": "Each arm changes one control family only. Regeneration availability 0.1 when enabled; recovery/release at 0.25s. Matched manufactured controls are not independent biological observations.",
+  "checks": [
+    "Complete 31-field histories and observations, strict RK4 stage domains and existing material/charge/energy/water checks",
+    "Independent adaptive trajectories for six arms",
+    "Twofold tighter independent reference and three RK4 grids for supply recovery",
+    "Fuel withdrawal/recovery and salt-to-water response with matched blocked controls",
+    "Complete saved-state, layout, clocks and accepted-history replay from 0.25s in a fresh worker"
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "potential_atol_V": 2e-08,
+    "physical_energy_atol_pJ": 2e-08,
+    "water_balance_atol_pL": 2e-12,
+    "reference_stability_rtol": 3e-11,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "max_worker_rss_bytes": 4294967296,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "pss",
+    "cpu_affinity": [
+      6
+    ],
+    "blas_threads": 1,
+    "persistent_compilation_cache": false
+  },
+  "tests": "tests/unit/test_surface_cotransport_water_response_full.py",
+  "automatic_followup": false,
+  "scope_exclusions": [
+    "Channel catalog/coupled channel trajectories",
+    "Open boundary/advection/deformation/charged energy-pool speciation",
+    "Wetlab calibration and mitochondrial respiration",
+    "Remote or multi-GPU execution"
+  ],
+  "refinement_convergence_observables": {
+    "amount_increment": {
+      "unit": "fmol",
+      "roundoff_floor": 3e-13,
+      "final_to_initial_limit": 0.2
+    },
+    "energy_amount_increment_fmol": {
+      "unit": "fmol",
+      "roundoff_floor": 3e-13,
+      "final_to_initial_limit": 0.2
+    },
+    "volume_increment_pL": {
+      "unit": "pL",
+      "roundoff_floor": 3e-13,
+      "final_to_initial_limit": 0.2
+    }
+  },
+  "refinement_scope": "Per-field convergence on three declared physical observables; all31 fields independently pass unchanged full-state accuracy budgets. No mixed-unit global error ratio."
+}

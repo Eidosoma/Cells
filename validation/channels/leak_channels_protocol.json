@@ -1,0 +1,50 @@
+{
+  "kind": "cells.pinned_leak_channel_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_version": "1.5.0",
+  "classes": ["ClLeak", "CatLeak", "CatLeak2"],
+  "law_codes": {"betse_clleak_always_open@1": 32, "betse_catleak_na_k@1": 33, "betse_catleak2_na_k_ca@1": 34},
+  "padding_code": -1,
+  "species": ["Cl", "Na", "K", "Ca"],
+  "ordered_permeabilities": {"ClLeak": [["Cl", 1.0]], "CatLeak": [["Na", 1.0], ["K", 1.0], ["Ca", 0.0]], "CatLeak2": [["Na", 1.0], ["K", 1.0], ["Ca", 1.0]]},
+  "voltage_domain_V": [-0.120, 0.060],
+  "voltage_domain_scope": "Computational bound only; selected leak kinetics/opening are independent of voltage",
+  "gate_domain": [0.0, 1.0],
+  "source_gate_powers": [0, 0],
+  "targets": [1.0, 1.0],
+  "tau_seconds": [1.0, 1.0],
+  "control_ownership": "One availability per population, shared over all declared ion routes; clocks do not freeze when conductance is blocked",
+  "zero_calcium": "CatLeak retains ordered Na/K/Ca metadata1/1/0; it has no calcium permeability",
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "native_probe": {
+    "installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "voltage_V": [-0.120, -0.080, -0.020, 0.0, 0.060],
+    "target_scenarios": {"default": null, "reordered": [4, 1], "empty": [], "duplicate": [4, 1, 4]},
+    "update_dt_s": 0.25,
+    "source_clock": "Actual inherited backward Euler with time_unit1s",
+    "voltage_correction_mV": 2.0,
+    "target_distinction": "Cl defaultsNone; cation defaults cells.mem_i and always scatters; duplicate target output assigns instead of adds",
+    "correction_distinction": "Cl.run includes v_corr; Cation.run omits it; selected constant leaks are unaffected",
+    "whole_native_simulation": false,
+    "copy_upstream_into_repo": false
+  },
+  "auxiliary_recovery": {
+    "initial_states": [[0.2, 0.7], [0.8, 0.3]],
+    "voltage_V": [-0.080, 0.0],
+    "duration_s": 12.0,
+    "preparation": "Separate manufactured perturbations of auxiliary gates after native initialization; not voltage-driven gating",
+    "native_refinements": [2, 4, 8],
+    "continuous_refinement_steps": [32, 64, 128],
+    "continuous_expected_order": 4
+  },
+  "tolerances": {"relative": 5e-12, "gate_atol": 5e-14, "rate_atol_per_s": 1e-12, "native_gate_atol": 1e-12},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false, "compiled_cpu_authorization": "Chief cleared exactly two proposed CPU7 JAX array/domain/derivative checks after verifying the63-case host receipt; <=1GiB PSS/individualRSS, >=8GiB reserve, BLAS1, no GPU"},
+  "scope": "Always-open population metadata and auxiliary clocks, not ionic flux/reversal, tissue trajectories or biological fit",
+  "automatic_followup": false
+}

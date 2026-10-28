@@ -24,16 +24,20 @@ WATER_FIELDS = (
     "water_transferred_pL",
     "water_dissipated_energy_pJ",
 )
+MODEL_PROJECTIONS = {
+    "resolved_water@2": "resolved_tissue@7",
+    "resolved_water@3": "resolved_tissue@11",
+}
 
 
 def bind(raw):
-    if raw["model"]["id"] != "resolved_water@2":
-        raise ValueError("Require resolved_water@2")
+    if raw["model"]["id"] not in MODEL_PROJECTIONS:
+        raise ValueError("Require a declared maintained ionic-water model version")
     if raw["model"]["temperature_K"] != 298.15:
         raise ValueError("Unscaled shared-channel source kinetics require exactly 298.15 K")
     prior = deepcopy(raw)
     m = prior["model"]
-    m["id"] = "resolved_tissue@7"
+    m["id"] = MODEL_PROJECTIONS[m["id"]]
     m.pop("water_compartments")
     m.pop("water_membranes")
     prior["experiment"].pop("water_controls")
@@ -77,6 +81,22 @@ def initial(c):
 
 def evaluate(c, state, time):
     d = unpack(c, state)
+    if c["raw"]["model"]["id"] == "resolved_water@3":
+        supported = np.array(
+            [
+                1e15 * edge["area_m2"] * edge["hydraulic_permeability_m_per_Pa_s"] > 0
+                for edge in c["water_case"]["edges"]
+            ],
+            dtype=bool,
+        )
+        # A permanently sealed route cannot carry a history of transferred
+        # water or heat. Control-blocked positive-conductance routes can retain
+        # their past ledgers. This does not modify rates or older @2 behavior.
+        for name in ("water_transferred_pL", "water_dissipated_energy_pJ"):
+            if not np.isfinite(d[name]).all() or np.any(d[name][~supported] != 0):
+                raise ValueError(
+                    "Permanently sealed water routes require exact zero finite ledgers"
+                )
     volume = np.r_[
         c["vi"] + d["volume_increment_pL"],
         c["vo"] + d["extracellular_volume_increment_pL"],

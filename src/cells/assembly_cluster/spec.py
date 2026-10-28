@@ -19,17 +19,32 @@ from cells.core.schedule import control_values
 from cells.core.spatial_calcium_spec import CalciumModel
 from cells.core.specs import SpatialJunctionSpec
 from cells.core.specs import parse_spec as parse_ionic
+from cells.core.surface_calcium_energy_spec import (
+    SurfaceCalciumEnergyActivatedModel,
+    SurfaceCalciumEnergyCatalogModel,
+    SurfaceCalciumEnergyHCNExtraModel,
+    SurfaceCalciumEnergyModel,
+    SurfaceCalciumEnergyMorrisLecarModel,
+)
+from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
+from cells.core.surface_calcium_energy_water_spec import SurfaceCalciumEnergyWaterModel
 from cells.core.surface_calcium_spec import (
+    SurfaceCalciumActivatedCatalogModel,
+    SurfaceCalciumCatalogModel,
     SurfaceCalciumCavModel,
     SurfaceCalciumChannelModel,
+    SurfaceCalciumExtendedCatalogModel,
+    SurfaceCalciumHCNExtraModel,
     SurfaceCalciumHCNModel,
     SurfaceCalciumKv1Model,
     SurfaceCalciumModel,
+    SurfaceCalciumMorrisLecarModel,
     SurfaceCalciumSodiumModel,
 )
+from cells.core.surface_calcium_water_spec import SurfaceCalciumWaterModel
 from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairModel
 from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
-from cells.core.surface_repair_spec import SurfaceRepairModel
+from cells.core.surface_repair_spec import SurfaceMorrisLecarRepairModel, SurfaceRepairModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.models.registry import get_model
 
@@ -121,7 +136,21 @@ def parse_spec(data):
         SurfaceCalciumHCNModel,
         SurfaceCalciumKv1Model,
         SurfaceCalciumCavModel,
+        SurfaceCalciumCatalogModel,
+        SurfaceCalciumExtendedCatalogModel,
+        SurfaceCalciumActivatedCatalogModel,
+        SurfaceCalciumMorrisLecarModel,
+        SurfaceCalciumHCNExtraModel,
+        SurfaceCalciumWaterModel,
+        SurfaceCalciumEnergyWaterRepairModel,
+        SurfaceCalciumEnergyWaterModel,
+        SurfaceCalciumEnergyModel,
+        SurfaceCalciumEnergyCatalogModel,
+        SurfaceCalciumEnergyActivatedModel,
+        SurfaceCalciumEnergyMorrisLecarModel,
+        SurfaceCalciumEnergyHCNExtraModel,
         SurfaceRepairModel,
+        SurfaceMorrisLecarRepairModel,
         SurfaceMobileRepairModel,
         SurfaceMobilePumpRepairModel,
     ):

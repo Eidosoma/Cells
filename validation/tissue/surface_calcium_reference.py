@@ -31,6 +31,17 @@ ER_FIELDS = (
 
 
 def bind(raw):
+    # New catalog compositions declare both identities explicitly; older
+    # versions cannot silently acquire additional channel or sensing laws.
+    outer, inner = raw["model"]["id"], raw["model"]["ionic"]["id"]
+    versions = {
+        "resolved_calcium@8": "resolved_tissue@9",
+        "resolved_calcium@9": "resolved_tissue@10",
+        "resolved_calcium@10": "resolved_tissue@11",
+        "resolved_calcium@11": "resolved_tissue@12",
+    }
+    if (outer in versions or inner in versions.values()) and versions.get(outer) != inner:
+        raise ValueError("The shared-catalog calcium model requires its versioned ionic identity")
     c = kinetic.bind(
         dict(model=raw["model"]["ionic"], experiment=raw["experiment"], execution=raw["execution"])
     )

@@ -27,6 +27,37 @@ the [project README](../README.md) gives the short feature overview.
   the existing bounded models behind the planned lineage replication.
 - [Tissue electrical models](TISSUE_RETURN_CURRENT.md): cross-region return
   currents, resolved membranes and native BETSE comparison components.
+- [Shared channel catalog](TISSUE_RETURN_CURRENT.md#hcn-leak-and-fixed-camp-variants):
+  56 sodium, potassium, HCN, calcium and leak laws, including owned calcium/ER,
+  finite-fuel and assembly-control compositions. Component correspondence,
+  integrated qualification and experimental calibration remain distinct.
+- [Legacy calcium-sensitive potassium](CALCIUM_ACTIVATED_POTASSIUM.md):
+  a free-calcium/voltage equation with explicit source units and container
+  limitations, now [composed with tissue, owned calcium and finite fuel](TISSUE_RETURN_CURRENT.md#calcium-sensitive-potassium-with-the-shared-catalog).
+- [Morris–Lecar channels](MORRIS_LECAR_CHANNELS.md): five dynamic and eight
+  instantaneous source laws, with explicit physical clocks, state contracts
+  and shared tissue/calcium/fuel composition.
+- [Channel catalog with compliant water](TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-compliant-water):
+  all 53 laws use current compartment concentrations, with conservative water
+  flow and separate water/gate timestep bounds.
+- [Channel catalog with prescribed repair](TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-prescribed-repair):
+  all 53 laws with owned calcium/ER, Na/K injury leakage and explicit resealing;
+  fixed geometry and one-way assembly control.
+- [Channel catalog with finite fuel and water](TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-finite-fuel-and-water):
+  all 53 laws with owner-local ATP/ADP/Pi, explicit supply and current-volume
+  concentrations; pool osmotic particles and mixing energy are counted once.
+- [Owned calcium/ER with compliant cytosol](TISSUE_RETURN_CURRENT.md#owned-calcium-and-er-with-compliant-cytosol):
+  shared chemical/water volume, fixed ER, one count per chemical particle and
+  joint mixing, binding, capacitor and water energy accounting.
+- [Owned calcium, finite ATP and water](TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water):
+  Na/K, plasma-calcium and ER pumps share one live fuel pool and cytosol volume;
+  chemistry and fuel each contribute their osmotic particles and energy once.
+- [Prescribed repair with calcium, ATP and water](TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water):
+  Na/K injury leakage reads the live volumes and preserves all shared owners;
+  structural resealing remains prescribed. Development evidence is in Progress.
+- [Shared fuel with owned calcium](TISSUE_RETURN_CURRENT.md#shared-finite-energy-with-owned-calcium-and-assembly):
+  Na/K, PMCA and ER pumps share finite ATP/ADP/Pi, with explicit regeneration
+  and internal pump-work accounting; assembly control remains one-way.
 - [Two-task readout assay](TWO_TASK_READOUT_ASSAY.md): cue location and timing
   read from shared tissue trajectories, with frozen calibration and controls.
 - [Compartment chemistry](COMPARTMENT_REACTIONS.md), [ER calcium](ER_CALCIUM.md),

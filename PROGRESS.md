@@ -10,7 +10,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 ## Current position
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
-  wider Cells features with short CPU validation. Defer new GPU qualifications
+  wider Cells features with scientifically adequate CPU validation. The user
+  now places **BETSE scientific compatibility before the Jupiter move**;
+  implementation alone does not satisfy the source-comparison requirement.
+  The [compatibility milestone](docs/ROADMAP.md#betse-compatibility-before-jupiter)
+  defines that gate. Defer new GPU qualifications
   and prepare later batches of compatible features/independent worlds, with
   balanced arms and both GPU-busy and SM-active telemetry. Existing frozen
   jobs remain intact. The last user-triggered finite-energy check at 14:33 UTC
@@ -18,6 +22,506 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Short checks must still cover the necessary scientific time scales and
   numerical comparisons. Stage checks are labelled separately from full
   coupled trajectories; necessary longer validations remain allowed.
+
+- **The 56-law HCN expansion passes scoped CPU qualification.**
+  The lead added `HCNLeak`, `HCN2_cAMP` and `HCN4_cAMP` in
+  [`resolved_tissue@12`, `resolved_calcium@11` and `resolved_calcium_energy@5`](docs/TISSUE_RETURN_CURRENT.md#hcn-leak-and-fixed-camp-variants),
+  retaining 19/34/38 complete fields. HCN4's initialization/update shifts and
+  HCNLeak's .33 sodium permeability are explicit. Previous identities retain
+  their declared catalogs, including the 53-law water/repair compositions.
+  The [combined receipt](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/development-result.json)
+  binds **228 distinct passing checks**: 104 host/planning checks, two completed
+  continuous RK4 clamps, two compiled checks and 120 independent native/reference
+  checks. This combines preserved runs; it is not one all-green batch.
+  [Host coverage](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/host-02/result.json)
+  includes all three families, exact earlier-catalog rates, ownership, blocked
+  gates, invalid states, ordinary/assembly checkpoints and offline 1/4/16-GPU
+  planning. Five versioned examples are included; their full 2-ms histories
+  remain unqualified.
+  The [continuous clamps](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/clamp-receipt.json)
+  cover **6.624 s / 16.596 s** for HCN2/HCN4, twelve activation time constants
+  per phase, with maximum gate error **2.10e-9**. The
+  [native package](/mnt/workspaces/Cells/hcn-extra-reference-20261028-01/HANDOFF.json)
+  includes 24 scalar, three vector and nine targeted native cases plus twelve
+  clamp traces. Native backward Euler and continuous relaxation remain separate.
+  The [compiled two-world comparison](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/compiled-stage-02/result.json)
+  passes all 38 rates and isolates an invalid leak-gate state without changing
+  the valid neighbour. The [complete 50-us CPU history](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/compiled-trajectory-01/result.json)
+  took **4m 15s**, passed at **0.111 of its state-error budget**, retained exact
+  absent-gate zeros and restored the entire final checkpoint. Energy residual
+  was **1.04e-17 pJ** and pool-material residual **2.22e-16 fmol**. Peak charged
+  memory was **2.70 GiB**, with **14.79 GiB** minimum host reserve.
+  Preserved failures include the
+  [240-s host timeout during planning](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/host-01/failure.json),
+  a [compiled harness capturing NumPy indices](/mnt/workspaces/Cells/hcn-extra-development-20261028-01/compiled-stage-01/failure.json)
+  corrected by passing layout arrays through JAX, and the native package's
+  refinement failure corrected with finer steps. Equations and scientific
+  tolerances were retained. No HCN job remains active and no GPU job is queued.
+  Longer coupled HCN recovery, 56-law water/repair integration, stochastic
+  assembly, GPU execution and experimental calibration remain separate work.
+  **Next lead task:** integrate configurable transporters with explicit material
+  owners, constants and energy accounting. Key Dev independently builds the
+  mitochondrial ion/voltage component. The lead alone maintains this status file.
+
+- **Native configurable transporter component delivered; tissue integration pending.**
+  Cells Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-network-transport-handoff-20261028-01/result.json)
+  records **123 passing checks** (119 host, four CPU JAX), **39 authenticated
+  native expression captures** and three explicitly rejected native failures.
+  The [integration contract](agent-work/cells-worker-01/workfiles/BETSE_NETWORK_TRANSPORT_HANDOFF.md)
+  covers stoichiometry, owners, saturation, regulation, voltage and source units.
+  Native captures explicitly supplied Cells' SI constants; pinned BETSE's
+  factory F/R constants differ. Integration must declare that choice and any
+  conversion. Native-default runs need a separate comparison.
+  Source reaction energy is a diagnostic, **not physical heat**; no implicit
+  ATP or water updates are supplied. Attempts 01–03 remain preserved. Final
+  peak RSS was **331 MiB**, with **19.72 GiB** minimum host reserve.
+  The lead verified the receipt and production-source identities on receipt;
+  this is component evidence, not coupled tissue qualification. Key Dev now
+  owns the separate mitochondrial ion/voltage component, with source captures
+  and CPU validation. Coordination stays limited to meaningful handoffs.
+
+- **Joint calcium/ER, finite ATP, water and prescribed repair passes CPU integration.**
+  [`resolved_calcium_energy_water_repair@1`](docs/TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water)
+  retains **48 complete fields** and the **53-law catalog**. Lesion transport
+  uses live cytosol/exterior volumes and the existing ion/chemical owners;
+  transfer and heat enter the total accounting once. Structural resealing
+  remains prescribed, without a modelled ATP cost. The lead implemented the
+  production/core/execution integration; Cells Key Dev owns the independent
+  fixtures, reference and checks in separate files.
+  The [combined development result](/mnt/workspaces/Cells/calcium-energy-water-repair-development-20261028-01/development-result.json)
+  binds **139 distinct passing checks**: **46 implementation/execution** and
+  **93 independent-reference checks** across preserved runs. These cover
+  host/reference, assembly reports/checkpoints, offline 1/4/16-GPU placement,
+  [two-world compilation](/mnt/workspaces/Cells/calcium-energy-water-repair-development-20261028-01/compiled-stage-01/result.json)
+  and the [complete 50-us CPU history](/mnt/workspaces/Cells/calcium-energy-water-repair-development-20261028-01/compiled-trajectory-01/result.json).
+  Compilation took **2m 54s**, isolating five invalid-state cases without
+  changing the valid neighbour. The full history took **7m 57s** and passed
+  at **0.339 of its state-error budget**, with energy residual **1.39e-15 pJ**,
+  global water residual **2.60e-18 pL**, damage-ledger error **1.03e-16**,
+  fixed ER volume, exact absent-gate zeros and complete final-checkpoint
+  restoration. Peak charged memory was **3.57 GiB**, with **14.14 GiB** minimum
+  host reserve. These short histories establish early coupling, not full
+  physiological recovery. A retained failed test manufactured water movement
+  through a permanently sealed route; its corrected case passes without
+  production or tolerance changes.
+  Key Dev's [independent receipt](/mnt/workspaces/Cells/calcium-energy-water-repair-reference-combined-20261028-01/result.json)
+  includes endpoint-energy convergence and three isolated repair clocks with
+  **0.5-ms opening plus 3-ms closure**, twelve time constants for each phase.
+  Other physical fields remain frozen in those scalar checks. The separate
+  [20-us full-state refinement](/mnt/workspaces/Cells/calcium-energy-water-repair-reference-20261028-05/evidence/short48-refinement.json)
+  covers the injury pulse at two resolutions: **7.64e-7 of its state-error
+  budget**, energy residual **1.25e-12 pJ**, and pool residual **7.01e-15 pJ**.
+  The [earlier final-five attempt](/mnt/workspaces/Cells/calcium-energy-water-repair-reference-20261028-04/failure.json)
+  hit its **180-s runtime guard**. The successful retry took **6m 11s**, retaining
+  the same 20-us horizon, oracle and acceptance tolerances; the failed attempt
+  and preliminary lint failure remain preserved. No repair validation job
+  remains active from this batch.
+  No new GPU run is queued. Longer coupled recovery, stochastic assembly
+  histories, native cutting/topology correspondence and biological calibration
+  remain separate requirements.
+
+- **Joint finite ATP, owned calcium/ER and water now passes scoped CPU development:**
+  [`resolved_calcium_energy_water@1`](docs/TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water)
+  retains **43 complete fields** and all **53 channel laws**. Na/K, plasma-calcium
+  and ER pumps read the same live fuel pool at the current cytosol volume.
+  Chemical species and ATP/ADP/Pi contribute their particles and free energy
+  once; ER volume and interfaces remain fixed. The
+  [development result](/mnt/workspaces/Cells/calcium-energy-water-development-20261028-01/development-result.json)
+  binds **126 distinct passing checks**: 48 implementation/execution checks and
+  78 independent-reference checks, across retained attempts and targeted fixes.
+  The [two-world compiled comparison](/mnt/workspaces/Cells/calcium-energy-water-development-20261028-01/compiled-stage-01/result.json)
+  passed in **2m 36s**, including isolation of exhausted fuel, an absent gate
+  and negative regeneration heat. The latter stage guard was added following
+  [source review](/mnt/workspaces/Cells/calcium-energy-water-review-20261028-01/REVIEW.json).
+  The [**50-us complete CPU trajectory**](/mnt/workspaces/Cells/calcium-energy-water-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **5m 04s**, error **0.111** of budget, energy residual
+  **7.17e-16 pJ**, global water residual **8.67e-19 pL**, fixed ER volume and
+  exact complete final-snapshot restoration. Peak charged memory was
+  **3.09 GiB**, leaving **14.38 GiB** host reserve.
+  Separate [physical-time evidence](/mnt/workspaces/Cells/calcium-energy-water-reference-20261028-08/evidence/actual-port-water-physical-time.json)
+  covers a reduced actual regeneration-port/water pair for **4.641 s**:
+  **4.072 s** turnover allowance plus twelve **47.45-ms** slow equilibration
+  times. Both resolutions reached the independently calculated equilibrium;
+  joint energy residuals were **3.27e-11 / 5.14e-12 pJ**. Other chemical particles
+  remain frozen in this reduced check. A separate **2.5-us full-state refinement**
+  includes off-grid channel, water and supply controls. Endpoint-energy
+  differences show coarse-step convergence, an adjacent three-step window
+  within the original tolerance, and roundoff at tiny perturbations.
+  Preserved failed attempts include corrected test assumptions and the reduced
+  pair's 180-s reference timeout. Scalar integration with high-precision rate
+  and endpoint checks completed the final five checks in **51.5 s**, retaining
+  the physical horizon and numerical acceptance tolerances.
+  Ordinary/assembly examples, complete reports/checkpoints and offline
+  **1/4/16-GPU** placement are included. This batch has no remaining jobs;
+  new GPU runs remain deferred. The prescribed-repair successor is tracked
+  above. Longer coupled recovery, stochastic assembly
+  histories, native whole-tissue BETSE correspondence and experimental
+  calibration remain separate requirements.
+
+- **Finite fuel and owned calcium now each compose with water and all 53 channel laws:**
+  [`resolved_energy@2` and `resolved_energy_water@2`](docs/TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-finite-fuel-and-water)
+  retain **23/28 complete fields**; the new
+  [`resolved_calcium_water@1`](docs/TISSUE_RETURN_CURRENT.md#owned-calcium-and-er-with-compliant-cytosol)
+  retains **38**. Finite fuel and owned calcium/ER remain separate water
+  compositions. The calcium model shares one cytosol volume between chemistry
+  and water, keeps ER volume fixed and counts each chemical particle once.
+  The [development result](/mnt/workspaces/Cells/morris-lecar-energy-water-development-20261028-01/development-result.json)
+  binds **239 distinct passing checks**: 90 new host/clock checks, 78 independent
+  fuel/water checks, 60 calcium/water host/reference checks, three earlier-version
+  clock checks, five compiled CPU checks and three assembly/report/placement checks.
+  This combines preserved attempts and targeted corrections, not one all-green run.
+  Three two-world compiled comparisons passed complete rates and isolated invalid
+  states. The **50-us coupled histories** passed conservation, exact absent gate
+  zeros and complete final-snapshot restoration:
+  [fuel/water](/mnt/workspaces/Cells/morris-lecar-energy-water-development-20261028-01/compiled-water-trajectory-01/result.json)
+  took **3m 17s**, error **0.119** of budget, energy residual **1.21e-15 pJ**;
+  [calcium/water](/mnt/workspaces/Cells/morris-lecar-energy-water-development-20261028-01/compiled-calcium-trajectory-01/result.json)
+  took **3m 19s**, error **0.111** of budget, energy residual **9.50e-16 pJ**.
+  Peak charged memory was **1.92/2.47 GiB**, with at least **15.46 GiB** host
+  reserve across the compiled checks. ER volume stayed exactly fixed.
+  Separate physical-time evidence covers the actual regeneration port's
+  [4.102-ms isolated fuel relaxation](/mnt/workspaces/Cells/morris-lecar-energy-water-reference-20261028-01/HANDOFF.json)
+  and an actual chemical-particle pair's
+  [0.368-s water relaxation over twelve equilibrium time constants](/mnt/workspaces/Cells/calcium-water-host-combined-20261028-01/result.json).
+  Binding and closed IP3 conversion checks compare direct endpoint free energy
+  with its directional derivative. These do not establish long coupled recovery.
+  Compatibility testing found and fixed projected timestep checks dropping
+  supply-only/water-only off-grid boundaries; the
+  [verified change](/mnt/workspaces/Cells/morris-lecar-energy-water-development-20261028-01/clock-correction.json)
+  preserves the full experiment clock without changing compiled rate equations.
+  Failed guard/padding/sign test premises and the actual clock failure remain
+  linked in the evidence bundle. Numerical tolerances were retained or tightened.
+  Four examples, assembly ownership/checkpoint reports and offline **1/4/16-GPU**
+  plans are included. Stochastic assembly histories, longer coupled trajectories,
+  runtime balance and GPU execution remain unqualified. No new GPU jobs or
+  follow-up qualifications are queued from this batch. Their joint finite-ATP,
+  calcium/ER and water successor is tracked above; prescribed repair follows it;
+  native whole-tissue BETSE correspondence and experimental calibration remain
+  separate requirements.
+
+- **The 53-law catalog now has separate water and prescribed-repair compositions:**
+  [`resolved_water@3`](docs/TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-compliant-water)
+  retains **23 complete fields**, using current compartment volumes for ion
+  concentrations and the free-calcium potassium sensor.
+  [`resolved_repair@4`](docs/TISSUE_RETURN_CURRENT.md#shared-channel-catalog-with-prescribed-repair)
+  retains **39 fields**, combining owned calcium/ER with prescribed Na/K injury
+  leakage and resealing. Each full example has 60 channel populations; the
+  earlier water and repair model identities keep their behavior.
+  The [development result](/mnt/workspaces/Cells/morris-lecar-water-development-20261028-01/development-result.json)
+  binds **166 passing distinct checks**: 73 water host, 35 independent water,
+  52 repair host/reference, four compiled CPU checks and two offline planning
+  checks. Both models passed two-world full-rate comparisons and isolated
+  invalid-state rejection. Their **50-us coupled histories** passed with exact
+  absent gate zeros, conservation checks and complete final-snapshot restoration:
+  [water](/mnt/workspaces/Cells/morris-lecar-water-development-20261028-01/compiled-trajectory-01/result.json)
+  took **2m 00s**, with error **0.111** of budget and energy residual
+  **7.79e-16 pJ**;
+  [repair](/mnt/workspaces/Cells/morris-lecar-water-development-20261028-01/compiled-repair-trajectory-01/result.json)
+  took **3m 22s**, with error **0.339** of budget and energy residual
+  **3.59e-16 pJ**. Peak charged memory was **1.65/2.51 GiB**, with at least
+  **14.0 GiB** host reserve across the compiled checks.
+  Separate physical-time checks cover an actual fixture pair's
+  [water-only relaxation](/mnt/workspaces/Cells/morris-lecar-water-reference-20261028-01/HANDOFF.json)
+  for **0.635 s / twelve conservative time constants**, and
+  [prescribed repair clocks](/mnt/workspaces/Cells/morris-lecar-repair-host-combined-20261028-01/result.json)
+  for twelve time constants per opening/closure phase. These do not establish
+  long coupled recovery. Retained failures document corrected impossible
+  sealed-route histories and numerical-guard test fixtures; production
+  equations and numerical tolerances were unchanged. The independent water
+  reference now explicitly rejects unsupported accumulated flow/heat in @3.
+  Three source examples and offline 16-world plans through **1/4/16 GPUs** are
+  included. Runtime balance, GPU execution and stochastic assembly histories
+  remain unqualified. Geometry stays fixed; autonomous repair, structural
+  repair energy and native BETSE water/wound trajectories are not claimed.
+  The follow-on finite-fuel and owned-calcium water work is tracked above.
+
+- **Thirteen Morris–Lecar laws now compose with tissue, calcium/ER and finite fuel:**
+  [`resolved_tissue@11`, `resolved_calcium@10` and `resolved_calcium_energy@4`](docs/TISSUE_RETURN_CURRENT.md#morris-lecar-channels-with-the-shared-catalog)
+  offer **53 named laws**, with 60 populations in the examples and 19/34/38
+  complete state fields. Five added laws have one evolving gate; eight respond
+  instantly to voltage. Absent packed entries remain exactly zero. Source
+  clocks, the 50-fold slower Kv1p5S law, HCN signs and K/Na-only routes stay
+  explicit. Previous model identities retain their catalogs and equations.
+  The [development result](/mnt/workspaces/Cells/morris-lecar-catalog-development-20261028-01/development-result.json)
+  binds **222 passing integration checks**: 101 host/planning, 117 independent
+  reference and four compiled CPU checks, with no failed integration attempts.
+  All three compositions passed two-world full-rate comparisons and isolated
+  invalid-state rejection. The
+  [independent reference](/mnt/workspaces/Cells/morris-lecar-catalog-reference-20261028-01/HANDOFF.json)
+  includes 42 complete stages and 18 bitwise old35/39/40 comparisons.
+  The [50-us coupled trajectory](/mnt/workspaces/Cells/morris-lecar-catalog-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **4m 14s**, exercising dynamic/instantaneous channel block/release
+  and a supply-only boundary. Full-state error was **0.111** of budget; energy
+  residual was **1.15e-17 pJ**. Exact absent gate zeros and complete final-snapshot
+  restoration passed. Peak charged memory was **2.69 GiB**, leaving at least
+  **12.8 GiB** host reserve. Five ordinary/assembly examples and offline
+  1/4/16-GPU placement are included; remote execution remains unqualified.
+  Separately, [verified source-component receipts](/mnt/workspaces/Cells/morris-lecar-catalog-development-20261028-01/component-verification.json)
+  bind **138 host/native checks plus two CPU JAX checks** and 439 output hashes.
+  Dynamic clamps cover twelve effective time constants per phase, including
+  the full slow-law duration; instantaneous laws include zero-time input steps.
+  The [initial component lint failure](/mnt/workspaces/Cells/morris-lecar-contracts-20261028-01/failure.json)
+  preceded native/test execution and is retained. No equations, physical
+  durations or tolerances changed to fix it. Longer coupled recovery,
+  stochastic assembly, joint water/calcium/fuel/repair and batched GPU qualification
+  remain pending. This does not establish native whole-tissue equivalence or
+  experimental channel calibration. The separate water and prescribed-repair
+  extensions are recorded above; GPU runs remain deferred.
+
+- **Calcium-sensitive potassium now runs with tissue, calcium/ER and finite fuel:**
+  [`resolved_tissue@10`, `resolved_calcium@9` and `resolved_calcium_energy@3`](docs/TISSUE_RETURN_CURRENT.md#calcium-sensitive-potassium-with-the-shared-catalog)
+  add the legacy `cagPotassium` equation to the 39 shared laws, retaining
+  19/34/38 complete state fields. It reads current owner-local free calcium
+  and voltage, transfers K+, and consumes no calcium or ATP directly. This is
+  an instantaneous law: declared gate state is empty, and reserved packed
+  entries stay exactly zero. Old model identities keep their previous catalogs.
+  The [development result](/mnt/workspaces/Cells/calcium-activated-catalog-development-20261028-01/development-result.json)
+  binds **175 passing distinct checks**: 92 host/planning, 79 independent
+  reference and four compiled CPU checks. Each model passed two-world full-rate
+  comparisons with different free calcium and isolated invalid-world rejection.
+  The [50-us coupled trajectory](/mnt/workspaces/Cells/calcium-activated-catalog-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **3m 46s**, including potassium block/release, calcium-channel and
+  supply-only boundaries. Full-state error was **0.111** of budget; energy
+  residual was **9.54e-18 pJ**. Zero gate entries and exact complete final-snapshot
+  restoration passed. Peak charged memory was **3.17 GiB**, with at least
+  **15.5 GiB** host reserve. The
+  [independent reference](/mnt/workspaces/Cells/calcium-activated-catalog-reference-20261028-01/HANDOFF.json)
+  distinguishes free calcium from bound/ER/outside calcium, checks K-only
+  transfer and short adaptive refinement, and preserves old35/old39 rates
+  bitwise. The [first host failures](/mnt/workspaces/Cells/calcium-activated-catalog-development-20261028-01/host-01/failure.json)
+  were three test calls passing a temperature array to the scalar oracle;
+  [targeted correction](/mnt/workspaces/Cells/calcium-activated-catalog-development-20261028-01/host-owner-02/result.json)
+  passed in **3.3 s**, without changing equations, durations or tolerances.
+  Five ordinary/assembly examples and offline 24-world/16-world placement through
+  1/4/16 GPUs are recorded. Longer recovery histories, stochastic assembly and
+  GPU qualification remain pending; this is legacy-equation correspondence,
+  not a fitted BK/SK channel or full native BETSE tissue equivalence.
+
+- **Wound/TRP source limitation retained.** Source inspection found that the
+  pinned class fails during initialization and stepping;
+  its factor-to-permeability feedback is commented out. The
+  [raw wound failures and source limits](/mnt/workspaces/Cells/wound-channel-source-limits-20261028-01/capture/audit.json)
+  are retained; no replacement wound mechanism or working native parity is claimed.
+
+- **The shared catalog now has 39 laws in all three compositions:**
+  [`resolved_tissue@9`, `resolved_calcium@8` and `resolved_calcium_energy@2`](docs/TISSUE_RETURN_CURRENT.md#extended-39-law-channel-catalog)
+  integrate Ca_L2, Ca_L3, regularized Cav_G and CaLeak into ordinary tissue,
+  owned calcium/ER and finite ATP, retaining 19/34/38 complete state fields.
+  Prior model identities retain their 35-law catalogs. Five ordinary/assembly
+  examples have 43 populations, with one free-calcium owner and no direct
+  channel ATP consumption.
+  The [development result](/mnt/workspaces/Cells/calcium-catalog-v2-development-20261028-01/development-result.json)
+  binds **137 passing distinct checks**: 76 host/planning, 57 independent
+  reference and four compiled CPU checks. Each model passed two-world full-rate
+  comparison and isolated invalid-world rejection. Old-model rates remain
+  bitwise identical; blocking preserves intrinsic clocks and domain checks.
+  The [50-us coupled trajectory](/mnt/workspaces/Cells/calcium-catalog-v2-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **3m 42s**, with full-state error **0.111** of budget, energy residual
+  **8.67e-18 pJ**, and exact complete final-snapshot restoration. Peak charged
+  memory was **3.08 GiB**, leaving at least **15.3 GiB** host reserve.
+  [Offline plans](/mnt/workspaces/Cells/calcium-catalog-v2-development-20261028-01/host-planning-03/result.json)
+  preserve 24 mixed-model worlds and 16 assembly worlds through 1/4/16-GPU
+  placement; neither runtime balance nor remote execution is qualified.
+  The [initial 240-s host/planning timeout](/mnt/workspaces/Cells/calcium-catalog-v2-development-20261028-01/host-01/failure.json)
+  remains saved. Separating the checks and using normal 256-step planning
+  windows passed in 23.7 s and 38.7 s, with unchanged physical timelines,
+  timesteps and numerical tolerances. The
+  [independent handoff](/mnt/workspaces/Cells/calcium-catalog-v2-reference-20261028-01/HANDOFF.json)
+  includes full derivatives, owner/fuel perturbations and separate adaptive
+  refinement. Long component clamps remain distinct from this early coupled
+  trajectory. Longer coupled depletion/recovery, stochastic assembly histories,
+  water/repair composition and batched GPU qualification remain pending.
+
+- **Calcium-sensitive potassium source component qualified:**
+  Key Dev's [legacy `cagPotassium` equation](docs/CALCIUM_ACTIVATED_POTASSIUM.md)
+  passed **101 host/native-source checks and two CPU JAX checks**; the
+  [verified receipts](/mnt/workspaces/Cells/calcium-catalog-v2-development-20261028-01/cagpotassium-verification.json)
+  bind 624 output hashes and seven owned source snapshots. It senses current
+  free calcium, voltage and temperature, transports potassium, and has no
+  channel state or relaxation clock. Literal native concentration scaling,
+  two container failures and one raw overflow remain explicit. No active
+  pinned-source call site was found, so this is a legacy-equation component,
+  not fitted BK/SK physiology or active BETSE tissue parity. Its separate tissue,
+  owned-calcium and finite-fuel integration is recorded above.
+
+- **Shared finite fuel now powers Na/K, PMCA and owned ER together:**
+  [`resolved_calcium_energy@1`](docs/TISSUE_RETURN_CURRENT.md#shared-finite-energy-with-owned-calcium-and-assembly)
+  adds live ATP/ADP/Pi and explicit regeneration to the 35-law calcium/ER model,
+  with **38 complete state fields**. Pump work is an internal pool transfer;
+  external regeneration energy is counted once. NCX consumes no ATP. Fixed
+  volumes, the 1-M/1-mM standard-state conversion and the formal one-Ca/ATP
+  ER law are explicit. The [ordinary](configs/resolved_calcium_energy_tissue.json)
+  and [assembly](configs/assembly_resolved_calcium_energy_tissue.json) examples
+  retain owned controls, fuel reports and full checkpoints.
+  The [development result](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/development-result.json)
+  binds **109 passing distinct checks**: 77 host/planning, 30 isolated independent
+  reference checks, one compiled CPU stage and one compiled early trajectory.
+  [Host-02](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/host-02/tests.xml)
+  passed 76 checks; its sole failed test misread the timeline API. The
+  [corrected clock/shared-port/empty-port check](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/host-clock-03/result.json)
+  passed in **3.8 s**. Both earlier test-harness failures are preserved; no
+  production equation or numerical tolerance changed to fix them.
+  [Compiled stage](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/compiled-stage-01/result.json)
+  passed in **75.3 s** with full-rate error **7.20e-6** of budget.
+  The [50-us trajectory](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **4m 22s**, including a supply-only boundary and exact complete final
+  snapshot restoration. Full-state error was **0.111** of budget; total energy
+  residual was **1.12e-17 pJ**, pool internal-transfer residual **1.63e-19 pJ**.
+  Peak charged memory was **3.03 GiB**, with at least **14.7 GiB** host reserve.
+  [Independent checks](/mnt/workspaces/Cells/calcium-energy-reference-20261028-01/checks-06/result.json)
+  took **7.5 s**, with **89.6 MiB** RSS; all 38 derivatives, changed owner pools,
+  individual pump stall/reversal, NCX exclusion and a separate 2.5-us adaptive
+  refinement were checked without production imports. The
+  [handoff](/mnt/workspaces/Cells/calcium-energy-reference-20261028-01/HANDOFF.json)
+  records setup failures and strong-reverse floating cancellation: raw residuals
+  remain saved, with explicit component-scaled roundoff alongside ordinary
+  absolute budgets. Reverse cases are instantaneous; the full finite-fuel
+  calcium loss bound correctly rejects their oversized trajectory timestep.
+  Offline assembly plans preserve 16 world IDs and both eight-world arms through
+  local one-GPU and Jupiter one/four-node placement. This is planning evidence,
+  not remote execution. Longer coupled depletion/recovery, full resumed assembly
+  histories, water/repair composition and GPU qualification remain pending.
+
+- **Four further calcium-channel components qualified, now integrated above:**
+  Key Dev's [`Ca_L2`, `Ca_L3`, `Cav_G` and `CaLeak`](docs/CALCIUM_CHANNEL_EXTRAS.md)
+  passed [80 host/source checks](/mnt/workspaces/Cells/calcium-extra-contracts-20261028-03/result.json)
+  and [two CPU JAX checks](/mnt/workspaces/Cells/calcium-extra-contracts-20261028-04/result.json).
+  [Coordinator verification](/mnt/workspaces/Cells/calcium-energy-development-20261028-01/calcium-extras-verification.json)
+  checked **686 output hashes**. Gates span twelve relevant time constants;
+  all 16 isolated RK4 refinement orders exceed **4.11**. Raw `Cav_G` singular
+  source failures remain distinct from the analytic-limit implementation.
+  Native clocks, shifts and voltage-only inputs are explicit. These are
+  component temporal checks; the 39-law composition evidence is recorded above.
+
+- **Expanded catalog now composed with owned calcium/ER and assembly:**
+  [`resolved_calcium@7`](docs/TISSUE_RETURN_CURRENT.md#expanded-catalog-with-owned-calcium-and-assembly)
+  uses all **35 shared laws**, one free chemical cytosol/ER owner per cell and
+  **34 complete state fields**. The [ordinary](configs/resolved_calcium_catalog_tissue.json)
+  and [assembly](configs/assembly_resolved_calcium_catalog_tissue.json) examples
+  have 39 populations across two cells/four patches. Existing calcium-model
+  identities retain their prior catalogs and equations. The finite-ATP
+  extension uses the separate identity recorded above.
+  [67 host integration checks](/mnt/workspaces/Cells/calcium-catalog-development-20261028-01/host-01/result.json)
+  passed in **14.1 s**, using **223.9 MiB** high-water RSS. They cover full
+  derivatives, free-versus-bound calcium/ER redistribution, owner-local assembly
+  blocking, all 34 corruption guards, ordinary/assembly initial checkpoints and
+  strict report metadata. [28 isolated independent checks](/mnt/workspaces/Cells/calcium-catalog-reference-20261028-01/checks-02/result.json)
+  passed in **3.0 s**, using **88.3 MiB** RSS, without production/JAX imports.
+  The existing independent calcium reference required no equation changes.
+  Its [first failed check](/mnt/workspaces/Cells/calcium-catalog-reference-20261028-01/checks-01/failure.json)
+  retained an incorrect assertion that every absolute node potential stays
+  fixed during internal redistribution. The corrected physical invariants are
+  plasma capacitor charge and membrane voltage; component offsets may change
+  when altered free concentrations rebalance junction currents.
+  The [compiled CPU stage/control check](/mnt/workspaces/Cells/calcium-catalog-development-20261028-01/compiled-stage-01/result.json)
+  passed in **49.5 s**, at **1.253 GiB** peak charged memory; maximum full-state
+  error was **9.18e-6** of budget. The
+  [50-us trajectory/final-snapshot check](/mnt/workspaces/Cells/calcium-catalog-development-20261028-01/compiled-trajectory-01/result.json)
+  passed in **2m 20s**, at **2.486 GiB** peak charged memory and **2.625 GiB**
+  individual high-water RSS. Maximum trajectory error was **0.111** of budget,
+  energy residual **1.39e-17 pJ** and ownership residual **3.45e-20 fmol**;
+  the complete final state/layout restored bit-for-bit.
+  [Offline assembly planning](/mnt/workspaces/Cells/calcium-catalog-development-20261028-01/planning-01/result.json)
+  passed in **7.3 s**, preserving 16 world IDs, owner stream seeds and both
+  eight-world arms through local one-GPU and Jupiter one/four-node plans.
+  The [development result](/mnt/workspaces/Cells/calcium-catalog-development-20261028-01/development-result.json)
+  binds **98 passing CPU/reference/planning checks**, source hashes and retained
+  failure evidence. Slow relaxation, longer coupled refinement, complete
+  resumed/stochastic assembly histories and GPU qualification remain separate
+  work; the short trajectory establishes early coupled wiring only.
+
+- **Expanded shared channel tissue implemented:**
+  [`resolved_tissue@8`](docs/TISSUE_RETURN_CURRENT.md#expanded-sodium-potassium-and-leak-catalog)
+  supports **35 named laws**, adding six sodium, eight potassium and three
+  chloride/mixed-cation laws to the previous 18-law catalog. The manufactured
+  [example](configs/resolved_catalog_tissue.json) has **39 populations** across
+  two cells/four patches. Controls, species routes, 19 complete state fields and
+  checkpoint/model identity are explicit; older models retain their catalogs.
+  [31 host integration checks](/mnt/workspaces/Cells/shared-channel-catalog-development-20261028-01/host-02/result.json)
+  passed in **11.7 s**, peaking at **218.7 MiB** RSS. Complete stage rates,
+  controls, empty/padded populations, initial snapshots and batch registration
+  passed; old-law rates and fields agree bit-for-bit. A separately isolated
+  [independent reference suite](/mnt/workspaces/Cells/shared-channel-reference-20261028-01/checks-03/result.json)
+  passed **100 checks** in **8.1 s**, peaking at **88.9 MiB**. Its **124 frozen
+  source hashes** were verified; it imports no Cells/JAX implementation. The
+  [offline routing check](/mnt/workspaces/Cells/shared-channel-catalog-development-20261028-01/planning-01/result.json)
+  passed in **61.8 s**, preserving 16 distinct world IDs and both eight-world
+  arms across local 1/4/16-GPU plans and the four-node Jupiter plan. This is
+  planning evidence only, with remote execution still unqualified. Both
+  [CPU compiled checks](/mnt/workspaces/Cells/shared-channel-catalog-development-20261028-01/compiled-01/result.json)
+  passed in **4m 54s**, using **1.456 GiB** peak charged memory and **1.528 GiB**
+  individual high-water RSS. Full stage error was **9.18e-6** of budget and
+  the 50-us trajectory error **0.111** of budget; maximum energy residual was
+  **1.36e-19 pJ**. The complete final state/layout restored bit-for-bit.
+  The [development result](/mnt/workspaces/Cells/shared-channel-catalog-development-20261028-01/development-result.json)
+  binds **134 passing CPU/reference/planning checks**, frozen inputs, sources
+  and retained failures. The 50-us trajectory is an integration check, not a claim
+  about slow-gate recovery or longer coupled physiology. Full coupled
+  refinement, resumed histories, GPU qualification and expanded-catalog
+  finite-energy/water/repair composition remain pending. The new owned-calcium
+  and assembly extension is recorded above.
+
+  The [first host failure](/mnt/workspaces/Cells/shared-channel-catalog-development-20261028-01/host-01/failure.json)
+  retained **30 passes** and one fixture observation that was not an exact
+  accepted floating-point grid boundary. Constructing observation times from
+  integer multiples of the timestep corrected it; no tolerance changed.
+  Independent checks-01/02 retain setup failures from a transitive production
+  fixture import and a missing legacy reference in the isolated source copy.
+  The passing reference uses authenticated JSON inputs and complete reference
+  dependencies, preserving its independence.
+
+  Component source coverage remains separate from tissue qualification.
+  Sodium passed [113 host/source checks](/mnt/workspaces/Cells/sodium-catalog-contracts-20261028-01/result.json)
+  and [two CPU JAX checks](/mnt/workspaces/Cells/sodium-catalog-contracts-20261028-02/result.json);
+  potassium passed [144 host/source checks](/mnt/workspaces/Cells/potassium-catalog-contracts-20261028-01/result.json)
+  and [two CPU JAX checks](/mnt/workspaces/Cells/potassium-catalog-contracts-20261028-02/result.json);
+  leaks passed [63 host/source checks](/mnt/workspaces/Cells/leak-catalog-contracts-20261028-01/result.json)
+  and [two CPU JAX checks](/mnt/workspaces/Cells/leak-catalog-contracts-20261028-02/result.json).
+  The coordinator verified **751/832/625 output hashes**, respectively.
+  Component clamps span twelve relevant gate time constants; native clocks,
+  retained singular source failures and coupled integration remain distinct.
+  Literal Kv3.3 slow recovery is a source-law property, not physiological data.
+- **Finite-pool calcium pumps implemented as a standalone component:**
+  Key Dev's [PMCA/ER adapter](docs/FINITE_CALCIUM_PUMPS.md) passed
+  [64 host checks](/mnt/workspaces/Cells/finite-calcium-contracts-20261028-03/result.json)
+  and [two CPU JAX checks](/mnt/workspaces/Cells/finite-calcium-contracts-20261028-04/result.json).
+  All **507 output hashes** and six final owned source hashes were verified.
+  It explicitly reconciles the source 1-mM standard state with the existing
+  1-M pool, with one calcium/ATP per signed formal source cycle. Its isolated
+  fuel depletion/recovery check holds calcium reservoirs at equal potentials
+  and spans **94.66/46.40 s**, twelve derived time constants per phase. RK4
+  power refinement orders are **4.023/4.011**, and finest energy residual
+  **1.71e-6 pJ** against the declared **1e-5-pJ** component budget. This is
+  finite-pool component evidence, not coupled closed calcium-tissue evidence.
+  The preserved earlier failures concern lint and NumPy route/world broadcast
+  expansion. Existing pump laws and tolerances stayed unchanged. The shared
+  tissue integration and four additional calcium components are recorded above.
+
+- **Longer coupled CPU response panel launched:** six matched, channel-free
+  salt/water/fuel cases run for **0.5 s**, with supply recovery or cotransport
+  release at **0.25 s**, under the
+  [response protocol](validation/tissue/surface_cotransport_water_response_protocol.json).
+  Rates and inventories are unchanged; each interval spans about nine initial
+  enabled-water time constants. The channel timestep ceiling now applies only
+  when channel populations exist; blocked/zero-permeability gates retain it,
+  and all other physical/domain bounds remain. The
+  [10 setup checks](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/host-02/result.json),
+  [compiled complete step/rejection check](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/compiled-01/result.json)
+  and [three-grid early-transient check](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/early-transient-01/result.json)
+  passed. Early energy residuals fall **9.74e-9 → 6.07e-10 → 3.78e-11 pJ**;
+  this 0.5-ms check does not qualify the half-second response. The compiled
+  check took **157 s**, peaking at **1.342 GiB charged memory**. The extended
+  [independent reference suite](/mnt/workspaces/Cells/cotransport-water-reference-20261028-01/checks-02/result.json)
+  passed **50 checks**, including seven-clock integration and saved failing
+  states. The
+  [detached launch](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/qualification-01/launch.json)
+  registered **nine sequential CPU groups**, controller **1115433**, CPU **6**,
+  **1,280 frozen source files**, a **4-GiB** charged-memory/individual-RSS ceiling,
+  **8-GiB** host reserve and **four-hour** total limit. Initial ETA is roughly
+  **one to two hours**, pending measured long-trajectory cost. Full trajectories,
+  per-field refinement and fresh-worker replay remain pending. Durable
+  status/result/failure artifacts stay in that directory; no automatic polling
+  or follow-up run is queued. New GPU qualifications remain deferred.
 
 - **Salt/water/finite-energy composition implemented on CPU:**
   [`resolved_cotransport_water@1`](docs/TISSUE_RETURN_CURRENT.md#cotransport-with-finite-energy-and-water)
@@ -42,16 +546,6 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inherited step checks; no physical equation or tolerance changed.
   The [scoped CPU summary](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/development-result.json)
   binds sources, all saved checks and the explicit remaining trajectory/GPU work.
-  Key Dev's seven-class pinned BETSE sodium catalog passed
-  [113 host/source checks](/mnt/workspaces/Cells/sodium-catalog-contracts-20261028-01/result.json)
-  in 52 seconds under its
-  [assignment](agent-work/cells-worker-01/workfiles/SODIUM_CATALOG_ASSIGNMENT.md).
-  The coordinator verified all 503 output hashes and the five executable,
-  reference, protocol and source-capture file hashes. Clamp/recovery checks span
-  twelve relevant gate time constants, with native clock refinement and
-  singular source outcomes retained separately. Two bounded CPU JAX checks
-  are cleared; their results and shared tissue integration remain pending.
-  Catalog equations, native clocks and coupled trajectories remain distinct.
 
 - **Active transport with water/volume passed complete CPU/L4 qualification
   at 13:59 UTC on 28 October.** The

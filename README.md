@@ -86,6 +86,9 @@ for source roles, existing evidence and the path to independent experimental tes
   channels, gap junctions and extracellular fields in selected model families.
 - **Cell chemistry:** calcium and IP3 signalling, internal compartments and
   chemical reactions.
+- **Fuel and cell volume:** finite ATP supplies and osmotic water flow, including
+  a [combined calcium/ER, ATP and water model](docs/TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water)
+  with [prescribed injury and resealing](docs/TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water).
 - **Regulatory cell state:** BITSEY-based isolated regulation and a bounded
   [two-cell regulatory/ionic model](docs/SOURCE_EMT_PAIR.md).
 - **Protein assembly:** stochastic cage formation, finite material pools,
@@ -118,8 +121,8 @@ hypothesis.
 
 The next directions are richer integrated cell physiology, broader BETSE/BITSEY
 verification, reproduction of the Forms assays, and Jupiter qualification from
-four to sixteen GPUs. Experimental calibration, energy metabolism, water,
-mechanics and organ models extend that programme. The organ
+four to sixteen GPUs. Experimental calibration, broader energy and water
+coupling, mechanics and organ models extend that programme. The organ
 illustration is schematic; it does not select a particular organ to build first.
 Detailed scope and priorities are recorded in [Progress](PROGRESS.md) and the
 [Roadmap](docs/ROADMAP.md).

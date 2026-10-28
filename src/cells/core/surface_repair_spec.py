@@ -11,6 +11,7 @@ from cells.core.specs import ConfigError, SimulationSpec, _fields
 from cells.processes.membrane_injury import LAW_ID
 
 MODEL_ID = "resolved_repair@1"
+MORRIS_LECAR_MODEL_ID = "resolved_repair@4"
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,15 @@ class Patch:
 @dataclass(frozen=True)
 class SurfaceRepairModel(base.SurfaceCalciumCavModel):
     injury_patches: tuple[Patch, ...]
+
+
+@dataclass(frozen=True)
+class SurfaceMorrisLecarRepairModel(SurfaceRepairModel, base.SurfaceCalciumMorrisLecarModel):
+    """Prescribed injury with the versioned 53-law owned-calcium catalog."""
+
+
+def model_id(model):
+    return MORRIS_LECAR_MODEL_ID if isinstance(model, SurfaceMorrisLecarRepairModel) else MODEL_ID
 
 
 @dataclass(frozen=True)
@@ -66,7 +76,12 @@ class Experiment(base.Experiment):
 def base_spec(spec):
     return replace(
         spec,
-        model=project(spec.model, base.SurfaceCalciumCavModel),
+        model=project(
+            spec.model,
+            base.SurfaceCalciumMorrisLecarModel
+            if isinstance(spec.model, SurfaceMorrisLecarRepairModel)
+            else base.SurfaceCalciumCavModel,
+        ),
         experiment=project(spec.experiment, base.Experiment),
     )
 
@@ -94,7 +109,7 @@ def accounting_spec(spec):
 
 def to_dict(spec):
     raw = base.to_dict(base_spec(spec))
-    raw["model"]["id"] = MODEL_ID
+    raw["model"]["id"] = model_id(spec.model)
     raw["model"]["injury_patches"] = [
         asdict(p)
         | {
@@ -114,10 +129,15 @@ def to_dict(spec):
 def parse(data):
     raw = deepcopy(data)
     m, e = raw["model"], raw["experiment"]
-    if m.get("id") != MODEL_ID or "injury_patches" not in m or "injury_controls" not in e:
+    if (
+        m.get("id") not in (MODEL_ID, MORRIS_LECAR_MODEL_ID)
+        or "injury_patches" not in m
+        or "injury_controls" not in e
+    ):
         raise ConfigError("Resolved repair requires explicit injury patches and controls")
+    morris_lecar = m["id"] == MORRIS_LECAR_MODEL_ID
     patches, controls = m.pop("injury_patches"), e.pop("injury_controls")
-    m["id"] = base.CAV_MODEL_ID
+    m["id"] = base.MORRIS_LECAR_MODEL_ID if morris_lecar else base.CAV_MODEL_ID
     prior = base.parse(raw)
     mids, ids = [p.id for p in prior.model.membranes], prior.model.species_ids
     # Initially restrict the lesion to the explicitly identified monovalent Na/K pair.
@@ -160,8 +180,9 @@ def parse(data):
                 Intervention(t, *(bounded(item[k], k, 0, 1) for k in ("injury", "resealing")))
             )
         schedules.append(tuple(changes))
+    model_type = SurfaceMorrisLecarRepairModel if morris_lecar else SurfaceRepairModel
     spec = SimulationSpec(
-        SurfaceRepairModel(**vars(prior.model), injury_patches=tuple(parsed)),
+        model_type(**vars(prior.model), injury_patches=tuple(parsed)),
         Experiment(**vars(prior.experiment), injury=tuple(schedules)),
         prior.execution,
     )

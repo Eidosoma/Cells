@@ -9,6 +9,7 @@ from copy import deepcopy
 from numbers import Real
 
 import numpy as np
+from scipy.integrate import solve_ivp
 
 from validation.tissue import surface_energy_water_reference as water_energy
 from validation.transport import cotransport_reference as transport
@@ -191,4 +192,183 @@ def evaluate(c, state, time):
             ).tolist(),
             cotransport_charge_rate_C_s=(1e-15 * F * (valence @ exchanged)).tolist(),
         ),
+    )
+
+
+class ReferenceIntegrationError(RuntimeError):
+    """Failed stage/solver evidence, retained for the calling run's failure artifact."""
+
+    def __init__(self, message, diagnostics):
+        super().__init__(message)
+        self.diagnostics = diagnostics
+
+
+def integrate(raw, *, max_step_s, refinement=1, method="DOP853"):
+    """Adaptively integrate all 31 fields, with explicitly bounded physical steps.
+
+    Each control interval uses its left endpoint's right-continuous controls,
+    including RHS evaluations at the right endpoint. States are continuous at
+    an event; observation potentials use the controls active at that event.
+
+    ``max_step_s`` is a case-specific accuracy cap, not an inherited channel
+    timestep. Refinement divides both this cap and all error tolerances. The
+    caller must choose a scientifically adequate duration and compare refined
+    trajectories. Evaluation extrema include rejected trial stages, not just
+    observations. No stage is clipped, projected or retried after domain failure.
+
+    Only DOP853 is currently qualified here. Naive Radau/BDF numerical Jacobians
+    perturb ionic amounts off the closed capacitor-component charge manifold;
+    stiff support needs independently validated conservative coordinates first.
+    """
+    if type(refinement) is not int or refinement < 1:
+        raise ValueError("Refinement must be a positive integer")
+    if (
+        isinstance(max_step_s, bool)
+        or not isinstance(max_step_s, Real)
+        or not np.isfinite(max_step_s)
+        or max_step_s <= 0
+    ):
+        raise ValueError("max_step_s must be an explicit finite positive physical step cap")
+    if method != "DOP853":
+        raise ValueError("Only DOP853 is validated; implicit solvers need conservative coordinates")
+    c, experiment = bind(raw), raw["experiment"]
+    end = experiment["end_time"]
+    times = np.asarray(experiment["observation_times"], dtype=float)
+    if (
+        not np.isfinite(end)
+        or end <= 0
+        or times.ndim != 1
+        or times.size == 0
+        or not np.isfinite(times).all()
+        or np.any(np.diff(times) <= 0)
+        or np.any((times < 0) | (times > end))
+    ):
+        raise ValueError("Require positive finite duration and ordered observations inside it")
+    events = sorted(
+        {
+            0.0,
+            end,
+            *(
+                row["time"]
+                for kind in CONTROL_KINDS
+                for group in experiment[kind + "_controls"]
+                for row in group["schedule"]
+            ),
+        }
+    )
+    if not np.isfinite(events).all() or events[0] != 0 or events[-1] != end:
+        raise ValueError("All seven control clocks must lie within the integration interval")
+    start = initial(c)
+    state = start.copy()
+    saved, segments = {0.0: start.copy()}, []
+    state_min, state_max = start.copy(), start.copy()
+    evaluations = 0
+    atols = flatten(
+        c,
+        {
+            name: np.full(shape, (1e-29 if name.endswith("_C") else 2e-14) / refinement)
+            for name, shape in c["shapes"].items()
+        },
+    )
+
+    def failure(message, time, held_time, value, phase):
+        # JSON-safe even when a failed trial itself contains a NaN or infinity.
+        def finite_values(array):
+            return [float(v) if np.isfinite(v) else str(v) for v in array]
+
+        return ReferenceIntegrationError(
+            message,
+            dict(
+                phase=phase,
+                time_s=float(time),
+                held_control_time_s=float(held_time),
+                state=finite_values(value),
+                initial_state=start.tolist(),
+                evaluation_state_minimum=finite_values(state_min),
+                evaluation_state_maximum=finite_values(state_max),
+                evaluations=evaluations,
+                completed_segments=deepcopy(segments),
+                event_times=events,
+                method=method,
+                max_step_s=float(max_step_s / refinement),
+                refinement=refinement,
+                automatic_retry=False,
+            ),
+        )
+
+    def rhs(time, value, held_time):
+        nonlocal evaluations
+        evaluations += 1
+        np.minimum(state_min, value, out=state_min)
+        np.maximum(state_max, value, out=state_max)
+        try:
+            slope = evaluate(c, value, held_time)[0]
+            if not np.isfinite(slope).all():
+                raise ValueError("Nonfinite independent reference derivative")
+            return slope
+        except Exception as error:
+            raise failure(
+                f"Reference RHS failed at t={time!r}: {error}", time, held_time, value, "rhs"
+            ) from error
+
+    for left, right in zip(events, events[1:], strict=False):
+        solution = solve_ivp(
+            lambda t, y, held=left: rhs(t, y, held),
+            (left, right),
+            state,
+            method=method,
+            rtol=2e-11 / refinement,
+            atol=atols,
+            max_step=max_step_s / refinement,
+            dense_output=True,
+        )
+        if not solution.success:
+            raise failure(solution.message, solution.t[-1], left, solution.y[:, -1], "solver")
+        steps = np.diff(solution.t)
+        segments.append(
+            dict(
+                left_s=float(left),
+                right_s=float(right),
+                held_control_time_s=float(left),
+                evaluations=int(solution.nfev),
+                accepted_steps=int(steps.size),
+                minimum_accepted_step_s=float(steps.min()),
+                maximum_accepted_step_s=float(steps.max()),
+            )
+        )
+        for time in times[(times > left) & (times <= right)]:
+            # Preserve the actual accepted endpoint, not its interpolated value.
+            saved[time] = solution.y[:, -1].copy() if time == right else solution.sol(time)
+        state = solution.y[:, -1].copy()
+    potentials = []
+    for time in times:
+        try:
+            potentials.append(evaluate(c, saved[time], time)[1])
+        except Exception as error:
+            raise failure(
+                f"Reference observation failed at t={time!r}: {error}",
+                time,
+                time,
+                saved[time],
+                "observation",
+            ) from error
+    return dict(
+        times=times.tolist(),
+        state=np.stack([saved[time] for time in times]),
+        potential_V=np.stack(potentials),
+        initial_state=start,
+        final_state=state,
+        evaluation_state_minimum=state_min,
+        evaluation_state_maximum=state_max,
+        evaluations=evaluations,
+        observation_evaluations=len(times),
+        accepted_steps=sum(segment["accepted_steps"] for segment in segments),
+        segments=segments,
+        refinement=refinement,
+        method="DOP853; full-node ion kinetics, finite pools, Decimal water and cotransport",
+        rtol=2e-11 / refinement,
+        amount_volume_energy_atol=2e-14 / refinement,
+        electrode_charge_atol_C=1e-29 / refinement,
+        max_step_s=float(max_step_s / refinement),
+        event_times=events,
     )

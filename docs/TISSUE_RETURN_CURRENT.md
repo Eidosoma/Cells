@@ -1053,6 +1053,109 @@ validation. Static/native-clock CaV3.1 branch checks do not qualify adaptive
 event localization in coupled threshold-crossing trajectories. Assembly remains
 a one-way hypothesis, and multi-GPU execution requires its own qualification.
 
+## Expanded sodium, potassium and leak catalog
+
+`resolved_tissue@8` makes **35 named channel laws** available in ordinary
+resolved tissue. It retains the previous 18 Kv1/Kir/NaV1.2/HCN/CaV laws and
+adds the following source-derived populations:
+
+| Component guide | Added laws |
+| --- | --- |
+| [Sodium catalog](SODIUM_CHANNEL_CATALOG.md) | NaV1.3, NavRat2, NavRat1, NavRat3, NaLeak and persistent NaV1.6 |
+| [Potassium catalog](POTASSIUM_CHANNEL_CATALOG.md) | Kv2.1/2.2, Kv3.1/3.2/3.3/3.4, K_Fast and KLeak |
+| [Chloride and mixed-cation leaks](LEAK_CHANNEL_CATALOG.md) | ClLeak, CatLeak with Na/K/Ca weights 1/1/0, and CatLeak2 with weights 1/1/1 |
+
+The [CPU example](../configs/resolved_catalog_tissue.json) has 39 populations
+on four membrane patches belonging to two cells. Each population has one
+availability control, two retained intrinsic gates and an explicit ordered
+species/permeability declaration. All its species routes use that shared gate
+opening and control, with material, charge and dissipation accumulated once
+at their existing owners. Blocking a population stops transport while its
+intrinsic gates continue to evolve. Always-open leaks retain their source
+auxiliary clocks, and CatLeak's declared calcium route remains exactly zero.
+
+The complete state still has 19 fields; channel transfer and heat retain
+species-by-population axes. A distinct model/layout identity protects existing
+checkpoints and prevents changing channel law during a continuation. Older
+models retain their original catalogs and equations. Shared code zero remains
+Kv1.5; inactive padding has a separate mask and zero controls/state.
+
+The domain remains **−120 to +60 mV at 298.15 K**, with the inherited **1.25-us
+maximum step** whenever channel populations are present. Source singularities,
+regularized limits and unusual constants are documented per component.
+In particular, the literal Kv3.3 recovery law can require days of model time
+for a twelve-time-constant clamp. Its preservation is source correspondence,
+not evidence of realistic physiological recovery.
+
+[Integration checks](../tests/unit/test_surface_catalog.py) compare full
+tissue derivatives against an
+[independent reference](../validation/tissue/surface_kinetic_reference.py),
+including multiple owners, reordered species/populations, controls, padding,
+old-model reductions and complete snapshots. An early 50-us trajectory checks
+coupled numerical wiring only. Component clamp/recovery checks cover their
+declared gate time scales separately. Current results and failed evidence live
+in [Progress](../PROGRESS.md).
+
+Longer coupled trajectories, timestep/reference refinement, complete resumed
+histories and GPU execution require separate qualification. The owned
+calcium/ER and assembly composition is described below; finite fuel, water,
+repair and mobile-population models retain their existing catalogs.
+GPU-ready array laws and offline world planning do not establish multi-GPU
+execution or biological calibration.
+
+### Expanded catalog with owned calcium and assembly
+
+`resolved_calcium@7` composes the 35-law catalog with each cell's existing
+chemical cytosol/ER, buffering, IP3-controlled release, PMCA and NCX. Its nested
+ionic identity is `resolved_tissue@8`. The
+[ordinary CPU example](../configs/resolved_calcium_catalog_tissue.json) and
+[assembly example](../configs/assembly_resolved_calcium_catalog_tissue.json)
+retain 39 shared populations across two cells and four patches, alongside
+separately declared dedicated CaV1.2 routes. These are manufactured inputs;
+they do not describe a fitted tissue.
+
+Every shared route reads the current **free cytosolic ion amount** from its
+chemical owner. Transport changes that same inventory and the whole-cell
+exchange ledger once. Internal binding or ER exchange changes available free
+calcium without charging the plasma capacitor. CatLeak2 can transport calcium;
+CatLeak's explicit zero-calcium weight remains zero. The separately configured
+dedicated CaV1.2 routes have their own controls and ledgers; the shared catalog
+does not implicitly create another copy of them.
+
+The state retains **34 fields**, including chemical inventories, reaction
+extents, ER and plasma transfer, gates, heat and maintained-source work.
+Complete snapshots preserve the new layout identity, and branches cannot
+change a channel law or population definition. The prior `resolved_calcium@6`
+model retains its restricted catalog. Species-route heat must remain monotone
+individually, including when total heat across routes would hide a decrease.
+
+Assembly's existing cell-owner mapping scales all shared populations belonging
+to that cell, using one availability per population across its species routes.
+Gate clocks continue while conductance is blocked. Dedicated calcium channels
+keep their separately scheduled controls. This remains one-way coupling from
+protein assembly to conductance; calcium and fuel do not yet change assembly
+rates or protein pools. Reports retain world/species/population axes, calcium
+and IP3 owners, and reject missing route metadata. Ordinary and assembly
+checkpoints use their complete existing formats.
+
+The [integration tests](../tests/unit/test_surface_calcium_catalog.py) check
+full derivatives, binding/ER redistribution, owner-local assembly control,
+conservation, strict domains and checkpoint restoration. The existing
+[independent calcium reference](../validation/tissue/surface_calcium_reference.py)
+already composes the expanded ionic equations; its new isolated checks consume
+frozen JSON inputs without production imports. Initial stages and an early
+50-us coupled trajectory establish scoped wiring and numerical consistency.
+They do not establish slow-gate or ER relaxation, stochastic assembly histories,
+long coupled stability, GPU agreement or measured biology. Those qualifications
+remain separate, with results recorded in [Progress](../PROGRESS.md).
+
+The inherited **298.15 K**, **−120 to +60 mV**, **1.25-us maximum step**,
+finite exterior and **1e-9-pJ energy tolerance** remain unchanged. ATP/ADP/Pi
+are maintained parameters in this model. The
+[standalone finite-pool adapter](FINITE_CALCIUM_PUMPS.md) reconciles calcium-pump
+and Na/K-pool standard states explicitly; its composition into this model
+remains separate work.
+
 ## Fixed-geometry injury and prescribed resealing
 
 `resolved_repair@1` composes the shared CaV/Na/K/HCN catalog and owned
@@ -1797,6 +1900,10 @@ the passive routes, channels and pumps. Water, baseline ionic, shared-channel,
 pump-cycle and metabolic-work records remain separate. The complete state has
 **23 fields**. Unscaled channel laws retain **298.15 K** and their existing
 **1.25-us** maximum RK4 step; the water relaxation bound also applies.
+The channel-family step ceiling applies whenever channel populations are
+present, including blocked populations whose gates still evolve. An empty
+channel list has no channel-gate ceiling; ionic, junction, pump, water and
+other applicable bounds and strict stage-domain checks remain in force.
 
 The example includes Kv1.5, HCN4 and CaV1.2 populations. Calcium is an ordinary
 mobile ion here; this family does not provide owned ER stores, calcium buffers
@@ -1891,3 +1998,542 @@ belong in [Progress](../PROGRESS.md). These checks establish component and
 initial integration behavior. Coupled settling, long-time stability, full
 restart trajectories and GPU execution require appropriately long comparisons,
 refinement and complete state evidence before those claims are made.
+
+The [CPU response protocol](../validation/tissue/surface_cotransport_water_response_protocol.json)
+extends this check to six matched, channel-free, half-second trajectories.
+Fuel supply, cotransport and water availability vary one family at a time;
+recovery/release occurs at 0.25 seconds. Rates and inventories are unchanged
+from the manufactured fixture. Each interval spans about nine initial
+enabled-water relaxation times. Actual late rates are recorded, because elapsed
+time alone does not establish equilibrium. The independent reference segments
+all seven clocks and keeps all 31 fields; refinement uses explicit physical
+observables, alongside full-state accuracy and complete saved-history restart.
+This panel does not qualify channel recovery, physiological parameter values
+or GPU execution. Its result belongs in Progress.
+
+### Shared finite energy with owned calcium and assembly
+
+The [finite-calcium example](../configs/resolved_calcium_energy_tissue.json)
+selects `resolved_calcium_energy@1`, combining the 35-law shared catalog and
+owned calcium/ER chemistry with one ATP/ADP/Pi pool per cell. The
+[assembly example](../configs/assembly_resolved_calcium_energy_tissue.json)
+adds the existing one-way assembly/channel control. Protein pools remain
+separate; this does not assign ATP costs to protein assembly.
+
+All Na/K, PMCA and ER pump routes refer explicitly to their own cytosol's
+`energy_pool`. Each stage gathers its current substrates, computes each pump
+rate once, and scatters the signed Na/K + PMCA + ER cycles into that pool once.
+Hydrolysis consumes ATP and makes ADP + Pi; reverse cycles synthesize ATP.
+NCX exchanges ions without a direct ATP reaction. Multiple patches and supply
+ports may share an owner, but different cells do not share fuel implicitly.
+ATP/ADP/Pi cannot also be declared as chemical species in this composition.
+
+The [finite calcium adapter](FINITE_CALCIUM_PUMPS.md) preserves the named
+positive-domain source equations and explicitly converts the pool's canonical
+1-M standard energy for the calcium laws' numeric-mM quotient:
+`delta_g0_mM = delta_g0_M - R*T*ln(1000)`. A shared pool therefore supplies the
+same hydrolysis free energy to all three pump families. This is a new model
+identity, not an assertion that different old maintained-reservoir declarations
+describe the same fuel. The ER law still moves **one Ca per formal ATP cycle**;
+it is not a two-Ca SERCA/proton model.
+
+The complete state has **38 fields**. The existing three pump-work histories
+remain internal transfer diagnostics. The combined energy balance includes
+ionic/chemical, plasma/ER capacitor and finite-pool free energy, all transport
+and regeneration heat, and external regeneration supply once. The former
+constant-drive-times-cycles checks are replaced by the integrated owner-local
+identity `pool free-energy change + pump work + regeneration heat - supply = 0`.
+The total energy tolerance remains **1e-9 pJ**; finite-pool material tolerance
+is **2e-12 fmol**. Adenylate and phosphorus remain conserved independently in
+every owner. Geometry/volumes are fixed and the pools are neutral transformed
+species with buffered pH/Mg/solvent; no mitochondrial metabolism is implied.
+
+The full control clock includes regeneration-only boundaries. Strict positive
+pool, calcium, affinity and padding checks apply even to blocked pumps. To
+retain a conservative calcium timestep bound as fuel changes, let `A` and `P`
+be the owner's conserved adenylate and phosphorus concentrations. Forward ATP
+saturation is bounded by `A/(Km_ATP + A)` and the reverse coefficient by
+`ADP*Pi/(Km_ATP + ATP) <= A*P/Km_ATP`. An auxiliary maintained-law parameter
+set attains these upper coefficients for the existing calcium/chemistry loss
+bound; it is not a realizable pool state. The initial gross-turnover bound and
+all existing gate ceilings also apply. Exhaustion rejects a trial; it is never
+clipped or repaired into a passing trajectory.
+
+Independent references check full stages, owner routing, reversal, work and
+supply. CPU trajectory, checkpoint and offline world-routing evidence is in
+[Progress](../PROGRESS.md). A 50-us coupled check establishes early interaction
+and a supply-control boundary; it cannot establish depletion, recovery, slow
+channel relaxation, native whole-BETSE correspondence or GPU qualification.
+The component's longer clamped-fuel tests remain separate evidence. Coupling
+this model to water, mobile repair routes and mitochondrial chemistry remains
+future work.
+
+### Extended 39-law channel catalog
+
+Four further pinned calcium laws join the shared population catalog:
+`Ca_L2`, `Ca_L3`, regularized `Cav_G` and `CaLeak`. The
+[component guide](CALCIUM_CHANNEL_EXTRAS.md) records their equations, native
+clocks, source failures and independent temporal checks. Each new population
+transports only calcium with relative permeability one, through the same
+electrochemical transport and owner ledgers as the existing catalog.
+
+| Composition | New identity / example | Complete state fields |
+| --- | --- | ---: |
+| Ionic tissue | [`resolved_tissue@9`](../configs/resolved_catalog_v2_ionic.json) | 19 |
+| Owned calcium, ER and IP3 | [`resolved_calcium@8`](../configs/resolved_catalog_v2_calcium.json) | 34 |
+| Shared finite Na/K, PMCA and ER fuel | [`resolved_calcium_energy@2`](../configs/resolved_catalog_v2_energy.json) | 38 |
+
+The preceding `@8`, `@7` and `@1` identities, respectively, retain their
+35-law catalogs and reject these four added laws. Codes 0–34 retain their
+meanings; codes 35–38 select the new calcium laws. Tissue padding still uses
+an inactive slot with code zero. Distinct layouts preserve this choice through
+compiled execution and snapshots; a model-version change is not a restart.
+
+Ca_L3 retains its native −15-mV shift. Cav_G uses the analytic activation-rate
+limit **0.209/ms** at −27 mV, without shifting the input voltage or claiming
+the native singular calculation succeeds. CaLeak remains always open before
+availability is applied, while its auxiliary gates relax on **one-second**
+clocks. Blocking or zero permeability stops transfer and leaves those clocks
+running. Invalid gates and absent species routes remain checked while blocked.
+
+In the owned models, transport reads current **free cytosolic calcium** and
+updates that chemical owner exactly once. Channel transport does not directly
+consume ATP; its concentration changes can affect subsequent pump demand.
+The existing dedicated CaV routes, ER and finite-fuel accounting keep their
+meaning. No new calcium store, ligand law, gating energy or temperature fit
+is introduced.
+
+Both the [calcium assembly](../configs/assembly_catalog_v2_calcium.json) and
+[finite-fuel assembly](../configs/assembly_catalog_v2_energy.json) examples
+apply cell-owned assembly controls to the shared channels. Separate protein
+pools and regeneration controls remain explicit. Reports and complete
+checkpoints retain calcium, channel and fuel ownership.
+
+[Progress](../PROGRESS.md) links the full-stage CPU/reference checks,
+two-world compiled checks, short coupled trajectory and offline 1/4/16-GPU
+plans. Gate-component clamps cover their own relaxation time scales; the
+50-us coupled trajectory checks early feedback and separate channel/supply
+boundaries. Longer coupled relaxation, stochastic assembly histories, GPU
+performance and experimental calibration require separate evidence.
+
+### Calcium-sensitive potassium with the shared catalog
+
+The [legacy calcium-sensitive potassium component](CALCIUM_ACTIVATED_POTASSIUM.md)
+now composes with the 39 shared channel laws. It evaluates the pinned
+`cagPotassium` equation from each patch owner's **current free cytosolic Ca
+concentration** and the same-stage membrane voltage. It transfers K+, with
+relative permeability one. Calcium is sensed without being consumed; channel
+transport has no direct ATP demand. Existing calcium pumps can respond to the
+resulting electrical and concentration changes through their usual coupling.
+
+| Composition | Identity / example | Complete state fields |
+| --- | --- | ---: |
+| Ionic tissue | [`resolved_tissue@10`](../configs/resolved_calcium_activated_ionic.json) | 19 |
+| Owned calcium, ER and IP3 | [`resolved_calcium@9`](../configs/resolved_calcium_activated_calcium.json) | 34 |
+| Owned calcium and shared finite fuel | [`resolved_calcium_energy@3`](../configs/resolved_calcium_activated_energy.json) | 38 |
+
+The new law has **no gate state or relaxation clock**. Its declaration uses
+`initial_gate: []`. The common packed arrays reserve two zero entries for this
+population; both entries and their derivatives remain exactly zero. Nonzero
+values are rejected even when the channel is blocked. Target/tau readouts use
+zero to mark absent gates, never an instruction to integrate a zero-time
+relaxation law. Instantaneous-only populations add no gate timestep ceiling;
+the other physical transport and reaction step bounds still apply.
+
+The law requires a declared Ca species with valence +2 and uses the owner's
+free-ion amount divided by its volume. Bound calcium, ER calcium, total calcium
+and outside calcium are not direct sensor inputs. The complete ionic model
+still requires positive free-ion concentrations for its chemical potentials,
+although the standalone scalar opening also defines a zero-calcium limit.
+Mixed-catalog temperature remains 298.15 K; the native numeric-mM concentration
+scale remains explicit in the law name. No additional calcium, gating-energy
+or fuel inventory is introduced.
+
+Code 39 identifies this law in the new models. The previous @9/@8/@2 models
+retain their 39-law catalogs and reject it. These equations are a composition
+of a **legacy source function**, for which no active pinned call site was
+found, with Cells' conservative transport. They are not a fitted BK/SK channel
+or proof of complete native BETSE tissue behavior.
+
+The [calcium assembly](../configs/assembly_calcium_activated_calcium.json) and
+[finite-fuel assembly](../configs/assembly_calcium_activated_energy.json)
+examples retain cell-owned channel controls, separate protein pools, reports
+and complete checkpoints. [Progress](../PROGRESS.md) records CPU comparisons
+and offline independent-world planning through 16 GPUs. Short coupled checks
+test wiring and control boundaries; longer recovery histories and GPU
+qualification require separate evidence.
+
+### Morris-Lecar channels with the shared catalog
+
+The [thirteen pinned Morris–Lecar laws](MORRIS_LECAR_CHANNELS.md) extend the
+catalog to **53 named laws**, with 60 populations in the examples. Five have
+one evolving activation gate; eight calculate their opening directly from the
+current membrane voltage. BETSE's chemistry network has an active call path
+for this family. Component source correspondence remains distinct from a
+complete native tissue comparison.
+
+| Composition | Identity / example | Complete state fields |
+| --- | --- | ---: |
+| Ionic tissue | [`resolved_tissue@11`](../configs/resolved_morris_lecar_ionic.json) | 19 |
+| Owned calcium, ER and IP3 | [`resolved_calcium@10`](../configs/resolved_morris_lecar_calcium.json) | 34 |
+| Owned calcium and shared finite fuel | [`resolved_calcium_energy@4`](../configs/resolved_morris_lecar_energy.json) | 38 |
+
+Codes 40–44 declare `initial_gate: [m]`; codes 45–52 declare
+`initial_gate: []`. The shared two-row gate array keeps every absent entry
+exactly zero, including h for the five dynamic laws and both entries for the
+eight instantaneous laws. Complete checkpoints and trial-state validation
+enforce this contract even when a population is blocked. The previous model
+identities retain their 35-, 39- or 40-law catalogs and state declarations.
+
+Each dynamic law uses its own physical clock, including the 50-fold slower
+Kv1p5S rate. Availability and permeability affect transport without stopping
+the intrinsic gate clock. Instantaneous opening reads the voltage at each
+integration stage; no relaxation state or synthetic time constant is added.
+The gate-step bound uses each dynamic ML law's minimum tau over its declared
+voltage domain. Instantaneous-only catalogs add no gate-step bound. Older
+two-gate populations retain their existing bounds, and all other physical
+transport/reaction bounds still apply.
+
+The four Ca laws transfer free calcium through the existing owner. Nav
+transfers sodium; the K laws transfer potassium. Each HCN population uses a
+single opening/control for its K/Na routes with relative permeabilities
+1/.2 and **no calcium route**. Its source target increases with voltage; the
+formula is preserved explicitly rather than refitted. These ML gates have no
+direct calcium, temperature, ligand or ATP input. The earlier calcium-sensitive
+potassium law still reads current owner-local free calcium, and existing
+pumps still couple transport to finite fuel. No duplicate calcium or fuel
+inventory is introduced.
+
+The [calcium assembly](../configs/assembly_morris_lecar_calcium.json) and
+[finite-fuel assembly](../configs/assembly_morris_lecar_energy.json) examples
+retain owner-specific controls, reports and full checkpoints. Assembly
+regulation remains one-way. [Progress](../PROGRESS.md) records the independent
+reference, CPU integration and offline 1/4/16-GPU planning evidence.
+
+Component clamps cover twelve effective time constants in each activation
+and recovery phase; instantaneous laws receive direct voltage steps. The
+separate 50-us coupled check exercises early electrical/calcium/fuel feedback,
+dynamic and instantaneous channel controls, a supply-only boundary and exact
+complete final-snapshot restoration. That short history does not establish
+coupled settling or long-term recovery. Longer coupled histories, stochastic
+assembly, GPU execution and experimental calibration remain separate
+qualifications. The water and prescribed-repair extensions below each have
+their own scope; the joint water/calcium/fuel/repair composition is described
+[below](#prescribed-repair-with-owned-calcium-finite-fuel-and-water).
+
+### HCN leak and fixed cAMP variants
+
+The **56-law** catalog adds three pinned BETSE variants to the previous 53
+laws. The compositions are `resolved_tissue@12` (19 fields),
+`resolved_calcium@11` (34 fields), and `resolved_calcium_energy@5` (38 fields).
+The latter two retain owned calcium/ER/IP3 and, for `@5`, shared finite ATP.
+All previous identities, including the 53-law water and repair compositions,
+retain their declared catalogs. Qualification status and evidence belong in
+[Progress](../PROGRESS.md).
+
+Examples: [ionic tissue](../configs/resolved_hcn_extra_ionic.json),
+[owned calcium](../configs/resolved_hcn_extra_calcium.json),
+[shared finite fuel](../configs/resolved_hcn_extra_energy.json),
+[calcium with assembly control](../configs/assembly_hcn_extra_calcium.json),
+and [finite fuel with assembly control](../configs/assembly_hcn_extra_energy.json).
+The full examples contain 63 channel populations across the 56 laws.
+They specify 2-ms histories. The scoped coupled CPU qualification uses the
+separate 50-us fixture below; the full example horizons need their own runs.
+
+The correspondence is to
+[BETSE 1.5.0 `vg_funny.py`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/channels/vg_funny.py#L291).
+Voltages below are effective midpoints after the source input shift; the
+activation target is `1 / (1 + exp((V - midpoint) / slope))`.
+The [source protocol](../validation/channels/hcn_extra_protocol.json),
+[independent equations](../validation/channels/hcn_extra_reference.py) and
+[native capture](../validation/betse/hcn_extra_native.py) preserve initialization,
+native backward Euler and continuous relaxation as separate contracts.
+
+| Native class / Cells law | Initialization / update midpoint | Slope / activation time constant | Relative Na/K/Ca permeability | Cells state |
+| --- | --- | --- | --- | --- |
+| `HCNLeak` / `betse_hcn_leak_open@1` | Opening always 1 | No physical gate clock | .33 / 1 / .05 | `initial_gate: []` |
+| `HCN2_cAMP` / `betse_hcn2_camp_m@1` | −79 / −79 mV | 6.2 mV / 184 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
+| `HCN4_cAMP` / `betse_hcn4_camp_m@1` | **−80 / −76 mV** | 9.6 mV / 461 ms | .2 / 1 / .05 | `initial_gate: [m, h]` |
+
+The cAMP variants retain the source's unused h gate, with target 1 and a
+1-ms relaxation time; opening depends only on m. HCNLeak's native m/h
+bookkeeping has powers zero and does not affect transport. Cells represents
+that leak without dynamic gate state and requires both packed slots to remain
+exactly zero, including while blocked. This representational difference is
+explicit in the comparison with native execution.
+
+HCN4_cAMP initializes using a −20-mV input shift and updates using −24 mV.
+The component's `initial_gates` helper preserves the source initialization;
+model definitions still provide explicit initial gates. Initial gates must
+not silently be replaced by the update target. These are **fixed cAMP-shift
+variants**, not dynamic ligand concentrations or binding kinetics.
+
+One opening and availability control drives all three ion routes. Calcium
+uses the actual free-cytosol owner in the calcium models. Channel transport
+has no direct ATP cost; its effects can change the demand of the existing
+finite-fuel pumps. Intrinsic gate clocks continue when transport is blocked.
+Component clamps cover twelve activation time constants per phase. Separate
+short coupled histories test current-state feedback, controls, conservation
+and complete checkpoint restoration; they do not establish slow HCN settling
+in a tissue. Native update-clock comparisons, continuous integration, GPU
+execution and experimental calibration retain separate evidence scopes.
+
+### Shared channel catalog with compliant water
+
+[`resolved_water@3`](../configs/resolved_morris_lecar_water.json) combines the
+53-law channel catalog with conservative water flow and compliant compartment
+volumes. Its **23 complete state fields** retain the ionic state and four water
+fields: inside/outside volume increments, transferred water and dissipated
+water energy. The earlier `resolved_water@1` and `@2` definitions retain their
+catalogs and behavior.
+
+Each stage divides current free-ion amounts by **current owner volume** before
+evaluating passive transport, channels and the Na/K pump. The calcium-sensitive
+potassium law therefore responds to dilution or concentration of its free
+calcium sensor. Volume changes do not create an extra calcium inventory. The
+Morris–Lecar gates retain their voltage-only input, including one-state and
+instantaneous declarations; absent packed gates stay exactly zero.
+
+Water movement conserves total compartment volume. Its osmotic and elastic
+free-energy accounting remains separate from, and consistent with, ionic heat
+and maintained pump work. ATP/ADP/Pi here are maintained chemical support,
+not owned osmolytes. The existing finite-fuel/water model is a separate
+composition, now [also available with all 53 laws](#shared-channel-catalog-with-finite-fuel-and-water);
+this maintained-support version does not add owned ER, finite fuel or injury.
+
+All actual clocks constrain the timestep. Removing fast two-gate populations
+can relax the gate bound, but leaves water, transport and junction bounds in
+force. Blocking a dynamic channel does not stop its gate clock. A permanently
+zero hydraulic permeability permits no accumulated water transfer or heat on
+that route; a time-controlled closure may retain its earlier history.
+
+The [validation fixtures](../validation/tissue/morris_lecar_water_fixtures.py)
+exercise multiple cells and outside owners, the full 60-population catalog,
+changed volumes, sealed/blocked routes, empty and single-state catalogs,
+reordered declarations and separate water/channel/pump control boundaries.
+[Progress](../PROGRESS.md) records CPU comparisons, numerical checks and
+offline GPU planning. A water-only relaxation over twelve conservative time
+constants is separate from the short full-catalog coupling check; neither
+establishes long coupled recovery or biological calibration. Interfaces,
+capacitances and topology stay fixed. Evolving shape, solvent drag, general
+fluid fields and native BETSE evolving-volume correspondence remain outside
+this model.
+
+### Shared channel catalog with prescribed repair
+
+[`resolved_repair@4`](../configs/resolved_morris_lecar_repair.json) combines all
+53 channel laws with owned free cytosolic calcium, ER/IP3 and the existing
+prescribed patch injury/resealing law. Its **39 complete state fields** retain
+the 34-field calcium composition plus damage, accumulated opening/closure,
+injury ion transfer and injury heat. The earlier repair `@1` and mobile
+channel/pump repair `@2`/`@3` definitions keep their previous behavior.
+
+The additional lesion transfers only explicitly declared Na+ and K+ through
+the existing cell/outside owners. It uses the same-stage voltage and current
+free-ion amounts; calcium stays with its chemical owner. Damage changes the
+lesion's permeability, while channel controls and their intrinsic clocks keep
+their separate meanings. All zero-, one- and two-state channel declarations,
+including exact absent gate entries, remain enforced during injury and closure.
+
+The [assembly example](../configs/assembly_morris_lecar_repair.json) retains
+owner-specific channel modulation, injury controls, chemical inventories,
+reports and full checkpoints. Its assembly-to-channel regulation remains
+one-way. [Progress](../PROGRESS.md) records the independent comparisons and
+execution evidence. Separate scalar repair checks cover twelve time constants
+of the declared law; short coupled histories check injury/resealing boundaries
+and changing channel availability. They do not establish physiological repair
+times or long-term restoration of tissue function.
+
+This is fixed-geometry **prescribed resealing**, with maintained pump support.
+The model adds no autonomous repair controller, structural repair energy,
+shape change, topology change, moving channel populations or water dynamics.
+The expanded water and repair models are separate compositions. Native wound
+source limitations remain documented; this extension makes no claim to a
+working native BETSE wound trajectory or measured biological recovery.
+
+### Shared channel catalog with finite fuel and water
+
+[`resolved_energy@2`](../configs/resolved_morris_lecar_finite_energy.json) adds
+the 53-law catalog to the finite cellular ATP/ADP/phosphate model. Its **23
+complete state fields** retain ionic amounts, gates, transport and energy
+ledgers, finite pool increments, and regeneration cycles, heat and supplied
+work. [`resolved_energy_water@2`](../configs/resolved_morris_lecar_finite_water.json)
+adds compliant cell/outside volumes, water transfer and heat, and signed pool
+volume work, giving **28 complete fields**. Both earlier `@1` identities retain
+their previous channel catalog and equations.
+
+Each Na/K pump consumes or regenerates fuel in its explicitly named inside
+cell's pool. Distinct cells have distinct pools and supply ports; multiple
+membrane patches may share a cell's pool. Channels consume no ATP directly.
+Their ionic transport changes the load faced by pumps. Each stage evaluates
+the pump, regeneration port and channels with current amounts and, in the
+water composition, current volumes. The calcium-sensitive potassium sensor
+therefore responds to free-calcium dilution at the same stage as fuel dilution.
+This composition owns free ionic calcium but has no ER or bound-calcium store.
+
+The explicit `neutral_ideal_atp_adp_pi@1` convention counts ATP, ADP and phosphate
+as transformed neutral osmotic particles. Hydrolysis changes their particle
+count while conserving adenylate and phosphorus. Water moves volume rather
+than carrying these particles across the membrane. The pool's mixing energy
+is counted once. Signed pool volume work is an internal diagnostic; only
+declared regeneration supply is external fuel input. Buffered pH, magnesium
+and solvent remain assumptions of this transformed model.
+
+Zero-, one- and two-state channel contracts survive both compositions, including
+exact absent gate entries. Numerical guards retain actual gate clocks, gross
+fuel turnover and water relaxation limits independently. Removing a gate or
+blocking a route does not remove the other limits. Full snapshots retain
+every pool, water and channel field and the versioned layout.
+
+The [fixtures](../validation/tissue/morris_lecar_energy_water_fixtures.py) cover
+60 channel populations, multiple fuel owners, reordered and padded layouts,
+blocked routes, inhibited pumps, absent supply, and separate control clocks.
+[Progress](../PROGRESS.md) records current CPU and offline placement evidence.
+Short coupled histories establish early coupling and accounting; independent
+fuel and water relaxation checks are labelled separately. The
+[owned-ER/fuel/water composition](#owned-calcium-finite-fuel-and-compliant-water)
+is described below, followed by its prescribed-repair extension. Longer coupled
+recovery, GPU execution, evolving interfaces and biological parameter calibration
+remain separate work.
+
+### Owned calcium and ER with compliant cytosol
+
+[`resolved_calcium_water@1`](../configs/resolved_calcium_water.json) composes
+the 53-law channel catalog and owned calcium/ER/IP3 model with conservative
+plasma-membrane water movement. Its **38 complete fields** retain the parent
+34-field state plus cell/outside volume increments, water transfer and water
+heat. The required convention is
+`chemical_osmotic_coupling: ideal_all_cytosol_species_fixed_er@1`.
+
+The cell's water volume is its chemical **cytosol** volume. Every stage uses
+that same volume for free-ion concentrations, chemical reactions, plasma and
+ER transport, and IP3 activation. ER volume stays fixed; there is no ER water
+port. Cell volume here therefore does not mean the sum of independently
+changing cytosol and organelle volumes. Plasma/ER areas and capacitances,
+interfaces and tissue topology stay fixed.
+
+Each declared cytosolic chemical species contributes one ideal osmotic particle
+per molecule. Free calcium and free buffer are separate particles; a bound
+calcium-buffer complex counts once. The free-ion view used by the electrical
+solver adds no duplicate inventory or osmotic particles. Outside compartments
+count their owned free ions, and explicitly declared additional inert solutes
+are separate. Fixed electrical charge is not itself an osmolyte. Maintained
+ATP reservoirs are external chemical support, without an automatically owned
+cytosolic ATP/ADP/phosphate pool in this model.
+
+The joint energy balance owns chemical mixing, binding standard energies,
+plasma/ER capacitor energy, inert-solute mixing and compliance energy once.
+The parent balance at reference volumes receives the exact current-particle
+dilution correction, compliance energy and accumulated water heat. Maintained
+pump work remains explicit. Binding and IP3 conversions can change particle
+counts, so hydraulic timestep bounds use conserved chemical moieties rather
+than treating the initial number of particles as a permanent upper bound.
+Chemical loss bounds also use the declared minimum volumes.
+
+The [assembly example](../configs/assembly_calcium_water.json) preserves
+owner-specific channel control and complete checkpoints. Reports include
+current cytosol/outside volumes, fixed ER volume, current free-ion and IP3
+concentrations, and chemical particle counts. Assembly regulation remains
+one-way. [Progress](../PROGRESS.md) records the independent equations,
+directional energy checks, execution evidence and remaining qualifications.
+Isolated water relaxation with frozen chemical particles is distinct from
+coupled calcium/water histories. Finite cellular fuel joins this model in the
+composition below. Injury, organelle water exchange, evolving shape, fluid
+mechanics and biological calibration remain further work; this model does not
+establish native BETSE volume trajectory correspondence.
+
+### Owned calcium, finite fuel and compliant water
+
+[`resolved_calcium_energy_water@1`](../configs/resolved_calcium_energy_water.json)
+combines owned calcium/ER/IP3 chemistry, all 53 channel laws, finite ATP/ADP/Pi
+and conservative plasma-membrane water flow. Its **43 complete fields** are
+the 38-field finite-calcium state plus cell/outside volume increments, water
+transfer and heat, and signed pool-volume work. The earlier model identities
+retain their definitions.
+
+Each cell has one chemical cytosol and one finite fuel pool at the **same current
+volume**. At every numerical stage, Na/K, plasma-calcium and ER pumps read that
+pool's current concentrations; chemical reactions, channels, exchangers and
+IP3 activation use the current cytosol volume. ER volume stays fixed. Interface
+areas, capacitances and topology also stay fixed. ATP/ADP/Pi remain transformed
+neutral species with buffered pH/Mg/solvent; they cannot also appear as chemical
+store species.
+
+Both osmotic choices are explicit in the configuration:
+`ideal_all_cytosol_species_fixed_er@1` and `neutral_ideal_atp_adp_pi@1`.
+Each distinct cytosolic chemical species counts once, including bound complexes
+and IP3 precursor/sink species. Three additional rows count ATP, ADP and Pi.
+Exterior free ions and explicitly declared inert solute complete the water law.
+The ionic view of cytosolic calcium contributes no second particle inventory.
+
+The joint energy balance owns chemical and fuel mixing, binding standard
+energies, plasma/ER capacitor energy, inert-solute mixing and compliance energy
+once. Its exact dilution correction uses **current amounts**, retaining the
+cross term when chemistry, fuel and volume change together. Pump work is an
+internal transfer between the fuel pool and transport; declared regeneration
+supplies external energy. The signed `pool_volume_work_pJ` diagnostic records
+the pool's volume derivative times water movement. It enters the internal pool
+identity and adds no second energy term to the whole system.
+
+Chemical loss bounds use the minimum permitted cytosol/outside volumes and
+conserved fuel bounds. The water relaxation bound includes conserved chemical
+moieties and each pool's phosphorus-minus-adenylate bound, since hydrolysis can
+increase particle count. Every channel, reaction, supply and water event retains
+its exact accepted boundary. Exhausted fuel, invalid calcium, absent gate states,
+invalid padding and unsupported water/work histories remain rejected even when
+routes are blocked.
+
+The [assembly example](../configs/assembly_calcium_energy_water.json) preserves
+complete checkpoints and owner-specific channel control. Reports retain current
+volumes, chemical and fuel concentrations, total cytosolic solute particles,
+fuel particles, pool-volume work and regeneration ledgers. Inert solute is
+additional to the reported cytosolic particle count. Assembly regulation remains
+one-way; no metabolic assembly cost or protein exchange is implied.
+
+[Progress](../PROGRESS.md) records the independent equations, endpoint-energy
+checks, CPU execution and offline placement evidence. Short complete trajectories
+and reduced physical-time relaxation tests support different claims. Longer
+coupled recovery, stochastic assembly histories,
+GPU qualification and experimental calibration remain separate work. This
+synthetic composition does not establish native whole-tissue BETSE equivalence.
+
+### Prescribed repair with owned calcium, finite fuel and water
+
+[`resolved_calcium_energy_water_repair@1`](../configs/resolved_calcium_energy_water_repair.json)
+extends the joint model above with damage, cumulative opening and closure,
+species-resolved lesion transfer and lesion heat: **48 complete state fields**.
+Each membrane patch has an explicit `prescribed_patch_injury_resealing@1`
+declaration and independent injury/resealing controls. Na/K permeability is
+multiplied by its current damage fraction; other lesion species are rejected.
+
+Leak flux uses the current chemical cytosol and exterior concentrations and
+the shared membrane voltage. It updates the existing free-ion/chemical owners
+and capacitor charge, with a separate outward-positive transfer ledger and
+nonnegative dissipated heat. Total material and energy checks fold those
+ledgers into the parent accounting once. Observations retain the separate
+lesion fields while reporting the total membrane flux and joint energy balance.
+Swelling changes leakage concentrations, and changed ion inventories feed the
+existing water and pump laws at subsequent stages.
+
+Damage follows the declared opening/closure rates. Structural resealing has
+no modelled ATP cost and is not controlled by calcium, ATP or assembly; the
+finite fuel pools still supply the existing ion pumps. Closing a lesion does
+not reset any ion, chemical, gate, fuel or water state. ER volume, membrane
+areas, capacitances and topology remain fixed. This is a synthetic prescribed
+injury model, not native BETSE cutting or autonomous biological repair.
+
+The timestep checks retain all channel, chemical, fuel, water and injury
+clocks. They also bound injury opening/closure and combined transport losses
+at the minimum permitted volumes, with steps no larger than 0.625 us.
+Invalid damage histories, negative heat, unsupported lesion routes, depleted
+fuel and invalid volumes remain rejected under blocked controls.
+
+The [assembly example](../configs/assembly_calcium_energy_water_repair.json)
+keeps one-way channel availability control, full checkpoints, and separate
+injury, calcium, fuel and water ownership reports. The
+[independent reference](../validation/tissue/calcium_energy_water_repair_reference.py)
+compares the complete coupled state; separate scalar damage clocks test actual
+opening/resealing durations without claiming full-system recovery.
+[Progress](../PROGRESS.md) records development results and outstanding
+qualifications. Longer coupled recovery, stochastic assembly histories, GPU
+execution, changing topology and experimental validation require further evidence.

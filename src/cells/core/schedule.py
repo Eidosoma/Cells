@@ -25,8 +25,26 @@ from cells.core.specs import (
     SpatialChange,
     VoltageGatedChange,
 )
+from cells.core.surface_calcium_energy_spec import (
+    Control as SurfaceCalciumEnergyControl,
+)
+from cells.core.surface_calcium_energy_spec import (
+    SurfaceCalciumEnergyModel,
+)
+from cells.core.surface_calcium_energy_spec import (
+    initial_prior_spec as calcium_energy_prior,
+)
+from cells.core.surface_calcium_energy_water_repair_spec import Control as JointRepairControl
+from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
+from cells.core.surface_calcium_energy_water_repair_spec import base_spec as joint_repair_prior
+from cells.core.surface_calcium_energy_water_spec import Control as SurfaceCalciumEnergyWaterControl
+from cells.core.surface_calcium_energy_water_spec import SurfaceCalciumEnergyWaterModel
+from cells.core.surface_calcium_energy_water_spec import energy_spec as calcium_energy_water_prior
 from cells.core.surface_calcium_spec import Change as SurfaceCalciumChange
 from cells.core.surface_calcium_spec import ionic_spec as surface_ionic_spec
+from cells.core.surface_calcium_water_spec import Control as SurfaceCalciumWaterControl
+from cells.core.surface_calcium_water_spec import SurfaceCalciumWaterModel
+from cells.core.surface_calcium_water_spec import prior_spec as calcium_water_prior
 from cells.core.surface_cotransport_spec import Control as SurfaceCotransportControl
 from cells.core.surface_cotransport_spec import SurfaceCotransportModel
 from cells.core.surface_cotransport_spec import energy_spec as cotransport_energy_spec
@@ -152,6 +170,37 @@ def event_index(spec, time):
 
 def control_values(spec, times):
     changes = spec.experiment.changes
+    if isinstance(spec.model, SurfaceCalciumEnergyWaterRepairModel):
+        original = control_values(joint_repair_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        extra = []
+        for key in ("injury", "resealing"):
+            values = np.asarray([getattr(p, key) for p in changes], dtype=float)[indices]
+            padded = np.zeros((len(times), spec.execution.membrane_capacity))
+            padded[:, : len(spec.model.membranes)] = values
+            extra.append(padded)
+        return JointRepairControl(*original, *extra)
+    if isinstance(spec.model, SurfaceCalciumEnergyWaterModel):
+        original = control_values(calcium_energy_water_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return SurfaceCalciumEnergyWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceCalciumWaterModel):
+        original = control_values(calcium_water_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return SurfaceCalciumWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceCalciumEnergyModel):
+        original = control_values(calcium_energy_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.regeneration for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.regeneration_capacity))
+        padded[:, : len(spec.model.regeneration_ports)] = values
+        return SurfaceCalciumEnergyControl(*original, padded)
     if isinstance(spec.model, SurfaceCotransportWaterModel):
         original = control_values(cotransport_water_spec(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1

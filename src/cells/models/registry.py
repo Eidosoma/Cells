@@ -31,24 +31,47 @@ from cells.core.specs import (
     SpatialJunctionSpec,
     VoltageGatedSpec,
 )
+from cells.core.surface_calcium_energy_spec import (
+    SurfaceCalciumEnergyActivatedModel,
+    SurfaceCalciumEnergyCatalogModel,
+    SurfaceCalciumEnergyHCNExtraModel,
+    SurfaceCalciumEnergyModel,
+    SurfaceCalciumEnergyMorrisLecarModel,
+)
+from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
+from cells.core.surface_calcium_energy_water_spec import SurfaceCalciumEnergyWaterModel
 from cells.core.surface_calcium_spec import (
+    SurfaceCalciumActivatedCatalogModel,
+    SurfaceCalciumCatalogModel,
     SurfaceCalciumCavModel,
     SurfaceCalciumChannelModel,
+    SurfaceCalciumExtendedCatalogModel,
+    SurfaceCalciumHCNExtraModel,
     SurfaceCalciumHCNModel,
     SurfaceCalciumKv1Model,
     SurfaceCalciumModel,
+    SurfaceCalciumMorrisLecarModel,
     SurfaceCalciumSodiumModel,
 )
+from cells.core.surface_calcium_water_spec import SurfaceCalciumWaterModel
 from cells.core.surface_cotransport_spec import SurfaceCotransportModel
 from cells.core.surface_cotransport_water_spec import SurfaceCotransportWaterModel
-from cells.core.surface_energy_spec import SurfaceEnergyModel
-from cells.core.surface_energy_water_spec import SurfaceEnergyWaterModel
+from cells.core.surface_energy_spec import SurfaceEnergyModel, SurfaceEnergyMorrisLecarModel
+from cells.core.surface_energy_water_spec import (
+    SurfaceEnergyWaterModel,
+    SurfaceEnergyWaterMorrisLecarModel,
+)
 from cells.core.surface_kinetic_spec import (
+    SurfaceCalciumActivatedModel,
+    SurfaceCatalogModel,
     SurfaceCavModel,
     SurfaceChannelModel,
+    SurfaceExtendedCatalogModel,
+    SurfaceHCNExtraModel,
     SurfaceHCNModel,
     SurfaceKineticModel,
     SurfaceKv1Model,
+    SurfaceMorrisLecarModel,
     SurfaceSodiumModel,
 )
 from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel
@@ -56,9 +79,12 @@ from cells.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpRepairMo
 from cells.core.surface_mobile_pump_spec import SurfaceMobilePumpModel
 from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
 from cells.core.surface_redistribution_spec import SurfaceRedistributionModel
-from cells.core.surface_repair_spec import SurfaceRepairModel
+from cells.core.surface_repair_spec import SurfaceMorrisLecarRepairModel, SurfaceRepairModel
 from cells.core.surface_tissue_spec import SurfaceTissueModel
-from cells.core.surface_water_kinetic_spec import SurfaceWaterKineticModel
+from cells.core.surface_water_kinetic_spec import (
+    SurfaceWaterKineticModel,
+    SurfaceWaterMorrisLecarModel,
+)
 from cells.core.surface_water_spec import SurfaceWaterModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.core.tissue_spec import TissueModel
@@ -86,11 +112,13 @@ from cells.models import (
     spatial_extracellular,
     spatial_junction,
     surface_calcium,
+    surface_calcium_catalog,
     surface_calcium_cav,
     surface_calcium_channels,
     surface_calcium_hcn,
     surface_calcium_kv1,
     surface_calcium_sodium,
+    surface_catalog,
     surface_cav,
     surface_channels,
     surface_hcn,
@@ -121,14 +149,26 @@ def get_model(spec):
         from cells.models import surface_cotransport
 
         return surface_cotransport
+    if isinstance(spec, SurfaceEnergyWaterMorrisLecarModel):
+        from cells.models import surface_energy_water_morris_lecar
+
+        return surface_energy_water_morris_lecar
     if isinstance(spec, SurfaceEnergyWaterModel):
         from cells.models import surface_energy_water
 
         return surface_energy_water
+    if isinstance(spec, SurfaceEnergyMorrisLecarModel):
+        from cells.models import surface_energy_morris_lecar
+
+        return surface_energy_morris_lecar
     if isinstance(spec, SurfaceEnergyModel):
         from cells.models import surface_energy
 
         return surface_energy
+    if isinstance(spec, SurfaceWaterMorrisLecarModel):
+        from cells.models import surface_water_morris_lecar
+
+        return surface_water_morris_lecar
     if isinstance(spec, SurfaceWaterKineticModel):
         return surface_water_kinetic
     if isinstance(spec, SurfaceWaterModel):
@@ -147,8 +187,62 @@ def get_model(spec):
         return surface_mobile_pump_repair
     if isinstance(spec, SurfaceMobileRepairModel):
         return surface_mobile_repair
+    if isinstance(spec, SurfaceMorrisLecarRepairModel):
+        from cells.models import surface_repair_morris_lecar
+
+        return surface_repair_morris_lecar
     if isinstance(spec, SurfaceRepairModel):
         return surface_repair
+    if isinstance(spec, SurfaceCalciumEnergyWaterRepairModel):
+        from cells.models import surface_calcium_energy_water_repair
+
+        return surface_calcium_energy_water_repair
+    if isinstance(spec, SurfaceCalciumEnergyWaterModel):
+        from cells.models import surface_calcium_energy_water
+
+        return surface_calcium_energy_water
+    if isinstance(spec, SurfaceCalciumEnergyHCNExtraModel):
+        from cells.models import surface_calcium_energy_hcn_extra
+
+        return surface_calcium_energy_hcn_extra
+    if isinstance(spec, SurfaceCalciumEnergyMorrisLecarModel):
+        from cells.models import surface_calcium_energy_morris_lecar
+
+        return surface_calcium_energy_morris_lecar
+    if isinstance(spec, SurfaceCalciumEnergyActivatedModel):
+        from cells.models import surface_calcium_energy_activated
+
+        return surface_calcium_energy_activated
+    if isinstance(spec, SurfaceCalciumEnergyCatalogModel):
+        from cells.models import surface_calcium_energy_catalog
+
+        return surface_calcium_energy_catalog
+    if isinstance(spec, SurfaceCalciumEnergyModel):
+        from cells.models import surface_calcium_energy
+
+        return surface_calcium_energy
+    if isinstance(spec, SurfaceCalciumWaterModel):
+        from cells.models import surface_calcium_water
+
+        return surface_calcium_water
+    if isinstance(spec, SurfaceCalciumHCNExtraModel):
+        from cells.models import surface_calcium_hcn_extra
+
+        return surface_calcium_hcn_extra
+    if isinstance(spec, SurfaceCalciumMorrisLecarModel):
+        from cells.models import surface_calcium_morris_lecar
+
+        return surface_calcium_morris_lecar
+    if isinstance(spec, SurfaceCalciumActivatedCatalogModel):
+        from cells.models import surface_calcium_activated_catalog
+
+        return surface_calcium_activated_catalog
+    if isinstance(spec, SurfaceCalciumExtendedCatalogModel):
+        from cells.models import surface_calcium_catalog_v2
+
+        return surface_calcium_catalog_v2
+    if isinstance(spec, SurfaceCalciumCatalogModel):
+        return surface_calcium_catalog
     if isinstance(spec, SurfaceCalciumCavModel):
         return surface_calcium_cav
     if isinstance(spec, SurfaceCalciumKv1Model):
@@ -161,6 +255,24 @@ def get_model(spec):
         return surface_calcium_channels
     if isinstance(spec, SurfaceCalciumModel):
         return surface_calcium
+    if isinstance(spec, SurfaceHCNExtraModel):
+        from cells.models import surface_hcn_extra
+
+        return surface_hcn_extra
+    if isinstance(spec, SurfaceMorrisLecarModel):
+        from cells.models import surface_morris_lecar
+
+        return surface_morris_lecar
+    if isinstance(spec, SurfaceCalciumActivatedModel):
+        from cells.models import surface_calcium_activated
+
+        return surface_calcium_activated
+    if isinstance(spec, SurfaceExtendedCatalogModel):
+        from cells.models import surface_catalog_v2
+
+        return surface_catalog_v2
+    if isinstance(spec, SurfaceCatalogModel):
+        return surface_catalog
     if isinstance(spec, SurfaceCavModel):
         return surface_cav
     if isinstance(spec, SurfaceKv1Model):

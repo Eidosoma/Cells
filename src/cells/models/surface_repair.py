@@ -15,7 +15,8 @@ import numpy as np
 
 from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
-from cells.core.surface_repair_spec import MODEL_ID, accounting_spec, base_spec
+from cells.core.surface_repair_spec import MODEL_ID as MODEL_ID
+from cells.core.surface_repair_spec import accounting_spec, base_spec, model_id
 from cells.coupling.selective import selective_flux
 from cells.models import surface_calcium as base
 from cells.models import surface_calcium_cav as prior
@@ -46,6 +47,19 @@ LAYOUT_TYPE = NamedTuple(
         )
     ],
 )
+MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceMorrisLecarRepairLayout",
+    [
+        (k, object)
+        for k in (
+            *base.MORRIS_LECAR_LAYOUT_TYPE._fields,
+            "initial_damage",
+            "injury_rate",
+            "resealing_rate",
+            "injury_permeability",
+        )
+    ],
+)
 BATCH_CAPACITIES = prior.BATCH_CAPACITIES
 OBSERVER_ID = "resolved_injury_resealing_accepted_grid@1"
 OBSERVATION_SAMPLING = prior.OBSERVATION_SAMPLING
@@ -66,7 +80,12 @@ def base_state(state):
 
 
 def base_layout(p):
-    return prior.LAYOUT_TYPE(*(getattr(p, k) for k in prior.LAYOUT_TYPE._fields))
+    layout_type = (
+        base.MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(p, MORRIS_LECAR_LAYOUT_TYPE)
+        else prior.LAYOUT_TYPE
+    )
+    return layout_type(*(getattr(p, k) for k in layout_type._fields))
 
 
 def base_control(control):
@@ -102,6 +121,9 @@ def initial_values(spec):
             row.resealing_rate_per_s,
         )
         permeability[:, i] = row.permeability_m_per_s
+    layout_type = (
+        MORRIS_LECAR_LAYOUT_TYPE if isinstance(p, base.MORRIS_LECAR_LAYOUT_TYPE) else LAYOUT_TYPE
+    )
     return STATE_TYPE(
         *state,
         damage,
@@ -109,7 +131,7 @@ def initial_values(spec):
         np.zeros(nm),
         np.zeros_like(permeability),
         np.zeros_like(permeability),
-    ), LAYOUT_TYPE(*p, damage.copy(), injury, reseal, permeability)
+    ), layout_type(*p, damage.copy(), injury, reseal, permeability)
 
 
 def domain_valid(state, p, active, *, xp=jnp):
@@ -320,7 +342,10 @@ def check_values(state, spec, *, additional_transport=None):
 def observe_history(times, history, layout, requested, spec):
     from cells.core.schedule import control_values
 
-    p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
+    layout_type = (
+        MORRIS_LECAR_LAYOUT_TYPE if isinstance(layout, MORRIS_LECAR_LAYOUT_TYPE) else LAYOUT_TYPE
+    )
+    p = layout_type(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
     if any(t not in times for t in requested):
         raise ConfigError("Injury observations require accepted times")
@@ -386,7 +411,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 def summarize(history, diagnostics, spec):
     return prior.summarize(accounting_state(history), diagnostics, base_spec(spec)) | dict(
-        model=MODEL_ID,
+        model=model_id(spec.model),
         state_fields=list(STATE_TYPE._fields),
         injury_law=process.LAW_ID,
         injury_patch_ids=[p.membrane_id for p in spec.model.injury_patches],

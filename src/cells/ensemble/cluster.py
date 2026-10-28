@@ -5,6 +5,7 @@ import math
 import numpy as np
 
 from cells.assembly_cluster import MODEL_ID, engine
+from cells.assembly_cluster.finite_energy import accumulate as accumulate_finite_energy
 from cells.assembly_cluster.mobile_channels import accumulate as accumulate_mobile_channels
 from cells.assembly_cluster.mobile_pumps import accumulate as accumulate_mobile_pumps
 from cells.ensemble.coupled import load_checkpoint, write_checkpoint  # noqa: F401
@@ -56,9 +57,23 @@ def aggregate(rows):
                 "resolved_calcium@4",
                 "resolved_calcium@5",
                 "resolved_calcium@6",
+                "resolved_calcium@7",
+                "resolved_calcium@8",
+                "resolved_calcium@9",
+                "resolved_calcium@10",
+                "resolved_calcium@11",
+                "resolved_calcium_water@1",
+                "resolved_calcium_energy@1",
+                "resolved_calcium_energy@2",
+                "resolved_calcium_energy@3",
+                "resolved_calcium_energy@4",
+                "resolved_calcium_energy@5",
+                "resolved_calcium_energy_water@1",
+                "resolved_calcium_energy_water_repair@1",
                 "resolved_repair@1",
                 "resolved_repair@2",
                 "resolved_repair@3",
+                "resolved_repair@4",
             )
             and "ip3" not in row
         ):
@@ -70,9 +85,23 @@ def aggregate(rows):
             "resolved_calcium@4",
             "resolved_calcium@5",
             "resolved_calcium@6",
+            "resolved_calcium@7",
+            "resolved_calcium@8",
+            "resolved_calcium@9",
+            "resolved_calcium@10",
+            "resolved_calcium@11",
+            "resolved_calcium_water@1",
+            "resolved_calcium_energy@1",
+            "resolved_calcium_energy@2",
+            "resolved_calcium_energy@3",
+            "resolved_calcium_energy@4",
+            "resolved_calcium_energy@5",
+            "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water_repair@1",
             "resolved_repair@1",
             "resolved_repair@2",
             "resolved_repair@3",
+            "resolved_repair@4",
         ):
             if "calcium" not in row:
                 raise ValueError("Resolved cluster requires calcium readouts")
@@ -83,6 +112,16 @@ def aggregate(rows):
                 row["final_voltage_V"]
             ).shape != (row["worlds"], len(row["voltage_owner_ids"])):
                 raise ValueError("Resolved cluster voltage shape/axis invalid")
+        if row["physical_model"] in (
+            "resolved_calcium_energy@1",
+            "resolved_calcium_energy@2",
+            "resolved_calcium_energy@3",
+            "resolved_calcium_energy@4",
+            "resolved_calcium_energy@5",
+            "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water_repair@1",
+        ):
+            accumulate_finite_energy(arm, row)
         if "ip3" in row:
             ip3 = row["ip3"]
             if ip3["cell_ids"] != row["cell_ids"]:
@@ -103,6 +142,77 @@ def aggregate(rows):
                 name = key + "_sum_over_worlds"
                 if name in target and np.asarray(target[name]).shape != value.shape:
                     raise ValueError("Cluster IP3 owner shape changed")
+                target[name] = (np.asarray(target.get(name, np.zeros_like(value))) + value).tolist()
+        if row["physical_model"] in (
+            "resolved_calcium_water@1",
+            "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water_repair@1",
+        ):
+            if "water" not in row:
+                raise ValueError("Calcium/water cluster requires volume ownership readouts")
+            water = row["water"]
+            metadata = (
+                "chemical_osmotic_coupling",
+                "cell_ids",
+                "outside_ids",
+                "species_ids",
+                "er_water_coupling",
+            )
+            joint = row["physical_model"] in (
+                "resolved_calcium_energy_water@1",
+                "resolved_calcium_energy_water_repair@1",
+            )
+            if joint:
+                metadata += ("energy_osmotic_coupling", "osmotic_particle_scope")
+            if any(k not in water for k in metadata):
+                raise ValueError("Incomplete calcium/water ownership metadata")
+            target = arm.setdefault("water", {k: water[k] for k in metadata})
+            if (
+                any(target[k] != water[k] for k in metadata)
+                or water["cell_ids"] != row["cell_ids"]
+                or water["species_ids"] != row["calcium"]["species_ids"]
+                or water["chemical_osmotic_coupling"] != "ideal_all_cytosol_species_fixed_er@1"
+                or water["er_water_coupling"] != "fixed ER volume; no ER water port"
+                or (
+                    joint
+                    and (
+                        water["energy_osmotic_coupling"] != "neutral_ideal_atp_adp_pi@1"
+                        or water["osmotic_particle_scope"]
+                        != "chemical species plus neutral ATP/ADP/Pi; inert solute additional"
+                    )
+                )
+            ):
+                raise ValueError("Calcium/water owner metadata changed")
+            nc, no, ns = (
+                len(water["cell_ids"]),
+                len(water["outside_ids"]),
+                len(water["species_ids"]),
+            )
+            shapes = dict(
+                cell_volume_pL=(nc,),
+                outside_volume_pL=(no,),
+                er_volume_pL=(nc,),
+                cytosol_free_concentration_mM=(ns, nc),
+                cytosol_osmolytes_fmol=(nc,),
+            )
+            if joint:
+                shapes.update(
+                    pool_osmolytes_fmol=(nc,),
+                    energy_concentration_mM=(3, nc),
+                    pool_volume_work_pJ=(nc,),
+                )
+            for key, shape in shapes.items():
+                if key not in water:
+                    raise ValueError("Missing calcium/water readout")
+                values = np.asarray(water[key])
+                if (
+                    values.shape != (row["worlds"], *shape)
+                    or not np.isfinite(values).all()
+                    or (key != "pool_volume_work_pJ" and np.any(values <= 0))
+                ):
+                    raise ValueError("Calcium/water readout shape or domain changed")
+                value = np.sum(values, axis=0)
+                name = key + "_sum_over_worlds"
                 target[name] = (np.asarray(target.get(name, np.zeros_like(value))) + value).tolist()
         if "calcium" in row:
             calcium = row["calcium"]
@@ -130,9 +240,23 @@ def aggregate(rows):
             "resolved_calcium@4",
             "resolved_calcium@5",
             "resolved_calcium@6",
+            "resolved_calcium@7",
+            "resolved_calcium@8",
+            "resolved_calcium@9",
+            "resolved_calcium@10",
+            "resolved_calcium@11",
+            "resolved_calcium_water@1",
+            "resolved_calcium_energy@1",
+            "resolved_calcium_energy@2",
+            "resolved_calcium_energy@3",
+            "resolved_calcium_energy@4",
+            "resolved_calcium_energy@5",
+            "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water_repair@1",
             "resolved_repair@1",
             "resolved_repair@2",
             "resolved_repair@3",
+            "resolved_repair@4",
         ):
             for key in (
                 "channel_transfer_axes",
@@ -150,7 +274,13 @@ def aggregate(rows):
                 or np.asarray(row["channel_transferred_fmol"]).shape != (row["worlds"], *shape)
             ):
                 raise ValueError("Cluster channel species/transfer axes invalid")
-        if row["physical_model"] in ("resolved_repair@1", "resolved_repair@2", "resolved_repair@3"):
+        if row["physical_model"] in (
+            "resolved_calcium_energy_water_repair@1",
+            "resolved_repair@1",
+            "resolved_repair@2",
+            "resolved_repair@3",
+            "resolved_repair@4",
+        ):
             if "injury" not in row:
                 raise ValueError("Repair cluster requires injury readouts")
             injury = row["injury"]

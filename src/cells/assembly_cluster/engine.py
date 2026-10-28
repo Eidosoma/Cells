@@ -108,6 +108,8 @@ def summary(spec, state):
     else:
         voltage = ionic.cell_voltage(state.ionic.amount_increment, layout, xp=np)[:, :n]
         voltage_axes = {}
+    from cells.assembly_cluster import finite_energy
+
     ncav = len(getattr(spec.ionic.model, "calcium_channels", ()))
     cells = {
         binding.cell_id: pool.summary(binding.pool, cell_pool(state, i))
@@ -125,6 +127,42 @@ def summary(spec, state):
                 "release_fraction": fraction.tolist(),
             }
         }
+    water = {}
+    if hasattr(spec.ionic.model, "chemical_osmotic_coupling"):
+        cell_volume = layout.volume + state.ionic.volume_increment_pL
+        outside_volume = layout.extracellular_volume + state.ionic.extracellular_volume_increment_pL
+        particles = ionic.osmolyte_amounts(state.ionic, layout, xp=np)
+        cell_ids = [c.id for c in spec.ionic.model.cells]
+        outside_ids = [c.id for c in spec.ionic.model.extracellular]
+        er_volume = layout.er_volume[np.arange(n), layout.er_er]
+        water = {
+            "water": {
+                "chemical_osmotic_coupling": spec.ionic.model.chemical_osmotic_coupling,
+                "cell_ids": cell_ids,
+                "outside_ids": outside_ids,
+                "species_ids": list(spec.ionic.model.species_ids),
+                "cell_volume_pL": cell_volume[..., :n].tolist(),
+                "outside_volume_pL": outside_volume[..., : len(outside_ids)].tolist(),
+                "er_volume_pL": np.broadcast_to(er_volume, (spec.pool.worlds, n)).tolist(),
+                "cytosol_free_concentration_mM": (
+                    ionic.cytosol_amount(state.ionic, layout, xp=np)[..., :n]
+                    / cell_volume[..., None, :n]
+                ).tolist(),
+                "cytosol_osmolytes_fmol": np.sum(particles[..., :n], axis=-2).tolist(),
+                "er_water_coupling": "fixed ER volume; no ER water port",
+            }
+        }
+        if hasattr(spec.ionic.model, "energy_osmotic_coupling"):
+            fuel = layout.energy_initial_amount_fmol + state.ionic.energy_amount_increment_fmol
+            water["water"].update(
+                energy_osmotic_coupling=spec.ionic.model.energy_osmotic_coupling,
+                osmotic_particle_scope=(
+                    "chemical species plus neutral ATP/ADP/Pi; inert solute additional"
+                ),
+                pool_osmolytes_fmol=np.sum(fuel[..., :n], axis=-2).tolist(),
+                energy_concentration_mM=(fuel[..., :n] / cell_volume[..., None, :n]).tolist(),
+                pool_volume_work_pJ=state.ionic.pool_volume_work_pJ[..., :n].tolist(),
+            )
     return {
         "model": MODEL_ID,
         "physical_model": spec.ionic.to_dict()["model"]["id"],
@@ -198,6 +236,12 @@ def summary(spec, state):
         ),
         "experimental_validation": False,
         **ip3,
+        **water,
+        **(
+            {"finite_energy": finite_energy.summary(spec, state, layout)}
+            if hasattr(spec.ionic.model, "energy_pools")
+            else {}
+        ),
         **(
             {"mobile_channels": mobile_channels.summary(spec, state, layout)}
             if hasattr(spec.ionic.model, "mobile_channels")

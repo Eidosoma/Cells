@@ -1,0 +1,51 @@
+{
+  "kind": "cells.finite_calcium_pump_contracts@1",
+  "laws": ["finite_atp_pmca_betse_positive@1", "finite_atp_er_1ca_betse_positive@1"],
+  "pool_law": "finite_atp_adp_pi_transformed@1",
+  "source_kernels": ["cells.processes.plasma_calcium.pump_rates", "cells.processes.er_calcium.pump_rates"],
+  "standard_energy_mapping": "deltaG0_1mM=deltaG0_1M-R*T*ln(1000); finite owner deltaG0 stays unchanged",
+  "formal_calcium_per_signed_atp_cycle": 1,
+  "maximum_absolute_reaction_affinity_over_RT": 80.0,
+  "temperature_domain_K": [200.0, 400.0],
+  "maximum_absolute_voltage_V": 0.15,
+  "reference": "Independent 80-digit Decimal scalar equations and manufactured rational extent integration; no Cells/NumPy/JAX imports",
+  "tolerances": {
+    "relative": 8e-12,
+    "potential_atol_J_mol": 8e-10,
+    "rate_atol_fmol_s": 2e-12,
+    "power_atol_pJ_s": 8e-11,
+    "power_identity_roundoff_factor": 64,
+    "material_atol_fmol": 2e-12,
+    "trajectory_first_law_atol_pJ": 0.00001,
+    "minimum_rk4_order": 3.7,
+    "trajectory_reference_steps_per_phase": 1536,
+    "trajectory_refinement_steps_per_phase": [24, 48, 96]
+  },
+  "manufactured_path": {
+    "scope": "Finite fuel with clamped equal-potential calcium reservoirs; not a closed calcium tissue trajectory",
+    "initial_ATP_ADP_Pi_fmol": [0.8, 0.2, 0.2],
+    "volume_pL": 1.0,
+    "temperature_K": 298.15,
+    "delta_g0_1M_J_mol": "R*T*ln1000",
+    "source_destination_ca_mM": [1.0, 1.0],
+    "voltage_V": 0.0,
+    "pump_capacity_fmol_s": 0.1,
+    "km_ca_mM": 1.0,
+    "km_atp_mM": 0.5,
+    "depletion_equilibrium_ATP_fmol": "(3-sqrt5)/2",
+    "depletion_duration": "12*local linear relaxation time at the positive interior stall",
+    "recovery": "Pump blocked; existing reversible regeneration capacity .05 fmol/s and supplied energy R*T*ln16",
+    "recovery_equilibrium_ATP_fmol": "(33-sqrt65)/32",
+    "recovery_duration": "12*local linear relaxation time at the supplied equilibrium"
+  },
+  "resources": {
+    "cpu_affinity": [7], "blas_threads": 1,
+    "max_process_tree_and_individual_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false, "persistent_compilation_cache": false,
+    "compiled_cpu_authorization": "Chief verified host03 receipt and cleared exactly two CPU7 array/domain/exchange and finite-pool/rate/owner-T derivative prototypes; <=1GiB PSS/individualRSS, >=8GiB reserve, BLAS1, no GPU"
+  },
+  "scope_exclusions": ["Core/model/checkpoint/shared hooks", "Physiological two-Ca SERCA/proton exchange or biological calibration", "NCX ATP consumption", "Zero-substrate continuation, floors, clipping, ATP resets", "GPU or coupled tissue qualification"],
+  "automatic_followup": false
+}

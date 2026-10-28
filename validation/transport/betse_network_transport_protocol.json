@@ -1,0 +1,86 @@
+{
+  "kind": "cells.betse_network_transport_contracts@1",
+  "law_id": "betse_network_transporter_source_v1_5_0@1",
+  "purpose": "Resolve literal generated-source semantics before integrating configurable native network transport",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/data/yaml/extra_configs/extra_config_template.yaml": "2dd1322fdab1dff7d7b9b1d90894d27e5f8357bf37b30050c2ae8c10e91492b7"
+    },
+    "executed_methods": ["default_zones", "get_influencers", "write_transporters"],
+    "scope": "Execute pinned AST methods and generated expressions; no upstream imports, full simulation or native geometry/update equivalence"
+  },
+  "units": {
+    "concentrations_and_Km": "mM, numerically mol/m3",
+    "membrane_voltage": "V, inside minus outside",
+    "maximum_flux_and_density": "mol/(m2 s)",
+    "area": "m2",
+    "extent_rate": "fmol/s = density * area / 1e-15",
+    "standard_free_energy": "J/mol configured forward extent",
+    "native_current_density": "A/m2 outward = F * native_net_z * density"
+  },
+  "implemented_source_contract": {
+    "reversible": "rho * availability * vmax * alpha * product(loading/(1+loading)) * (1 - Q/Keq)",
+    "irreversible": "standard free energy None removes Q, Keq and electrical reversal from the rate",
+    "loading": "(reactant concentration / reactant Km) ** reactant multiplier",
+    "product_Km": "Generated backward saturation is absent from the executable final expression",
+    "Q": "product(1e-3 * product_concentration ** product_multiplier) / product(1e-3 * reactant_concentration ** reactant_multiplier)",
+    "Q_source_limit": "The literal 1e-3 is outside each power; do not silently substitute (1e-3*c)**n",
+    "Keq": "exp(-(standard_free_energy + electrical_transfer_energy)/(R*T))",
+    "electrical_transfer_energy": "F*Vm*(sum(imported reactant coefficients*z) - sum(exported product coefficients*z))",
+    "native_net_z": "sum(exported product coefficients*z) - sum(imported reactant coefficients*z)",
+    "influencers": "Product of regular activator Hills plus sum of independent ! Hills, multiplied by inhibitor Hills and optional sum of direct & activators minus direct & inhibitors",
+    "independent_only": "Activator expression starts at 1 when there are only independent activators",
+    "influencer_zones": "write_transporters does not forward configured zone lists; get_influencers defaults all regulators to cell/membrane concentrations",
+    "star_suffix": "write_transporters sets in_mem_tag=False, so * requests do not make transporter regulator Km voltage sensitive",
+    "inhibitor_bang_suffix": "Stripped; inhibitors remain multiplicative",
+    "direct_inhibitors": "Can make alpha and density negative; source correspondence does not imply passive dissipation"
+  },
+  "supported_domain": {
+    "zone": "cell only, explicit inside/outside ownership supplied by composing model",
+    "substrates": "Finite strictly positive participating reactant/product concentrations, even when blocked",
+    "other_species": "Finite nonnegative active concentrations; inactive compartments are exactly zero",
+    "multipliers": "Positive finite real active coefficients; zero denotes internal padding only",
+    "regulation": "Finite nonnegative regulator concentrations, positive finite Km and Hill exponents",
+    "topology": "Unique species/names, nonempty reactant and product lists per active route, explicit transfer flags, charge-conserving configured reactions; reversible routes require at least one transfer term",
+    "direct_inhibitor_order": "A direct & inhibitor is sole or last; other orders trigger malformed expressions or changed operator precedence in the pinned native generator and are rejected",
+    "direct_only_groups": "Simultaneous only-direct activator and only-direct inhibitor groups leave an empty tuple in the native expression; rejected before evaluation",
+    "controls": "Finite nonnegative rho; availability in [0,1]; inactive routes have zero controls/parameters",
+    "temperature": "Finite positive isothermal K per independent world",
+    "numerics": "Finite representable rates, currents, owner updates and diagnostic driving energies"
+  },
+  "reference": "Independent scalar 80-digit Decimal formula and owner loops, without Cells/NumPy/JAX imports",
+  "tolerances": {
+    "relative": 5e-12,
+    "dimensionless_atol": 2e-14,
+    "density_atol_mol_m2_s": 1e-18,
+    "extent_atol_fmol_s": 2e-12,
+    "energy_atol_J_mol": 2e-9,
+    "current_atol_A_m2": 1e-13,
+    "material_atol_fmol": 2e-12,
+    "charge_atol_C": 3e-22
+  },
+  "resources": {
+    "cpu_affinity": [7],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "scope_limits": [
+    "Component law and conservative owner accumulation only; shared dispatch/schema/checkpoints remain separate integration work",
+    "No manufactured tanh/KCC/NKCC law replacement or fitted isoform claim",
+    "No mitochondrial transport, native geometry concentration stepping, reservoir semantics or membrane-shell update equivalence",
+    "No implicit ATP demand, repair cost, water drag, osmotic term or physical heat/free-energy ledger",
+    "Source driving energy is diagnostic: literal Q conversion and direct influencers do not establish thermodynamic consistency",
+    "No floors, clamping, depletion repair, silent native bug correction or full-cell settling/qualification claim"
+  ],
+  "automatic_followup": false
+}

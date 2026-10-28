@@ -28,6 +28,11 @@ SODIUM_MODEL_ID = "resolved_calcium@3"
 HCN_MODEL_ID = "resolved_calcium@4"
 KV1_MODEL_ID = "resolved_calcium@5"
 CAV_MODEL_ID = "resolved_calcium@6"
+CATALOG_MODEL_ID = "resolved_calcium@7"
+EXTENDED_CATALOG_MODEL_ID = "resolved_calcium@8"
+CALCIUM_ACTIVATED_MODEL_ID = "resolved_calcium@9"
+MORRIS_LECAR_MODEL_ID = "resolved_calcium@10"
+HCN_EXTRA_MODEL_ID = "resolved_calcium@11"
 
 
 @dataclass(frozen=True)
@@ -67,7 +72,42 @@ class SurfaceCalciumCavModel(SurfaceCalciumKv1Model):
     """Shared calcium-channel populations with one owned free cytosol/ER."""
 
 
+@dataclass(frozen=True)
+class SurfaceCalciumCatalogModel(SurfaceCalciumCavModel):
+    """Expanded Na/K/leak populations sharing existing free cytosol/ER owners."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumExtendedCatalogModel(SurfaceCalciumCatalogModel):
+    """39 shared laws with one existing free chemical cytosol/ER owner."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumActivatedCatalogModel(SurfaceCalciumExtendedCatalogModel):
+    """Instantaneous potassium populations sense the existing free Ca owner."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumMorrisLecarModel(SurfaceCalciumActivatedCatalogModel):
+    """Adds thirteen Morris–Lecar laws with explicit dynamic/instantaneous state."""
+
+
+@dataclass(frozen=True)
+class SurfaceCalciumHCNExtraModel(SurfaceCalciumMorrisLecarModel):
+    """Adds HCNLeak and the fixed HCN2/4 cAMP-shift variants."""
+
+
 def model_id(model):
+    if isinstance(model, SurfaceCalciumHCNExtraModel):
+        return HCN_EXTRA_MODEL_ID
+    if isinstance(model, SurfaceCalciumMorrisLecarModel):
+        return MORRIS_LECAR_MODEL_ID
+    if isinstance(model, SurfaceCalciumActivatedCatalogModel):
+        return CALCIUM_ACTIVATED_MODEL_ID
+    if isinstance(model, SurfaceCalciumExtendedCatalogModel):
+        return EXTENDED_CATALOG_MODEL_ID
+    if isinstance(model, SurfaceCalciumCatalogModel):
+        return CATALOG_MODEL_ID
     if isinstance(model, SurfaceCalciumCavModel):
         return CAV_MODEL_ID
     if isinstance(model, SurfaceCalciumKv1Model):
@@ -130,7 +170,17 @@ def ionic_spec(spec):
     return SimulationSpec(
         project(
             spec.model,
-            ionic.SurfaceCavModel
+            ionic.SurfaceHCNExtraModel
+            if isinstance(spec.model, SurfaceCalciumHCNExtraModel)
+            else ionic.SurfaceMorrisLecarModel
+            if isinstance(spec.model, SurfaceCalciumMorrisLecarModel)
+            else ionic.SurfaceCalciumActivatedModel
+            if isinstance(spec.model, SurfaceCalciumActivatedCatalogModel)
+            else ionic.SurfaceExtendedCatalogModel
+            if isinstance(spec.model, SurfaceCalciumExtendedCatalogModel)
+            else ionic.SurfaceCatalogModel
+            if isinstance(spec.model, SurfaceCalciumCatalogModel)
+            else ionic.SurfaceCavModel
             if isinstance(spec.model, SurfaceCalciumCavModel)
             else ionic.SurfaceKv1Model
             if isinstance(spec.model, SurfaceCalciumKv1Model)
@@ -226,13 +276,28 @@ def parse(data):
     x = _fields(
         data["execution"], set(Execution.__dataclass_fields__), "resolved calcium execution"
     )
-    cav = m["id"] == CAV_MODEL_ID
-    kv1 = m["id"] in (KV1_MODEL_ID, CAV_MODEL_ID)
-    hcn = m["id"] in (HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
-    sodium = m["id"] in (SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
-    mixed = m["id"] in (CHANNEL_MODEL_ID, SODIUM_MODEL_ID, HCN_MODEL_ID, KV1_MODEL_ID, CAV_MODEL_ID)
+    hcn_extra = m["id"] == HCN_EXTRA_MODEL_ID
+    morris_lecar = hcn_extra or m["id"] == MORRIS_LECAR_MODEL_ID
+    calcium_activated = morris_lecar or m["id"] == CALCIUM_ACTIVATED_MODEL_ID
+    extended = calcium_activated or m["id"] == EXTENDED_CATALOG_MODEL_ID
+    expanded = extended or m["id"] == CATALOG_MODEL_ID
+    cav = expanded or m["id"] == CAV_MODEL_ID
+    kv1 = cav or m["id"] == KV1_MODEL_ID
+    hcn = kv1 or m["id"] == HCN_MODEL_ID
+    sodium = hcn or m["id"] == SODIUM_MODEL_ID
+    mixed = sodium or m["id"] == CHANNEL_MODEL_ID
     ionic_id = (
-        ionic.CAV_MODEL_ID
+        ionic.HCN_EXTRA_MODEL_ID
+        if hcn_extra
+        else ionic.MORRIS_LECAR_MODEL_ID
+        if morris_lecar
+        else ionic.CALCIUM_ACTIVATED_MODEL_ID
+        if calcium_activated
+        else ionic.EXTENDED_CATALOG_MODEL_ID
+        if extended
+        else ionic.CATALOG_MODEL_ID
+        if expanded
+        else ionic.CAV_MODEL_ID
         if cav
         else ionic.KV1_MODEL_ID
         if kv1
@@ -253,6 +318,11 @@ def parse(data):
             HCN_MODEL_ID,
             KV1_MODEL_ID,
             CAV_MODEL_ID,
+            CATALOG_MODEL_ID,
+            EXTENDED_CATALOG_MODEL_ID,
+            CALCIUM_ACTIVATED_MODEL_ID,
+            MORRIS_LECAR_MODEL_ID,
+            HCN_EXTRA_MODEL_ID,
         )
         or not isinstance(m["ionic"], dict)
         or m["ionic"].get("id") != ionic_id
@@ -476,7 +546,17 @@ def parse(data):
         )
     spec = SimulationSpec(
         (
-            SurfaceCalciumCavModel
+            SurfaceCalciumHCNExtraModel
+            if hcn_extra
+            else SurfaceCalciumMorrisLecarModel
+            if morris_lecar
+            else SurfaceCalciumActivatedCatalogModel
+            if calcium_activated
+            else SurfaceCalciumExtendedCatalogModel
+            if extended
+            else SurfaceCalciumCatalogModel
+            if expanded
+            else SurfaceCalciumCavModel
             if cav
             else SurfaceCalciumKv1Model
             if kv1

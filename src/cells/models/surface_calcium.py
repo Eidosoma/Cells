@@ -17,10 +17,15 @@ from cells.core.errors import NumericalError
 from cells.core.specs import ConfigError
 from cells.core.surface_calcium_spec import (
     MODEL_ID,  # noqa: F401 - public model identity used by ordinary execution
+    SurfaceCalciumActivatedCatalogModel,
+    SurfaceCalciumCatalogModel,
     SurfaceCalciumCavModel,
     SurfaceCalciumChannelModel,
+    SurfaceCalciumExtendedCatalogModel,
+    SurfaceCalciumHCNExtraModel,
     SurfaceCalciumHCNModel,
     SurfaceCalciumKv1Model,
+    SurfaceCalciumMorrisLecarModel,
     SurfaceCalciumSodiumModel,
     ionic_spec,
     model_id,
@@ -102,6 +107,23 @@ KV1_LAYOUT_TYPE = NamedTuple(
 )
 CAV_LAYOUT_TYPE = NamedTuple(
     "SurfaceCalciumCavLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields]
+)
+CATALOG_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumCatalogLayout", [(k, object) for k in HCN_LAYOUT_TYPE._fields]
+)
+EXTENDED_CATALOG_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumExtendedCatalogLayout", [(k, object) for k in CATALOG_LAYOUT_TYPE._fields]
+)
+CALCIUM_ACTIVATED_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumActivatedCatalogLayout",
+    [(k, object) for k in (*CATALOG_LAYOUT_TYPE._fields, "channel_calcium_species")],
+)
+MORRIS_LECAR_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumMorrisLecarLayout", [(k, object) for k in CALCIUM_ACTIVATED_LAYOUT_TYPE._fields]
+)
+
+HCN_EXTRA_LAYOUT_TYPE = NamedTuple(
+    "SurfaceCalciumHCNExtraLayout", [(k, object) for k in MORRIS_LECAR_LAYOUT_TYPE._fields]
 )
 HCN_STATE_AXES = STATE_AXES | {
     "channel_transferred": ["species", "channel_slot"],
@@ -228,7 +250,17 @@ def initial_values(spec):
         ip3_power=np.array([b.activation_n for b in m.ip3_release], dtype=float),
     )
     layout_type = (
-        CAV_LAYOUT_TYPE
+        HCN_EXTRA_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumHCNExtraModel)
+        else MORRIS_LECAR_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumMorrisLecarModel)
+        else CALCIUM_ACTIVATED_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumActivatedCatalogModel)
+        else EXTENDED_CATALOG_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumExtendedCatalogModel)
+        else CATALOG_LAYOUT_TYPE
+        if isinstance(m, SurfaceCalciumCatalogModel)
+        else CAV_LAYOUT_TYPE
         if isinstance(m, SurfaceCalciumCavModel)
         else KV1_LAYOUT_TYPE
         if isinstance(m, SurfaceCalciumKv1Model)
@@ -259,16 +291,38 @@ def ionic_state(state):
 
 
 def ionic_layout(state, p, *, xp=jnp):
-    if isinstance(p, (HCN_LAYOUT_TYPE, KV1_LAYOUT_TYPE, CAV_LAYOUT_TYPE)):
+    if isinstance(
+        p,
+        (
+            HCN_LAYOUT_TYPE,
+            KV1_LAYOUT_TYPE,
+            CAV_LAYOUT_TYPE,
+            CATALOG_LAYOUT_TYPE,
+            EXTENDED_CATALOG_LAYOUT_TYPE,
+            CALCIUM_ACTIVATED_LAYOUT_TYPE,
+            MORRIS_LECAR_LAYOUT_TYPE,
+            HCN_EXTRA_LAYOUT_TYPE,
+        ),
+    ):
         view = (
-            kinetic.CAV_OWNED_VIEW_TYPE
+            kinetic.HCN_EXTRA_OWNED_VIEW_TYPE
+            if isinstance(p, HCN_EXTRA_LAYOUT_TYPE)
+            else kinetic.MORRIS_LECAR_OWNED_VIEW_TYPE
+            if isinstance(p, MORRIS_LECAR_LAYOUT_TYPE)
+            else kinetic.CALCIUM_ACTIVATED_OWNED_VIEW_TYPE
+            if isinstance(p, CALCIUM_ACTIVATED_LAYOUT_TYPE)
+            else kinetic.EXTENDED_CATALOG_OWNED_VIEW_TYPE
+            if isinstance(p, EXTENDED_CATALOG_LAYOUT_TYPE)
+            else kinetic.CATALOG_OWNED_VIEW_TYPE
+            if isinstance(p, CATALOG_LAYOUT_TYPE)
+            else kinetic.CAV_OWNED_VIEW_TYPE
             if isinstance(p, CAV_LAYOUT_TYPE)
             else kinetic.KV1_OWNED_VIEW_TYPE
             if isinstance(p, KV1_LAYOUT_TYPE)
             else kinetic.HCN_OWNED_VIEW_TYPE
         )
         return view(
-            **{k: getattr(p, k) for k in kinetic.HCN_LAYOUT_TYPE._fields},
+            **{k: getattr(p, k) for k in view._fields if k != "cytosol_amount"},
             cytosol_amount=cytosol_amount(state, p, xp=xp),
         )
     values = {k: getattr(p, k) for k in kinetic.LAYOUT_TYPE._fields}
@@ -728,7 +782,19 @@ def check_values(state, spec, *, additional_transport=None):
             )
     state_axes = (
         HCN_STATE_AXES
-        if isinstance(p, (HCN_LAYOUT_TYPE, KV1_LAYOUT_TYPE, CAV_LAYOUT_TYPE))
+        if isinstance(
+            p,
+            (
+                HCN_LAYOUT_TYPE,
+                KV1_LAYOUT_TYPE,
+                CAV_LAYOUT_TYPE,
+                CATALOG_LAYOUT_TYPE,
+                EXTENDED_CATALOG_LAYOUT_TYPE,
+                CALCIUM_ACTIVATED_LAYOUT_TYPE,
+                MORRIS_LECAR_LAYOUT_TYPE,
+                HCN_EXTRA_LAYOUT_TYPE,
+            ),
+        )
         else STATE_AXES
     )
     for k, axes in state_axes.items():

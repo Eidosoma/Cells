@@ -1,0 +1,28 @@
+{
+  "kind": "cells.legacy_cagpotassium_contracts@1",
+  "law_id": "betse_cagpotassium_numeric_mM_scale@1", "future_code": 39, "padding_code": -1,
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2", "source_version": "1.5.0",
+  "source_symbol": "betse.science.tissue.channels_o.cagPotassium",
+  "source_status": "Legacy standalone function; no call site found in pinned checkout. Not a current-runtime class, BK/SK fit or coupled BETSE parity claim",
+  "source_formula": "P=1/(1+6182*((1+1e6*C/10.22)/(1+1e6*C/.89))^4*exp(-1.64*F*V/(R*T)))",
+  "calcium_units": "Literal numeric mM inputs from configured mmol/L through sim.cc_cells; retain 1e6*C, no inferred micromolar correction",
+  "owner_dependency": "Each membrane population reads CURRENT FREE cytosolic calcium amount/current cytosolic volume of its owning cell. Excludes bound/total/ER/outside Ca",
+  "transport": "K-only permeability1; sensed Ca is not consumed; no binding state, ATP cost or calcium transfer",
+  "state_and_clock": "Zero channel state, instantaneous algebraic response, no native tau or invented settling history",
+  "array_contract": "V/codes explicit [...,population]; scalar/leading-world Ca,T,availability broadcast while preserving declared code-array population count",
+  "computational_domain": {"voltage_V": [-0.120, 0.060], "calcium_mM": "finite nonnegative, including exact zero", "temperature_K": [200.0, 400.0], "availability": [0,1], "padding": "V=Ca=availability=0,T=298.15K; opening0"},
+  "evaluation": "Stable algebraic ratio=(.89/10.22)*((C+10.22e-6)/(C+.89e-6)); bounded quotient avoids source1e6*C overflow; log-odds sigmoid. Positive offsets are source constants, not concentration floors",
+  "native_container_quirks": ["Calcium is selected by targets after mem_to_cells gather, but voltage remains full sim.vm", "Whole Dm_cag[K] row assigned, without target scatter", "Non-singleton subsets/empty targets can fail broadcasting; singleton Ca can broadcast to all voltages", "Record full/reordered/duplicate behaviors; do not relabel paired per-population API as corrected native container parity"],
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/tissue/channels_o.py": "ee6f9c538661f42d72e01afc6d01530dcfa1a9cbf1af9945d7227842827e7251",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+  },
+  "native_probe": {"installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages", "checkout": "/mnt/workspaces/Cells/betse-v1.5.0", "copy_upstream_into_repo": false, "whole_native_simulation": false},
+  "external_input_protocol": {"scope": "Manufactured calcium input, not native dynamics or coupled tissue recovery", "baseline_mM": 0, "pulse_mM": 0.00002, "pulse_start_s": 1, "pulse_end_s": 2, "decay_tau_s": 2, "decay_duration_s": 24, "steps": "Exact Ca/V/availability changes; evaluate both sides of boundaries and 12 declared INPUT taus; no channel lag or settling claim"},
+  "tolerances": {"relative": 6e-12, "opening_atol": 8e-14, "native_relative": 5e-11, "native_opening_atol": 2e-13, "derivative_relative": 6e-10, "derivative_atol": 2e-8},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false, "compiled_cpu_authorization": "Chief cleared exactly two CPU7 array/domain and independent Ca/V/T/control derivative prototypes after the101-case host/native receipt; <=1GiB PSS/individualRSS, >=8GiB host reserve, BLAS1, no GPU"},
+  "automatic_followup": false
+}
