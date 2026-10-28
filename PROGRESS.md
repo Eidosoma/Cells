@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-27 UTC.
+Last updated: 2026-10-28 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,28 +9,345 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Assembly integration of the 53-field mobile-pump/calcium/injury model is
-  implemented; qualification is being prepared.** The
-  [GPU example](configs/assembly_resolved_mobile_pump_repair_tissue.json),
+- **Development priority updated on 28 October:** implement BETSE-parity and
+  wider Cells features with short CPU validation. Defer new GPU qualifications
+  and prepare later batches of compatible features/independent worlds, with
+  balanced arms and both GPU-busy and SM-active telemetry. Existing frozen
+  jobs remain intact. The last user-triggered finite-energy check at 14:33 UTC
+  found controller 1070204 active in CPU replay; no repeated polling is queued.
+  Short checks must still cover the necessary scientific time scales and
+  numerical comparisons. Stage checks are labelled separately from full
+  coupled trajectories; necessary longer validations remain allowed.
+
+- **Salt/water/finite-energy composition implemented on CPU:**
+  [`resolved_cotransport_water@1`](docs/TISSUE_RETURN_CURRENT.md#cotransport-with-finite-energy-and-water)
+  retains **31 fields** and seven independent control families, with one shared
+  ionic/field/pool calculation. Its
+  [host suite](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/host-02/result.json)
+  passed **106 checks**: 45 new contracts and 61 existing configuration checks.
+  The separate
+  [independent reference](/mnt/workspaces/Cells/cotransport-water-reference-20261028-01/checks-01/result.json)
+  passed **39 checks** in **4.8 seconds**. The
+  [CPU JIT stage/domain check](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/compiled-stage-01/result.json)
+  passed in **88 seconds**, with **1.016 GiB** peak charged memory. This covers
+  complete derivatives, shared owners, role ordering, closed/absent reductions,
+  conservation, seven clocks, initial snapshots and a ten-microsecond feedback
+  check. It does **not** establish settling, long-time stability, full trajectory
+  replay or GPU qualification. Maximum stage error was **0.000151** of budget;
+  the short feedback check's energy residual was **4.24e-14 pJ**, with zero global
+  water residual. The
+  [first host failure](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/host-01/failure.json)
+  retained 101 passes and five failures: projected component clocks had dropped
+  water observation boundaries. The fix preserves the full event union through
+  inherited step checks; no physical equation or tolerance changed.
+  The [scoped CPU summary](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/development-result.json)
+  binds sources, all saved checks and the explicit remaining trajectory/GPU work.
+  Key Dev's seven-class pinned BETSE sodium catalog passed
+  [113 host/source checks](/mnt/workspaces/Cells/sodium-catalog-contracts-20261028-01/result.json)
+  in 52 seconds under its
+  [assignment](agent-work/cells-worker-01/workfiles/SODIUM_CATALOG_ASSIGNMENT.md).
+  The coordinator verified all 503 output hashes and the five executable,
+  reference, protocol and source-capture file hashes. Clamp/recovery checks span
+  twelve relevant gate time constants, with native clock refinement and
+  singular source outcomes retained separately. Two bounded CPU JAX checks
+  are cleared; their results and shared tissue integration remain pending.
+  Catalog equations, native clocks and coupled trajectories remain distinct.
+
+- **Active transport with water/volume passed complete CPU/L4 qualification
+  at 13:59 UTC on 28 October.** The
+  [completed result](/mnt/workspaces/Cells/resolved-active-water-20261028-01/result.json)
+  records **85 CPU passes plus one expected skip and 86 GPU passes**, with all
+  **38 CPU / 39 GPU required reports**, across 14 fresh groups per backend in
+  **1h 2m 58s**. The coordinator implemented
+  [active transport with water/volume](docs/TISSUE_RETURN_CURRENT.md#active-transport-with-compliant-volumes),
+  `resolved_water@2`: shared channel populations, maintained Na/K pumps and kinetic
+  junctions use current compartment volumes, with 23 complete state fields.
+  [Thirty schema checks](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/schema-02/result.json)
+  and [41 physics/accounting checks](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/stages-02/result.json)
+  passed on CPU. The [compiled guard and complete release trajectory](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/compiled-02/result.json)
+  also passed, taking **2m 18s** with peak charged memory **1.37 GiB**. Maximum
+  trajectory error was **0.00000154** of the existing budget and maximum energy
+  residual **1.71e-17 pJ**. The
+  [independent reference](/mnt/workspaces/Cells/water-kinetic-reference-20261028-01/checks-02/result.json)
+  passed 17 cases including actual adaptive-step refinement. Three
+  [host execution/planning checks](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/execution-host-02/result.json)
+  passed. The [development summary](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/development-result.json)
+  binds these 93 passing checks and retained failures. Full CPU/L4
+  qualification used **86 cases per backend** under its
+  [protocol](validation/tissue/surface_water_kinetic_protocol.json).
+  The [launch receipt](/mnt/workspaces/Cells/resolved-active-water-20261028-01/launch.json)
+  and [registration](/mnt/workspaces/Cells/resolved-active-water-20261028-01/registration.json)
+  bind the frozen panel. Six complete trajectories, refinement, full 23-field
+  replay, changed windows and reordered/partitioned independent worlds passed.
+  Maximum trajectory error was **6.81e-6** of the declared budget, maximum energy
+  residual **8.13e-17 pJ**, and global water residual zero. The
+  [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-active-water-20261028-01/evidence/gpu/active-water-cpu-gpu.json)
+  passed for **34,233 values**. At the user-triggered handoff, the coordinator
+  verified result/registration/protocol binding and all 77 required report hashes
+  against the [completion receipt](/mnt/workspaces/Cells/resolved-active-water-20261028-01/completion.json),
+  which binds **1,602 files**. Controller 1034971 exited and the L4 was free.
+
+  Peak charged memory was **3.745 GiB**, individual RSS **3.671 GiB**, and host
+  availability stayed above **13.39 GiB**. The
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-active-water-20261028-01/gpu-metrics/result.json)
+  records **0.1863% GPU busy / 0.001819% SM-active** over **2,479 seconds**, with
+  approximately 100% coverage for both. These averages include compilation and
+  host checks; no single warmed interval exists. This remains a scoped synthetic
+  Cells composition, not native BETSE evolving-volume or biological calibration.
+
+  The [initial schema failure](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/schema-01/failure.json)
+  and [multi-cell fixture failure](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/stages-01/failure.json)
+  retained the inherited channel-temperature constraint; both examples now use
+  **298.15 K**, with no scaling or tolerance relaxation. A
+  [preview-wrapper failure](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/compiled-01/failure.json)
+  occurred before any test process; its memory-metric keyword was corrected.
+  The [initial planning-test failure](/mnt/workspaces/Cells/water-kinetic-development-20261028-01/execution-host-01/failure.json)
+  confused the new 23-field state count with the existing 16-GPU target in a
+  test assertion; the planning code and the target were unchanged.
+
+  Cells Key Dev completed the standalone [finite ATP/ADP/phosphate component](docs/FINITE_ENERGY_POOLS.md),
+  including conservative consumption and explicitly powered regeneration.
+  [All 80 CPU cases passed](/mnt/workspaces/Cells/finite-energy-contracts-20261028-04/result.json):
+  75 NumPy/Decimal and five JAX checks, in 12.37 seconds, with peak RSS
+  **352.6 MiB**. The coordinator verified the test outcomes and five delivered
+  code/protocol/guide hashes. GPU and whole-model qualification remain pending.
+  The worker delivered `resolved_energy@1` to connect finite pools
+  to actual shared Na/K pump demand and regeneration, following the
+  [mitochondrial plan](docs/PAPER_REVIEW_MITOCHONDRIA.md). Its code and
+  [worker log](agent-work/cells-worker-01/WORK_LOG.md) have separate ownership.
+  The coordinator has added shared model dispatch, finite-pool serialization,
+  independent regeneration controls and ensemble registration. The
+  [shared-hook compatibility check](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/shared-hooks-01/result.json)
+  passed **77 existing schema/control cases** in **5.04 seconds**, using
+  **181.5 MiB** peak RSS; its [inputs and source hashes](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/shared-hooks-01/inputs.json)
+  and [test outcomes](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/shared-hooks-01/tests.xml)
+  are retained. The worker's
+  [71 schema/stage cases passed](/mnt/workspaces/Cells/finite-energy-tissue-development-20261028-02/result.json)
+  in **5.63 seconds**, with **215.8 MiB** peak RSS. The coordinator checked all
+  nine delivered file hashes and the 12 complete derivative reports against
+  this receipt. Six
+  [host execution/control/checkpoint/planning cases passed](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/execution-host-02/result.json)
+  in **5m 57s**, with **186.2 MiB** peak RSS. They retain all 23 fields, reject
+  incomplete energy checkpoints and preserve 16 stable world IDs across every
+  local 1–16-GPU and Jupiter 1–4-node plan. Remote execution remains unqualified.
+
+  The [compiled guard and complete release trajectory](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/compiled-01/result.json)
+  passed in **3m 51s**, using **1.200 GiB** peak charged PSS. Maximum trajectory
+  error was **3.15e-7** of the declared budget; fourfold adaptive-reference
+  tightening differed by **4.76e-5** of its stricter budget. The maximum combined
+  energy residual was **2.49e-18 pJ** and pool-material residual **2.15e-19 fmol**.
+  These are numerical checks on manufactured parameters, not biological cases.
+  The [development summary](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/development-result.json)
+  binds these checks and retained failures. Full CPU/L4 qualification launched
+  detached at **14:03 UTC**, controller **1070204**,
+  under its [protocol](validation/tissue/surface_energy_protocol.json):
+  **89 cases per backend**, 14 groups, **35 CPU / 36 GPU required reports**,
+  including six trajectories, refinement, complete replay and independent worlds.
+  The [registration check](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/registration-check.json)
+  confirms complete, disjoint test selection. The
+  [launch receipt](/mnt/workspaces/Cells/resolved-finite-energy-20261028-01/launch.json)
+  and [registration](/mnt/workspaces/Cells/resolved-finite-energy-20261028-01/registration.json)
+  bind the frozen source and job. Completion is pending. No automatic polling,
+  retry or follow-up is queued.
+
+  The [initial worker failures](/mnt/workspaces/Cells/finite-energy-tissue-development-20261028-01/failure.json)
+  were reference-adapter scalar-type mismatches, corrected without changing the
+  equations or tolerances. The
+  [first host planning timeout](/mnt/workspaces/Cells/energy-tissue-development-20261028-01/execution-host-01/failure.json)
+  retained five completed host cases before the 480-second bound. The passing
+  retry uses two arms of eight worlds instead of sixteen each, preserving all
+  1–16-GPU placement checks while reducing repeated configuration validation.
+
+  **Ongoing division of work:** Cells Key Dev owns new capabilities through
+  implementation and initial checks; the coordinator codes a separate feature
+  and owns priorities, shared hooks, review and qualification launches. After the
+  finite-energy handoff, the coordinator implemented `resolved_energy_water@1`
+  to compose water with finite energy, using 28 complete state fields.
+  The independent [coupling contract and analytical checks](/mnt/workspaces/Cells/energy-water-reference-20261028-01/CONTRACT.md)
+  establish live pool osmolytes, a signed internal volume-work ledger and a
+  conserved-inventory particle bound. The
+  [combined example](configs/resolved_energy_water_tissue.json) and
+  [model description](docs/TISSUE_RETURN_CURRENT.md#finite-cellular-energy-with-compliant-volumes)
+  declare neutral ideal pool osmolytes explicitly; volume work is internal and
+  pool mixing energy is counted once. The first
+  [host check](/mnt/workspaces/Cells/energy-water-development-20261028-01/host-01/result.json)
+  passed **124 cases** in **44.2 seconds**, with **217.9 MiB** peak RSS:
+  51 new schema/stage/accounting cases and 73 existing configuration checks.
+  The separate
+  [independent reference](/mnt/workspaces/Cells/energy-water-reference-20261028-01/checks-01/result.json)
+  passed **27 cases** in **81 seconds**, with **89 MiB** peak RSS, including
+  changing-pool volume work, an omitted-pressure counterexample and refined
+  trajectories. Its maximum full-energy residual was **1.45e-12 pJ** and
+  pool-transfer residual **4.74e-15 pJ**. The compiled CPU preview
+  [hit its 480-second wall limit](/mnt/workspaces/Cells/energy-water-development-20261028-01/compiled-01/failure.json)
+  while tightening the adaptive reference, after the
+  [compiled rejection guard passed](/mnt/workspaces/Cells/energy-water-development-20261028-01/compiled-01/evidence/cpu/energy-water-compiled-guard.json)
+  and the [complete release trajectory was captured](/mnt/workspaces/Cells/energy-water-development-20261028-01/compiled-01/evidence/cpu/energy-water-history-release.json).
+  The saved ordinary-reference comparison has maximum absolute state difference
+  **2.22e-16**, combined-energy residual **2.35e-17 pJ** and global water
+  residual zero. On the next user instruction, the
+  [fourfold reference completion](/mnt/workspaces/Cells/energy-water-development-20261028-01/reference-completion-01/comparison.json)
+  passed in **84.6 seconds**, using **78 MiB** peak RSS and the original frozen
+  source/arrays. Maximum state error was **3.95e-7** of budget against the tighter
+  reference, and reference stability **0.000217** of its stricter budget. No
+  compiled simulation was repeated. The original preview's peak charged
+  PSS was **1.487 GiB**, individual RSS **1.623 GiB**, with host reserve above
+  **15.71 GiB**. Compilation took **226 seconds** and execution **0.408 seconds**
+  for the captured trajectory; the preview shared CPU6 with host checks.
+  No automatic retry is queued. The
+  [host execution check](/mnt/workspaces/Cells/energy-water-development-20261028-01/execution-host-01/failure.json)
+  also hit its 480-second limit during repeated offline placement validation,
+  after seven cases completed: two multi-cell stages and five host execution,
+  clock, history and checkpoint contracts. Partial 1/4/16-GPU and one-node plans
+  are retained, but the planning case is not a pass. Its test now uses two
+  constant-control arms for placement, while release clocks remain covered by
+  separate execution/replay checks; this test-only simplification awaits a run.
+  Placement work is deferred behind feature development under the new priority.
+  The [qualification protocol](validation/tissue/surface_energy_water_protocol.json)
+  has a [checked registration](/mnt/workspaces/Cells/energy-water-development-20261028-01/registration-check.json)
+  of **73 cases per backend**, 15 groups and **44 CPU / 45 GPU required reports**.
+  The [development summary](/mnt/workspaces/Cells/energy-water-development-20261028-01/development-result.json)
+  binds the partial checks, captured trajectory, pending work and preserved
+  failures. Full CPU/L4 qualification has not launched.
+
+  Key Dev completed the [electroneutral KCC/NKCC component](docs/COTRANSPORT.md):
+  [90 host cases](/mnt/workspaces/Cells/cotransport-contracts-20261028-03/result.json)
+  and [four CPU JAX cases](/mnt/workspaces/Cells/cotransport-contracts-20261028-04/result.json)
+  passed, alongside ten separately labelled pinned generic BETSE source probes.
+  The [handoff verification](/mnt/workspaces/Cells/energy-water-development-20261028-01/cotransport-handoff.json)
+  checked all **545 artifact hashes** and delivered component files. The
+  manufactured reversible tanh laws remain distinct from BETSE's generic
+  transporter kinetics; no native named KCC/NKCC equivalence is claimed.
+  Key Dev delivered fixed-volume `resolved_cotransport@1`, following
+  its [tissue assignment](agent-work/cells-worker-01/workfiles/COTRANSPORT_TISSUE_ASSIGNMENT.md):
+  [77 host cases](/mnt/workspaces/Cells/cotransport-tissue-development-20261028-03/result.json)
+  and [two CPU JAX cases](/mnt/workspaces/Cells/cotransport-tissue-development-20261028-04/result.json)
+  passed. The coordinator verified all **541 artifact hashes** and eight delivered
+  files in the [handoff](/mnt/workspaces/Cells/cotransport-water-development-20261028-01/cotransport-tissue-handoff.json).
+  This establishes scoped 26-field stages/contracts, not coupled trajectory,
+  replay or GPU qualification. The worker log retains its earlier dtype and
+  canonical-species fixture failures and corrected overflow test input.
+  The coordinator added shared registration, serialization, a sixth cotransport
+  clock and independent-world dispatch. A
+  [development smoke failure](/mnt/workspaces/Cells/energy-water-development-20261028-01/cotransport-hook-smoke-01/failure.json)
+  caught an incorrect species attribute in the new schema; Key Dev corrected
+  the owned schema/model before the passing checks. Each lane uses separate files and the
+  coordinator alone maintains this status file. The finite-energy qualification
+  runs separately from these new-feature development files.
+  The completed water qualification below retains its frozen source; current
+  development and worker checks do not modify that evidence.
+
+- **Conservative water and compliant volumes, `resolved_water@1`, passed complete
+  CPU/L4 qualification at 12:43 UTC on 28 October.** The
+  [completed result](/mnt/workspaces/Cells/resolved-water-20261028-01/result.json)
+  records **71 CPU passes plus one expected skip and 72 GPU passes**, with all
+  **55 CPU / 56 GPU required reports** passed, in **27m 31s**. The
+  [registration](/mnt/workspaces/Cells/resolved-water-20261028-01/registration.json)
+  binds the frozen source, protocol and test groups. Controller **1016298** exited
+  and the L4 was free at the single resource-handoff check for the next version.
+  The
+  [GPU example](configs/resolved_water_tissue.json),
+  [guide](docs/TISSUE_RETURN_CURRENT.md#osmotic-water-and-compliant-volumes) and
+  [protocol](validation/tissue/surface_water_protocol.json) define shared passive
+  ions and evolving finite cell/exterior volumes with fixed interfaces. Current
+  volumes enter every ionic stage; water transfers no solute or charge directly.
+  Explicit osmolytes, elastic pressure, volume conservation and energy accounting
+  bring the complete state to 16 fields. Pumps, kinetic channels, calcium/ER,
+  injury, assembly and shape/flow mechanics remain further integration work.
+
+  [Development evidence](/mnt/workspaces/Cells/water-volume-development-20261028-01/development-result.json)
+  records **28 kernel, 32 coupled-model, 55 existing-configuration, 161 schema,
+  three host-execution and 17 independent-reference passes**. The coupled CPU
+  preview includes a full scheduled trajectory and tightened independent reference,
+  taking 65 seconds with peak RSS below 1 GiB. These are numerical and engineering
+  checks. All five trajectories, compiled refinement, complete replay and
+  reordered worlds passed across 13 fresh groups per backend. Maximum trajectory
+  error was **0.00199** of the unchanged budget; the
+  [CPU/L4 comparison](/mnt/workspaces/Cells/resolved-water-20261028-01/evidence/gpu/resolved-water-cpu-gpu.json)
+  passed for **9,557 values**. The
+  [completion receipt](/mnt/workspaces/Cells/resolved-water-20261028-01/completion.json)
+  binds the result and **1,714 evidence files**; the result, registration, protocol
+  and all 111 required report hashes were checked at handoff. Offline
+  planning preserves world identities for 1–16 GPUs; it is not remote execution.
+
+  Peak charged process-tree memory was **3.766 GiB**, individual peak RSS
+  **2.468 GiB**, and host availability stayed above **15.37 GiB**. The
+  [GPU telemetry](/mnt/workspaces/Cells/resolved-water-20261028-01/gpu-metrics/result.json)
+  records **0.07437% GPU busy / 0.001188% SM-active** over **1,056.5 seconds**, with
+  approximately 100% busy and 99.89% hardware-counter coverage. These descriptive
+  averages include compilation and host checks; no single warmed interval exists.
+
+  The [reference/source note](docs/WATER_VOLUME_REFERENCE.md) retains eight
+  passing native BETSE pressure/flow snapshot comparisons. Pinned BETSE leaves
+  volume/dilution updates inactive, so evolving volumes are a Cells extension
+  checked against independent equations. The
+  [initial reference-wrapper failure](/mnt/workspaces/Cells/water-volume-reference-20261028-01/checks-01/failure.json)
+  and [exact observation-clock failure](/mnt/workspaces/Cells/water-volume-execution-20261028-01/failure.json)
+  remain preserved; fixes changed the wrapper import path and constructed
+  observation times from exact integration ticks, without relaxing tolerances.
+
+  Direct agent-to-agent communication is working. The coordinator owns the
+  kernel, model integration and this status file; the other developer delivered
+  schema and execution/replay work with a separate
+  [worker log](agent-work/cells-worker-01/WORK_LOG.md). Independent references were
+  implemented separately. All work uses the same checkout with disjoint file
+  ownership. The user reports **10,000 GH200 GPU-hours for Cells within a 50,000-hour
+  allocation**, with Jupiter a few days away; local verification remains the
+  immediate priority. The qualification keeps the existing 4-GiB memory limits,
+  8-GiB host reserve and GPU-busy/SM-active telemetry.
+
+- **Assembly integration of the 53-field mobile-pump/calcium/injury model passed
+  complete CPU/L4 qualification at 18:40 UTC on 27 October.** The
+  [completed result](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/result.json)
+  records **60 CPU passes plus one expected skip and 61 GPU passes**, with all
+  **32 CPU / 33 GPU required reports** passed. All nine groups ran freshly on
+  each backend, taking **1h 31m 2s** overall. These are numerical and engineering
+  checks, not independent biological cases.
+
+  The [GPU example](configs/assembly_resolved_mobile_pump_repair_tissue.json),
   [guide](docs/TISSUE_RETURN_CURRENT.md#assembly-with-mobile-pumps-channels-and-prescribed-repair)
   and [protocol](validation/tissue/assembly_mobile_pump_repair_protocol.json)
   describe cell-owned assembly control of fixed/mobile channel conduction.
   Pumps retain independent schedules and respond through shared voltage and
-  ions. Reports retain pump protein, 3Na/2K transfers, signed cycles and maintained
-  reservoir work; no protein exchange or finite ATP supply is added.
+  ions. Separate protein, 3Na/2K transfer, signed cycle and maintained-reservoir
+  work records remain intact. Fixed geometry, maintained ATP and prescribed
+  injury/resealing remain explicit; this does not establish native BETSE
+  moving-protein correspondence, autonomous repair or remote Jupiter execution.
 
-  [New contract checks](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/contracts-02/tests.xml)
-  passed **50 cases**, including all 53 stage derivatives for forward/reverse
-  pumping and compact/padded, reordered-species layouts. The initial
-  [development run](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/contracts-01/tests.xml)
-  also passed **46 compatibility/control cases**; its 36 report-construction
-  failures are preserved. The report incorrectly used the channel-style law
-  field; mapping the parsed pump law and role tuple fixed it. A bounded compiled
-  CPU trajectory and the one-to-sixteen-GPU planning check are now running.
-  The [collection receipt](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/protocol-collection.json)
-  registers **61 test cases**, nine sequential groups and **32 CPU / 33 GPU
-  required reports** for the upcoming complete qualification. These are numerical
-  and engineering checks, not independent biological cases.
+  All three coupled, scheduled-release and uncoupled trajectories passed against
+  independent references for both keyed worlds. Maximum trajectory error was
+  **0.34476** of the unchanged numerical budget. Tightened references and compiled
+  three-grid refinement passed. The [CPU/L4 comparison](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/evidence/gpu/assembly-mobile-pump-repair-cpu-gpu.json)
+  passed for **77,610 values**. [Fresh-process replay](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/evidence/gpu/assembly-mobile-pump-repair-replay.json)
+  preserves all 53 ionic fields plus complete assembly, pending-event, exposure
+  and clock state bit-for-bit across changed windows and terminal restart.
+  [Separate one-world partitions and reversed order](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/evidence/gpu/assembly-mobile-pump-repair-worlds.json)
+  also match exactly. The [synthetic coupling control](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/evidence/gpu/assembly-mobile-pump-repair-coupling.json)
+  retains identical assembly events, prescribed damage and neutral pump protein
+  histories while producing a **1.172-mV** voltage contrast and a nonzero pump-cycle
+  response through shared physics. This is a synthetic response, not a wetlab fit.
+
+  Peak charged process-tree memory was **3.97415 GiB**, individual peak RSS
+  **3.94712 GiB**, and host availability stayed above **13.94 GiB**. The four-hour
+  wall limit, 4-GiB memory limits, 8-GiB host reserve, deterministic GPU policy
+  and recorded host allocator were unchanged. [GPU telemetry](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/gpu-metrics/result.json)
+  records **1.545% GPU busy / 0.01723% SM-active** over **2,361.9 seconds**, with
+  approximately 100% busy and 99.96% hardware-counter coverage. These averages
+  include compilation and host checks; there is no single warmed interval.
+
+  The [completion receipt](/mnt/workspaces/Cells/assembly-mobile-pump-repair-20261027-01/completion.json)
+  binds the result and **1,181 evidence files**. This status inspection verified
+  the result, registration, protocol and all 65 required report hashes. Controller
+  **701604** has exited and the L4 is idle. No follow-up job was launched.
+
+  The [development summary](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/development-result.json)
+  retains **96 passing contract/compatibility cases** and the one-to-sixteen-GPU
+  planning check. The [initial report-construction failures](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/contracts-01/tests.xml)
+  remain preserved: mapping the parsed pump law and role tuple corrected 36
+  failures, and all 50 new contract cases then passed. The
+  [480-second compiled-preview timeout](/mnt/workspaces/Cells/assembly-mobile-pump-development-20261027-01/compiled-01/failure.json)
+  retains its complete CPU history and first-world reference/errors; the full
+  qualification above now completes that comparison without relaxing tolerances.
 
 - **Mobile Na/K pumps with mobile Kv1.5, owned calcium/ER and prescribed injury,
   `resolved_repair@3`, passed complete CPU/L4 qualification at 15:54 UTC on

@@ -1,0 +1,202 @@
+{
+  "kind": "resolved_finite_energy_tissue_qualification@1",
+  "scope": "Fixed-volume resolved_tissue@7 channels and Na/K ATPases coupled to finite cell-owned ATP/ADP/Pi. Every pump patch consumes its inside pool once; explicit reversible regeneration carries signed supplied work and heat. Six complete 50-us manufactured regimes at 298.15 K, including two pump patches sharing one finite pool. All 23 state fields are retained. Transformed buffered pH/Mg/solvent chemistry; this is a synthetic Cells coupling, not mitochondrial respiration, biological calibration or native BETSE finite-energy trajectory parity.",
+  "tests": [
+    "tests/unit/test_surface_energy_spec.py",
+    "tests/unit/test_surface_energy.py",
+    "tests/unit/test_surface_energy_execution.py",
+    "tests/unit/test_surface_energy_qualification.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_energy_qualification.py::test_cpu_gpu_complete_states_and_observations"
+  ],
+  "required_evidence": [
+    "resolved-energy-stage-coupled-compact",
+    "resolved-energy-stage-coupled-padded",
+    "resolved-energy-stage-supply_off-compact",
+    "resolved-energy-stage-supply_off-padded",
+    "resolved-energy-stage-inhibited-compact",
+    "resolved-energy-stage-inhibited-padded",
+    "resolved-energy-stage-reverse-compact",
+    "resolved-energy-stage-reverse-padded",
+    "resolved-energy-stage-release-compact",
+    "resolved-energy-stage-release-padded",
+    "resolved-energy-stage-two_patches-compact",
+    "resolved-energy-stage-two_patches-padded",
+    "resolved-energy-compiled-guard",
+    "resolved-energy-trajectory-coupled",
+    "resolved-energy-trajectory-supply_off",
+    "resolved-energy-trajectory-inhibited",
+    "resolved-energy-trajectory-reverse",
+    "resolved-energy-trajectory-release",
+    "resolved-energy-trajectory-two_patches",
+    "resolved-energy-reference-coupled-r1",
+    "resolved-energy-reference-supply_off-r1",
+    "resolved-energy-reference-inhibited-r1",
+    "resolved-energy-reference-reverse-r1",
+    "resolved-energy-reference-release-r1",
+    "resolved-energy-reference-two_patches-r1",
+    "resolved-energy-reference-release-r4",
+    "resolved-energy-controls",
+    "resolved-energy-refinement",
+    "finite-energy-execution-replay",
+    "finite-energy-execution-worlds",
+    "finite-energy-execution-host-contracts",
+    "finite-energy-execution-capture-contract",
+    "finite-energy-execution-regeneration-clock",
+    "finite-energy-execution-checkpoint-contract",
+    "finite-energy-execution-planning"
+  ],
+  "required_gpu_evidence": [
+    "resolved-energy-cpu-gpu"
+  ],
+  "checks": [
+    "Strict finite-pool owner references, explicit regeneration ports and capacities, independent right-continuous membrane/junction/channel/pump/regeneration clocks, lossless raw serialization and an explicitly initial-only maintained-pool projection. Retain inherited ionic/channel domains and temperature/step limits.",
+    "Independent full-node ionic and 80-digit finite-energy stage comparisons in compact/padded layouts, with dynamic pool concentrations, reverse pumping, pump inhibition and supply interruption. Two membrane pumps share one cellular ATP pool and each route is counted exactly once.",
+    "Finite pools preserve adenylate and phosphorus and remain strictly positive. Pump work is an internal transfer, not an additional external source. Combined ionic/capacitor/pool free energy, transport and regeneration heat, and signed external regeneration work close within unchanged energy tolerance. The obsolete initial-drive-times-cycles identity is not used for evolving fuel.",
+    "Compile an accepted step and rejected oversized, invalid-control and exhausted-substrate trials; retain all 23 state fields unchanged on rejection without floors, clipping or ATP resets. Exhaustion rejects even with pump and regeneration controls off.",
+    "Save six complete trajectories and readouts before comparison with segmented independent DOP853. Tighten the release reference fourfold and compare three RK4 grids. Explicitly check per-owner pool/cycle/adenylate/phosphorus and supplied-work identities, shared-patch demand and independent supply/pump/channel interruptions. These are numerical controls, not biological samples.",
+    "Require complete bitwise disk/fresh-process/terminal replay, future supply-off branching and changed windows. Regeneration ledgers stop when supply is disabled while pumps continue consuming retained ATP. Reject incomplete energy checkpoints even when payload checksums are valid.",
+    "Independent scalar/combined/reordered/partitioned worlds retain every state field and stable identities through distinct restart clocks. Require equal regeneration capacity across a batch. Offline plans preserve 16 worlds under 1-16 GPUs and 1-4 Jupiter nodes; remote execution is separate.",
+    "Compare complete CPU/L4 histories and readouts. Reused adaptive CPU references require identical normalized inputs and refinement identity. Use frozen bounded workers, deterministic GPU execution, no persistent compilation cache, the recorded host allocator, unchanged 4-GiB memory limits and 8-GiB host reserve, durable failures and GPU-busy/SM-active telemetry. No automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "stage_potential_atol_V": 3e-11,
+    "trajectory_potential_atol_V": 2e-08,
+    "physical_energy_atol_pJ": 2e-08,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "reference_stability_rtol": 3e-11,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "pool_material_balance_atol_fmol": 2e-12,
+    "regeneration_work_atol_pJ": 3e-12,
+    "cpu_gpu_amount_energy_atol": 3e-13
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k"
+  },
+  "scope_exclusions": [
+    "Fixed geometry, capacitance, topology and ionic/energy volumes. ATP/ADP/Pi are transformed chemical species without implicit ionic charge or osmotic coupling; water/volume composition requires a separate version and qualification.",
+    "The reference includes buffered pH/Mg and solvent activity. No explicit proton/Mg speciation, mitochondrial compartments, respiration or oxygen consumption; the reversible regeneration port is manufactured external energetic support.",
+    "Na/K ATPase consumes the finite pool. Historical BETSE PMCA/SERCA numeric-mM energy conventions are not silently connected to this 1-M pool. Owned ER/calcium, finite metabolism with mobile pumps, and assembly/repair energetics remain further compositions.",
+    "Kv1.5, HCN4 and CaV1.2 are the selected coupled trajectory laws. Other catalog laws are not newly qualified for finite-energy trajectories here. No source-compatible whole-BETSE, wetlab, remote Jupiter or single-tissue decomposition claim."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "schema",
+      "tests": [
+        "tests/unit/test_surface_energy_spec.py"
+      ]
+    },
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_energy.py"
+      ]
+    },
+    {
+      "name": "execution-host",
+      "tests": [
+        "tests/unit/test_surface_energy_execution.py::test_execution_host_contracts",
+        "tests/unit/test_surface_energy_execution.py::test_execution_history_capture_retains_complete_fields",
+        "tests/unit/test_surface_energy_execution.py::test_regeneration_controls_keep_their_clock_and_padding",
+        "tests/unit/test_surface_energy_execution.py::test_batch_rejects_mismatched_regeneration_capacity",
+        "tests/unit/test_surface_energy_execution.py::test_execution_rejects_incomplete_energy_checkpoint",
+        "tests/unit/test_surface_energy_execution.py::test_one_to_sixteen_gpu_planning_preserves_energy_worlds"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_compiled_rejection_keeps_every_field_unchanged"
+      ]
+    },
+    {
+      "name": "trajectory-coupled",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[coupled]"
+      ]
+    },
+    {
+      "name": "trajectory-supply-off",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[supply_off]"
+      ]
+    },
+    {
+      "name": "trajectory-inhibited",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[inhibited]"
+      ]
+    },
+    {
+      "name": "trajectory-reverse",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[reverse]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[release]"
+      ]
+    },
+    {
+      "name": "trajectory-two-patches",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_complete_trajectory_against_independent_reference[two_patches]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_saved_finite_pool_material_supply_and_controls",
+        "tests/unit/test_surface_energy_qualification.py::test_cpu_gpu_complete_states_and_observations"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_surface_energy_qualification.py::test_three_grid_refinement"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_energy_execution.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_energy_execution.py::test_independent_world_partition_reorder_and_restart"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

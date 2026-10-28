@@ -1740,3 +1740,154 @@ This remains a synthetic, fixed-geometry composition with maintained ATP/ADP/Pi
 reservoirs and prescribed injury/resealing. Finite metabolism, protein exchange,
 feedback into assembly and autonomous repair require further models and evidence.
 One-to-sixteen-GPU planning is distinct from qualified remote execution.
+
+### Osmotic water and compliant volumes
+
+The [GPU example](../configs/resolved_water_tissue.json) selects
+`resolved_water@1`, a closed finite-compartment extension of the passive
+`resolved_tissue@1` model. Water crosses each declared cell/exterior membrane
+according to its area, hydraulic permeability and independently scheduled
+availability. Osmotic pressure uses the current mobile-ion amounts plus explicit
+impermeant osmolyte amounts. Fixed-charge equivalents do not specify particle
+counts. Each compartment has a reference volume, linear elastic modulus,
+constant pressure offset and strict allowed volume bounds.
+
+Water transfer changes the two owners' volumes equally and oppositely. It
+transports no ions or charge directly. Every coupled ionic stage uses the current
+concentration, `amount / volume`, so swelling or shrinkage feeds back into
+electrodiffusion and voltage. Membrane areas, capacitances and topology remain
+fixed: this is a compliant-compartment approximation. The
+[reference note](WATER_VOLUME_REFERENCE.md) specifies units, signs, pressure,
+free energy and the independently implemented equations.
+
+The complete state has **16 fields**: the existing 12 ionic fields plus cell
+volume change, exterior volume change, signed membrane water transfer and
+water dissipation. Observations include current volumes/concentrations, osmotic
+and hydrostatic pressures, water potentials, flows and energy residuals. Material,
+charge, local/global volume and combined mixing/elastic/electrical energy checks
+remain separate. Invalid intermediate or final trial volumes reject the step
+without clipping or changing the previous state. The water-volume relaxation
+bound supplements the existing step ceiling; independent coupled refinement is
+still needed because it is not a bound on the full ionic/water Jacobian.
+
+Ordinary execution supports snapshots, future control branches, bounded windows
+and independent ionic ensembles. The
+[qualification protocol](../validation/tissue/surface_water_protocol.json) covers
+coupled swelling, sealed water, water-only dilution, shrinkage and independently
+scheduled release; complete CPU/L4 comparisons; tightened adaptive references;
+three compiled timestep grids; complete fresh-process replay; reordered worlds;
+and offline planning for 1–16 GPUs. [Progress](../PROGRESS.md) owns results and
+pending checks. Outputs belong under `/mnt/workspaces/Cells`.
+
+Pinned BETSE computes osmotic pressure and a water-velocity quantity, but its
+volume and dilution updates are commented out. Its separately checked pressure
+and zero-hydrostatic-pressure flow snapshots provide source correspondence;
+they do not provide an evolving-volume trajectory reference. Kinetic channels,
+pumps, calcium/ER, injury and assembly are not yet composed with this model.
+Shape mechanics, extracellular fluid fields, solvent drag and experimental
+calibration also require further work.
+
+### Active transport with compliant volumes
+
+The [active-water example](../configs/resolved_water_kinetic_tissue.json) selects
+`resolved_water@2`. It composes the existing `resolved_tissue@7` channel catalog,
+maintained Na/K ATPases and kinetic junction gates with the same finite water
+owners and compliant-volume law. Each stage supplies current concentrations to
+the passive routes, channels and pumps. Water, baseline ionic, shared-channel,
+pump-cycle and metabolic-work records remain separate. The complete state has
+**23 fields**. Unscaled channel laws retain **298.15 K** and their existing
+**1.25-us** maximum RK4 step; the water relaxation bound also applies.
+
+The example includes Kv1.5, HCN4 and CaV1.2 populations. Calcium is an ordinary
+mobile ion here; this family does not provide owned ER stores, calcium buffers
+or dedicated plasma/ER calcium transport. Membrane, junction, channel, pump and
+water controls retain separate schedules on one accepted event grid. Sealing
+water recovers the active ionic model; removing channels and pumps recovers the
+passive-water model. Definitions, full snapshots, future branches, windows and
+independent-world plans use the ordinary execution stack.
+
+The [qualification protocol](../validation/tissue/surface_water_kinetic_protocol.json)
+specifies six synthetic 50-us trajectories: coupled transport, sealed water,
+passive-water reduction, inhibited pumps, reversed pumping and independent
+release schedules. Multi-cell stages also include shared exterior owners,
+junctions and extracellular faces. Independent equations, complete CPU/L4
+histories, tightened adaptive references, three-grid refinement and exact replay
+have separate checks; [Progress](../PROGRESS.md) owns their execution status.
+Implementing the wider channel catalog does not qualify every catalog law in
+this coupled regime.
+
+ATP/ADP/Pi are maintained chemical support inputs, not finite volume-owned
+metabolites. They supply the recorded ATP work and are not silently added to
+the osmotic particle inventory. Only declared mobile ions and finite impermeant
+osmolytes contribute to this water law. A finite-energy model must declare its
+material, energy, charge and osmotic ownership before replacing these inputs.
+Existing phenomenological channel gates also have no newly assigned energetic
+store. Geometry, capacitance and topology remain fixed; autonomous adaptation,
+assembly coupling and experimental calibration require further work.
+
+### Finite cellular energy with compliant volumes
+
+The [combined example](../configs/resolved_energy_water_tissue.json) selects
+`resolved_energy_water@1`. It composes the finite ATP/ADP/phosphate model with
+water exchange and the active ionic/channel layer. Every stage uses current
+amounts and volumes for ion transport, Na/K pumping, regeneration and osmotic
+pressure. Membrane, junction, channel, pump, regeneration and water schedules
+remain independent. The complete state has **28 fields**.
+
+The required declaration `energy_osmotic_coupling: neutral_ideal_atp_adp_pi@1`
+makes the extra assumption explicit: each transformed ATP, ADP and phosphate
+particle contributes ideal osmotic pressure, without adding ionic charge.
+These particles are separate from the declared background impermeant inventory.
+This is an approximation with buffered pH/Mg/solvent, not explicit metabolite
+speciation or measured cell energetics. Hydrolysis increases their combined
+particle count; regeneration decreases it. Water changes concentrations without
+directly moving solute or charge. Areas and capacitances remain fixed.
+
+The finite pool already owns its mixing free energy. Its signed volume-work
+ledger integrates `-0.001 R T N_pool/V * dV/dt` in pJ/s. This is an internal
+transfer between pool mixing and volume relaxation. The pool identity includes
+this transfer; the combined ionic/capacitor/pool/elastic energy identity includes
+water heat and external regeneration work, with no second volume-work input.
+In particular, endpoint dilution energy cannot replace the integrated ledger
+when reactions change the particle count. The
+[reference note](WATER_VOLUME_REFERENCE.md) derives the accounting and the
+conserved-inventory bound `N_pool < 2 ATP_initial + ADP_initial + Pi_initial`.
+
+Closed ions, adenylate, phosphorus and water retain their separate conservation
+checks and existing tolerances. Invalid volumes or exhausted substrates reject
+every trial, including when pumps, supply or water controls are disabled. Sealed
+water recovers the complete fixed-volume finite-energy model. Independent
+equations exercise changing volumes and particles, shared owners, full
+trajectories and refinement. Snapshot/replay, world placement and CPU/L4
+qualification are separate execution checks; [Progress](../PROGRESS.md) records
+what has actually passed. Neither this model nor its manufactured regeneration
+port establishes whole-BETSE equivalence, respiration or biological calibration.
+
+### Cotransport with finite energy and water
+
+The [combined cotransport example](../configs/resolved_cotransport_water_tissue.json)
+selects `resolved_cotransport_water@1`. Manufactured electroneutral KCC/NKCC
+routes act on the same ionic amounts that determine osmotic pressure, channel
+currents and Na/K pump demand. Current volumes enter every concentration
+calculation. Cotransport has no direct ATP reaction or transported current;
+its ionic redistribution can change subsequent pumping, voltage and water flow.
+The [cotransport guide](TISSUE_COTRANSPORT.md) retains its kinetic assumptions
+and distinguishes these laws from the pinned BETSE generic transporter.
+
+The complete state has **31 fields**, adding signed cotransport cycles,
+per-species transfers and heat to the 28-field water/finite-energy state. Each
+stage uses one shared ionic/field/pool calculation. Incoming cotransport amounts
+are scattered once to their membrane owners, and heat enters the combined
+energy balance once. Finite pool volume work retains its internal-transfer
+meaning. Seven independent control families share the full accepted event
+grid; reducing a model for a numerical check must not discard another
+component's event boundaries.
+
+Blocking or omitting cotransport recovers the complete water/finite-energy
+model; sealing water recovers fixed-volume cotransport. Compact/padded stages,
+renamed roles, shared pump owners, complete snapshots, accounting corruption
+and a short feedback trajectory have CPU checks. Their evidence and limits
+belong in [Progress](../PROGRESS.md). These checks establish component and
+initial integration behavior. Coupled settling, long-time stability, full
+restart trajectories and GPU execution require appropriately long comparisons,
+refinement and complete state evidence before those claims are made.

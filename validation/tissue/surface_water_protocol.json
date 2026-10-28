@@ -1,0 +1,217 @@
+{
+  "kind": "resolved_compliant_water_qualification@1",
+  "scope": "Conservative osmotic water exchange coupled to the passive resolved_tissue@1 ionic field model. Closed finite cells and exterior compartments, fixed membrane areas/capacitances/topology, explicit impermeant osmolyte particle counts and linear elastic pressures. Complete 16-field trajectories use one cell and one exterior owner for 2 ms at 310 K; separate multi-edge/multicell stages check shared owners. This is a Cells compliant-volume extension, not native BETSE volume-trajectory parity or a biological calibration.",
+  "tests": [
+    "tests/unit/test_osmotic_water.py",
+    "tests/unit/test_surface_water.py",
+    "tests/unit/test_surface_water_execution.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_water.py::test_cpu_gpu_complete_states_and_observations"
+  ],
+  "required_evidence": [
+    "water-kernel-stage-osmotic-0-0",
+    "water-kernel-stage-osmotic-0-1",
+    "water-kernel-stage-osmotic-1-0",
+    "water-kernel-stage-osmotic-1-1",
+    "water-kernel-stage-mixed-0-0",
+    "water-kernel-stage-mixed-0-1",
+    "water-kernel-stage-mixed-1-0",
+    "water-kernel-stage-mixed-1-1",
+    "water-kernel-stage-mechanical-0-0",
+    "water-kernel-stage-mechanical-0-1",
+    "water-kernel-stage-mechanical-1-0",
+    "water-kernel-stage-mechanical-1-1",
+    "water-kernel-stage-empty-0-0",
+    "water-kernel-stage-empty-0-1",
+    "water-kernel-stage-empty-1-0",
+    "water-kernel-stage-empty-1-1",
+    "water-kernel-stage-branched-0-0",
+    "water-kernel-stage-branched-0-1",
+    "water-kernel-stage-branched-1-0",
+    "water-kernel-stage-branched-1-1",
+    "water-kernel-pressure-and-bound",
+    "water-kernel-compiled",
+    "resolved-water-registration-cpu",
+    "resolved-water-registration-gpu",
+    "resolved-water-stage-coupled-0",
+    "resolved-water-stage-coupled-1",
+    "resolved-water-stage-sealed-0",
+    "resolved-water-stage-sealed-1",
+    "resolved-water-stage-water_only-0",
+    "resolved-water-stage-water_only-1",
+    "resolved-water-stage-shrink-0",
+    "resolved-water-stage-shrink-1",
+    "resolved-water-stage-release-0",
+    "resolved-water-stage-release-1",
+    "resolved-water-multicell",
+    "resolved-water-sealed-reduction",
+    "resolved-water-compiled-guard",
+    "resolved-water-trajectory-coupled",
+    "resolved-water-trajectory-sealed",
+    "resolved-water-trajectory-water_only",
+    "resolved-water-trajectory-shrink",
+    "resolved-water-trajectory-release",
+    "resolved-water-reference-coupled-r1",
+    "resolved-water-reference-sealed-r1",
+    "resolved-water-reference-water_only-r1",
+    "resolved-water-reference-shrink-r1",
+    "resolved-water-reference-release-r1",
+    "resolved-water-reference-release-r4",
+    "resolved-water-controls",
+    "resolved-water-refinement",
+    "water-execution-replay",
+    "water-execution-worlds",
+    "water-execution-host-contracts",
+    "water-execution-capture-contract",
+    "water-execution-planning"
+  ],
+  "required_gpu_evidence": [
+    "resolved-water-cpu-gpu"
+  ],
+  "checks": [
+    "Compare pressure, flow, energy and conservative graph derivatives with an independent 80-digit Decimal oracle across osmotic, mechanical, mixed, zero-solute and shared-owner graphs, reversed edges and padding. Check common pressure offsets, sealed interfaces, nonnegative dissipation and the fixed-solute water-volume Jacobian bound. The bound is not a full coupled stability or accuracy guarantee.",
+    "Compare complete 16-field coupled derivatives and resolved potentials with independent scalar ionic and water equations at changed volumes, compact/padded layouts and reordered species. Every ionic stage uses current amount/current volume. Sealing water reduces exactly to the prior 12-field model. Explicit impermeant particle amounts are not inferred from fixed charge.",
+    "Five complete compiled 2-ms trajectories cover coupled swelling, sealed water, water-only dilution, shrinkage and independent off-grid ionic/water release schedules. Save complete histories and observations before assertions. Compare every field and potential against a segmented DOP853 reference; water alone changes no ionic amount or charge. These are numerical cases, not independent biological observations.",
+    "Keep existing ion, charge, capacitor and physical-energy tolerances. Add local/global volume-transfer identities, monotone water heat and the stable mixing/elastic energy correction using current ion amounts. Invalid bounded-volume trials and water controls reject without clipping, preserving all 16 fields. Fourfold reference tightening and three compiled RK4 grids test coupled accuracy independently of the step bound.",
+    "Require bitwise complete disk/fresh-process/terminal replay, an independently changed future water control, changed integration windows, full state/layout/clocks and a fresh ordinary CLI resume. Save actual arrays before comparisons. Run replay phases sequentially under the same process-tree resource guard.",
+    "Compare scalar worlds, combined/reversed worlds and separate one-world partitions, then resume worlds with different clocks including a terminal world. Retain stable world identities in offline 1-16 GPU and 1-4 Jupiter-node plans. Planning and L4 execution do not establish remote execution or a single tissue spanning devices.",
+    "Compare every saved CPU/L4 history and observation using unchanged unit-specific backend tolerances. GPU adaptive references must match normalized CPU inputs and refinement settings. Required reports and all evidence hashes are bound to the frozen source; failed evidence remains retained.",
+    "Use fresh bounded workers, the deterministic GPU policy, disabled persistent compilation cache and the recorded host allocator. Keep 4-GiB charged process-tree and individual RSS limits with an 8-GiB host reserve. Record GPU-busy and SM-active including host/compilation intervals. No automatic retry or follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "water_kernel_rtol": 3e-13,
+    "water_kernel_atol": 3e-12,
+    "stage_potential_atol_V": 3e-11,
+    "trajectory_potential_atol_V": 2e-08,
+    "volume_balance_atol_pL": 2e-12,
+    "physical_energy_atol_pJ": 2e-08,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_volume_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "reference_stability_rtol": 3e-11,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k"
+  },
+  "scope_exclusions": [
+    "Fixed areas, capacitances and topology with changing compliant volumes. No shape mechanics, solvent drag, extracellular fluid velocity field, junction water transport, cutting or remeshing.",
+    "Passive shared ionic/water model only. Integration with kinetic channels, pumps, calcium/ER, injury, assembly, finite metabolism and autonomous repair requires further models and qualification.",
+    "Native BETSE pressure/zero-hydrostatic-pressure flow snapshots were checked separately. Its pinned volume/concentration update block is inactive; no native evolving-volume trajectory claim. No wetlab fit or experimental validation.",
+    "Offline independent-world planning and local CPU/L4 execution only. No GH200/Jupiter qualification or single-tissue domain decomposition."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "water-kernel",
+      "tests": [
+        "tests/unit/test_osmotic_water.py"
+      ]
+    },
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_registered_complete_state_and_ensemble",
+        "tests/unit/test_surface_water.py::test_independent_stage_with_shared_ions_and_current_volumes",
+        "tests/unit/test_surface_water.py::test_multicell_shared_outside_owners_and_full_field_reference",
+        "tests/unit/test_surface_water.py::test_sealed_water_reduces_exactly_to_existing_ionic_stage",
+        "tests/unit/test_surface_water.py::test_corrupt_complete_ledgers_are_rejected"
+      ]
+    },
+    {
+      "name": "execution-host",
+      "tests": [
+        "tests/unit/test_surface_water_execution.py::test_execution_host_contracts",
+        "tests/unit/test_surface_water_execution.py::test_execution_history_capture_retains_complete_fields",
+        "tests/unit/test_surface_water_execution.py::test_one_to_sixteen_gpu_planning_preserves_water_worlds"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_compiled_rejection_keeps_every_field_unchanged"
+      ]
+    },
+    {
+      "name": "trajectory-coupled",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_complete_trajectory_against_independent_reference[coupled]"
+      ]
+    },
+    {
+      "name": "trajectory-sealed",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_complete_trajectory_against_independent_reference[sealed]"
+      ]
+    },
+    {
+      "name": "trajectory-water-only",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_complete_trajectory_against_independent_reference[water_only]"
+      ]
+    },
+    {
+      "name": "trajectory-shrink",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_complete_trajectory_against_independent_reference[shrink]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_complete_trajectory_against_independent_reference[release]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_saved_physical_controls_and_dilution",
+        "tests/unit/test_surface_water.py::test_cpu_gpu_complete_states_and_observations"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_surface_water.py::test_three_grid_refinement"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_water_execution.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_water_execution.py::test_independent_world_partition_reorder_and_restart"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

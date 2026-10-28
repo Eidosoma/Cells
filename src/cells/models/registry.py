@@ -39,6 +39,10 @@ from cells.core.surface_calcium_spec import (
     SurfaceCalciumModel,
     SurfaceCalciumSodiumModel,
 )
+from cells.core.surface_cotransport_spec import SurfaceCotransportModel
+from cells.core.surface_cotransport_water_spec import SurfaceCotransportWaterModel
+from cells.core.surface_energy_spec import SurfaceEnergyModel
+from cells.core.surface_energy_water_spec import SurfaceEnergyWaterModel
 from cells.core.surface_kinetic_spec import (
     SurfaceCavModel,
     SurfaceChannelModel,
@@ -54,6 +58,8 @@ from cells.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
 from cells.core.surface_redistribution_spec import SurfaceRedistributionModel
 from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.core.surface_water_kinetic_spec import SurfaceWaterKineticModel
+from cells.core.surface_water_spec import SurfaceWaterModel
 from cells.core.tissue_calcium_spec import TissueCalciumModel
 from cells.core.tissue_spec import TissueModel
 from cells.models import (
@@ -98,6 +104,8 @@ from cells.models import (
     surface_repair,
     surface_sodium,
     surface_tissue,
+    surface_water,
+    surface_water_kinetic,
     tissue,
     tissue_calcium,
     voltage_gated_membrane,
@@ -105,6 +113,26 @@ from cells.models import (
 
 
 def get_model(spec):
+    if isinstance(spec, SurfaceCotransportWaterModel):
+        from cells.models import surface_cotransport_water
+
+        return surface_cotransport_water
+    if isinstance(spec, SurfaceCotransportModel):
+        from cells.models import surface_cotransport
+
+        return surface_cotransport
+    if isinstance(spec, SurfaceEnergyWaterModel):
+        from cells.models import surface_energy_water
+
+        return surface_energy_water
+    if isinstance(spec, SurfaceEnergyModel):
+        from cells.models import surface_energy
+
+        return surface_energy
+    if isinstance(spec, SurfaceWaterKineticModel):
+        return surface_water_kinetic
+    if isinstance(spec, SurfaceWaterModel):
+        return surface_water
     if isinstance(spec, BetseJunctionModel):
         return betse_junction
     if isinstance(spec, BetseSpatialModel):

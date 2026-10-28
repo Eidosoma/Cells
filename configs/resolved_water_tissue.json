@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "resolved_water@1",
+    "temperature_K": 310.0,
+    "species": [
+      {"id": "Na", "valence": 1},
+      {"id": "K", "valence": 1},
+      {"id": "Cl", "valence": -1}
+    ],
+    "cells": [
+      {
+        "id": "cell_0",
+        "volume_pL": 2.0,
+        "initial_amount_fmol": {"Na": 24.0, "K": 280.0, "Cl": 20.0},
+        "fixed_charge_equivalent_fmol": -284.0,
+        "initial_charge_C": 0.0
+      }
+    ],
+    "extracellular": [
+      {
+        "id": "outside_0",
+        "volume_pL": 4.0,
+        "initial_amount_fmol": {"Na": 580.0, "K": 16.0, "Cl": 480.0},
+        "fixed_charge_equivalent_fmol": -116.0,
+        "initial_charge_C": 0.0,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      }
+    ],
+    "membranes": [
+      {
+        "id": "membrane_0",
+        "inside": "cell_0",
+        "outside": "outside_0",
+        "area_m2": 4e-10,
+        "capacitance_F": 4e-12,
+        "permeability_m_per_s": {"Na": 1e-9, "K": 2e-9, "Cl": 8e-10},
+        "law": "constant_field@1"
+      }
+    ],
+    "junctions": [],
+    "faces": [],
+    "closure": {
+      "law": "resolved_capacitor_components_current_continuity@1",
+      "gauge_reference": "outside_0"
+    },
+    "water_compartments": [
+      {
+        "compartment_id": "cell_0",
+        "reference_volume_pL": 2.0,
+        "minimum_volume_pL": 1.0,
+        "maximum_volume_pL": 3.0,
+        "impermeant_amount_fmol": 300.0,
+        "bulk_modulus_Pa": 500000.0,
+        "pressure_offset_Pa": 1000.0
+      },
+      {
+        "compartment_id": "outside_0",
+        "reference_volume_pL": 4.0,
+        "minimum_volume_pL": 2.0,
+        "maximum_volume_pL": 6.0,
+        "impermeant_amount_fmol": 0.0,
+        "bulk_modulus_Pa": 500000.0,
+        "pressure_offset_Pa": -500.0
+      }
+    ],
+    "water_membranes": [
+      {
+        "membrane_id": "membrane_0",
+        "hydraulic_permeability_m_per_Pa_s": 1e-12
+      }
+    ]
+  },
+  "experiment": {
+    "end_time": 0.002,
+    "observation_times": [0.0, 0.00037, 0.00073, 0.001, 0.00113, 0.00151, 0.002],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "schedule": [
+          {"time": 0.0, "availability": 1.0},
+          {"time": 0.00073, "availability": 0.0},
+          {"time": 0.00151, "availability": 0.75}
+        ]
+      }
+    ],
+    "junction_controls": [],
+    "water_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "schedule": [
+          {"time": 0.0, "availability": 1.0},
+          {"time": 0.00037, "availability": 0.0},
+          {"time": 0.00113, "availability": 0.8}
+        ]
+      }
+    ]
+  },
+  "execution": {
+    "dt": 0.0001,
+    "capacity": 2,
+    "extracellular_capacity": 2,
+    "membrane_capacity": 2,
+    "edge_capacity": 0,
+    "face_capacity": 0,
+    "backend": "gpu",
+    "jit": true,
+    "precision": "float64",
+    "solver": "rk4",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "max_steps": 256,
+    "max_trace_bytes": 67108864,
+    "material_balance_atol_fmol": {"Na": 2e-11, "K": 2e-11, "Cl": 2e-11}
+  }
+}

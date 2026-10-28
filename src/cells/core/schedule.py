@@ -27,6 +27,16 @@ from cells.core.specs import (
 )
 from cells.core.surface_calcium_spec import Change as SurfaceCalciumChange
 from cells.core.surface_calcium_spec import ionic_spec as surface_ionic_spec
+from cells.core.surface_cotransport_spec import Control as SurfaceCotransportControl
+from cells.core.surface_cotransport_spec import SurfaceCotransportModel
+from cells.core.surface_cotransport_spec import energy_spec as cotransport_energy_spec
+from cells.core.surface_cotransport_water_spec import Control as CotransportWaterControl
+from cells.core.surface_cotransport_water_spec import SurfaceCotransportWaterModel
+from cells.core.surface_cotransport_water_spec import water_spec as cotransport_water_spec
+from cells.core.surface_energy_spec import Control as SurfaceEnergyControl
+from cells.core.surface_energy_spec import SurfaceEnergyModel, initial_ionic_spec
+from cells.core.surface_energy_water_spec import Control as SurfaceEnergyWaterControl
+from cells.core.surface_energy_water_spec import SurfaceEnergyWaterModel, energy_spec
 from cells.core.surface_kinetic_spec import Change as SurfaceKineticChange
 from cells.core.surface_mobile_channel_spec import Control as SurfaceMobileChannelControl
 from cells.core.surface_mobile_channel_spec import SurfaceMobileChannelModel
@@ -41,6 +51,12 @@ from cells.core.surface_mobile_repair_spec import prior_spec as mobile_repair_pr
 from cells.core.surface_repair_spec import SurfaceRepairModel
 from cells.core.surface_repair_spec import base_spec as repair_base_spec
 from cells.core.surface_tissue_spec import SurfaceChange
+from cells.core.surface_water_kinetic_spec import Control as SurfaceWaterKineticControl
+from cells.core.surface_water_kinetic_spec import SurfaceWaterKineticModel
+from cells.core.surface_water_kinetic_spec import prior_spec as water_kinetic_prior
+from cells.core.surface_water_spec import Control as SurfaceWaterControl
+from cells.core.surface_water_spec import SurfaceWaterModel
+from cells.core.surface_water_spec import prior_spec as water_prior
 
 
 class PairControl(NamedTuple):
@@ -136,6 +152,48 @@ def event_index(spec, time):
 
 def control_values(spec, times):
     changes = spec.experiment.changes
+    if isinstance(spec.model, SurfaceCotransportWaterModel):
+        original = control_values(cotransport_water_spec(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.cotransport for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.cotransport_capacity))
+        padded[:, : len(spec.model.cotransporters)] = values
+        return CotransportWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceCotransportModel):
+        original = control_values(cotransport_energy_spec(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.cotransport for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.cotransport_capacity))
+        padded[:, : len(spec.model.cotransporters)] = values
+        return SurfaceCotransportControl(*original, padded)
+    if isinstance(spec.model, SurfaceEnergyWaterModel):
+        original = control_values(energy_spec(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return SurfaceEnergyWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceEnergyModel):
+        original = control_values(initial_ionic_spec(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.regeneration for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.regeneration_capacity))
+        padded[:, : len(spec.model.regeneration_ports)] = values
+        return SurfaceEnergyControl(*original, padded)
+    if isinstance(spec.model, SurfaceWaterKineticModel):
+        original = control_values(water_kinetic_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return SurfaceWaterKineticControl(*original, padded)
+    if isinstance(spec.model, SurfaceWaterModel):
+        original = control_values(water_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return SurfaceWaterControl(*original, padded)
     if isinstance(spec.model, SurfaceMobileChannelModel):
         original = control_values(mobile_channel_prior(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1

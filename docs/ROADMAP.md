@@ -38,10 +38,19 @@ Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
 4. Develop assembly coupling as an explicit model hypothesis. Keep finite protein
    material and ionic inventories distinct; use intervention and conservation
    checks before adding feedback from calcium, energy or neighbouring cells.
-5. Carry CPU/L4 verification and resource measurement into each new family.
-   Prepare Jupiter qualification in stages while capability work remains the
-   immediate priority. Further utilization optimization is parked; telemetry
-   continues on GPU runs.
+5. Build features with short CPU checks first, retaining independent references,
+   conservation checks and failed evidence. Batch later GPU qualification across
+   compatible features and pack independent worlds within each device. Use
+   measured runtimes to balance arms across the four-GPU Jupiter node and later
+   up to sixteen GPUs, preserving each case's identity and tolerances. Track both
+   GPU-busy and SM-active, with useful work and allocation cost as the objective.
+   New GPU rounds are deferred while the next mechanisms are implemented;
+   CPU implementation and GPU qualification remain separate coverage claims.
+   Validation duration follows the claimed behavior: component-stage checks do
+   not establish coupled relaxation or long-time stability. Retain sufficient
+   settling time, intervention/recovery intervals, independent references and
+   refinement; launch longer necessary checks detached rather than shortening
+   their scientific scope to meet a runtime target.
 6. **Defer further two-task/channel-compensation research until more of the
    simulator is built and verified.** Preserve the existing experiments and
    the [Hazan and Levin review](PAPER_REVIEW_CHANNEL_COMPENSATION.md) for a later
@@ -53,9 +62,13 @@ Cells model needs its own CPU/GPU evidence before GPU parity is claimed.
    Revisit its scope after additional platform capabilities are verified;
    do not automatically extend the search or launch confirmation runs.
 
-Water/volume/flow, biophysical mechanics, spatial redistribution and mitochondrial
-energy dynamics require new laws and references. Existing calcium and tissue
-implementations are useful prerequisites, not complete coverage of those targets.
+The first [water/volume component](TISSUE_RETURN_CURRENT.md#osmotic-water-and-compliant-volumes)
+couples conservative solvent transfer to passive ions in compliant compartments.
+Its qualification is tracked in Progress. Integrating it with pumps, channels,
+calcium and assembly comes before evolving geometry and fluid fields. Broader
+biophysical mechanics, spatial redistribution and mitochondrial energy dynamics
+still require additional laws and references; existing components provide
+prerequisites rather than complete coverage.
 Biological calibration needs measured inputs, uncertainty and independent
 experimental evaluation in addition to numerical or source agreement.
 

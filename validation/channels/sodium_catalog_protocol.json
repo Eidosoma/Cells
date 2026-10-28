@@ -1,0 +1,68 @@
+{
+  "kind": "cells.pinned_sodium_catalog_contracts@1",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_version": "1.5.0",
+  "classes": ["Nav1p2", "Nav1p3", "NavRat2", "NavRat1", "NavRat3", "NaLeak", "Nav1p6"],
+  "law_codes": {
+    "betse_nav1p2_m3h_regularized@1": 2,
+    "betse_nav1p3_m3h_regularized@1": 18,
+    "betse_navrat2_m3h_regularized@1": 19,
+    "betse_navrat1_m3h_regularized@1": 20,
+    "betse_navrat3_m3h_regularized@1": 21,
+    "betse_naleak_always_open@1": 22,
+    "betse_nav1p6_persistent_m@1": 23
+  },
+  "padding": "Code0 is sodium-component-only neutral padding, not shared-catalog compatibility; voltage/gates/rates/opening zero, tau1s",
+  "axes": "Voltage/codes [...,population], gates/targets/tau [...,2,population]; independent leading world broadcasts",
+  "voltage_domain_V": [-0.120, 0.060],
+  "gate_domain": [0.0, 1.0],
+  "temperature": "No temperature/Q10 scaling is present in inspected source; none inferred",
+  "continuous_law": "dg/dt=(target-g)/tau_seconds; analytic removable limits",
+  "native_clock": "Actual inherited backward Euler, dt_native=p.dt*self.time_unit; distinct finite-step history",
+  "overlap": "Accepted sodium_channels.Nav1p2 kinetics/opening remain unchanged; code2 overlap must be exact",
+  "reference": "Independent scalar80-digit Decimal equations using millivolts, direct exponential quotients and exact zero limits; no Cells/NumPy/JAX imports",
+  "source_files": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+  },
+  "native_probe": {
+    "installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "ordinary_voltage_V": [-0.120, -0.080, -0.065, -0.020, 0.0, 0.060],
+    "initial_gates_for_update_probe": [0.2, 0.7],
+    "update_dt_s": 0.0002,
+    "voltage_correction_mV": 0.0,
+    "expected_singular_failures": "Retain actual native failures/nonfinite results at exact quotient singularities; regularized finite limits are separate physical contracts",
+    "whole_native_simulation": false,
+    "copy_upstream_into_repo": false
+  },
+  "clamp_protocol": {
+    "holding_voltage_V": -0.080,
+    "depolarized_voltage_V": 0.0,
+    "segment_duration": "12*max(tau_m,tau_h) for each class and each held voltage; no arbitrary physical-duration truncation",
+    "native_clock_refinement": [2, 4, 8],
+    "native_time_grid": "Independent geometric base clock starts at min(tau)/4, grows1.2x, ends at12*max(tau); split each interval for refinement",
+    "continuous_gate_refinement_steps": [32, 64, 128],
+    "continuous_gate_duration": "12*tau_gate; other independent gate held exactly at its production fixed point",
+    "continuous_expected_order": 4,
+    "scope": "Selected scalar gate clamp/recovery laws and clocks, not coupled ionic/tissue trajectories"
+  },
+  "tolerances": {
+    "relative": 5e-12,
+    "gate_atol": 5e-14,
+    "tau_atol_s": 3e-13,
+    "opening_atol": 8e-14,
+    "rate_atol_per_s": 3e-10,
+    "native_ordinary_relative": 5e-11,
+    "native_gate_atol": 1e-12,
+    "native_tau_atol_s": 4e-12
+  },
+  "resources": {
+    "cpu_affinity": [7], "blas_threads": 1, "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180,
+    "gpu": false, "persistent_compilation_cache": false,
+    "compiled_cpu_authorization": "Chief cleared exactly two CPU7 JAX array/domain/gradient checks after verifying the113-case host receipt and503 output hashes; BLAS1, <=1GiB PSS and individual RSS, >=8GiB host reserve, no GPU or automatic follow-up"
+  },
+  "automatic_followup": false
+}

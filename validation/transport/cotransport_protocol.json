@@ -1,0 +1,73 @@
+{
+  "kind": "cells.cotransport_contracts@1",
+  "kernel_law": "electroneutral_symport_reversible_tanh@1",
+  "named_laws": {
+    "kcc_reversible_tanh@1": {"K": 1, "Cl": 1},
+    "nkcc_reversible_tanh@1": {"Na": 1, "K": 1, "Cl": 2}
+  },
+  "positive_direction": "outside to inside",
+  "kinetics": "Manufactured C*a*tanh(A/(2RT)); no fitted transporter or native BETSE equivalence claim",
+  "temperature_domain_K": [200.0, 400.0],
+  "temperature_ownership": "One isothermal temperature per independent world, with singleton final axis",
+  "substrate_domain": "Strict positive finite concentrations in every active compartment even when blocked; zero inactive compartments",
+  "padding": "Zero stoichiometry, capacity, availability and cycles for inactive routes; safe owner indices",
+  "reference": "Independent 80-digit scalar Decimal concentration products and signed owner loops, no Cells/NumPy/JAX imports",
+  "tolerances": {
+    "relative": 5e-12,
+    "rate_atol_fmol_s": 1e-12,
+    "affinity_atol_J_mol": 4e-10,
+    "power_atol_pJ_s": 5e-11,
+    "material_atol_fmol": 2e-12,
+    "charge_atol_C": 3e-22,
+    "native_flux_atol_mol_m2_s": 1e-18
+  },
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "scope": "Execute the pinned generic write_transporters expression generator on manufactured neutral inward configurations, without a native simulation",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+      "betse/data/yaml/extra_configs/extra_config_template.yaml": "2dd1322fdab1dff7d7b9b1d90894d27e5f8357bf37b30050c2ae8c10e91492b7"
+    },
+    "primary_sources": [
+      "https://journals.physiology.org/doi/10.1152/jn.2000.84.1.281",
+      "https://journals.physiology.org/doi/10.1152/jn.01007.2007"
+    ]
+  },
+  "host_checks": {
+    "pytest_selector": "tests/unit/test_cotransport.py -k 'not jax'",
+    "cpu_affinity": [7],
+    "blas_threads": 1,
+    "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "jit": false,
+    "persistent_compilation_cache": false
+  },
+  "cpu_jax_checks": {
+    "authorization": "Chief authorized four CPU-only JAX cases on CPU7 after 90 host contracts and 10 separate pinned-source cases passed; <=1GiB guard/8GiB reserve, BLAS1, no GPU",
+    "pytest_selector": "tests/unit/test_cotransport.py -k jax",
+    "cpu_affinity": [7],
+    "blas_threads": 1,
+    "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "scope_exclusions": [
+    "Existing tissue schema, models, registry, checkpoints or solvers",
+    "Substrate floors, depletion repair or a zero-concentration boundary law",
+    "Direct ATP usage or direct electroneutral capacitive current",
+    "Isoform calibration, protein binding kinetics and regulatory pathways",
+    "Water/solvent drag or implicit volume/osmolyte coupling",
+    "Native BETSE named KCC/NKCC law or native tissue simulation equivalence",
+    "Whole-model CPU/GPU qualification, large sweep or trajectory audit"
+  ],
+  "automatic_followup": false
+}

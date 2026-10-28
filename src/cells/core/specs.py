@@ -808,9 +808,33 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceCalciumModel):
             return to_dict(self)
+        from cells.core.surface_water_kinetic_spec import SurfaceWaterKineticModel, to_dict
+
+        if isinstance(m, SurfaceWaterKineticModel):
+            return to_dict(self)
+        from cells.core.surface_cotransport_water_spec import SurfaceCotransportWaterModel, to_dict
+
+        if isinstance(m, SurfaceCotransportWaterModel):
+            return to_dict(self)
+        from cells.core.surface_cotransport_spec import SurfaceCotransportModel, to_dict
+
+        if isinstance(m, SurfaceCotransportModel):
+            return to_dict(self)
+        from cells.core.surface_energy_water_spec import SurfaceEnergyWaterModel, to_dict
+
+        if isinstance(m, SurfaceEnergyWaterModel):
+            return to_dict(self)
+        from cells.core.surface_energy_spec import SurfaceEnergyModel, to_dict
+
+        if isinstance(m, SurfaceEnergyModel):
+            return to_dict(self)
         from cells.core.surface_kinetic_spec import SurfaceKineticModel, to_dict
 
         if isinstance(m, SurfaceKineticModel):
+            return to_dict(self)
+        from cells.core.surface_water_spec import SurfaceWaterModel, to_dict
+
+        if isinstance(m, SurfaceWaterModel):
             return to_dict(self)
         from cells.core.surface_tissue_spec import SurfaceTissueModel, to_dict
 
@@ -1088,6 +1112,33 @@ def parse_spec(data: dict) -> SimulationSpec:
         "resolved_tissue@7",
     ):
         from cells.core.surface_kinetic_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_water@2":
+        from cells.core.surface_water_kinetic_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_cotransport_water@1"
+    ):
+        from cells.core.surface_cotransport_water_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_cotransport@1":
+        from cells.core.surface_cotransport_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_energy_water@1":
+        from cells.core.surface_energy_water_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_energy@1":
+        from cells.core.surface_energy_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_water@1":
+        from cells.core.surface_water_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":

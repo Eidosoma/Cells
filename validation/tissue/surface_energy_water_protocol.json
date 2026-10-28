@@ -1,0 +1,220 @@
+{
+  "kind": "resolved_finite_energy_water_qualification@1",
+  "scope": "Finite cell-owned ATP/ADP/Pi, shared Na/K pumps and active ionic channels with compliant volumes. Explicit neutral ideal pool osmolytes enter water pressure; signed pool volume work is internal and not an external supply. Seven complete 50-us manufactured regimes at 298.15K retain 28 state fields. Fixed areas/capacitances/topology, buffered pH/Mg/solvent, closed mobile species and water. Numerical composition, not biological calibration or native BETSE finite-energy/water trajectory parity.",
+  "tests": [
+    "tests/unit/test_surface_energy_water_spec.py",
+    "tests/unit/test_surface_energy_water.py",
+    "tests/unit/test_surface_energy_water_execution.py",
+    "tests/unit/test_surface_energy_water_qualification.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_energy_water_qualification.py::test_cpu_gpu_complete_states_and_observations"
+  ],
+  "required_evidence": [
+    "energy-water-stage-coupled-0",
+    "energy-water-stage-coupled-1",
+    "energy-water-stage-supply_off-0",
+    "energy-water-stage-supply_off-1",
+    "energy-water-stage-inhibited-0",
+    "energy-water-stage-inhibited-1",
+    "energy-water-stage-reverse-0",
+    "energy-water-stage-reverse-1",
+    "energy-water-stage-release-0",
+    "energy-water-stage-release-1",
+    "energy-water-stage-two_patches-0",
+    "energy-water-stage-two_patches-1",
+    "energy-water-stage-sealed-0",
+    "energy-water-stage-sealed-1",
+    "energy-water-multicell-0",
+    "energy-water-multicell-1",
+    "energy-water-sealed-reduction",
+    "energy-water-host-trajectory",
+    "energy-water-compiled-guard",
+    "energy-water-trajectory-coupled",
+    "energy-water-trajectory-supply_off",
+    "energy-water-trajectory-inhibited",
+    "energy-water-trajectory-reverse",
+    "energy-water-trajectory-release",
+    "energy-water-trajectory-two_patches",
+    "energy-water-trajectory-sealed",
+    "energy-water-reference-coupled-r1",
+    "energy-water-reference-supply_off-r1",
+    "energy-water-reference-inhibited-r1",
+    "energy-water-reference-reverse-r1",
+    "energy-water-reference-release-r1",
+    "energy-water-reference-two_patches-r1",
+    "energy-water-reference-sealed-r1",
+    "energy-water-reference-release-r4",
+    "energy-water-controls",
+    "energy-water-water-pool-accounting",
+    "energy-water-refinement",
+    "energy-water-execution-replay",
+    "energy-water-execution-worlds",
+    "energy-water-execution-host-contracts",
+    "energy-water-execution-capture-contract",
+    "energy-water-execution-regeneration-clock",
+    "energy-water-execution-checkpoint-contract",
+    "energy-water-execution-planning"
+  ],
+  "required_gpu_evidence": [
+    "energy-water-cpu-gpu"
+  ],
+  "checks": [
+    "Explicit neutral ideal pool osmolyte declaration; strict finite-energy and water schemas, faithful projections, six right-continuous control families and complete serialization. Inherited ionic/channel temperature/step limits and water relaxation ceilings remain.",
+    "Independent complete 28-field stages at nonzero volume and finite pool increments, compact/padded, all seven arms; multi-cell shared exterior/pump owners and reordered species. Current volumes reach ionic, pump, pool and regeneration calculations. Sealed water recovers all 23 finite-energy fields exactly.",
+    "Live ATP/ADP/Pi particle counts affect osmosis without direct charge or solute advection. Pool mixing free energy is owned once. Combined ionic/capacitor/pool/elastic energy includes water heat and external regeneration work; signed integrated pool volume work is internal. Endpoint dilution is distinct when reactions change particle count. Water-block stability bound uses conserved adenylate/phosphorus inventory, not initial particle count.",
+    "Strict positive pools and bounded volumes at every RK4 trial, including blocked transport or supply. Compile an accepted step and rejected oversized, exhausted-pool, collapsed-volume and invalid-control steps; preserve every field bitwise on rejection. Corrupted energy, material and water ledgers fail checks.",
+    "Save seven complete trajectories/readouts and compare segmented independent DOP853; tighten release reference fourfold and compare three RK4 grids. Retain existing tolerances and per-owner pool/material/adenylate/phosphorus/supply/water checks. Water and regeneration interruptions have distinct clocks; synthetic controls are not independent biological observations.",
+    "Complete bitwise disk/fresh-process/terminal replay, future supply-and-water branching, changed bounded windows and complete history. When branch disables water and supply, all associated integrated ledgers stop while ionic transport and finite-pool demand continue. Reject missing water/energy fields even when payload hashes are recomputed.",
+    "Independent scalar/combined/reordered/partitioned worlds retain all 28 fields and distinct restart clocks. Representative offline 1/4/16-GPU and 1/4-node Jupiter plans preserve 16 stable world IDs across two arms. Remote execution and interacting-tissue decomposition remain separate.",
+    "Complete CPU/L4 histories/readouts comparison. Adaptive CPU references reused only with matching normalized inputs and refinement. Frozen guarded workers, deterministic GPU execution, no persistent compilation cache, 4-GiB charged PSS plus individual RSS limit, 8-GiB host reserve, durable failures and GPU-busy/SM-active telemetry. No automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "stage_potential_atol_V": 3e-11,
+    "trajectory_potential_atol_V": 2e-08,
+    "physical_energy_atol_pJ": 2e-08,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "reference_stability_rtol": 3e-11,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13,
+    "pool_material_balance_atol_fmol": 2e-12,
+    "regeneration_work_atol_pJ": 3e-12,
+    "cpu_gpu_amount_energy_atol": 3e-13,
+    "water_balance_atol_pL": 2e-12
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k"
+  },
+  "scope_exclusions": [
+    "Neutral ideal transformed pool osmolytes, not explicit ATP/ADP/phosphate charge, proton or Mg binding/speciation, counterion balance or reaction-associated solvent volume. Background impermeant particle counts exclude explicit finite pools.",
+    "Fixed areas, capacitances and topology with compliant compartment volumes. No shape mechanics, fluid velocity field, solvent drag or solute advection.",
+    "Manufactured reversible regeneration port is external energetic support, not mitochondrial respiration or oxygen metabolism. Pool volume work and pump/pool exchange are internal only.",
+    "Selected Kv1.5/HCN4/CaV1.2 populations and Na/K ATPase; owned ER/calcium buffers, PMCA/SERCA source-convention reconciliation, cotransport, mobile protein/repair/assembly energy and autonomous biological regulation remain separate compositions.",
+    "No whole-BETSE, wetlab, remote Jupiter execution or single-tissue decomposition claim."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "schema",
+      "tests": [
+        "tests/unit/test_surface_energy_water_spec.py"
+      ]
+    },
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_energy_water.py"
+      ]
+    },
+    {
+      "name": "execution-host",
+      "tests": [
+        "tests/unit/test_surface_energy_water_execution.py::test_execution_host_contracts",
+        "tests/unit/test_surface_energy_water_execution.py::test_execution_history_capture_retains_complete_fields",
+        "tests/unit/test_surface_energy_water_execution.py::test_regeneration_controls_keep_their_clock_and_padding",
+        "tests/unit/test_surface_energy_water_execution.py::test_batch_rejects_mismatched_regeneration_capacity",
+        "tests/unit/test_surface_energy_water_execution.py::test_execution_rejects_incomplete_energy_checkpoint",
+        "tests/unit/test_surface_energy_water_execution.py::test_one_to_sixteen_gpu_planning_preserves_energy_worlds"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_compiled_rejection_keeps_every_field_unchanged"
+      ]
+    },
+    {
+      "name": "trajectory-coupled",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[coupled]"
+      ]
+    },
+    {
+      "name": "trajectory-supply-off",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[supply_off]"
+      ]
+    },
+    {
+      "name": "trajectory-inhibited",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[inhibited]"
+      ]
+    },
+    {
+      "name": "trajectory-reverse",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[reverse]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[release]"
+      ]
+    },
+    {
+      "name": "trajectory-two-patches",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[two_patches]"
+      ]
+    },
+    {
+      "name": "trajectory-sealed",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_complete_trajectory_against_independent_reference[sealed]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_saved_finite_pool_material_supply_and_controls",
+        "tests/unit/test_surface_energy_water_qualification.py::test_saved_water_and_internal_volume_work_accounting",
+        "tests/unit/test_surface_energy_water_qualification.py::test_cpu_gpu_complete_states_and_observations"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_surface_energy_water_qualification.py::test_three_grid_refinement"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_energy_water_execution.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_energy_water_execution.py::test_independent_world_partition_reorder_and_restart"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

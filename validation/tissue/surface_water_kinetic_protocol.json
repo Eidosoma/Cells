@@ -1,0 +1,206 @@
+{
+  "kind": "resolved_active_compliant_water_qualification@1",
+  "scope": "Conservative osmotic water exchange with the resolved_tissue@7 shared channel catalog, maintained Na/K ATPases and kinetic junctions. One finite cell/exterior for six complete 50-us trajectories at 298.15 K; separate two-cell/five-exterior/four-patch stages with junction/face routes and shared water owners. The full state has 23 fields. Fixed interfaces/capacitances/topology, explicit finite osmolytes and compliant pressures. This is a synthetic Cells composition, not finite metabolism, native BETSE evolving-volume parity or biological calibration.",
+  "tests": [
+    "tests/unit/test_surface_water_kinetic_spec.py",
+    "tests/unit/test_surface_water_kinetic.py",
+    "tests/unit/test_surface_water_kinetic_execution.py"
+  ],
+  "expected_cpu_skips": 1,
+  "expected_cpu_skip_nodes": [
+    "tests/unit/test_surface_water_kinetic.py::test_cpu_gpu_complete_states_and_observations"
+  ],
+  "required_evidence": [
+    "active-water-registration-cpu",
+    "active-water-registration-gpu",
+    "active-water-stage-coupled-0",
+    "active-water-stage-coupled-1",
+    "active-water-stage-sealed-0",
+    "active-water-stage-sealed-1",
+    "active-water-stage-passive-0",
+    "active-water-stage-passive-1",
+    "active-water-stage-inhibited-0",
+    "active-water-stage-inhibited-1",
+    "active-water-stage-reverse-0",
+    "active-water-stage-reverse-1",
+    "active-water-stage-release-0",
+    "active-water-stage-release-1",
+    "active-water-multicell",
+    "active-water-sealed-reduction",
+    "active-water-passive-reduction",
+    "active-water-compiled-guard",
+    "active-water-trajectory-coupled",
+    "active-water-trajectory-sealed",
+    "active-water-trajectory-passive",
+    "active-water-trajectory-inhibited",
+    "active-water-trajectory-reverse",
+    "active-water-trajectory-release",
+    "active-water-reference-coupled-r1",
+    "active-water-reference-sealed-r1",
+    "active-water-reference-passive-r1",
+    "active-water-reference-inhibited-r1",
+    "active-water-reference-reverse-r1",
+    "active-water-reference-release-r1",
+    "active-water-reference-release-r4",
+    "active-water-controls",
+    "active-water-refinement",
+    "active-water-execution-replay",
+    "active-water-execution-worlds",
+    "active-water-execution-host-contracts",
+    "active-water-execution-capture-contract",
+    "active-water-execution-planning"
+  ],
+  "required_gpu_evidence": [
+    "active-water-cpu-gpu"
+  ],
+  "checks": [
+    "Strict typed registration, exact active and passive-water projections, species/owner identity, separate right-continuous membrane/junction/channel/pump/water controls and retained unscaled-channel temperature/step limits. No maintained ATP reservoir is silently counted as a finite osmotic solute.",
+    "Independent complete 23-field derivatives and full-node potentials at displaced volumes for coupled, sealed, passive, inhibited, reversed and released cases, compact/padded layouts and reordered species in a multi-owner topology. The existing Decimal channel/pump references use current ionic concentrations; water pressure/flow/heat use the same stage amounts and volumes.",
+    "Sealing water reproduces the existing 19-field active model exactly. Removing channels/pumps reproduces the 16-field passive-water stage exactly. Every trial must satisfy ionic, gate, pump and water domains; invalid trials preserve complete state without clipping. Invalid ensemble volume readouts reject.",
+    "Six complete compiled 50-us trajectories retain histories and observations before assertions. Compare all fields and potentials with independent segmented DOP853, then fourfold reference tightening and three compiled RK4 grids. Retain water feedback on voltage and pump cycles, reverse pumping, absent/inhibited routes and independent off-grid controls as numerical contrasts, not biological samples.",
+    "Keep all existing material, charge, capacitor and maintained-metabolic-work identities and tolerances. Combine current-amount dilution, elastic energy, water heat, channel heat and pump heat minus maintained ATP work exactly once. ATP/ADP/Pi are external chemical support; phenomenological gates have no newly invented energy store.",
+    "Complete bitwise disk/fresh-process/terminal replay, a future water-control branch, changed windows and ordinary CLI restart must preserve all 23 fields, layout and clocks. Actual arrays are saved before comparisons. Independent scalar/combined/reordered/partitioned worlds retain stable identity and independent restart clocks.",
+    "Offline plans preserve the same 32 stable world IDs for 1-16 GPUs and 1-4 Jupiter nodes. Local CPU/L4 agreement covers complete histories and observations. Normalized input and refinement identity bind reused adaptive CPU references. Remote execution and single-tissue decomposition require separate evidence.",
+    "Use fresh bounded workers, deterministic GPU execution, disabled persistent compilation cache and the recorded host allocator. Preserve failures, exact tests and reports, 4-GiB charged tree and individual RSS limits, 8-GiB host reserve, GPU-busy/SM-active telemetry and no automatic follow-up."
+  ],
+  "tolerances": {
+    "state_rtol": 3e-09,
+    "state_atol": 2e-11,
+    "state_charge_atol_C": 3e-25,
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "stage_charge_rate_atol_A": 3e-23,
+    "stage_potential_atol_V": 3e-11,
+    "trajectory_potential_atol_V": 2e-08,
+    "volume_balance_atol_pL": 2e-12,
+    "physical_energy_atol_pJ": 2e-08,
+    "cpu_gpu_rtol": 3e-10,
+    "cpu_gpu_amount_energy_volume_atol": 3e-13,
+    "cpu_gpu_charge_atol_C": 3e-25,
+    "cpu_gpu_current_atol_A": 3e-23,
+    "cpu_gpu_voltage_atol_V": 3e-11,
+    "reference_stability_rtol": 3e-11,
+    "reference_stability_atol": 3e-14,
+    "reference_charge_stability_atol_C": 3e-28,
+    "refinement_final_to_initial_limit": 0.2,
+    "refinement_roundoff_floor": 3e-13
+  },
+  "resources": {
+    "max_wall_seconds": 14400,
+    "artifact_and_cache_bytes": 2147483648,
+    "free_disk_reserve_bytes": 4294967296,
+    "max_worker_rss_bytes": 4294967296,
+    "gpu_memory_fraction": 0.2,
+    "min_available_host_memory_bytes": 8589934592,
+    "resource_sample_seconds": 0.25,
+    "persistent_compilation_cache": false,
+    "process_tree_memory_metric": "pss",
+    "gpu_execution_policy": "deterministic",
+    "host_allocator_policy": "glibc_two_arenas_128k"
+  },
+  "scope_exclusions": [
+    "Fixed geometry/capacitance/topology and finite compliant volumes; no shape mechanics, solvent drag, extracellular fluid velocity field, junction water transport, cutting or remeshing.",
+    "Kv1.5, HCN4 and CaV1.2 are the coupled trajectory populations in this panel. Other catalog laws inherit their implementation but do not gain coupled water trajectory qualification from these cases. Calcium here is a mobile ion; owned ER, buffers, dedicated calcium pumps/exchangers and organelles remain separate.",
+    "Maintained ATP/ADP/Pi are external energy inputs. No finite metabolic supply, mitochondrial model, autonomous repair, assembly integration or gate-conformation energy claim.",
+    "No native BETSE evolving-volume trajectory parity, measured water/energy calibration, wetlab validation, remote Jupiter qualification or single-tissue decomposition."
+  ],
+  "automatic_followup": false,
+  "test_groups": [
+    {
+      "name": "schema",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic_spec.py"
+      ]
+    },
+    {
+      "name": "contracts",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_registered_complete_state_and_ensemble",
+        "tests/unit/test_surface_water_kinetic.py::test_independent_stage_with_shared_ions_and_current_volumes",
+        "tests/unit/test_surface_water_kinetic.py::test_multicell_shared_outside_owners_and_full_field_reference",
+        "tests/unit/test_surface_water_kinetic.py::test_sealed_water_reduces_exactly_to_existing_ionic_stage",
+        "tests/unit/test_surface_water_kinetic.py::test_absent_active_routes_reduce_to_passive_water",
+        "tests/unit/test_surface_water_kinetic.py::test_ensemble_readout_rejects_invalid_volume",
+        "tests/unit/test_surface_water_kinetic.py::test_corrupt_complete_ledgers_are_rejected"
+      ]
+    },
+    {
+      "name": "execution-host",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic_execution.py::test_execution_host_contracts",
+        "tests/unit/test_surface_water_kinetic_execution.py::test_execution_history_capture_retains_complete_fields",
+        "tests/unit/test_surface_water_kinetic_execution.py::test_one_to_sixteen_gpu_planning_preserves_water_worlds"
+      ]
+    },
+    {
+      "name": "compiled-guard",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_compiled_rejection_keeps_every_field_unchanged"
+      ]
+    },
+    {
+      "name": "trajectory-coupled",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[coupled]"
+      ]
+    },
+    {
+      "name": "trajectory-sealed",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[sealed]"
+      ]
+    },
+    {
+      "name": "trajectory-passive",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[passive]"
+      ]
+    },
+    {
+      "name": "trajectory-inhibited",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[inhibited]"
+      ]
+    },
+    {
+      "name": "trajectory-reverse",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[reverse]"
+      ]
+    },
+    {
+      "name": "trajectory-release",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_complete_trajectory_against_independent_reference[release]"
+      ]
+    },
+    {
+      "name": "comparisons",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_saved_physical_controls_and_dilution",
+        "tests/unit/test_surface_water_kinetic.py::test_cpu_gpu_complete_states_and_observations"
+      ]
+    },
+    {
+      "name": "refinement",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic.py::test_three_grid_refinement"
+      ]
+    },
+    {
+      "name": "replay",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic_execution.py::test_complete_saved_restart_branch_and_windows"
+      ]
+    },
+    {
+      "name": "worlds",
+      "tests": [
+        "tests/unit/test_surface_water_kinetic_execution.py::test_independent_world_partition_reorder_and_restart"
+      ]
+    }
+  ],
+  "allowed_stderr_notices": [
+    "xla_slow_compilation"
+  ]
+}

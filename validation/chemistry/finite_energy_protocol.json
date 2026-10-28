@@ -1,0 +1,55 @@
+{
+  "kind": "cells.finite_energy_contracts@1",
+  "pool_law": "finite_atp_adp_pi_transformed@1",
+  "regeneration_law": "driven_atp_regeneration_tanh@1",
+  "species": ["ATP", "ADP", "Pi"],
+  "standard_state_mM": 1000.0,
+  "temperature_domain_K": [200.0, 400.0],
+  "maximum_absolute_regeneration_affinity_over_RT": 80.0,
+  "hydrolysis_stoichiometry": [-1, 1, 1],
+  "material_invariants": [[1, 1, 0], [3, 2, 1]],
+  "reference": "Independent 80-digit Decimal equations; no Cells, NumPy or JAX imports",
+  "tolerances": {
+    "relative": 5e-12,
+    "concentration_atol_mM": 1e-12,
+    "potential_atol_J_mol": 4e-10,
+    "energy_atol_pJ": 5e-11,
+    "volume_derivative_atol_pJ_per_pL": 5e-11,
+    "power_atol_pJ_s": 5e-11,
+    "material_atol_fmol": 2e-12,
+    "rate_atol_fmol_s": 1e-12
+  },
+  "initial_checks": {
+    "pytest_selector": "tests/unit/test_finite_energy.py -k 'not jax'",
+    "cpu_affinity": [7],
+    "blas_threads": 1,
+    "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "jit": false,
+    "persistent_compilation_cache": false
+  },
+  "cpu_jax_checks": {
+    "authorization": "Chief authorized lightweight CPU-only JIT/vmap after the active-water CPU preview finished",
+    "pytest_selector": "tests/unit/test_finite_energy.py -k jax",
+    "cpu_affinity": [7],
+    "blas_threads": 1,
+    "max_worker_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "complete_component_selector": "tests/unit/test_finite_energy.py",
+  "scope": "Standalone NumPy/reference and separately selected CPU-JAX finite-pool/supply-port contracts; no integrated cell qualification",
+  "scope_exclusions": [
+    "Zero-substrate continuation, clipping or a boundary depletion law",
+    "Detailed protons, magnesium, solvent or electrical charge inventories",
+    "Implicit addition to existing ionic osmolyte totals",
+    "Mitochondrial respiration, oxygen utilization or biological calibration",
+    "Selectable model/configuration, checkpoint integration or timestep qualification",
+    "Whole-model compiled trajectories, L4 qualification or remote Jupiter execution"
+  ],
+  "automatic_followup": false
+}

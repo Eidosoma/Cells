@@ -2,8 +2,9 @@
 
 Execution scope reviewed: **2026-10-11**. Selected model families have CPU/L4
 qualification; current results and active jobs live in [Progress](../PROGRESS.md).
-Jupiter execution and remote scaling remain to be qualified. Further utilization
-optimization is parked while simulation capabilities and verification advance.
+Jupiter execution and remote scaling remain to be qualified. Feature development
+and scientifically adequate CPU checks take priority; new GPU rounds are deferred
+while compatible feature combinations and independent-world batches are prepared.
 
 The deployment target is now **up to 16 GH200 GPUs on JUPITER**, across at most
 four nodes. The [site configuration](https://apps.fz-juelich.de/jsc/hps/jupiter/configuration.html)
@@ -47,6 +48,21 @@ are unchanged. Guarded ionic batches still use `lax.map`; functional GPU support
 does not establish high ionic throughput. Later [tissue and resolved-surface
 families](TISSUE_RETURN_CURRENT.md) also have explicit CPU/GPU paths. Their bounded
 field solves do not establish large-mesh or distributed-field performance.
+
+For the next feature batches, group matching model/state layouts and accepted
+numerical clocks, while keeping case identities, controls and evidence separate.
+Include coupled transport/water/energy cases and the appropriate disabled-route
+controls in the later qualification. A richer model exercises more mechanisms;
+it does not by itself demonstrate higher SM activity. The production guarded
+ionic path still maps worlds sequentially with `lax.map`. Concurrent world
+execution needs the same invalid-trial, finished-world, conservation and restart
+checks, including the existing experimental parallel paths below.
+
+Measure compilation and warmed execution separately, and retain both GPU-busy
+and SM-active with coverage. Use measured per-batch costs to balance a four-GPU
+node before extending to sixteen GPUs. Runtime packing must preserve simulation
+duration, refinement, reference comparisons and scientific arm counts; numerical
+controls are not additional independent biological cases.
 
 ## Independent model ensembles
 
