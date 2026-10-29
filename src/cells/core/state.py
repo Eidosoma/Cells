@@ -444,13 +444,22 @@ def initialise(spec: SimulationSpec) -> Checkpoint:
     from cells.models.registry import get_model
 
     device = execution_device(spec.execution.backend)
-    state, layout = get_model(spec.model).initial_values(spec)
+    model = get_model(spec.model)
+    state, layout = model.initial_values(spec)
+    start_time, start_step, start_event = 0.0, 0, 0 if spec.experiment.changes else -1
+    if hasattr(model, "initial_time"):
+        from cells.core.grid import EventGrid
+        from cells.core.schedule import event_index
+
+        start_time = model.initial_time(spec)
+        start_step = EventGrid(spec).exact_index(start_time)
+        start_event = event_index(spec, start_time)
     return Checkpoint(
         jax.device_put(state, device),
         jax.device_put(layout, device),
-        0.0,
-        0,
-        0 if spec.experiment.changes else -1,
+        start_time,
+        start_step,
+        start_event,
     )
 
 

@@ -1,0 +1,74 @@
+{
+  "kind": "cells.betse_network_reactions_contract@1",
+  "law_id": "betse_network_reactions_source_v1_5_0@1",
+  "purpose": "Resolve zone-dependent native reaction formulas, regulator location and growth/source accounting before tissue integration",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/data/yaml/extra_configs/extra_config_template.yaml": "2dd1322fdab1dff7d7b9b1d90894d27e5f8357bf37b30050c2ae8c10e91492b7",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+    },
+    "executed_methods": ["read_reactions", "default_zones", "get_influencers", "write_growth_and_decay", "write_reactions", "write_reactions_mit", "write_reactions_env", "create_reaction_matrix", "create_reaction_matrix_mit", "create_reaction_matrix_env"],
+    "additional_native_bodies": ["Reaction.__init__", "Molecule.init_growth", "molecule time-dilation assignment/branch", "tissue_init growth-and-decay assignment/branch"],
+    "scope": "Authenticated isolated AST bodies and generated expressions, supplied small concentration arrays and sampled profile/modulator controls; no native network transport or full run_loop"
+  },
+  "units": {
+    "concentration_Km": "mM, numerically mol/m3",
+    "maximum_reaction_and_growth_production": "mM/s",
+    "basal_and_regulated_decay": "1/s applied to c_mM / nested growth scale",
+    "growth_scale_time_modulation": "dimensionless, explicit supplied runtime values",
+    "owner_volume": "m3",
+    "extent": "fmol/s = rate_mM_s * owner_volume_m3 / 1e-15",
+    "standard_free_energy": "J/mol configured forward extent; source reversal parameter only",
+    "native_R": "8.314 J/(mol K); override explicitly supplied per world"
+  },
+  "formulas": {
+    "Q": "product(1e-3 * product_c**nu) / product(1e-3 * reactant_c**nu), outside each power",
+    "Keq": "exp(-delta_Go/(R*T))",
+    "forward_backward": "products of (c/Km)**nu / (1+(c/Km)**nu) over each list",
+    "cell_reversible": "vmax * alpha * (1-Q/Keq); both saturation coefficients absent",
+    "mit_reversible": "vmax * alpha * (forward-(Q/Keq)*backward)",
+    "env_reversible": "vmax * alpha * forward * (1-Q/Keq); product saturation absent",
+    "all_irreversible": "vmax * alpha * forward",
+    "growth": "target * (modulation * production * time * alpha_growth - decay * time * c/scale - decay_max * time * alpha_decay * c/scale)",
+    "growth_auxiliary": "alpha_growth only; zero when simple_growth is False",
+    "decay_auxiliary": "decay*time*c/scale only, unmasked; excludes regulated decay",
+    "matrix": "Growth identity columns in molecule order followed by reaction columns in insertion order per zone; repeated entries and both-side species sum",
+    "evaluation_order": "All local growth, cell/mit/env reaction rates use incoming concentrations before env then cell Euler mutation in native run_loop; other run_loop actions are out of scope"
+  },
+  "regulators": {
+    "cell": "cell owner or env[cells.map_cell2ecm], explicit map required",
+    "mit": "Always own mitochondrial concentration; configured cell/env tags ignored",
+    "env": "env tag samples own environment; cell tag is literal factor 1, including positive direct-inhibitor term 1",
+    "combination": "(product ordinary activator Hills + sum independent ! Hills) * product inhibitor Hills * optional signed direct & sum",
+    "independent_only": "Baseline 1 plus independent Hills",
+    "star": "Trailing * stripped; all generators pass in_mem_tag=False",
+    "inhibitor_bang": "Stripped; remains multiplicative",
+    "rejected_broken": "Direct inhibitor before another inhibitor; both activators/inhibitors only direct; malformed zones/lists"
+  },
+  "domain": {
+    "state": "Finite nonnegative active concentrations; strictly positive participating substrates even if irreversible; padded compartments exactly zero",
+    "geometry": "Finite positive physical compartment volumes; padding zero",
+    "configuration": "Unique reaction names per zone; literal string None for irreversible native raw reader, matching nonempty substrate lists, positive finite multipliers/Km/Hill powers; duplicate substrate entries retained",
+    "growth": "Nonnegative production/decay/time factors; positive nested scale; finite signed sampled modulation; explicit boolean targets",
+    "flags": "Explicit booleans and neutral route padding; no silent floors, clipping or native branch correction",
+    "trial": "Finite representable rates, diagnostics and accumulated material; caller rejects negative Euler trials using state predicate"
+  },
+  "accounting": {
+    "stoichiometry": "Signed concentration/amount conversions, not assumed species conservation",
+    "growth": "Separate named signed source/sink ledger",
+    "moieties_charge": "Caller-supplied species basis projections expose every unbalanced route; charge output in elementary-charge fmol, no implicit current",
+    "material_residual": "current amount - initial amount - stoichiometry times integrated extents"
+  },
+  "reference": "Independent stdlib 80-digit Decimal dictionaries and owner loops",
+  "tolerances": {"relative": 5e-12, "rate_atol_mM_s": 2e-14, "material_atol_fmol": 2e-12, "dimensionless_atol": 3e-14},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_process_tree_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false},
+  "scope_limits": ["No full native network run_loop, transport/pumping/gating, mit refresh, geometry or tissue parity", "No ATP/heat/free-energy closure inferred from delta_Go or raw Hill regulation", "Profile selection, sampled modulator values and runtime time factor are explicit inputs", "Shared schema/dispatch/stepping/checkpoint ownership remains separate integration work"],
+  "automatic_followup": false
+}

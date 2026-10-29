@@ -1,0 +1,106 @@
+{
+  "kind": "cells.initial_geometry_static_profiles_contract@1",
+  "bridge_id": "initial_geometry_static_profiles@1",
+  "component_receipts": {
+    "geometry": {
+      "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/result.json",
+      "sha256": "7259b548229f637c5e90889276119ad7cccbb422f5e4ae35a5c20bd8d2dfeba2"
+    },
+    "profiles": {
+      "path": "/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/result.json",
+      "sha256": "54c8ea35205b35f5ddff067a5d192bada41df26171d0a9c6847a43ee18949493"
+    }
+  },
+  "readonly_source_sha256": {
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/core/specs.py": "ce6de2a07494bf77726a308a5d7df0c171289ae3c3ceba85112f7b82cb756c5d",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/core/schedule.py": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/core/tissue_profile_preparation.py": "f7ef93d0abe7fe7599c2ecb1cc8f12d9f507773a0ef23b9388bb73b00845044c",
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "validation/topology/tissue_profile_preparation_reference.py": "44d719f7e48342cbacc9937eb1c7630f8f628080111106604c0f6c42cd1c828a",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c",
+    "validation/geometry/betse_geometry_reference.py": "7f8cec792aa0f0cc5fac28793cb7ec542de2d1e237c908f197c96fef36b113f2",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de"
+  },
+  "geometry_artifacts": {
+    "irregular-native-radial": {
+      "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/examples/irregular-native-radial",
+      "source_evidence_sha256": "10de2d649c02715f401e8e79d96b88ab7ab8a31b3b63fedd31016752e8d1feb9",
+      "files_sha256": {
+        "definition.json": "98d22df94b46999763c025f38787f22802c034b1ba547267ac58577203ab7f49",
+        "provenance.json": "3e86751ed96e680854c5ad6713b20b4c44fe2e8e1f8358f78ce7d8cc78fdf8e9",
+        "request.json": "778fa8e8d174b478495baa0cc1d3ad75a83a0ac70baafce8ab74c0dfe1110620"
+      }
+    },
+    "irregular-polygon": {
+      "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/examples/irregular-polygon",
+      "source_evidence_sha256": "659314a9f7249b56f2f468430c35a9159a41d0fe5af9680484805d3127482d35",
+      "files_sha256": {
+        "definition.json": "9a658a648e5339438061e88e618ca5530dff426861d1f5c8b6e14632ff70f889",
+        "provenance.json": "56669ed3135e39ae441f7cd4caaeb77245451b7167d13375db482cb506f260aa",
+        "request.json": "fd5e04de98f22f2a18bb0f375c2ac387be205a3fd59ecebef25ad60aaad7704f"
+      }
+    },
+    "scaled-polygon": {
+      "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/examples/scaled-polygon",
+      "source_evidence_sha256": "38f0ae8955cb3153b4f4652b0fa4cc4a22067958b7f71fe3d9c940b1816ca1c0",
+      "files_sha256": {
+        "definition.json": "06cd727272b180ecdce5e21d7c382011c107c8fe0d350854e2a22a8fbfed5c56",
+        "provenance.json": "d655ae18bf7df72165b0b1a3712c6f4ac81083576c80741c86fc452b5e7990a0",
+        "request.json": "79c963b76cc1d123f53dc428998c364d400810cc31769ee3d4ee261857e0dbd0"
+      }
+    }
+  },
+  "repository_example": "examples/geometry_tissue_profiles/irregular_overlap.request.json",
+  "repository_example_sha256": "599a1f56707b4f289404e317125dfbff3ac76bf675b07b06b4521d912c4a9c3d",
+  "purpose": "Join qualified geometry and static profile recipes without mixing primal seeds with polygon centroids, inventing selection metadata or losing physical owners/state",
+  "derived_contract": "Only bound owner axes/polygon centroids/grid bounds, explicit physical thickness, actual reciprocal contact/junction IDs and physical junction neighbor graph; seed fills only explicit complete stable-ID tags or None; no inferred percentage/index choices",
+  "physical_contract": "Only qualified static profile coefficient changes; complete geometry artifact and profile provenance retained; exact initial state/inventory/volume/capacitance/exterior-face/controls/execution preservation",
+  "reference": "Independent stdlib polygon-centroid and owner-map derivation; frozen stdlib selector/Decimal conversion and complete independent passive field/rates/conservation",
+  "cases": [
+    "overlap",
+    "overlap-polygon",
+    "percent-alias",
+    "color",
+    "image-centroids",
+    "scaled",
+    "disabled"
+  ],
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_host_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 480
+  },
+  "numerical_budgets": {
+    "geometry_rtol": 6e-12,
+    "geometry_atol_m": 1e-27,
+    "P_rtol": 5e-14,
+    "P_atol_m_s": 1e-25,
+    "rhs_rtol": 3e-10,
+    "rhs_atol": 3e-12,
+    "charge_rhs_atol_C_s": 3e-23,
+    "potential_rtol": 3e-10,
+    "potential_atol_V": 3e-13,
+    "material_atol_fmol_s": 3e-14,
+    "energy_atol_pJ_s": 1e-10
+  },
+  "automatic_followup": false
+}

@@ -1,0 +1,19 @@
+{
+  "base": "/home/robert/Cells",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "21a13c5ccd7aaa686e50a2d4e3c26c313d321a5e0bfc56ba9d7004a090ef7c80",
+      "patched_sha256": "ab5b9659e874845c26bb9f1aa7801de865aa59b2fc74318a4ef557f0dd624ff4"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "7a2c865466fc3c8a723c6798c51bc96629e06afaebefd057453cf7ff3f99aaa0",
+      "patched_sha256": "b39a6ac35481c8e18e7b51e5239af2659e11ce746277e11c384ed73cf1f4c11c"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "cceeb3f5ad5ce0d68351bbbb0df65569af50b06fea4b4cab0d62f9b0ed1844de",
+      "patched_sha256": "ea24893e154f2aa8519e129f2a395971428eb1b8f5549affb194cfd434b1aede"
+    }
+  },
+  "patch_sha256": "4b1c84b1d9ea5d310e6a182121fdcbb5dc4d9f27a13ac53363f4bb1aa5aeb820",
+  "shared_files_written": false
+}

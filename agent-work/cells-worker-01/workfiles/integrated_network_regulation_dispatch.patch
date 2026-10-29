@@ -1,0 +1,71 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -832,6 +832,13 @@
+ 
+         if isinstance(m, SurfaceCalciumEnergyTransportModel):
+             return to_dict(self)
++        from cells.core.surface_calcium_energy_regulated_spec import (
++            SurfaceCalciumEnergyRegulatedModel,
++            to_dict as regulated_to_dict,
++        )
++
++        if isinstance(m, SurfaceCalciumEnergyRegulatedModel):
++            return regulated_to_dict(self)
+         from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyModel, to_dict
+ 
+         if isinstance(m, SurfaceCalciumEnergyModel):
+@@ -1157,6 +1164,13 @@
+         from cells.core.surface_calcium_energy_transport_spec import parse
+ 
+         return parse(data)
++    if (
++        isinstance(data["model"], dict)
++        and data["model"].get("id") == "resolved_calcium_energy_regulated@1"
++    ):
++        from cells.core.surface_calcium_energy_regulated_spec import parse
++
++        return parse(data)
+     if isinstance(data["model"], dict) and data["model"].get("id") in (
+         "resolved_calcium_energy@1",
+         "resolved_calcium_energy@2",
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -215,6 +215,12 @@
+         from cells.models import surface_calcium_energy_transport
+ 
+         return surface_calcium_energy_transport
++    from cells.core.surface_calcium_energy_regulated_spec import SurfaceCalciumEnergyRegulatedModel
++
++    if isinstance(spec, SurfaceCalciumEnergyRegulatedModel):
++        from cells.models import surface_calcium_energy_regulated
++
++        return surface_calcium_energy_regulated
+     if isinstance(spec, SurfaceCalciumEnergyHCNExtraModel):
+         from cells.models import surface_calcium_energy_hcn_extra
+ 
+--- a/src/cells/core/schedule.py
++++ b/src/cells/core/schedule.py
+@@ -219,6 +219,13 @@
+         padded = np.zeros((len(times), spec.execution.network_transport_capacity))
+         padded[:, : len(spec.model.network_transporters)] = values
+         return Control(*original, padded)
++    from cells.core.surface_calcium_energy_regulated_spec import (
++        SurfaceCalciumEnergyRegulatedModel,
++        control_values as regulated_controls,
++    )
++
++    if isinstance(spec.model, SurfaceCalciumEnergyRegulatedModel):
++        return regulated_controls(spec, times)
+     if isinstance(spec.model, SurfaceCalciumEnergyModel):
+         original = control_values(calcium_energy_prior(spec), times)
+         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -160,6 +160,7 @@
+         "resolved_calcium_energy@3",
+         "resolved_calcium_energy@4",
+         "resolved_calcium_energy@5",
++        "resolved_calcium_energy_regulated@1",
+         "resolved_calcium_energy_transport@1",
+         "resolved_calcium_energy_mitochondria@1",
+         "resolved_repair@1",

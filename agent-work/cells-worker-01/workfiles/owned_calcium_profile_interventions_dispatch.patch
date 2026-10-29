@@ -1,0 +1,58 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -772,6 +772,14 @@
+ 
+     def to_dict(self) -> dict:
+         m, e, x = self.model, self.experiment, self.execution
++        from cells.core.surface_calcium_profile_interventions_spec import SurfaceCalciumProfileInterventionModel
++        from cells.core.surface_calcium_profile_interventions_spec import to_dict as surface_calcium_profile_interventions_dict
++        if isinstance(m, SurfaceCalciumProfileInterventionModel):
++            return surface_calcium_profile_interventions_dict(self)
++        from cells.core.surface_calcium_energy_profile_interventions_spec import SurfaceCalciumEnergyProfileInterventionModel
++        from cells.core.surface_calcium_energy_profile_interventions_spec import to_dict as surface_calcium_energy_profile_interventions_dict
++        if isinstance(m, SurfaceCalciumEnergyProfileInterventionModel):
++            return surface_calcium_energy_profile_interventions_dict(self)
+         from cells.core.surface_active_profile_epoch_spec import (
+             SurfaceActiveProfileEpochModel,
+         )
+@@ -1189,6 +1197,12 @@
+     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
+     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
+         raise ConfigError("Only schema_version 1 is supported")
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_membrane_profiles@1":
++        from cells.core.surface_calcium_profile_interventions_spec import parse
++        return parse(data)
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_membrane_profiles@1":
++        from cells.core.surface_calcium_energy_profile_interventions_spec import parse
++        return parse(data)
+     if (
+         isinstance(data["model"], dict)
+         and data["model"].get("id") == "resolved_active_membrane_profile_epoch@1"
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -141,6 +141,14 @@
+ 
+ 
+ def get_model(spec):
++    from cells.core.surface_calcium_profile_interventions_spec import SurfaceCalciumProfileInterventionModel
++    if isinstance(spec, SurfaceCalciumProfileInterventionModel):
++        from cells.models import surface_calcium_profile_interventions
++        return surface_calcium_profile_interventions
++    from cells.core.surface_calcium_energy_profile_interventions_spec import SurfaceCalciumEnergyProfileInterventionModel
++    if isinstance(spec, SurfaceCalciumEnergyProfileInterventionModel):
++        from cells.models import surface_calcium_energy_profile_interventions
++        return surface_calcium_energy_profile_interventions
+     from cells.core.surface_active_profile_epoch_spec import SurfaceActiveProfileEpochModel
+ 
+     if isinstance(spec, SurfaceActiveProfileEpochModel):
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -149,6 +149,8 @@
+         "resolved_active_membrane_profiles@1",
+         "resolved_active_membrane_profile_epoch@1",
+         "resolved_tissue@12",
++        "resolved_calcium_membrane_profiles@1",
++        "resolved_calcium_energy_membrane_profiles@1",
+         "resolved_calcium@1",
+         "resolved_calcium@2",
+         "resolved_calcium@3",

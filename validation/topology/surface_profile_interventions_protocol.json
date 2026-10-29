@@ -1,0 +1,112 @@
+{
+  "kind": "cells.scheduled_passive_membrane_profile_contract@1",
+  "model_id": "resolved_membrane_profiles@1",
+  "timing_policy": "phase_clock_rk_stage_native_logistic@1",
+  "reset_policy": "fresh_phase_zero_scheduled_sim_only@1",
+  "readonly_source_sha256": {
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/core/schedule.py": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/core/tissue_profile_preparation.py": "f7ef93d0abe7fe7599c2ecb1cc8f12d9f507773a0ef23b9388bb73b00845044c",
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "validation/topology/tissue_profile_preparation_reference.py": "44d719f7e48342cbacc9937eb1c7630f8f628080111106604c0f6c42cd1c828a",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c",
+    "validation/geometry/betse_geometry_reference.py": "7f8cec792aa0f0cc5fac28793cb7ec542de2d1e237c908f197c96fef36b113f2",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+    "src/cells/numerics/fixed_step.py": "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6",
+    "src/cells/core/state.py": "367d3bdcb4093203280a96697a9d7eaf25b11f8a3799c0e5582ce57fb0c12dd1",
+    "src/cells/core/runner.py": "1a2e0cd45a0ae55624fa1aa3f325c85b3d3bee0978b52f079f0667c4e1aa24c9",
+    "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9",
+    "validation/topology/tissue_profile_preparation_fixtures.py": "bb4d693031d39bf6c1816729ae204c39fe95787870d9fc06401a068172bf8d9c",
+    "validation/tissue/surface_excision_fixtures.py": "a37c929162a350d5caca34e62a805c77fd8a9ba0d064346bfa377486fc74ff0a",
+    "validation/tissue/active_excision_fixtures.py": "eeb723aaad055213a3383562103c2aa82107862b37944494ceab23a88f84c42e",
+    "src/cells/core/geometry_profile_preparation.py": "b7430b17dbbd2ee3201522dece95d01c49d69b405bc33b8ce051796aaeb81573"
+  },
+  "native_phase_scope": {
+    "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+    "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "body_ast_sha256": {
+      "init_dynamics": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+      "_run_sim_core_loop": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+      "_run_fast_sim_core_loop": "2ef819f5611699d8d757592ff55a609e9a30396cec375d8525cabc4d297fac51"
+    },
+    "scope": "Native phase initialization zeros Dm_scheduled; both solver loops fire events only for SIM; new model adopts membrane-only reset scope with an explicit RK clock, not loop parity"
+  },
+  "component_receipts": {
+    "geometry": {
+      "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/result.json",
+      "sha256": "7259b548229f637c5e90889276119ad7cccbb422f5e4ae35a5c20bd8d2dfeba2"
+    },
+    "profiles": {
+      "path": "/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/result.json",
+      "sha256": "54c8ea35205b35f5ddff067a5d192bada41df26171d0a9c6847a43ee18949493"
+    },
+    "geometry_profiles": {
+      "path": "/mnt/workspaces/Cells/geometry-profile-preparation-handoff-20261029-01/result.json",
+      "sha256": "068c33df50a1b684214618377a13d3768692f8a3b3d6671917dcb215849df1a0"
+    }
+  },
+  "test_dispatch_metadata": "agent-work/cells-worker-01/workfiles/surface_profile_interventions_dispatch.json",
+  "test_dispatch_patch": "agent-work/cells-worker-01/workfiles/surface_profile_interventions_dispatch.patch",
+  "purpose": "Qualify the native membrane pulse/ordered assignment as a stage-dependent kinetic permeability while preserving all passive ledgers; avoid stale closed-route support and ambiguous phase resets",
+  "source_semantics": "One event per Na/K/Cl/Ca kind; native family and occurrence order, duplicate-last, DEFAULT Dm multiplier, explicit constant dynamic/spatial samples; Na/K unguarded and Cl/Ca flagged",
+  "physical_domain": "Ordered 0<=on<off<=horizon, positive ramp; conservative baseD+min(C,0)>=0 for pulse in [0,1], actual-stage finite nonnegative P, no clipping; union of possible routes used only for accounting",
+  "scope": "Fresh explicitly declared INIT or SIM; no automatic native phase handoff, pressure/ECM events, cuts, remaps, moving geometry, unknown callback evaluation or native full-solver parity",
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_rss_bytes": 1073741824,
+    "min_available_bytes": 8589934592,
+    "max_command_seconds": 480,
+    "gpu": false
+  },
+  "budgets": {
+    "rhs_rtol": 3e-10,
+    "rhs_atol": 3e-12,
+    "charge_rhs_atol_C_s": 3e-23,
+    "potential_rtol": 3e-10,
+    "potential_atol_V": 3e-13,
+    "material_atol_fmol_s": 3e-14,
+    "energy_atol_pJ_s": 1e-10,
+    "trajectory_rtol": 3e-08,
+    "trajectory_atol": 2e-11,
+    "trajectory_charge_atol_C": 3e-25
+  },
+  "automatic_followup": false,
+  "joined_source": {
+    "path": "/mnt/workspaces/Cells/geometry-profile-preparation-handoff-20261029-01/examples/overlap",
+    "source_evidence_sha256": "34b4df5b85ef62610e886050da5d923971487f8a439c43890a55ae437000dbd4",
+    "files_sha256": {
+      "definition.json": "b994ec792a3917cc078b1d6932b36d01267daf6b84061cfc6bc8478a5cdc6222",
+      "request.json": "599a1f56707b4f289404e317125dfbff3ac76bf675b07b06b4521d912c4a9c3d",
+      "provenance.json": "b81fb9d61d5f0c4216d1a1a4c0b86d0b3bf332ef6df224306f79cca3653e723d"
+    }
+  },
+  "clock_roundoff_allowance": {
+    "horizon_ulps": 2,
+    "relative_step_epsilons": 16,
+    "independent_nominal_dt_bound": "execution.dt <= min(change_s/8)*(1+16*eps), checked before parent grid construction",
+    "oversize_controls": "Valid nominal baseline followed by oversized nominal dt refusal at 10us and 1e9s horizons; actual interval oversize separately refused",
+    "purpose": "Differences of absolute clock labels have endpoint-scale roundoff; nominal dt remains transition/8 and true oversize is refused"
+  },
+  "validation_execution": {
+    "host": "NumPy host checks",
+    "jax_rhs": "Fresh process, compiled CPU JAX complete RHS/vmap/gradient",
+    "public": "Fresh process, eager CPU four-step snapshot/resume; no compiled trajectory qualification"
+  }
+}

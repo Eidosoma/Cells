@@ -1,0 +1,41 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -937,6 +937,12 @@
+         from cells.core.surface_excision_spec import SurfaceExcisionModel, to_dict
+ 
+         if isinstance(m, SurfaceExcisionModel):
++            return to_dict(self)
++        from cells.core.surface_profile_interventions_spec import SurfaceProfileInterventionModel
++
++        if isinstance(m, SurfaceProfileInterventionModel):
++            from cells.core.surface_profile_interventions_spec import to_dict
++
+             return to_dict(self)
+         from cells.core.surface_tissue_spec import SurfaceTissueModel, to_dict
+ 
+@@ -1159,6 +1165,10 @@
+     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
+     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
+         raise ConfigError("Only schema_version 1 is supported")
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_membrane_profiles@1":
++        from cells.core.surface_profile_interventions_spec import parse
++
++        return parse(data)
+     if (
+         isinstance(data["model"], dict)
+         and data["model"].get("id") == "betse_spatial_nak_kv1p5_dynamic_gj@1"
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -141,6 +141,12 @@
+ 
+ 
+ def get_model(spec):
++    from cells.core.surface_profile_interventions_spec import SurfaceProfileInterventionModel
++
++    if isinstance(spec, SurfaceProfileInterventionModel):
++        from cells.models import surface_profile_interventions
++
++        return surface_profile_interventions
+     if isinstance(spec, SurfaceCotransportWaterModel):
+         from cells.models import surface_cotransport_water
+ 

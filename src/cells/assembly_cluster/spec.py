@@ -19,6 +19,9 @@ from cells.core.schedule import control_values
 from cells.core.spatial_calcium_spec import CalciumModel
 from cells.core.specs import SpatialJunctionSpec
 from cells.core.specs import parse_spec as parse_ionic
+from cells.core.surface_calcium_energy_mitochondria_spec import (
+    SurfaceCalciumEnergyMitochondriaModel,
+)
 from cells.core.surface_calcium_energy_spec import (
     SurfaceCalciumEnergyActivatedModel,
     SurfaceCalciumEnergyCatalogModel,
@@ -27,6 +30,12 @@ from cells.core.surface_calcium_energy_spec import (
     SurfaceCalciumEnergyMorrisLecarModel,
 )
 from cells.core.surface_calcium_energy_transport_spec import SurfaceCalciumEnergyTransportModel
+from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+    SurfaceCalciumEnergyWaterHCNExtraModel,
+)
+from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+    SurfaceCalciumEnergyWaterRepairHCNExtraModel,
+)
 from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
 from cells.core.surface_calcium_energy_water_spec import SurfaceCalciumEnergyWaterModel
 from cells.core.surface_calcium_spec import (
@@ -144,13 +153,16 @@ def parse_spec(data):
         SurfaceCalciumHCNExtraModel,
         SurfaceCalciumWaterModel,
         SurfaceCalciumEnergyWaterRepairModel,
+        SurfaceCalciumEnergyWaterRepairHCNExtraModel,
         SurfaceCalciumEnergyWaterModel,
+        SurfaceCalciumEnergyWaterHCNExtraModel,
         SurfaceCalciumEnergyModel,
         SurfaceCalciumEnergyCatalogModel,
         SurfaceCalciumEnergyActivatedModel,
         SurfaceCalciumEnergyMorrisLecarModel,
         SurfaceCalciumEnergyHCNExtraModel,
         SurfaceCalciumEnergyTransportModel,
+        SurfaceCalciumEnergyMitochondriaModel,
         SurfaceRepairModel,
         SurfaceMorrisLecarRepairModel,
         SurfaceMobileRepairModel,

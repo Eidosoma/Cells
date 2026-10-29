@@ -1,0 +1,19 @@
+{
+  "kind": "cells.init_sim_epoch_proposed_shared_dispatch@1",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "67cdce35019607df8b8dafcd07923066ea1e45b310727a6f35dc4c97a82d6c48",
+      "patched_sha256": "27cc404369cc081c38197f9e2e00e40b4ffceed87d5d2d27772c79fc2b3759f6"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "c74e1842ac93f372651d876b31979652efb992481d12643634e720bec43ecffb",
+      "patched_sha256": "3a59cc6ac17196e35fe9d77d98818bd0084823f72394f99cd33c2b2dc928a1b9"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "39c2dcc9536cff94497c8b869944058fe3c4358f0f2237e5979c40b961989e87",
+      "patched_sha256": "5fed8de99875b6c36a6dfa12885d7f21857dc6634975cb4723cfb1328af72f37"
+    }
+  },
+  "patch_sha256": "94f27aaef775536648dd7c6292e78567098a1dbe0efbc2327dd1d960a9e75d50",
+  "scope": "Unapplied proposed Root-owned parse/serialization/registry/ensemble changes against current shared bases after scheduled profile integration"
+}

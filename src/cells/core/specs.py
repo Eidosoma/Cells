@@ -772,6 +772,52 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core.surface_calcium_energy_profile_epoch_spec import (
+            SurfaceCalciumEnergyProfileEpochModel,
+        )
+        from cells.core.surface_calcium_energy_profile_epoch_spec import (
+            to_dict as calcium_energy_epoch_dict,
+        )
+        from cells.core.surface_calcium_profile_epoch_spec import SurfaceCalciumProfileEpochModel
+        from cells.core.surface_calcium_profile_epoch_spec import to_dict as calcium_epoch_dict
+
+        if isinstance(m, SurfaceCalciumEnergyProfileEpochModel):
+            return calcium_energy_epoch_dict(self)
+        if isinstance(m, SurfaceCalciumProfileEpochModel):
+            return calcium_epoch_dict(self)
+        from cells.core.surface_calcium_energy_profile_interventions_spec import (
+            SurfaceCalciumEnergyProfileInterventionModel,
+        )
+        from cells.core.surface_calcium_energy_profile_interventions_spec import (
+            to_dict as calcium_energy_profiles_dict,
+        )
+        from cells.core.surface_calcium_profile_interventions_spec import (
+            SurfaceCalciumProfileInterventionModel,
+        )
+        from cells.core.surface_calcium_profile_interventions_spec import (
+            to_dict as calcium_profiles_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyProfileInterventionModel):
+            return calcium_energy_profiles_dict(self)
+        if isinstance(m, SurfaceCalciumProfileInterventionModel):
+            return calcium_profiles_dict(self)
+        from cells.core.surface_active_profile_epoch_spec import (
+            SurfaceActiveProfileEpochModel,
+        )
+        from cells.core.surface_active_profile_epoch_spec import to_dict as active_epoch_dict
+
+        if isinstance(m, SurfaceActiveProfileEpochModel):
+            return active_epoch_dict(self)
+        from cells.core.surface_active_profile_interventions_spec import (
+            SurfaceActiveProfileInterventionModel,
+        )
+        from cells.core.surface_active_profile_interventions_spec import (
+            to_dict as active_profiles_dict,
+        )
+
+        if isinstance(m, SurfaceActiveProfileInterventionModel):
+            return active_profiles_dict(self)
         from cells.core.betse_junction_spec import BetseJunctionModel, to_dict
 
         if isinstance(m, BetseJunctionModel):
@@ -804,12 +850,33 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceRepairModel):
             return to_dict(self)
+        from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+            SurfaceCalciumEnergyWaterRepairHCNExtraModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+            SurfaceCalciumEnergyWaterHCNExtraModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyWaterHCNExtraModel):
+            return to_dict(self)
         from cells.core.surface_calcium_energy_water_repair_spec import (
             SurfaceCalciumEnergyWaterRepairModel,
             to_dict,
         )
 
         if isinstance(m, SurfaceCalciumEnergyWaterRepairModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_water_excision_spec import (
+            SurfaceCalciumEnergyWaterExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyWaterExcisionModel):
             return to_dict(self)
         from cells.core.surface_calcium_energy_water_spec import (
             SurfaceCalciumEnergyWaterModel,
@@ -818,6 +885,27 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceCalciumEnergyWaterModel):
             return to_dict(self)
+        from cells.core.surface_calcium_energy_mitochondria_excision_spec import (
+            SurfaceCalciumEnergyMitochondriaExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyMitochondriaExcisionModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_mitochondria_spec import (
+            SurfaceCalciumEnergyMitochondriaModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyMitochondriaModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_transport_excision_spec import (
+            SurfaceCalciumEnergyTransportExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyTransportExcisionModel):
+            return to_dict(self)
         from cells.core.surface_calcium_energy_transport_spec import (
             SurfaceCalciumEnergyTransportModel,
             to_dict,
@@ -825,6 +913,39 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceCalciumEnergyTransportModel):
             return to_dict(self)
+        from cells.core.surface_calcium_energy_excision_spec import (
+            SurfaceCalciumEnergyExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyExcisionModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_regulated_spec import (
+            SurfaceCalciumEnergyRegulatedModel,
+        )
+        from cells.core.surface_calcium_energy_regulated_spec import (
+            to_dict as regulated_to_dict,
+        )
+        from cells.core.surface_calcium_energy_regulated_v2_spec import (
+            SurfaceCalciumEnergyRegulatedV2Model,
+        )
+        from cells.core.surface_calcium_energy_regulated_v2_spec import (
+            to_dict as regulated_v2_to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyRegulatedModel):
+            return regulated_to_dict(self)
+        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
+            SurfaceCalciumEnergyRegulatedV2ExcisionModel,
+        )
+        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
+            to_dict as regulated_v2_excision_to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyRegulatedV2ExcisionModel):
+            return regulated_v2_excision_to_dict(self)
+        if isinstance(m, SurfaceCalciumEnergyRegulatedV2Model):
+            return regulated_v2_to_dict(self)
         from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyModel, to_dict
 
         if isinstance(m, SurfaceCalciumEnergyModel):
@@ -832,6 +953,10 @@ class SimulationSpec:
         from cells.core.surface_calcium_water_spec import SurfaceCalciumWaterModel, to_dict
 
         if isinstance(m, SurfaceCalciumWaterModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_excision_spec import SurfaceCalciumExcisionModel, to_dict
+
+        if isinstance(m, SurfaceCalciumExcisionModel):
             return to_dict(self)
         from cells.core.surface_calcium_spec import SurfaceCalciumModel, to_dict
 
@@ -857,6 +982,10 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceEnergyModel):
             return to_dict(self)
+        from cells.core.surface_active_excision_spec import SurfaceActiveExcisionModel, to_dict
+
+        if isinstance(m, SurfaceActiveExcisionModel):
+            return to_dict(self)
         from cells.core.surface_kinetic_spec import SurfaceKineticModel, to_dict
 
         if isinstance(m, SurfaceKineticModel):
@@ -865,6 +994,29 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceWaterModel):
             return to_dict(self)
+        from cells.core.surface_excision_spec import SurfaceExcisionModel, to_dict
+
+        if isinstance(m, SurfaceExcisionModel):
+            return to_dict(self)
+        from cells.core.surface_profile_epoch_spec import SurfaceProfileEpochModel
+        from cells.core.surface_profile_epoch_spec import to_dict as profile_epoch_to_dict
+
+        if isinstance(m, SurfaceProfileEpochModel):
+            return profile_epoch_to_dict(self)
+        from cells.core.surface_profile_interventions_spec import (
+            SurfaceProfileInterventionModel,
+        )
+        from cells.core.surface_profile_interventions_spec import (
+            to_dict as profile_interventions_to_dict,
+        )
+
+        if isinstance(m, SurfaceProfileInterventionModel):
+            return profile_interventions_to_dict(self)
+        from cells.core.environment_barrier_interventions_spec import EnvironmentBarrierModel
+        from cells.core.environment_barrier_interventions_spec import to_dict as barrier_to_dict
+
+        if isinstance(m, EnvironmentBarrierModel):
+            return barrier_to_dict(self)
         from cells.core.surface_tissue_spec import SurfaceTissueModel, to_dict
 
         if isinstance(m, SurfaceTissueModel):
@@ -1088,6 +1240,48 @@ def parse_spec(data: dict) -> SimulationSpec:
         raise ConfigError("Only schema_version 1 is supported")
     if (
         isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_calcium_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_membrane_profiles@1"
+    ):
+        from cells.core.surface_calcium_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_membrane_profiles@1"
+    ):
+        from cells.core.surface_calcium_energy_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_active_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_membrane_profiles@1"
+    ):
+        from cells.core.surface_active_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
         and data["model"].get("id") == "betse_spatial_nak_kv1p5_dynamic_gj@1"
     ):
         from cells.core.betse_junction_spec import parse
@@ -1126,9 +1320,51 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if (
         isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_mitochondria_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_mitochondria_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_mitochondria@1"
+    ):
+        from cells.core.surface_calcium_energy_mitochondria_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_transport_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_transport_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_calcium_energy_transport@1"
     ):
         from cells.core.surface_calcium_energy_transport_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_regulated@1"
+    ):
+        from cells.core.surface_calcium_energy_regulated_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_regulated_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_regulated@2"
+    ):
+        from cells.core.surface_calcium_energy_regulated_v2_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") in (
@@ -1143,9 +1379,30 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if (
         isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_repair@2"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water@2"
+    ):
+        from cells.core.surface_calcium_energy_water_hcn_extra_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_calcium_energy_water_repair@1"
     ):
         from cells.core.surface_calcium_energy_water_repair_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_water_excision_spec import parse
 
         return parse(data)
     if (
@@ -1225,6 +1482,49 @@ def parse_spec(data: dict) -> SimulationSpec:
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_water@1":
         from cells.core.surface_water_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_excision_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_excision@1":
+        from cells.core.surface_calcium_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_tissue_active_excision@1"
+    ):
+        from cells.core.surface_active_excision_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue_excision@1":
+        from cells.core.surface_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_membrane_profiles@1"
+    ):
+        from cells.core.surface_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_extracellular_barriers@1"
+    ):
+        from cells.core.environment_barrier_interventions_spec import parse
 
         return parse(data)
     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_tissue@1":

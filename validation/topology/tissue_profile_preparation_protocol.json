@@ -1,0 +1,145 @@
+{
+  "kind": "cells.resolved_tissue_profile_preparation_contract@1",
+  "bridge_id": "resolved_tissue_static_profiles@1",
+  "supported_models": [
+    "resolved_tissue@1",
+    "resolved_tissue@12"
+  ],
+  "readonly_source_sha256": {
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/core/surface_kinetic_spec.py": "be80df36047ce3e41c36299f73d06c5632e7fe9220d7d73aabdf44a996cf4a40",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c"
+  },
+  "native_component_receipt": {
+    "path": "/mnt/workspaces/Cells/betse-tissue-profiles-development-20261028-05/result.json",
+    "sha256": "d7973ce0c448a57e9e3b56d9013f9c217a9b2307321e95c94c1c9dea0571f50b"
+  },
+  "native_units": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2"
+    },
+    "electroflux_ast_sha256": "fdea0e87111b95676927b226fdd3dd56db1ca20849dcd55da581c350d2eb4183",
+    "common_constants": {
+      "F_C_mol": 96485.33212331001,
+      "R_J_mol_K": 8.31446261815324
+    },
+    "derivation": [
+      "electroflux uses Dc/d with concentrations mol/m3 and inward area flux; update_Co multiplies by mem_sa",
+      "sim.py passes p.tm and initializes rho_channel=1; parameters.py declares tm in metres",
+      "Cells selective_flux is outward area*P/1e-15 with fmol/pL=mol/m3, so P=D/thickness and sign is reversed for comparison",
+      "Native docstring mol/s is resolved using actual expression and update_Co caller units mol/(m2*s)"
+    ],
+    "constants_scope": "Common F/R/T are explicit inputs to unchanged native electroflux; Cells physical constants are preserved, not calibrated to rounded source defaults"
+  },
+  "unit_cases": [
+    {
+      "name": "Na-inward",
+      "valence": 1,
+      "voltage_V": -0.025,
+      "ci_mM": 12,
+      "co_mM": 145,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "K-outward",
+      "valence": 1,
+      "voltage_V": -0.04,
+      "ci_mM": 140,
+      "co_mM": 4,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "Cl-signed",
+      "valence": -1,
+      "voltage_V": -0.02,
+      "ci_mM": 11,
+      "co_mM": 120,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "Ca-valence2",
+      "valence": 2,
+      "voltage_V": -0.03,
+      "ci_mM": 0.002,
+      "co_mM": 1.8,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "zero-voltage",
+      "valence": 1,
+      "voltage_V": 0.0,
+      "ci_mM": 12,
+      "co_mM": 145,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "opposite-gradient",
+      "valence": 1,
+      "voltage_V": 0.02,
+      "ci_mM": 100,
+      "co_mM": 2,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 3.2e-18,
+      "thickness_m": 7.5e-09
+    },
+    {
+      "name": "zero-diffusion",
+      "valence": -1,
+      "voltage_V": 0.03,
+      "ci_mM": 30,
+      "co_mM": 40,
+      "temperature_K": 298.15,
+      "area_m2": 1.2e-10,
+      "D_m2_s": 0.0,
+      "thickness_m": 7.5e-09
+    }
+  ],
+  "geometry": "Explicit stable-ID thickness, reciprocal membrane pairs, one pair per actual edge, exact original neighbor graph and complete layout/provenance; no inferred thickness or contact averaging",
+  "preservation": "Only enabled static membrane permeabilities and zeroed insular edge permeabilities may change; inventories, IDs, states, intrinsic gates, schedules and all unselected parameters stay exact",
+  "reference": "Independent frozen stdlib profile owner loops plus 80-digit Decimal D/thickness and flux; no production imports",
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_host_rss_bytes": 1073741824,
+    "min_available_memory_bytes": 8589934592,
+    "max_command_seconds": 300,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "scope_limits": [
+    "Static unit-rho baseline only; unsupported enabled M/P or missing ions/owners are refused",
+    "Direct resolved_tissue@1/@12 only; no hidden preparation of nested regulation/fuel/cut epochs",
+    "No pressure/intervention/ECM-transport preparation or full native geometry/solver equivalence",
+    "One reciprocal membrane contact per existing resolved junction; ambiguous aggregation refused",
+    "No shared dispatch/PROGRESS writes or detached-job polling"
+  ],
+  "automatic_followup": false
+}

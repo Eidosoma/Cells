@@ -28,6 +28,11 @@ def _parser() -> argparse.ArgumentParser:
         "assembly-cluster", help="cell-owned assembly controlling interacting cells"
     )
     commands.add_parser("ensemble", help="balanced independent assembly worlds across GPUs")
+    commands.add_parser("tissue-profiles", help="prepare and replay static tissue profiles")
+    commands.add_parser("tissue-phase", help="carry INIT history into a new SIM phase")
+    commands.add_parser(
+        "tissue-geometry", help="prepare and replay initial passive tissue geometry"
+    )
     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
     validate.add_argument("config", type=Path)
     fresh = commands.add_parser("run", help="run a fresh configured world")
@@ -37,6 +42,17 @@ def _parser() -> argparse.ArgumentParser:
     branch = commands.add_parser("branch", help="continue with explicitly changed future inputs")
     branch.add_argument("snapshot", type=Path)
     branch.add_argument("config", type=Path)
+    excision = commands.add_parser(
+        "excise",
+        help="remove named cells and rebuild supported passive, active or calcium/fuel tissue",
+    )
+    excision.add_argument("snapshot", type=Path)
+    excision.add_argument(
+        "--remove", action="append", required=True, help="cell ID; repeat for several cells"
+    )
+    excision.add_argument(
+        "--output", type=Path, required=True, help="new excision archive directory"
+    )
     for command in (fresh, resume, branch):
         command.add_argument(
             "--output", type=Path, required=True, help="new directory; never overwritten"
@@ -157,6 +173,18 @@ def _batch_window_main(args):
 
 def main(argv=None) -> int:
     args = sys.argv[1:] if argv is None else argv
+    if args and args[0] == "tissue-phase":
+        from cells.tissue_phase import main as phase_main
+
+        return phase_main(args[1:])
+    if args and args[0] == "tissue-geometry":
+        from cells.tissue_geometry import main as geometry_main
+
+        return geometry_main(args[1:])
+    if args and args[0] == "tissue-profiles":
+        from cells.tissue_profiles import main as profiles_main
+
+        return profiles_main(args[1:])
     if args and args[0] == "assembly-cluster":
         from cells.assembly_cluster.cli import main as cluster_main
 
@@ -180,6 +208,28 @@ def main(argv=None) -> int:
         return assembly_main(argv[1:])
     args = _parser().parse_args(argv)
     try:
+        if args.command == "excise":
+            from cells.core.excision import excise
+            from cells.excision_io import write_excision
+
+            saved = load_snapshot(args.snapshot)
+            result = excise(saved.spec, saved.checkpoint, args.remove)
+            write_excision(args.output, result)
+            print(
+                json.dumps(
+                    dict(
+                        status="complete",
+                        output=str(args.output),
+                        terminal=result.report["terminal"],
+                        absolute_time_s=saved.checkpoint.time,
+                        continuation=str(args.output / "after")
+                        if result.spec is not None
+                        else None,
+                    ),
+                    indent=2,
+                )
+            )
+            return 0
         if args.command == "windowed":
             print(json.dumps(_window_main(args), indent=2))
             return 0

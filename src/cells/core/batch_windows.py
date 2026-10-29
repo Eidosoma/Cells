@@ -45,6 +45,7 @@ class BatchWindowPlan:
     worlds: tuple[WindowPlan, ...]
     estimated_working_bytes: int
     padded_step_bound: int
+    fixed_kernel_width: int | None = None
 
 
 def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
@@ -63,7 +64,16 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
             )
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
-    width = min(plans[0].policy.window_steps, max(len(p.grid) - 1 - p.start_step for p in plans))
+    remaining = max(len(p.grid) - 1 - p.start_step for p in plans)
+    width = min(plans[0].policy.window_steps, remaining)
+    # Reusing the full shape avoids compiling and retaining a second executable
+    # for a short final round. The existing kernel masks those extra slots before
+    # evaluating a step. Preserve tight declared work limits by retaining the
+    # original variable-width path when the additional padding would exceed them.
+    fixed_slots = len(plans) * width * ((remaining + width - 1) // width) if width else 0
+    fixed_width = width if fixed_slots <= spec.max_padded_steps else None
+    if fixed_width is not None:
+        bound = max(bound, fixed_slots)
     # Reserve padding for EVERY world at the shared window width, including
     # worlds with less work. Two adjacent rounds may coexist in a consuming loop.
     estimate = 2 * sum(
@@ -80,7 +90,7 @@ def plan_batch_windows(spec, policy=DEFAULT_POLICY, checkpoints=None):
             )
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
-    return BatchWindowPlan(spec, plans[0].policy, tuple(plans), estimate, bound)
+    return BatchWindowPlan(spec, plans[0].policy, tuple(plans), estimate, bound, fixed_width)
 
 
 def _initial_checkpoints(plan, checkpoints):
@@ -143,7 +153,9 @@ def _iter_batch_windows(plan, checkpoints):
             for i, t in zip(ids, next_times, strict=True)
         ]
         counts = np.array([len(t) - 1 for t in times], dtype=np.int64)
-        width = int(counts.max())
+        width = plan.fixed_kernel_width
+        if width is None:
+            width = int(counts.max())
         steps = np.zeros((len(ids), width), dtype=np.float64)
         controls = []
         for i, (local, t) in enumerate(zip(plan.worlds, times, strict=True)):

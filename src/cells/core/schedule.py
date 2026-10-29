@@ -25,6 +25,9 @@ from cells.core.specs import (
     SpatialChange,
     VoltageGatedChange,
 )
+from cells.core.surface_calcium_energy_mitochondria_spec import (
+    SurfaceCalciumEnergyMitochondriaModel,
+)
 from cells.core.surface_calcium_energy_spec import (
     Control as SurfaceCalciumEnergyControl,
 )
@@ -36,6 +39,24 @@ from cells.core.surface_calcium_energy_spec import (
 )
 from cells.core.surface_calcium_energy_transport_spec import (
     SurfaceCalciumEnergyTransportModel,
+)
+from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+    Control as JointHCNWaterControl,
+)
+from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+    SurfaceCalciumEnergyWaterHCNExtraModel,
+)
+from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+    energy_spec as joint_hcn_water_prior,
+)
+from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+    Control as JointHCNRepairControl,
+)
+from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+    SurfaceCalciumEnergyWaterRepairHCNExtraModel,
+)
+from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+    base_spec as joint_hcn_repair_prior,
 )
 from cells.core.surface_calcium_energy_water_repair_spec import Control as JointRepairControl
 from cells.core.surface_calcium_energy_water_repair_spec import SurfaceCalciumEnergyWaterRepairModel
@@ -173,6 +194,23 @@ def event_index(spec, time):
 
 def control_values(spec, times):
     changes = spec.experiment.changes
+    if isinstance(spec.model, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
+        original = control_values(joint_hcn_repair_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        extra = []
+        for key in ("injury", "resealing"):
+            values = np.asarray([getattr(p, key) for p in changes], dtype=float)[indices]
+            padded = np.zeros((len(times), spec.execution.membrane_capacity))
+            padded[:, : len(spec.model.membranes)] = values
+            extra.append(padded)
+        return JointHCNRepairControl(*original, *extra)
+    if isinstance(spec.model, SurfaceCalciumEnergyWaterHCNExtraModel):
+        original = control_values(joint_hcn_water_prior(spec), times)
+        indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
+        values = np.asarray([p.water for p in changes], dtype=float)[indices]
+        padded = np.zeros((len(times), spec.execution.membrane_capacity))
+        padded[:, : len(spec.model.membranes)] = values
+        return JointHCNWaterControl(*original, padded)
     if isinstance(spec.model, SurfaceCalciumEnergyWaterRepairModel):
         original = control_values(joint_repair_prior(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1
@@ -197,6 +235,15 @@ def control_values(spec, times):
         padded = np.zeros((len(times), spec.execution.membrane_capacity))
         padded[:, : len(spec.model.membranes)] = values
         return SurfaceCalciumWaterControl(*original, padded)
+    if isinstance(spec.model, SurfaceCalciumEnergyMitochondriaModel):
+        from cells.core.surface_calcium_energy_mitochondria_spec import Control, base_spec
+
+        original = control_values(base_spec(spec), times)
+        indices = np.searchsorted([c.time for c in changes], times, side="right") - 1
+        values = np.asarray([c.mitochondria for c in changes])[indices]
+        padded = np.zeros((len(times), spec.execution.capacity))
+        padded[:, : len(spec.model.mitochondria)] = values
+        return Control(*original, padded)
     if isinstance(spec.model, SurfaceCalciumEnergyTransportModel):
         from cells.core.surface_calcium_energy_transport_spec import Control, base_spec
 
@@ -207,6 +254,23 @@ def control_values(spec, times):
         padded = np.zeros((len(times), spec.execution.network_transport_capacity))
         padded[:, : len(spec.model.network_transporters)] = values
         return Control(*original, padded)
+    from cells.core.surface_calcium_energy_regulated_spec import (
+        SurfaceCalciumEnergyRegulatedModel,
+    )
+    from cells.core.surface_calcium_energy_regulated_spec import (
+        control_values as regulated_controls,
+    )
+    from cells.core.surface_calcium_energy_regulated_v2_spec import (
+        SurfaceCalciumEnergyRegulatedV2Model,
+    )
+    from cells.core.surface_calcium_energy_regulated_v2_spec import (
+        control_values as regulated_v2_controls,
+    )
+
+    if isinstance(spec.model, SurfaceCalciumEnergyRegulatedModel):
+        return regulated_controls(spec, times)
+    if isinstance(spec.model, SurfaceCalciumEnergyRegulatedV2Model):
+        return regulated_v2_controls(spec, times)
     if isinstance(spec.model, SurfaceCalciumEnergyModel):
         original = control_values(calcium_energy_prior(spec), times)
         indices = np.searchsorted([p.time for p in changes], times, side="right") - 1

@@ -1,0 +1,15 @@
+{
+  "kind": "cells.active_profile_test_dispatch@1",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "370788dadfd372fe8db7f8216b6632e07452b1005b07b59cbd6562f6890ad5d2",
+      "patched_sha256": "82b7f6d7de50471bb622c67198ac8dd4da884c6b837716dbb6802668e201255f"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "fe0f1b8a3c637afa05d5812104fac6cfff3153af73ca39358414a21aed4171e8",
+      "patched_sha256": "8e4f48d3cd9e788111d8a8c48f5c016cf2a683fe6cb8120248e7cea3e4dd13f2"
+    }
+  },
+  "patch_sha256": "d017beba80bf75523aa260822f87add029c9d528dfb50f78a01ffe736d3a0d5e",
+  "scope": "Unapplied proposed test routing; Root owns shared integration"
+}

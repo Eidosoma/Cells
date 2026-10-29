@@ -78,6 +78,75 @@ def test_complete_resume_can_change_window_and_recording_policy(name, tmp_path):
     assert_windows(zero, run(spec, full.final))
 
 
+@pytest.mark.parametrize("name", MODELS)
+@pytest.mark.parametrize("remaining", [0, 1])
+def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
+    monkeypatch, name, remaining
+):
+    import jax
+
+    from cells.core.schedule import control_values
+
+    spec = short_spec(name, 0.073)
+    full = run(spec)
+    point = full.checkpoint_at(float(full.times[-1 - remaining]))
+    model = get_model(spec.model)
+    original = model.check_steps
+    checked = []
+
+    def check(definition, steps, controls):
+        original(definition, steps, controls)
+        checked.append((steps.copy(), jax.tree.map(np.copy, controls)))
+
+    monkeypatch.setattr(model, "check_steps", check)
+    width = 7
+    plan = plan_windows(spec, WindowPolicy(width), point)
+    assert plan.start_step == point.step_index
+    assert plan.window_count == 1
+    assert len(checked) == (len(full.times) - 2 + width) // width
+    np.testing.assert_array_equal(np.concatenate([s for s, _ in checked]), np.diff(full.times))
+    actual_controls = jax.tree.map(
+        lambda *arrays: np.concatenate(arrays), *(controls for _, controls in checked)
+    )
+    for actual, expected in zip(
+        jax.tree.leaves(actual_controls),
+        jax.tree.leaves(control_values(spec, full.times[:-1])),
+        strict=True,
+    ):
+        np.testing.assert_array_equal(actual, expected)
+
+
+def test_completed_restart_still_refuses_an_invalid_historical_step(monkeypatch):
+    from cells.core.resources import trace_bytes
+
+    raw = synthetic_pair().worlds[0].simulation.to_dict()
+    raw["experiment"]["source"]["schedule"].append({"time": 0.5, "rate": 0})
+    spec = parse_spec(raw)
+    full = run(spec)
+    model = get_model(spec.model)
+    original = model.check_steps
+    calls = []
+
+    def check(definition, steps, controls):
+        original(definition, steps, controls)
+        calls.append(len(steps))
+        if np.any(controls > 0):
+            raise ConfigError("Rejected historical control")
+
+    monkeypatch.setattr(model, "check_steps", check)
+    # A large requested chunk must still obey the existing storage cap. The
+    # terminal checkpoint itself fits; earlier nonzero controls remain checked.
+    base = trace_bytes(spec, 0, 0)
+    per_step = trace_bytes(spec, 1, 0) - base
+    terminal_storage = 2 * trace_bytes(spec, 0, 2) + 2 * base
+    spec = replace(
+        spec, execution=replace(spec.execution, max_trace_bytes=terminal_storage + per_step)
+    )
+    with pytest.raises(ConfigError, match="Rejected historical control"):
+        plan_windows(spec, WindowPolicy(1000), full.final)
+    assert max(calls) <= (spec.execution.max_trace_bytes - base) // per_step
+
+
 @pytest.mark.parametrize("width", [1, 2, 7, 256])
 def test_events_observations_boundaries_and_future_branch(width):
     spec = synthetic_pair().worlds[0].simulation

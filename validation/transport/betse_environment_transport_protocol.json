@@ -1,0 +1,101 @@
+{
+  "kind": "cells.betse_environment_transport_contract@1",
+  "source_law_id": "betse_environment_transport_source_v1_5_0@1",
+  "conservative_law_id": "bernoulli_fitted_environment_faces@1",
+  "purpose": "Separate native collocated grid/barrier/bath semantics from an explicitly conservative positive face operator",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+    }
+  },
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "automatic_followup": false,
+  "source_scope": "Actual authenticated AST Simulator initDenv/update_ecm, full zero-membrane/GJ molecule_mover branch, bath initialization/firing, FD/Nernst/gaussian helpers and wound coefficient statements; normalized explicit geometry/fields, no cut/full solver",
+  "native_semantics": {
+    "barriers": "D_free outside; adherens overwrite in cluster; tight*relative overwrite three boundary sets; sodium/max normalization; duplicated target occurrences retained; molecule target factor applied once per duplicate advanced-assignment location",
+    "gradient": "Central interior, positive one-sided boundary gradients; divergence diff reverses boundary signs; composed stencil spans two sites",
+    "boundary": "Perimeter site values clamped before transport; resulting output is not reset; native stage amount accounting is not face conservation",
+    "molecule": "Sodium-normalized weight plus molecule TJ factor; ignores ion TJ_modulator; extra mobility/flow not blocked by zero diffusion; all-zero small bath <=1e-15 skips",
+    "smoothing": "Neighbor averaging only when sharpness<1, preserves current boundary values but not total amount",
+    "bath": "K then Cl then Na overwrite baselines/counterions; overlapping events need not be charge neutral; non-ECM legacy fields differ and may be absent",
+    "clipping": "Ionic update leaves negative outputs; molecule mover raises; explicit no_negs diagnostic clips with measured amount change and is not invoked by update_ecm"
+  },
+  "conservative_law": {
+    "name": "Distinct Bernoulli-fitted face flux, harmonic D and explicit scalar drift/advection; zero D becomes upwind",
+    "geometry": "Complete explicit nearest-neighbor/internal face owners, physical perimeter faces, corner two ports; uniform square grid and height give volumes/areas; boundary distance half spacing",
+    "flux": "J = D/l * [cL B(-Pe)-cR B(Pe)], Pe=w*l/D, w=(D*z*q/kBT+mu)*E_normal+u_normal; B=x/expm1(x)",
+    "boundary": "Explicit sealed/fixed face bath masks; no site clamping; per-face signed bath amount ledger",
+    "domain": "Finite nonnegative concentrations/D/bath, positive thermal constants/dt, |Pe|<=500, outgoing Euler Courant<=1, no floors/clipping; species and global charge budgets include external bath",
+    "scope": "Prescribed E/flow; no field solve or native discretization equivalence"
+  },
+  "units": {
+    "concentration": "mol/m3",
+    "diffusion": "m2/s",
+    "length": "m",
+    "volume": "m3",
+    "flux": "mol/(m2*s)",
+    "mobility": "m2/(V*s)",
+    "electric": "V/m",
+    "velocity": "m/s",
+    "bath_amount": "mol",
+    "charge": "C with explicit F",
+    "source_q": "1.602e-19 C",
+    "source_kb": "1.3806e-23 J/K",
+    "source_F": "96485 C/mol; separate rounded constant, no silent SI replacement"
+  },
+  "reference": "Independent stdlib ordered stencil/region/Gaussian/pulse loops and 80-digit Decimal face flux/budgets; no production/NumPy/JAX imports",
+  "tolerances": {
+    "relative": 5e-12,
+    "concentration_atol_mol_m3": 2e-13,
+    "flux_atol_mol_m2_s": 3e-16,
+    "coefficient_atol_m2_s": 1e-25,
+    "budget_relative": 3e-13,
+    "source_stage_ledger_atol_mol": 2e-28
+  },
+  "qualified_limits": {
+    "max_sites": 1024,
+    "max_species": 32,
+    "native_interior_refinement": [
+      8,
+      16,
+      32
+    ],
+    "face_spatial_refinement": [
+      4,
+      8,
+      16
+    ],
+    "temporal_steps": [
+      8,
+      16,
+      32
+    ]
+  },
+  "scope_limits": [
+    "Source stage changes are not inferred physical boundary fluxes",
+    "No cut execution/evolving geometry or physical remap",
+    "No whole-tissue, Poisson/current closure, thermodynamic/ATP or shared checkpoint claim",
+    "Frozen geometry/common numerical primitives read only; source defects and unsupported clipping remain preserved"
+  ]
+}

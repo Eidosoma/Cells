@@ -1,0 +1,58 @@
+{
+  "kind": "cells.betse_deformation_contract@1",
+  "law_id": "betse_deformation_source_v1_5_0@1",
+  "purpose": "Resolve reachable steady forcing, disabled recurrence, DEC/HH arithmetic, osmotic auxiliary dimensions and visualization ownership before composition",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+    },
+    "functions": ["getDeformation", "timeDeform", "implement_deform_timestep", "osmotic_P", "check_v"],
+    "cell_methods": ["graphLaplacian", "curl", "HH_cells", "deform_tools"],
+    "fragments": ["mechanical parameter assignments", "Simulator deformation initialization", "deformation storage reset", "sampled display write block", "tissue-handler deformation reset"],
+    "scope": "Actual isolated source bodies and SciPy spline calls on supplied small graph/layout arrays; no native seeding, full solver, force-energy closure or physical geometry rebuild"
+  },
+  "source_semantics": {
+    "normal_reachable": "parameters unconditionally force td_deform=False; normal loop calls getDeformation after osmotic/flow and before concentration/voltage update",
+    "fast": "No reachable deformation call in fast solver",
+    "shear_modulus": "youngMod/(2*(1+0.49)); lame_lamb computed but unused in these routines",
+    "pressure_gradient": "-M_sum_mems * ((P[right]-P[left])/nn_len * nn_direction) / num_mems",
+    "steady": "rotation_only(lapGJinv * (-pressure_gradient/shear)) + optional raw gradient(PP) + E_cell*galvanotropism",
+    "rotation_only": "AA=lapGJinv*(-curl(F)); output=(G_y*AA,-G_x*AA); native bounds_closed unused; not assumed idempotent or orthogonal",
+    "time_positive": "k*L*d - gamma*(d-d_previous)/dt + (k/shear)*((gradient(P+PP)+J*rho*galvanotropism/sigma)/shear) + 2*d-d_previous, followed by rotation_only",
+    "k": "dt**2*shear/1000, literal density1000 rather than configured1050",
+    "gamma": "dt**2*damping*shear/(1000*2*cell_radius)",
+    "time_initial": "Disabled t=0 path appends history then fails at removed np.float; no initialization alias/repair supplied",
+    "limits": "Native stability/displacement checks commented out; check_v detects NaN only and timeDeform calls it only on x",
+    "osmotic": "R*T totals include ions+molecules+GRN; mapped/averaged env minus cell; u=(deltaPi-P)*(aquaporins/mu_water)*(3e-10**2)/tm; div=u*area/volume; PP=lapGJinv*(-div*rho*dt)",
+    "volumes": "Osmotic volume/concentration updates commented out; no mass/water ledger inferred",
+    "display": "Sampled quartic SmoothBivariateSpline fit uses current copied centres; ev clamps targets to fitted rectangular knot bounds; displacement added to original membrane vertices; area-weighted centres/vertex histories updated; physical world rebuild commented out",
+    "display_repeat": "Persistent display centres change interpolation abscissae on later samples; original membrane vertices remain fixed"
+  },
+  "units": {
+    "pressure": "Pa for P_cells and ideal osmotic pressures; native PP dimensions unresolved",
+    "grad_pressure": "Pa/m; steady elastic inverse Laplacian divided by shear yields m",
+    "electric": "E V/m times galvanotropism m2/V yields m after HH",
+    "native_PP": "Linv(m2)*div(1/s)*rho(kg/m3)*dt(s) gives kg/m, not Pa; literal gradient addition is not a dimensional force-energy derivation",
+    "operators": "gradient1/m, Laplacian1/m2, source inverse m2",
+    "time": "seconds; disabled recurrence semantics reported without physical validation",
+    "geometry": "m, m2, m3; display only, no inferred material conservation"
+  },
+  "reference": "Independent stdlib 80-digit Decimal matrix/owner loops and Gaussian-elimination polynomial least-squares display reference with rectangle clamping, plus manufactured modal mathematics",
+  "tolerances": {"relative": 8e-12, "displacement_atol_m": 3e-20, "display_atol_m": 3e-17, "operator_atol": 2e-14, "pressure_atol_Pa": 3e-9, "auxiliary_atol": 3e-14},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_process_tree_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "max_dense_cells": 256, "gpu": false, "persistent_compilation_cache": false},
+  "supported_domain": {"layout": "Explicit finite source matrices/measures/owners, neutral padded rows/columns, <=256 dense cells", "parameters": "Positive shear/radius/dt, nonnegative damping, signed finite galvanotropism and pressures, explicit flags", "dynamic": "Diagnostic positive-clock branch with both history levels and positive conductivity; native time initialization remains broken/disabled", "display": "Explicit interpolation matrices; host quartic helper only captured global polynomial regime, not adaptive FITPACK equivalence", "bounds": "Optional caller-specified displacement acceptance limit, never a native clamp"},
+  "scope_limits": ["No native tissue/geometry seeding or mechanics integration", "No physical pressure-energy/elastic energy, ATP, heat, volume or water closure", "No silent fixed-boundary enforcement or repair of disabled initial branch", "Time/spatial refinement is scoped to supplied operators/modal mathematics; no whole-tissue settling", "Caller owns clocks, histories, physical geometry, operators after cuts and checkpoint identity"],
+  "automatic_followup": false
+}

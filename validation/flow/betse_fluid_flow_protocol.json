@@ -1,0 +1,87 @@
+{
+  "kind": "cells.betse_fluid_flow_contract@1",
+  "law_id": "betse_fluid_flow_source_v1_5_0@1",
+  "purpose": "Authenticate dormant native flow and qualify standalone source arithmetic without pressure/volume/energy closure",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+    }
+  },
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "automatic_followup": false,
+  "native_runtime": "Actual authenticated getFlow, HH_Decomp, cell HH/curl/DEC and grid inverse/derivative bodies; actual identified loader/init/caller/consumer/GRN fragments; normalized explicit geometry; no full native simulation",
+  "ownership": {
+    "cell": "Stable explicit owner IDs with frozen deformation operator binding; fields in the declared order, no remap or reconstruction",
+    "ecm": "Read-only qualified geometry GridBinding; all-value voltage inverse reused exactly; explicit C-order IDs, shape, bounds and spacing",
+    "pressure": "No P_cells or osmotic PP read by getFlow. Cell HH uses rot_only=True; ECM scalar HH potential is discarded. No physical pressure solver or volume update"
+  },
+  "timing": "Normal ECM updates precede getFlow, then deformation/concentration/voltage; voltage initialized before loop. Prior flow is consumed at current transport step. Fast loop never calls getFlow.",
+  "loader": {
+    "fluid_flow": false,
+    "mu_water_Pa_s": 0.01,
+    "ignored_config": true,
+    "cell_inverse": "Not constructed by flow initialization; graph construction is behind deformation and forced-off td_deform",
+    "grn": "Separate current/(F*mean(c)*mean(z)) formula; enables flag; read/reinitialize config key spelling differs"
+  },
+  "units": {
+    "cell_forcing": "E*rho*gap_fraction/mu in 1/(m*s); gap parameter documented as dimensionless fraction",
+    "cell_velocity": "m/s",
+    "cell_stream": "m2/s",
+    "ecm_slip": "m/s",
+    "ecm_raw_and_output": "m3/s, dimensional source defect retained",
+    "ecm_stream_and_scalar": "m4/s, neither is pressure Pa",
+    "ecm_divergence": "m2/s, not physical volume source",
+    "grn_output": "m/s"
+  },
+  "limitations": [
+    "ECM absolute potential offset changes output at fixed E; not gauge-invariant electroosmosis",
+    "ECM uses voltage all-value inverse, not separately created all-flux lapENV_P_inv",
+    "HH rotational boundary source zeroing does not impose no-slip; source divergence reverses perimeter derivative signs",
+    "Cell HH is inherited actual curl/inverse/curl, not a guaranteed idempotent projector",
+    "Native graph initialization missing and source nonfinite/negative domains retained as evidence",
+    "ECM failure after early writes can leave partially updated state; standalone wrapper is stateless",
+    "GRN mean valence can be zero even with nonzero current/concentration; no denominator repair"
+  ],
+  "reference": "Independent frozen stdlib DEC/HH algebra plus new 80-digit flow forcing; frozen independent grid stencil/pivoted elimination plus new FD/HH loops. Manufactured refinements use independent analytic fields.",
+  "tolerances": {
+    "relative": 8e-12,
+    "cell_velocity_atol_m_s": 3e-24,
+    "cell_aux_atol": 3e-21,
+    "ecm_output_atol_native": 3e-30,
+    "ecm_aux_atol": 5e-26,
+    "refinement_absolute": 2e-11,
+    "divergence_absolute": 2e-20,
+    "refinement_auxiliary_scaling": "Before the fixed 2e-11 output-field absolute tolerance, multiply divergence by h and divide HH potentials by h to compare all auxiliaries in native m3/s units."
+  },
+  "scope_limits": [
+    "No coupled-tissue, physical Stokes, pressure or no-slip validation claim",
+    "No geometry/remap, physical water volume, energy, ATP or ion-conservation evolution",
+    "No implicit conversion of ECM m3/s to transport m/s",
+    "No full native simulator or checkpoint integration"
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "kind": "cells.passive_init_sim_membrane_epoch_contract@1",
+  "model_id": "resolved_membrane_profile_epoch@1",
+  "bridge_id": "passive_membrane_init_checkpoint_new_sim_epoch@1",
+  "readonly_source_sha256": {
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/core/schedule.py": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/core/tissue_profile_preparation.py": "f7ef93d0abe7fe7599c2ecb1cc8f12d9f507773a0ef23b9388bb73b00845044c",
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "validation/topology/tissue_profile_preparation_reference.py": "44d719f7e48342cbacc9937eb1c7630f8f628080111106604c0f6c42cd1c828a",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c",
+    "validation/geometry/betse_geometry_reference.py": "7f8cec792aa0f0cc5fac28793cb7ec542de2d1e237c908f197c96fef36b113f2",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+    "src/cells/numerics/fixed_step.py": "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6",
+    "src/cells/core/state.py": "367d3bdcb4093203280a96697a9d7eaf25b11f8a3799c0e5582ce57fb0c12dd1",
+    "validation/topology/tissue_profile_preparation_fixtures.py": "bb4d693031d39bf6c1816729ae204c39fe95787870d9fc06401a068172bf8d9c",
+    "validation/tissue/surface_excision_fixtures.py": "a37c929162a350d5caca34e62a805c77fd8a9ba0d064346bfa377486fc74ff0a",
+    "validation/tissue/active_excision_fixtures.py": "eeb723aaad055213a3383562103c2aa82107862b37944494ceab23a88f84c42e",
+    "src/cells/core/geometry_profile_preparation.py": "b7430b17dbbd2ee3201522dece95d01c49d69b405bc33b8ce051796aaeb81573",
+    "src/cells/core/surface_profile_interventions_spec.py": "f5b03749c8813daaf33f2dac12482cd233db5ac9f98f216b5095b14013fe33bc",
+    "src/cells/models/surface_profile_interventions.py": "1df268bee8b38aced7a62f6304c4b4ed38d48603ccaed3a28bc69c8f4fc50248",
+    "validation/topology/surface_profile_interventions_reference.py": "ddaf769e07f27a82b9064f5856c6b41a91fe6ab858500fc858ac1aa02feca702"
+  },
+  "frozen_workspace": {
+    "path": "/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-03/workspace",
+    "manifest": "/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-03/workspace-manifest.json",
+    "manifest_sha256": "10397eff7f687bc1ce6cf0b70ef2272181cfb4919036896d8df9d961af45e2ab",
+    "component_receipt": "/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-03/result.json",
+    "component_receipt_sha256": "642ab256f2e98493237c6b78a8ca32d3272371ea106018b94a7ef170f16e441c",
+    "handoff_receipt": "/mnt/workspaces/Cells/scheduled-membrane-profiles-handoff-20261029-01/result.json",
+    "handoff_receipt_sha256": "a922fb3a4605f41d1d224231d14f7710810003a366d2ff6b26b951ffa3dc7bef"
+  },
+  "native_phase_scope": [
+    {
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "body_ast_sha256": {
+        "init_dynamics": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+        "run_sim_core": "86d7910fa4e55eaba60afa058765aba37a0ac228288462118311237b3784cfb2",
+        "clear_storage": "884d79232639fabbc8abc850f402df7338b33c3e5a1cb1804cd3eefb86bba22f",
+        "_plot_loop": "4d065b9d5d554bca00b712d6f09f3c8df51f311ad1e5beaf4d7629e8e975735f",
+        "_run_sim_core_loop": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "_run_fast_sim_core_loop": "2ef819f5611699d8d757592ff55a609e9a30396cec375d8525cabc4d297fac51"
+      }
+    },
+    {
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/simrunner.py",
+      "sha256": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "body_ast_sha256": {
+        "init": "0e3444d3da1b82fc21f57b787c824cd5818a2a6f818818ee3409ae7ec1a2cd1f",
+        "sim": "5237d06172e437bcdd8af4b5b2e7af465b5bd33093373a3b9e369eeaa866c409"
+      }
+    },
+    {
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/tissue/tishandler.py",
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "body_ast_sha256": {
+        "init_profiles": "d19e6c50d26e9b6c5f9900f1123c43f246235a29c016b43675973fc80b06b085"
+      }
+    }
+  ],
+  "qualified_examples": {
+    "direct-four-ion": {
+      "path": "/mnt/workspaces/Cells/scheduled-membrane-profiles-handoff-20261029-01/examples/direct-four-ion/definition.json",
+      "sha256": "66a18685fb1757a74bb0cb3bbe34eaf31246714038cfe803d95e796cb0e2294b"
+    },
+    "geometry-profiles": {
+      "path": "/mnt/workspaces/Cells/scheduled-membrane-profiles-handoff-20261029-01/examples/geometry-profiles/definition.json",
+      "sha256": "57b535cb3db24bd5b74c6ce6c98593d3be6d7e5c1542265f6fb6239f7b758240"
+    }
+  },
+  "purpose": "Qualify a deliberate new SIM epoch from evolved INIT without inventory/charge/history reset or reinterpretation as checkpoint resume",
+  "source_contract": "Ordinary scheduled passive INIT accepted checkpoint; complete typed state/layout and original definition sealed; source history validated against original accounting origin",
+  "target_contract": "Same physical model, static preparation/defaults and physical capacities; explicit SIM events, zero-based controls/horizon/dt; all twelve parent state arrays carried exactly, phase clock reset only",
+  "scope": "Membrane-only passive physical-state handoff with RK-stage sampling; no optional native noise/channel/pressure/ECM writers, native full-solver parity, profile/default changes, cuts/remaps or automatic phase transition",
+  "cases": [
+    "continued-controls",
+    "changed-controls",
+    "empty-SIM",
+    "safe-negative-SIM"
+  ],
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_rss_bytes": 1073741824,
+    "min_available_bytes": 8589934592,
+    "max_command_seconds": 480,
+    "gpu": false
+  },
+  "budgets": {
+    "rhs_rtol": 3e-10,
+    "rhs_atol": 3e-12,
+    "charge_rhs_atol_C_s": 3e-23,
+    "potential_rtol": 3e-10,
+    "potential_atol_V": 3e-13,
+    "material_atol_fmol_s": 3e-14,
+    "energy_atol_pJ_s": 1e-10,
+    "trajectory_rtol": 3e-08,
+    "trajectory_atol": 2e-11,
+    "trajectory_charge_atol_C": 3e-25
+  },
+  "test_dispatch_patch": "agent-work/cells-worker-01/workfiles/membrane_profile_phase_handoff_test_dispatch.patch",
+  "test_dispatch_metadata": "agent-work/cells-worker-01/workfiles/membrane_profile_phase_handoff_test_dispatch.json",
+  "automatic_followup": false
+}

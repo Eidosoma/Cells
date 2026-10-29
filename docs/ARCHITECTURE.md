@@ -312,8 +312,10 @@ ordinary interval/observer check, complete ledger/state continuity, and
 incremental selected recording. It bounds retained arrays, not biological work
 or whole-process RSS. CORE-005b/D029 applies the contract to
 [independent cohorts](WINDOWED_WORLDS.md): each execution round consumes each
-world's own existing intervals, with prepared parameters, active masks and
-compiled widths reused. A complete cohort checkpoint maps independent local
+world's own existing intervals, with prepared parameters and active masks reused.
+The full compiled width also handles masked tail slots when the declared work
+budget permits, avoiding another executable; tight budgets retain a shorter tail.
+A complete cohort checkpoint maps independent local
 clocks; it is not a simultaneous organ state. Per-world observers still check
 ordinary host results before any round is exposed. Vectorized failure guards,
 multi-device semantics and biological exchange still require qualification.

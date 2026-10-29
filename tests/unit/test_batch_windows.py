@@ -63,7 +63,7 @@ def test_all_models_exact_scalar_batch_window_parity(name, width):
     for index, round_ in enumerate(rounds):
         assert round_.index == index and set(round_.checkpoints) == {10, 11}
         assert round_.resources["prepared_parameter_sets"] == (2 if index == 0 else 0)
-        assert round_.resources["compiled_executables"] <= 2
+        assert round_.resources["compiled_executables"] == 1
     assert (
         sum(r.resources["executed_world_steps"] for r in rounds)
         == full.resources["executed_world_steps"]
@@ -204,9 +204,33 @@ def test_prepared_parameters_and_compiled_widths_are_reused(monkeypatch):
     monkeypatch.setattr(batch_windows, "_compiled_batch", CountCompilations())
     result = run_batch_windowed(spec, WindowPolicy(2))
     assert calls == [w.simulation.fingerprint for w in spec.worlds]
-    assert len(widths) == len(set(widths)) == 2
+    assert widths == [2]
     assert result.resources["rounds"] > len(widths)
     assert result.resources["peak_compiled_executables"] == len(widths)
+    assert (
+        result.resources["padded_step_slots"] <= result.resources["conservative_padded_step_bound"]
+    )
+
+
+def test_tail_padding_respects_the_existing_padded_work_budget():
+    from cells.core.batch import checkpoint_batch_limits
+
+    spec = synthetic_pair()
+    _, bound = checkpoint_batch_limits(spec)
+    remaining = max(len(timeline(w.simulation)) - 1 for w in spec.worlds)
+    policy = WindowPolicy(remaining - 1)
+    assert remaining > 4
+    roomy = plan_batch_windows(spec, policy)
+    assert roomy.fixed_kernel_width == policy.window_steps
+    assert roomy.padded_step_bound > bound
+    tight = replace(spec, max_padded_steps=bound)
+    planned = plan_batch_windows(tight, policy)
+    assert planned.fixed_kernel_width is None and planned.padded_step_bound == bound
+    rounds = list(iter_batch_windows(tight, policy))
+    assert sum(r.resources["padded_step_slots"] for r in rounds) <= bound
+    assert rounds[-1].resources["compiled_executables"] == 2
+    for world in tight.worlds:
+        assert_windows(local_parts(rounds, world.world_id), run(world.simulation))
 
 
 def test_finished_world_never_evaluates_its_rhs(monkeypatch):

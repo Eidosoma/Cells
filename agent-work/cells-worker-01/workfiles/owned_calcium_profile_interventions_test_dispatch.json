@@ -1,0 +1,19 @@
+{
+  "base": "/mnt/workspaces/Cells/active-membrane-profiles-development-20261029-02/workspace",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "82b7f6d7de50471bb622c67198ac8dd4da884c6b837716dbb6802668e201255f",
+      "patched_sha256": "7af247eddbe360c0613de7c49f6d74cfc85935aba5a8799d3992a3bf99bfae78"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "52b4d6c759c025b93eb27ddf29d3330e1fc8b271609c3fba0ce84b0022a457d8",
+      "patched_sha256": "d3fdfd69dfa2cb6e4abf5dffffde11ec59d8bd07a8d353bf070450aa7c0eee20"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "8e4f48d3cd9e788111d8a8c48f5c016cf2a683fe6cb8120248e7cea3e4dd13f2",
+      "patched_sha256": "e0061d256a846db25c6dc4e241bc876abe90c5efba0f0b7a9612c2d1d7c57e67"
+    }
+  },
+  "patch_sha256": "fb81400b4f63ce5bd6527112ba0ba9de5e2e210f9f370ae951b6b9fdf5ca4b7c",
+  "shared_files_written": false
+}

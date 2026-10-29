@@ -1,0 +1,8 @@
+{
+  "path": "src/cells/__main__.py",
+  "base_sha256": "0ad34d6e1c299a8e0a703c3e18f8919ee5c0ac2187b584da0ca6d241de2966d1",
+  "patched_sha256": "5d8ed94e700049061b40b4bf897f72d62ecfe0ef844612f5a18c34b2bfa30a5c",
+  "patch_sha256": "84774e16f9de8928493e64165b9b9e8f6b23f5e580ee538c40537d484fc7177c",
+  "policy": "Unapplied shared dispatch patch; root owns application",
+  "changes": "One help entry and an early module delegation; no other shared change"
+}

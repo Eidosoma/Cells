@@ -1,0 +1,30 @@
+{
+  "status": "prepared-not-applied",
+  "model_id": "resolved_calcium_energy_regulated@2",
+  "patch_path": "agent-work/cells-worker-01/workfiles/integrated_network_regulation_v2_dispatch.patch",
+  "patch_sha256": "fda9ce3bd9c6db130b87ef3110f1f45d34908593776146ad25b5f4fefcb29736",
+  "shared_files": {
+    "src/cells/core/specs.py": {
+      "before_sha256": "4cfcd885139258211ba2dcdf7cad48dc26eb86d0a1c632ca86847c76ab385e8f",
+      "after_sha256": "91270c0fbc8b7615f79b5abd13e047cfe19f95fec74845a0f615e2d0ab289d96",
+      "inserted_lines": 14
+    },
+    "src/cells/models/registry.py": {
+      "before_sha256": "db3facdfa3044330d8af5248ee5a8f1f81fe770f66dc8edb6bae4e4641d4f2c8",
+      "after_sha256": "dbe97ea459a71ca1687e50272be1d13a67e710945e1ffe4b8820b8fe4381baf4",
+      "inserted_lines": 8
+    },
+    "src/cells/core/schedule.py": {
+      "before_sha256": "42f058ca91dab7656294763d9418da55f28b6d59db4fc13143e246eb1918a6d2",
+      "after_sha256": "7f92f608c4a521f42808e52a663b04f2c36ced3767e3771049d2a5bee0babc3b",
+      "inserted_lines": 7
+    },
+    "src/cells/ensemble/ionic.py": {
+      "before_sha256": "9cb104a82b2db54898b8d8f9f18b30dc030bd6eb6e889beb482a53cb0b9d1990",
+      "after_sha256": "c6501c6cedbf7d5fdd15886496fa05646d3ed0dccd7872f2f80b560338844ce7",
+      "inserted_lines": 1
+    }
+  },
+  "scope": "New sibling class independent of @1; dispatch before parent HCNExtra branch; schema helper projects parent controls; public execution/compiled @2 unqualified; rebase context if Chief changes shared files",
+  "mutates_shared_files": false
+}

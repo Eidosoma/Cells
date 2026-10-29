@@ -1648,3 +1648,1618 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   No regeneration/mechanics/whole-tissue parity, complete checkpoint migration
   or cut-energy law is claimed. No follow-up computation, regression or audit
   is running.
+
+## Native configurable reaction and growth/decay kinetics, 2026-10-28
+
+- Chief assigned new reaction/growth kinetics, native captures, independent
+  reference, CPU/JAX checks and an integration contract. Own only new
+  `src/cells/processes/betse_network_reactions.py`, matching chemistry validation,
+  unit tests and own workfiles/log. Shared models/docs/PROGRESS remain Chief-owned.
+  CPU7, one thread, <=1-GiB process-tree RSS, >=8-GiB host reserve; external
+  evidence and no GPU. Earlier evidence and scientific files remain frozen.
+- Source inspection resolves three different reversible executable branches:
+  cell `vmax*alpha*(1-Q/Keq)` (both saturations absent), mitochondria
+  `vmax*alpha*(forward-(Q/Keq)*backward)`, environment
+  `vmax*alpha*forward*(1-Q/Keq)` (product saturation absent). Irreversible
+  branches use forward saturation. Literal Q applies 1e-3 outside each power.
+  Actual generated expressions, rather than LaTeX, will define correspondence.
+- Growth is cell-local production minus basal and regulated decay, with
+  concentration divided by the nested growth scale and all rates multiplied by
+  the substance time factor. Profile targets and modulation are explicit inputs.
+  Native raw reader, regulator-zone quirks, ordering, matrix sums and broken
+  branches require separate captures. No ATP/heat or tissue parity is inferred.
+- [Source preflight 02](/mnt/workspaces/Cells/betse-network-reactions-development-20261028-02/result.json)
+  passes **38 valid networks and 11 native limitations**. Actual authenticated
+  reader, constructor, growth/time-field AST fragments, profile initialization,
+  regulators, generators and three matrix builders execute. The only spatial
+  modulator hook returns supplied per-cell samples. Native child imports no
+  production Cells or JAX; the 80-digit Decimal reference imports only stdlib.
+- Implemented explicit owner expansion, zone-dependent reaction rates, raw
+  nested growth/decay scaling, source auxiliary expressions, targets/modulation,
+  native 8.314 gas-constant default and an explicit modern-SI override. Actual
+  insertion/identity order and repeated/both-side substrate coefficients are
+  retained. Stoichiometric conversions and signed growth source/sink ledgers
+  accumulate to authoritative species/compartment amounts. Declared moiety and
+  charge projections expose unbalanced reactions without inventing missing fuel.
+- [Complete component receipt 04](/mnt/workspaces/Cells/betse-network-reactions-development-20261028-04/result.json)
+  passes **92 tests: 88 host / four CPU JAX**, no skips. All 38 networks match
+  native generated rates, growth auxiliaries, matrices and owner changes plus
+  the independent oracle. CPU compilation covers batches/padding, singular-world
+  isolation, an eight-step exact local-carry restart and regulation derivatives.
+  Native invalid/quirky cases retain inputs, expressions and outcomes: Python
+  None energy, invalid zone/list cases, broken direct ordering/groups, unknown
+  regulator zone, disabled-mito fallback, duplicate overwrite, zero substrate
+  and negative growth scale. Attempts 01/03 stop at lint and remain preserved.
+- Unregulated local growth has tau **4.040404040404041 s**. At three tau
+  (**12.1212121212 s**), 48/96/192 Euler steps give maximum errors
+  **0.00553528209 / 0.00277595473 / 0.00138991979 mM** and orders
+  **0.995673 / 0.997982**. At 12 tau (**48.4848484848 s**), 384 updates retain
+  **5.07340e-6** of initial departure from equilibrium; maximum material residual
+  **2.66454e-15 fmol**. The mixed local JAX restart spans **80 ms** and retains
+  material to **3.29424e-15 fmol**. Neither is a whole-tissue settling claim.
+- Native/host/JAX guarded phases take **1.535 / 5.140 / 37.747 s**. Peak RSS
+  **342,908,928 B**, minimum available memory **19,140,800,512 B**, CPU7/one
+  thread meet all assigned bounds. No GPU, detached job or persistent cache.
+  No scientific source drifts during the qualified checks.
+- [Frozen metadata handoff](/mnt/workspaces/Cells/betse-network-reactions-handoff-20261028-01/result.json)
+  verifies **169 artifact hashes** and freezes the
+  [owner/source/energy integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_NETWORK_REACTIONS_HANDOFF.md).
+  SHA `468fb5b3e3a6f0c41fca41e1a06a049eb5f7fd1eaba9cf4a35926ee551a52bba`.
+  Process SHA `4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364`;
+  full receipt SHA `84d56dacc23b4cdd5c01bda0a8a9ab633de95cc073726f4c90c771cc78e4fc07`.
+- All seven scientific files/evidence are frozen. Native full run_loop, shell
+  transport, molecule alias divergence, top-level display/charge scales, stepping,
+  checkpoint schema and shared tissue wiring remain explicit composition work.
+  No ATP/heat closure or native tissue parity is claimed. Shared files and prior
+  frozen work remain untouched; no follow-up scientific job/audit is running.
+
+## Native network modulation and regulator dispatch, 2026-10-28
+
+- Chief assigned new `betse_network_modulation` process, regulation validation,
+  unit tests and own workfiles/log. Shared models/docs/PROGRESS remain Chief-owned;
+  all earlier components and evidence stay frozen. CPU7/one thread, <=1-GiB RSS,
+  >=8-GiB reserve, external outputs, no GPU. Only blockers/final handoff to Chief.
+- Pinned source has no `write_modulators`: `read_modulators` compiles expressions
+  and `run_loop_modulators` applies them. Reachable targets are exactly GJ,
+  Na/K-ATPase and TJ. Assignments replace earlier factors in insertion order;
+  TJ selects shared environment targets and optional ion rows. `_o` arrays reset
+  on initialization but live GJ/pump factors do not reset there.
+- Channel regulation uses the same influencer generator with voltage requests
+  enabled and inhibitor maxima; ordinary modulator generation disables voltage
+  requests. Channel inhibitor maxima expose native arithmetic precedence, rather
+  than a product of shifted Hills. Plan to reuse the frozen reaction regulator
+  kernel for shared activation/direct semantics and preserve extra channel rules
+  explicitly. Core channel state, physical fluxes and tissue timing stay bounded
+  by a recorded dispatch contract and authenticated native call traces.
+- [Source preflight 02](/mnt/workspaces/Cells/betse-network-modulation-development-20261028-02/result.json)
+  passes **38 valid configurations and 14 native limitations**. Authenticated
+  reader/generator, modulator constructor/init, channel constructor/init and
+  normal/fast channel/modulator bodies execute. Native class/profile dispatch
+  uses an explicitly recorded Probe core; zero-current transport hooks record
+  DChan inputs. Exact simulator molecule/GRN network if-blocks record call order.
+  Neither production Cells nor JAX is imported in the native child.
+- Implemented pure signed factor evaluation, explicit membrane/environment
+  sampling, ordered GJ/NaK/TJ overwrite, shared TJ-site/ion selection, channel
+  INIT skips and caller-owned core target carriers. Channel voltage-sensitive
+  Km uses p.T and explicit native F=96485/R=8.314. Activator maxima remain
+  ignored; inhibitor maxima use the actual generated sum-of-products precedence.
+  DChan applies the explicit outer modulator after supplied post-run core.P.
+  Frozen reaction binding/activation/direct kernels are reused unchanged.
+- [Complete component receipt 04](/mnt/workspaces/Cells/betse-network-modulation-development-20261028-04/result.json)
+  passes **75 tests: 71 host / four CPU JAX**, no skips. All 38 configurations
+  match native factors, prior/live control handling, ordered target writes and
+  normal/fast DChan traces plus an independent stdlib 80-digit Decimal oracle.
+  CPU checks cover separate batch phases, neutral rule padding, zero regulator
+  values, invalid-world isolation, exact control-carry restart and voltage
+  derivatives. No scientific source drifts during the qualified run.
+- Native initialization resets *_block_o but not live factors; express channel
+  initialization scales channelMax after maxDm assignment and targets all
+  membranes. Captured limits retain unsupported target labels (four), unknown
+  TJ ion, broken direct order/groups, invalid regulator zone, duplicate overwrite,
+  uninitialized TJ live array, unsupported channel class/type, missing sim.dyna
+  and short inhibitor maxima. Attempt 01 retains a capture-helper NameError;
+  02 is source-only and 03 stops at lint. Failed evidence remains intact.
+- Native/host/JAX guarded phases take **1.021 / 3.801 / 16.725 s**. Peak RSS
+  **318,382,080 B**, minimum available host memory **18,221,760,512 B**, CPU7/one
+  thread meet all assigned bounds. No GPU, detached job or persistent cache.
+  Four prescribed control samples 50 ms apart (span200 ms) restart exactly;
+  this is array carry, not kinetic settling. Voltage derivative
+  **0.6667209074754705 /V** matches central difference
+  **0.6667209077916569 /V** at h=1e-6 V.
+- [Frozen metadata handoff](/mnt/workspaces/Cells/betse-network-modulation-handoff-20261028-01/result.json)
+  verifies **177 artifact hashes** and freezes the
+  [factor/target/dispatch integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_NETWORK_MODULATION_HANDOFF.md).
+  SHA `ea86673d75305bc17c8753deefbce320e3db9d509b8756c44e0a2a946cf8f3c2`.
+  Process SHA `c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100`;
+  full receipt SHA `6cd841eb45b7c2774527d7f5032533be291a296a0b8d8b2c3ff4724070a31b09`.
+- All seven scientific files and evidence are frozen. Shared models/dispatch/
+  docs/PROGRESS and earlier frozen work remain untouched. The contract separates
+  control assignment from physical consumer timing, core.P state, flux/current,
+  energy/material inventories and checkpoint identity. No tissue/ATP/heat parity
+  is inferred; no follow-up scientific job or audit is running.
+
+## Native deformation and electromechanical displacement, 2026-10-28
+
+- Chief assigned new `src/cells/processes/betse_deformation.py`, mechanics
+  validation, unit tests and own workfiles/log. Shared integration/docs/PROGRESS
+  and all earlier scientific components stay untouched. CPU7/one thread,
+  <=1-GiB RSS, >=8-GiB host reserve, external evidence, no GPU. Only blockers/
+  final handoff messages to Chief.
+- Source forces `td_deform=False`. Reachable steady displacement rotates the
+  elastic pressure solution, then adds raw osmotic-PP gradients and electric
+  field times galvanotropism. HH_cells ignores bounds_closed and is not assumed
+  an orthogonal/idempotent projection. Dynamic forcing contains two divisions
+  by shear modulus; time density is hardcoded1000 rather than configured1050.
+  At t=0 the disabled routine uses removed np.float. These differences and
+  dimensionally unresolved native PP terms will remain explicit in evidence.
+- Display updates use quartic SmoothBivariateSpline against a persistent copy's
+  current cell_centres, but add displacement to original membrane vertices.
+  They update displayed vertices/centres/history only, with world rebuild and
+  volume changes commented out. The production mechanics path must therefore
+  consume explicit operators/owners and leave physical geometry/inventories to
+  the composing model. Any dynamic time/refinement result will be scoped to
+  supplied positive-clock history and mathematical operators, not native enablement.
+- [Complete component receipt 08](/mnt/workspaces/Cells/betse-deformation-development-20261028-08/result.json)
+  passes **58 tests: 54 host / four CPU JAX**, no skips. Actual native captures
+  cover **20 forcing/operator cases, four display cases and ten limitations**.
+  Source getDeformation/timeDeform/pressure/display, DEC graph/curl/HH/tools,
+  parameter assignments and initialization/storage/sample/reset fragments run
+  on explicit small layouts. Native child imports no Cells/JAX. Independent
+  reference uses stdlib 80-digit Decimal matrix/owner loops and partial-pivot
+  normal equations; layout incidence inverses use exact Fraction elimination.
+- Steady pressure elasticity, post-rotation electric/osmotic additions and all
+  source signs/order are preserved. Disabled positive-clock recurrence keeps
+  both shear divisions and literal density 1000; it requires supplied two-level
+  history and has no repaired native t=0 path. Operator ownership, neutral
+  padding, finite/domain checks, optional caller displacement bounds and a
+  bounded <=256-cell dense layout are explicit. Numerical kernels are pure.
+- Pressure auxiliary retains ion/molecule/GRN totals, ECM or membrane averaging,
+  aquaporin velocity/divergence and native PP. It moves no volume/water/material.
+  Native PP has dimensional kg/m rather than Pa; physical pressure/work and
+  force-energy closure are not inferred. HH ignores fixed-boundary flags and
+  does not establish an orthogonal/idempotent projection or total-volume law.
+- Display captures show FITPACK ev clamps to the fitted rectangular domain.
+  Corrected the initial extrapolating mathematical reference and production
+  map accordingly, without changing valid-case tolerances. Supported host maps
+  implement only the captured global quartic polynomial regime, now including
+  minimum 25-centre and 36-centre examples. Display changes the persistent copy's
+  centres/vertices/history; original membrane vertices, physical centres and
+  volumes remain unchanged. Repeating affine displacement changes displayed
+  vertices by **3.692368390342338e-10 m** as fitting abscissae move.
+- Captured limitations: t=0 np.float, missing history, negative clock, zero
+  conductivity, negative dt, missing PP, unbounded displacement, nonfinite
+  steady output, too few spline points and collinear fitting. Degenerate FITPACK
+  produced both bad finite output/warnings and a later exception on nominally
+  identical input; both outcomes are archived as unsupported behavior. The
+  supported map rejects the layout. Failure evidence from all eight attempts
+  remains intact: 01 lint, 02 storage dimension, 03 extrapolation reference,
+  04 lint, 05/06 degenerate outcomes, 07 floating grouping, 08 qualification.
+- Supplied periodic-strip gradients refine over **8/16/32 cells**, errors
+  **313.165529 / 80.125195 / 20.147501 per m**, orders **1.96660 / 1.99166**.
+  Native rotational gains **0.213388 / 0.240485 / 0.247598** approach 1/4;
+  repeated application squares the gain. This qualifies source operator
+  arithmetic, not tissue geometry or an ideal Helmholtz projection.
+- Primed compatible modal recurrence spans **638.719031 us** at
+  **19.959970 / 9.979985 / 4.989992 us** (32/64/128 steps), errors
+  **3.84464e-11 / 9.46354e-12 / 2.34753e-12 m**, orders **2.02240 / 2.01123**.
+  Native time mode stays disabled and initialization broken. CPU JAX compiles
+  steady/pressure/display paths, isolates invalid worlds and restarts an
+  eight-update primed history exactly over **8 us**; no whole-tissue settling,
+  physical mechanics, energy or shared checkpoint claim follows.
+- Native/host/JAX guarded phases take **7.860 / 8.844 / 14.894 s**. Peak RSS
+  **280,268,800 B**, minimum available memory **19,554,729,984 B**, CPU7/one
+  thread satisfy all bounds. No GPU, detached job or persistent cache; no
+  scientific source drifts during the qualified checks.
+- [Frozen metadata handoff](/mnt/workspaces/Cells/betse-deformation-handoff-20261028-01/result.json)
+  verifies **137 artifact hashes** and freezes the
+  [mode/unit/geometry ownership contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_DEFORMATION_HANDOFF.md).
+  SHA `fd1a6f3dae09711623f7e4c247907691356e01e33b612f809d00769fb824ca7e`.
+  Process SHA `88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2`;
+  full receipt SHA `f7750f7bf37466d6b18efd7bdd269a944903e03dc2e3bc84e8805b0146484d98`.
+- All seven scientific files/evidence are frozen. Shared models/dispatch/docs/
+  PROGRESS and earlier components remain untouched. No follow-up scientific
+  computation, audit or regression is running; shared integration is Chief-owned.
+
+## Native tissue profiles and intervention target ownership, 2026-10-28
+
+- Chief assigned new `src/cells/processes/betse_tissue_profiles.py`, matching
+  topology validation/unit tests and own workfiles/log. Root retains actual
+  cut/solver/checkpoint integration; all shared files and earlier components
+  remain frozen. CPU7/one thread, <=1-GiB RSS, >=8-GiB reserve, external evidence,
+  no GPU. Only blockers/final messages to Chief.
+- Audited ALL/COLOR/INDICES/PERCENT/IMAGE pickers, profile initialization,
+  ordered Dm assignment, GJ insularity and scheduled target binding/application.
+  Default membership is all cells, even under overlapping later profiles.
+  Percent shuffles a view of cell_i in place, changing earlier ALL target aliases
+  while their already-flattened membrane lists retain pick-time order. Explicit
+  recorded permutations and stable IDs must separate this source behavior from
+  mutating authoritative layout. Duplicate selections/environment mappings remain
+  ordered occurrences rather than being silently deduplicated.
+- Image selection thresholds every non-white pixel (!=255), flips vertically,
+  uses transposed bilinear interpolation and selects any nonzero value; fitting
+  clamps evaluation coordinates at the rectangle. An unused cubic fast helper
+  and ConvexHull still impose minimum-size/noncollinearity requirements. Color
+  comparison is exact. Empty profiles omit environment target keys upstream.
+- Scheduled target concatenation preserves profile and occurrence order. Spatial
+  callbacks infer axes from target-list lengths and can fail or select the wrong
+  domain; the new interface will require explicit axes/sample ownership. Native
+  events use default-profile Dm, overwrite scheduled entries and retain unrelated
+  prior values. ECM-disabled junction events are incompletely initialized.
+  Global GJ blocking shuffles a copied array but actually selects a fixed prefix.
+- Complete component qualification passed **81 tests (77 host / 4 CPU JAX)**,
+  **38 valid native cases / 19 preserved native limitations**, zero skips or
+  drift. Authenticated actual picker/profile/event bodies plus Pillow/SciPy
+  image decoding are checked against independent stdlib owner/Fraction/Decimal
+  arithmetic. [Complete receipt](/mnt/workspaces/Cells/betse-tissue-profiles-development-20261028-05/result.json),
+  SHA `d7973ce0c448a57e9e3b56d9013f9c217a9b2307321e95c94c1c9dea0571f50b`.
+- Immutable stable owner maps preserve ALL cell alias order separately from
+  pick-time membrane/environment occurrences, duplicate-last writes and native
+  default-Dm event scaling. Explicit sampled callback axes reject length-based
+  ambiguity; stable-ID carry/drop is distinguished from native post-cut reruns.
+  Read-only compiled manifests detect stale layouts/parameters/order, while raw
+  selector/image/RNG/callback provenance and real checkpoint migration remain
+  caller-owned. No geometry, cut, solver or physical accounting is inferred.
+- CPU JAX compiles selectors/insularity/events, duplicate batching/padding and
+  invalid-world isolation. Prescribed buffers restart exactly over the sampled
+  **0.1/0.3/0.5/0.9 s** controls. Pressure derivative at **0.215 s** is
+  **57.70159566416571 Pa/s** versus central difference **57.701595661541205**.
+  These are control-kernel checks, without tissue settling/conservation claims.
+- Native/host/JAX guarded times **4.304 / 5.555 / 15.406 s**; peak RSS
+  **310,988,800 B**, minimum available memory **20,038,062,080 B**.
+  CPU7/one thread; no GPU or persistent cache. Native captures use the existing
+  BETSE/Pillow environment; host/JAX stay in CPU venv. No packages changed.
+- Attempts **01/04** retain lint failures, **02** missing Pillow in CPU venv;
+  **03** passes source-only preflight and is not a complete-component result.
+  All attempts remain external and hashed by the finalizer. No source tolerance
+  was relaxed; the seven qualified scientific files are frozen.
+- [Integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_TISSUE_PROFILES_HANDOFF.md)
+  and [metadata-only finalizer](/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_betse_tissue_profiles.py)
+  produce a [frozen 191-artifact handoff](/mnt/workspaces/Cells/betse-tissue-profiles-handoff-20261028-01/result.json),
+  SHA `241773286cd2f10b47f9a70e47a952743e940b0eff265380d3e557225dac4226`.
+  Process SHA `840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1`.
+  Shared models/dispatch/docs/PROGRESS and earlier frozen evidence remain
+  untouched. No worker scientific job, follow-up audit or regression is active.
+
+## Native geometry/operator binding, 2026-10-28
+
+- Chief assigned B09/B13 geometry ownership in NEW `betse_geometry` process,
+  geometry validation, unit tests and own workfiles. Shared/core/docs/PROGRESS
+  and all earlier scientific files/evidence remain untouched. Root owns active
+  physiology/cut composition. CPU7/one thread, <=1-GiB tree RSS, >=8-GiB reserve,
+  external outputs, no GPU. Only blocker/final messages to Chief.
+- Initial source audit separates actual DECMesh generation from native cell
+  shrink/measure/contact construction, regular environment mapping and DEC
+  operators. Source cell patch volume uses radial midpoint distance rather than
+  perpendicular polygon height; dual edges use nearest-midpoint association,
+  including centroid duals that need not be orthogonal. These require explicit
+  diagnostics rather than assuming geometric volume or continuum consistency.
+  Native world creation requests core operators only; auxiliary derivative and
+  boundary behavior must be qualified separately and labeled in captures.
+- Qualified on **2026-10-29**: **66 tests (62 host / 4 CPU JAX)**, zero skips,
+  failures or source drift. Actual imported native classes construct **12 small
+  geometries / four grids**, with **12 retained degeneration/operator limits**.
+  [Complete receipt](/mnt/workspaces/Cells/betse-geometry-development-20261029-03/result.json),
+  SHA `cbc165a2a899d30136ce3c78224ebec3e9acab9ce11ed08de680a7cd81b6a46f`.
+- Stable original/retained/removed seeds, explicit paired edges, membrane/contact/
+  environment owners and reference-face measures are bound without physical
+  state remap. Read-only kernels distinguish native radial patch volumes from
+  polygon volumes (maximum **34.11363810%** difference in the irregular centroid
+  panel), primal seed coordinates from actual cell centroids, and field edges
+  from reciprocal membrane contacts. Generated "single cell" preset has seven
+  downstream owners. Duplicate seeds can both disappear upstream; removals
+  require an explicit ledger. No production RNG stream is consumed.
+- Closed primal incidence conservation/negative-adjoint/constant nullspace and
+  per-component gauges pass. Native nearest dual-edge pairing can omit dual
+  face-walk edges: one/two omissions in the irregular centroid/circumcentre
+  panels. Those source interior-row operators are preserved without a complete
+  dual-complex claim. Core-only native mesh rejects unavailable aux operations.
+- Source factorized inverse has relative residual **0.3108126850** on a
+  compatible panel. Separate explicit density pseudoinverse gives
+  **3.8117645620e-15**, potential arithmetic mean **7.4014868308e-17**.
+  Native default grid pseudoinverse leaks a numerical Neumann null mode on
+  8x8/16x16: residual **0.00142130547 / 0.000764451496**, mean
+  **0.0723686218 / -0.00202944875**. Separate `compatible_gauge` gives residual
+  **2.6978338325e-15 / 5.3230009756e-15**. Native defects remain captured;
+  callers explicitly choose convention and check RHS compatibility.
+- Directional sine difference errors **0.02017097869 / 0.00506780928 /
+  0.00126871731**, orders **1.99284695 / 1.99799158**. Uniform environment
+  cosine-mode errors **0.05035879645 / 0.01278516923 / 0.00320863596**, orders
+  **1.97777255 / 1.99443924**. No irregular-dual continuum, mechanical-energy or
+  whole-tissue inference. JAX covers batching/aux/grid/conservative transfers,
+  invalid-world isolation, gauges, repeatability and analytical derivatives.
+- Explicit interface-only check consumes frozen profile/cut/deformation binders
+  without modifying/rerunning their science. Finalizer verifies/copies their
+  pinned sources and prior receipts. Native empty Cells constructor pass is
+  bypassed for normalized parameters; actual geometry/operator methods execute.
+- Native/host/JAX guarded wall times **16.645 / 6.559 / 5.565 s**; peak RSS
+  **252,542,976 B**, minimum available host memory **19,734,528,000 B**.
+  CPU7/one thread, no GPU/persistent cache or installed package changes.
+- Preserve attempts 20261028-01 (typed empty-constructor setup failure),
+  20261028-02 (source-only preflight), 20261029-01 (lint), 20261029-02
+  (centroid rounding/native nullspace assertions). Source centroid summation was
+  matched and gauge conventions separated; declared tolerances were not loosened.
+- [Contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_GEOMETRY_HANDOFF.md)
+  and [metadata-only finalizer](/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_betse_geometry.py)
+  freeze the [131-artifact handoff](/mnt/workspaces/Cells/betse-geometry-handoff-20261029-01/result.json),
+  SHA `eba18a769047e0f5fb455f074cb1c8602166c8d1916bccd5e83aeccda3216e0e`.
+  Process SHA `18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff`.
+  All seven qualified science files/evidence frozen; shared/core/docs/PROGRESS
+  and earlier evidence untouched. No worker job, follow-up audit or regression
+  is active. Root retains all physical remap/cut/solver/checkpoint integration.
+
+## Native stochastic physiological perturbations, 2026-10-29
+
+- Chief assigned separate B14 package in new `betse_perturbations` process,
+  perturbations validation, unit tests and own workfiles. Active-cut integration
+  remains Chief-owned; no shared/frozen edits. CPU7/one thread, <=1-GiB tree RSS,
+  >=8-GiB memory reserve, no GPU, external evidence. Only blocker/final to Chief.
+- Audited source static K uniform multiplier and normal-SIM protein uniform
+  flux, direct boundary-cell categorical modulator and disabled microtubule
+  Gaussian update. Static initialization snapshots Dm_base before adding noise;
+  first SIM event finalization removes that perturbation. Zero static level
+  still draws. Dynamic noise runs per normal SIM loop invocation, including t=0,
+  not per sampled output and without sqrt(dt) scaling; fast loop has no such
+  branch. Boundary choices weight repeated boundary entries, not unique cells.
+- RNG/replay will distinguish actual sequential NumPy MT19937 state/call order
+  from a separately named Cells stable-world/owner convention. Protein update
+  delegates to actual update_Co/div_env; fast duplicate ECM scatter and non-ECM
+  mean-bath semantics need explicit conservation/ownership limits. Microtubule
+  integration/configuration is commented out and its source angular-noise units
+  mix incompatible quantities; any numeric diagnostic must remain disabled.
+- Complete qualification passed **61 tests (57 host / 4 CPU JAX)**, zero skips,
+  failures or source drift; **21 native valid cases / 14 retained limitations**.
+  [Complete receipt](/mnt/workspaces/Cells/betse-perturbations-development-20261029-03/result.json),
+  SHA `71563291ed6c1a9250e0d0759037f78fef2185d9953aa225b5c91bf47ccec579`.
+  Actual authenticated AST sites/helpers and a recording NumPy proxy preserve
+  source draws rather than substituting a new stochastic law.
+- Local native MT19937 replay includes all 624 words, position and Gaussian
+  cache, with exact NumPy-version/owner/order provenance and no global RNG
+  mutation. Cached **-0.9117195369572063** survives intervening uniforms and is
+  reproduced exactly. Active-component seven-update replay split after three
+  restores exact buffers/RNG over **0.014 s** accumulated update duration.
+  Loop labels and this duration remain distinct explicit timing inputs.
+- Separate Cells Threefry law folds seed, both uint64 world/tick words, site and
+  all SHA256 owner words; open52 uniforms/Box-Muller normals. World reorder,
+  owner reorder/subset and site separation are exact; IDs **7 / 4294967303** and
+  tick **1099511627779** are distinguished. This is not native-stream parity.
+- Native **32768** uniform/normal draws give means/variances
+  **0.4969219781 / 0.0829247910** and **-0.0032252249 / 1.0035966849**.
+  Native **8192** boundary choices count **2749/1356/4087** for weights
+  **1/3,1/6,1/2**, maximum |z| **0.42969**. Stable **8192** draws give
+  **0.4998722729 / 0.0824324353**, **-0.0075393836 / 1.0145642539**;
+  boundary **2694/1373/4125**, max |z| **0.85938**. Analytic moment checks
+  meet declared six-standard-error bounds.
+- Independent Decimal budgets/covariance and **512-world** protein panels
+  compare 3*0.002 s versus 6*0.001 s at **0.006 s** duration. Expected integrated
+  amount variance halves at fixed flux amplitude; observed moments/covariance
+  and per-sample conservation pass. No Wiener sqrt(dt) scaling is introduced.
+  Source fast duplicate ECM scatter retains defect **-5.935102132663108e-23 mol**
+  and fails conservative acceptance. Mixed bath explicitly uses **M*vol_env**;
+  negative clipping/stale membrane copies and ambiguous callbacks stay unsupported.
+- CPU JAX compiles source-tape/batched arithmetic, exact split replay,
+  stable sampling, invalid-world isolation and analytical Jacobians. Disabled
+  microtubule methods remain numeric diagnostics with unresolved units;
+  import/config/initialization/update integration stays commented out. Expected
+  negative-time sqrt warning remains recorded. No whole-tissue, physical
+  Brownian, energy/ATP or actual checkpoint/cut integration claim follows.
+- Native/host/JAX guarded times **42.337 / 3.787 / 22.215 s**; peak RSS
+  **333,107,200 B**, minimum available memory **17,925,255,168 B**. CPU7/one
+  thread, no GPU/persistent cache or package changes. Attempts 01 (source-only)
+  and 02 (lint failures) remain externally frozen; attempt 03 qualifies.
+- [Replay/integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_PERTURBATIONS_HANDOFF.md)
+  and [metadata-only finalizer](/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_betse_perturbations.py)
+  freeze the [148-artifact handoff](/mnt/workspaces/Cells/betse-perturbations-handoff-20261029-01/result.json),
+  SHA `831db765a0ef268b148285d7cf56f8960ccfe58af2ef52b2d38950e8d83ed435`.
+  Process SHA `75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56`.
+  Seven scientific files/evidence frozen. Shared/frozen work remains untouched;
+  no worker computation, automatic follow-up audit or regression is active.
+
+## Native environment transport/barriers, 2026-10-29
+
+- Chief assigned B08 in NEW `betse_environment_transport` process, transport
+  validation/unit tests and own workfiles. Active cuts/calcium-ER composition
+  remain Chief-owned. No shared/frozen edits. CPU7/one thread, <=1-GiB tree RSS,
+  >=8-GiB reserve, no GPU, external evidence; only blocker/final to Chief.
+- Source audit covers Simulator initDenv/update_ecm, actual Nernst-Planck flux,
+  finite-difference gradient/diff/divergence/integrator, molecular extracellular
+  barrier path and global K/Cl/Na bath setters. Source divergence reverses
+  boundary derivative signs, central-gradient composition has a two-grid-step
+  stencil, and perimeter concentrations are clamped before transport rather
+  than held fixed afterward. Stage ledgers must not imply a conservative face
+  discretization. Sodium-normalized weights and overlapping bath salt writes
+  also need explicit zero/ownership/order limits.
+- Qualified **75 tests (71 host / four CPU JAX)**, zero skips, failures or source
+  drift. Captures contain **23 native valid cases / 19 limitations / three
+  native refinement grids**, executing authenticated actual source helpers and
+  normalized zero-membrane/GJ molecule paths.
+  [Complete receipt](/mnt/workspaces/Cells/betse-environment-transport-development-20261029-04/result.json),
+  SHA `c0df59be8d95908a0202dec9e0703d04eee4473fdfa5d6053e3522882379c6ae`.
+- Explicit C-order sites/species, internal contact owners and physical boundary
+  faces/ports bind positive geometry/units. Native coefficient precedence,
+  sodium/max weighting, duplicate TJ assignment, ion versus molecule modulation,
+  non-ECM Gaussian weights, wound coefficient-only writes and ordered bath
+  setters match independent stdlib/Decimal references. Frozen geometry interface
+  and common numerical primitives were used read-only; no physical remap/cut.
+- Literal source retains checkerboard blindness and perimeter derivative signs.
+  A zero-bath impulse injects **9.53674316406468e-21 mol per species** in its
+  collocated step; stage accounting is not physical bath conservation. Combined
+  salt writes yield [Na,K,Cl,M]=**[19.6,4.2,14,12.6] mol/m3**, charge-density
+  change **-270158 C/m3**, rejected by the optional neutral-pair predicate.
+  Negative ionic outputs, molecular exceptions, clipping diagnostic, missing
+  legacy fields/modulators, bad shapes and small-bath suppression stay recorded.
+- Separate Bernoulli-fitted finite-volume law uses harmonic D, explicit field/
+  flow and half-cell bath ports, per-face external amount ledgers, nonnegative
+  Euler domain and outgoing Courant<=1, |Pe|<=500. Zero D has an explicit upwind
+  mobility/advection limit. No floors, clipping, hidden reservoir repair or
+  native-discretization equivalence. Open-bath residual **-3.0092655381e-36 mol**,
+  global charge residual **-2.9034898544e-31 C**. Compatible Boltzmann steady
+  state max flux **4.336808689942018e-19 mol/(m2*s)**; linear bath profile steady.
+- Native interior 8/16/32 errors **0.1894305309 / 0.05035879645 /
+  0.01278516923**, orders **1.91135316 / 1.97777255** (three boundary layers
+  excluded, no source boundary convergence claim). Conservative 4/8/16 errors
+  **0.05035879645 / 0.01278516923 / 0.00320863596**, orders
+  **1.97777255 / 1.99443924**. Euler 8/16/32 update errors over
+  **0.00059740483196 s** are **1.9998241150e-4 / 9.9211820413e-5 /
+  4.9413658783e-5 mol/m3**, orders **1.01128920 / 1.00560214**, max Courant
+  **0.32842678 / 0.16421339 / 0.08210669**.
+- CPU JAX checks source/coefficient/bath paths, conservative batches/invalid
+  worlds, finite zero-field/D derivatives and exact 8-update restart split
+  after three (**8 us**). Sealed Jacobian is nonnegative with unit column sums.
+  No whole-tissue, field/Poisson, energy/ATP or shared checkpoint claim follows.
+- Native/host/JAX guarded times **4.039 / 3.787 / 20.217 s**; peak RSS
+  **325,390,336 B**, minimum available memory **19,727,589,376 B**. CPU7/one
+  thread, no GPU/persistent cache/package changes. Attempts 01/03 retain lint
+  failures; 02 is source-only preflight; 04 qualifies. Tolerances unchanged.
+- [Source/conservative contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_ENVIRONMENT_TRANSPORT_HANDOFF.md)
+  and [metadata-only finalizer](/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_betse_environment_transport.py)
+  freeze the [164-artifact handoff](/mnt/workspaces/Cells/betse-environment-transport-handoff-20261029-01/result.json),
+  SHA `5a5badadb9bb458e3328cd24bb102cec0d94831e35925ce3b690026a16bd9fc5`.
+  Process SHA `7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c`.
+  Seven scientific files and evidence frozen; shared/earlier work untouched.
+  No worker computation, automatic follow-up audit or regression is active.
+
+## Integrated state-dependent pump regulation, 2026-10-29
+
+- Chief assigned B07 over resolved_calcium_energy@5: NEW regulated spec/model,
+  validation/regulation integrated reference/fixtures/tests and own workfiles.
+  Existing 38 fields, finite fuel, physical balances and source provenance must
+  remain intact. No registry/specs/schedule/PROGRESS or frozen edits; provide
+  exact Chief-owned dispatch changes at handoff. CPU7, <=1-GiB host / <=4-GiB
+  compiled, >=8-GiB available reserve, external evidence, no GPU; blocker/final
+  direct messages only.
+- Integration choice: gather each explicit target Na/K pump's current free
+  cytosol, finite exterior and named owner fuel concentrations as read views.
+  Reuse frozen source factor equations, keep ordered last-writer factors for
+  overlapping pump targets, then multiply scheduled availability once at every
+  common RK stage. Reject factors outside [0,1], even if a schedule blocks the
+  pump. Native SIM replacement/order/lag stays a separate source contract.
+- Qualified **46 tests (43 host / three CPU JAX)**, zero skips/errors/failures
+  or source drift. New model `resolved_calcium_energy_regulated@1` preserves
+  the exact **38 parent state fields** and physical balances. Seven scientific
+  files frozen. [Complete receipt](/mnt/workspaces/Cells/integrated-network-regulation-development-20261029-03/result.json),
+  SHA `01113b95ad364a45f0c25da84dde2a666d942f7c161d786d232e15ac2f8f6563`.
+- Explicit rule IDs target named Na/K pumps and the pumps' own named finite
+  fuel pools. Production reuses frozen source factor binding/equations on
+  sampled read views; no equations or inventories are duplicated. Actual free
+  cytosol store species, finite exterior amounts and live ATP/ADP/Pi amounts
+  divided by owned volumes feed every stage. Native ordered factors replace
+  at overlapping targets, then multiply scheduled availability once. Existing
+  Na/K, PMCA and ER signed cycles share and exchange the existing fuel once.
+- Eight arms with/without padding compare complete derivatives, field/energy
+  proof and sample/factor views to the independent coupled reference. Empty/
+  identity cases reduce exactly to the parent. Calcium binding at unchanged
+  ionic transfer ledger changes the regulator, as do live own ATP and outside
+  Na. Unsupported owners/targets/species, source direct groups, signed/unbounded
+  factors, bad timing/composition/capacity and positive-fuel dynamic factor
+  escape are refused without clipping. Observers use the effective control
+  for every inherited physical readout. Earlier native capture/provenance and
+  separate source SIM timing are retained read-only.
+- Full 63-population coupled CPU 10-us probe holds exact clock boundaries at
+  3.3/6.25/7.1 us and compares RK4 caps 1.25/.625/.3125 us with independent
+  DOP853. Max error/budget **1.0126774e-3 / 9.6793164e-5 / 7.1338931e-6**;
+  raw max serialized-coordinate error **8.0454532e-12 / 7.6899598e-13 /
+  5.6676885e-14** (coordinate-specific units). Max material residual
+  **1.6940659e-21 fmol**, charge **5.0511750e-29 C**, combined energy
+  **1.0570971e-18 pJ**, pool energy **2.7105054e-20 pJ**; global charge zero.
+- CPU JAX full 63-population stage matches host/independent reference at max
+  error/budget **2.6818936e-5**, energy rate residual **7.1054274e-15 pJ/s**.
+  Complete 38-field two-population 5-us trajectory matches CPU at
+  **4.3149657e-9** error/budget and resumes exactly in memory after 2.5 us.
+  Own ATP derivative **0.0146345925**, cross-owner derivative zero. No native
+  SIM parity, registered CLI/assembly/shared-checkpoint or monolithic compiled
+  checked-step resource claim; Chief owns dispatch and subsequent integration.
+- Host/compiled guards **65.759 / 180.898 s**, peak RSS **235,446,272 /
+  1,697,222,656 B**, minimum available **16,369,115,136 B**. CPU7/one thread,
+  no GPU/persistent cache/dependency changes. 01 retains lint failures; 02
+  passed two host preflight tests then its empty JAX selection returned code5;
+  03 is the complete pass. Tolerances unchanged; no post-pass science ran.
+- [Integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_HANDOFF.md),
+  [unapplied exact dispatch patch](/home/robert/Cells/agent-work/cells-worker-01/workfiles/integrated_network_regulation_dispatch.patch),
+  its [identity manifest](/home/robert/Cells/agent-work/cells-worker-01/workfiles/integrated_network_regulation_dispatch.json)
+  and metadata finalizer freeze the [141-artifact handoff](/mnt/workspaces/Cells/integrated-network-regulation-handoff-20261029-01/result.json),
+  SHA `1aef3f7548030055ceaac811d6c64fd0d29b1056da8fbd4bcb1d88c2445bfc2b`.
+  Model SHA `76c1ddd7ad918e3aa49456c9f106f40f533a48b8550b4254541eb53b24129bc9`.
+  Shared/earlier files untouched; no active worker job or automatic follow-up.
+
+## Native fluid flow, 2026-10-29
+
+- Chief assigned B11 in NEW fluid-flow process, validation/flow fixtures,
+  source captures/reference/protocol, unit tests and own workfiles. Earlier
+  geometry, pressure/deformation and environment components are read-only;
+  shared PROGRESS and active calcium/ER/cutting work remain Chief-owned.
+  CPU7/one thread, <=1-GiB process-tree RSS, >=8-GiB available reserve, outputs
+  external, no GPU; blocker/final messages only to Chief.
+- Initial audit: loader forces fluid_flow=False and mu_water=0.01 Pa.s;
+  getFlow's cell path requires a graph inverse that normal flow initialization
+  does not construct. Normal loop updates ECM before flow and updates voltage
+  after flow; fast loop has no getFlow. GRN has a separate current/mean-charge
+  formula and can set fluid_flow=True. Gap junction surface is documented as
+  a dimensionless cell-area fraction. The ECM slip expression has velocity
+  dimensions, then is passed through an inverse Laplacian, so its source
+  output has m3/s dimensions. Neither discarded HH scalar potential is a
+  physical pressure. Actual source/caller captures and scoped validation will
+  preserve these distinctions without changing earlier components.
+- Qualified **64 tests (60 host / four CPU JAX)**, zero skips, failures or source
+  drift. **14 native valid cases / six refinements / 11 limitations**, plus
+  separate GRN two valid/two singular cases. Twelve checkout/installed source
+  identities, nine actual arithmetic bodies and five caller fragments execute
+  on explicit normalized layouts; no full simulator, cut or geometry generation.
+  [Complete receipt](/mnt/workspaces/Cells/betse-fluid-flow-development-20261029-07/result.json),
+  SHA `96c8ef38e86096f3713a5c97b2a7697bf2c945e9695bb4bf4f5f408b4d9a34bd`.
+- New immutable owner bindings reuse frozen mechanics and geometry operators.
+  Cell output is m/s, stream auxiliary m2/s. ECM literal slip is m/s, then
+  source inverse/HH output m3/s, potentials m4/s and divergence m2/s. No implicit
+  conversion into an earlier transport m/s port. Default standalone host gate
+  is disabled; bare checked numeric kernels provide CPU NumPy/JAX batches.
+  Pressure/geometry/time history remain external; no volume or energy update.
+- Actual loader ignores fluid configuration and forces flow=False, mu=0.01,
+  td_deform=False. Flow initialization supplies zero arrays but no cell inverse;
+  capture preserves partial ECM writes before the missing-cell-inverse failure.
+  Initial voltage is updated before the normal loop; current transport uses
+  prior flow. Fast loop has no getFlow. Pressure changes have no effect on
+  getFlow. GRN separately enables flow and computes -J/(F*mean(c)*mean(z));
+  zero mean valence/concentration stays nonfinite. The two GRN config-reader
+  spellings remain recorded, without claiming full GRN execution.
+- ECM +0.02-V offset at fixed E changes output by **2.6727605676e-18 native
+  m3/s**. Tangential boundary output **4.0511150621e-18**, normal roundoff
+  **3.9934886748e-33 native m3/s**. Reversed source perimeter derivatives yield
+  divergence **2.0255575310e-13** at boundaries versus **6.3108872418e-30 native
+  m2/s** inside. No no-slip/whole-grid incompressibility claim. Two-row grids
+  lose all rotational source. Cell source HH retains its non-projector limits.
+- Periodic cell 8/16/32 errors **6.4075061364e-10 / 1.6212906332e-10 /
+  4.0650825802e-11 m/s**, orders **1.98262022 / 1.99578617**; source gain
+  **0.22470418 / 0.24359940 / 0.24839517 -> 0.25**, preserving four-membrane
+  averaging rather than claiming physical Stokes convergence. Manufactured
+  ECM 5/9/17 errors **0.07322330470 / 0.01903011687 / 0.004803679899 native
+  m3/s**, orders **1.94401846 / 1.98607250**, analytic gain cos²(theta/2).
+- CPU JAX verifies JIT/world order, invalid per-world domains, finite zero-E/
+  zero-potential/zero-current derivatives and GRN singular denominators. Seven
+  independent snapshots split after three match the established tolerance;
+  changing batch size gives **5.1768996905e-31 m/s** roundoff, not bitwise
+  equality or a dynamic/shared-checkpoint claim.
+- Native/host/JAX guarded times **2.030 / 5.072 / 12.651 s**; peak RSS
+  **281,755,648 B**, minimum available memory **16,883,544,064 B**. CPU7/one
+  thread, no GPU/persistent cache/package changes. Failed attempts preserved:
+  01/03 lint; 04 initial analytic gain; 05 auxiliary comparison unit mismatch;
+  06 unsupported bitwise batch equality. 02 is source preflight, 07 qualifies.
+  Numerical tolerance constants unchanged; reference/comparison/claim corrected.
+- [Integration contract](/home/robert/Cells/agent-work/cells-worker-01/workfiles/BETSE_FLUID_FLOW_HANDOFF.md)
+  and [metadata-only finalizer](/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_betse_fluid_flow.py)
+  freeze the [169-artifact handoff](/mnt/workspaces/Cells/betse-fluid-flow-handoff-20261029-01/result.json),
+  SHA `da94071ed7b3ccb6db35fb7ec5171fc6ffbc1cd35a98b6329d84873bce76cbcd`.
+  Process SHA `b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41`.
+  Seven scientific files and evidence frozen; shared/earlier work untouched.
+  No worker computation, automatic follow-up audit or regression is active.
+
+## Regulated model public execution qualification, 2026-10-29
+
+- Chief accepted B07 (151 identities) and assigned public execution checks in
+  a NEW external frozen source snapshot, with the existing dispatch patch
+  applied only to that copy. Own NEW integration test and runner/workfiles;
+  no shared repo or earlier frozen edits. Reuse accepted coupled inputs and
+  references, do not repeat the 46 component checks. Qualify public dispatch,
+  bounded checked scalar/two-world runs, complete disk/fresh-process restart,
+  absolute controls and offline 1/4/16 GPU plans. Preserve exact source/runtime
+  identities across checkpoint producer/consumers and any resource refusals.
+- CPU7/one thread, <=1-GiB host / <=4-GiB compiled, >=8-GiB available reserve,
+  outputs external, no GPU. Fresh compiler processes are separate bounded
+  phases; runs expected >=10 minutes must be detached under AGENTS.md.
+- Public parse/registry/schedule/budget preflight passed in snapshot 05.
+  Accepted dispatch additions were rebased onto current surrounding Chief code
+  with identical added lines, leaving the shared repository and 46-check
+  component frozen. Setup failures 01--04 are retained (guard import, patch
+  context, lint, and an extra-blank-line rebase refusal); 05 is preserved as
+  public preflight. No earlier component checks were rerun.
+- Final source epoch 06 freezes 1,250 files with exactly four dispatch-only
+  source changes in its external copy. Original patch SHA
+  `95a276180dcbcb671c7a315180b6445a266340bd190f4953586646eeb2f9036b`;
+  rebased applied SHA
+  `94397d4175556b36e188664560e22e1d67447c4a130ab26552b1bea92bfc8dfb`.
+  Source/runtime/checkpoint identity is fixed across all fresh processes;
+  mutable driver journals are excluded from immutable artifact inventories.
+- **Detached acceptance job launched**, expected >10 minutes, under AGENTS.md.
+  [Launch manifest](/mnt/workspaces/Cells/regulated-public-execution-20261029-06/job-launch.json),
+  [driver log](/mnt/workspaces/Cells/regulated-public-execution-20261029-06/driver.log),
+  [job status](/mnt/workspaces/Cells/regulated-public-execution-20261029-06/job-status.json).
+  The suite writes phase receipts and result/failure artifacts, with separate
+  scalar, refined scalar, scalar restore, two-world and cohort restore
+  compiler processes. It uses the accepted 10-us full-63-population input and
+  adds an independently referenced second control clock/parameter world.
+  No GPU, automatic polling or extra follow-up audits. Final qualification
+  remains pending; request status before inspecting this detached job.
+- Chief/user explicitly requested continuation after epoch06's planner
+  wall refusal. Retained the complete 480-s failure, source/runtime inputs,
+  logs and guard evidence; no assertions finished in that phase.
+- [Read-only public parse diagnosis](/mnt/workspaces/Cells/regulated-planner-diagnosis-20261029-01/result.json)
+  measured two unprofiled parses at 6.938/6.839 s (median 6.889 s). A single
+  public ionic parse invoked 3 physical parses, 10 step checks and 13 regulated
+  definition checks. The original test requested four builds including a
+  duplicate 16-GPU build, then redundantly reparsed all 64 emitted definitions.
+- New verification makes exactly three real public requests (1 local GPU,
+  4-GPU/JUPITER and 16-GPU/JUPITER), preserving every planner's internal
+  validation. All 48 emitted complete simulation definitions are compared
+  directly with the public canonical definition, alongside exact seed/world/
+  task-identity checks. This reduces explicit public ionic parse requests from
+  132 to 51. Expected parse cost ~351 s motivates a **900-s planner wall cap**;
+  other phase caps stay 480 s. Physics, accuracy, CPU7 and memory guards unchanged.
+- Epoch07 clones the established immutable epoch06 package to isolate this
+  retry from the Chief's active 42-field cut work. All src/ bytes are identical;
+  only this worker's NEW integration test and runner differ. The original
+  46-check component, shared dispatch, frozen evidence and PROGRESS are untouched.
+- **Detached retry launched** in
+  [/mnt/workspaces/Cells/regulated-public-execution-20261029-07](/mnt/workspaces/Cells/regulated-public-execution-20261029-07/job-launch.json),
+  with durable driver.log, job-status.json, phase/result/failure artifacts and
+  the same exact source/runtime checkpoint identity across fresh processes.
+  Expected >10 minutes; control returned per AGENTS.md. No automatic polling
+  or additional audits; qualification remains pending a requested status check.
+- Chief/user requested continuation after epoch07: contracts passed in
+  14.886 s, reduced 1/4/16 planning passed in 396.085 s; reference failed before
+  numerical comparison because tests/conftest.py imports production Cells/JAX
+  into the pytest process. All failed evidence remains frozen.
+- Added an own standalone oracle launcher, invoked by a clean Python child
+  outside pytest/conftest. The original Cells/JAX import prohibition is checked
+  before reference import, afterward and after integration; no module deletion,
+  masking, weaker guard, equation or tolerance changes. Epoch08 retains a path
+  formatting lint failure; epoch09 is the new frozen source epoch.
+- [Reuse proof](/mnt/workspaces/Cells/regulated-public-execution-20261029-09/reuse-proof.json)
+  verifies every production/reference byte, both world inputs, unchanged ASTs
+  of all test/helper functions except the oracle-launcher test, unchanged
+  non-import module context, only an added stdlib subprocess import, unchanged
+  environment/guard/phase runner ASTs and freshly collected exact public
+  source/runtime identity. Prior contracts/plans receipts and all hashes are
+  copied unchanged with explicit executed_in_this_epoch=False provenance.
+  The seven-minute planner work and 46 component checks were not repeated.
+- **Clean oracle preflight passed in 27.065 s**. PID1323703 ran outside pytest
+  parent1323690; all three Cells/JAX guard offender lists are empty and pytest
+  is absent. NumPy2.5.3/SciPy1.18.1; unchanged DOP853 rtol2e-11/atol1e-15 and
+  1.25-us max step, 38 fields. Capture/proof artifacts are retained externally.
+- **Detached epoch09 continuation launched** for scalar/base refinement,
+  scalar disk/fresh-process restore, checked two-world trajectories and cohort
+  restore, with fixed source/runtime identity and unchanged memory/accuracy
+  guards. [Launch](/mnt/workspaces/Cells/regulated-public-execution-20261029-09/job-launch.json),
+  [status](/mnt/workspaces/Cells/regulated-public-execution-20261029-09/job-status.json),
+  [log](/mnt/workspaces/Cells/regulated-public-execution-20261029-09/driver.log).
+  Shared dispatch/PROGRESS and frozen files remain untouched. Expected >10
+  minutes; control returned under AGENTS.md, no automatic polling or audits.
+  Public execution qualification remains pending a requested status check.
+
+## Live channel/junction regulation @2, 2026-10-29
+
+- Chief assigned a distinct @2/new-file B07 family while epoch09 runs. Do not
+  poll epoch09 without a user status request. Earlier @1 source/evidence and
+  active computation remain untouched. Extend availability composition to
+  existing shared channels and resolved junctions using actual owned chemical/
+  fuel reads, native factor ordering, bounded factors and no invented ATP cost.
+- Own new spec/model/reference/fixtures/tests/runner/workfiles and separate
+  unapplied dispatch patch; no shared dispatcher or PROGRESS edits. CPU7,
+  <=1-GiB host, >=8-GiB reserve, no GPU; short meaningful CPU checks, detach
+  >=10-minute jobs. Direct Chief messages only substantive blocker/final.
+- Scope decision: channel rules use the frozen voltage-independent channel
+  factor subset (charged voltage-star coefficients need a coupled algebraic
+  closure and are explicitly unsupported). Junction rules name an actual
+  endpoint cytosol/fuel owner; source environment-zone sampling is unsupported
+  without a real edge/exterior mapping. Existing intrinsic gates and physical
+  transport/charge/energy/fuel ledgers remain parent-owned.
+
+- Development01 preserved three E501 lint refusals (no scientific checks).
+  Development02 clean independent oracle passed (12.89 s, 83.1 MB sampled
+  RSS, >=21.8 GB reserve); host had 37/39 pass in 101.86 s. The blocked
+  fixture used a frozen-source rejected only-direct combination; fixed the
+  fixture by adding a real Hill term. The two-channel 5-us transient reached
+  roundoff and could not establish strict refinement; upgraded this input to
+  all 63 parent populations, without changing tolerances. Also found and
+  fixed channel-specific influencer counts in batch signatures and added a
+  shape-compatibility regression; malformed kind values now refuse cleanly.
+  All failures are retained in fresh external development directories.
+
+- Development03 passed all 41 host tests, lint and the clean standalone
+  independent oracle. Full 63-population 5-us transient passed unchanged
+  physical tolerances at three refinements, with off-grid pump/channel/GJ
+  availability changes and exact in-memory 2.5-us split/resume. Frozen
+  @1/native and parent hashes were verified, without rerunning their suites.
+  Host sampled peak 234758144 bytes;
+  minimum host reserve 18980556800 bytes. CPU7, single-thread BLAS,
+  no GPU, no persistent compilation cache; @2 compiled/public execution
+  remains unqualified and Chief-owned.
+  [Verified handoff](/mnt/workspaces/Cells/integrated-network-regulation-v2-handoff-20261029-01/result.json) SHA256 `0b3f0d8b6677d5ffc9639367409e8e72bfec8bd69c5f341881d1ff3117a70a0e`,
+  140 component artifacts, 40 evidence receipts.
+  [Contract](workfiles/INTEGRATED_NETWORK_REGULATION_V2_HANDOFF.md) and separate
+  [unapplied patch](workfiles/integrated_network_regulation_v2_dispatch.patch)
+  are ready for Chief. No shared/PROGRESS edits, no commits, no @1 job polling
+  or interruption, no automatic follow-up jobs.
+
+## Regulation public continuation and @2 preparation, 2026-10-29
+
+- Chief authorized a frozen @1 continuation after scalar-fine hit only the
+  480-s wall guard (no completed assertion failure, peak 3,168,133,120 bytes).
+  Epoch09 evidence remains untouched. New orchestration file copies all 1,251
+  original snapshot files byte for byte and reuses contracts/plans/reference/
+  scalar-base with exact receipt/artifact hashes, verified run/checkpoint
+  checksums, unchanged physical inputs/oracles and a fresh exact runtime/source
+  identity probe. No public/numerical test, runner or scientific source changed.
+- Detached continuation [epoch10](/mnt/workspaces/Cells/regulated-public-execution-20261029-10)
+  launched at 03:15:19 UTC, PID 1336882, CPU7. Remaining scalar-fine,
+  restore-scalar, batch, restore-batch each have 2,700 s wall allowance;
+  4-GiB process-tree RSS and 8-GiB host reserve remain. External GNU time
+  records separate phase timings. ETA 45–120 min, worst phase allowance 180 min.
+  Manifest SHA256 `6700013307362ee96b3cde8b96c25883ad4448c5c1319845eddb028d7e5eed73`.
+  Durable driver.log, job-status.json, phase guards and final/failure artifacts;
+  no automatic polling or audit. Chief received launch details directly.
+- Next authorized work: new @2 public tests/driver and frozen dispatch-patched
+  copy, reusing the established public runner. Do not launch another long
+  compiled job. Shared dispatch/PROGRESS and both component families stay frozen.
+
+- Prepared the distinct @2 public family in new files only:
+  `tests/unit/test_surface_calcium_energy_regulated_v2_integration.py`,
+  `workfiles/check_surface_calcium_energy_regulated_v2_integration.py`,
+  `workfiles/capture_surface_calcium_energy_regulated_v2_public_reference.py`,
+  `workfiles/finalize_surface_calcium_energy_regulated_v2_preparation.py`.
+  Reused established bounded/phase/suite/finalizer functions with exact AST
+  equality, full accepted 38-field/public window and checkpoint APIs, original
+  scientific tolerances and separate fresh compiler/restore process phases.
+- Chief integrated both narrow dispatch branches while this preparation was
+  underway. Copied the integrated working dispatcher into the new snapshot;
+  did not apply either historical patch or write shared files. The snapshot
+  rejects capture races and pins all 1,277 files and four integrated dispatcher
+  hashes. All frozen @2/native equation identities remain exact.
+- [@2 preparation receipt](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-01/preparation-result.json)
+  SHA256 `564fbdb5615b6f5a31631636a8ebf536953c3c6ec0e73fdb689c7bcc9d6329f5`;
+  source manifest SHA256 `0e9339a4fdc1cae89d6f1cde033cecce03b70bc7886323d3ec60d5f70c5936ac`.
+  All eight public tests collect; contracts passed (31.69 s), including actual
+  @2 registry/serialization and all three availability schedules/refusals.
+  Clean second-world reference capture passed (53.20 s), with Cells/JAX/pytest
+  absent in the independent child. Peak host RSS 195,858,432 bytes; host reserve
+  >=16,744,833,024 bytes. Both short phases were CPU7, <=1 GiB, >=8 GiB reserve.
+- Prepared heterogeneous world clocks and factors, complete 38-field reference
+  comparisons, scalar two-step-size/checkpoints, fresh identity/corruption
+  refusals, two-world batch/cohort restore, and 1/4/16-GPU offline plans. The
+  six planning/compiled/restore phases remain unstarted. The preparation
+  receipt includes an explicit future detached launch command, unexecuted.
+  No second long compiled job, shared/PROGRESS edit or automatic follow-up.
+  Epoch10 has not been polled since launch; Chief receives the final receipt.
+
+## Regulation-aware finite-fuel tissue cutting, 2026-10-29
+
+- Chief assigned new exact-@2 38-field cut adapter, owned new spec/core/model/
+  test files and separate unapplied dispatcher patch. Agreed ID:
+  `resolved_calcium_energy_regulated_excision@1`. Frozen physical/native models,
+  shared dispatch/PROGRESS and active jobs remain untouched. No @1 polling and
+  no long @2 compiled run. CPU7 host-only <=1 GiB, >=8 GiB reserve.
+- Reuse established finite-fuel cut/rebase/accounting semantics. New physical
+  inspection calls the actual @2 readouts with current held controls, so source
+  and post-cut fields include regulated NaK/channel/junction availability.
+  Filter rules only by removed physical targets, preserving surviving order,
+  complete configurations and sample/fuel owners; assert exact retained samples
+  and factors. No new state/ATP cost, no clipping or rewritten control history.
+- Chief's independent agent exclusively owns the new validation/tissue
+  regulated-v2-excision fixture/reference family. Do not edit those files.
+  Own initial tests use a local boundary fixture on the existing three-cell
+  finite-fuel geometry, including a surviving 0-2 junction and shadowed rules.
+- Host01 retained one E501 lint refusal. Host02 retained the missing inherited
+  raw-config dependency refusal before numerical evaluation; both raw inputs
+  are now captured. Host03 completed ten checks without a numerical assertion
+  failure, then hit its 480-s wall guard (host memory stayed bounded). The
+  inherited 150-us control history caused repeated archival parses unrelated
+  to this focused owner-transition claim. New local boundary fixture uses a
+  5-us horizon with real removed-owner past/future clocks and a retained edge
+  event. Physical parameters, nominal dt, domain/conservation checks and
+  tolerances are unchanged; prefix still evolves all 38 fields at exact event
+  boundaries. No active external job was interrupted.
+- Added explicit preservation/refusal of declared regulation capacity to align
+  production provenance with the independent reference. Added one bridge to
+  the frozen independent floating-field control (55.6 uV counterfactual error),
+  with exact handoff/artifact hashes; no independent suite is rerun.
+- Host04 passed complete source restoration and the independent floating-field
+  value comparison, then caught a no-op device checkpoint boundary omission:
+  the new factor-preservation read used NumPy on unconverted JAX arrays.
+  Added temporary host array views, matching the inherited physical/domain
+  checks, without altering or replacing the source checkpoint. The failed
+  trace and all earlier evidence remain frozen. No physical/native equations,
+  tolerance, inventory or active external job changed.
+- Host05 passed all 27 focused checks in 467.18 s. Sampled peak RSS
+  246,661,120 bytes; host reserve >=12,699,389,952 bytes. Verified 1,357
+  component artifacts and 27 evidence receipts. Exact inherited accounting
+  AST proof passed: four source/clock validation helpers unchanged; physical
+  equations unchanged after removing two new readout keywords; rebasing
+  unchanged after removing one target-rule filter; transition accounting
+  unchanged after normalizing its function name; history routing imported
+  directly. All frozen native/@2 sources verified.
+  [Focused handoff](/mnt/workspaces/Cells/regulated-v2-excision-handoff-20261029-01/result.json)
+  SHA256 `25a157373cfa051a2104567589fde6966004fbc500df8fc98e9d1b1e3f7699ea`.
+  This receipt qualifies the focused component; full-schedule production
+  qualification remains a separate pending phase.
+- Chief explicitly required retaining the original 150-us schedule/archive
+  coverage. Restored all 25 original checks into the new full-schedule test
+  family; every original function AST is exact (15 functions). Added two
+  production cut/archive/stage panels using the frozen independent accepted
+  50-us prefix and 150-us suffix checkpoints, with handoff/artifact hashes;
+  no independent trajectory is recomputed. New 1,291-file frozen copy has
+  the exact focused-component package bytes and all transitive reference
+  hashes. No historical dispatch patch reapplied, no shared edits.
+- Detached full-schedule production qualification launched CPU7 PID 1350289
+  at 2026-10-29 03:59:26 UTC. ETA 30–75 min, wall allowance 7,200 s, host-only
+  <=1 GiB RSS and >=8 GiB reserve. All 27 full-schedule tests collected before
+  launch. [Directory](/mnt/workspaces/Cells/regulated-v2-excision-full-schedule-20261029-01),
+  driver.log, job-status.json, external-time.txt and host-guard/result/failure
+  artifacts are durable. Source manifest SHA256
+  `f523fa5eb6e806b1037b141fed979b513a908c28881bfcca2b8fdef43506877a`.
+  No automatic polling, no compiled/GPU cut work, no follow-up audit. Chief
+  receives both the focused handoff and detached job details directly.
+
+## B13 static tissue-profile preparation bridge, 2026-10-29
+
+- Chief assigned new bridge/modules/tests/workfiles only; no shared dispatch or
+  PROGRESS edits, no GPU, and detached jobs stay unpolled. Bind the frozen
+  native profiles to actual resolved tissue by stable membrane/junction IDs.
+  Preserve inventories, initial state, IDs, unselected parameters and native
+  ordered/overlap selection; dynamic interventions, pressure and ECM stay
+  separate. Reject unsupported ions/owners, ambiguous geometry, negative
+  physical values and missing reciprocal contact maps.
+- Source trace: pinned BETSE 1.5.0 `electroflux` uses D/d, simulation passes
+  `d=p.tm`, static `rho_channel=1`, and concentration updates multiply flux by
+  membrane surface area. Cells GHK uses area*permeability and fmol conversion.
+  Thus the baseline static bridge uses P[m/s]=D[m2/s]/thickness[m]. Native's
+  flux docstring says mol/s, but the actual equation and update caller establish
+  mol/(m2*s) before area. No membrane thickness is inferred from cell volume or
+  capacitance. Explicit per-membrane thickness and provenance are required.
+- Planned bounded scope: direct resolved_tissue@1 and @12 definitions, native
+  Na/K/Cl/Ca profile rows and unit rho only, with a strict stable-ID geometry
+  binding. Every physical junction must name its reciprocal membrane pair and
+  actual endpoint owners. Use the unchanged native selector/diffusion/insular
+  kernels; closed edges get zero static permeability while IDs/gates/schedules
+  stay declared. Validate the resulting definition and exact initial state;
+  reject any inferred-gate change rather than rewriting it.
+- Built `src/cells/core/tissue_profile_preparation.py`: direct validated
+  resolved_tissue@1/@12 -> `Preparation(definition, provenance)`, using frozen
+  profile compile/diffusion/insular kernels unchanged. Explicit Na/K/Cl/Ca
+  flags, SI thickness, exact stable owners, reciprocal contact/edge bijection
+  and original neighbor IDs; unit native rho only. Selected permeability
+  fields are the only allowed definition changes. Initial states, inventories,
+  IDs, gates, clocks and unselected parameters are checked exactly.
+  Full recipe replay and non-overwriting JSON write/read are implemented.
+- Development01 passed all 49 host checks (33.27 s pytest; 35.63 s guarded host)
+  plus seven authenticated actual native electroflux unit cases (0.83 s).
+  Independent frozen owner loops and 80-digit Decimal conversion/flux match;
+  duplicate/index/color/image/percent alias and overlapping insular semantics,
+  geometry/ion/owner/unit refusals and resealed replay tampering are covered.
+  Native child proves no Cells/JAX imports. No prior component is rerun.
+- [Verified B13 handoff](/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/result.json)
+  SHA256 `54c8ea35205b35f5ddff067a5d192bada41df26171d0a9c6847a43ee18949493`.
+  Verified 136 component artifacts and 49 evidence receipts. Native peak RSS
+  36,306,944 bytes; host peak RSS 195,571,712 bytes; minimum available host
+  memory 17,034,502,144 bytes. CPU7, one thread, JIT disabled, no GPU/cache.
+  Three concrete paired definition/provenance examples are under the handoff
+  `examples/`: active-overlap, active-color, passive-percent-alias. Copies are
+  taken exactly from passed evidence, with semantic and file hashes verified.
+- [Contract](workfiles/TISSUE_PROFILE_PREPARATION_HANDOFF.md) records actual
+  source/model unit derivation and supported scope. Direct base/@12 static
+  preparation only; no dynamic/pressure/ECM transport, nested fuel/regulation/
+  cut preparation or native full-solver claim. No concrete design blocker
+  remained after requiring explicit thickness and reciprocal contact maps.
+  All native/kernel/physical equation hashes remain unchanged. No shared
+  dispatch/PROGRESS edit, commit, detached-job polling or automatic follow-up.
+
+## Static profile preparation for composed parent families, 2026-10-29
+
+- Chief accepted the direct B13 bridge and assigned a separate composition
+  adapter. Keep all qualified direct-bridge sources/evidence unchanged. Cover
+  calcium/ER, finite fuel, configured transport, mitochondria, compliant water
+  and regulation parents; preserve every nonselected property, physical owner,
+  initial gate/volume/fuel state and complete control history. Explicitly refuse
+  cut epochs/assembly and unsupported schemas. No shared/PROGRESS edits, GPU or
+  detached-job polling. Root handles current public/window qualifications.
+- Source trace: `surface_kinetic_spec.passive_spec` explicitly documents a
+  geometry/ledger projection and accepts the common resolved owner interface.
+  Use it only as an internal coefficient/owner view for the frozen direct
+  bridge. Copy back only selected permeability changes by the declared nested
+  schema path and stable IDs. Never use this ungated/unregulated view as the
+  composed instantaneous field or flux. The full parent is parsed/validated
+  before and after, with exact initial state and full nonselected-schema checks.
+- Implemented explicit 29-parent schema mapping, complete deterministic replay
+  and non-overwriting definition/provenance serialization. Actual parent controls
+  are untouched; extra source event clocks are carried only on the internal
+  passive parameter-view schedule. All nonselected canonical fields, dtype and
+  state, cytosol/exterior/store/fuel/mitochondria/water ownership and inventories,
+  and initial regulation samples/factors are checked exactly.
+- [Development02](/mnt/workspaces/Cells/tissue-profile-composition-development-20261029-02/result.json)
+  passed all 35 host checks, including 15 full parent families before/after
+  preparation, independent selected-coefficient and full derivative/potential
+  comparisons, replay, serialization, clock preservation and schema/tampering
+  refusals. Frozen tolerances remain unchanged. Development01 retains a
+  runner-only Ruff line-length failure; no scientific assertion failed.
+- [Verified handoff](/mnt/workspaces/Cells/tissue-profile-composition-handoff-20261029-01/result.json)
+  SHA256 `16b7fdb493ecd678f3262e4e2e25f5bf03867a1119c6064a75e40ad09af351dd`.
+  [Contract](workfiles/TISSUE_PROFILE_COMPOSITION_HANDOFF.md) describes the API,
+  explicit scope and geometry-only projection restriction. Concrete paired
+  examples are under handoff `examples/mitochondria`, `fuel_water` and
+  `regulation_v2`, copied exactly from passed evidence. The finalizer also
+  archives 37 older scalar reference dependencies authenticated against the
+  already frozen, passed regulated-cut receipt; no old checks are rerun.
+- Host guard: 54.78 seconds (52.38 pytest), CPU7, one thread, JIT disabled,
+  peak RSS 239,276,032 bytes and minimum available memory 18,671,050,752 bytes.
+  Limits 480 seconds / 1 GiB RSS / 8 GiB reserve. Qualified direct/native sources,
+  parent equations and shared dispatch remain unchanged; no GPU, trajectory
+  claim, PROGRESS edit, commit, detached-job polling or automatic follow-up.
+
+## Native geometry to ordinary passive tissue, 2026-10-29
+
+- Chief assigned a separate B09 static preparation adapter, new module/tests/
+  reference and bounded CPU validation only. Reuse qualified geometry binding;
+  emit resolved_tissue@1, with explicit volume policy, height, thickness,
+  capacitance, physical coefficients, stable owners and initial inventories/
+  charge. No shared/CLI/PROGRESS edits, GPU, long jobs or other-job polling.
+- Contract assessment: native radial patch sums and shrunk polygon volumes are
+  different measures, so the caller must choose `native_radial` or `polygon`.
+  Exterior compartment volumes must be positive explicit physical m3 values;
+  source DEC dual weights and native occupied-grid weights are diagnostic
+  geometry measures, never implicitly assigned physical exterior volumes.
+  Membrane area comes from bound edge length times explicit height, areal
+  capacitance and explicit diffusivity/thickness determine C and P. Every actual
+  reciprocal contact needs a stable declared junction with an explicit physical
+  permeability. Exterior faces, reservoir/gauge policy, inventories, fixed
+  charge, charge anchors and every control/execution setting remain explicit.
+  Persist complete specs and initial native generation inputs/RNG/source pins;
+  rebind from those specs on replay. Refuse cuts/remaps/moving geometry and any
+  missing or inconsistent owner/physics declaration.
+- Implemented separate `cells.core.geometry_tissue_preparation`, returning
+  complete ordinary `resolved_tissue@1` with deterministic recipe replay and
+  non-overwriting JSON write/read. Full native capture, specs, generation inputs,
+  RNG/source/runtime pins and stable occurrence axes remain in provenance.
+  Capture/mesh/grid/surface/seed declarations are checked together before the
+  unchanged qualified binder runs. Physical initial inventory/fixed background/
+  charge, exterior volumes, C/D/thickness/P, faces and all controls are explicit.
+- [Development02](/mnt/workspaces/Cells/geometry-tissue-preparation-development-20261029-02/result.json)
+  passed all 56 host checks: five native geometries under both volume policies,
+  20 independent complete physical stages at two scheduled clocks, material/
+  energy checks, exact inventory/charge, stable-ID ordering, replay, serialization,
+  30 missing-physics/owner/capture refusals, seven resealed tampering cases, RNG/
+  input purity and frozen source provenance. Maximum full-RHS error used
+  0.029805 of the unchanged budget. No integrated trajectory claim.
+- Development01 retains the fixture ID-format failure. Geometry permits colon
+  IDs, while ordinary tissue requires ASCII letters/digits/underscore/hyphen.
+  New fixture owner axes explicitly use compatible IDs; no existing source ID
+  is renamed. The frozen native single-preset original cell IDs contain colons
+  and are explicitly refused, pending a separate initial naming contract.
+- [Verified handoff](/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/result.json)
+  SHA256 `7259b548229f637c5e90889276119ad7cccbb422f5e4ae35a5c20bd8d2dfeba2`.
+  Verified 997 artifacts, 451 source snapshots and 56 evidence records, with
+  full request/definition/provenance examples for irregular-native-radial,
+  irregular-polygon and scaled-polygon. [Contract](workfiles/GEOMETRY_TISSUE_PREPARATION_HANDOFF.md)
+  documents the explicit physical decisions, unit conversions and safe scope.
+- Guarded host time 30.01 s (27.86 s pytest), CPU7, one thread, JIT disabled,
+  peak RSS 253,857,792 bytes, minimum available memory 19,676,303,360 bytes.
+  All existing qualified geometry and physical equations remain unchanged.
+  No shared dispatch/CLI/PROGRESS edits, GPU, native generation rerun, physical
+  remap, cut/moving geometry, long job, detached-job polling or automatic follow-up.
+
+## Public geometry preparation workflow, 2026-10-29
+
+- Chief assigned the public JSON workflow around the frozen geometry adapter:
+  new `cells.tissue_geometry` prepare/validate/replay module, strict finite/
+  duplicate parsing, nonoverwrite, portable provenance, example and user guide.
+  Shared dispatch remains Chief-owned; deliver only an unapplied minimal patch.
+  No component changes/new physics, implicit source ID renaming, GPU, long job
+  or other-job polling. Reuse the component evidence rather than rerunning 56.
+- Implemented `python -m cells.tissue_geometry` with prepare REQUEST --output
+  NEW, validate DIRECTORY and replay PROVENANCE --output NEW. Both saved files
+  use strict JSON; complete identities also distinguish equal Python numeric
+  values with different JSON types. Existing directories/files/dangling links
+  refuse before input reading/evaluation. Definition/provenance writing uses
+  the unchanged qualified component writer. Error exit 2/stderr, success JSON.
+- [User guide](/home/robert/Cells/docs/TISSUE_GEOMETRY.md) and portable
+  [repository request](/home/robert/Cells/examples/tissue_geometry/irregular_native_radial.request.json)
+  are complete. The example is copied byte-for-byte from passed component
+  evidence, including full native capture, specs, generation/RNG/source/runtime
+  pins and explicit physics; no original capture path/native installation is
+  needed by replay.
+- [Development02](/mnt/workspaces/Cells/tissue-geometry-cli-development-20261029-02/result.json)
+  passed all 33 public workflow checks. Four fresh processes prepare, validate a
+  relocated bundle, replay, then validate. Original request/output are removed;
+  an audit hook blocks original external geometry artifact reads. All component
+  definition/provenance and initial state arrays/dtypes remain exact. Malformed,
+  duplicate/nonfinite, resealed tampering, typed JSON and nonoverwrite checks
+  pass. Development01 remains frozen with its 31 passed checks; final two cases
+  add explicit numeric JSON type preservation. The 56 scientific checks were
+  reused, not rerun, and 14 frozen geometry/physical sources remain exact.
+- [Verified handoff](/mnt/workspaces/Cells/tissue-geometry-cli-handoff-20261029-01/result.json)
+  SHA256 `d863b7b27d2aa55ab3fd5c1e2d8859ec14156000b0114396bb34e192abad0f62`.
+  Verified 171 artifacts, 30 captured sources and 33 evidence records. Includes the
+  exact public-replayed example, request, guide and unapplied dispatch patch.
+  [Contract](workfiles/TISSUE_GEOMETRY_CLI_HANDOFF.md) records scope and receipts.
+  [Shared dispatch patch](workfiles/tissue_geometry_cli_dispatch.patch) adds one
+  help entry and early delegation; tested in an isolated copy only. Root applies.
+- Host guard 19.91 s (pytest 19.02 s), CPU7, one thread, JIT disabled; peak tree
+  RSS 382,615,552 bytes and reserve >=18,179,772,416 bytes. No shared dispatch/
+  PROGRESS/TISSUE_RETURN_CURRENT edit, frozen component edit, new physics,
+  native generation, GPU, long job, detached-job polling or automatic follow-up.
+
+## Initial geometry and static profile integration, 2026-10-29
+
+- Chief assigned a separate owned adapter joining qualified passive geometry
+  artifacts to explicit static profiles, with Python API, portable recipe/example,
+  independent physical before/after comparisons, selection/order and replay/
+  refusal checks. Keep all qualified adapters/CLI/shared dispatch/PROGRESS
+  unchanged. Root owns shared integration/status. CPU7, <=1 GiB RSS, >=8 GiB
+  reserve, no GPU, long jobs or other-job polling.
+- `cells.core.geometry_profile_preparation` replays the complete initial geometry
+  artifact, rebinds source specs, and derives the profile Layout from actual
+  polygon centroids, bound surface/exterior owners and grid bounds. Thickness
+  comes only from explicit physical per-membrane inputs; reciprocal contacts,
+  declared physical junction IDs/orientation and the actual junction neighbor
+  graph provide the remaining direct-bridge maps. No geometry/owner overrides,
+  implicit source-ID changes, colors or percentage permutations are introduced.
+  Exact cell color tags are supplied by stable ID or remain None; positional
+  selectors require the derived layout identity. Complete geometry and profile
+  provenance chains remain in the portable outer recipe, with exact initial
+  state, physical inventory, control and nonselected-property checks.
+- [Development02](/mnt/workspaces/Cells/geometry-profile-preparation-development-20261029-02/result.json)
+  passed all 43 host checks, with seven selection/geometry cases and 28 complete
+  independent before/after physical stages at two control clocks. Full field,
+  state derivative, potential, material and energy checks pass. Stdlib polygon/
+  owner derivation and frozen selector/Decimal references supply expected data;
+  overlapping duplicate targets, percent/ALL alias order, exact color tags,
+  positional identities and image-centroid choices are checked explicitly.
+  Maximum RHS error is 0.029805 of the unchanged budget. Inventories, initial
+  state/dtypes, volumes/capacitance/faces, controls and execution remain exact.
+- The image control selects `seed-r2-c0` with actual centroids; the deliberately
+  wrong primal-point control selects nothing. Development01 preserves rejection
+  of a single-pixel fixture by the unchanged native noncollinear-mask contract.
+  The valid fixture declares a 2x2 patch and a degenerate-image refusal is tested.
+  No qualified code or scientific tolerance changed. Fresh-process replay blocks
+  original external geometry reads; full two-chain serialization, typed JSON
+  tampering, request purity and unchanged process RNG are covered.
+- [Verified handoff](/mnt/workspaces/Cells/geometry-profile-preparation-handoff-20261029-01/result.json)
+  SHA256 `068c33df50a1b684214618377a13d3768692f8a3b3d6671917dcb215849df1a0`.
+  Verified 164 artifacts, 39 source snapshots, 43 evidence records, both qualified
+  component receipts and unchanged public geometry CLI. Three exact request/
+  definition/provenance examples cover overlap, percent-alias and image-centroids.
+  [Python example and API usage](/home/robert/Cells/examples/geometry_tissue_profiles/README.md)
+  and [contract](workfiles/GEOMETRY_PROFILE_PREPARATION_HANDOFF.md) are complete.
+- Guarded host 28.19 s (pytest 27.22 s), CPU7, one thread, JIT disabled;
+  peak process-tree RSS 453,574,656 bytes, reserve >=16,492,101,632 bytes.
+  Initial passive static preparation only; no extra physics, physical remap,
+  cut/moving geometry, native generation or trajectory claim. Existing qualified
+  adapters/CLI/shared dispatch/PROGRESS/index unchanged. No old component suite
+  rerun, GPU, long job, other-job polling, commit or automatic follow-up.
+
+## Scheduled passive membrane profile interventions, 2026-10-29
+
+- Chief assigned a standalone model/spec for Na/K/Cl/Ca membrane interventions,
+  preserving the parent passive equations and all material/charge/energy
+  ledgers. Reuse frozen pulse/default-Dm/ordered-target kernels and explicit
+  D/thickness; define phase/timing scope. New owned code/tests/reference and a
+  proposed shared integration patch only. No shared/PROGRESS edits, GPU, long
+  trajectory or other-job polling; CPU7, <=1 GiB RSS, >=8 GiB reserve.
+- Source contract: native phase initialization copies Dm_base and zeros
+  Dm_scheduled; full and fast simulation loops call fire_events only for SIM.
+  Supported membrane events always overwrite selected entries at each firing,
+  one event per ion kind with last duplicate occurrence winning. Thus starting
+  from the declared zero scheduled buffer at each RK stage reproduces this
+  membrane-only buffer arithmetic; untouched entries remain zero. INIT is
+  explicitly inactive. No automatic native INIT-to-SIM biological handoff or
+  phase-reset-on-checkpoint-resume is claimed.
+- Existing RK4 RHS receives no time argument. The new model carries an
+  explicit one-entry phase clock with derivative one, preserved in checkpoints,
+  to sample pulses at the actual RK stages without changing numerical engines.
+  Declare ordered 0<=on<off<=horizon and positive ramp; use the native smooth
+  pulse including its nonzero tails. Signed amplitudes/samples/constant factors
+  are accepted only with a conservative all-time nonnegative physical-D bound,
+  plus actual-stage positivity checks. Pressure/ECM, cuts/remaps and dynamic
+  callbacks without explicit samples remain outside this model.
+- Accounting uses the union of possible membrane routes for ledger support
+  only; instantaneous physical fields use current P. This avoids treating a
+  temporarily closed, previously used route as a permanently impossible ledger.
+  Varying the kinetic permeability prefactor adds no new stored chemical or
+  capacitor energy, so the existing passive material/charge/energy identities
+  remain the scientific owners.
+- Stable public contract is `resolved_membrane_profiles@1`,
+  `SurfaceProfileInterventionModel`, `parse`/`to_dict`/`base_spec`, with complete
+  direct or joined geometry/profile artifacts retained and replayed. Native
+  layout permutations bind through stable membrane IDs. INIT, guarded-off ions,
+  duplicate-last/default-Dm semantics, signed safe factors and transient route
+  closure all preserve the parent physical state and full ledgers.
+- [Development01](/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-01/result.json)
+  preserves a resource failure: 32 host checks and the compiled full RHS passed,
+  but the combined JAX/public process reached 1,084,862,464 bytes RSS and was
+  stopped by the 1 GiB guard at 77.88 s. No numerical assertion failed and the
+  memory limit was not raised. Separate fresh compiled-RHS and eager public
+  processes remove the accumulated compilation memory. No compiled trajectory
+  qualification is claimed.
+- [Development02](/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-02/result.json)
+  passed 36 checks: 34 host, one compiled CPU JAX RHS/vmap/gradient and one eager
+  four-step public snapshot/resume. All captured/live pinned sources remained
+  unchanged. Host/compiled/public phases took 55.32/17.61/241.92 s, with peak RSS
+  396,750,848/648,003,584/467,566,592 bytes and reserve >=14,967,652,352 bytes.
+- Chief's exact-ceiling control found 1.25e-7 nominal dt becoming
+  1.2500000000000134e-7 after absolute-clock subtraction. The model now permits
+  only two horizon ULPs (or 16 step epsilons) for actual interval roundoff, with
+  a separate nominal dt<=transition/8 relative-roundoff guard before parent
+  grid construction. Regression controls first prove valid nominal baselines
+  at 10 us and 1e9 s, then refuse oversized nominal dt at both horizons; a truly
+  oversized actual interval is separately refused. Original fixture dt,
+  horizons and event times are unchanged. Root owns shared/ensemble integration
+  and its separate public contract tests.
+- [Final Development03](/mnt/workspaces/Cells/scheduled-membrane-profiles-development-20261029-03/result.json)
+  passed all 36 checks after the nominal guard repair. Independent complete
+  fields/RHS/potentials/material/energy checks cover 48 pulse/phase stages plus
+  one joined-source stage. Maximum RHS error is 0.029805 of the unchanged budget.
+  The 10 us NumPy RK4 refinements at 125/62.5 ns use 0.104657/0.006430 of the
+  trajectory budget against the independent adaptive reference. Compiled CPU
+  JAX full-RHS parity, invalid-world isolation and a nonzero finite time gradient
+  pass; eager four-step public snapshot/resume is exact and refuses phase change.
+- [Frozen verified handoff](/mnt/workspaces/Cells/scheduled-membrane-profiles-handoff-20261029-01/result.json)
+  SHA256 `a922fb3a4605f41d1d224231d14f7710810003a366d2ff6b26b951ffa3dc7bef`.
+  Verified 474 component artifacts, 50 source snapshots, 36 evidence records and
+  all three qualified preparation receipts. Complete direct-four-ion and joined
+  geometry/profile definition/artifact examples are exported. The
+  [contract and usage](workfiles/SURFACE_PROFILE_INTERVENTIONS_HANDOFF.md) and
+  reproducible finalizer are complete. Sent the frozen receipt directly to the
+  Chief; shared parse/serialization/registry/ensemble integration and public
+  contracts remain the Chief's work.
+- Final host/compiled/public phases took 54.57/18.12/242.45 s; CPU7, one thread,
+  peak RSS 397,692,928/648,179,712/469,794,816 bytes and host reserve
+  >=19,256,279,040 bytes. All live pinned parent/kernel/engine sources were
+  unchanged at freeze; only two metadata dispatch files differ in the isolated
+  test copy. Root held live runner/windows changes until this handoff and may
+  now proceed with its separately owned scalar-tail repair. Captured source
+  snapshots and previous failed/passed evidence remain frozen. No GPU, long
+  trajectory/job, other-job polling, old component-suite rerun, commit or
+  automatic follow-up; no native-loop, compiled-trajectory or remap claim.
+
+## Explicit passive INIT-to-SIM handoff, 2026-10-29
+
+- Chief assigned a new owned adapter and epoch model/spec, preserving the frozen
+  scheduled model and shared files. Contract agreed: carry all twelve parent
+  arrays with their original accounting origin, reset only the phase clock,
+  archive the complete accepted INIT checkpoint and both clocks, and explicitly
+  replay the identical static profile/default preparation with a zero scheduled
+  buffer before first SIM pulse evaluation. New SIM controls, events, horizon
+  and timestep are deliberate inputs; no ordinary resume/branch transition.
+- Native `SimRunner.sim` loads the evolved INIT simulator and passes it to a
+  SIM phase without `init_core`. `run_sim_core` calls `init_dynamics`, clears
+  output storage and rebuilds a phase-local timeline from zero. `init_profiles`
+  restores declared membrane D values, then `init_dynamics` copies Dm_base and
+  zeros Dm_scheduled. The passive membrane-only contract excludes optional native
+  noise, channels, pressure/ECM and other writers; RK-stage sampling remains
+  distinct from native solver-loop parity. Complete pinned files and function
+  AST identities are recorded in the new protocol.
+- New `resolved_membrane_profile_epoch@1` / `SurfaceProfileEpochModel` owns
+  distinct checkpoint state/layout types. Exact typed source arrays, accepted
+  clocks, actual-control fields, padding and original material/charge/energy
+  histories are validated. Version 1 retains identical physical model, profile
+  preparation/defaults and physical capacities, with no remap or rebasing.
+- Validation uses a new isolated copy of the immutable scheduled Development03
+  engine plus only the new runtime files and test dispatch routes. Root's live
+  scalar runner/window repair can proceed. A separate proposed shared patch is
+  based on Root's current post-profile-integration specs/registry/ensemble
+  files; all shared integration and shared status remain Root-owned. CPU7,
+  <=1 GiB live process-tree RSS, >=8 GiB reserve, no GPU or long runs.
+- [Development01](/mnt/workspaces/Cells/membrane-phase-handoff-development-20261029-01/result.json)
+  passed the first 10 scientific checks in 33.17 guarded host seconds: evolved
+  INIT at 5/10 us, exact parent-state/owner/history preservation and complete SIM
+  fields for four cases. No source drift or numerical failure.
+- [Complete Development02](/mnt/workspaces/Cells/membrane-phase-handoff-development-20261029-02/result.json)
+  passed all 44 checks: 42 host, one compiled CPU JAX full-RHS/isolation check,
+  one eager public execution/snapshot-resume check. Four cases provide 32 full
+  SIM pulse/control-stage comparisons; a joined complete geometry/profile chain
+  with an accepted interior INIT checkpoint adds a 33rd independent full stage.
+  Maximum RHS error is 0.029805 of the unchanged budget. Independent evolved
+  INIT solutions use 0.323177/0.104639 of the trajectory budget at 5/10 us.
+- Continuous-history SIM continuation from the evolved 10 us INIT checkpoint
+  passes 125/62.5 ns RK4 refinement against independent segmented DOP853, using
+  0.003767/0.000232 of the trajectory budget. Explicit owner-loop material and
+  charge checks and Decimal chemical/capacitor/work accounting remain within
+  unchanged tolerances. Every initial SIM parent array is a byte-exact copy;
+  original charge/inventory/energy anchors and histories stay intact.
+- Refusals cover wrong source phase/owners/layout, erased transfer history,
+  negative dissipation, corrupt electrode work, clock/grid/input positions,
+  precision/padding, missing or wrongly typed/overflowing owner arrays, changed
+  physical capacity/volume, reset clocks/buffers and sealed-history/proof edits.
+  A valid rebuilt static preparation changes default Na D while later profiles
+  leave all physical P unchanged; the declared identical-default policy still
+  refuses it. Ordinary resume/branch cannot perform the phase operation, and
+  resetting initial SIM histories is rejected. Fresh-process replay blocks both
+  builtins and Path/io source-file access; all embedded artifacts replay exactly.
+- [Frozen verified handoff](/mnt/workspaces/Cells/membrane-phase-handoff-20261029-01/result.json)
+  SHA256 `79d5aa20327e470155ce7e5fc23bd0686a7f64af0497901cbf65f0f170d44f8f`.
+  Verified 490 component artifacts, 51 source snapshots, 44 evidence records,
+  immutable qualified engine receipts and native phase files/ASTs. Four complete
+  request/definition/provenance examples cover continued controls, changed
+  controls, a joined interior source and short public replay. The
+  [contract/API usage](workfiles/MEMBRANE_PROFILE_PHASE_HANDOFF.md) and finalizer
+  are complete. Proposed shared specs/serialization/registry/ensemble patch is
+  based on Root's current files and passes read-only `git apply --check` at
+  freeze. Sent the receipt directly to the Chief for its integration/public tests.
+- Host/compiled/public phases took 98.70/20.38/30.70 s; CPU7, one thread,
+  peak RSS 458,915,840/633,057,280/465,297,408 bytes and host reserve
+  >=19,490,455,552 bytes. Only three new runtime files overlay the frozen engine;
+  two isolated test dispatch files differ. Qualified scheduled model and shared
+  files were not edited by this worker. No GPU, native generation, long run/job,
+  other-job polling, existing-suite rerun, commit or automatic follow-up. No
+  native solver-loop, compiled trajectory, changed-default or remap claim.
+
+## Scheduled regional membranes on complete active @12, 2026-10-29
+
+- Chief assigned a separate spec/model/reference/tests for scheduled background
+  Na/K/Cl/Ca membrane D on `resolved_tissue@12`, preserving all 56 channel laws,
+  actual zero/one/two-state gates, intrinsic junction gates, maintained-fuel
+  pumps, four control families and every physical/accounting field. New ID is
+  `resolved_active_membrane_profiles@1`. Fresh INIT/SIM RK-stage timing is
+  explicit; the frozen passive/epoch models and shared files stay untouched.
+- Concrete parent risk: `surface_kinetic.readouts` applies its fixed-route
+  `domain_valid` to historical background membrane transfers using current P.
+  A later zero-P stage would reject valid earlier transfers. The new wrapper
+  checks untouched actual history against union route support and uses a
+  temporary readout-only closed-route diagnostic view. Parent potentials,
+  physical fluxes and all derivatives use no such integral. Returned history
+  is restored exactly; complete actual history drives conservation diagnostics.
+  Chief explicitly requires pinned call-graph proof plus independent complete
+  closure/reopening arrays, and refusal of corrupt actual material/energy
+  histories. No conservation tolerance or physical coefficient is relaxed.
+- New source files are `surface_active_profile_interventions_spec.py` and
+  `models/surface_active_profile_interventions.py`. They reuse qualified native
+  bindings/signal math and project to the exact HCN_EXTRA layout type before
+  every unchanged parent call. New independent fixtures/reference cover the
+  complete 56-law active parent; validation/proposed integration are being
+  prepared. Test engine is an immutable epoch Development02 workspace copy;
+  Root can continue its own live runner/window and shared integration work.
+- Native correspondence is limited to frozen scheduling/default-Dm/target
+  arithmetic and explicit D/thickness. Active laws and maintained-fuel ledgers
+  retain the qualified parent equations; no full native-loop claim. Larger
+  calcium-store, finite-fuel and water owners remain the next boundary. CPU7,
+  <=1 GiB live RSS, >=8 GiB reserve, no GPU or long runs; outputs under /mnt.
+- [Development01](/mnt/workspaces/Cells/active-membrane-profiles-development-20261029-01/result.json)
+  passed 8 checks (seven all-law panels plus pinned call-graph proof), pytest
+  13.51 s. Each panel compares complete fields and all twenty derivatives at
+  eight clocks, with all 56 channel laws and actual initial gate/pump owners.
+- [Complete Development02](/mnt/workspaces/Cells/active-membrane-profiles-development-20261029-02/result.json)
+  passed all 35 checks: 33 host, one full-catalog CPU JAX eager/abstract-trace
+  check and one public eager exact snapshot/resume check. Seven cases provide
+  56 independent complete stages; four evolved closure/reopening stages add 60
+  in total. Maximum RHS error is 0.000161 of the unchanged active budget.
+- The risky projection is proved by pinned parent AST/call graph and 240
+  bitwise comparisons of every nonboolean parent readout leaf between untouched
+  and temporary-view histories at four evolved clocks. Potentials, all physical
+  fluxes, every RHS/ledger derivative and numerical field diagnostics match.
+  Actual full histories and all nineteen observed parent state arrays stay
+  exact. Corrupting an actual closed-route transfer fails both accounting and
+  observation. No conservation tolerance, actual history or parent file changes.
+- Two 8 us trajectories, ordinary SIM and exact background Na closure/reopening,
+  pass 62.5/31.25 ns refinement against independent segmented DOP853. Ratios are
+  0.084796/0.004804 and 0.109932/0.005536 of the unchanged state budget.
+  Actual channel/pump histories, metabolic work, full material/charge and
+  chemical/capacitor/work accounting pass. Empty/INIT scheduling reduces to the
+  bitwise complete parent; native ion flags affect background scheduling while
+  physical channels/pumps and blocked intrinsic clocks retain their contracts.
+- [Frozen verified handoff](/mnt/workspaces/Cells/active-membrane-profiles-handoff-20261029-01/result.json)
+  SHA256 `023fa90edf6d9e506e630fb7e32a023f05cfcf12dfe7e0ab3eb59c3e2dc9e754`.
+  Verified 769 artifacts, 197 source snapshots, 35 evidence records, immutable
+  engine and complete native phase source identities. Four portable definitions
+  cover SIM, INIT, closure and disabled flags, with a sealed complete SIM
+  artifact. [Contract/API/limits](workfiles/SURFACE_ACTIVE_PROFILE_INTERVENTIONS_HANDOFF.md)
+  and finalizer are complete. Root integrated epoch while qualification ran;
+  the new `surface_active_profile_interventions_integration.patch/.json` rebases
+  only the proposed shared metadata routes on those current files and applies
+  cleanly at freeze. Captured test/original proposal remain unchanged.
+- Host/JAX-eager/public phases took 235.07/40.24/60.38 s, CPU7, one thread;
+  peak RSS 418,062,336/560,009,216/555,184,128 bytes, host reserve
+  >=16,324,419,584 bytes. JAX evidence is complete-catalog eager parity,
+  abstract tracing and nonzero native pulse differentiation; compiled active
+  RHS/trajectory remains outside this component's claim. No GPU, long run/job,
+  other-job polling, old-suite rerun, commit or automatic follow-up. Root owns
+  public admission/checkpoint tests and independent projection review. Sent the
+  frozen receipt directly; Chief explicitly assigned the next @6 calcium/
+  finite-fuel boundary design after this handoff.
+
+## Scheduled calcium/finite-fuel membranes: component handoff, 2026-10-29
+
+- Chief explicitly assigned the next larger feature after the active handoff:
+  new owner-specific spec/model/reference/tests, no shared/status/frozen-runtime
+  edits, CPU7 <=1 GiB RSS and >=8 GiB reserve, no GPU. Start from @6 and return
+  a concrete supported-family scope with independent/refinement evidence.
+- [Boundary design](workfiles/CALCIUM_PROFILE_BOUNDARY.md) identifies the exact
+  @6 source as `resolved_calcium@6` / ionic @7. The separate finite-fuel target
+  is `resolved_calcium_energy@5` / ionic @12; no energy @6 exists in the source.
+  This is an explicit pair of physical owner contracts rather than a blanket
+  wrapper across all compositions. No new runtime or claim is qualified yet.
+- Source review confirms actual free chemical cytosol and ER stores differ
+  from total ionic charge/inventory. Finite fuel stages all Na/K/PMCA/ER pumps
+  from current ATP/ADP/Pi; its initial maintained-law projection is layout/
+  serialization only. Full composed preparation retains these owners, while
+  its inner direct record is usable for native coefficients only.
+- The new closure proof must extend through store and live-fuel call graphs.
+  Finite-fuel observers call balances, so material/pool-energy diagnostics must
+  be assembled from untouched actual state rather than a diagnostic view.
+  Parent timestep chemical-loss bounds need the maximum possible scheduled P.
+  Existing passive/epoch/active/shared sources remain unchanged by this worker.
+- Drafted separate owner-specific spec/runtime pairs plus a shared coefficient
+  binder, pure complete-owner references/fixtures and scoped qualification.
+  Finite-fuel observations explicitly assemble balances from actual history;
+  timestep bounds use the maximum scheduled background permeability. Exact
+  parent layouts preserve free-calcium and full channel-catalog dispatch.
+- [Development01](/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-01/result.json)
+  preserves the failed first smoke: manufactured geometry had invalid SVG fill
+  metadata. Corrected the fixture to declare no SVG fills.
+  [Development02](/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-02/result.json)
+  passed 10 full-owner panels (50 independent full RHS/field stages), all actual
+  initial arrays/layouts exact. Cases cover both supported owners and SIM,
+  INIT, closure/reopening, disabled ion flags and empty events; 67.18 s pytest.
+- Current validation adds transitive store/live-fuel state-flow assertions,
+  actual-history accounting corruption refusals, independent DOP853/RK4
+  refinement, and separate-process eager JAX/public snapshot checks. Explicitly
+  captured `validation/betse/contact.py` and its unqualified `require` helper
+  dependency following Chief's review. Whole qualification is still pending;
+  public shared routing remains an unapplied proposal owned by Chief.
+- Development03 preserves a test collection import error, corrected to the
+  public `cells.core.runner.run` import. Development04 preserves the meaningful
+  excessive-pulse refusal failure: inherited calcium chemical bounds ignore
+  background GHK outflow. Added an explicit conservative upper-P outflow term,
+  summed over actual free-cytosol/finite-exterior owners and combined with the
+  unchanged chemical/fuel bound at the existing 0.25 fractional-loss ceiling.
+  [Development05](/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-05/result.json)
+  passed all 23 selected recipe, owner/refusal, inactive-RHS and call-graph
+  checks in 87.42 s. No frozen parent, equation or tolerance was changed.
+- [Development06](/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-06/result.json)
+  passed the complete finite-fuel SIM trajectory pilot: 4 us, RK4 at
+  31.25/15.625 ns against independent segmented DOP853 (948 RHS evaluations),
+  all 39 fields and full actual store/fuel conservation. Both error ratios
+  are <0.000387 of the unchanged state budget; absolute max error ~7.75e-15
+  is precision-limited, so there is no convergence-order claim. Pytest 227.09 s.
+- Full 44-check qualification launched detached at 08:08:08 UTC, PID 1428978:
+  [launch receipt](/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-07-launch/launch.json),
+  durable launcher log alongside it, output directory
+  `/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-07`.
+  It will write `result.json` and `failure.json` on failure. Separate bounded
+  contract, SIM/refinement, closure/actual-history, JAX-eager and public-replay
+  processes retain CPU7 <=1 GiB RSS / >=8 GiB reserve / 480 s per phase, no GPU.
+  Expected total exceeds ten minutes; return control with no automatic polling,
+  audit, retry or follow-up. Captured component/runtime/protocol/test files are
+  frozen during this job. Logs and failed evidence from all pilots remain.
+- Chief's 08:08 coordination confirms Root is implementing shared public
+  parser/serialization/registry/ensemble routes and separate dispatch tests for
+  these exact two models. This worker continues to own only component files;
+  frozen handoff awaits the requested later result review. Other jobs untouched.
+- On Chief's later instruction to finish qualification/handoff, read the
+  completed Development07 receipt once. All 44 distinct checks passed (40 host,
+  two complete-owner JAX eager/trace and two public eager exact replay); 44
+  evidence records. The raw summary is preserved as failed with 46 collections,
+  two skipped duplicates and zero errors/failures: host closure selectors also
+  matched the two public test names, which then passed in the proper public
+  phases. Exact JUnit identity reconciliation proves one genuine pass per
+  unique check. Corrected only future host selection in the owned runner; no
+  scientific source, tolerance or frozen artifact changed, and no tests reran.
+- [Frozen verified handoff](/mnt/workspaces/Cells/owned-calcium-profiles-handoff-20261029-01/result.json)
+  SHA256 `0cddd7473b72c09c50de30a4895a593ce9d93ec7b798ba1324851e3211c06143`.
+  [Contract/API/limits and summary correction](workfiles/OWNED_CALCIUM_PROFILE_INTERVENTIONS_HANDOFF.md)
+  and the reusable finalizer are complete. Full portable definitions cover both
+  families and all five cases; sealed SIM artifacts and exact reconciliation
+  are exported with the unchanged raw result/failure receipts.
+- Fifty initial plus eight evolved independent full RHS/field stages pass.
+  Closure/reopening gives 980 bitwise parent numeric-leaf comparisons; every
+  actual observed parent field and all original store/fuel ledgers stay exact.
+  Four 4 us SIM/closure trajectories at 31.25/15.625 ns agree with segmented
+  independent DOP853 within unchanged budgets. All are precision-limited;
+  no convergence-order claim. All three pump families use actual ATP/ADP/Pi;
+  exhaustion, unrecorded pool changes and corrupted closed-route history refuse.
+- Peak guarded RSS 708,788,224 bytes, host reserve >=12,020,678,656 bytes;
+  every phase <480 s on CPU7, one thread, no GPU. Compiled coupled execution,
+  other compositions, cuts and calcium/fuel INIT-to-SIM operations remain
+  outside this component. No detached-job repeated polling or new numerical
+  follow-up/audit/regression jobs. Root's separate active jobs untouched.
+- Chief's independent public integration passed 61 interface checks
+  (24 new +37 adjacent regressions) on the identical five runtime files;
+  receipt snapshot SHA256
+  `40cff2825f32b0ccd9ac839d779ded1dc25345561a256b93b500e99145ae8515`
+  is preserved in the handoff. Root owns its separate eager job and shared
+  status; this worker did not poll it or repeat public work after that notice.
+
+## Explicit calcium/finite-fuel INIT-to-SIM: current component work, 2026-10-29
+
+- Chief assigned explicit transitions for the exact qualified calcium @6 and
+  finite-fuel @5 profile owners after the frozen 44-check handoff. New isolated
+  adapter/spec/runtime/reference/tests only; Root owns shared routing/CLI/docs/
+  PROGRESS and its other jobs. CPU7 <=1 GiB / >=8 GiB reserve, long suites
+  detached, no GPU or other large admissions. Qualified profile files frozen.
+- Reviewed the active epoch contract. Draft new adapter
+  `owned_calcium_profile_phase_handoff` and separate
+  `surface_calcium_profile_epoch` / `surface_calcium_energy_profile_epoch`
+  spec/runtime pairs preserve every original parent array and accounting
+  reference, exact prepared owners/capacities/defaults, archive both INIT clocks
+  and complete typed checkpoint, and reset only the new SIM clock/buffer.
+- Complete chemical stores and actual ATP/ADP/Pi remain state increments against
+  original anchors. A new finite-fuel epoch must supplement the ordinary
+  fresh-run admission check with gross turnover at the actual carried pools;
+  this check is local to the new epoch runtime. Neither constitutive equations
+  nor any qualified profile file changes. No new transition is qualified yet.
+- Planned independent evidence compares complete INIT and SIM states at
+  transient observation clocks and both allowed timesteps, including native
+  pulse transfer during its ramp. This avoids treating a precision-limited
+  final endpoint alone as a convergence-rate result.
+- Chief independently accepted the previous 44-check component: review SHA256
+  `e29e1a5b153e7f8a9aa2bbbb67dc8c7304109cc098db9ec8cdd20b26b456b226`.
+  That accepted evidence compares trajectory endpoints, with no trajectory NPZ;
+  it stays frozen. New transition evidence must cover all declared observations
+  and held-control boundaries and retain compact full-state/reference arrays.
+- New transition runtimes, adapter and pure references are drafted. API names
+  REQUEST_KIND/KIND/owner/capture_source/prepare/replay/write_preparation are
+  stable for Root's separate public integration. Snapshot-source preservation
+  explicitly converts exact source copies to host arrays for diagnostics.
+  All five qualified scheduled-profile files remain unchanged.
+- [Phase Development01](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-01/result.json)
+  passed both evolved full-owner transition smoke checks in 104.99 s: exact
+  original physical arrays/layouts, actual stores/fuel/history, clock-only reset.
+- [Phase Development02](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-02/result.json)
+  preserves a useful accuracy failure at transient observations: the declared
+  100x permeability fixture at 31.25 ns exceeds the unchanged state budget by
+  4.1303x. Keep the fixture and tolerances; use 15.625/7.8125 ns for the next
+  two-dt comparison. Added compact NPZ preservation for future accuracy and
+  refinement failures as well as passes. The in-flight Phase Development03
+  pilot compares all 21 finite-fuel SIM observations/control boundaries and
+  checks real transient transfer convergence. No production runtime changed.
+- Root froze its separate public suite at 09:01:43 on CPU5. Root owns all
+  shared interfaces/CLI, fixture/test files and monitoring of that job. This
+  worker neither polls it nor launches duplicate public checks.
+- [Phase Development03](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-03/result.json)
+  passed the finite-fuel carried-SIM pilot in 340.36 s at every one of 21
+  declared observation/control-boundary samples. Unchanged-budget ratios fall
+  0.2365613 ->0.0145369; transient background-transfer error falls
+  4.6392e-13 ->2.8508e-14 fmol at 15.625/7.8125 ns. This is resolved transient
+  refinement, separate from the accepted old endpoint-only precision floor.
+  The compact NPZ retains all 39 padded production state arrays for both dt,
+  full reference/coarse/fine flats (21x897), initial flat and shape metadata;
+  loaded with pickle disabled; confirmed 85 entries, both 39-field production
+  blocks and the chemical/fuel array shapes.
+- Root reports its public epoch suite passed all 63 checks at 09:13:17;
+  Root independently reviews that receipt. No public repetitions by this worker.
+- Full 62-check independent component qualification launched detached at
+  09:33:28 UTC, PID 1454497:
+  [launch receipt](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-04-launch/launch.json),
+  logs alongside it, output directory
+  `/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-04`.
+  It covers both complete INIT phases, four carried SIM trajectories, all
+  observations/held boundaries and compact full-state/reference NPZ, preservation,
+  typed replay/refusals, independent carried-pool turnover, and separate JAX
+  eager/device-source checks. A separate final bounded phase reproduces the
+  original coarse failure to save its previously unwritten full arrays from
+  unchanged integration/oracle functions and all five unchanged runtime files;
+  that expected failure is not counted as a passing scientific case.
+- Every child remains CPU7, one thread, <=1 GiB RSS / >=8 GiB reserve / 480 s
+  per phase, no GPU. Expected total exceeds ten minutes. Return control with
+  no automatic polling, retry, audit or new numerical follow-up. Captured new
+  component/spec/runtime/reference/test/runner files stay frozen during the
+  job; prior qualified files and all other jobs remain untouched. Frozen
+  transition handoff remains pending completion review on the next instruction.
+- Chief's later coordination records its 63-check public closeout and a
+  separate CPU6 intermediate batch-restart job. No status query or monitoring
+  of that job, water, regulated or any other Root computation by this worker.
+  Prepared [transition contract](workfiles/OWNED_CALCIUM_PROFILE_PHASE_HANDOFF.md)
+  while the component remains detached. It explicitly labels full qualification
+  pending, documents actual-pool admission and separates resolved new transient
+  evidence from the old accepted endpoint-only scope. No captured run sources,
+  shared files or numerical jobs were changed.
+
+## Full56 joint water and prescribed repair @2: static draft, 2026-10-29
+
+- Chief explicitly assigned the next substantial feature while phase04 owns
+  CPU7: joint calcium/ER + actual finite fuel + compliant water, with/without
+  prescribed repair, extended from the existing 53-law catalog to all 56 laws.
+  Draft/code only until numerical capacity is available; no overlapping runs or
+  repeated job polling. Root owns all shared/public/assembly/cohort integration.
+- Sent and received acceptance of the concrete @2 API/file boundary. Four new
+  schema/runtime modules now exist with explicit energy @5 / ionic @12 and
+  exact HCN_EXTRA layout dispatch. Root was notified that the APIs are ready
+  for shared wiring. No @1 or shared source was edited by this worker.
+- [Boundary/API/evidence plan](workfiles/JOINT_WATER_HCN_BOUNDARY.md) and
+  [static function correspondence](workfiles/joint_water_hcn_static_boundary.json)
+  cover both versions. All 49 runtime function ASTs match @1 after the exact
+  full-catalog layout substitution and repair Control import; no physics or
+  scientific tolerance changes. Full component/reference/fixture/tests are
+  drafted and Ruff checks pass; no numerical results or qualification claimed.
+- New references explicitly bind all 56 laws through full calcium @11 and
+  finite-fuel @5, avoiding the old chemical-water binder's fixed @10 selection.
+  Passive projection supplies water geometry only. Free-energy fields use
+  actual current pools/volumes. Tests retain complete 43/48-field data and
+  independent references at every observation/control boundary, with separate
+  manufactured-stage and integrated-history scopes and old53 overlap checks.
+- All captured phase04 inputs/runtime/reference/test files remain frozen.
+  Neither phase04 nor Root's detached jobs were queried during this draft.
+- Root has applied the shared @2 routes and reports six public contracts
+  passing (typed 43/48 fields, all56 catalog, full fuel projection, declared
+  backend admission and control boundaries). Its eleven further public checks
+  are separately detached/frozen on CPU5; this worker does not query them.
+  All new component references, fixtures and tests are now statically drafted,
+  including legacy53 overlap, complete trajectory NPZ and precision-floor
+  labels. Numerical component admission remains pending CPU7 capacity and the
+  next completion/status instruction; no new numerical process was launched.
+- On the new user continuation Chief explicitly requested one phase04 check:
+  it terminated at 09:45:38 when fuel contracts reached the 480 s cap. It has
+  only 26 finalized calcium JUnit passes; 22 printed fuel markers/records lack
+  a completed JUnit receipt and are not promoted to passes. Source/workspace
+  hashes unchanged, RSS 276,975,616 bytes, reserve >=19,458,166,784 bytes.
+  Full INIT/SIM/closure/JAX qualification remains pending. Reported the exact
+  scope directly to Chief, separately retaining the successful pilot03 arrays.
+- Prepared `continue_owned_calcium_phase_qualification.py`, not launched: it
+  verifies and retains those 26 finalized calcium tests/records, splits the
+  27 remaining fuel contracts into six bounded processes, and schedules only
+  unfinished INIT/SIM/closure/reference/JAX work and coarse failure capture.
+  It changes no old runtime/spec/reference/test/protocol and repeats no finalized
+  calcium check. Fuel continuation remains disjoint from current water work.
+- New water numerical admission now authorized by Chief after the completed
+  phase04 job released CPU7. [Joint Development01](/mnt/workspaces/Cells/joint-water-hcn-development-20261029-01/result.json)
+  passed two complete-owner smoke cases in 3.63 s.
+  [Joint Development02](/mnt/workspaces/Cells/joint-water-hcn-development-20261029-02/result.json)
+  passed all 44 nontrajectory stage/ownership/refusal/legacy53 checks in 23.78 s.
+  Isolated frozen-engine routes were used; Root's public checks were not rerun.
+  Full trajectories, all-observation NPZ and independent energy balances remain
+  under qualification; the first water trajectory pilot is running bounded.
+- Component work completed at 10:45 UTC. The water trajectory passed in
+  252.51 s; completion04 retained those 45 finalized checks and ran only the
+  remaining repair trajectory, which passed in 260.65 s. The combined
+  [receipt](/mnt/workspaces/Cells/joint-water-hcn-development-20261029-04/result.json)
+  contains 46 unique passes, zero failures/errors/skips, 48 independent complete
+  stage comparisons and unchanged captured source/workspace hashes.
+- Both 50 us trajectories compare every declared observation/control boundary:
+  water has 8 samples and repair 11, with all padded 43/48-field production
+  arrays for both 0.625/0.3125 us steps and complete independent references
+  retained in NPZ. Unchanged state-budget ratios decrease from 0.00687962 to
+  0.000428878 for water and 0.339130 to 0.0222444 for repair. Independent
+  Decimal global energy residuals stay below 2.460e-12 pJ against 1e-9 pJ;
+  original material/work/fuel/water/damage ledgers pass. No convergence-order,
+  endpoint-only, compiled/GPU or new repair-energy claim is made.
+- Exported the frozen
+  [handoff](/mnt/workspaces/Cells/joint-water-hcn-handoff-20261029-01/result.json),
+  SHA256 `946946f88ba0cc0351083d24ab0db1287549042bccc457488276817d4cc5b6e3`.
+  The finalizer verifies 748 existing component artifacts, exact unique JUnit
+  coverage, complete NPZ blocks, isolated routing, readonly @1 sources and all
+  bounded resource receipts; no scientific job was repeated for export.
+  Chief receives the handoff for its separate review/shared PROGRESS update.
+  CPU7 is released. The phase continuation remains prepared and held; no new
+  regression, acceptance job or Root job query is launched after this boundary.
+
+## Calcium/fuel INIT-to-SIM continuation launch, 2026-10-29
+
+- Chief relayed the user's explicit continuation instruction after receiving
+  the water/repair handoff. It authorized the prepared six-group fuel split,
+  retaining the 26 finalized calcium checks; water/repair scheduled profiles
+  remain a separate feature for a later turn. No shared file changes.
+- Preflight verified all nine original owned scientific source hashes and
+  164 readonly dependencies, plus the qualified base manifest/receipt. Ruff
+  passed for the continuation driver; equations and tolerances are unchanged.
+- Launched detached at 10:53:36 UTC, supervisor PID 1478525:
+  [launch receipt](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05-launch/launch.json).
+  Output is `/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05`;
+  durable stdout/stderr and supervisor completion/failure records live beside
+  the launch receipt. The scientific runner preserves inputs, individual guard
+  logs, finalized JUnits, complete all-observation state/reference NPZ and
+  result/failure artifacts. Original failed phase04 evidence stays frozen.
+- Expected coverage is 62 unique checks: 26 retained finalized calcium passes
+  plus 36 unfinished checks, including six smaller fuel-contract processes,
+  both INIT trajectories, four SIM/closure trajectories, dependency manifest
+  and two JAX eager checks. Unfinalized old fuel markers are not counted. A
+  separate bounded phase captures the original coarse-step accuracy failure;
+  it is not promoted to a passing scientific comparison.
+- CPU7, one thread, <=1 GiB guarded child-tree RSS, >=8 GiB host reserve,
+  480 s per bounded phase, no GPU or persistent compilation cache. Estimated
+  35-60 minutes (11:28-11:53 UTC). Launch receipt sent directly to Chief.
+  Return control without automatic polling, follow-up audits or other-job
+  queries; the user can request the next status check.

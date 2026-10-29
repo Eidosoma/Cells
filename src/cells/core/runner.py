@@ -71,6 +71,8 @@ def validate_checkpoint(spec: SimulationSpec, checkpoint: Checkpoint, times=None
     ):
         raise ConfigError("Checkpoint state/layout types do not match the declared model")
     initial = initialise(spec)
+    if checkpoint.time < initial.time:
+        raise ConfigError("Checkpoint precedes this model's initial epoch")
     for name, values, target in zip(
         model.STATE_TYPE._fields, checkpoint.state, initial.state, strict=True
     ):
@@ -85,10 +87,10 @@ def validate_checkpoint(spec: SimulationSpec, checkpoint: Checkpoint, times=None
     model.check_values(model.STATE_TYPE(*(np.asarray(v) for v in checkpoint.state)), spec)
     if hasattr(model, "check_checkpoint"):
         model.check_checkpoint(spec, checkpoint)
-    if checkpoint.step_index == 0 and any(
+    if checkpoint.step_index == initial.step_index and any(
         not np.array_equal(a, b) for a, b in zip(checkpoint.state, initial.state, strict=True)
     ):
-        raise ConfigError("Time-zero checkpoint does not match the declared initial state")
+        raise ConfigError("Initial checkpoint does not match the declared initial state")
 
 
 def branch_checkpoint(
@@ -184,6 +186,46 @@ def _discrete_rollout(state, steps, controls, parameters, active, checked_step):
 _compiled_discrete_rollout = jax.jit(_discrete_rollout, static_argnums=(5,))
 
 
+def _window_rollout(state, steps, controls, parameters, active, enabled, rhs, domain, checked_step):
+    """Fixed execution shape; disabled slots never call a model or advance state."""
+
+    def advance(carry, inputs):
+        current, previous_ok = carry
+        dt, control, real_step = inputs
+
+        def evaluate(value):
+            if checked_step is not None:
+                return checked_step(value, dt, control, parameters, active)
+            if domain is not None:
+                return rk4_checked_step(rhs, domain, value, dt, control, parameters, active)
+            return rk4_step(rhs, value, dt, control, parameters, active), jnp.array(True)
+
+        updated, ok = jax.lax.cond(
+            real_step & previous_ok,
+            evaluate,
+            lambda value: (value, previous_ok),
+            current,
+        )
+        return (updated, ok), (updated, ok)
+
+    (final, _), (history, valid) = jax.lax.scan(
+        advance, (state, jnp.array(True)), (steps, controls, enabled)
+    )
+    return final, history, valid
+
+
+_compiled_window_rollout = jax.jit(_window_rollout, static_argnums=(6, 7, 8))
+
+
+@dataclass
+class _WindowExecution:
+    """One iterator owns one compiled shape and its complete fixed definition."""
+
+    spec: SimulationSpec
+    width: int
+    compiled: Any = None
+
+
 def _checked_eager_rollout(state, steps, controls, parameters, active, rhs, domain):
     records = []
     # disable_jit avoids compiling a fresh lax.cond closure for each eager stage.
@@ -255,7 +297,7 @@ def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult
     return _run_segment(spec, checkpoint, times, requested, started=started)
 
 
-def _run_segment(spec, checkpoint, times, requested, *, started=None):
+def _run_segment(spec, checkpoint, times, requested, *, started=None, window_execution=None):
     """Shared numerical/observer path; callers validate the grid and checkpoint.
 
     A segment only partitions accepted storage. It must never insert solver steps.
@@ -266,14 +308,53 @@ def _run_segment(spec, checkpoint, times, requested, *, started=None):
     device = execution_device(spec.execution.backend)
     state = jax.device_put(checkpoint.state, device)
     layout = jax.device_put(checkpoint.layout, device)
+    step_values = integration_steps(spec, times)
+    enabled = None
+    if window_execution is not None and len(times) > 1:
+        if (
+            window_execution.spec is not spec
+            or not spec.execution.jit
+            or type(window_execution.width) is not int
+            or window_execution.width < len(step_values)
+        ):
+            raise ConfigError("Prepared window execution differs from its definition or width")
+        padding = window_execution.width - len(step_values)
+        enabled = jax.device_put(np.arange(window_execution.width) < len(step_values), device)
+        step_values = np.pad(step_values, (0, padding))
+        controls = jax.tree.map(
+            lambda value: np.pad(value, ((0, padding), *((0, 0) for _ in value.shape[1:]))),
+            controls,
+        )
     steps, controls, parameters = jax.device_put(
-        (integration_steps(spec, times), controls, model.parameters(spec, layout)), device
+        (step_values, controls, model.parameters(spec, layout)), device
     )
     jax.block_until_ready((state, steps, controls, parameters))
     prepared = perf_counter()
     compile_seconds = 0.0
     if len(times) > 1:
-        if hasattr(model, "checked_step"):
+        if window_execution is not None:
+            args = (state, steps, controls, parameters, layout.active, enabled)
+            if window_execution.compiled is None:
+                window_execution.compiled = _compiled_window_rollout.lower(
+                    *args,
+                    getattr(model, "rhs", None),
+                    getattr(model, "domain_valid", None),
+                    getattr(model, "checked_step", None),
+                ).compile()
+                compile_seconds = perf_counter() - prepared
+            execute_started = perf_counter()
+            final_state, history, valid = window_execution.compiled(*args)
+            real_steps = len(times) - 1
+            history = jax.tree.map(lambda values: values[:real_steps], history)
+            failed = np.flatnonzero(~np.asarray(valid[:real_steps]))
+            if len(failed):
+                index = int(failed[0])
+                label = spec.execution.solver if hasattr(model, "checked_step") else "RK4"
+                raise NumericalError(
+                    f"{label} trial/endpoint domain failure on "
+                    f"[{times[index]}, {times[index + 1]}]; no invalid step accepted or repaired"
+                )
+        elif hasattr(model, "checked_step"):
             args = (state, steps, controls, parameters, layout.active)
             if spec.execution.jit:
                 compiled = _compiled_discrete_rollout.lower(*args, model.checked_step).compile()

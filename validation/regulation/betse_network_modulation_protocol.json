@@ -1,0 +1,49 @@
+{
+  "kind": "cells.betse_network_modulation_contract@1",
+  "law_id": "betse_network_modulation_source_v1_5_0@1",
+  "purpose": "Resolve exact native target overwrites, membrane/environment regulator locations, channel voltage/floor expressions and dispatch before composition",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/data/yaml/extra_configs/extra_config_template.yaml": "2dd1322fdab1dff7d7b9b1d90894d27e5f8357bf37b30050c2ae8c10e91492b7"
+    },
+    "executed_methods": ["read_modulators", "read_channels", "default_zones", "get_influencers", "run_loop_modulators", "run_loop_channels", "run_fast_loop_channels"],
+    "additional_bodies": ["Modulator.__init__", "Modulator.init_modulator", "Channel.__init__", "Channel.init_channel", "normal/fast simulator molecule/GRN dispatch if blocks"],
+    "hooks": "Probe channel core records init/run and supplies prescribed P. Electroflux/update_Co/conductivity hooks record DChan and produce no transport/current. No gate, flux, tissue or full simulator equivalence is claimed."
+  },
+  "frozen_dependencies": {"src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364"},
+  "supported_targets": ["GJ", "Na/K-ATPase", "TJ"],
+  "semantics": {
+    "generator": "read_modulators compiles expressions; no write_modulators exists in pinned source",
+    "factor": "max effect * alpha; signed finite values retained, no [0,1] clamp",
+    "GJ_NaK": "mem_concs or mapped env_concs; assign entire membrane factor, last writer wins",
+    "TJ": "env regulators sample own env; cell regulators become literal 1 including positive direct-inhibitor 1; assign selected global TJ sites/all or one ion row",
+    "init": "Modulator init resets *_block_o to ones, does not reset live GJ/NaK factors or allocate TJ_modulator",
+    "star_modulator": "Stripped and ignored because in_mem_tag=False",
+    "channel_star": "Km *= exp(sign*z*Vm*F/(R*p.T)), sign + for env and - for membrane; p.T differs from sim.T",
+    "activation": "Frozen native product of regular Hills plus sum of independent ! Hills, baseline1 when independent-only; signed direct & sum multiplies it",
+    "channel_activator_max": "Ignored by actual native activator loop",
+    "channel_inhibitor_max": "Streaming source sum-of-products from unparenthesized additions; NOT product of shifted Hills",
+    "channel_init": "INIT skips exactly init_active is False; SIM runs all configured channels",
+    "channel_targets": "Carried to core init, do not mask alpha; express selects all targets and scales channelMax after maxDm was already assigned",
+    "channel_diffusivity": "After assigning core.modulator and core.run: DChan = core.P * rel_perm * maxDm * moddy; preserve possible modulator dependence already inside core.P",
+    "order": "Native normal/fast paths run molecule channels then modulators then local network, followed by GRN channels/modulators/network; earlier pump/GJ/ECM consumers may use previous factors"
+  },
+  "units": {"samples_Km": "mM, native membrane samples distinct from cell averages", "voltage": "V", "temperature": "K, configured p.T", "R": "native8.314 J/(mol K), explicit override", "F": "native96485 C/mol, explicit override", "controls": "Native numeric multiplier convention; raw direct mM terms are not a dimensional derivation", "DChan": "m2/s in diffusion dispatch, despite max conductivity input label; no automatic unit conversion"},
+  "domain": {"samples": "Finite nonnegative; zero regulators allowed", "parameters": "Finite signed max effects/floors, positive Km/Hill powers/F/R/T, nonnegative maxDm", "layout": "Explicit nonempty membrane/environment/ion axes, global boolean TJ target mask, unique names per dictionary, neutral rule padding", "rejection": "Malformed lists/zones, unsupported target/ion/class, broken direct ordering and only-direct groups, incompatible shapes or nonfinite factors"},
+  "reference": "Independent stdlib 80-digit Decimal scalar source arithmetic and ordered target loops",
+  "tolerances": {"relative": 5e-12, "factor_atol": 3e-14, "diffusivity_atol_m2_s": 1e-30},
+  "resources": {"cpu_affinity": [7], "blas_threads": 1, "max_process_tree_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592, "max_command_seconds": 180, "gpu": false, "persistent_compilation_cache": false},
+  "scope_limits": ["No channel isoform construction or core dynamics in production component", "No physical transport/current, ATP, heat, energy or tissue-parity inference", "Caller owns phase/clock, prior controls, events, target masks, channel P, species amount inventories and checkpoint identity", "Native dispatch probes replace physical core/transport only with explicitly recorded test doubles"],
+  "automatic_followup": false
+}

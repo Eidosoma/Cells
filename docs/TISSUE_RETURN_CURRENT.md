@@ -2228,7 +2228,9 @@ laws. The compositions are `resolved_tissue@12` (19 fields),
 `resolved_calcium@11` (34 fields), and `resolved_calcium_energy@5` (38 fields).
 The latter two retain owned calcium/ER/IP3 and, for `@5`, shared finite ATP.
 All previous identities, including the 53-law water and repair compositions,
-retain their declared catalogs. Qualification status and evidence belong in
+retain their declared catalogs. Version-two joint water and water/repair
+compositions below add these three variants while preserving their 43- and
+48-field owner contracts. Qualification status and evidence belong in
 [Progress](../PROGRESS.md).
 
 Examples: [ionic tissue](../configs/resolved_hcn_extra_ionic.json),
@@ -2451,6 +2453,14 @@ the 38-field finite-calcium state plus cell/outside volume increments, water
 transfer and heat, and signed pool-volume work. The earlier model identities
 retain their definitions.
 
+`resolved_calcium_energy_water@2` uses the full 56-law catalog, with
+`resolved_tissue@12` as its inner ionic identity and the same physical
+configuration keys and 43 state fields. Its finite-fuel projection retains the
+exact HCN layout, so the three additional laws survive water, volume and fuel
+evaluation. The shared CLI, schedules, snapshots, independent-world planning
+and assembly interfaces accept this version. Qualification is tracked in
+[Progress](../PROGRESS.md); the version-one example above keeps its original scope.
+
 Each cell has one chemical cytosol and one finite fuel pool at the **same current
 volume**. At every numerical stage, Na/K, plasma-calcium and ER pumps read that
 pool's current concentrations; chemical reactions, channels, exchangers and
@@ -2505,6 +2515,13 @@ species-resolved lesion transfer and lesion heat: **48 complete state fields**.
 Each membrane patch has an explicit `prescribed_patch_injury_resealing@1`
 declaration and independent injury/resealing controls. Na/K permeability is
 multiplied by its current damage fraction; other lesion species are rejected.
+
+`resolved_calcium_energy_water_repair@2` adds the 56-law parent with the same
+48 fields and prescribed damage law. Water, injury and resealing retain separate
+control axes, complete snapshots and assembly ownership reports. The new
+versions have their own serialized model/layout identities. Cell removal is
+currently supported by the separately qualified version-one water-cut model;
+the new version-two water and repair models explicitly refuse that operation.
 
 Leak flux uses the current chemical cytosol and exterior concentrations and
 the shared membrane voltage. It updates the existing free-ion/chemical owners
@@ -2591,3 +2608,628 @@ remain distinct from short coupled trajectories. Current receipts and failures
 are recorded only in [Progress](../PROGRESS.md). Offline multi-GPU planning,
 compiled CPU evidence, native-source correspondence and experimental calibration
 are separate claims; this version does not establish whole-tissue BETSE parity.
+
+### Finite mitochondrial ion and voltage coupling
+
+[`resolved_calcium_energy_mitochondria@1`](../configs/resolved_calcium_energy_mitochondria.json)
+extends the configured-transport composition with an explicit mitochondrial
+compartment in each cell. Its **45 complete fields** retain the 56-law channel
+catalog, calcium/ER chemistry, finite fuel and configured plasma transport.
+The three added fields record mitochondrial amount increments, signed internal
+ion transfer and dissipated energy, each by species and cell.
+
+This is a continuous passive ion/voltage model. Its source correspondence is the
+[separate pinned BETSE component](../src/cells/processes/betse_mitochondria.py),
+which retains native copied initialization, cached voltage and ordered Euler
+updates. The coupled Cells law instead declares explicit disjoint initial
+inventories, SI constants and charge-consistent voltage at each RK stage.
+Matching instantaneous fluxes under matched inputs does not establish identity
+with the native discrete trajectory. The exact neutral-ion and zero-voltage
+limits are evaluated without a voltage perturbation.
+
+The initial mitochondrial inventory is supplied independently; construction
+does not copy it from the cytosol or silently withdraw it. The configured cell
+volume means cytosolic solvent volume excluding both ER and mitochondria.
+Volumes, areas and capacitances are fixed. Positive internal transfer adds to
+the mitochondrial owner and subtracts from the actual free cytosolic chemical
+owner. Whole-cell external transfer and plasma charge records stay unchanged.
+Calcium movement can therefore affect existing PMCA/ER fuel demand, but the
+mitochondrial route itself has no ATP reaction.
+
+With mitochondrial-minus-cytosolic voltage `V`, the initial fixed background is
+`Q_fixed = C*V0 - F*1e-15*sum(z*n0)`, accompanied by cytosolic countercharge
+`-C*V0`. During evolution, `V = V0 + F*1e-15*sum(z*delta_n)/C`; its current
+countercharge is equal and opposite. Initial fixed backgrounds and subsequent
+charge increments are checked separately to avoid cancelling large ionic
+charges when testing a small capacitor residual. The current supported voltage
+domain is `abs(V) <= 0.2 V`.
+
+For compatibility with the parent cytosol/ER owner checks, a temporary stage
+view subtracts mitochondrial increments from the parent's inventory coordinate
+and adds the same charge to its field offset. Their sum remains the actual
+whole-cell charge. This view is never saved as a checkpoint or used as an
+initial energy anchor; snapshots retain the authoritative state and static
+initial layout.
+
+Passive GHK flux uses the actual cytosolic and mitochondrial concentrations.
+For positive cytosol-to-mitochondrion transfer, its chemical potential change is
+`delta_mu = R*T*log(c_mito/c_cyto) + z*F*V` and heat production is
+`-1e-3*flux_fmol_s*delta_mu` in pJ/s. The balance includes mitochondrial chemical
+and capacitor energy once, alongside the parent's actual cytosolic energy.
+Positive inventories, nonnegative heat, material ledgers and charge ownership
+are checked at actual stages, including blocked routes. Conserved-pool step
+bounds include the initial mitochondrial inventory.
+
+The [assembly example](../configs/assembly_resolved_calcium_energy_mitochondria.json)
+retains channel-only modulation and reports organelle ownership, amounts,
+transfer, charge and heat separately. All 45 fields participate in ordinary and
+assembly checkpoints. [Independent reference checks](../validation/tissue/calcium_energy_mitochondria_reference.py)
+separate a complete 50-us coupled probe from a reduced charged-potassium
+relaxation at unchanged diffusivity over twelve time constants. The latter
+holds other routes off and does not establish whole-cell settling. These are
+synthetic calibration fixtures, not measured mitochondrial parameters.
+
+Current CPU receipts, preserved failures and offline placement checks are in
+[Progress](../PROGRESS.md). Respiration, electron transport, ATP synthesis,
+dynamic organelle volume, long coupled recovery, stochastic assembly histories,
+GPU execution and wetlab calibration remain outside this version's claim.
+
+### Cell removal and absolute-time continuation
+
+`resolved_tissue_excision@1` connects the conservative
+[cut/remap component](../agent-work/cells-worker-01/workfiles/BETSE_TISSUE_CUT_HANDOFF.md)
+to the twelve-field passive `resolved_tissue@1` solver. The public operation
+`cells.core.excision.excise(spec, checkpoint, removed_cell_ids)` removes
+named cells, their membranes and incident junctions, then rebuilds the field
+operators for the surviving tissue. It supports finite extracellular owners
+and maintained baths under the existing field-solvability rules.
+
+Surviving amounts, net charge, fixed background, volumes, membranes and
+extracellular faces are retained. Removed material, cell volume, fixed/net
+charge and capacitor energy have explicit records. Material is excised from
+the system; it is not released into extracellular space. Junctions in this
+model are abstract cell-to-cell edges without an explicit pair of contact
+faces, so removing them does not create a physical wound surface.
+
+After a cut, the actual surviving amounts and charges become the new reference
+state. New local transfer, work and heat ledgers start at zero. The complete
+original definition, all twelve state arrays, full static layout and exact
+checkpoint clock remain in the source archive, including padding and every
+previous cut. Previous transfers are preserved as history, not counted again
+as current material. Empty removal is an unchanged checkpoint; removing all
+cells produces a terminal archive without invoking a zero-cell field solver.
+An incompatible post-cut field is rejected without altering the source state.
+
+The new model starts at the **absolute cut time**, retaining the original
+nominal grid and event boundaries. Controls are evaluated on their
+right-continuous side before removal. Even a future event targeting only a
+removed membrane remains as a no-op clock boundary. Ordinary runs, scalar
+windows and independent-world batch windows all start at this declared epoch;
+checkpoint step indices remain global. Up to sixteen successive cuts can
+retain nested provenance. The serialized definition rejects changed physical
+survivors, rewritten control history, missing original event clocks, a changed
+nominal timestep or an incomplete source checkpoint.
+
+The event report records the before/after stored energies, removed chemical
+and capacitor energies, electrode-charge impulse and held-potential electrical
+work. The retained capacitor-energy change uses a stable difference of
+squares. The remaining energy jump is a diagnostic in the declared potential
+reference. It is **not** assigned to a fitted cutting-work term or claimed to
+close a mechanical energy law. Ordinary passive material, charge and energy
+checks apply separately to each continuous segment.
+
+Use the CLI with a complete passive snapshot:
+
+```bash
+python -m cells excise /mnt/workspaces/Cells/my-run/checkpoint_final \
+  --remove cell_1 --output /mnt/workspaces/Cells/my-cut
+python -m cells resume /mnt/workspaces/Cells/my-cut/after \
+  --output /mnt/workspaces/Cells/my-cut-continuation
+```
+
+Repeat `--remove` for multiple cell IDs. The non-overwriting cut archive contains
+complete `before/` and, when runnable, `after/` snapshots, `transition.json` and
+a checksummed manifest. `load_excision(...)` verifies the inventory and hashes,
+recomputes the remap from the saved source and checks the saved continuation.
+A terminal cut has no `after/` snapshot.
+
+The [three-cell source example](../configs/resolved_tissue_excision_source.json)
+declares a 2.5-ms horizon. Save a checkpoint at 1 ms with `--checkpoint-at 0.001`
+to reproduce the qualified nonterminal cut; the run manifest names its
+snapshot path. Windowed execution with 4096 steps bounds the conservative
+working estimate to about 580 MiB. The scalar example also permits a full
+trace; that larger declared storage estimate is distinct from measured runtime
+memory. Current independent-world cut cohorts require matching post-cut axes
+and the same cut epoch. Offline placement is available for 1/4/16 GPUs; GPU
+execution and utilization are not established by that plan.
+
+The independent oracle rebuilds full-node charge/current equations and
+integrates every field using event-segmented DOP853. Its manufactured cases
+cover open and held boundaries, blocked transport, padding, no-op/full removal,
+single survivors, sequential cuts and rejected closed/disconnected layouts.
+The three-cell fixture's initial fast electrical mode is about 3 microseconds;
+the general 100-microsecond passive timestep ceiling is not an accuracy or
+stability guarantee for this geometry. Production qualification uses finer
+RK4 steps, with unchanged physical rates, event times and the 2.5-ms horizon.
+See [Progress](../PROGRESS.md) for results, exact inputs and retained failures.
+These are synthetic numerical comparisons, not independent biological cases.
+
+The original passive API remains available. The family dispatcher above also
+accepts the active channel/pump, calcium/ER, finite-fuel, configured-transport and
+mitochondrial and compliant-water models described below. Regulation and assembly
+still need explicit remapping of their extra owners and clocks. Lysis, healing, growth,
+physical contact evolution, mechanical
+cutting work, full native BETSE cut trajectories and GPU execution remain
+separate work.
+
+### Cell removal with channels and maintained-fuel pumps
+
+`resolved_tissue_active_excision@1` applies the same physical-removal rules to
+the 56-law `resolved_tissue@12` family. The generic Python operation and
+`cells excise` command accept a complete snapshot from each supported family and write
+an explicit family identity in the cut manifest. Other physiological families
+are rejected until their additional state owners have a cut adapter.
+
+Surviving channels retain their actual gate values by population and membrane
+owner. Surviving junctions retain their intrinsic gate values by edge ID. This
+includes zero-, one- and two-state channels and the parent's declared packed
+HCN convention. Gates are not reinitialized from the new voltage. The new epoch
+uses the original catalog layout class, which selects the channel equations in
+the compiled kernel. Removed populations and pumps are listed explicitly;
+surviving pump parameters and maintained chemical reservoirs remain unchanged.
+
+All **19 source state fields**, including gates, transport histories, pump
+cycles, heat and metabolic work, remain in the complete source checkpoint.
+The two gate fields carry forward; the other **17 local ledger fields** start
+at zero against the surviving physical amounts and charges. Kept and removed
+histories use their own cell, membrane, channel, edge, face and extracellular
+axes. Pump chemical support in this family is maintained externally; it is
+not a finite cellular ATP inventory.
+
+The field calculation at removal uses both scheduled availability and actual
+intrinsic junction gates. Membrane, junction, channel and pump controls retain
+their original absolute event boundaries, including events owned only by
+removed structures. No-op, terminal and sequential cuts preserve the same
+archive rules as passive removal. Source validation rejects changed gates,
+pump parameters, owners, past controls, layouts and incomplete histories.
+
+The [active source example](../configs/resolved_active_excision_source.json)
+uses the qualified 39.0625-ns timestep. Save a checkpoint at 50 us with
+`--checkpoint-at 0.00005`, then use the same `cells excise` and `cells resume`
+commands above. The horizon is 150 us; 512-step windows provide bounded
+recording. Saved source/after-cut examples and exact validation inputs are
+linked from [Progress](../PROGRESS.md).
+
+The independent comparison exercises a 50-us active prefix and continuation
+through 150 us, including evolving sodium activation/inactivation and junction
+gates. Separate stage/ownership panels exercise all 56 laws. Timestep refinement,
+compiled scalar and bounded-world execution, complete checkpoint restoration
+and offline GPU placement have separate evidence in [Progress](../PROGRESS.md).
+These manufactured histories test transient consistency and gate memory;
+they do not establish slow-gate equilibrium, tissue healing, measured recovery
+or full native BETSE tissue correspondence. Cut-energy reports retain the
+chemical, capacitor and held-electrode diagnostic scope; no gate free-energy
+or mechanical cutting-work law is supplied.
+
+### Cell removal with owned calcium and ER stores
+
+`resolved_calcium_excision@1` extends removal to the 34-field
+`resolved_calcium@11` family. The same Python operation, CLI and checksummed
+before/after archive apply. Current qualification evidence and limitations are
+linked from [Progress](../PROGRESS.md).
+
+The authoritative material inventory is the full chemical store in each cell:
+free ions, bound complexes, buffers and IP3 in both cytosol and ER. Surviving
+stores keep their actual amounts, compartment volumes, reaction parameters
+and ER voltage. Removed stores and their chemical and capacitor energies are
+recorded explicitly. Moiety totals are projections of those stores; free-ion
+concentrations are readouts. Neither is added as a second material inventory.
+
+The ionic solver's concentration anchor becomes the actual free cytosol after
+removal. Its plasma-charge anchor retains the whole-cell charge determined by
+external transfers. Binding and ER exchange can change free-ion charge without
+changing whole-cell charge, so the effective free-ion background is re-expressed
+at this boundary. Physical chemical fixed backgrounds are preserved within an
+explicit floating-point representation bound; ordinary incremental charge,
+ownership and energy tolerances are unchanged.
+
+Three intrinsic gate fields survive exactly: shared channel gates, junction
+gates and dedicated calcium-channel gates. The other 31 local state fields
+restart at zero against the new physical reference. All 34 original fields,
+including every ER, reaction, transfer, heat and work history, remain in the
+complete source checkpoint. Histories are remapped using their declared cell,
+membrane, channel, junction, extracellular and face owners.
+
+All seven control families retain their absolute clocks: membrane, junction,
+shared channel, Na/K pump, store, plasma calcium transport and dedicated calcium
+channel controls. Removed-owner events remain clock boundaries. No-op,
+terminal and sequential cuts use the same provenance rules as earlier families.
+
+This parent model has finite extracellular owners. Removing a charged cell can
+make the retained closed field unsolvable; such a cut is rejected. The adapter
+does not neutralize survivors, invent a bath or release removed stores into the
+environment. The manufactured qualification fixture removes a neutral cell
+whose external transport is explicitly blocked while its internal ER chemistry
+and gates remain active. Surviving cells continue their active transport.
+
+The comparison covers a 50-us prefix and continuation through 150 us, with
+separate full-catalog ownership/stage panels and timestep refinement. This
+tests transient chemical ownership and gate memory, not slow relaxation or
+biological repair. Na/K, PMCA and ER pump support remains externally maintained.
+The finite-ATP, configured-transport and mitochondrial adapters are described
+below, followed by compliant water and regulated finite fuel. Assembly still
+needs its own cut adapter.
+The event energy jump remains a diagnostic; mechanical cutting work, physical
+wound surfaces, lysis, healing, full native tissue parity and GPU execution
+are separate qualifications.
+
+The [calcium cut source example](../configs/resolved_calcium_excision_source.json)
+uses 39.0625-ns steps. Save the 50-us checkpoint with `--checkpoint-at 0.00005`,
+then use the same `cells excise` / `cells resume` commands above. Scalar windows
+of 512 steps and two-world windows of 256 steps keep their declared array
+budgets bounded. The qualified prefix, scalar continuation and windowed restart
+use separate processes with one frozen source tree and checksummed artifacts.
+
+### Cell removal with finite ATP and regeneration
+
+`resolved_calcium_energy_excision@1` extends the same operation to the 38-field
+`resolved_calcium_energy@5` family. It preserves surviving cytosol/ER chemistry,
+intrinsic gates and actual ATP/ADP/Pi amounts. Each fuel pool keeps its cell owner
+and standard chemical energy; regeneration ports survive only with their pool.
+The CLI and checksummed before/after archive use the same interface as above.
+Qualification results and pending checks are recorded in [Progress](../PROGRESS.md).
+
+These fuel species are neutral transformed pools, separate from the ionic charge
+inventory. Adenylate and phosphorus totals are conserved projections of the fuel
+amounts, not additional stores. Na/K, PMCA and ER pump work transfers energy
+internally between the finite pool and transport processes. Regeneration supply
+is external work. The cut report lists removed fuel, its conserved moieties,
+free energy, pool identities and regeneration-port identities without counting
+pump work a second time as external support.
+
+All **38 source fields** and the complete layout remain archived. The three gate
+fields survive; 35 local ledger fields restart against the actual surviving
+chemical and fuel inventories. Regeneration adds an eighth absolute control
+clock to the seven families above. Removed-port events remain clock boundaries,
+and rewriting prior fuel amounts, pump parameters, owners or controls is rejected.
+No-op, terminal and sequential cuts retain the same provenance rules.
+
+There is an inherited constructor restriction: a surviving PMCA or ER pump can
+only be re-anchored when its live ATP, ADP and Pi concentrations are within
+**[1e-9, 1e3] mM**. A valid evolved source may lie outside that interval. Such a
+cut is explicitly refused without clipping fuel or changing the source; no-op
+and terminal archives remain available. Na/K-only owners do not acquire this
+PMCA/ER restriction. Closed-field solvability requirements also remain in force.
+
+The manufactured comparison uses actual pump rates and finite-pool feedback over
+a 50-us prefix, neutral removal and continuation through 150 us, with timestep
+refinement and separate full-catalog owner panels. These transients test material,
+energy, clock and restart consistency; they do not establish physiological fuel
+exhaustion or recovery. The cut-energy jump remains a diagnostic. Mechanical
+cutting work, combined water/organelle/regulation/assembly cuts, full native tissue
+correspondence and GPU execution require separate qualification.
+
+### Cell removal with configured membrane transport
+
+`resolved_calcium_energy_transport_excision@1` applies conservative removal to
+`resolved_calcium_energy_transport@1`, including its reversible, species-preserving
+configured transporters. A route survives exactly when its membrane survives.
+Its kinetic configuration, density, regulator definitions and declared maintained
+drive remain unchanged. The rebuilt layout resolves the surviving membrane IDs;
+it does not retain stale numerical indices. Qualification status belongs in
+[Progress](../PROGRESS.md).
+
+The full **42-field** source checkpoint is archived. The three gate fields survive
+and 39 local fields restart against the actual surviving chemical/fuel inventories.
+The four configured-route histories—cycle extent, transferred ions, dissipated
+energy and supplied work—are archived by route owner. These are histories of
+transfers already included in the physical stores, not additional material or
+energy inventories. Configured transport's declared maintained work stays external;
+finite-ATP pump work remains internal to the cellular pool/transport composition.
+
+Transporter schedules add a ninth absolute control family. Removed-route events
+remain clock boundaries, while changed prior schedules, route parameters, owners,
+missing histories and nonzero padded entries are rejected. The Python operation,
+CLI, checksummed cut archive, scalar/window execution and ensemble registration
+use the same contracts as the preceding cut families.
+
+The comparison includes a manufactured electrically neutral KCl route on a
+removed cell, so archived work and transferred material can be nonzero without
+neutralizing the tissue artificially. The default panel blocks the removed cell's
+external transport. Continuous segments retain separate conservation and numerical
+checks. The inherited PMCA/ER fuel-anchor range and closed-field solvability limits
+still apply. This adapter does not add ATP-driven or species-converting configured
+routes, assembly remapping, physical wound surfaces or healing. The separate
+mitochondrial and water adapters below retain their additional owners.
+
+### Cell removal with mitochondrial owners
+
+`resolved_calcium_energy_mitochondria_excision@1` extends removal to the complete
+45-field calcium/ER/fuel/configured-transport/mitochondrial composition. Surviving
+organelles retain their actual ion inventories, voltage, fixed charge, geometry
+and diffusivity. All 45 source fields remain archived; three gate fields survive
+and 42 local fields restart at the cut's absolute time. Mitochondrial controls add
+a tenth control family, including retained clock boundaries from removed owners.
+Current qualification and evidence are recorded in [Progress](../PROGRESS.md).
+
+Internal ion movement requires paired charge accounting at a restart. If
+`delta_Qm = F*1e-15*sum(z*delta_nm)`, the new chemical reference coordinate shifts
+by `+delta_Qm` in cytosol and the mitochondrial initial countercharge shifts by
+`-delta_Qm`. Their sum is the physical chemical fixed background and must remain
+unchanged within the explicitly reported representation bound. The organelle's
+own fixed background, `Cm*Vm - F*1e-15*sum(z*nm)`, is also preserved. Its charge
+`Cm*Vm` and matching cytosolic countercharge are internal; neither becomes an
+additional whole-cell plasma charge. Ordinary segment conservation and domain
+tolerances remain unchanged.
+
+Removed mitochondrial inventories, capacitor/chemical energies and all three
+organelle histories are retained in the cut report and complete source archive.
+The internal transfer history does not count as additional material. Actual
+survivor concentrations and capacitor voltages become the next epoch's anchors;
+missing histories, changed owners/parameters and discarded control clocks reject.
+The inherited PMCA/ER fuel-anchor range and retained-field solvability limits
+still apply. This passive organelle law adds no respiration or ATP synthesis;
+combined organelle/regulation/assembly cut compositions, mechanical cutting work, healing and full
+native tissue correspondence remain separate work. Water uses the distinct
+43-field composition below; water and mitochondrial owners are not combined here.
+
+### Cell removal with compliant water and finite fuel
+
+`resolved_calcium_energy_water_excision@1` connects removal to the existing
+43-field `resolved_calcium_energy_water@1` parent and its 53-law channel catalog.
+It archives all source fields, preserves three gate fields and rebases 40 local
+fields. Nine control families retain absolute event times, including removed
+water-port clocks. Qualification and limitations are tracked in [Progress](../PROGRESS.md).
+
+Surviving cytosol and finite exterior compartments keep their actual current
+volumes. Those volumes become the next epoch's initial anchors, alongside the
+actual ion, chemical and fuel inventories. This preserves concentrations at the
+cut. ER volume remains fixed. Each water compartment retains its original
+compliance reference volume, pressure offset, bulk modulus, volume bounds and
+impermeant amount; surviving interfaces retain their hydraulic permeability.
+Rebasing the compliance reference to the current volume would reset the pressure
+law and stored elastic energy, so that alteration is rejected.
+
+The report records removed cytosolic water and fixed ER volume separately, with
+additional neutral impermeant material, impermeant mixing energy and elastic
+energy. Chemical/fuel mixing energy is already evaluated at current volumes;
+adding the water evaluator's all-solute mixing energy would count it twice.
+Pool volume work remains an internal diagnostic ledger, not another stored-energy
+inventory. Complete water-transfer, heat and pool-volume-work histories stay in
+the source archive. Surviving PMCA/ER fuel anchors must satisfy their inherited
+concentration range at the actual current volume.
+ATP amount loss alone does not imply crossing the lower concentration bound:
+shrinking cytosol can increase concentration. The bound applies to each retained
+pool divided by its current owner's volume.
+
+The cut does not create wound contacts, release removed material, or supply
+mechanical cutting work. This uses Cells' compliant-volume extension; native
+BETSE volume-trajectory correspondence, combined water/mitochondrial cuts,
+combined water/regulation/assembly cuts and healing remain separate work.
+
+### Live network regulation of pumps, channels and junctions
+
+`resolved_calcium_energy_regulated@1` adds concentration-dependent Na/K pump
+availability to the 38-field finite-calcium/fuel parent. Version `@2` also
+regulates existing shared channels and gap junctions. Both use the normal
+configuration, model, checkpoint and ensemble interfaces; execution qualification
+is tracked separately in [Progress](../PROGRESS.md).
+
+Rules sample actual free cytosolic/exterior ions and the explicitly owned finite
+ATP/ADP/Pi pool. Junction rules name the sampled endpoint. Native factor equations
+retain their declared order: the last rule for a target sets its factor, which
+multiplies scheduled availability once. Intrinsic gates and all physical
+inventories remain with the parent. Regulation adds no duplicate fuel demand.
+Every active raw factor must remain finite and between zero and one, including
+shadowed rules and rules whose consumer is scheduled off.
+
+This is common-stage coupling, with native SIM lag and ordering still distinct.
+Voltage-dependent charged regulation, exterior sampling for junction rules,
+and dedicated calcium-channel targets remain unsupported. The exact `@2` parent
+has the cut adapter below; combined water, mitochondrial and assembly regulation
+still need their own cut contracts.
+The [Na/K contract](../agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_HANDOFF.md)
+and [channel/junction contract](../agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_V2_HANDOFF.md)
+describe the source equations and explicit scope limits.
+
+### Cell removal with live network regulation
+
+`resolved_calcium_energy_regulated_excision@1` accepts exactly the regulated
+`@2` parent and its own previous cut epochs. Its 38-field archive preserves three
+gate fields and rebases the other 35 local fields at the original time. Eight
+control families keep their absolute clocks, including removed-owner event times.
+Qualification is tracked in [Progress](../PROGRESS.md).
+
+Rules disappear only with their physical pump, shared-channel or junction target.
+Survivors retain their order, complete configuration, sampled cell/exterior/fuel
+owners and factor values at the cut. Shadowed rules remain declared. Source and
+retained electrical fields use the actual regulated availability; projecting to
+an unregulated parent would change the field even with identical inventories.
+The binder then recomputes live factors from the retained physical state during
+continuation.
+
+Complete cut archives retain the source definition, all state/layout arrays and
+owned regulation capacity. No-op cuts preserve the source checkpoint; terminal
+cuts retain a complete archive. Finite-fuel constructor limits and inherited
+charge/field solvability checks remain enforced. Regulation adds no ATP sink or
+energy inventory. Mechanical cutting work, wound healing and combinations with
+water, mitochondria or assembly remain separate work.
+
+### Static tissue-profile preparation
+
+The `tissue-profiles` commands prepare ordinary tissue definitions from a complete
+JSON recipe. Supported models include all `resolved_tissue@1` through `@12`,
+calcium/ER, finite fuel, configured transport, mitochondria, compliant water and
+regulation. The [example request](../configs/tissue_profiles_active.json)
+uses a manufactured three-cell geometry with overlapping regional profiles:
+
+```bash
+python -m cells tissue-profiles prepare configs/tissue_profiles_active.json --output /mnt/workspaces/Cells/profile-example
+python -m cells tissue-profiles validate /mnt/workspaces/Cells/profile-example
+python -m cells tissue-profiles replay /mnt/workspaces/Cells/profile-example/provenance.json --output /mnt/workspaces/Cells/profile-replayed
+```
+
+Each output directory must be new. `definition.json` is an ordinary Cells input;
+`provenance.json` retains the original definition, profiles, geometry and exact
+preparation identity. These commands prepare or verify inputs without advancing
+the simulation. Check the resulting definition's numerical/resource bounds with
+`python -m cells validate /mnt/workspaces/Cells/profile-example/definition.json`
+before choosing a run and recording policy.
+
+Requests declare schema version 1, kind `cells.tissue_profile_preparation_request@1`,
+the source `definition`, complete `geometry`, `default`, ordered `profiles`,
+six `ion_enabled` flags and the explicit `enabled`/`is_ecm` flags. Native ion order
+is Na/K/Cl/Ca/M/P; only physically supported, present Na/K/Cl/Ca ions may be enabled.
+Geometry names every owner and reciprocal contact, with thickness and coordinates
+in metres. Profiles specify diffusivity in m²/s; the bridge derives permeability
+as diffusivity divided by thickness. Native index selectors require their explicit
+layout identity. Image selectors contain decoded `grayscale_F` pixels.
+
+Unknown or duplicate fields, nonfinite JSON, ambiguous mappings and unsupported
+units refuse before publication. Replaying a complete artifact must reproduce its
+definition and provenance, including JSON value types. Selected transport
+coefficients may change; initial
+state, inventories, physical owners and all unselected properties stay exact.
+The [direct component contract](../agent-work/cells-worker-01/workfiles/TISSUE_PROFILE_PREPARATION_HANDOFF.md)
+defines the source correspondence. The
+[composition contract](../agent-work/cells-worker-01/workfiles/TISSUE_PROFILE_COMPOSITION_HANDOFF.md)
+and explicit `SCHEMAS` map in
+[the adapter](../src/cells/core/tissue_profile_composition_preparation.py) cover
+the intermediate `resolved_tissue@2` through `@11` models and 29 composed schemas.
+Versions `@1` and `@12` use the direct bridge, giving 41 supported model schemas.
+Their full initial physical state, organelle and
+fuel inventories, water volumes, event clocks and regulation configuration remain
+exact. The passive geometry/coefficient view used during preparation does not
+stand in for a composed model's electrical field or flux. The resulting ordinary
+definition still selects its original complete physical model.
+
+For an initial passive tissue prepared from recorded native geometry, the
+[geometry-to-profile workflow](TISSUE_GEOMETRY.md#apply-static-tissue-profiles)
+derives the selector layout from the bound physical owners and polygon centroids.
+Its separate `cells.initial_geometry_profile_request@1` recipe embeds the complete
+geometry artifact and retains both source recipes in the output. The ordinary
+41-model preparation above remains available when geometry is declared directly.
+
+Preparation of existing cut epochs, assembly and repair models is refused.
+The scheduled passive extension below adds membrane interventions. Pressure,
+ECM transport and dynamic interventions in composed models have separate
+integration requirements. Qualification and remaining limitations are recorded in
+[Progress](../PROGRESS.md).
+
+### Scheduled passive membrane profiles
+
+`resolved_membrane_profiles@1` applies timed Na/K/Cl/Ca membrane interventions to
+a statically prepared passive `resolved_tissue@1` tissue. Its complete definition
+retains the direct profile preparation or joined geometry/profile preparation,
+including owner IDs, ordered selectors, native diffusion defaults and explicit
+membrane thickness. The [portable example](../examples/scheduled_membrane_profiles/README.md)
+contains both an ordinary input and a replayable artifact. Ordinary validation,
+serialization, checkpoints and ensemble admission use the same public routes
+as other models.
+
+The native logistic pulse is evaluated at every RK4 stage. A stored phase clock
+advances with the physical state: INIT suppresses scheduled membrane effects,
+while a fresh SIM phase starts at zero and applies its declared events.
+Restart preserves this clock; changing phase or resetting it through an ordinary
+branch is refused. The [explicit INIT-to-SIM preparation](TISSUE_PHASES.md)
+carries evolved physical state and all original accounting history into a new
+SIM clock through `resolved_membrane_profile_epoch@1`. This is RK-stage evaluation
+of the supported native event
+law, rather than a claim of native solver-loop trajectory equivalence.
+
+Events preserve native family order, ordered assignment and duplicate-target
+behavior. Na/K and Cl/Ca retain their respective native ion-flag rules. Diffusion
+divided by the declared thickness gives the stage's actual permeability. All-time
+bounds and actual-stage checks reject negative or nonfinite permeability without
+clipping. SIM's nominal timestep must resolve the shortest transition with at
+least eight steps; bounded clock-roundoff allowance does not relax that nominal
+limit. All twelve parent material, charge and energy fields remain present, plus
+the phase clock. Closing a route retains its earlier transfer ledger.
+
+This model supports at most four membrane-event kinds. Pressure/ECM events,
+arbitrary callbacks, moving geometry, cuts and combinations with active channels,
+water or fuel are outside this version. Independent stage comparisons, short
+trajectory refinement and public checkpoint checks have separate scopes from
+compiled trajectory qualification; see [Progress](../PROGRESS.md) and the
+[component contract](../agent-work/cells-worker-01/workfiles/SURFACE_PROFILE_INTERVENTIONS_HANDOFF.md).
+
+### Scheduled active membrane profiles
+
+`resolved_active_membrane_profiles@1` applies the same supported native membrane
+pulse laws to a directly prepared `resolved_tissue@12` tissue, including its
+complete 56-law channel catalog, intrinsic channel and junction gates, and
+maintained-fuel pumps. The [portable example](../examples/scheduled_active_membrane_profiles/README.md)
+includes an ordinary definition and sealed replay artifact. Public loading,
+serialization, snapshots and ensemble admission preserve this distinct family.
+
+Only background membrane diffusion changes. Each RK stage converts its actual
+diffusion through explicit thickness and solves the full active physical field.
+Channel conductance, gates and pump kinetics retain their own controls and
+equations. All four control families retain their original clocks. INIT suppresses
+scheduled background effects while channels and pumps continue evolving; SIM
+applies the pulses. The nineteen parent state fields and one phase-clock field
+are preserved. Ordinary restart keeps the clock and complete history. The
+[explicit INIT-to-SIM workflow](TISSUE_PHASES.md) now has a distinct active
+adapter that carries all nineteen parent arrays into a fresh SIM clock;
+the passive adapter continues to refuse active states.
+
+Earlier transfers remain part of conservation accounting after a route closes.
+The fixed-route parent evaluator receives a temporary view of the closed-route
+diagnostic integral solely for its route-validity check. Actual state is unchanged;
+physical amounts, electrical fields, channel/pump fluxes and every derivative
+use the actual instantaneous permeability. Conservation checks and returned
+observations retain the full transfer and work history. The qualification binds
+the parent's call graph and compares physical outputs through closure/reopening,
+including refusal of corrupted closed-route history.
+
+The direct static recipe must reproduce all physical owners, channel/gate and
+pump declarations. Native Na/K flags remain unguarded and Cl/Ca flags retain
+their source behavior; these flags concern the scheduled background component,
+not the existence of physical channel or pump owners. Ordered targets, signed
+event bounds, nonnegative permeability and phase timing follow the passive
+contract above. Other parent families, cuts, moving geometry and pressure/ECM
+events are refused.
+
+Independent complete-field/RHS comparisons, short trajectory refinement, eager
+CPU JAX parity and public checkpoint checks have distinct scopes. Compiled
+active-profile trajectories, GPU execution, finite-fuel/calcium-store coupling
+and native full-loop correspondence remain separate. See [Progress](../PROGRESS.md)
+and the [component contract](../agent-work/cells-worker-01/workfiles/SURFACE_ACTIVE_PROFILE_INTERVENTIONS_HANDOFF.md).
+
+### Scheduled membrane profiles with calcium stores and finite fuel
+
+Two distinct models extend regional background-permeability pulses to complete
+calcium and fuel owners:
+
+| Scheduled model | Physical parent |
+| --- | --- |
+| `resolved_calcium_membrane_profiles@1` | `resolved_calcium@6`: calcium/ER stores, buffers, plasma transport and shared calcium-channel gates |
+| `resolved_calcium_energy_membrane_profiles@1` | `resolved_calcium_energy@5`: the shared 56-law catalog with calcium/ER chemistry and finite ATP/ADP/phosphate pools |
+
+Their static profile artifacts must reproduce the complete physical parent.
+At each RK stage, the actual regional background permeability enters that
+parent's electrical field and transport equations. The model retains all
+chemical inventories, bound calcium, intrinsic gates, reaction extents, pump
+histories and energy accounts, together with one phase-clock field. The finite
+fuel model uses its existing pool ownership and pump demand; a membrane pulse
+does not provide an extra ATP supply.
+
+INIT suppresses the scheduled background contribution while the complete parent
+continues evolving. SIM applies the declared native membrane pulses. Original
+control families keep their schedules. Closing a background route preserves
+earlier transfer history for conservation and observations. The timestep must
+resolve the pulse transition and satisfy a conservative bound on the maximum
+scheduled background permeability and chemical loss.
+
+Public parsing, serialization, checkpoints, window planning and ensemble
+admission retain these model identities. Ordinary restart preserves the clock
+and complete state; it cannot perform INIT-to-SIM transfer. These families need
+an [explicit phase-transition preparation](TISSUE_PHASES.md) to carry an accepted
+INIT state into a new SIM clock. That preparation preserves every physical
+array and original accounting reference; the finite-fuel transition starts
+with the actual carried pools. Cut contracts remain separate. Water, mitochondria,
+live regulation, pressure/ECM events and moving geometry remain separate
+compositions. Implementation and qualification results, including independent
+reference checks and pending execution checks, are tracked in
+[Progress](../PROGRESS.md); interface admission alone is not compiled or GPU
+trajectory qualification.

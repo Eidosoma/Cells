@@ -1,0 +1,15 @@
+{
+  "kind": "cells.scheduled_membrane_profile_test_dispatch@1",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "ce6de2a07494bf77726a308a5d7df0c171289ae3c3ceba85112f7b82cb756c5d",
+      "patched_sha256": "e57772b8dea88fa1fa2b1faa7a927c81f143b5f53693460724085d93c702e355"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "f10bca2086b8d5d2389545d98eec923f1caaa8cfe256d7d7c28d320e0dc82c09",
+      "patched_sha256": "ed1bcf689063bc453ee830e42190f3d4b9a0203f719e0ecf2312fd481ef06b39"
+    }
+  },
+  "patch_sha256": "4129d563fa154cc0af1b92422bcc986827eebf0a3e7e9ffb89fa5408322e39b2",
+  "scope": "Unapplied test-only parse/serialization/registry changes; Chief owns actual shared/ensemble integration"
+}

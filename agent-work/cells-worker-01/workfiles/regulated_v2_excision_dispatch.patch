@@ -1,0 +1,125 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -875,6 +875,15 @@
+ 
+         if isinstance(m, SurfaceCalciumEnergyRegulatedModel):
+             return regulated_to_dict(self)
++        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
++            SurfaceCalciumEnergyRegulatedV2ExcisionModel,
++        )
++        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
++            to_dict as regulated_v2_excision_to_dict,
++        )
++
++        if isinstance(m, SurfaceCalciumEnergyRegulatedV2ExcisionModel):
++            return regulated_v2_excision_to_dict(self)
+         if isinstance(m, SurfaceCalciumEnergyRegulatedV2Model):
+             return regulated_v2_to_dict(self)
+         from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyModel, to_dict
+@@ -1225,6 +1234,13 @@
+         return parse(data)
+     if (
+         isinstance(data["model"], dict)
++        and data["model"].get("id") == "resolved_calcium_energy_regulated_excision@1"
++    ):
++        from cells.core.surface_calcium_energy_regulated_v2_excision_spec import parse
++
++        return parse(data)
++    if (
++        isinstance(data["model"], dict)
+         and data["model"].get("id") == "resolved_calcium_energy_regulated@2"
+     ):
+         from cells.core.surface_calcium_energy_regulated_v2_spec import parse
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -255,6 +255,14 @@
+         from cells.models import surface_calcium_energy_regulated
+ 
+         return surface_calcium_energy_regulated
++    from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
++        SurfaceCalciumEnergyRegulatedV2ExcisionModel,
++    )
++
++    if isinstance(spec, SurfaceCalciumEnergyRegulatedV2ExcisionModel):
++        from cells.models import surface_calcium_energy_regulated_v2_excision
++
++        return surface_calcium_energy_regulated_v2_excision
+     if isinstance(spec, SurfaceCalciumEnergyRegulatedV2Model):
+         from cells.models import surface_calcium_energy_regulated_v2
+ 
+--- a/src/cells/core/excision.py
++++ b/src/cells/core/excision.py
+@@ -9,6 +9,10 @@
+ from cells.core.surface_calcium_energy_mitochondria_spec import (
+     SurfaceCalciumEnergyMitochondriaModel,
+ )
++from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
++    SurfaceCalciumEnergyRegulatedV2ExcisionModel,
++)
++from cells.core.surface_calcium_energy_regulated_v2_spec import SurfaceCalciumEnergyRegulatedV2Model
+ from cells.core.surface_calcium_energy_spec import SurfaceCalciumEnergyHCNExtraModel
+ from cells.core.surface_calcium_energy_transport_excision_spec import (
+     SurfaceCalciumEnergyTransportExcisionModel,
+@@ -61,8 +65,17 @@
+     )
+ 
+ 
++def is_calcium_energy_regulated_v2(spec):
++    return type(spec.model) in (
++        SurfaceCalciumEnergyRegulatedV2Model,
++        SurfaceCalciumEnergyRegulatedV2ExcisionModel,
++    )
++
++
+ def excise(spec, checkpoint, removed_cell_ids):
+-    if is_calcium_energy_water(spec):
++    if is_calcium_energy_regulated_v2(spec):
++        from cells.core.calcium_energy_regulated_v2_tissue_excision import excise as operation
++    elif is_calcium_energy_water(spec):
+         from cells.core.calcium_energy_water_tissue_excision import excise as operation
+     elif is_calcium_energy_mitochondria(spec):
+         from cells.core.calcium_energy_mitochondria_tissue_excision import excise as operation
+--- a/src/cells/excision_io.py
++++ b/src/cells/excision_io.py
+@@ -12,6 +12,7 @@
+     is_calcium,
+     is_calcium_energy,
+     is_calcium_energy_mitochondria,
++    is_calcium_energy_regulated_v2,
+     is_calcium_energy_transport,
+     is_calcium_energy_water,
+ )
+@@ -22,12 +23,15 @@
+ ACTIVE_KIND = "cells.active_tissue_excision@1"
+ CALCIUM_KIND = "cells.calcium_tissue_excision@1"
+ CALCIUM_ENERGY_KIND = "cells.calcium_energy_tissue_excision@1"
++CALCIUM_ENERGY_REGULATED_V2_KIND = "cells.calcium_energy_regulated_v2_tissue_excision@1"
+ CALCIUM_ENERGY_TRANSPORT_KIND = "cells.calcium_energy_transport_tissue_excision@1"
+ CALCIUM_ENERGY_MITOCHONDRIA_KIND = "cells.calcium_energy_mitochondria_tissue_excision@1"
+ CALCIUM_ENERGY_WATER_KIND = "cells.calcium_energy_water_tissue_excision@1"
+ 
+ 
+ def _kind(spec):
++    if is_calcium_energy_regulated_v2(spec):
++        return CALCIUM_ENERGY_REGULATED_V2_KIND
+     if is_calcium_energy_water(spec):
+         return CALCIUM_ENERGY_WATER_KIND
+     if is_calcium_energy_mitochondria(spec):
+@@ -106,6 +110,7 @@
+             ACTIVE_KIND,
+             CALCIUM_KIND,
+             CALCIUM_ENERGY_KIND,
++            CALCIUM_ENERGY_REGULATED_V2_KIND,
+             CALCIUM_ENERGY_TRANSPORT_KIND,
+             CALCIUM_ENERGY_MITOCHONDRIA_KIND,
+             CALCIUM_ENERGY_WATER_KIND,
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -166,6 +166,7 @@
+         "resolved_calcium_energy@5",
+         "resolved_calcium_energy_regulated@1",
+         "resolved_calcium_energy_regulated@2",
++        "resolved_calcium_energy_regulated_excision@1",
+         "resolved_calcium_energy_transport@1",
+         "resolved_calcium_energy_mitochondria@1",
+         "resolved_repair@1",

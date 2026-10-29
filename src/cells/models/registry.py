@@ -141,6 +141,48 @@ from cells.models import (
 
 
 def get_model(spec):
+    from cells.core.surface_calcium_energy_profile_epoch_spec import (
+        SurfaceCalciumEnergyProfileEpochModel,
+    )
+    from cells.core.surface_calcium_profile_epoch_spec import SurfaceCalciumProfileEpochModel
+
+    if isinstance(spec, SurfaceCalciumEnergyProfileEpochModel):
+        from cells.models import surface_calcium_energy_profile_epoch
+
+        return surface_calcium_energy_profile_epoch
+    if isinstance(spec, SurfaceCalciumProfileEpochModel):
+        from cells.models import surface_calcium_profile_epoch
+
+        return surface_calcium_profile_epoch
+    from cells.core.surface_calcium_energy_profile_interventions_spec import (
+        SurfaceCalciumEnergyProfileInterventionModel,
+    )
+    from cells.core.surface_calcium_profile_interventions_spec import (
+        SurfaceCalciumProfileInterventionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyProfileInterventionModel):
+        from cells.models import surface_calcium_energy_profile_interventions
+
+        return surface_calcium_energy_profile_interventions
+    if isinstance(spec, SurfaceCalciumProfileInterventionModel):
+        from cells.models import surface_calcium_profile_interventions
+
+        return surface_calcium_profile_interventions
+    from cells.core.surface_active_profile_epoch_spec import SurfaceActiveProfileEpochModel
+
+    if isinstance(spec, SurfaceActiveProfileEpochModel):
+        from cells.models import surface_active_profile_epoch
+
+        return surface_active_profile_epoch
+    from cells.core.surface_active_profile_interventions_spec import (
+        SurfaceActiveProfileInterventionModel,
+    )
+
+    if isinstance(spec, SurfaceActiveProfileInterventionModel):
+        from cells.models import surface_active_profile_interventions
+
+        return surface_active_profile_interventions
     if isinstance(spec, SurfaceCotransportWaterModel):
         from cells.models import surface_cotransport_water
 
@@ -193,20 +235,95 @@ def get_model(spec):
         return surface_repair_morris_lecar
     if isinstance(spec, SurfaceRepairModel):
         return surface_repair
+    from cells.core.surface_calcium_energy_water_hcn_extra_spec import (
+        SurfaceCalciumEnergyWaterHCNExtraModel,
+    )
+    from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import (
+        SurfaceCalciumEnergyWaterRepairHCNExtraModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
+        from cells.models import surface_calcium_energy_water_repair_hcn_extra
+
+        return surface_calcium_energy_water_repair_hcn_extra
+    if isinstance(spec, SurfaceCalciumEnergyWaterHCNExtraModel):
+        from cells.models import surface_calcium_energy_water_hcn_extra
+
+        return surface_calcium_energy_water_hcn_extra
     if isinstance(spec, SurfaceCalciumEnergyWaterRepairModel):
         from cells.models import surface_calcium_energy_water_repair
 
         return surface_calcium_energy_water_repair
+    from cells.core.surface_calcium_energy_water_excision_spec import (
+        SurfaceCalciumEnergyWaterExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyWaterExcisionModel):
+        from cells.models import surface_calcium_energy_water_excision
+
+        return surface_calcium_energy_water_excision
     if isinstance(spec, SurfaceCalciumEnergyWaterModel):
         from cells.models import surface_calcium_energy_water
 
         return surface_calcium_energy_water
+    from cells.core.surface_calcium_energy_mitochondria_excision_spec import (
+        SurfaceCalciumEnergyMitochondriaExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyMitochondriaExcisionModel):
+        from cells.models import surface_calcium_energy_mitochondria_excision
+
+        return surface_calcium_energy_mitochondria_excision
+    from cells.core.surface_calcium_energy_mitochondria_spec import (
+        SurfaceCalciumEnergyMitochondriaModel,
+    )
     from cells.core.surface_calcium_energy_transport_spec import SurfaceCalciumEnergyTransportModel
+
+    if isinstance(spec, SurfaceCalciumEnergyMitochondriaModel):
+        from cells.models import surface_calcium_energy_mitochondria
+
+        return surface_calcium_energy_mitochondria
+
+    from cells.core.surface_calcium_energy_transport_excision_spec import (
+        SurfaceCalciumEnergyTransportExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyTransportExcisionModel):
+        from cells.models import surface_calcium_energy_transport_excision
+
+        return surface_calcium_energy_transport_excision
 
     if isinstance(spec, SurfaceCalciumEnergyTransportModel):
         from cells.models import surface_calcium_energy_transport
 
         return surface_calcium_energy_transport
+    from cells.core.surface_calcium_energy_excision_spec import SurfaceCalciumEnergyExcisionModel
+
+    if isinstance(spec, SurfaceCalciumEnergyExcisionModel):
+        from cells.models import surface_calcium_energy_excision
+
+        return surface_calcium_energy_excision
+    from cells.core.surface_calcium_energy_regulated_spec import SurfaceCalciumEnergyRegulatedModel
+    from cells.core.surface_calcium_energy_regulated_v2_spec import (
+        SurfaceCalciumEnergyRegulatedV2Model,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyRegulatedModel):
+        from cells.models import surface_calcium_energy_regulated
+
+        return surface_calcium_energy_regulated
+    from cells.core.surface_calcium_energy_regulated_v2_excision_spec import (
+        SurfaceCalciumEnergyRegulatedV2ExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyRegulatedV2ExcisionModel):
+        from cells.models import surface_calcium_energy_regulated_v2_excision
+
+        return surface_calcium_energy_regulated_v2_excision
+    if isinstance(spec, SurfaceCalciumEnergyRegulatedV2Model):
+        from cells.models import surface_calcium_energy_regulated_v2
+
+        return surface_calcium_energy_regulated_v2
     if isinstance(spec, SurfaceCalciumEnergyHCNExtraModel):
         from cells.models import surface_calcium_energy_hcn_extra
 
@@ -231,6 +348,12 @@ def get_model(spec):
         from cells.models import surface_calcium_water
 
         return surface_calcium_water
+    from cells.core.surface_calcium_excision_spec import SurfaceCalciumExcisionModel
+
+    if isinstance(spec, SurfaceCalciumExcisionModel):
+        from cells.models import surface_calcium_excision
+
+        return surface_calcium_excision
     if isinstance(spec, SurfaceCalciumHCNExtraModel):
         from cells.models import surface_calcium_hcn_extra
 
@@ -261,6 +384,12 @@ def get_model(spec):
         return surface_calcium_channels
     if isinstance(spec, SurfaceCalciumModel):
         return surface_calcium
+    from cells.core.surface_active_excision_spec import SurfaceActiveExcisionModel
+
+    if isinstance(spec, SurfaceActiveExcisionModel):
+        from cells.models import surface_active_excision
+
+        return surface_active_excision
     if isinstance(spec, SurfaceHCNExtraModel):
         from cells.models import surface_hcn_extra
 
@@ -291,6 +420,30 @@ def get_model(spec):
         return surface_channels
     if isinstance(spec, SurfaceKineticModel):
         return surface_kinetic
+    from cells.core.surface_excision_spec import SurfaceExcisionModel
+
+    if isinstance(spec, SurfaceExcisionModel):
+        from cells.models import surface_excision
+
+        return surface_excision
+    from cells.core.surface_profile_epoch_spec import SurfaceProfileEpochModel
+
+    if isinstance(spec, SurfaceProfileEpochModel):
+        from cells.models import surface_profile_epoch
+
+        return surface_profile_epoch
+    from cells.core.surface_profile_interventions_spec import SurfaceProfileInterventionModel
+
+    if isinstance(spec, SurfaceProfileInterventionModel):
+        from cells.models import surface_profile_interventions
+
+        return surface_profile_interventions
+    from cells.core.environment_barrier_interventions_spec import EnvironmentBarrierModel
+
+    if isinstance(spec, EnvironmentBarrierModel):
+        from cells.models import environment_barrier_interventions
+
+        return environment_barrier_interventions
     if isinstance(spec, SurfaceTissueModel):
         return surface_tissue
     if isinstance(spec, TissueCalciumModel):

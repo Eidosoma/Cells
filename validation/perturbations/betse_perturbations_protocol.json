@@ -1,0 +1,81 @@
+{
+  "kind": "cells.betse_perturbations_contract@1",
+  "law_id": "betse_perturbations_source_v1_5_0@1",
+  "purpose": "Separate native RNG/timing/owner semantics from explicitly stable Cells perturbations and reproducible component replay",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+      "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+    }
+  },
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "automatic_followup": false,
+  "source_scope": "Authenticated AST statements/guards and full update_Co/div_env/no_negs/single_cell/disabled MT methods; actual NumPy RNG delegated through recording proxy; phase labels and unrelated event hooks normalized",
+  "units": {
+    "static_K": "Dm m2/s times dimensionless uniform multiplier, positive-biased when level>0",
+    "protein": "Uniform membrane flux mol/(m2*s), concentration mol/m3, amount mol, dt seconds",
+    "microtubule": "Disabled source numeric scale mixes vector norm with kBT and length2 under sqrt, then adds it to radians; no physical Brownian claim"
+  },
+  "timing": {
+    "static": "Always consumes M uniforms, even level zero; Dm_base copied before noise, SIM fire_events subsequently resets Dm_cells=base+scheduled",
+    "protein": "Normal SIM and enabled P/dynamic==1 only; one M-vector per loop call including t=0, independent of sample times; no sqrt(dt) rescaling",
+    "fast": "No dynamic noise branch",
+    "boundary": "One choice at callback construction, constant dynamics; duplicate boundary occurrences carry weights",
+    "microtubule": "Import/config/init/update integration commented out; explicit isolated diagnostic only, draw only if dilation>0"
+  },
+  "rng_laws": {
+    "native": "NumPy legacy MT19937 complete 624-word state/position/has_gauss/cached_gaussian and NumPy version; local replay preserves source sequential call/owner order; no global RNG mutation",
+    "cells": "Separate Threefry2x32 seed/world64/tick64/site/SHA256-owner fold-in, open52 pairs and Box-Muller; order/subset isolation is a Cells convention, not native RNG equivalence"
+  },
+  "owners": "Explicit stable cell/membrane/environment axes and occurrence sequences; no geometry generation/remap",
+  "conservation": {
+    "matrix": "Full area-weighted cell/environment flux cancels; no concentration clipping in accepted component",
+    "fast": "Native last-duplicate scatter multiplied by summed areas can break conservation; source_fast arithmetic retained and conservative predicate rejects observed defect",
+    "bath": "Native mean-mixed bath matches effective volume M*vol_env, not vol_env; heterogeneous initial vector collapse unsupported",
+    "bulk": "Later source update_all_concs/no_negs can clip negative cells and leave negative/stale membrane values; preserved as unsupported"
+  },
+  "statistics": {
+    "native_uniform_and_normal_samples": 32768,
+    "native_boundary_samples": 8192,
+    "stable_samples": 8192,
+    "moment_bounds": "Six standard errors under analytic uniform/normal moments",
+    "protein": "Independent Decimal owner arithmetic; analytic area covariance and per-world amount budgets; fixed elapsed-time variance proportional to dt at fixed flux amplitude"
+  },
+  "tolerances": {
+    "relative": 5e-13,
+    "concentration_atol_mol_m3": 2e-14,
+    "permeability_atol_m2_s": 1e-30,
+    "flux_atol_mol_m2_s": 1e-23,
+    "micro_angle_atol_source": 2e-15,
+    "balance_relative": 3e-13
+  },
+  "replay": "Hash-validated active component buffers, controls, logical tick/clock, explicit RNG law/state; disabled MT/source draw packets replay separately with prescribed inputs; no shared simulator checkpoint migration",
+  "scope_limits": [
+    "No whole-tissue physiology, evolving geometry, cut or activation of disabled MT paths",
+    "No physical Brownian, thermodynamic noise or energy/ATP model claim",
+    "Native sequential stream and Cells identity stream are distinct laws",
+    "Callers own other RNG sites, source solver order, positivity/domain acceptance and downstream physical coupling"
+  ]
+}

@@ -1,0 +1,90 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -772,6 +772,14 @@
+ 
+     def to_dict(self) -> dict:
+         m, e, x = self.model, self.experiment, self.execution
++        from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import SurfaceCalciumEnergyWaterRepairHCNExtraModel
++        from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import to_dict as surface_calcium_energy_water_repair_hcn_extra_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
++            return surface_calcium_energy_water_repair_hcn_extra_dict(self)
++        from cells.core.surface_calcium_energy_water_hcn_extra_spec import SurfaceCalciumEnergyWaterHCNExtraModel
++        from cells.core.surface_calcium_energy_water_hcn_extra_spec import to_dict as surface_calcium_energy_water_hcn_extra_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterHCNExtraModel):
++            return surface_calcium_energy_water_hcn_extra_dict(self)
+         from cells.core.surface_calcium_profile_interventions_spec import SurfaceCalciumProfileInterventionModel
+         from cells.core.surface_calcium_profile_interventions_spec import to_dict as surface_calcium_profile_interventions_dict
+         if isinstance(m, SurfaceCalciumProfileInterventionModel):
+@@ -1186,6 +1194,12 @@
+     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
+     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
+         raise ConfigError("Only schema_version 1 is supported")
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_repair@2":
++        from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import parse
++        return parse(data)
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water@2":
++        from cells.core.surface_calcium_energy_water_hcn_extra_spec import parse
++        return parse(data)
+     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_membrane_profiles@1":
+         from cells.core.surface_calcium_profile_interventions_spec import parse
+         return parse(data)
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -141,6 +141,14 @@
+ 
+ 
+ def get_model(spec):
++    from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import SurfaceCalciumEnergyWaterRepairHCNExtraModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
++        from cells.models import surface_calcium_energy_water_repair_hcn_extra
++        return surface_calcium_energy_water_repair_hcn_extra
++    from cells.core.surface_calcium_energy_water_hcn_extra_spec import SurfaceCalciumEnergyWaterHCNExtraModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterHCNExtraModel):
++        from cells.models import surface_calcium_energy_water_hcn_extra
++        return surface_calcium_energy_water_hcn_extra
+     from cells.core.surface_calcium_profile_interventions_spec import SurfaceCalciumProfileInterventionModel
+     if isinstance(spec, SurfaceCalciumProfileInterventionModel):
+         from cells.models import surface_calcium_profile_interventions
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -147,6 +147,8 @@
+         "resolved_tissue@12",
+         "resolved_calcium_membrane_profiles@1",
+         "resolved_calcium_energy_membrane_profiles@1",
++        "resolved_calcium_energy_water_repair@2",
++        "resolved_calcium_energy_water@2",
+         "resolved_calcium@1",
+         "resolved_calcium@2",
+         "resolved_calcium@3",
+--- a/src/cells/core/schedule.py
++++ b/src/cells/core/schedule.py
+@@ -175,6 +175,29 @@
+ 
+ 
+ def control_values(spec, times):
++    from cells.core import (
++        surface_calcium_energy_water_repair_hcn_extra_spec as joint_hcn_repair,
++    )
++    from cells.core import surface_calcium_energy_water_hcn_extra_spec as joint_hcn_water
++    if isinstance(spec.model, joint_hcn_repair.SurfaceCalciumEnergyWaterRepairHCNExtraModel):
++        original = control_values(joint_hcn_repair.base_spec(spec), times)
++        changes = spec.experiment.changes
++        indexes = np.searchsorted([p.time for p in changes], times, side="right") - 1
++        extra = []
++        for key in ("injury", "resealing"):
++            values = np.asarray([getattr(p, key) for p in changes], dtype=float)[indexes]
++            padded = np.zeros((len(times), spec.execution.membrane_capacity))
++            padded[:, :len(spec.model.membranes)] = values
++            extra.append(padded)
++        return joint_hcn_repair.Control(*original, *extra)
++    if isinstance(spec.model, joint_hcn_water.SurfaceCalciumEnergyWaterHCNExtraModel):
++        original = control_values(joint_hcn_water.energy_spec(spec), times)
++        changes = spec.experiment.changes
++        indexes = np.searchsorted([p.time for p in changes], times, side="right") - 1
++        values = np.asarray([p.water for p in changes], dtype=float)[indexes]
++        padded = np.zeros((len(times), spec.execution.membrane_capacity))
++        padded[:, :len(spec.model.membranes)] = values
++        return joint_hcn_water.Control(*original, padded)
+     changes = spec.experiment.changes
+     if isinstance(spec.model, SurfaceCalciumEnergyWaterRepairModel):
+         original = control_values(joint_repair_prior(spec), times)

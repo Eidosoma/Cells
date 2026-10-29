@@ -51,8 +51,13 @@ not union unrelated event times or create a common biological clock. The last
 round may be shorter; finished worlds are masked without evaluating their RHS.
 
 Reuse the existing guarded compiled batch kernel. Prepare stacked parameters,
-active masks and device state once per run. Cache compiled executables for the
-full and tail widths inside that run. Numerical laws, RK4 stages and observer
+active masks and device state once per run. When the declared padded-work budget
+allows it, reuse one compiled window width and mask unused final-round slots
+before evaluating any step. Otherwise retain the shorter tail shape, preserving
+the existing work limit. The preflight includes the extra slots in its bound;
+working-array estimates already reserve the full window width. This avoids a
+second tail compilation when its padding fits, without raising a resource guard.
+Numerical laws, RK4 stages and observer
 formulas remain unchanged. Host observers still perform their ordinary checks;
 this is not permission to skip checks for a benchmark.
 
@@ -70,6 +75,11 @@ before model-capacity allocation. The per-world `max_steps` and batch
 `max_padded_steps` still bound the declared horizon, even on resume. Metadata
 schedules remain resident; compiler caches and process RSS are not hard-bounded
 by the working-array estimate. Do not accumulate a list of rounds or payloads.
+
+Restart preflight checks the complete declared clock in bounded chunks, including
+its historical steps and controls. A short or completed suffix does not shrink
+these validation chunks to one step. The chunk width still respects the storage
+budget, and checkpoint state, layout and clock checks remain mandatory.
 
 A cohort checkpoint is a map of complete states with **different valid local
 clocks**, including worlds already finished. Snapshot validity is independent of

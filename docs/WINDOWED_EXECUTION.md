@@ -46,6 +46,16 @@ bounded number of **existing accepted intervals**, not a new time discretization
 Its final complete state becomes the next window's initial state. No ledger,
 gate, reference quantity or event position is reset. Tail windows may be shorter.
 
+Compiled scalar execution prepares one fixed-width integration executable per
+iterator. Its width is the smaller of the requested window and the number of
+remaining real intervals. A shorter final window masks its unused slots before
+any model step, domain check or clock advance. Only real rows reach observations,
+diagnostics and checkpoints. This keeps a short tail from compiling another
+large integration executable; it adds no physical integration steps. Eager
+execution and the ordinary full-trace path retain their existing behavior.
+The working-array estimate already reserves that maximum window width. Compiler
+memory and total process RSS still need their separate guards.
+
 The grid is a lazy indexed union of nominal times and declared events, including
 the exact end time. It never materializes a horizon-length array. Checkpoints
 retain global accepted-step indices. Off-grid observations do not become steps,

@@ -1,0 +1,19 @@
+{
+  "base": "/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-07/workspace",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "7af247eddbe360c0613de7c49f6d74cfc85935aba5a8799d3992a3bf99bfae78",
+      "patched_sha256": "1cff7e44aa9cd6a5bf50002ad738ecf8c07ba1947d17ce37065276f55c98f6e7"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "d3fdfd69dfa2cb6e4abf5dffffde11ec59d8bd07a8d353bf070450aa7c0eee20",
+      "patched_sha256": "ced9a4f3c05694ac0e16f58f327d82d438eae1f142b0e5fe0b3ae3624c18910d"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "e0061d256a846db25c6dc4e241bc876abe90c5efba0f0b7a9612c2d1d7c57e67",
+      "patched_sha256": "5766f1aad6f01ce03eb753cc7058638a2d626f69ace859abc5aa42d30e1cef72"
+    }
+  },
+  "patch_sha256": "e2415c73ca4097ecc023439736925f244ef47d77cd95a7cfd24bc1e1d415da82",
+  "shared_files_written": false
+}

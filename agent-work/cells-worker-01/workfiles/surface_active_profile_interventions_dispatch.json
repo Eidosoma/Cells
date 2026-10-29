@@ -1,0 +1,19 @@
+{
+  "kind": "cells.active_profile_shared_dispatch@1",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "27cc404369cc081c38197f9e2e00e40b4ffceed87d5d2d27772c79fc2b3759f6",
+      "patched_sha256": "d116123168dc9734a55e323658c13690874dd95d004ea714f7958996806cb310"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "3a59cc6ac17196e35fe9d77d98818bd0084823f72394f99cd33c2b2dc928a1b9",
+      "patched_sha256": "c0b3ee61739d526ff097f9ed82954902de75d4b03ebfc7d2eb18ed1693a00f3d"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "5fed8de99875b6c36a6dfa12885d7f21857dc6634975cb4723cfb1328af72f37",
+      "patched_sha256": "b63514a618fbca99fcb16cdb64ab6e999cb59e115e439c8a27797f711882f183"
+    }
+  },
+  "patch_sha256": "7880eb3bfdcae9a20a6a8856f23eb9b95870eafe908c2f6b177bfc615d5adc03",
+  "scope": "Unapplied proposed shared routing; Root owns shared integration"
+}

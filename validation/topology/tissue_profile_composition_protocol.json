@@ -1,0 +1,712 @@
+{
+  "kind": "cells.resolved_composed_profile_preparation_contract@1",
+  "bridge_id": "resolved_composed_static_profiles@1",
+  "supported_schema_map": {
+    "resolved_tissue@2": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@3": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@4": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@5": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@6": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@7": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@8": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@9": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@10": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_tissue@11": {
+      "family": "ionic_channels",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_calcium@1": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@2"
+    },
+    "resolved_calcium@2": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@3"
+    },
+    "resolved_calcium@3": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@4"
+    },
+    "resolved_calcium@4": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@5"
+    },
+    "resolved_calcium@5": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@6"
+    },
+    "resolved_calcium@6": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@7"
+    },
+    "resolved_calcium@7": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@8"
+    },
+    "resolved_calcium@8": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@9"
+    },
+    "resolved_calcium@9": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@10"
+    },
+    "resolved_calcium@10": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@11"
+    },
+    "resolved_calcium@11": {
+      "family": "calcium_er",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_calcium_energy@1": {
+      "family": "calcium_finite_fuel",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@8"
+    },
+    "resolved_calcium_energy@2": {
+      "family": "calcium_finite_fuel",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@9"
+    },
+    "resolved_calcium_energy@3": {
+      "family": "calcium_finite_fuel",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@10"
+    },
+    "resolved_calcium_energy@4": {
+      "family": "calcium_finite_fuel",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@11"
+    },
+    "resolved_calcium_energy@5": {
+      "family": "calcium_finite_fuel",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_calcium_energy_transport@1": {
+      "family": "configured_transport",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_calcium_energy_mitochondria@1": {
+      "family": "mitochondria",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_calcium_water@1": {
+      "family": "calcium_water",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@11"
+    },
+    "resolved_calcium_energy_water@1": {
+      "family": "calcium_fuel_water",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@11"
+    },
+    "resolved_calcium_energy_regulated@1": {
+      "family": "regulation_v1",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_calcium_energy_regulated@2": {
+      "family": "regulation_v2",
+      "path": [
+        "ionic"
+      ],
+      "ionic_id": "resolved_tissue@12"
+    },
+    "resolved_water@1": {
+      "family": "compliant_water",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_water@2": {
+      "family": "compliant_water",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_water@3": {
+      "family": "compliant_water",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_energy@1": {
+      "family": "finite_fuel",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_energy@2": {
+      "family": "finite_fuel",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_energy_water@1": {
+      "family": "fuel_water",
+      "path": [],
+      "ionic_id": null
+    },
+    "resolved_energy_water@2": {
+      "family": "fuel_water",
+      "path": [],
+      "ionic_id": null
+    }
+  },
+  "readonly_source_sha256": {
+    "agent-work/cells-worker-01/workfiles/check_morris_lecar_channels.py": "608707d9b2d38814e3201a32eebecb8d8b5ca8704914654b100aca112c233699",
+    "agent-work/cells-worker-01/workfiles/check_tissue_profile_preparation.py": "0279ce283431b62ecfff6cf88f78e37146015aa9e74d8e9961fa5ed82be73cd7",
+    "agent-work/cells-worker-01/workfiles/check_water_schema.py": "248b23595bcb6f7dddc318c6ee97ba81f7e8ef1b8cdecbb15e0799941d103b6a",
+    "configs/resolved_hcn_extra_ionic.json": "65fa001673b7e37069bc8fa72276d946659406f0bde61974e333dd0e00866e7b",
+    "pyproject.toml": "6fcf3f444faa6c82d78b816b059decc3c1aea8b9c56c07f338e1e65a122406f0",
+    "src/cells/core/surface_kinetic_spec.py": "be80df36047ce3e41c36299f73d06c5632e7fe9220d7d73aabdf44a996cf4a40",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/core/tissue_profile_preparation.py": "f7ef93d0abe7fe7599c2ecb1cc8f12d9f507773a0ef23b9388bb73b00845044c",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/models/surface_kinetic.py": "edaf0040915e3f97bef778a938fd8b0835a860fcfca86b1fca230e78f64b630d",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "tests/unit/test_tissue_profile_preparation.py": "c67613eab96a6d5fd760df159a4f98b69ab5ad996dc2971fc16e844f2398538d",
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "validation/tissue/active_excision_fixtures.py": "eeb723aaad055213a3383562103c2aa82107862b37944494ceab23a88f84c42e",
+    "validation/tissue/surface_excision_fixtures.py": "a37c929162a350d5caca34e62a805c77fd8a9ba0d064346bfa377486fc74ff0a",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c",
+    "validation/topology/tissue_profile_preparation_fixtures.py": "bb4d693031d39bf6c1816729ae204c39fe95787870d9fc06401a068172bf8d9c",
+    "validation/topology/tissue_profile_preparation_native_units.py": "2c233d13b98a7f8e16750bfba0d0a80d1c370eae5ed5810faf7e32bf4d16b924",
+    "validation/topology/tissue_profile_preparation_protocol.json": "574fabfa2a4807b7a65d3ba2121ee10279780dc6761970cc73826cedce37a2cb",
+    "validation/topology/tissue_profile_preparation_reference.py": "44d719f7e48342cbacc9937eb1c7630f8f628080111106604c0f6c42cd1c828a",
+    "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "src/cells/core/active_tissue_excision.py": "6a6f16d5831187939a18ce6ea3c2345d5834dec0c9f094fa5e2640726a662aae",
+    "src/cells/core/batch.py": "b45ea082b334715f2c4c2ffd089662f385b898c405b8a4dc47d29d6b4c3d33af",
+    "src/cells/core/batch_windows.py": "62f1df48d0a9bdaab2e0425ce3b575236fb1e87b8080ee80f397b2eae128592c",
+    "src/cells/core/betse_junction_spec.py": "5c69106cbb2d0ac59aad5cde89188e6bbaa3c2885e1cbbaf5aed2e5ad3236670",
+    "src/cells/core/betse_spatial_spec.py": "74e88581b25117199e4749ec1eedc9d45e4f04e748f06f1d603eb1bb8f264e8d",
+    "src/cells/core/bioelectric_pair_spec.py": "bb0178850a0137e8b2c363f3c958208020bea1452b57bca768cf56483fa5f4aa",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/calcium_energy_mitochondria_tissue_excision.py": "cbe6ec512c8acfc300e9714698b2c117ef8d48e741ac411045aeb9ac35a0dd65",
+    "src/cells/core/calcium_energy_regulated_v2_tissue_excision.py": "8e7c51f2b57b11975be308abc951d9594d894b5f0a4d4d3f5611ba71bcc097ec",
+    "src/cells/core/calcium_energy_tissue_excision.py": "a4ca64f79599a492b3ada92136a1b14f4655bac2dd5335e31c06b72ef4ea73d3",
+    "src/cells/core/calcium_energy_transport_tissue_excision.py": "12aaea9398ff091f10e0a490453f3feaba28bea68e044fe66682f71052bbdfe9",
+    "src/cells/core/calcium_energy_water_tissue_excision.py": "f478af680d1f4746ccc1ae9405935e0442f9d3df14f16e167b886bc5147f166b",
+    "src/cells/core/calcium_tissue_excision.py": "7f25b36aac74d0ba09eebc3ddbc1397874381bfff0b0642dfa7f1ddb45c53308",
+    "src/cells/core/devices.py": "3ec3d787e0c554382ff2eea1612db667412b9ad529930fd69dbc68d8a9b65d9d",
+    "src/cells/core/er_spec.py": "00a01aa14183b870a6f835fb757a2093c81f319ce910897c44d839a858e2a8d1",
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/excision.py": "d33750ec511ee2b31c929d8855005685015249730fe93ed7bf86a6dc2dc4b142",
+    "src/cells/core/finite_extracellular_spec.py": "4bafdfeb3cdcc21ed0c6667aa2bc498ce574cd3f37f849f51395cd9a948860a5",
+    "src/cells/core/gated_calcium_spec.py": "ecf20ce4cddbc0fb7c66ec2e07c750c1d01f6d793afdde20b28ea925e8075dc6",
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/ip3_calcium_spec.py": "fa1138ebf53bc1dde5d47a404b0543b5031a2371176a0c3988af8b027be885ca",
+    "src/cells/core/junction_finite_spec.py": "babcdd93e898f7cf9cf39f2f529f5d0f0ab3318543da577ff39f4123f217b57e",
+    "src/cells/core/kinetic_finite_spec.py": "832f232c89be9b505cd29ace57bbe7f6eb9b6a59716904528f91a439bceb19c3",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/output_paths.py": "9ddd74769af3f36785c71387ea703fd971d115a2cb49e3138710a7e50f3ff8c1",
+    "src/cells/core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "src/cells/core/plasma_calcium_spec.py": "0272608b81e3bac94554fcb250641ff5be4fbcbe8b31bd61e51dd8727b42b04d",
+    "src/cells/core/reaction_spec.py": "e0d1e2961b7198b3e4f10acd46d0909b5d896b400ec6f7a36d6a5d9f5edecfc5",
+    "src/cells/core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "src/cells/core/runner.py": "1a2e0cd45a0ae55624fa1aa3f325c85b3d3bee0978b52f079f0667c4e1aa24c9",
+    "src/cells/core/schedule.py": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+    "src/cells/core/source_pair_spec.py": "505ba8b9fb19ee0f48f6b088f53388c46bf5efc029bcdaf0f7af3ec89c8dc238",
+    "src/cells/core/spatial_calcium_spec.py": "2a1ba23373e6effe7e4a64e0bfca26335356eee8a90d8e2a806f2d59a7fc4d21",
+    "src/cells/core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "src/cells/core/spatial_junction_spec.py": "ee429eb21876a7f01bda6a730822d9026418c875875622bfee688097848aeff8",
+    "src/cells/core/specs.py": "ce6de2a07494bf77726a308a5d7df0c171289ae3c3ceba85112f7b82cb756c5d",
+    "src/cells/core/state.py": "367d3bdcb4093203280a96697a9d7eaf25b11f8a3799c0e5582ce57fb0c12dd1",
+    "src/cells/core/surface_active_excision_spec.py": "f3c42a0c53231b1ee9d0c00a7197273387c26e305699206622480e64bb496339",
+    "src/cells/core/surface_calcium_energy_excision_spec.py": "030a0c4ce86db6be03706a59f3e975892f5b9c8e2630e1e41f9b883516794ec6",
+    "src/cells/core/surface_calcium_energy_mitochondria_excision_spec.py": "92bd11b15162205c74c52f7c8f15da5f78722136f0e9f1a8ce76279be60b5948",
+    "src/cells/core/surface_calcium_energy_mitochondria_spec.py": "2a70be93d6397831dd28aa69691ee478cb466e6bd006a1f92eacfec92f9ff30d",
+    "src/cells/core/surface_calcium_energy_regulated_spec.py": "42378ea33c8576b7b132fe8ea72a13d11b73b4594ff02910f90f17b16a501099",
+    "src/cells/core/surface_calcium_energy_regulated_v2_excision_spec.py": "a411175cf42365cbe95c275927b93bd85bcc3ceceb76e728ea0d7f41aeb15b6c",
+    "src/cells/core/surface_calcium_energy_regulated_v2_spec.py": "1d464e9317c0bd5d56b9cf7883f8a16a38fbf8468bf1da758865c5b28b0f3f03",
+    "src/cells/core/surface_calcium_energy_spec.py": "0f1f7ca0614af9c1f5c41c53221eb40aff18ac8135127b426b350d32bcabf113",
+    "src/cells/core/surface_calcium_energy_transport_excision_spec.py": "20f5fa625c7efc34305175b0bf70f7e4a6d4254d1982649b2544be6e48fe9cae",
+    "src/cells/core/surface_calcium_energy_transport_spec.py": "59bc35072ea35643f71692f6a761b51e3724f8cd512f7eed676cdda2cbf5913e",
+    "src/cells/core/surface_calcium_energy_water_excision_spec.py": "e44d1f15cc1dc202c3997390e77bea347aff34aced648819be8cf57369ec8811",
+    "src/cells/core/surface_calcium_energy_water_repair_spec.py": "beae719cc18240f1c19c48a2c46ac016c202e194125dcd06af8bec0bf3f3deb1",
+    "src/cells/core/surface_calcium_energy_water_spec.py": "4e562a8e6bce244e3885253f33fd28d001b48dd5b65f89d72a5f3718e3f3f31b",
+    "src/cells/core/surface_calcium_excision_spec.py": "ca92f4f79d96c097549daecea2cdb114ac0ef6d08b10b638861f6ea68763c9ce",
+    "src/cells/core/surface_calcium_spec.py": "7b87ffe4a530828d19dd9eb5f99152fab0302330a5ffa63fa808715f253507c4",
+    "src/cells/core/surface_calcium_water_spec.py": "a2d20e8a7fdce87569f6b64766fb5099366b7bf052498d9c96dddf6760447c42",
+    "src/cells/core/surface_cotransport_spec.py": "bc0e92d6c5cf1889a382e2b1e32e6be1ac838e8fe6c3b31455b5a28127a20ed4",
+    "src/cells/core/surface_cotransport_water_spec.py": "f25510ace6e9e52d9f3512aae70066ab130c5aa66e339464a5ea630b035bd36b",
+    "src/cells/core/surface_energy_spec.py": "7653c50d6b8d86d3ac68eccf23d8acb7b0df768a228dca6e581481b33307235b",
+    "src/cells/core/surface_energy_water_spec.py": "13dbaeecd090a58d6bd92ce5ee5be9768946dffd8ab4838c5fcad97e96c02dc6",
+    "src/cells/core/surface_excision_spec.py": "263e43ba6b1b2bb6a15bf8f795aceba65912e5001aa943073c4999c9d5d17d21",
+    "src/cells/core/surface_mobile_channel_spec.py": "91b3f38840bc732785c307c36702719d332da1a33b5df069eabf2b297b27eb12",
+    "src/cells/core/surface_mobile_pump_repair_spec.py": "3c2b7c9e6ba15293bc7cff67abe3c203a05522d7e615a4c8382f51953481d36d",
+    "src/cells/core/surface_mobile_pump_spec.py": "1657bd48141a0460b6899438aa9dc5ec12a82d81667121fd1880c22f1dd1b775",
+    "src/cells/core/surface_mobile_repair_spec.py": "3954d467c81aedad1c3b005da36d0c56573bc023307fe3191cfcbe803c296a32",
+    "src/cells/core/surface_redistribution_spec.py": "a34825e2eceff1792253c6ea04d6bd9f498de757b6947b9db5b838e9da520ceb",
+    "src/cells/core/surface_repair_spec.py": "d416d7bf65d1a9c57e69dfb05d68715f03cf17f5580d01945f8fe062d68a99f8",
+    "src/cells/core/surface_water_kinetic_spec.py": "13accbf1258cb52091b0d98c367d38784e57642fdf52d53e6ca81345793d2f6f",
+    "src/cells/core/surface_water_spec.py": "71cb9163a0eb11ad92d05bc3dd37286c5f2c5a053417f4121e12eead5baa9e53",
+    "src/cells/core/tissue_calcium_spec.py": "101f191b453eb4730f96cebeaa04fce8be12bca7d6bf02e2e78e369c928faa32",
+    "src/cells/core/tissue_excision.py": "50876c1cce3635ff5dacb2c0aa5b3bbe589eb26aa03ca7a6409d16c9101909a3",
+    "src/cells/core/tissue_spec.py": "b81c179947324da1e9e6f043b3391ee313446c03ac5055f552c658b71adc14b4",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/core/windows.py": "d5a6371ff8effea6160a87500ae92942a12f7c336c3aea805bd4bfb16400b238",
+    "src/cells/models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "src/cells/models/betse_junction.py": "edc982093a0a9c9ce39eb58b2d5b189d252ea70e271cd0fe0cc014e6e04d406b",
+    "src/cells/models/betse_spatial.py": "bfdb51c0515822d934f4b9d280f7c41c57895493a90bdcbe74cc6a9330669506",
+    "src/cells/models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "src/cells/models/bioelectric_pair.py": "1de84ec5bb84078dd1ea831ae7d2998d96532e0c859b4d7bbb4593d139845003",
+    "src/cells/models/compartment_reactions.py": "2187b9708c8bbc49384f0fa78eb5e9401ebc1c08adac069138e2ba086c907917",
+    "src/cells/models/emt_mirna.py": "234216ff8bc8340b91fac2f908576425385b8cbb7fa5619efe81c4eba59f168d",
+    "src/cells/models/er_calcium.py": "abdb591b4dfe564dfa444495642e8f60caf90edebe751854b1181ed6ef778408",
+    "src/cells/models/finite_extracellular.py": "bbcae877eb139ca4e7b09bca6d6092c65238914289e5697718306ba4c146966b",
+    "src/cells/models/gated_calcium.py": "1c596e2d1168b3bd16f32378a8b4c54e342bed423505986122c1145f1407b51d",
+    "src/cells/models/ip3_calcium.py": "4f1e46393b95f8aba39cb27d11247aca0e0b3cc8f109f321208df421b6ad2870",
+    "src/cells/models/junction_finite_extracellular.py": "1eb551dee42a9e35437acb607500a900ad07583e13f1c5b55ecfa79df771b1d7",
+    "src/cells/models/kinetic_finite_bounds.py": "fe7744191cc39deb355d384224e67eaf54e802b4b4e881c19d95a81abc0fcc46",
+    "src/cells/models/kinetic_finite_extracellular.py": "d604808d3dc90c4f9709b1d29023a7ac76186110311915f70043c0e31febd1e1",
+    "src/cells/models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "src/cells/models/passive_pair.py": "80006b07a999f005c820f741c4b479c11a8763710df128e89b8cb29e1f309798",
+    "src/cells/models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "src/cells/models/plasma_calcium.py": "e20dc89ef46f280aaae0fae5e21efd4670dbd1d57344b5faa636335e172f15c5",
+    "src/cells/models/reaction_transport.py": "256c1c123fe36a319d8f5318f72d5268381c6706a48526f5e4dd77a5537fe62a",
+    "src/cells/models/registry.py": "f10bca2086b8d5d2389545d98eec923f1caaa8cfe256d7d7c28d320e0dc82c09",
+    "src/cells/models/source_decay.py": "9aeb5a92783049146b1850de36bd0c35ff4fdc1a47610e586de78fd44626b630",
+    "src/cells/models/source_pair.py": "54a748019f80229c865d5e03b7ef615a39a983430326e18a63bf94f624b7ac99",
+    "src/cells/models/spatial_calcium.py": "25979d4077fd125327f375d9ed383f896977b600dc49f1c57419673e7a3e2fe7",
+    "src/cells/models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "src/cells/models/spatial_junction.py": "d065003d97713e5f56617f0b9b3afceb374e511999c0a9e64e5793f98f8840a5",
+    "src/cells/models/surface_active_excision.py": "5b5d5897d995a53cf4d6b8f2718b31a08c87c7038935f41da31784a8ce721cb9",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/models/surface_calcium_activated.py": "c7dcfbd804535e4f122fc7017a4dfb9ecbd9f45d786c64a7feac9468b9ff50d9",
+    "src/cells/models/surface_calcium_activated_catalog.py": "3ffa898ac05e7d425767f1c4173b04c45fd3da10ee5ea8ff58225651495d9de9",
+    "src/cells/models/surface_calcium_catalog.py": "bbaa85783a36c0311e2b5ca13337e8add225999f7e534d6a0af8d24063a3df48",
+    "src/cells/models/surface_calcium_catalog_v2.py": "67f0450dce5a5f689373a516fd223dfd9bd3b138c92ecf51583f6c9f31b72060",
+    "src/cells/models/surface_calcium_cav.py": "122b9976047019c1ca4188e9c6f0d9aefc90e9838c541d05bad32565c29e56dd",
+    "src/cells/models/surface_calcium_channels.py": "c099bc100125d6f70241c8c91ec9cd27e5539eedbddb63ebddde09459292443a",
+    "src/cells/models/surface_calcium_energy.py": "30b4d8ae602aac384cfc6169431f96f4d0d4d13589e39ef51d324e62ef787046",
+    "src/cells/models/surface_calcium_energy_activated.py": "2171ac9b16777bfdda2a7d89d4cc10306f95796ba3880ccdf17c1fef3bc7775e",
+    "src/cells/models/surface_calcium_energy_catalog.py": "055d1c6d56e9c7d9a635edc1fea779032d0ce941f88e9378ad88d24b26f14abb",
+    "src/cells/models/surface_calcium_energy_excision.py": "dca8e6f28fd783260f15a4c69aaa089410c0b357a886c8057440b82f0ff9dc23",
+    "src/cells/models/surface_calcium_energy_hcn_extra.py": "0763650e924204821101b03f6c6bf632b92925f0c47b2d57eea8a2556851b588",
+    "src/cells/models/surface_calcium_energy_mitochondria.py": "a8ba8d704d36ca2bc68223704c276242f77390ed9e1865185ec3b39ec01a486b",
+    "src/cells/models/surface_calcium_energy_mitochondria_excision.py": "d6370c532273fa1f172666f595d69e30351e6440e25eaa4607b1bf5f78122b72",
+    "src/cells/models/surface_calcium_energy_morris_lecar.py": "231eeff4a3d93940208c043fc0e4e718ff6808d64de9f111f5c97bd993ffb81a",
+    "src/cells/models/surface_calcium_energy_regulated.py": "76c1ddd7ad918e3aa49456c9f106f40f533a48b8550b4254541eb53b24129bc9",
+    "src/cells/models/surface_calcium_energy_regulated_v2.py": "9471f3bb30bde1fca9e334c245b435dc80b28f08975cd975dbde0486f1ddf2a8",
+    "src/cells/models/surface_calcium_energy_regulated_v2_excision.py": "fa231996f986c87bd22de9ffab7749c9ff556d8b63e7f6f804bbaea6dcabe2de",
+    "src/cells/models/surface_calcium_energy_transport.py": "71381f01a2430872365ededa226ba2327cbc1c7f9341322b7dcb4d7c496e9189",
+    "src/cells/models/surface_calcium_energy_transport_excision.py": "005fa6b7d4de4cda2587bb80451a1b105805f983366dd9752a60e7a8e907df5c",
+    "src/cells/models/surface_calcium_energy_water.py": "3571894830cd3591330185f2cc88de120666e6fb340c8934669a5f2027b9a556",
+    "src/cells/models/surface_calcium_energy_water_excision.py": "8415d8fa90f893360b06f1b4d26c8a024ddb8aaed7a9cdf351a52f463d5fbc2b",
+    "src/cells/models/surface_calcium_energy_water_repair.py": "e160bb909615c67040834c9ca6f82299c957cffd9f785b95d6675971555b5639",
+    "src/cells/models/surface_calcium_excision.py": "53bc0c41092da08c75001534a6f1b644bc49903bf723a3ace8852acf7eb15f81",
+    "src/cells/models/surface_calcium_hcn.py": "f56265fae9273fbe514a79621a093cf67674204465cf7d800ffd9945730f64b5",
+    "src/cells/models/surface_calcium_hcn_extra.py": "7e59656cd2cf6020c47221882a2e1572ddee9bea5e7ba99a6f1a28d9cd771f7d",
+    "src/cells/models/surface_calcium_kv1.py": "4774ea7fb66515552b3a607f8aa881381f6787b58abf38047f8c281f2ee49489",
+    "src/cells/models/surface_calcium_morris_lecar.py": "da88423e26d5b9c1e4d49da8c414e4a568d434f2962f35f41eeda90ef4a24d6f",
+    "src/cells/models/surface_calcium_sodium.py": "2da063ca7030909d86f545f89676d2c2dbe60ca64cc3bad55cb87f4b4aa8e350",
+    "src/cells/models/surface_calcium_water.py": "7f3997e2bce5911639adb623d20a0eb279dcb6342edaf7dedc082124f8f0bcbf",
+    "src/cells/models/surface_catalog.py": "646ce1a532bf20fc4467f5ecab4b6ad6a3605218a880d08a57afc40f1a93f4cf",
+    "src/cells/models/surface_catalog_v2.py": "79baf68816eff9904c0b2b2e44b060c6bc6f528df995f5c45dc96beca0b3ad41",
+    "src/cells/models/surface_cav.py": "e0630cc55d2bee653ec466a74b7c90dd66c0cf1cd15a0a4d3d2c6b18d08b722c",
+    "src/cells/models/surface_channels.py": "7dbf31b87d711782eff962adac7e73af45735a806804a58cc5fe402664ce30e2",
+    "src/cells/models/surface_cotransport.py": "d6912df6155c45254fece97edfccf3e13719fe80803c3b1a2bcd57aecb85adcf",
+    "src/cells/models/surface_cotransport_water.py": "f6093b15718259f711aced7375e8d4cb6d4a6074366fd5b34dcca32dc826a589",
+    "src/cells/models/surface_energy.py": "61916ca18ea6e25f360652f61ba6dd5ee5483ceff4c7ab6571e48be03a82ff62",
+    "src/cells/models/surface_energy_morris_lecar.py": "accfc8fe9ac007372ba23da125fae76e7360a000b6a6f74f48624f5fafd1d9b7",
+    "src/cells/models/surface_energy_water.py": "2e7f26b62eec8090b9a6797b7ad6f001bab32e38be7c8274289b7b2181862333",
+    "src/cells/models/surface_energy_water_morris_lecar.py": "f9a98e0985fe4ade9ae303b59d846e20d1964f2167ad25a42459fe445fdd2734",
+    "src/cells/models/surface_excision.py": "b5195ad9e90e4f40b7c9dba95f16ef2bbf142a7250f0371de5a6236ba9955210",
+    "src/cells/models/surface_hcn.py": "2bdc1b28334a92ec99e0a48530755e8611954d9aeb74a9e143a9b81ea1179918",
+    "src/cells/models/surface_hcn_extra.py": "259008c68cab604c6349ba1737b1ca1c91b343e981d8bb2775f2bbf9b7229417",
+    "src/cells/models/surface_kv1.py": "f76a601b3da3158cce27d53a3bd29c460790efe4146ee9ef455a2b8561f095d5",
+    "src/cells/models/surface_mobile_channel.py": "6193a446d4095d2797f3ca309bccae2ba68f23d6c74d57ecbf70160d6c980e43",
+    "src/cells/models/surface_mobile_pump.py": "dce845ad2b9801826d044b2889ad8360bc0c1252834b99a457aa7362253dc82f",
+    "src/cells/models/surface_mobile_pump_repair.py": "a7da5fef8829c9b563fca41e33df2b9b3971d7f1da1f1b3fb23aa5f0114f45fd",
+    "src/cells/models/surface_mobile_repair.py": "1bc0cfd8282d28a107c2484511a1e1ee057aff46893557a82a55f21c826a3635",
+    "src/cells/models/surface_morris_lecar.py": "535cea74a384cd5c9304c604c2e307d16ec8f6030d4b2a981d443e3b1f3cddb6",
+    "src/cells/models/surface_redistribution.py": "4d5cdbd6ab74f50a6bc025e50e51ed158a314a29576353ed085b37e4ab616286",
+    "src/cells/models/surface_repair.py": "9c486e36bb367f9a9ca3aabe8e76cfa01cd7f492ac27b58a22cbcd396cc75165",
+    "src/cells/models/surface_repair_morris_lecar.py": "ec6a18d608aa4d0c58312d9ae51c7ff48e8b8b26d8ef6e2c37945bf973a6aaad",
+    "src/cells/models/surface_sodium.py": "ab47573006f266b02945837e80b05e5b5b03c9a9f4a052ec85d3e1090ab21dd2",
+    "src/cells/models/surface_water.py": "b478a19ac6ce60f11ba9bc9e66eaee77a69c477a62dd3ac9df4e4a4bd02d1132",
+    "src/cells/models/surface_water_kinetic.py": "1c6c6c9eed8fb1e4ac52fb16beeae0d6c21fa15e12b4f68a253832a1e857e8bc",
+    "src/cells/models/surface_water_morris_lecar.py": "93dab9f3aa52ad496075ecbf6dccd84bbe27902b305c8dd9177d4639d4e79ac7",
+    "src/cells/models/tissue.py": "2be024aa876e1ef35b8c52a38d1a1cf3d2703a4e5791b5a45e7c6a4b46aab01d",
+    "src/cells/models/tissue_calcium.py": "65c8666f9844115c7fd30dbfe70561b1473f4875d38459d5f8f3fc079bbda385",
+    "src/cells/models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "src/cells/numerics/betse_active.py": "8feab36d7e79c61670e7648e910b37af7c4f8a2a2d1c882dec6fe2ea673c1dd3",
+    "src/cells/numerics/betse_junction.py": "beec9575c2de96ba536a0fa574b3c059ed4a17566ab6b19b5b12b784a597d30e",
+    "src/cells/numerics/betse_spatial.py": "813e6f65f5afdb10282e03040d40a7f4b6ddc4ac234d9da64b0c5584b05270f5",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/numerics/fixed_step.py": "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6",
+    "src/cells/numerics/membrane_redistribution.py": "6e12f8e10d62a90741818685882954ec43d01f828ea6dbf3c87fa300fa2140ab",
+    "src/cells/numerics/osmotic_water.py": "afec7bac3a73752d1586ecdde214abd989648855b8fd23629e2eefcd8444ab9e",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/tissue_field.py": "69e36a6b7f0078022ed708da326e42cb0f33bcfd985dcc163819c740e48f60da",
+    "src/cells/coupling/__init__.py": "2f313dbe445a944ae3df147155ef7073dab49560857bdc67fc46bb6b8966e7cd",
+    "src/cells/coupling/passive.py": "9110e19720d61d6803228015ac7b419bcbc7b534ef794c5f1588a346abceddc8",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/betse_deformation.py": "88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2",
+    "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/processes/betse_mitochondria.py": "a062869889c218284cf953d668477e40d2fa7a99ab15c2e4b08a0c2383d0b83d",
+    "src/cells/processes/betse_network_modulation.py": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+    "src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+    "src/cells/processes/betse_network_transport.py": "6004e87b44d99d9ede041358add93493347f863b4002bcd58fde4d885fa83726",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/processes/betse_tissue_cut.py": "2ca66f3f0e3c95b210586c85826668ff681579e908ba896e7c11201c868bc0b1",
+    "src/cells/processes/calcium_activated_catalog.py": "fcfae34af189ed5a913860c88d8ad02fdc1757694467f22f835bf0202cdffd50",
+    "src/cells/processes/calcium_activated_potassium.py": "7c2af945b4fad5d4d5a3470438b1bf542c874aaa9d5d8022d7896429d5eee955",
+    "src/cells/processes/calcium_catalog_extra.py": "1da086a51d0c8fdf2a9080c7f260b7c9f7731b02afa45a74c5c7503477d18823",
+    "src/cells/processes/calcium_gates.py": "cd02e69f98cad21646064748e2783004c66fd2d683deb9bfc2b45d3bbf15e49a",
+    "src/cells/processes/cav_channels.py": "8cc628a16d112ae0bb897858379efc20a6516fea1e8218e4caf2b11634283298",
+    "src/cells/processes/cotransport.py": "60d3a48a42d52355928b55966cca3c416cd271a8e87c2e7038d0912d0d4829f6",
+    "src/cells/processes/er_calcium.py": "230071026df1c76acd0da85d5f26341da39b0abaf198451d4490c1c2498814be",
+    "src/cells/processes/finite_calcium_pumps.py": "1faf86472a90af59f6420886ba720b76cd7417f9272ad3f08fe2820113f96c4d",
+    "src/cells/processes/finite_energy.py": "7ff2d84094366bb22a73bb666ab17b26975c4952ceebed4acc0d20004327141a",
+    "src/cells/processes/hcn_channels.py": "a1a9d64ab7940a61c01ee9e227115e93a6070d82a0a2de8074109c51dba9bd3c",
+    "src/cells/processes/hcn_extra_catalog.py": "a2b36a94705872d28cc2b2ab8397648f7b447cd047a3fb7ace94607bceff7392",
+    "src/cells/processes/hcn_extra_channels.py": "6832e637e8aec8a66ce403a249c1b2ae6b2b440005c9f5aa2cc3128588656923",
+    "src/cells/processes/ip3_release.py": "ada6e75d92d7cf20c7bc948a47794d5ac4f068770dd8f5f0c81c481ba2db9682",
+    "src/cells/processes/junction_gate.py": "5664dd3e54b1e0158318620d69e30c86fdf3cec48c5d1a89d41d92457f251211",
+    "src/cells/processes/kinetic_pump.py": "fb7ade8ae8281bc26c283a2c27369d38bbc3eb3848c109ce8f0bc82b27cd2f9c",
+    "src/cells/processes/kv1_channels.py": "e3d52e3713f3b5b700b52dbc4c126f62b61ff9d21ba4705272c6205ec16df29a",
+    "src/cells/processes/leak_channels.py": "9f13ca7a859683e16c6428b188ee989a4022034456cda33f1a533317a981f64b",
+    "src/cells/processes/mass_action.py": "17201c9e2e0a4eb45ec6437961dcb47d10ab9bf56bcfa24759261a70656bbb13",
+    "src/cells/processes/membrane_injury.py": "5c749e85b168011207aa1652838c9721ac6f8a8f0ba890c4b1caed9a46f8bea5",
+    "src/cells/processes/mitochondrial_passive.py": "9279de6598fe8dc0fe1227d9f1a439fd036aa35c9dce80cf00f8f3268a00f0d4",
+    "src/cells/processes/mobile_channel_gates.py": "c0d6969f937f47734e310478b12e0ae0101157422e73b600166ca0a7f44529e5",
+    "src/cells/processes/morris_lecar_catalog.py": "3e266e1019ed2a63ea36ae5c98b76ac56391c3341bc94ba7cd90cd7a2aaf39ce",
+    "src/cells/processes/morris_lecar_channels.py": "a84b6caedd53e586da3aae73c2f3f8b26815625b878f6656d197271c12bb5560",
+    "src/cells/processes/plasma_calcium.py": "bdf716e00a81796f000051e4a150f498acf0df093392ca6e0cda5bfbf50731b3",
+    "src/cells/processes/potassium_catalog.py": "75ab6da5a783967ac80b5ddc1f8db061a472c43529829875f4021c2d549bb270",
+    "src/cells/processes/potassium_channels.py": "d7f77ebbb313a4d251ba27ea935889426396006907d9d4bb21d9ccd219bca2e3",
+    "src/cells/processes/reactions.py": "ace2eb53a65e3b6df0d0937337e214144a55e3ba4afb2851d04103717da70b29",
+    "src/cells/processes/shared_channel_catalog.py": "c1ec79a84e60fa69cfcb9fc840095066bb51aa1f9d5197e4eaba2a58912d88ca",
+    "src/cells/processes/shared_channel_catalog_v2.py": "86ba89eb06df29c0e5535a1b92d711f4cf0920b66befccf8d2398005d03ec695",
+    "src/cells/processes/sodium_catalog.py": "98c93939bb7c20e402c0bdba04158179c6f5035cba769b8b5b0934761973dda9",
+    "src/cells/processes/sodium_channels.py": "c7f4d3cc96c2b4d8e129812589c419ff254c9f5c61a9788736c0963e49e4ac31",
+    "src/cells/processes/source_electrochemistry.py": "bd5dc657851c6ecc2e87fd9b61e302837889357ca69c1a2865ec508bc27fe3a8",
+    "src/cells/processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "validation/assembly/cluster_reference.py": "212e72084a5048c3487956f564a94a0f038013368533357868e5d31fc3c51b5c",
+    "validation/betse/channel_feedback_audit/feedback_audit_reference.py": "dec51ee5e27c7984ca40b3a230206e30116ebd3bfa84874a2f2b13a94d6d2ce6",
+    "validation/betse/channel_feedback_pilot/feedback_reference.py": "8c398d96f7de93b5b05df5e4237c4f2a67e0d8f600d738f37dc1c88a8e0111a6",
+    "validation/betse/channel_history_audit/history_audit_reference.py": "d7534496c2e72780b4128ade3a90b06c476be05e6ed310aa3b71ed07f3fc4bdb",
+    "validation/betse/channel_history_pilot/paired_reference.py": "06129885749c007bd07f10d7a451254901cfbe96b8e4f635aeb023b018962edb",
+    "validation/betse/channel_loop_preparation/pilot_reference.py": "ef734252d92f12a22292fc7a82154233cf14a45f13fc9f0e401b7bbfe3787e41",
+    "validation/betse/channel_release_reference/piecewise_reference.py": "e869c9dcaf895eed90a7d4ce76a951ac97c94893830d00503e6be3a565c99e13",
+    "validation/betse/channel_release_reference/test_release_reference.py": "a49ee44e15748dce058723abaf61d94684b17de262be3a9f803d7f5cccd8337c",
+    "validation/betse/pump_contact/pump_reference.py": "7f5bf4a4d66e0b6a21857b551499243d17e677df808b098b92f37a0ea12e5231",
+    "validation/betse/pump_coupled/coupled_reference.py": "3ee8fd5c0a241162de0e59de61ec946b34c2c8ec7a9f28adf67b8ec17c0b7d08",
+    "validation/betse/pump_matched_pilot/pilot_reference.py": "992911aa989cde25d692accf1cc330d6fd9f76f854445834f4e337c935ebaece",
+    "validation/betse/pump_relaxation_scope/relax_reference.py": "f29b309634f7a128505a3246a3034d49f0dd9e383c23cd0e9260a67fef58e10d",
+    "validation/betse/spatial_active/intervention_reference.py": "dcb14498942d478ce73b9bb1ac9449e4aceb03ff12cd35b8bd57c16e153e1598",
+    "validation/betse/spatial_active/junction_reference.py": "f76bbd7cd3c5a2b945a15abe2a3d4bad64717c5d3a1096d96f13276c63b72a26",
+    "validation/betse/spatial_active/mixed_reference.py": "4a75bb8ab5ec1e1b6eeda203198eb5e6e6a5f5f068448b7533506753e92ef220",
+    "validation/betse/voltage_gate_contact/gate_reference.py": "5611e2683efcc382730ba61979d6d6d1c9478e1a2d544045b092ae634b495315",
+    "validation/channels/calcium_activated_potassium_reference.py": "ca0852c7424be2d0e497933017161f5a7c5014f12ada5f8f8fd15c61c1c2ca2d",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/leak_channels_reference.py": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+    "validation/chemistry/betse_network_reactions_fixtures.py": "b39836394c3b0a1eaf4c7f823cfae15e564a32176242ead2f294683622e3566d",
+    "validation/chemistry/betse_network_reactions_reference.py": "37e3f11a19b4d38c607f3fb04366ab47208f4c01c8b3181863b5176800063fac",
+    "validation/chemistry/finite_calcium_pump_reference.py": "11d9b2d9ea11b3639cc2646c678ae652b9a862d9da3f71e5ea4d618ca8995a07",
+    "validation/chemistry/finite_energy_reference.py": "2feeadbd78d5c0644dc72544495747ca1e7961b26a179d0cccf1ac6ad175b501",
+    "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+    "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0",
+    "validation/geometry/betse_geometry_fixtures.py": "2f459231a821e2c079fd2f1dab8c771ecb71e19cb754e03ccde54ce4a638b179",
+    "validation/geometry/betse_geometry_reference.py": "7f8cec792aa0f0cc5fac28793cb7ec542de2d1e237c908f197c96fef36b113f2",
+    "validation/mechanics/betse_deformation_fixtures.py": "fd88f67b1c7754e546014a4a76422f2049b6523d817c9518d6867c13cb94d981",
+    "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+    "validation/organelles/betse_mitochondria_fixtures.py": "664af913a8ddc39fc5c123af9d26a839db141e13141b4fe7e63fc6ac0ff409d4",
+    "validation/organelles/betse_mitochondria_reference.py": "78c6c5cdc59a221f7cf93d8b0d9d56801d8d454c78a9a3aae79b631933b7bd09",
+    "validation/perturbations/betse_perturbations_fixtures.py": "749937d8cfe23523a5c4fb649683d5819a87335ea8c060c0cbc3c662596fe554",
+    "validation/perturbations/betse_perturbations_reference.py": "06f0aaa041e84bcdf1e4ac1899ad5c309a6be66700505bc6c5cadf720634d6dc",
+    "validation/regulation/betse_network_modulation_fixtures.py": "1d4e2af5d3f7750365c31cb554a95cb3def670fdded297670c31adcbe2fc1025",
+    "validation/regulation/betse_network_modulation_reference.py": "ffaf85c9e5e58a67f063ef2aaebc7e610bb0cb6e6abe4bc7b3184a34762882c3",
+    "validation/regulation/integrated_network_regulation_fixtures.py": "240aa72a1c80ce408bc23512ccae264a24d0347e3d52bb11a16ef858d81ff0b8",
+    "validation/regulation/integrated_network_regulation_reference.py": "655f95135a12bd565df50b74c08743c896ff6bcd9beabad8823678a1304a0361",
+    "validation/regulation/integrated_network_regulation_v2_fixtures.py": "75af6a625ec4588a57e40efff76a2b5f87b2da6ff6be5869dd3cf57fddbaa920",
+    "validation/regulation/integrated_network_regulation_v2_reference.py": "016955178b3d8713f915df91eedf0f58d2c8027deab24a269230ff4b925f0d5e",
+    "validation/tissue/active_excision_reference.py": "0fc098bf96933f6799e646ce8e600403085becf455bff2c7dad83b74a269b1bb",
+    "validation/tissue/assembly_mobile_pump_repair_fixtures.py": "f908fd2a49ef7337cad4b5a5646a296cd0c16b6d581f930102f54f7ab3bec2a7",
+    "validation/tissue/assembly_mobile_repair_fixtures.py": "da3f862aaa31e5f8ff442ca305a87a396e85d0471cd02b190a59dadde23abb5b",
+    "validation/tissue/calcium_activated_catalog_fixtures.py": "cb51957ba08b7f2279a016b99131e05a175ae46fe3a6a73b35b269df0c56465c",
+    "validation/tissue/calcium_energy_excision_fixtures.py": "1ad189b03da8a6b50c2e5101f22012d4b7f333449aef05ef44c16570c892c6b8",
+    "validation/tissue/calcium_energy_excision_reference.py": "3bb474e474aea28d58175e1c685c25fe9d822a7f9b3068b3328128b0899a6903",
+    "validation/tissue/calcium_energy_mitochondria_excision_fixtures.py": "bf318eadb802f1f81941b881689db6a6b0aed00eb20df0efab9352b9cf187c8b",
+    "validation/tissue/calcium_energy_mitochondria_excision_reference.py": "e9702cfbbc445a60ba0c6cd4d587e0a7153b8092065c4241cd48de8df2e747b9",
+    "validation/tissue/calcium_energy_mitochondria_fixtures.py": "57068a9cef6ec9d735a5f160f150ecd8b799f62689230f17726e436ddfafcb54",
+    "validation/tissue/calcium_energy_mitochondria_reference.py": "cf79694b175457460d6b0bac3aa07d9d16d8549fceb76817c99da5a26b059397",
+    "validation/tissue/calcium_energy_network_transport_fixtures.py": "ccdc6277119f21d4b513cbc01491858be3f8917979111d65670aa725a95797ce",
+    "validation/tissue/calcium_energy_network_transport_reference.py": "f60cf1594f62fde507fa77566cf48a366beade5ca230c5cfbaf34f369a121330",
+    "validation/tissue/calcium_energy_regulated_v2_excision_fixtures.py": "4786f77385697165eac10c04b60616e24455e61df5ee1bb562a688466b6b4462",
+    "validation/tissue/calcium_energy_regulated_v2_excision_reference.py": "44d63704437eec4258b71e18f6a87de564a7715d975114d232f9c5c44fdfb64a",
+    "validation/tissue/calcium_energy_transport_excision_fixtures.py": "f959692dd4bf7a7fc2b9d1fd5274c89fc12eeff78c0b8cd7de430a7e375a49d3",
+    "validation/tissue/calcium_energy_transport_excision_reference.py": "228a388608688ec9f8f17b1b99f22971d5a28bf91faff1a3d0d02b91531ee93d",
+    "validation/tissue/calcium_energy_water_excision_fixtures.py": "3dea0c6d9fb8927237374b666796a6f1cf44e083a8555f45626da761511da6fe",
+    "validation/tissue/calcium_energy_water_excision_reference.py": "04b87d67efeed04c5a71f114fc949c19507cb4748c91e2dc4090e337d2235753",
+    "validation/tissue/calcium_energy_water_fixtures.py": "ddc696a72af9219026fc954f50b67f3fb9916997f8cfa9809cf7c29a404bda9f",
+    "validation/tissue/calcium_energy_water_reference.py": "74345b57009cc75e4cd53703b7de09a92656c0857cf5f683aba13efb88cef522",
+    "validation/tissue/calcium_energy_water_repair_fixtures.py": "162ad90c563a3798b59b2815e6e1d66d963482a8ac70cef08efa6907341dfeac",
+    "validation/tissue/calcium_energy_water_repair_reference.py": "b1e2ce8b7e3d684ace8b302369f701bc44181651c2722ef99dad02b364f356ce",
+    "validation/tissue/calcium_excision_fixtures.py": "939d3df7ef39dbb0348d1cd3b4a9f63bbd064049e498b18eb33b8dfb329b6a0f",
+    "validation/tissue/calcium_excision_reference.py": "9f1494d14b7b9e8532775f650d1b832f9d15ace58f3d560c0a310ad4f74dd985",
+    "validation/tissue/calcium_fixtures.py": "10b8fb56655c935f84e294611cfc8642fa34ff140b5397c6a3d4b5f7184dde4e",
+    "validation/tissue/calcium_reference.py": "9174762adbe13916745af2a6b1887e77e03bfc4eda330240d9d6c124ae8d41af",
+    "validation/tissue/calcium_water_fixtures.py": "85f552e1cd9025880f8c2ab7554b7e7ad5a5b7fbd019be341a484a954a16b0b8",
+    "validation/tissue/calcium_water_reference.py": "04bacb1b483e5d90f19492efbd276b24f076fef9bcaa2a2a1809a423fc0ae6eb",
+    "validation/tissue/cav_reference.py": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+    "validation/tissue/channel_catalog_v2_fixtures.py": "2ee9a63bbed09f141afea5541055ac473b07e58e3b73d926bba319b252841ffc",
+    "validation/tissue/dynamics_fixtures.py": "c95b8ecec237bfb4ef53af3be96c19f0c4b1bfc88fd123ff09e0b02166c0cdd2",
+    "validation/tissue/dynamics_reference.py": "9a4aca4555bdbab8e45784964efe5375122d9f919c1873c13444281ae1a14313",
+    "validation/tissue/hcn_extra_catalog_fixtures.py": "ce27d4dfaa18e238a006069592f122be561ac9a46d2c195351c79606a48b1422",
+    "validation/tissue/hcn_reference.py": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+    "validation/tissue/kir_reference.py": "688bef58c2353fd22c1dcc937935b9bd155c67fcebe63c568f158c12cd4b2965",
+    "validation/tissue/kv1_reference.py": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+    "validation/tissue/morris_lecar_catalog_fixtures.py": "43cd4331bc62bb782327569fbee8616512be4a55aa758f853a38cbbbab6a1265",
+    "validation/tissue/morris_lecar_energy_water_fixtures.py": "8c44186b776d09ebfbecd86473072a22b03bd810b978b1a32fef5c2bdb6f7a90",
+    "validation/tissue/morris_lecar_repair_fixtures.py": "335d0967be27cf43ebe1d9b43664c14d1c35d2dc39db1c4f3a297c92199efefe",
+    "validation/tissue/morris_lecar_repair_reference.py": "51442fb5b242e12f0898c22d655722d6f6d9912580427eab51d6f93cdfc5c0f7",
+    "validation/tissue/morris_lecar_water_fixtures.py": "2138045098f06f98af73b588ca26c7be397aac3b16d90652f89b25c656004089",
+    "validation/tissue/sodium_reference.py": "0c3f30645ac75abbb6f8b9799163425dd201bc35ec8ac9e30e74c6add8383c91",
+    "validation/tissue/surface_calcium_catalog_fixtures.py": "92837a0cfdae32365ab3bbc143d312817b2e5bc9e98aba9b0bd33a7b363f7ccb",
+    "validation/tissue/surface_calcium_cav_fixtures.py": "43d409a4f864d464944d756279ffb1da7bb7a9d15a5de0d648b6fda7579638d6",
+    "validation/tissue/surface_calcium_channel_fixtures.py": "1bddfd2b2e4c699d699abc1df273f50735c526dc4ab3e54a62d384c62e99614a",
+    "validation/tissue/surface_calcium_energy_fixtures.py": "4bddb494c80ffaf7be3b06b80d2d062c490dd2227427126fb3e233b4a9438cc5",
+    "validation/tissue/surface_calcium_energy_reference.py": "6c32e08c58771b4294d6b48daffbaf6936be8f43d936ba0672e36537ecaa9c2c",
+    "validation/tissue/surface_calcium_fixtures.py": "6ba254d0c33be9c0a8ac32b848dd5a0579fb42984cfc8612f6b948f893676ebd",
+    "validation/tissue/surface_calcium_hcn_fixtures.py": "137863a4dc2031ef1f0545fc130edfc995b9316a3b882d807a54c139fe5376b0",
+    "validation/tissue/surface_calcium_kv1_fixtures.py": "26e89a6ebcd98e572505fef25c882c1895392c87fa5ad9e4557fb6e97b5bfafe",
+    "validation/tissue/surface_calcium_reference.py": "5191ab6459b2e9cb7713277bbfb90d08b5896cbfc67309955024e6e948463934",
+    "validation/tissue/surface_calcium_sodium_fixtures.py": "7acde52fb6d3b2715cf6582ac0091a8fdf6b19fa5c5c80d40e5922ccd36b521f",
+    "validation/tissue/surface_catalog_fixtures.py": "d2d32836c6282e9daff66a1a29b295dc91bb11a6de88c76b1bafe187937ff371",
+    "validation/tissue/surface_channel_fixtures.py": "9f0a0537868a73e1a1b740ec45f7025f9a1dd0ff99686c3022402354d0f50ec9",
+    "validation/tissue/surface_cotransport_fixtures.py": "7a241f21c183e124b554f4763885a78dea6247a3f7da600a763dc76b885dd252",
+    "validation/tissue/surface_cotransport_reference.py": "7123ba2502aff1e696d8d700ce842808610aff080ff3a0be6d7a6dc1bc4731d6",
+    "validation/tissue/surface_cotransport_water_fixtures.py": "f0c9121a010668514d3eeeb3ed09624bf9d036f57e3a6dde14d065fc886746e1",
+    "validation/tissue/surface_cotransport_water_reference.py": "70ea84b6def0a134fc024953d0a91de142eb19945f393c33fbedde2c4da7848a",
+    "validation/tissue/surface_dynamics_fixtures.py": "0e5be633540ea3107d1a338b694f38c1aa6e097465112614e5b0b9d9864e516e",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_energy_fixtures.py": "82d8a2b31e488366aed6b512b028e13e412505953797ba772f096ca4b25f8b04",
+    "validation/tissue/surface_energy_reference.py": "631e596262974efb9599fb17ae6a9163e962635ead0cb81568294a34cf0aa575",
+    "validation/tissue/surface_energy_water_fixtures.py": "50e4a3679af953577b20f289c0507451e4b0d064d617205fe2ed6c9294e96502",
+    "validation/tissue/surface_energy_water_reference.py": "a07f7d172fa0700f5bc2ab33ed56377a89adc3c450d635a20af41bfa60a6f427",
+    "validation/tissue/surface_excision_reference.py": "16a5f61178fe110c0cfbb92d39a0361dfb3f8fd3de4febf48b46420149f15219",
+    "validation/tissue/surface_field_fixtures.py": "edc14d0ae0a02256b13c23559be416f15c91f6361244ff622045e7fbb1366c89",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_fixtures.py": "914b248ae37ce67f73540fb2fec4094441cfa409e8ec9cac0ec9f4e7d8aef08d",
+    "validation/tissue/surface_hcn_fixtures.py": "cfe21188a4eddffcf2e0d711ad2ce593648292d554a16f14a68e7f31c52de2a9",
+    "validation/tissue/surface_kinetic_fixtures.py": "8cd95ff9ec59294bfb10e07978e507d541482cceae2a04062c321751ecf618bc",
+    "validation/tissue/surface_kinetic_reference.py": "9edcf61080688872757afaa2d8fc0e537266bfc23e6770e0c9f163161ab1bda3",
+    "validation/tissue/surface_mobile_channel_fixtures.py": "4dd400041efee1f23de5bbab8a36499523866c3c25d40ecb6cfe289e829d9a83",
+    "validation/tissue/surface_mobile_channel_reference.py": "391a903022c3d4ae565173da04f665751b0444beea2f5c6ea29ede22de201425",
+    "validation/tissue/surface_mobile_pump_fixtures.py": "b2d8ec5a316a6acfb7264391bf058df0972980d598a5aa0b4030191a3723423d",
+    "validation/tissue/surface_mobile_pump_reference.py": "bb967dc51d29f867cfabe08f383127fd24c9b1bac3ce210916c2362fc6b7c18f",
+    "validation/tissue/surface_mobile_pump_repair_fixtures.py": "cf6e9da830c5ba7ea683305f9da2e943c2848189c7e372122c21c6afe70fb2cb",
+    "validation/tissue/surface_mobile_pump_repair_reference.py": "91578eeb4853ba779737fad0e23a151f74f575d19b832679f65c4c7ca0b5a96d",
+    "validation/tissue/surface_mobile_repair_fixtures.py": "85c7338830c089642baad8186e7043444cea3ca3c28e7446a94a9f94667ae0ce",
+    "validation/tissue/surface_mobile_repair_reference.py": "e5cf85cabaf162ec2a378e82f0b7535416de65bc70e0b6d2a8f6c0cf3b147ed4",
+    "validation/tissue/surface_redistribution_fixtures.py": "59723559e2b9d8ba31220d41b5b589640ed81775701d6767c32669162b4d54a2",
+    "validation/tissue/surface_redistribution_reference.py": "c28ed44c90356ba3ed19611d77a5c3b4e953303aa6c2b13e1e12d6067ce4018c",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/tissue/surface_repair_fixtures.py": "f8819c8c683aed170ffa4fb9754b5f490dd259d7a7af7c1c3bf8ed6776d29762",
+    "validation/tissue/surface_repair_reference.py": "16e231da9a26e065a9b83b95d9d0c0b029be142391436f283b030f096c8ebb41",
+    "validation/tissue/surface_sodium_fixtures.py": "49c4298608f6bb3bbf87d9e05dc7d1f2f63317a9c4ed725856ff4290464090b3",
+    "validation/tissue/surface_water_fixtures.py": "ef6b87933dc3943493403b86e4df46db532400f4cefa75ba4f8c890a1bb8da01",
+    "validation/tissue/surface_water_kinetic_fixtures.py": "dbf7695a53247b710b30b254a2422194cf34cfc5812fc70c66901052578804a8",
+    "validation/tissue/surface_water_kinetic_reference.py": "196be287dc60fa90e65f79190f71c0b9f60475ed6e2996972d55a6b0bd9bc2a6",
+    "validation/tissue/surface_water_reference.py": "c55cb6206085a709ad3e3c7cc0a9e505ea240f007d6cedf51d03010673e84da3",
+    "validation/tissue/test_active_excision_reference.py": "bda25e95f437ae5b65bece519bf9e618f22979f04a157484b054b928055adcd2",
+    "validation/tissue/test_calcium_activated_catalog_reference.py": "56a9a3c33e52b1553fadfe0dc5e9981ca49f13d728e4f15ef5a3f95ba90a67a5",
+    "validation/tissue/test_calcium_catalog_reference.py": "9c06b20085903720d822219f3e3eb91b59fb4e14483041b3d996bd2afe87bcaf",
+    "validation/tissue/test_calcium_catalog_v2_reference.py": "43b733726a13a91a3890d4a4e5d5345e7f23cab8fd077b0cb7466a183c5662de",
+    "validation/tissue/test_calcium_energy_excision_reference.py": "a014a5dfc3a643537dddbc7d59360f85a7da144cb25c35f6bb0e0201bbaeee7e",
+    "validation/tissue/test_calcium_energy_mitochondria_excision_reference.py": "2ae09cdf4ed6661461796b8a62aaef8fbf602a6eeb760a8c88a55dc0d8b97cbf",
+    "validation/tissue/test_calcium_energy_mitochondria_reference.py": "719d6c7e3cae37488bb4cf7c3520105e90c313ebafef36fdce30ffc11ac1cbc7",
+    "validation/tissue/test_calcium_energy_network_transport_reference.py": "4b9a15fb360a9807bec54e4068bd30cbadabc1f38e5e6bccf630396627cc409c",
+    "validation/tissue/test_calcium_energy_reference.py": "c8d426eca2a80a6b8d98702b5dc56b1e9fc318fd3b447f204ba5cfacaaebef78",
+    "validation/tissue/test_calcium_energy_regulated_v2_excision_reference.py": "81f760489d258f23e53442809a0235a9a1328acb64ef77497ebcd58c5fce2f3b",
+    "validation/tissue/test_calcium_energy_transport_excision_reference.py": "e0e672429045a9bcc5d14a0b2d43057ae235547c036ff84eefa269c7da4794ea",
+    "validation/tissue/test_calcium_energy_water_excision_reference.py": "80e27946c71391573eb5336057bd7f9d9d65a9819e49f1d85c26a7517f76962a",
+    "validation/tissue/test_calcium_energy_water_reference.py": "7e07683f800135aadf5044f33ba2eb0b738e6e4c6b678e911bae188b76a07dbd",
+    "validation/tissue/test_calcium_energy_water_repair_reference.py": "68ec1b69a106c3690b44bc1f70beacacee607915b8c44b6d4e3f62e10ac9ee8c",
+    "validation/tissue/test_calcium_excision_reference.py": "2e1252680890b60887ed4dd63659e804b153af9c3cedc87003b08dfc52f21c1a",
+    "validation/tissue/test_cotransport_water_reference.py": "071227219d6680cc3d78d25b5b86f6189d6bb5168026e07b21818333bfdde909",
+    "validation/tissue/test_energy_water_reference.py": "45ac213c9a26e5ef824c3cb5047e21c1d566963444aac71d13d8f04bda391dcd",
+    "validation/tissue/test_morris_lecar_catalog_reference.py": "ce7b12527054a623ea6b6a5398418e8febb8357b16a593492a4fa15ca3502955",
+    "validation/tissue/test_morris_lecar_energy_water_reference.py": "efab496ba7b59f815eda977855b96e3307987b1c4e0b24294012429d496b794c",
+    "validation/tissue/test_morris_lecar_water_reference.py": "830630a7442bb9de761af39d79ff0640476f26760f90d8ba968edfe3b3d1dcc9",
+    "validation/tissue/test_shared_channel_catalog_reference.py": "7c6f4de9a7de352c41876fc5cb0959f541d63667bcd1153e1b433ac1618da322",
+    "validation/tissue/test_surface_excision_reference.py": "58fc869115e32a9ff2f7daefb186f907fb3e3d90a1fc807919368b47c543d1a4",
+    "validation/tissue/test_water_kinetic_reference.py": "81a7023405b9304b637579c017505d5007dd8be5eee211e33176cf4abc3ed209",
+    "validation/tissue/test_water_volume_reference.py": "9d99180b002cc06a97fc4c9c5405c8397be607bbd936612985b493e8fea5a9a9",
+    "validation/tissue/water_volume_reference.py": "db816868100c85e160b7f8939b2dc906c59ccd0e9c8c0cb85d0e5ab849260199",
+    "validation/topology/betse_tissue_cut_fixtures.py": "15636610d7810b7f9a30b1c39fc5d0f7bb0a7ed333308644b75771dd94628bda",
+    "validation/topology/betse_tissue_cut_reference.py": "6e4544deb885d9672500c9a34763df7d05c5a875640c7fedda2f8e3af9f5fdb6",
+    "validation/topology/betse_tissue_profiles_fixtures.py": "09c791aabbcfb86aae949deb76dee83d3964df42186dbe2a08c05036776fbd43",
+    "validation/transport/betse_environment_transport_fixtures.py": "d5a97d35df6839735a05601e1daa3173127306dca288fa0a8a8557900008139b",
+    "validation/transport/betse_environment_transport_reference.py": "f2a6d3313144566ba075fa249b09fcb3373438fca1af1520ff2e0283aaf0ece2",
+    "validation/transport/betse_network_transport_fixtures.py": "48b1200715d27a7e47c6c31d228e46609c64b424eda48a334e52cd6a01040858",
+    "validation/transport/betse_network_transport_reference.py": "9c3e467218f80c0d86b602555907906d8efa1264a8de3553eee4c85427fb9ed3",
+    "validation/transport/cotransport_reference.py": "08dc5f15d172689de27e456f60d8b0b6a4e3fcb8aee34d8d86aec032aef2c230"
+  },
+  "direct_bridge_receipt": {
+    "path": "/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/result.json",
+    "sha256": "54c8ea35205b35f5ddff067a5d192bada41df26171d0a9c6847a43ee18949493"
+  },
+  "purpose": "Prevent a geometry/coefficient projection from replacing complete composed field physics or resetting owned inventories, state and histories",
+  "reference": "Frozen stdlib profile preparation reference and existing independent full-parent equations, never production parameter projections",
+  "families": [
+    "ionic_v2",
+    "ionic_v3",
+    "ionic_v4",
+    "ionic_v5",
+    "ionic_v6",
+    "ionic_v7",
+    "ionic_v8",
+    "ionic_v9",
+    "ionic_v10",
+    "ionic_v11",
+    "calcium",
+    "fuel",
+    "calcium_water",
+    "fuel_water",
+    "water",
+    "kinetic_water",
+    "energy",
+    "energy_water",
+    "morris_water",
+    "morris_energy_water",
+    "morris_energy",
+    "transport",
+    "mitochondria",
+    "regulation_v1",
+    "regulation_v2"
+  ],
+  "preservation": "Only selected physical membrane/junction permeability coefficients change; canonical nonselected definition, stable owner inventories, initial state with dtype, all controls, gates, fuel, water and organelle properties remain exact",
+  "projection_scope": "Qualified passive parameter view for stable-owner selection and D/thickness conversion only; every source event clock carried; no projected field or flux is used as a full parent physical readout",
+  "numerical_budgets": {
+    "permeability_rtol": 5e-14,
+    "permeability_atol_m_per_s": 1e-25,
+    "full_rhs_rtol": 3e-10,
+    "full_rhs_atol": 3e-12,
+    "charge_rhs_atol_C_per_s": 3e-23,
+    "potential_rtol": 3e-10,
+    "potential_atol_V": 3e-13
+  },
+  "replay": "Complete source plus geometry and ordered static profiles; revalidation checks all state/owner/control provenance; resealed inconsistent records refused",
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_host_rss_bytes": 1073741824,
+    "min_available_memory_bytes": 8589934592,
+    "max_command_seconds": 480,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "scope_limits": [
+    "Ordinary explicitly mapped parent schemas only; cuts, assembly, repair and unknown nesting refused",
+    "Frozen direct/native laws and parent numerical equations are unchanged",
+    "Explicit thickness and one reciprocal membrane pair per existing physical edge; no aggregation or inferred geometry",
+    "No dynamic interventions, pressure/ECM transport, GPU or compiled/full trajectory qualification",
+    "No shared dispatch/PROGRESS edits, detached-job polling or automatic follow-up",
+    "Intermediate resolved_tissue@2..@11 use the complete channel/pump/junction parent; passive geometry projection never replaces its physical field or flux."
+  ],
+  "automatic_followup": false
+}

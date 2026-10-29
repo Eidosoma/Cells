@@ -1,0 +1,554 @@
+{
+  "automatic_followup": false,
+  "budgets": {
+    "charge_rhs_atol_C_s": 3e-23,
+    "energy_atol_pJ_s": 1e-10,
+    "material_atol_fmol_s": 3e-14,
+    "potential_atol_V": 3e-13,
+    "potential_rtol": 3e-10,
+    "rhs_atol": 3e-12,
+    "rhs_rtol": 3e-10,
+    "trajectory_atol": 2e-11,
+    "trajectory_charge_atol_C": 3e-25,
+    "trajectory_rtol": 3e-09
+  },
+  "frozen_workspace": {
+    "handoff_receipt": "/mnt/workspaces/Cells/active-membrane-profiles-handoff-20261029-01/result.json",
+    "handoff_receipt_sha256": "023fa90edf6d9e506e630fb7e32a023f05cfcf12dfe7e0ab3eb59c3e2dc9e754",
+    "manifest": "/mnt/workspaces/Cells/active-membrane-profiles-development-20261029-02/workspace-manifest.json",
+    "manifest_sha256": "efd1de03979b389a46819e06050f3e671c6179203f060f4719ddda97f35089c9",
+    "path": "/mnt/workspaces/Cells/active-membrane-profiles-development-20261029-02/workspace",
+    "source_hash_key": "source_sha256"
+  },
+  "history_projection": "Only closed background membrane_transferred is masked in a temporary readout view. Every physical store, gate and live fuel pool stays actual. All material and energy diagnostics use untouched full history under union support.",
+  "native_phase_scope": [
+    {
+      "body_ast_sha256": {
+        "_run_fast_sim_core_loop": "2ef819f5611699d8d757592ff55a609e9a30396cec375d8525cabc4d297fac51",
+        "_run_sim_core_loop": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "init_dynamics": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430"
+      },
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    {
+      "body_ast_sha256": {
+        "makeAllChanges": "169a98c6deba956f4134d9203b0ca9153fe791bccae3364ab9b99ff83a25d809"
+      },
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/tissue/tishandler.py",
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+    }
+  ],
+  "owner_call_graph": [
+    {
+      "body_ast_sha256": {
+        "domain_valid": "f9dca61478140a0e6163772033a542040aca5a56de02e83740223a7140131556",
+        "readouts": "cb8fa0cbcf8a837f2eff2a226323c86ee1f9e59734f3b9aeeeca1963744e88aa"
+      },
+      "path": "src/cells/models/surface_kinetic.py",
+      "sha256": "edaf0040915e3f97bef778a938fd8b0835a860fcfca86b1fca230e78f64b630d",
+      "state_flow": {
+        "domain_valid": {
+          "attributes": [
+            "channel_dissipated_energy_pJ",
+            "channel_gate",
+            "channel_transferred",
+            "junction_gate",
+            "pump_cycles"
+          ],
+          "calls": [
+            "passive_state"
+          ],
+          "other": [
+            "Subscript"
+          ]
+        },
+        "readouts": {
+          "attributes": [
+            "channel_gate",
+            "junction_gate"
+          ],
+          "calls": [
+            "base.field_values",
+            "domain_valid",
+            "physical_amounts"
+          ],
+          "other": []
+        }
+      }
+    },
+    {
+      "body_ast_sha256": {
+        "charge_increment": "c17ced44cef5b1ebad38be6878a95e0379b531d001187a74bc6a36604b290ddd",
+        "field_values": "b93dfcda327d89008fdb7385f9cfc549806d1fd084c4c330da8d0b0730ec602f",
+        "physical_amounts": "45aa842bf1ca61486ab352e3b905bbf9fc26b4fc1ae95699f95620c723170aa2"
+      },
+      "path": "src/cells/models/surface_tissue.py",
+      "sha256": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+      "state_flow": {
+        "charge_increment": {
+          "attributes": [
+            "amount_increment",
+            "extracellular_amount_increment"
+          ],
+          "calls": [],
+          "other": []
+        },
+        "field_values": {
+          "attributes": [],
+          "calls": [
+            "charge_increment",
+            "physical_amounts"
+          ],
+          "other": []
+        },
+        "physical_amounts": {
+          "attributes": [
+            "amount_increment",
+            "extracellular_amount_increment"
+          ],
+          "calls": [],
+          "other": []
+        }
+      }
+    },
+    {
+      "body_ast_sha256": {
+        "cytosol_amount": "8b6b6d641bf5e7d8ee03c7dd65808fd223276e26ba303a7bbbf5f02a2e896706",
+        "ownership_residual": "6f174b5c28b3165877c845d307cc8d6c9a6b1222c37d5a00a13cedee06b947c1",
+        "store_state": "fb07a9f09f75a585b22cea7bcd0db77fa7e56dd6c916d39a9058bd928e410a14"
+      },
+      "path": "src/cells/models/spatial_calcium.py",
+      "sha256": "25979d4077fd125327f375d9ed383f896977b600dc49f1c57419673e7a3e2fe7",
+      "state_flow": {
+        "cytosol_amount": {
+          "attributes": [],
+          "calls": [
+            "store_state"
+          ],
+          "other": []
+        },
+        "ownership_residual": {
+          "attributes": [
+            "amount_increment",
+            "chemical_amount_increment"
+          ],
+          "calls": [],
+          "other": []
+        },
+        "store_state": {
+          "attributes": [],
+          "calls": [
+            "getattr"
+          ],
+          "other": []
+        }
+      }
+    },
+    {
+      "body_ast_sha256": {
+        "balances": "5a12ae619837c41ed8d619e15afa38eda7bac2d40435535fe88a2d582f0e02c5",
+        "check_values": "78059e008a0eabdc519cf0e0fba496f58da1d0ad7c4aae64408dd22b4f0b71f2",
+        "domain_valid": "c1c9f8f7034c11413580521ac3e2bdbc341bb946946dfde2332fb0970553ce43",
+        "ionic_layout": "ffabe4a52a222e1d827c7e7917cf0a2625b2cff0c21d7d239de5fd12e8af2e41",
+        "ionic_state": "3f33dff1211b3c03d4377f5e002b5de1c4ac129560d7937ad17dafbd800b80af",
+        "observe_history": "cd3828d50a7a0ebec7cdf2b9170629740404419f204cc491ed3295513ba6b48d",
+        "physical_amounts": "ae4ed4b27a647bb73bd7336574b99cdefdcef53a260e081bb5dc30fd264d8457",
+        "readouts": "3d1895ff7c1f48bec2c7607ab1e245990bb0d883f7d0c9a9da9a2a03597c8abe"
+      },
+      "path": "src/cells/models/surface_calcium.py",
+      "sha256": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+      "state_flow": {
+        "balances": {
+          "attributes": [
+            "amount_increment",
+            "calcium_channel_transferred",
+            "channel_transferred",
+            "er_metabolic_work_pJ",
+            "membrane_transferred",
+            "metabolic_work_pJ",
+            "plasma_exchange_cycles",
+            "plasma_metabolic_work_pJ",
+            "plasma_pump_cycles",
+            "pump_cycles"
+          ],
+          "calls": [
+            "getattr",
+            "kinetic.passive_state",
+            "ownership_residual",
+            "store_state"
+          ],
+          "other": []
+        },
+        "check_values": {
+          "attributes": [
+            "amount_increment"
+          ],
+          "calls": [
+            "getattr"
+          ],
+          "other": [
+            "List",
+            "comprehension"
+          ]
+        },
+        "domain_valid": {
+          "attributes": [
+            "amount_increment",
+            "calcium_gate",
+            "er_metabolic_work_pJ",
+            "plasma_exchange_cycles",
+            "plasma_pump_cycles"
+          ],
+          "calls": [
+            "getattr",
+            "ionic_layout",
+            "ionic_state",
+            "ownership_residual",
+            "store_state"
+          ],
+          "other": [
+            "Subscript"
+          ]
+        },
+        "ionic_layout": {
+          "attributes": [],
+          "calls": [
+            "cytosol_amount"
+          ],
+          "other": []
+        },
+        "ionic_state": {
+          "attributes": [],
+          "calls": [
+            "getattr"
+          ],
+          "other": []
+        },
+        "observe_history": {
+          "attributes": [],
+          "calls": [
+            "physical_amounts",
+            "readouts"
+          ],
+          "other": [
+            "Starred"
+          ]
+        },
+        "physical_amounts": {
+          "attributes": [
+            "extracellular_amount_increment"
+          ],
+          "calls": [
+            "cytosol_amount"
+          ],
+          "other": []
+        },
+        "readouts": {
+          "attributes": [
+            "calcium_gate",
+            "extracellular_amount_increment"
+          ],
+          "calls": [
+            "domain_valid",
+            "ionic_layout",
+            "ionic_state",
+            "ip3_readouts",
+            "store_state"
+          ],
+          "other": []
+        }
+      }
+    },
+    {
+      "body_ast_sha256": {
+        "balances": "ebdf6fa5636f8fea3ebd05c30a90f9879e5d145014c87d599fd114a3de3d7e88",
+        "check_values": "7ad45675c10341ef0ca14302fa4bd16b5bb4ba39291661e236a3f220b5345335",
+        "domain_valid": "631fe3bdd22db68176406bbb3b5ed22d9be4865250bed107bcc21cc5ed0c615c",
+        "energy_amounts": "6ecddfd56229f2d25d395b621301f4a2bddf07cd99e8e4c1fbd4146b669cfbee",
+        "observe_history": "c36096e7d2f4b73b927f50838c16a1ccee818e536e49e74bfcb7a259ee583838",
+        "prior_state": "2de3bdd2764f3ad6a3b68f67266c2e4f0275c6452d1b5ef88254f356935de067",
+        "readouts": "3e832096037a4c6ae13ecc3c725dd623f08594d4648e039fa55ca2e7c716f4fc",
+        "stage_layout": "0fddfeb550534078c414c38c1ef844ce3196e461e6629b2cc0d15154765fc847"
+      },
+      "path": "src/cells/models/surface_calcium_energy.py",
+      "sha256": "30b4d8ae602aac384cfc6169431f96f4d0d4d13589e39ef51d324e62ef787046",
+      "state_flow": {
+        "balances": {
+          "attributes": [
+            "er_metabolic_work_pJ",
+            "metabolic_work_pJ",
+            "plasma_metabolic_work_pJ",
+            "regeneration_cycles_fmol",
+            "regeneration_dissipated_energy_pJ",
+            "regeneration_supplied_work_pJ"
+          ],
+          "calls": [
+            "energy_amounts",
+            "pool_free_energy_change_pJ",
+            "prior_state",
+            "pump_cycles"
+          ],
+          "other": []
+        },
+        "check_values": {
+          "attributes": [
+            "amount_increment"
+          ],
+          "calls": [
+            "getattr"
+          ],
+          "other": [
+            "List",
+            "comprehension"
+          ]
+        },
+        "domain_valid": {
+          "attributes": [
+            "energy_amount_increment_fmol"
+          ],
+          "calls": [
+            "energy_amounts",
+            "getattr",
+            "prior_state",
+            "stage_layout"
+          ],
+          "other": []
+        },
+        "energy_amounts": {
+          "attributes": [
+            "energy_amount_increment_fmol"
+          ],
+          "calls": [],
+          "other": []
+        },
+        "observe_history": {
+          "attributes": [],
+          "calls": [
+            "balances",
+            "energy_amounts",
+            "getattr",
+            "pool_free_energy_change_pJ",
+            "prior_state",
+            "readouts",
+            "stage_layout"
+          ],
+          "other": []
+        },
+        "prior_state": {
+          "attributes": [],
+          "calls": [
+            "getattr"
+          ],
+          "other": []
+        },
+        "readouts": {
+          "attributes": [],
+          "calls": [
+            "domain_valid",
+            "energy_amounts",
+            "prior_state",
+            "stage_layout"
+          ],
+          "other": []
+        },
+        "stage_layout": {
+          "attributes": [],
+          "calls": [
+            "energy_amounts"
+          ],
+          "other": []
+        }
+      }
+    },
+    {
+      "body_ast_sha256": {
+        "ip3_readouts": "720f9b11390ec9d5a4964bbaa811eb0a422962526117439931190063529d7cf5"
+      },
+      "path": "src/cells/models/ip3_calcium.py",
+      "sha256": "4f1e46393b95f8aba39cb27d11247aca0e0b3cc8f109f321208df421b6ad2870",
+      "state_flow": {
+        "ip3_readouts": {
+          "attributes": [
+            "chemical_amount_increment"
+          ],
+          "calls": [],
+          "other": []
+        }
+      }
+    }
+  ],
+  "purpose": "Preserve actual calcium stores and shared finite ATP/ADP/Pi through regional background permeability closure/reopening",
+  "readonly_source_sha256": {
+    "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+    "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/devices.py": "3ec3d787e0c554382ff2eea1612db667412b9ad529930fd69dbc68d8a9b65d9d",
+    "src/cells/core/er_spec.py": "00a01aa14183b870a6f835fb757a2093c81f319ce910897c44d839a858e2a8d1",
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/finite_extracellular_spec.py": "4bafdfeb3cdcc21ed0c6667aa2bc498ce574cd3f37f849f51395cd9a948860a5",
+    "src/cells/core/gated_calcium_spec.py": "ecf20ce4cddbc0fb7c66ec2e07c750c1d01f6d793afdde20b28ea925e8075dc6",
+    "src/cells/core/geometry_profile_preparation.py": "b7430b17dbbd2ee3201522dece95d01c49d69b405bc33b8ce051796aaeb81573",
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/ip3_calcium_spec.py": "fa1138ebf53bc1dde5d47a404b0543b5031a2371176a0c3988af8b027be885ca",
+    "src/cells/core/junction_finite_spec.py": "babcdd93e898f7cf9cf39f2f529f5d0f0ab3318543da577ff39f4123f217b57e",
+    "src/cells/core/kinetic_finite_spec.py": "832f232c89be9b505cd29ace57bbe7f6eb9b6a59716904528f91a439bceb19c3",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/physical_ionic_graph_spec.py": "99fa067b759c1a953e4efd307a75960153a9ae4449e32e4a3ff81dc87c2fd3ec",
+    "src/cells/core/plasma_calcium_spec.py": "0272608b81e3bac94554fcb250641ff5be4fbcbe8b31bd61e51dd8727b42b04d",
+    "src/cells/core/reaction_spec.py": "e0d1e2961b7198b3e4f10acd46d0909b5d896b400ec6f7a36d6a5d9f5edecfc5",
+    "src/cells/core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+    "src/cells/core/spatial_calcium_spec.py": "2a1ba23373e6effe7e4a64e0bfca26335356eee8a90d8e2a806f2d59a7fc4d21",
+    "src/cells/core/spatial_extracellular_spec.py": "ccaec6b0f94cc4b4ae6ddb3116300bc4cf9f50a3f77abbc320e52a7b6a865a9b",
+    "src/cells/core/spatial_junction_spec.py": "ee429eb21876a7f01bda6a730822d9026418c875875622bfee688097848aeff8",
+    "src/cells/core/surface_calcium_energy_spec.py": "0f1f7ca0614af9c1f5c41c53221eb40aff18ac8135127b426b350d32bcabf113",
+    "src/cells/core/surface_calcium_spec.py": "7b87ffe4a530828d19dd9eb5f99152fab0302330a5ffa63fa808715f253507c4",
+    "src/cells/core/surface_energy_spec.py": "7653c50d6b8d86d3ac68eccf23d8acb7b0df768a228dca6e581481b33307235b",
+    "src/cells/core/surface_kinetic_spec.py": "be80df36047ce3e41c36299f73d06c5632e7fe9220d7d73aabdf44a996cf4a40",
+    "src/cells/core/surface_profile_interventions_spec.py": "f5b03749c8813daaf33f2dac12482cd233db5ac9f98f216b5095b14013fe33bc",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/core/tissue_profile_composition_preparation.py": "8cb0ea11ac58240d8a6e5bad602c8b54b0b1bb223670797b9b33e02d62f4b56e",
+    "src/cells/core/tissue_profile_preparation.py": "f7ef93d0abe7fe7599c2ecb1cc8f12d9f507773a0ef23b9388bb73b00845044c",
+    "src/cells/core/tissue_spec.py": "b81c179947324da1e9e6f043b3391ee313446c03ac5055f552c658b71adc14b4",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9",
+    "src/cells/models/__init__.py": "a51c8155dc9b3e599c7b9fcdb53a87d0b1fdda66d073c2516b841eb55d8e2231",
+    "src/cells/models/bioelectric_cell.py": "47d9787d4166c3573e5be0abf1e1ae40693f50f19540a625ee9e917e424a7ccd",
+    "src/cells/models/compartment_reactions.py": "2187b9708c8bbc49384f0fa78eb5e9401ebc1c08adac069138e2ba086c907917",
+    "src/cells/models/er_calcium.py": "abdb591b4dfe564dfa444495642e8f60caf90edebe751854b1181ed6ef778408",
+    "src/cells/models/finite_extracellular.py": "bbcae877eb139ca4e7b09bca6d6092c65238914289e5697718306ba4c146966b",
+    "src/cells/models/gated_calcium.py": "1c596e2d1168b3bd16f32378a8b4c54e342bed423505986122c1145f1407b51d",
+    "src/cells/models/ip3_calcium.py": "4f1e46393b95f8aba39cb27d11247aca0e0b3cc8f109f321208df421b6ad2870",
+    "src/cells/models/junction_finite_extracellular.py": "1eb551dee42a9e35437acb607500a900ad07583e13f1c5b55ecfa79df771b1d7",
+    "src/cells/models/kinetic_finite_bounds.py": "fe7744191cc39deb355d384224e67eaf54e802b4b4e881c19d95a81abc0fcc46",
+    "src/cells/models/kinetic_finite_extracellular.py": "d604808d3dc90c4f9709b1d29023a7ac76186110311915f70043c0e31febd1e1",
+    "src/cells/models/multispecies_membrane.py": "4795bda4beb12a8ed8cb3061f0ed74b4dc7a12684bccd612574c64ecc89c8847",
+    "src/cells/models/physical_ionic_graph.py": "1f4698b0a2575f0bd5ae8936b4802fd27bde2d4cf3132f5aa8c7f154b736f0ff",
+    "src/cells/models/plasma_calcium.py": "e20dc89ef46f280aaae0fae5e21efd4670dbd1d57344b5faa636335e172f15c5",
+    "src/cells/models/spatial_calcium.py": "25979d4077fd125327f375d9ed383f896977b600dc49f1c57419673e7a3e2fe7",
+    "src/cells/models/spatial_extracellular.py": "451a6e14b9f266c89c4b1f83561a7196c883e9189502cdcb1cf4c3b7ca9c5a8e",
+    "src/cells/models/spatial_junction.py": "d065003d97713e5f56617f0b9b3afceb374e511999c0a9e64e5793f98f8840a5",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/models/surface_calcium_catalog.py": "bbaa85783a36c0311e2b5ca13337e8add225999f7e534d6a0af8d24063a3df48",
+    "src/cells/models/surface_calcium_cav.py": "122b9976047019c1ca4188e9c6f0d9aefc90e9838c541d05bad32565c29e56dd",
+    "src/cells/models/surface_calcium_energy.py": "30b4d8ae602aac384cfc6169431f96f4d0d4d13589e39ef51d324e62ef787046",
+    "src/cells/models/surface_calcium_energy_hcn_extra.py": "0763650e924204821101b03f6c6bf632b92925f0c47b2d57eea8a2556851b588",
+    "src/cells/models/surface_cav.py": "e0630cc55d2bee653ec466a74b7c90dd66c0cf1cd15a0a4d3d2c6b18d08b722c",
+    "src/cells/models/surface_energy.py": "61916ca18ea6e25f360652f61ba6dd5ee5483ceff4c7ab6571e48be03a82ff62",
+    "src/cells/models/surface_kinetic.py": "edaf0040915e3f97bef778a938fd8b0835a860fcfca86b1fca230e78f64b630d",
+    "src/cells/models/surface_profile_interventions.py": "1df268bee8b38aced7a62f6304c4b4ed38d48603ccaed3a28bc69c8f4fc50248",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/models/tissue.py": "2be024aa876e1ef35b8c52a38d1a1cf3d2703a4e5791b5a45e7c6a4b46aab01d",
+    "src/cells/models/voltage_gated_membrane.py": "dc8bc327a79ef64d42d99eb02481d73661c69f9692f3a153ce65125d3702a46e",
+    "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/numerics/tissue_field.py": "69e36a6b7f0078022ed708da326e42cb0f33bcfd985dcc163819c740e48f60da",
+    "src/cells/observers.py": "c493f1fd69ad0837afd9397bae0b954ba7313fb7d6c0d6ef78aea9a8047cf6db",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/processes/betse_tissue_profiles.py": "840482d6612a4f0502eac9214acc1d90559345cb757d847f72f4dc8843502be1",
+    "src/cells/processes/calcium_activated_catalog.py": "fcfae34af189ed5a913860c88d8ad02fdc1757694467f22f835bf0202cdffd50",
+    "src/cells/processes/calcium_activated_potassium.py": "7c2af945b4fad5d4d5a3470438b1bf542c874aaa9d5d8022d7896429d5eee955",
+    "src/cells/processes/calcium_catalog_extra.py": "1da086a51d0c8fdf2a9080c7f260b7c9f7731b02afa45a74c5c7503477d18823",
+    "src/cells/processes/calcium_gates.py": "cd02e69f98cad21646064748e2783004c66fd2d683deb9bfc2b45d3bbf15e49a",
+    "src/cells/processes/cav_channels.py": "8cc628a16d112ae0bb897858379efc20a6516fea1e8218e4caf2b11634283298",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/processes/er_calcium.py": "230071026df1c76acd0da85d5f26341da39b0abaf198451d4490c1c2498814be",
+    "src/cells/processes/finite_calcium_pumps.py": "1faf86472a90af59f6420886ba720b76cd7417f9272ad3f08fe2820113f96c4d",
+    "src/cells/processes/finite_energy.py": "7ff2d84094366bb22a73bb666ab17b26975c4952ceebed4acc0d20004327141a",
+    "src/cells/processes/hcn_channels.py": "a1a9d64ab7940a61c01ee9e227115e93a6070d82a0a2de8074109c51dba9bd3c",
+    "src/cells/processes/hcn_extra_catalog.py": "a2b36a94705872d28cc2b2ab8397648f7b447cd047a3fb7ace94607bceff7392",
+    "src/cells/processes/hcn_extra_channels.py": "6832e637e8aec8a66ce403a249c1b2ae6b2b440005c9f5aa2cc3128588656923",
+    "src/cells/processes/ip3_release.py": "ada6e75d92d7cf20c7bc948a47794d5ac4f068770dd8f5f0c81c481ba2db9682",
+    "src/cells/processes/junction_gate.py": "5664dd3e54b1e0158318620d69e30c86fdf3cec48c5d1a89d41d92457f251211",
+    "src/cells/processes/kinetic_pump.py": "fb7ade8ae8281bc26c283a2c27369d38bbc3eb3848c109ce8f0bc82b27cd2f9c",
+    "src/cells/processes/kv1_channels.py": "e3d52e3713f3b5b700b52dbc4c126f62b61ff9d21ba4705272c6205ec16df29a",
+    "src/cells/processes/leak_channels.py": "9f13ca7a859683e16c6428b188ee989a4022034456cda33f1a533317a981f64b",
+    "src/cells/processes/mass_action.py": "17201c9e2e0a4eb45ec6437961dcb47d10ab9bf56bcfa24759261a70656bbb13",
+    "src/cells/processes/morris_lecar_catalog.py": "3e266e1019ed2a63ea36ae5c98b76ac56391c3341bc94ba7cd90cd7a2aaf39ce",
+    "src/cells/processes/morris_lecar_channels.py": "a84b6caedd53e586da3aae73c2f3f8b26815625b878f6656d197271c12bb5560",
+    "src/cells/processes/plasma_calcium.py": "bdf716e00a81796f000051e4a150f498acf0df093392ca6e0cda5bfbf50731b3",
+    "src/cells/processes/potassium_catalog.py": "75ab6da5a783967ac80b5ddc1f8db061a472c43529829875f4021c2d549bb270",
+    "src/cells/processes/potassium_channels.py": "d7f77ebbb313a4d251ba27ea935889426396006907d9d4bb21d9ccd219bca2e3",
+    "src/cells/processes/shared_channel_catalog.py": "c1ec79a84e60fa69cfcb9fc840095066bb51aa1f9d5197e4eaba2a58912d88ca",
+    "src/cells/processes/shared_channel_catalog_v2.py": "86ba89eb06df29c0e5535a1b92d711f4cf0920b66befccf8d2398005d03ec695",
+    "src/cells/processes/sodium_catalog.py": "98c93939bb7c20e402c0bdba04158179c6f5035cba769b8b5b0934761973dda9",
+    "src/cells/processes/sodium_channels.py": "c7f4d3cc96c2b4d8e129812589c419ff254c9f5c61a9788736c0963e49e4ac31",
+    "src/cells/processes/voltage_gates.py": "ff4e282468415cac9f09a73238e1d86bc87e5a97c23331615e5867352bf6ad15",
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "tests/reference_er_calcium.py": "8bd836c5f8a0f632df7ab546adbe1c1fe1efb871aaef90598e62ddde64b1f050",
+    "tests/reference_gated_calcium.py": "8ed3fb5760bb07f22cc0676a930448f4e2c97b3895ce4b64c74bcf1656ab880c",
+    "tests/reference_ip3_calcium.py": "ac0ffa44f6c6841fae2958a69edc5a8f40cff064fe9bfa818df9c9f7dcb6b0a4",
+    "tests/reference_plasma_calcium.py": "641103daca04301f01131014559abb36fd9c1c253da59f4c00998dce4d2f8ff1",
+    "tests/reference_spatial_calcium.py": "8900b4798be0879f44fd5749671ca9460c54410d4f7e27482ee7c8473e03b62c",
+    "validation/betse/contact.py": "c2fb432d3b0988b08abf43e3c0e37eb7a8ddd8f549ce8480657d5dfdfc18c67d",
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+    "validation/betse/pump_contact/pump_reference.py": "7f5bf4a4d66e0b6a21857b551499243d17e677df808b098b92f37a0ea12e5231",
+    "validation/betse/spatial_cluster/reference.py": "7142fb93f92fb108a44af4faac7544404341d98ca019c8aa22a0239e2b8d8674",
+    "validation/betse/voltage_gate_audit/gate_independent.py": "ae99739ae74c2ee95421cc9451b57a4662a0f86fdaeaa8bbe78006bbd6ab4b1b",
+    "validation/channels/calcium_activated_potassium_reference.py": "ca0852c7424be2d0e497933017161f5a7c5014f12ada5f8f8fd15c61c1c2ca2d",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/leak_channels_reference.py": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+    "validation/chemistry/finite_energy_reference.py": "2feeadbd78d5c0644dc72544495747ca1e7961b26a179d0cccf1ac6ad175b501",
+    "validation/tissue/calcium_activated_catalog_fixtures.py": "cb51957ba08b7f2279a016b99131e05a175ae46fe3a6a73b35b269df0c56465c",
+    "validation/tissue/cav_reference.py": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+    "validation/tissue/channel_catalog_v2_fixtures.py": "2ee9a63bbed09f141afea5541055ac473b07e58e3b73d926bba319b252841ffc",
+    "validation/tissue/hcn_extra_catalog_fixtures.py": "ce27d4dfaa18e238a006069592f122be561ac9a46d2c195351c79606a48b1422",
+    "validation/tissue/hcn_reference.py": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+    "validation/tissue/kir_reference.py": "688bef58c2353fd22c1dcc937935b9bd155c67fcebe63c568f158c12cd4b2965",
+    "validation/tissue/kv1_reference.py": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+    "validation/tissue/morris_lecar_catalog_fixtures.py": "43cd4331bc62bb782327569fbee8616512be4a55aa758f853a38cbbbab6a1265",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/tissue/sodium_reference.py": "0c3f30645ac75abbb6f8b9799163425dd201bc35ec8ac9e30e74c6add8383c91",
+    "validation/tissue/surface_calcium_catalog_fixtures.py": "92837a0cfdae32365ab3bbc143d312817b2e5bc9e98aba9b0bd33a7b363f7ccb",
+    "validation/tissue/surface_calcium_cav_fixtures.py": "43d409a4f864d464944d756279ffb1da7bb7a9d15a5de0d648b6fda7579638d6",
+    "validation/tissue/surface_calcium_channel_fixtures.py": "1bddfd2b2e4c699d699abc1df273f50735c526dc4ab3e54a62d384c62e99614a",
+    "validation/tissue/surface_calcium_energy_fixtures.py": "4bddb494c80ffaf7be3b06b80d2d062c490dd2227427126fb3e233b4a9438cc5",
+    "validation/tissue/surface_calcium_energy_reference.py": "6c32e08c58771b4294d6b48daffbaf6936be8f43d936ba0672e36537ecaa9c2c",
+    "validation/tissue/surface_calcium_fixtures.py": "6ba254d0c33be9c0a8ac32b848dd5a0579fb42984cfc8612f6b948f893676ebd",
+    "validation/tissue/surface_calcium_hcn_fixtures.py": "137863a4dc2031ef1f0545fc130edfc995b9316a3b882d807a54c139fe5376b0",
+    "validation/tissue/surface_calcium_kv1_fixtures.py": "26e89a6ebcd98e572505fef25c882c1895392c87fa5ad9e4557fb6e97b5bfafe",
+    "validation/tissue/surface_calcium_reference.py": "5191ab6459b2e9cb7713277bbfb90d08b5896cbfc67309955024e6e948463934",
+    "validation/tissue/surface_calcium_sodium_fixtures.py": "7acde52fb6d3b2715cf6582ac0091a8fdf6b19fa5c5c80d40e5922ccd36b521f",
+    "validation/tissue/surface_catalog_fixtures.py": "d2d32836c6282e9daff66a1a29b295dc91bb11a6de88c76b1bafe187937ff371",
+    "validation/tissue/surface_channel_fixtures.py": "9f0a0537868a73e1a1b740ec45f7025f9a1dd0ff99686c3022402354d0f50ec9",
+    "validation/tissue/surface_dynamics_fixtures.py": "0e5be633540ea3107d1a338b694f38c1aa6e097465112614e5b0b9d9864e516e",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_fixtures.py": "edc14d0ae0a02256b13c23559be416f15c91f6361244ff622045e7fbb1366c89",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_fixtures.py": "914b248ae37ce67f73540fb2fec4094441cfa409e8ec9cac0ec9f4e7d8aef08d",
+    "validation/tissue/surface_hcn_fixtures.py": "cfe21188a4eddffcf2e0d711ad2ce593648292d554a16f14a68e7f31c52de2a9",
+    "validation/tissue/surface_kinetic_fixtures.py": "8cd95ff9ec59294bfb10e07978e507d541482cceae2a04062c321751ecf618bc",
+    "validation/tissue/surface_kinetic_reference.py": "9edcf61080688872757afaa2d8fc0e537266bfc23e6770e0c9f163161ab1bda3",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/tissue/surface_sodium_fixtures.py": "49c4298608f6bb3bbf87d9e05dc7d1f2f63317a9c4ed725856ff4290464090b3",
+    "validation/topology/betse_tissue_profiles_reference.py": "1618932604982d21ab3fb185e2f73a1ab99c4c557e38d2eac80f5843ec88e91c",
+    "validation/topology/surface_profile_interventions_reference.py": "ddaf769e07f27a82b9064f5856c6b41a91fe6ab858500fc858ac1aa02feca702"
+  },
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_rss_bytes": 1073741824,
+    "min_available_bytes": 8589934592
+  },
+  "scope": "Explicit fresh INIT/SIM RK-stage native membrane D on exactly calcium @6 and finite-fuel @5; no implicit phase handoff, pressure/ECM, cuts, other compositions or native full-loop parity",
+  "supported_owners": {
+    "resolved_calcium_energy_membrane_profiles@1": "resolved_calcium_energy@5",
+    "resolved_calcium_membrane_profiles@1": "resolved_calcium@6"
+  },
+  "test_dispatch_metadata": "agent-work/cells-worker-01/workfiles/owned_calcium_profile_interventions_test_dispatch.json",
+  "test_dispatch_patch": "agent-work/cells-worker-01/workfiles/owned_calcium_profile_interventions_test_dispatch.patch",
+  "timestep_admission": "Maximum scheduled background P adds a conservative per-owner GHK outflow bound to the unchanged parent chemical loss bound; step times their sum must be <=0.25.",
+  "trajectory_claim": "Independent full-state agreement at both allowed steps; record precision-limited refinement explicitly and make no convergence-order claim below the precision floor."
+}

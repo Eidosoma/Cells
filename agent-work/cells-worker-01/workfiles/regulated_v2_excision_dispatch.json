@@ -1,0 +1,31 @@
+{
+  "status": "prepared-not-applied",
+  "model_id": "resolved_calcium_energy_regulated_excision@1",
+  "exact_parent": "resolved_calcium_energy_regulated@2",
+  "patch_path": "agent-work/cells-worker-01/workfiles/regulated_v2_excision_dispatch.patch",
+  "patch_sha256": "ffc57430d08603f5f5ad735a213ed03bccafe23990ce74a278d7695f906da75b",
+  "shared_files": {
+    "src/cells/core/specs.py": {
+      "before_sha256": "aa1af3ebbd90e6daa069beefe18b67f1abd4b17b43d0421fdec597eb15a4136e",
+      "after_sha256": "ce6de2a07494bf77726a308a5d7df0c171289ae3c3ceba85112f7b82cb756c5d"
+    },
+    "src/cells/models/registry.py": {
+      "before_sha256": "3d89ae43c0b8b65730dbb5425cefd51fddd270e68a6ae50add74f80d19eeaca1",
+      "after_sha256": "f10bca2086b8d5d2389545d98eec923f1caaa8cfe256d7d7c28d320e0dc82c09"
+    },
+    "src/cells/core/excision.py": {
+      "before_sha256": "62f3b937de765af67c22f6211e7b3d5ff6f1c89cb9cf50a996e6f3dbd7396b33",
+      "after_sha256": "d33750ec511ee2b31c929d8855005685015249730fe93ed7bf86a6dc2dc4b142"
+    },
+    "src/cells/excision_io.py": {
+      "before_sha256": "20bbfbb839ed30071bd52b913e75ee014bc26c8e805c6bf8161c9c309901d4b3",
+      "after_sha256": "06a955058753e19c1c3852fe37d6e52a8e1d135f819fba78c826618e93de8a56"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "before_sha256": "32adb2107fc61ac62e8c184744b92b2141a07889e55c3bfa1d407359b4a65d8f",
+      "after_sha256": "52b4d6c759c025b93eb27ddf29d3330e1fc8b271609c3fba0ce84b0022a457d8"
+    }
+  },
+  "scope": "Only frozen qualification copy receives patch; existing @2 control projection handles inherited schedule; no shared source writes",
+  "prepared_candidates": "/tmp/cells-regulated-cut-dispatch-34ooydly"
+}

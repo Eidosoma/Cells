@@ -1,0 +1,9 @@
+{
+  "path": "agent-work/cells-worker-01/workfiles/check_owned_calcium_profile_interventions.py",
+  "base_snapshot": "/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-07/sources/agent-work/cells-worker-01/workfiles/check_owned_calcium_profile_interventions.py",
+  "base_sha256": "a8e876f0acb429e8d623665919820f1c7b7f4b010eed027508994ce440b00294",
+  "corrected_sha256": "7e7567a03871b760e02c0b3ddcc0a89f2cc023ab6f0634bc21c538ab3fa2b67a",
+  "patch_sha256": "6230ab27c72cfbf71d423b579190e6f7840fda524f6251aa4ca0bd419230235c",
+  "change": "Exclude backend-only public/JAX cases from every host selector; physical files and evidence unchanged.",
+  "tests_rerun": false
+}

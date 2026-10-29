@@ -58,6 +58,38 @@ the [project README](../README.md) gives the short feature overview.
 - [Shared fuel with owned calcium](TISSUE_RETURN_CURRENT.md#shared-finite-energy-with-owned-calcium-and-assembly):
   Na/K, PMCA and ER pumps share finite ATP/ADP/Pi, with explicit regeneration
   and internal pump-work accounting; assembly control remains one-way.
+- [Finite mitochondrial ion/voltage coupling](TISSUE_RETURN_CURRENT.md#finite-mitochondrial-ion-and-voltage-coupling):
+  passive internal exchange with actual cytosolic owners, capacitor energy and
+  heat, composed with calcium/ER, finite fuel and configured plasma transport.
+  [Mitochondrial cuts](TISSUE_RETURN_CURRENT.md#cell-removal-with-mitochondrial-owners)
+  retain organelle inventories and paired internal charge; qualification is in Progress.
+  Respiration and ATP synthesis remain outside this law.
+- [Water-aware cuts](TISSUE_RETURN_CURRENT.md#cell-removal-with-compliant-water-and-finite-fuel):
+  actual cytosol/exterior volumes and concentrations survive, while compliance
+  references, pressure laws and all transfer/work histories stay explicit.
+- [Live network regulation](TISSUE_RETURN_CURRENT.md#live-network-regulation-of-pumps-channels-and-junctions):
+  bounded factors read actual free ions and finite fuel to regulate existing
+  pumps, shared channels and junctions; public qualification is tracked in Progress.
+  [Regulation-aware cuts](TISSUE_RETURN_CURRENT.md#cell-removal-with-live-network-regulation)
+  preserve surviving rule order, physical sample owners and regulated fields.
+- [Initial tissue geometry](TISSUE_GEOMETRY.md): prepare passive tissue from
+  recorded native meshes with explicit physical measures and portable replay.
+- [Static tissue-profile preparation](TISSUE_RETURN_CURRENT.md#static-tissue-profile-preparation):
+  bind native regional profiles to resolved membrane/junction permeability using
+  explicit physical thickness and owner maps, with a JSON/CLI preparation and replay interface.
+- [Explicit INIT-to-SIM preparation](TISSUE_PHASES.md): carry passive, active or
+  complete calcium/fuel inventories, intrinsic gates and accounting history into
+  a new phase clock, with complete replay.
+- [Scheduled active membrane profiles](TISSUE_RETURN_CURRENT.md#scheduled-active-membrane-profiles):
+  apply regional background-permeability pulses while preserving channels, pumps,
+  intrinsic gates, phase clocks and full transfer history.
+- [Scheduled profiles with calcium and finite fuel](TISSUE_RETURN_CURRENT.md#scheduled-membrane-profiles-with-calcium-stores-and-finite-fuel):
+  distinct models retain calcium/ER stores, buffers and ATP pool ownership;
+  qualification is tracked in Progress.
+- [Cell removal and continuation](TISSUE_RETURN_CURRENT.md#cell-removal-and-absolute-time-continuation):
+  conservative passive tissue cuts, [active channel/pump cuts](TISSUE_RETURN_CURRENT.md#cell-removal-with-channels-and-maintained-fuel-pumps)
+  and [owned calcium/ER cuts](TISSUE_RETURN_CURRENT.md#cell-removal-with-owned-calcium-and-er-stores),
+  rebuilt electrical fields and complete archives retaining the original clock.
 - [Two-task readout assay](TWO_TASK_READOUT_ASSAY.md): cue location and timing
   read from shared tissue trajectories, with frozen calibration and controls.
 - [Compartment chemistry](COMPARTMENT_REACTIONS.md), [ER calcium](ER_CALCIUM.md),

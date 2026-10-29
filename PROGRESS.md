@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-28 UTC.
+Last updated: 2026-10-29 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -17,11 +17,1461 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   defines that gate. Defer new GPU qualifications
   and prepare later batches of compatible features/independent worlds, with
   balanced arms and both GPU-busy and SM-active telemetry. Existing frozen
-  jobs remain intact. The last user-triggered finite-energy check at 14:33 UTC
-  found controller 1070204 active in CPU replay; no repeated polling is queued.
+  jobs remain intact. Run-specific entries below record the latest requested
+  status checks; no repeated polling is queued.
   Short checks must still cover the necessary scientific time scales and
   numerical comparisons. Stage checks are labelled separately from full
   coupled trajectories; necessary longer validations remain allowed.
+  Under the current `AGENTS.md`, runs expected to take ten minutes or more
+  launch detached with durable logs and result/failure artifacts, then return
+  control. Status checks wait for the user's request. GPU runs stay deferred.
+
+- **Static extracellular barriers now prepare ordinary passive tissue inputs.**
+  The [barrier workflow](docs/TISSUE_GEOMETRY.md#apply-static-extracellular-barriers)
+  binds BETSE's free/adherens/tight coefficient precedence and explicit ionic
+  modulators to physical site/species owners, then maps harmonic diffusivities
+  to existing Cells logmean faces. Only face coefficients change: all twelve
+  initial state fields, inventories, charge anchors, geometry and schedules
+  remain intact. Complete site/face geometry and sealed finite boundaries are
+  required; duplicates, zero coefficients and native sodium normalization remain
+  explicit. `cells tissue-profiles` prepares, validates and replays the complete
+  recipe, with a [portable example](examples/extracellular_barriers/request.json).
+  The [verified result](/mnt/workspaces/Cells/environment-barrier-preparation-20261029-01/closeout.json)
+  binds **161 distinct passes**: 74 independent coefficient-oracle self-checks,
+  55 component/ownership/refusal checks, ten public CLI checks and 22 existing
+  profile CLI regressions. Eight full initial physical stages match independent
+  field/material/energy calculations, with a maximum **0.00033450** error/budget
+  and **8.89e-16 pJ/s** energy residual. Their full arrays and all 106 output
+  artifacts are retained; **1,703 frozen sources** match at closeout.
+  Checks completed **10:47:26 UTC** in **92 seconds**, at approximately
+  **400 MiB tree RSS**, with **18.23 GiB** minimum host reserve under
+  1-GiB / 8-GiB guards. These are static preparation and initial-stage checks,
+  not evolved trajectories, biological cases or GPU qualification. Native
+  collocated transport, the separate Bernoulli face law, dynamic barriers,
+  bath events, flow and moving geometry remain separate integration work.
+
+- **Real intermediate batch recovery passes host admission for three coupled
+  cut families; compiled qualification is prepared and held.**
+  The [shared qualification harness](validation/execution/coupled_excision_batch_restart.py)
+  and [tests](tests/integration/test_coupled_excision_batch_restart.py) extend
+  transport (**42 fields**), mitochondria (**45**) and water (**43**) from
+  completed-checkpoint replay to a saved intermediate batch and fresh-process
+  continuation. They load each actual compiled cut, compare every accepted
+  state against its saved scalar trajectory at existing tolerances, reuse the
+  saved independent reference observations, and require an exact batch/restart
+  state, clock, layout and observation suffix. Failure evidence is retained.
+  The [verified source map](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/preparation/source-map.json)
+  binds **4,800 existing file identities**. The
+  [three prepared packages](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/preparation-result-v2.json)
+  keep their separate frozen production runtimes; only the two new harness/test
+  files are added outside `src/cells`. No checkpoint is migrated. Saved
+  observation boundaries are **101.3 / 100 / 100 us**, using **63 / 86 / 92**
+  steps per window respectively, with all physical inputs unchanged. Worlds
+  3 and 79 repeat one case per family and add no independent biological cases.
+  The [first transport admission passed](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/transport-01/admission/result.json)
+  in **3m 51s**, at **271 MiB** RSS with **18.25 GiB** minimum reserve.
+  Static review then prompted an explicit refusal of imported test/reference
+  modules outside the frozen package; no physical code or tolerance changed.
+  All three updated host admissions and snapshot roundtrips
+  [launched detached](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/admission-launch.json)
+  at **09:41:05 UTC**, PID **1456780**, CPU6, estimated **10–25 minutes**.
+  They run sequentially under **1-GiB RSS / 8-GiB host reserve / 600-second**
+  guards, with durable logs and terminal result/failure artifacts. The first
+  transport pass is retained separately, not credited to the updated package.
+  Compiled baseline and restart phases remain **unlaunched**, with 4-GiB
+  PSS/individual-RSS and 8-GiB reserve guards prepared. No new trajectory,
+  GPU or recovery pass is claimed; no polling, retry or subsequent launch is queued.
+  The **09:54 UTC user-triggered check** found
+  [all three host admissions completed](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/admission-result.json)
+  at **09:51:28 UTC**, in **10m 23s** overall. The
+  [closeout](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/admission-closeout.json)
+  verifies all source/runtime bindings, exact artifact inventories and **1,210
+  arrays across six batch-child snapshots**, byte-identical to the saved cuts.
+  The three packages preserve **4,704 original source files**, adding only
+  their six harness/test copies. Peak RSS was **272 MiB**, with **18.12 GiB**
+  minimum host reserve. These are **three host admissions**, with zero new
+  compiled restart or independent biological passes. The water case retains
+  its qualified 53-law runtime. Compiled work remains held behind regulated06.
+
+- **Scalar windows now reuse one compiled integration shape, including the tail.**
+  The [applied repair](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/integration.json)
+  prepares one executable per iterator and masks unused final slots before any
+  model evaluation. Real step sizes, event clocks, fields, accounting checks
+  and checkpoint indices are unchanged. A completed restart compiles nothing.
+  The [receipt](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/result.json)
+  binds **131 distinct passing checks**: 13 targeted, 116 window/numerics
+  regressions and two real physical/native-discrete execution checks. All
+  compared states and observations agree exactly with ordinary execution.
+  These are engineering checks, not independent biological cases. The three
+  phases took **26.3 / 103.9 / 81.5 seconds**, peaking at **1.30 GiB RSS**
+  with at least **17.48 GiB** host reserve, under 4-GiB / 8-GiB guards.
+  The [source comparison](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/ordinary-path-proof.json)
+  recovers the original runner/window ASTs by removing only the explicit
+  window-execution additions. The [independent review](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/review/qualification-review-01/REVIEW.json)
+  finds no blocking issue, verifies **4,872 frozen source identities** and confirms
+  bitwise equality of **78 saved state/observation pairs**. The [baseline](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/baseline-evidence.json)
+  confirms the original engine compiled a second short-tail shape; its first
+  incorrectly selected no-tail probe remains preserved. One integration shape
+  does not bound all compiler/process memory. The instrumented transport
+  qualification below now passes with one compilation per phase, under its
+  original memory guards. This verifies the repair on that frozen workload;
+  the old uninstrumented RSS failure's exact allocation cause remains unproven.
+  Other coupled runs and GPU qualification retain their own scope.
+
+- **Calcium/ER cut/continuation passes scoped CPU qualification.**
+  [`resolved_calcium_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-owned-calcium-and-er-stores)
+  preserves actual cytosol/ER inventories and three gate fields, archives all
+  34 source fields and rebases 31 local ledgers at the original clock. The
+  [combined receipt](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/development-result.json)
+  binds **94 distinct passing checks**: 67 implementation/regression checks and
+  27 independent checks. Counts combine frozen phases; split execution checks,
+  refinements and repeated worlds are not extra biological cases.
+  [Host checks](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/host-02/result.json)
+  cover evolved chemistry, gates, all seven control families, source history,
+  no-op/terminal/sequential cuts and malformed provenance. Complementary
+  owner/rate panels retain all 56 shared laws; the compiled stage retains 37.
+  The [prefix](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-prefix-01/result.json),
+  [scalar continuation](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-suffix-01/result.json)
+  and [windowed fresh-process restart](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-trajectory-window-01/result.json)
+  pass in **3m 6s / 3m / 4m 40s**, using one frozen source tree and checksummed
+  artifacts. The 50-us prefix / cut / 150-us endpoint compares all 34 fields
+  at **0.00103 before / 2.15e-5 after** of the state-error budget. Scalar/window
+  observations, final state and restored layout agree exactly. Continuous
+  energy residual is **1.51e-16 pJ**, material residual **8.44e-19 fmol** and
+  global charge residual zero. The
+  [two-world continuation/restart](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-batch-01/result.json)
+  passes at **2.16e-5** of the state-error budget. Refinement and existing
+  passive/active archive regressions pass, as do offline 1/4/16-GPU plans.
+  The [source example](configs/resolved_calcium_excision_source.json) and
+  [after-cut input](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/example-after.json)
+  retain the qualified 39.0625-ns step. Scalar 512-step windows estimate
+  **622.6 MiB** after removal; two-world 256-step windows estimate **628.5 MiB**.
+  Successful phases peak at **3.08 GiB** charged memory, with **12.49 GiB**
+  minimum host reserve. The [original combined attempt](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-trajectory-01/failure.json)
+  hit its 4-GiB RSS guard; the [512-step batch refusal](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/compiled-preflight.json)
+  is also preserved. Fresh-process splitting and smaller batch windows fixed
+  resource use without changing rates, horizons, tolerances or the 8-GiB host
+  reserve. The [independent package](/mnt/workspaces/Cells/calcium-excision-reference-20261029-01/HANDOFF.json)
+  and [static review](/mnt/workspaces/Cells/calcium-excision-reference-20261029-01/production-review-01/REVIEW.json)
+  are bound by [93 hash checks](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/reference-verification.json).
+  No calcium qualification remains active. These manufactured neutral-removal
+  transients do not establish slow relaxation, healing, mechanical cutting work,
+  full native tissue parity or GPU execution.
+
+- **Finite-ATP cutting completes its five-phase scoped CPU qualification.**
+  [`resolved_calcium_energy_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-finite-atp-and-regeneration)
+  removes cells with their actual neutral transformed ATP/ADP/Pi and regeneration
+  owners. All **38 fields** are archived; three gates survive, 35 local fields
+  rebase and eight control clocks remain absolute. Shared CLI, snapshots and
+  ensemble dispatch are wired. The
+  [closeout](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-closeout-01/CLOSEOUT.json)
+  verifies **23,605 file identities** and consolidates **five compiled checks**:
+  full catalog/domain, 50-us prefix/cut, 150-us scalar continuation, fresh-process
+  scalar restart and two-world batch. The **82 host checks** (73 new-family and
+  nine earlier-family archive checks) and **32 independent-reference checks**
+  remain separate, bound by the
+  [host receipt](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/host-receipt.json)
+  and [reference package](/mnt/workspaces/Cells/calcium-energy-excision-reference-20261029-01/HANDOFF.json).
+  Repeated controls, execution worlds and reporting rechecks add no biological cases.
+  The **05:35 UTC user-triggered check** found the
+  [final batch passed](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-batch-suite-04/result.json)
+  at **05:21:17 UTC**, in **5m 3s**, after its 05:16:14 launch. Both worlds retain
+  **2,572 actual steps**, 256-step windows and 11 rounds at the original
+  **39.0625-ns** timestep. Normalized state errors are **0.000921 before / 0.00003994
+  after** removal; both batch worlds report **0.00003995 of budget**. The saved
+  scalar/window observations and full 38-field endpoint checkpoint agree exactly.
+  Completed-batch continuation executes **zero additional steps**, retaining exact
+  state. This is a completed-checkpoint check, not an intermediate batch restart.
+  Batch evidence comprises the frozen complete assertions, passing JUnit and
+  completion events; batch arrays/checkpoints were not separately saved for an
+  independent array audit. The batch starts from the independent reference-prefix
+  checkpoint; the compiled prefix and scalar/window artifacts are audited separately.
+  The four original compiled passes retain their original source epoch. The batch
+  differs only in `windows.py`, `batch_windows.py` and their regression tests;
+  all physics, references, fixtures, ATP test assertions, rates, clocks and
+  tolerances remain byte-identical. This does not qualify the entire current tree.
+  The [tail-reuse repair](/mnt/workspaces/Cells/batch-tail-reuse-development-20261029-01/result.json)
+  passes **75 engine regressions**; the
+  [restart-preflight repair](/mnt/workspaces/Cells/restart-preflight-development-20261029-01/result.json)
+  passes **175**, with overlaps not added again. They preserve actual biological
+  steps and controls while avoiding a second tail compilation and one-step
+  full-history validation. The
+  [independent endpoint probe](/mnt/workspaces/Cells/restart-preflight-development-20261029-01/reference-terminal-atp-result.json)
+  verifies 7,720 historical steps in 32 chunks without migrating old checkpoints.
+  The original [900-second wall refusal](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-suite-01/batch/failure.json),
+  [4-GiB individual-RSS refusal](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-batch-suite-02/batch/failure.json)
+  and [2,700-second history-validation refusal](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-batch-suite-03/batch/failure.json)
+  remain preserved. The final batch peaks at **3.19 GiB PSS / 3.32 GiB individual
+  RSS**, with **15.61 GiB** minimum host reserve, within unchanged 4-GiB / 8-GiB
+  guards. The 512-step batch storage refusal and 256-step **645-MiB** estimate
+  remain in the [preflight](/mnt/workspaces/Cells/calcium-energy-excision-development-20261029-01/compiled-preflight.json).
+  Surviving PMCA/ER owners outside the inherited **[1e-9, 1e3] mM** constructor
+  range explicitly refuse re-anchoring without clipping; no-op and terminal
+  archives remain supported. No ATP qualification job remains active. These
+  manufactured transients establish neither physiological recovery, mechanical
+  cutting work, full native tissue equivalence nor GPU execution.
+
+- **Configured-transporter cutting passes its five-phase compiled CPU suite.**
+  [`resolved_calcium_energy_transport_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-configured-membrane-transport)
+  extends removal to the 42-field calcium/fuel/configured-transport model.
+  Surviving routes keep their membrane owners, kinetic parameters and maintained
+  drive. All 42 source fields remain archived; three gates survive, 39 local
+  fields rebase and nine control families retain their absolute clocks. Route
+  transfer/work histories add no duplicate inventory; supplied route work is
+  external and finite-ATP pump work stays internal. Shared parsing, CLI/archive,
+  model and ensemble dispatch are wired without changing the parent equations.
+  The [three initial checks](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/initial-01/result.json)
+  pass in **27 seconds**, including empty route axes. The
+  [two evolved-owner checks](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/live-owner-01/result.json)
+  pass in **2m 14s**, including a genuinely evolved, removed neutral KCl route
+  with nonzero cycle, transfer, heat and supplied-work histories and complete
+  archive restoration. That synthetic case explicitly supplies **6000 J/mol**
+  of maintained route work; the default removed-cell routes remain blocked.
+  Both compare against the independent 42-field reference at unchanged physical
+  rates. These five checks are not full trajectory/GPU qualification and will
+  not be counted again when the broader suite repeats their test IDs.
+  The [independent reference](/mnt/workspaces/Cells/calcium-energy-transport-excision-reference-20261029-01/HANDOFF.json)
+  passes **46 distinct checks**, including complete 42-field prefix/cut/suffix
+  refinement for both default and nonzero removed-route histories. Each has a
+  50-us prefix and 150-us absolute endpoint; maximum energy residual is
+  **1.39e-11 pJ**. One test inadvertently mutated its comparison baseline;
+  copying that test's counterfactual arrays fixes it. The original failure stays
+  frozen, with no oracle, fixture, rate or tolerance changes. The
+  [218-hash verification](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/reference-verification.json)
+  checks those identities, the single test-only AST change and the host suite's
+  oracle/fixture match. This independent CPU worker is complete.
+  The [combined host receipt](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/host-receipt.json)
+  verifies **152 distinct checks: 94 transporter-family checks, 12 earlier-family
+  archive regressions and 46 independent checks**. The **04:11 UTC user-triggered
+  check** found [offline placement completed](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/planning-suite-03/result.json)
+  at **03:50:56 UTC**, in **21m 17s**. All 1/4/16-GPU plans pass; these are offline
+  placement checks, not GPU executions. Peak host-phase RSS is **369.6 MiB**;
+  minimum host reserve is **11.84 GiB**.
+  The [original 128-step storage refusal](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/host-suite-01/plans/failure.json)
+  and [540-second planning timeout](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/plans-02/failure.json)
+  remain preserved. The [planning-only repair](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/planning-repair-inputs.json)
+  retains the refusal and uses **64-step windows** for placement, preserving
+  every physical step, observation, world and memory budget. Only that test
+  changes; **1,558 other files** remain identical. The successful continuation
+  allows 2,400 seconds with unchanged 1-GiB process / 8-GiB host-reserve guards.
+  Four passed phases were reused with source, artifact and test-identity checks.
+  No transporter host job remains active; compiled qualification launched below.
+  The [prepared compiled suite](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-01/preparation-result.json)
+  has passed [root review](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-01/root-verification.json)
+  of **1,667 identities**. Its reviewed
+  bounded-execution test patch is now applied to the working tree, with an
+  [exact source match](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-01/root-integration.json).
+  It preserves the actual 50-us cut,
+  150-us endpoint, rates and tolerances, using prefix/scalar/restart/batch windows
+  of **215/256/128/128 steps**. Full-trace and larger-batch storage refusals remain
+  recorded. Execution-array estimates are **566/603/307/615 MiB**; complete
+  histories are still retained, with estimated merge payload peaks of **12 MiB
+  before / 21.4 MiB after** the cut. This will qualify bounded execution with full
+  history comparisons; it is not a monolithic-run or GPU qualification.
+  The [CPU2 preparation](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/root-verification.json)
+  preserves all **1,559 source files**, all five tests and guards exactly;
+  only output paths and placement change. [Root verification](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/root-final-preparation-verification.json)
+  checks **3,334 identities**. The [detached run](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/launch.json)
+  launched **05:34:19 UTC, 29 October**, PID **1380103**, CPU2, with **21.02 GiB**
+  host memory available. Estimate **45–90 minutes**, with **4-GiB PSS and
+  individual RSS / 8-GiB host reserve / 2,700 seconds per phase** guards.
+  Full catalog, prefix, scalar continuation, fresh restart and two-world batch
+  checks retain durable logs and result/failure artifacts. No repeated polling,
+  automatic retry or subsequent job is queued.
+  The **05:58 UTC user-triggered check** found **two of five compiled phases
+  passed**: [catalog](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/catalog/result.json)
+  in **2m 41s** and [prefix/cut](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/prefix/result.json)
+  in **6m 24s**. The [scalar phase failed](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-02/scalar/failure.json)
+  at **05:50:24 UTC**, after **6m 55s**, on the unchanged 4-GiB individual-RSS
+  guard. Peak individual RSS was **4.12 GiB**; minimum host reserve **12.59 GiB**.
+  No numerical assertion failure was reported; restart and batch did not run.
+  The original scalar engine compiles another shape for the final **14 of 2,574
+  steps**. Its contribution to this failure remains a hypothesis;
+  retained logs do not locate the failure within a compilation.
+  The failed run and all earlier passing evidence remain unchanged.
+  The [instrumented successor](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/preparation-result.json)
+  overlays only the two qualified scalar-engine files; **1,557 of 1,559 frozen
+  source files** and all physical tests remain exact. Root
+  [verified 6,315 identities](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/root-review/VERIFICATION.json),
+  the catalog reuse boundary, telemetry pass-through and qualified engine binding.
+  Only the unaffected catalog pass is retained. Prefix, cut, scalar and fresh
+  restart artifacts are regenerated; batch also runs anew. No old checkpoint
+  is migrated. The scalar retains **2,574 actual steps**, ten full 256-step
+  windows plus a **14-step masked tail**; this count comes from the retained
+  transporter preflight, distinct from ATP's 2,572-step case.
+  [Launched detached](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/launch.json)
+  at **06:38:05 UTC, 29 October**, PID **1401460**, CPU2, with **20.73 GiB**
+  host memory available. Estimate **45–120 minutes**; unchanged limits are
+  **4-GiB PSS and individual RSS / 8-GiB reserve / 2,700 seconds per phase**.
+  Four new phases retain logs, result/failure artifacts and fsynced
+  `window-trace.jsonl` records for window, lowering and compilation boundaries.
+  The instrumentation changes no numerical arguments or returned arrays and
+  introduces no device synchronization. Its logging overhead is separate from
+  production integration timings. No automatic retry or follow-up job is queued.
+  The **07:00 UTC user-triggered check** found **four of five phases passed**:
+  the retained catalog, fresh prefix/cut, scalar continuation and fresh-process
+  windowed restart. The [prefix](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/prefix/result.json)
+  took **6m 27s**; the [scalar](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/scalar/result.json)
+  took **5m 53s** and the [restart](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/window/result.json)
+  took **5m 10s**. Each trace records one integration compilation, including
+  the short tails. Scalar/restart individual memory peaks were **3.35 GiB**,
+  within the original 4-GiB guard; these phases retain at least **15.53 GiB**
+  host reserve. Batch was still running at that check; the job was not polled
+  again during the active profile integration below.
+  The **07:19 UTC user-triggered check** found the
+  [five-phase suite completed](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/result.json)
+  at **07:04:15 UTC**, after **26m 10s** for the four regenerated phases.
+  The [batch](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-suite-03/batch/result.json)
+  passes in **8m 33s**, with both numerical worlds at **0.00007394 of the
+  independent state-error budget**. Each takes 2,574 real steps through 21
+  128-slot rounds, retaining the 14-step tail. A separate completed-checkpoint
+  round executes zero steps and compiles nothing; it is not an intermediate
+  batch restart. All four regenerated phases use one integration compilation
+  each. Batch peaks at **3.41 GiB PSS / 3.54 GiB individual RSS**; all phases
+  retain at least **14.96 GiB** host reserve under unchanged 4-GiB / 8-GiB limits.
+  The [independent closeout](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-closeout-01/REVIEW.json)
+  accepts the frozen qualification without blockers after **20,720 file identity
+  checks**. Saved observations cover all **42 state fields**: prefix error is
+  **0.00017755 of budget**, scalar/window error **0.000073915**. Scalar/window
+  state observations agree bitwise and all 160 checked layout arrays match.
+  Batch arrays were not serialized; its evidence is the unchanged complete
+  assertions, passing JUnit and execution trace. The complete prefix history
+  was checked during execution; the saved prefix observations and cut artifacts
+  are audited independently. This does not claim every derived readout was
+  separately compared. The 106 host and 46 independent checks retain their
+  original scopes; numerical worlds are not biological cases. The
+  [explicit release](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/compiled-closeout-01/release-held-successors.json)
+  clears the transport dependency for water and mitochondria, whose results
+  still require their own qualification.
+  The [first direct probe](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/empty-smoke-01/failure.json)
+  caught a source-identity change while editing; it is retained and excluded
+  from passing counts. Subsequent checks run from frozen snapshots.
+  [Lint, formatting and diff checks](/mnt/workspaces/Cells/calcium-energy-transport-excision-development-20261029-01/static-checks.json)
+  pass. Broader source correspondence, mechanical cutting work,
+  organelle/water/assembly remapping and GPU execution remain open.
+
+- **Mitochondrial cutting passes host and scoped compiled CPU qualification.**
+  [`resolved_calcium_energy_mitochondria_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-mitochondrial-owners)
+  preserves the surviving organelles' actual ions, voltage, geometry and passive
+  transport parameters. All **45 fields** remain archived; three gates survive,
+  42 local fields rebase and ten control families keep their absolute clocks.
+  The chemical reference coordinate and organelle countercharge rebase together,
+  preserving both physical fixed backgrounds and whole-cell plasma charge.
+  This extends the existing passive organelle law without adding ATP synthesis.
+  Shared parsing, model/ensemble dispatch and checksummed cut archives are wired.
+  [Three initial checks](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/initial-01/result.json)
+  pass in **1m 42s**, covering compact/full catalogs and incompatible charged
+  removal. [Three evolved-owner checks](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/live-organelle-01/result.json)
+  pass in **3m 27s**: nonzero paired-charge rebasing, nonzero removed-organelle
+  histories with exact archive restoration, and rejection of rewritten past
+  organelle controls. They use the actual-rate 50-us independent prefix, without
+  changing rates or tolerances. These six checks are not full compiled trajectory
+  qualification and will not be counted again when the wider suite repeats them.
+  Peak process RSS is **273.3 MiB**; minimum host reserve is **15.17 GiB**.
+  The [independent package](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-reference-20261029-01/HANDOFF.json)
+  passes **48 distinct checks**: 46 short controls and two full 45-field
+  prefix/cut/suffix refinement cases, through the 150-us absolute endpoint.
+  Maximum energy residual is **1.20e-11 pJ**, and the independent paired-charge
+  derivation closes within **8.26e-24 C** of its unchanged **5e-23 C** budget.
+  The [296-hash verification](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/reference-verification.json)
+  checks the receipts and all 63 reference dependency files against the frozen
+  host source. Reference checks, numerical refinements and repeated controls
+  remain distinct from biological replication. The reference CPU worker is done.
+  The [133-check host suite](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-suite-01/inputs.json)
+  covers **118 new-family checks and 15 earlier-family archive regressions**.
+  It [launched detached](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-suite-01/launch.json)
+  at **02:45:26 UTC**, controller **1327865**, on CPU 3; estimated duration is
+  **45–75 minutes**. Contracts, history/owner refusals, refinement/archives,
+  evolved cuts and offline 1/4/16-GPU placement use one frozen source tree,
+  1-GiB process guards and an 8-GiB host reserve. Logs and result/failure
+  artifacts remain under that directory. The **04:11 UTC user-triggered check**
+  found [the evolved phase stopped at its 2,400-second wall guard](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-suite-01/evolved/failure.json)
+  at **04:10:23 UTC**. Contracts, histories and refinement/archive phases retain
+  **91 finalized passes**. The interrupted phase printed 38 passing markers,
+  but has no finalized JUnit record; those are not added to the passing count.
+  Its partial artifacts remain preserved. Peak RSS there was **276.1 MiB**,
+  minimum host reserve **11.84 GiB**; the failure is a wall-time refusal, with
+  no reported numerical assertion failure. Remaining evolved-owner and offline
+  placement coverage needs continuation at the unchanged scientific settings.
+  The [continuation inputs](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-continuation-02/inputs.json)
+  select **14 compact, 14 padded and 13 further evolved-owner checks**, then one
+  offline placement check. The [reuse receipt](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-partial-receipt.json)
+  binds the 91 finalized passes and the interrupted phase's preserved evidence.
+  Only the offline placement test changes; **1,565 source files** stay identical,
+  including the original physical laws, fixtures, references and runtime.
+  Its [storage preflight](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/planning-preflight.json)
+  retains the 128-step refusal and accepts **64-step windows at 213.7 MiB** within
+  the unchanged 256-MiB budget. All 96 remaining physical steps are still planned.
+  The continuation [launched detached](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-continuation-02/launch.json)
+  on CPU 3 at **04:27:47 UTC**, controller **1358674**, estimated **65–100 minutes**,
+  with **18.07 GiB** host memory available. Unchanged 1-GiB process / 8-GiB
+  host-reserve guards and per-phase durable logs remain in force. No automatic
+  retry, repeated polling or GPU job is queued.
+  The **04:56 UTC user-triggered check** found compact evolved-owner coverage
+  completed at **04:45:15 UTC**, in **17m 26s**, with the padded phase running.
+  The [updated partial receipt](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-compact-receipt.json)
+  verifies 1,566 frozen source files and consolidates **105 finalized host checks**
+  (91 retained plus 14 compact), with **28 checks pending**. Compact-phase peak
+  RSS was **234.5 MiB**, minimum host reserve **15.00 GiB**. No unfinished markers
+  are counted.
+  The **05:17 UTC user-triggered check** found the 14 padded-owner checks finished
+  at **05:02:43 UTC** and the 13 further owner/history checks at **05:12:53 UTC**.
+  The [evolved-owner receipt](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-evolved-receipt.json)
+  consolidates **132 distinct finalized host checks**, with one offline placement
+  check still pending verification. It verifies **3,434 path/hash records**;
+  the **48 independent reference checks** remain separate. The active placement
+  phase was not polled again while completing this review.
+  The **05:35 UTC user-triggered check** still found placement active; the
+  finalized count remains 132 pending its complete result/failure artifact.
+  The **05:46 UTC user-triggered check** found the
+  [continuation completed](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-continuation-02/result.json)
+  at **05:35:31 UTC**. Its 42 finalized checks, combined with 91 retained, give
+  **133 distinct host passes: 118 family checks and 15 older archive regressions**.
+  The 48 independent-reference checks remain separate. Offline placement took
+  **22m 35s**; the continuation took **67m 44s** overall. No mitochondrial host
+  job remains active. The [host receipt](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/host-receipt.json)
+  consolidates the finalized evidence. The
+  [compiled preparation](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-01/preparation-result.json)
+  is ready for review but **unlaunched**. It retains all 45 fields and 56 laws
+  at the actual 50/150-us clocks. The scalar/restart/batch widths are 256/128/128;
+  full-trace and larger-batch storage refusals remain preserved. This package
+  needs the qualified scalar-engine successor before execution; original frozen
+  sources and checkpoints will not be migrated. That original package was
+  never launched. The [engine-updated successor](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/preparation-result.json)
+  has been released after acceptance of transport's terminal review. Only the
+  two qualified engine files change; **1,564 of 1,566 sources** stay exact.
+  At preparation, all five compiled phases were pending, with unchanged 76/256/128/128 windows,
+  physical tests and resource guards. Root
+  [applied the prepared test partition exactly](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/root-integration/result.json):
+  all **110 original assertions** remain, both window helpers match the passing
+  transport helpers, and all five compiled tests collect. These are preparation
+  checks, not new trajectory passes. The
+  [package review](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/root-review-02/handoff.json)
+  verifies all 1,566 frozen sources and exact live test/family dispatch contracts.
+  The [detached qualification](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/launch.json)
+  launched **07:32:02 UTC, 29 October**, PID **1417577**, CPU3, estimated
+  **45–120 minutes**. All five phases run with **4-GiB PSS and individual RSS /
+  8-GiB reserve / 2,700 seconds per phase**. The concurrent admission reserved
+  both compiled caps, regulated preflight, Key Dev and host reserve: **18 GiB**
+  required against **21.15 GiB** available. Each job retains its own live guard.
+  No old checkpoint migration, repeated polling or automatic follow-up is queued.
+  The **08:26 UTC user-triggered check** found
+  [all five compiled phases completed](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/result.json)
+  at **08:10:59 UTC**, in **38m 57s**. The
+  [independent closeout review](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/compiled-suite-02/compiled-closeout-01/REVIEW.json)
+  verifies frozen identities, all **45 state / 169 layout fields**, **2,577 saved
+  suffix states**, 21 observation times and the independent numerical targets.
+  Fresh-process scalar restart reproduces the suffix observations exactly;
+  each integration iterator compiles once, including short tails. Peak charged
+  memory was **3.69 GiB**, minimum reserve **11.24 GiB**. The two-world batch
+  check covers continuation and a completed-checkpoint zero-step replay;
+  intermediate/durable batch restart remains unqualified, and its numerical
+  arrays were not saved separately. The five compiled checks, 133 host checks
+  and 48 independent checks retain their separate scopes. Stale preparation
+  wording in the frozen terminal receipt is resolved explicitly by the review.
+  [Lint, formatting and diff checks](/mnt/workspaces/Cells/calcium-energy-mitochondria-excision-development-20261029-01/static-checks.json)
+  pass. GPU execution, intermediate batch restart, mechanical cutting work and
+  native tissue correspondence remain
+  unqualified for this new cut family.
+
+- **Compliant-water cutting passes host and scoped compiled CPU qualification.**
+  [`resolved_calcium_energy_water_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-compliant-water-and-finite-fuel)
+  extends the exact **43-field / 53-law** water parent. Three gates survive,
+  40 local fields rebase, and nine absolute control families stay intact.
+  Actual surviving cytosol/exterior volumes, chemical/fuel concentrations and
+  fixed ER volume are preserved. Compliance reference volumes, pressure offsets,
+  stiffness, bounds, impermeants and hydraulic permeability remain unchanged.
+  Removed water and impermeant material are reported separately; chemical/fuel
+  mixing energy is counted once and pool volume work stays an internal ledger.
+  [Three initial checks](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/initial-01/result.json)
+  pass in **38 seconds**, including compact/full catalogs and zero impermeants.
+  [Three evolved checks](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/live-water-01/result.json)
+  pass in **1m 52s**, including changed cytosol/exterior volumes, pressure and
+  concentration preservation, complete source restoration and control-history
+  refusal after the actual-rate 50-us reference prefix. These are six distinct
+  engineering checks, not full trajectory qualification or biological cases.
+  The [independent reference](/mnt/workspaces/Cells/calcium-energy-water-excision-reference-20261029-01/HANDOFF.json)
+  passes **59 distinct checks**: 58 short controls and the complete 43-field
+  50-us prefix/cut/150-us endpoint with refinement at unchanged parameters.
+  [297 verified identities](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/reference-verification.json)
+  bind the evidence and all **69 reference dependency files** to the frozen
+  host suite. Continuous segment energy residual is **9.58e-12 pJ**; the
+  [separate instantaneous-cut diagnostic](/mnt/workspaces/Cells/calcium-energy-water-excision-reference-20261029-01/DERIVATION.json)
+  remains **1.81e-7 pJ unresolved**, without a mechanical cutting-work claim.
+  Reference controls and refinements are not independent biological cases.
+  [Lint, formatting and diff checks](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/static-checks.json)
+  pass. The [original 118-check host suite](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-suite-01/inputs.json)
+  passed contracts/history checks and **22 of 23** refinement/archive checks,
+  then stopped on a [low-fuel test assumption](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-suite-01/refinement-archives/failure.json).
+  The **03:46 UTC user-triggered check** identified that failure. In the original
+  actual-rate 50-us case, retained cells shrink; ATP concentration stays above
+  the inherited **1e-9 mM** constructor floor even as ATP amount falls.
+  The [two boundary checks](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/fuel-boundary-02/result.json)
+  pass in **1m 56s**: the original flowing case permits rebase using current
+  volume, while a separate held-off water control crosses the concentration
+  floor and correctly refuses the cut without altering its source. No-op and
+  terminal archives still work. Equations, rate constants, timestep, 50-us
+  horizon and tolerances are unchanged; the water-availability control is explicit.
+  Peak RSS is **226.9 MiB**, minimum host reserve **15.43 GiB**.
+  The [reuse receipt](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-partial-receipt.json)
+  retains **87 earlier passes plus those two checks**, with original failures
+  preserved. Only the boundary test and its helper/additional control change;
+  **1,578 other source files** remain byte-identical. The updated target is
+  **119 host checks: 101 water-family checks and 18 earlier-family regressions**.
+  Initial/evolved probes repeated within that selection add no extra cases.
+  The [continuation inputs](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-continuation-02/inputs.json)
+  select only **29 evolved-owner checks and one offline 1/4/16-GPU placement**.
+  A [storage preflight](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/planning-preflight-02.json)
+  retains the original 128-step placement request within its 256-MiB budget.
+  Launched detached at **04:11:03 UTC**, controller **1353621**, on CPU 4.
+  Expected duration is **30–55 minutes**, with unchanged 1-GiB process
+  and 8-GiB host-reserve guards. [Launch metadata](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-continuation-02/launch.json),
+  logs and result/failure artifacts stay there. The **04:28 UTC user-triggered
+  check** found [all 29 evolved-owner checks passed](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-continuation-02/evolved/result.json)
+  at **04:28:43 UTC**, in **17m 38s**, and the final placement phase running.
+  The **04:56 UTC user-triggered check** found the placement phase completed at
+  **04:43:34 UTC**, in **14m 49s**; the continuation took **32m 31s** overall.
+  The [final host receipt](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/host-receipt.json)
+  verifies **4,789 identities** and consolidates **119 distinct host checks:
+  101 water-family checks and 18 earlier-family regressions**. The 59 independent
+  reference checks remain separate. Peak continuation RSS was **274.3 MiB**,
+  minimum host reserve **13.78 GiB**. No water host job remains active.
+  No passed phase is repeated and no automatic retry, assistant polling or GPU run is queued.
+  The [five-phase compiled preparation](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/preparation-result.json)
+  passed [root review](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/root-verification.json)
+  of **1,643 identities**. It retains the 119 host and 59 independent prerequisites,
+  with **1,576 of 1,579 source files unchanged**; only two qualified window engines
+  and the bounded-execution test partition differ. The reviewed test patch is
+  [applied exactly](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/root-integration.json).
+  All assertions, rates and tolerances stay unchanged. The 43-field / 53-law,
+  50-us cut / 150-us endpoint uses prefix/scalar/restart/batch windows of
+  **215/256/512/256 steps**. Full-trace storage planning passes; bounded execution
+  preserves runtime headroom. The [detached qualification](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/launch.json)
+  launched **05:45:36 UTC, 29 October**, PID **1383766**, CPU0, with **19.46 GiB**
+  host memory available. Estimated duration **45–90 minutes**; guards remain
+  **4-GiB PSS and individual RSS / 8-GiB host reserve / 2,700 seconds per phase**.
+  Catalog, prefix, scalar, restart and batch results/failures have durable logs.
+  No repeated polling, automatic retry or subsequent job is queued.
+  The **05:58 UTC user-triggered check** found **two of five compiled phases
+  passed**: [catalog](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/catalog/result.json)
+  at **05:48:20 UTC**, in **2m 43s**, and
+  [prefix/cut](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/prefix/result.json)
+  at **05:54:38 UTC**, in **6m 16s**. The **06:39 UTC user-triggered check**
+  found [scalar failure](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-01/scalar/failure.json)
+  at **06:02:10 UTC**, after **7m 31s**, on the 4-GiB individual-RSS guard:
+  **4.04 GiB RSS / 3.89 GiB PSS**, with **13.94 GiB** minimum host reserve.
+  Catalog/prefix passes and failure evidence remain preserved; no numerical
+  assertion failure was reported and restart/batch did not run.
+  The [engine-updated successor](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-02/preparation-result.json)
+  has been released after acceptance of transport's terminal review. Only two engine
+  files change; **1,577 of 1,579 sources** stay exact. It retains catalog only
+  and will regenerate the four remaining phases at the same 215/256/512/256
+  widths, rates, clocks and guards. The
+  [package review](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-02/root-review-02/handoff.json)
+  verifies all 1,579 source files and unchanged family dispatch. The
+  [detached successor](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-02/launch.json)
+  launched **07:32:02 UTC, 29 October**, PID **1417575**, CPU0, with four new
+  phases pending and the original catalog pass retained. Estimate **45–120
+  minutes**. Guards remain **4-GiB PSS and individual RSS / 8-GiB reserve /
+  2,700 seconds per phase**; complete logs and result/failure artifacts are
+  durable. No old checkpoint is migrated, and no repeated polling or automatic
+  follow-up is queued. Its frozen scope is separate from the later live checkout.
+  The **07:58 UTC user-triggered check** found a
+  [prefix resource failure](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-02/prefix/failure.json)
+  at **07:35:26 UTC**, after **3m 23s**. The
+  [trace](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-02/prefix/window-trace.jsonl)
+  stops inside the **first 215-step kernel compilation**, before compilation
+  completion or any accepted integration step. Individual high-water RSS reached
+  **4.05 GiB**, exceeding the 4-GiB limit; charged memory reached **3.93 GiB**
+  and minimum host reserve was **11.92 GiB**. This is a compiler-resource stop,
+  not evidence of a numerical failure or a second-tail compilation. The catalog
+  remains the only retained pass in this successor; all four fresh phases remain
+  unfinished. The [resource-only successor is prepared but unlaunched](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-03/preparation-result.json).
+  All **1,579 source files**, physical settings, tests and window shapes remain
+  byte-identical. The [explicit resource decision](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-03/resource-decision.json)
+  gives **only the prefix a 6-GiB PSS/individual-RSS budget**; scalar, restart
+  and batch retain 4 GiB, every phase retains the 8-GiB reserve and 2,700-second
+  limit. This does not claim an algorithm repair or numerical pass. Launch and
+  driver both require **24 GiB MemAvailable** before starting, leaving the
+  existing jobs priority. Static preparation verifies **6,390 file identities**
+  without integration or repeated admission checks. Launch awaits a later
+  user-triggered capacity check; that preparation remains unlaunched and intact.
+  After the **08:26 UTC check** confirmed mitochondria complete and regulation
+  stopped, the [new admission decision](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/resource-admission-decision.json)
+  reserves one 6-GiB compiled job, four 1-GiB host workers, 8-GiB host reserve
+  and a 2-GiB margin. Its aggregate launch gate is **20 GiB**, with unchanged
+  per-phase limits and all **1,579 scientific source files byte-identical**.
+  This [successor launched detached](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/launch.json)
+  at **08:32:25 UTC**, PID **1435795**, CPU0, with **20.95 GiB reported available**
+  (the conservative reporting error is recorded below).
+  Estimate **45–120 minutes**. Four numerical phases remain pending; catalog
+  and all failures remain retained. No repeated polling or automatic retry.
+  The **08:47 UTC user-triggered check** found the
+  [fresh prefix/cut passed](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/prefix/result.json)
+  at **08:38:27 UTC**, in **6m**, and
+  [scalar continuation passed](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/scalar/result.json)
+  at **08:43:59 UTC**, in **5m 31s**. Observed high-water RSS was **3.36 / 3.61 GiB**
+  on this attempt. Raising the prefix ceiling changes resource admission, not
+  the algorithm; the earlier first-compilation failure remains preserved.
+  Catalog, prefix and scalar were complete; restart was running and batch
+  remained pending at that check. The **09:05 UTC user-triggered check** found
+  [all five phases complete](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/result.json)
+  at **08:55:09 UTC**, in **22m 44s**: one retained catalog check and four fresh
+  execution checks. The [terminal review](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/compiled-suite-04/compiled-closeout-01/REVIEW.json)
+  verifies **9,474 source identities**, all **43 state / 146 layout fields**,
+  **2,575 suffix states** and **19 observation rows**, with independent targets.
+  Fresh-process scalar restart executes the **50–150-us** continuation. Batch
+  restart covers a completed-checkpoint zero-step replay; durable intermediate
+  batch restart remains unqualified. Each fresh phase compiled once. Peak PSS
+  was **3.48 GiB**, individual high-water RSS **3.61 GiB**; all live guards passed.
+  The 119 host and 59 independent checks remain separate from these five passes.
+  The review also retains a launch-record erratum: converting MemAvailable kB
+  with `*1020` understated capacity by **0.390625%**. This was conservative for
+  admission; live resource guards use the correct `*1024` conversion. Completed
+  artifacts stay unchanged. The new regulated launcher below verifies the
+  correct conversion explicitly. Stale prelaunch wording in the frozen result
+  is superseded by the review's exact completed scope.
+  GPU continuation, intermediate batch restart, native tissue parity, mechanical cutting work and healing remain
+  unqualified; this is Cells' compliant-water law, not native BETSE volume dynamics.
+
+- **Active tissue cut/continuation passes scoped CPU qualification.**
+  [`resolved_tissue_active_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-channels-and-maintained-fuel-pumps)
+  preserves surviving channel/junction gates and pump definitions, archives all
+  **19 source fields**, and starts 17 local ledgers against conserved physical
+  survivors at the original clock. The
+  [combined receipt](/mnt/workspaces/Cells/active-excision-development-20261029-01/development-result.json)
+  binds **101 distinct passing checks**: 65 implementation/regression checks,
+  34 independent checks and two reference serialization/field controls. Counts
+  combine preserved phases; controls, refinements and worlds are not extra
+  biological cases. Host checks cover all 56 laws, exact gate/owner histories,
+  no-op/terminal/sequential cuts, floating-component fields, invalid provenance
+  and passive artifact compatibility. The
+  [compiled catalog stage](/mnt/workspaces/Cells/active-excision-development-20261029-01/compiled-stage-02/result.json)
+  checks the fixture's 37 retained laws with separate valid/invalid worlds;
+  the host ownership panels cover all 56. The
+  [full compiled history](/mnt/workspaces/Cells/active-excision-development-20261029-01/compiled-trajectory-01/result.json)
+  covers a **50-us prefix**, cut and continuation through **150 us**, comparing
+  all 19 fields and restoring complete checkpoints exactly. Recorded-state
+  error ratios are **0.0436 before / 0.0677 after** removal. Continuous energy
+  residual is **1.45e-12 pJ**, global material residual **5.15e-19 fmol** and
+  global charge residual **7.57e-29 C**. The
+  [two-world continuation and evolved second cut](/mnt/workspaces/Cells/active-excision-development-20261029-01/compiled-batch-01/result.json)
+  also pass. [Refinement/planning checks](/mnt/workspaces/Cells/active-excision-development-20261029-01/transient-planning-01/result.json)
+  support **39.0625-ns** steps, with fast-transient error ratios **0.0552 / 0.322**;
+  coarser steps exceed the unchanged budget. Offline 1/4/16-GPU plans and
+  zero-remaining-time windows pass. The
+  [source example](configs/resolved_active_excision_source.json) and
+  [after-cut input](/mnt/workspaces/Cells/active-excision-development-20261029-01/example-after.json)
+  come from this qualified history; 512-step windows estimate **126.5 MiB** of
+  working arrays. Peak charged memory was **2.29 GiB**, minimum host reserve
+  **15.59 GiB**, within 4-GiB process / 8-GiB reserve guards.
+  The [reference correction](/mnt/workspaces/Cells/active-excision-reference-20261028-01/SERIALIZATION_CORRECTION_RECEIPT.json)
+  removes unused zero pump entries rejected by the schema; 20 fixture pairs
+  and 40 complete stage pairs remain exactly equal. Original evidence stays
+  frozen, with [111 verified identities](/mnt/workspaces/Cells/active-excision-development-20261029-01/reference-receipt-verification.json).
+  Failed schema and NumPy/JAX interoperability attempts remain in the receipt;
+  the host/device checkpoint boundary is fixed. No equations or tolerances
+  changed. No root qualification remains active and no GPU job was launched.
+  This is transient/gate-memory evidence, not slow-gate equilibrium, mechanical
+  cutting work, biological recovery or full native tissue parity.
+  Calcium/ER owner cuts are qualified above; finite fuel, mitochondrial,
+  water and assembly owners follow under explicit remap rules.
+
+- **Static BETSE tissue profiles now prepare resolved physical tissue definitions.**
+  Key Dev's [preparation bridge](agent-work/cells-worker-01/workfiles/TISSUE_PROFILE_PREPARATION_HANDOFF.md)
+  supports direct `resolved_tissue@1` and `@12` models, with explicit stable-owner
+  geometry and **permeability = diffusivity / membrane thickness** at the native
+  unit-rho baseline. Native selection/order/overlap behavior stays with the
+  unchanged component. Insular contacts close their mapped physical junctions;
+  selected permeability fields change while all inventories, initial states,
+  IDs, gates, volumes and schedules remain exact. Ambiguous mappings and
+  unsupported ions/owners are refused. Deterministic preparation artifacts carry
+  the full source/profile/geometry recipe and reject inconsistent replay.
+  The [receipt](/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/result.json)
+  passes **49 host checks**, with **seven authenticated native flux-unit cases**
+  compared against Cells and independent Decimal equations. These component/unit
+  panels are not biological replications. [226 verified identities](/mnt/workspaces/Cells/tissue-profile-preparation-handoff-20261029-01/root-verification.json)
+  bind the code, immutable native dependencies, evidence and three examples.
+  Peak process RSS is **186.5 MiB**, minimum host reserve **15.86 GiB**.
+  The [public JSON/CLI interface](docs/TISSUE_RETURN_CURRENT.md#static-tissue-profile-preparation)
+  adds `tissue-profiles prepare`, `validate` and `replay`, with a
+  [repository example](configs/tissue_profiles_active.json). Its
+  [interface receipt](/mnt/workspaces/Cells/tissue-profile-cli-development-20261029-01/result.json)
+  binds **24 checks: 22 preparation-interface checks and two older CLI regressions**.
+  Six passive/active overlap, image and explicitly bound-index recipes compare
+  against the independent reference, preserve initial state and replay exactly
+  in fresh processes. Unknown/duplicate/nonfinite fields, unsupported units/ions,
+  missing owner maps, stale artifacts and existing outputs refuse explicitly.
+  The initial [six comparison failures](/mnt/workspaces/Cells/tissue-profile-cli-development-20261029-01/host-01/failure.json)
+  remain preserved: independent Decimal coefficients differ by at most one ULP;
+  the corrected test uses the existing component tolerance only for those
+  coefficients. All other fields and replay bytes stay exact. Eighteen prior
+  passes are reused; only the failed six tests rerun. Peak process-tree RSS is
+  **406.6 MiB**, minimum host reserve **18.19 GiB**. No physical law changes.
+  The separate [composition adapter](agent-work/cells-worker-01/workfiles/TISSUE_PROFILE_COMPOSITION_HANDOFF.md)
+  now supports **29 explicit schemas** spanning calcium/ER, finite fuel,
+  configured transport, mitochondria, water and regulation. Its
+  [component receipt](/mnt/workspaces/Cells/tissue-profile-composition-handoff-20261029-01/result.json)
+  passes **35 host checks**, including **15 representative families / 30 complete
+  before-and-after instantaneous RHS and potential comparisons** against the
+  independent equations. Inventories, state dtypes, owners, water volumes, event
+  clocks and regulation configurations remain exact; the internal passive
+  geometry/coefficient view is never used as the composed physical field or flux.
+  [Root verification](/mnt/workspaces/Cells/tissue-profile-composition-handoff-20261029-01/root-verification.json)
+  checked **1,863 identities**. Component checks took **54.8 seconds**, with
+  **228.2 MiB** peak RSS and **17.39 GiB** minimum host reserve.
+  The [expanded public-interface receipt](/mnt/workspaces/Cells/tissue-profile-cli-development-20261029-01/composed-result.json)
+  now passes **42 distinct checks: 18 composed-interface checks, 22 direct-model
+  regressions and two older CLI regressions**. These supersede the earlier
+  24-check interface count; they are not 66 independent checks. Six composed
+  families cover configured transport, mitochondria, calcium/fuel/water,
+  fuel/water and both regulation versions, with independent coefficient checks,
+  exact full-state/control preservation and byte-exact fresh-process replay.
+  Unsupported models and malformed or resealed recipes refuse cleanly.
+  Two [resource-limited attempts](/mnt/workspaces/Cells/tissue-profile-cli-development-20261029-01/composition-execution-correction.json)
+  remain preserved: disabling JIT for the older run/resume regression exceeded
+  1-GiB summed RSS. Separate processes and its normal CPU compilation setting
+  pass with **all 1,604 frozen source files unchanged**, retaining the same tests,
+  limits and tolerances. No incomplete pass markers are counted. The completed
+  phases took **75.9 and 52.3 seconds**, peaking at **406.3 MiB** summed RSS with
+  **17.41 GiB** minimum host reserve. The new preparation itself remains host-only.
+  The [channel-version expansion](/mnt/workspaces/Cells/tissue-profile-cli-development-20261029-01/channel-expansion-result.json)
+  now admits the ten intermediate `resolved_tissue@2`–`@11` versions. Public
+  preparation therefore covers **all 12 ordinary tissue/channel versions plus
+  29 composed schemas**. All production ASTs remain exact except the added
+  admission-map entries; physical equations and the direct bridge stay unchanged.
+  **73 distinct checks pass: 45 component and 28 public-interface checks**, with
+  **25 parent families / 50 complete before-and-after instantaneous field/RHS
+  comparisons**. Full original channel catalogs are retained for the new cases.
+  These overlap earlier checks and are not added to those totals. The initial
+  **72 passes** are retained; one provenance check is repeated after restoring
+  three hash-pinned support scripts omitted by the generic snapshot collector.
+  The original failure is preserved; no scientific input, assertion or tolerance
+  changes. Phases took **123.2 and 2.3 seconds**, with **410.4 MiB** peak RSS and
+  **14.81 GiB** minimum host reserve. Integrated trajectories remain separate.
+  Static Na/K/Cl/Ca preparation is the scope; dynamic interventions, pressure,
+  ECM and full coupled/native trajectories remain separate. Cut, assembly,
+  repair and unknown nested schemas require their own preparation contracts.
+  The geometry/profile connection below is now public.
+
+- **Scheduled passive membrane profiles now use the public simulator interfaces.**
+  [`resolved_membrane_profiles@1`](docs/TISSUE_RETURN_CURRENT.md#scheduled-passive-membrane-profiles)
+  applies the supported native Na/K/Cl/Ca pulse laws at RK stages, preserving
+  complete preparation, stable owners, physical state and a saved phase clock.
+  The [frozen component](/mnt/workspaces/Cells/scheduled-membrane-profiles-handoff-20261029-01/result.json)
+  passes **36 checks**, with **49 independent complete physical stages**.
+  Short NumPy trajectory refinement against segmented DOP853 improves error
+  from **0.1047 to 0.00643 of budget** when halving dt. These are numerical
+  controls, not independent biological cases or compiled trajectory qualification.
+  Root [integrated parse/serialization/model/ensemble dispatch](/mnt/workspaces/Cells/profile-intervention-integration-20261029-01/integration.json)
+  after **14/14 public contract checks** passed in **18.64 seconds**.
+  The [independent review](/mnt/workspaces/Cells/profile-intervention-integration-20261029-01/independent-current-01/result.json)
+  verifies **474 component artifacts**, the guard-only correction and the
+  separately frozen public source. Peak watched RSS was **593 MiB**, minimum
+  reserve **18.4 GiB**, within 1-GiB / 8-GiB guards. Complete one-step evolved
+  INIT/SIM checkpoints survive fresh-process restore; wrong clocks, implicit
+  phase resets, cuts and mixed cohorts refuse. Four older family routes pass.
+  The [portable example](examples/scheduled_membrane_profiles/README.md)
+  retains the complete definition and replay artifact.
+  The [initial development failure](/mnt/workspaces/Cells/profile-intervention-integration-20261029-01/development-result-01.json)
+  exposed a **1.35e-21-s** clock-subtraction excess over the exact nominal step.
+  The repair separately checks nominal dt and bounded clock roundoff, including
+  large-horizon oversized-step refusals. Rates and transition times are unchanged.
+  All 14 revised contracts were run after the fix; preliminary passes are not
+  added. The original component RSS refusal and wrapper-directory failure also
+  remain preserved. Native solver-loop parity and compiled trajectories remain
+  separate.
+
+- **Explicit passive INIT-to-SIM preparation is now public.**
+  [`cells tissue-phase`](docs/TISSUE_PHASES.md) prepares, validates and replays
+  `resolved_membrane_profile_epoch@1`, including preparation from an accepted
+  INIT snapshot. All twelve physical arrays and their original accounting
+  anchors carry exactly; only the SIM phase clock resets. Both INIT clocks,
+  physical owners and the complete recipe remain archived. Ordinary resume
+  and branch cannot perform this transition.
+  The [public receipt](/mnt/workspaces/Cells/profile-epoch-integration-20261029-01/result.json)
+  binds **36 distinct passing checks: 22 new interface/execution checks and
+  14 existing scheduled-family regressions**, across 4,937 frozen source identities.
+  It includes fresh-process CLI preparation/replay, exact typed state/snapshot
+  preservation, explicit JIT ensemble admission and malformed-history/clock refusals.
+  The **two-step compiled CPU** check passes in **1m 50s**, with exact ordinary,
+  windowed and restarted states/observations. This is execution verification,
+  not a longer biological trajectory qualification. Peak compiled individual
+  RSS is **1.26 GiB**; all phases retain at least **15.53 GiB** host reserve.
+  The original two ensemble-test failures are preserved: the eager example was
+  correctly refused by the JIT requirement. Only those tests were corrected and
+  repeated; 33 passes were retained. No equation, physical parameter or tolerance changed.
+  Separately, the [component](/mnt/workspaces/Cells/membrane-phase-handoff-20261029-01/result.json)
+  passes **44 checks** and **33 complete SIM reference stages**; its independent
+  continuation improves **16.29-fold** under timestep refinement.
+  [Independent review](/mnt/workspaces/Cells/profile-epoch-integration-20261029-01/review/REVIEW.json)
+  verifies 1,149 identities and 308 typed arrays, with no blocking finding.
+  The [portable evolved-INIT example](examples/tissue_phase/README.md) and guide
+  are in the repository. Full native loop equivalence, composed-family phase
+  transfers and GPU execution remain separate.
+
+- **Scheduled active membrane profiles now use the public simulator interfaces.**
+  [`resolved_active_membrane_profiles@1`](docs/TISSUE_RETURN_CURRENT.md#scheduled-active-membrane-profiles)
+  adds regional background-permeability pulses to the complete 56-law active
+  tissue, preserving gates, maintained-fuel pumps, all nineteen parent fields
+  and a saved phase clock. Public loading, snapshots, replay, window planning
+  and ensemble admission retain its distinct model identity. The
+  [portable example](examples/scheduled_active_membrane_profiles/README.md)
+  retains the complete static preparation and sealed event recipe.
+  The [frozen component](/mnt/workspaces/Cells/active-membrane-profiles-handoff-20261029-01/result.json)
+  passes **35 checks**, including **60 independent full-field/RHS comparisons**.
+  Both 8-us manufactured trajectories improve under timestep refinement:
+  SIM error falls **0.08480 → 0.004804 of budget**; closure/reopening falls
+  **0.10993 → 0.005535**. These numerical controls and channel panels add no
+  biological replications. Eager CPU JAX parity and exact public restart are
+  separate from compiled-active-RHS or compiled-trajectory qualification.
+  The [independent review](/mnt/workspaces/Cells/active-profile-integration-20261029-01/review/REVIEW.json)
+  verifies **1,629 bindings** and **240 exact physical-output comparisons**,
+  with no blocking finding. It checks that the temporary closed-route view
+  affects only parent route validity: actual history drives conservation,
+  diagnostics and returned observations; corrupted actual history refuses.
+  The numerical oracle sources are pinned; a simple assertion helper absent
+  from the execution-time dependency list is captured separately at review time.
+  The [public receipt](/mnt/workspaces/Cells/active-profile-integration-20261029-01/result.json)
+  binds **37 distinct passing checks: 16 new interface checks and 21 existing
+  passive scheduled/epoch regressions**, with **4,948 frozen source identities**.
+  Complete evolved INIT/SIM checkpoints preserve channels, pump work and phase
+  clocks in a fresh process. Parent checkpoints, mixed cohorts, cuts, eager
+  ensembles and implicit phase transfers refuse where unsupported.
+  Public phases take **77.2 / 11.3 / 31.9 seconds**, with **456 MiB** maximum
+  watched RSS and **18.18 GiB** minimum reserve under 1-GiB / 8-GiB limits.
+  The [first failure](/mnt/workspaces/Cells/active-profile-integration-20261029-01/contracts-01/failure.json)
+  and [focused retry failure](/mnt/workspaces/Cells/active-profile-integration-20261029-01/admission-02/failure.json)
+  retain two test mistakes: assuming a top-level pump list, then using JAX
+  scalar arrays in a Python set. Only that test function changed; the complete
+  model comparison and explicit host-integer comparison now pass. Previously
+  passed checks were retained, without changing production behavior or tolerances.
+  Root owns shared integration; Key Dev has started scheduled interventions
+  for complete calcium/finite-fuel owners. The active INIT-to-SIM implementation
+  follows below; compiled/GPU qualification and full native solver-loop
+  correspondence remain open.
+
+- **Active INIT-to-SIM preparation passes independent physics and public checks.**
+  [`resolved_active_membrane_profile_epoch@1`](docs/TISSUE_PHASES.md) carries all
+  nineteen active parent arrays into a new SIM clock, retaining intrinsic gates,
+  channel transfers, pump cycles, heat, maintained-fuel work and original
+  accounting references. Static profiles, physical owners and capacities must
+  match exactly. New SIM schedules are explicit; ordinary resume cannot reset
+  phase history. The shared `tissue-phase` commands preserve distinct passive
+  and active model identities.
+  The [public receipt](/mnt/workspaces/Cells/active-phase-integration-20261029-01/result.json)
+  binds **38 distinct passing checks: eight new and thirty existing passive CLI
+  / active scheduled regressions**, with **4,993 frozen source identities**.
+  Preparation from a saved checkpoint, replay, typed state/layout preservation,
+  corruption refusals and explicit ensemble admission pass. The execution check
+  advances **two eager CPU SIM steps** from a 125-ns INIT fixture and exactly
+  reproduces all twenty final state arrays after a real intermediate checkpoint
+  restart. This is interface/execution evidence, not a longer biological case
+  or compiled qualification. Passing phases took **2m 48s / 3m**, with **536 MiB**
+  maximum watched RSS and **14.66 GiB** minimum reserve under 1-GiB / 8-GiB guards.
+  The [original failure](/mnt/workspaces/Cells/active-phase-integration-20261029-01/interface-01/failure.json)
+  exposed JAX snapshot arrays reaching a NumPy-only host validation path.
+  Explicit host conversion fixes this without changing equations, physical
+  inputs or tolerances; all public checks were rerun after the fix, and the six
+  pre-fix passes are not added.
+  The [independent qualification receipt](/mnt/workspaces/Cells/active-phase-integration-20261029-01/physics/suite-04/result.json)
+  consolidates **36 distinct component passes**, separate from the 38 public
+  checks. It covers full fields/RHS and conservation from evolved **8-us INIT**
+  states, then **8-us SIM** with changed controls and exact closure/reopening.
+  All 56 channel laws and nineteen carried arrays retain their owners/history.
+  At **62.5 / 31.25 ns**, the largest state/charge error-to-budget ratios are
+  **0.404 / 0.0251 for INIT**, **0.0687 / 0.00363 for changed-control SIM**, and
+  **0.0126 / 0.00117 for closure/reopening**. These are numerical cases and
+  refinements, not measured tissue replicates or slow biological settling.
+  The [fixture correction](/mnt/workspaces/Cells/active-phase-integration-20261029-01/physics/suite-03/fixture-correction.json)
+  preserves exact observation boundaries with explicit no-op control knots;
+  held controls, physical values, dt and tolerances are unchanged. Original
+  failures remain archived. The **08:26 UTC check** found nineteen contracts
+  and two refinements passed, with the remaining closure check stopped on a
+  [test-only species lookup error](/mnt/workspaces/Cells/active-phase-integration-20261029-01/physics/suite-03/refinements/failure.json).
+  Using the declared `species_ids` schema fixes that lookup; all **1,657 other
+  sources**, equations, assertions and thresholds stay exact. The one failed
+  check [passed its attached rerun](/mnt/workspaces/Cells/active-phase-integration-20261029-01/physics/suite-04/closure-retry/result.json)
+  at **08:36:10 UTC**, in **2m 7s**, with **234 MiB** watched RSS and **14.95 GiB**
+  minimum reserve. Thirty-five prior passes are retained without rerunning them.
+  The [portable active example](examples/active_tissue_phase/README.md) contains
+  the exact qualified INIT request and explicit SIM recipe. Its
+  [public prepare/validate/replay check](/mnt/workspaces/Cells/active-phase-integration-20261029-01/example-replay-01/result.json)
+  reproduces both qualified output artifacts exactly using all 300 captured
+  current runtime files. The [combined closeout](/mnt/workspaces/Cells/active-phase-integration-20261029-01/closeout-01/result.json)
+  binds the 38 public and 36 component checks separately and preserves every
+  failed attempt. Example replay adds no new trajectory or biological case.
+  Compiled/GPU execution, calcium/finite-fuel/water
+  phase transitions and full native solver-loop correspondence remain open.
+
+- **Regional calcium/fuel interventions pass component, public and eager CPU checks.**
+  The [new model families](docs/TISSUE_RETURN_CURRENT.md#scheduled-membrane-profiles-with-calcium-stores-and-finite-fuel),
+  `resolved_calcium_membrane_profiles@1` and
+  `resolved_calcium_energy_membrane_profiles@1`, retain their complete
+  `resolved_calcium@6` and `resolved_calcium_energy@5` parents. Root added public
+  parsing, serialization, model dispatch and ensemble admission while Key Dev
+  owns the component equations, independent reference and timestep bounds.
+  The public checks cover all parent inventories/history, control families,
+  typed snapshots, fresh-process restoration and refusal of unsupported phase
+  transfers, cuts and mixed cohorts. Their short interface fixtures do not
+  replace the component's longer physical/refinement cases.
+  The [component handoff](/mnt/workspaces/Cells/owned-calcium-profiles-handoff-20261029-01/result.json)
+  records **44 distinct passes: 40 host, two eager/abstract-trace and two eager
+  snapshot/resume checks**. The [independent review](/mnt/workspaces/Cells/owned-calcium-profiles-handoff-20261029-01/root-review-01/REVIEW.json)
+  verifies **803 artifact hashes**, the live owned sources and the **34-file
+  reference dependency closure**, including `contact.require`. Ten panels and
+  evolved closure/reopening give **58 complete independent field/RHS stages**;
+  **980 numeric readout comparisons** confirm that the temporary closed-route
+  diagnostic view leaves actual physical values and history intact.
+  Four **4-us cases**, at **31.25 / 15.625 ns**, compare complete endpoint states
+  with independent segmented DOP853. Conservation checks use actual full
+  histories; independent comparisons at every observation time and saved
+  trajectory arrays are not part of this component's evidence. Errors are below
+  its precision floor, so no convergence-order claim is made. The calcium case
+  uses 18 distinct channel laws; the finite-fuel case uses all 56.
+  The raw component summary remains failed because two public tests were also
+  selected in host phases and skipped. Both subsequently passed in their proper
+  phases. Exact JUnit reconciliation gives **44 unique passes, two duplicate
+  skips and zero failures/errors**; skips receive no pass credit. Original
+  receipts remain intact, and a separate future-runner selection fix changes
+  no science or passing source. Peak component RSS was **676 MiB**, minimum
+  reserve **11.20 GiB**, under 1-GiB / 8-GiB guards. These component execution
+  checks overlap the public execution purpose and are not biological replicas.
+  The [public receipt](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/result.json)
+  binds **61 passing checks: 24 new and 37 existing scheduled/phase regressions**,
+  with **3,336 frozen source identities**. Both owners retain all **35 / 39 state
+  arrays including their phase clocks**. The passing batch took **4m 36s**, with
+  **498 MiB** maximum watched RSS and **17.55 GiB** minimum reserve under
+  1-GiB RSS / 8-GiB reserve / 480-second guards. All 300 runtime files match
+  the tested snapshot at receipt creation.
+  The [first attempt](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/interface-01/failure.json)
+  reached its eight-minute wall guard while repeatedly validating the component's
+  longer schedules. Its partial output is preserved and adds no finalized passes.
+  Dedicated **2-ns interface fixtures** retain every physical owner, original
+  rates and explicit changes in all control families; the component's scientific
+  horizons, schedules and tolerances are unchanged. No production fix was needed.
+  Two eager CPU execution/restart checks
+  [launched detached](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/eager-launch.json)
+  at **08:24:01 UTC**, PID **1433391**, CPU6, using the identical passing source.
+  Expected runtime is **10–20 minutes**, with 1-GiB RSS / 8-GiB reserve /
+  600-second per-owner guards. [Inputs](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/eager-inputs.json)
+  and [durable log](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/eager-driver.log)
+  retain the two-step execution and intermediate restart comparisons. No automatic
+  polling or retry. The **08:47 UTC user-triggered check** found
+  [both eager/restart checks completed](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/eager-result.json)
+  at **08:28:01 UTC**, in **4m 1s** overall. The
+  [combined closeout review](/mnt/workspaces/Cells/owned-calcium-profile-integration-20261029-01/closeout-01/REVIEW.json)
+  verifies **6,672 frozen source identities and 157 artifacts**, with **61 public
+  interface, two new eager execution and 44 component checks kept separate**.
+  Saved 35-/39-field histories and intermediate snapshots agree exactly.
+  After disk restore, continuation executes the remaining step in the same
+  worker; fresh-process loading is separately checked. Four later shared-routing
+  changes are recorded, while owned physics and reference dependencies still
+  match. Evidence stays bound to its captured source. Compiled/GPU and full
+  native solver-loop equivalence remain unqualified.
+
+- **Complete calcium/fuel INIT-to-SIM models pass public software qualification;
+  independent transient qualification remains pending.**
+  The [phase workflow](docs/TISSUE_PHASES.md) now routes
+  `resolved_calcium_membrane_profile_epoch@1` and
+  `resolved_calcium_energy_membrane_profile_epoch@1` through preparation,
+  snapshot input, validation, replay, serialization, model selection and
+  ensemble admission. Exact owner types precede their inherited parents.
+  All **34 / 38 parent arrays**, chemical stores, gates, actual fuel pools and
+  original accounting anchors survive; only the phase clock resets. Finite-fuel
+  admission checks turnover against the pools actually carried from INIT.
+  The [two focused public ownership checks](/mnt/workspaces/Cells/owned-calcium-phase-integration-20261029-01/contracts-01/result.json)
+  passed in **1m 28s**, with **297 MiB** watched RSS and **15.27 GiB** minimum
+  reserve. They verify complete typed state/layout preservation, nonzero prior
+  histories, new controls, snapshots and distinct ensemble admission. The
+  [public code review](/mnt/workspaces/Cells/owned-calcium-phase-integration-20261029-01/public-review-01/REVIEW.json)
+  finds no blocker and prompted a separate re-sealed invalid-history refusal
+  check; the original stale-checksum refusal remains. No physical equation or
+  previously passing test function changed.
+  The [public qualification completed](/mnt/workspaces/Cells/owned-calcium-phase-integration-20261029-01/suite-01/result.json)
+  at **09:13:17 UTC**, in **11m 34s** on CPU5. Its **63 distinct passes** comprise
+  **16 interface checks** (including the two retained checks), **45 existing
+  routing regressions** and **two eager execution/restart checks**.
+  [Frozen inputs](/mnt/workspaces/Cells/owned-calcium-phase-integration-20261029-01/suite-01/inputs.json)
+  bind **1,678 sources**, all captured runtime files matching live at launch.
+  Guards were **1-GiB RSS / 8-GiB reserve / 600 seconds per phase**; the fresh
+  phases peaked at **680 MiB** individual RSS and retained **17.59 GiB** minimum
+  host reserve. The
+  [closeout review](/mnt/workspaces/Cells/owned-calcium-phase-integration-20261029-01/closeout-01/REVIEW.json)
+  verifies **10,068 frozen source instances**, every passing check and saved
+  35-/39-field histories. Complete parent state and layout survive the phase
+  handoff; only the local phase clock resets. Disk restart reproduces the
+  remaining step, state, layout and observations. Captured production runtime
+  files still match live; two evolving scientific fixture/reference files are
+  recorded separately. This does not add independent scientific passes.
+  The **1-ns INIT / 2-ns SIM** public fixtures exercise interfaces and actual
+  intermediate restart. Key Dev owns the independent physics qualification,
+  comparing every declared observation time and saving full-state/reference
+  arrays. Scientific, compiled/GPU and full native solver-loop qualification
+  remain pending for these new transitions.
+  Key Dev's full-transient development comparison exposed a **31.25-ns
+  timestep accuracy failure** that endpoint-only checks did not resolve.
+  The failure is retained; the next refinement uses **15.625 / 7.8125 ns**
+  without relaxing tolerances. Prior endpoint checks remain labelled as such.
+  The [finite-fuel transient pilot](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-03/result.json)
+  subsequently passed all **21 observation/control-boundary samples**, retaining
+  all 39 state fields and reference arrays. Error/budget ratios fall from
+  **0.2365613 to 0.0145369**; transient transfer error falls from
+  **4.6392e-13 to 2.8508e-14 fmol**. Key Dev's completion review of the
+  [larger component round](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-04/result.json)
+  reports **26 finalized calcium checks**, followed by a preserved
+  [480-second fuel-process timeout](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-04/failure.json).
+  Unfinalized fuel output adds no passes. Remaining fuel/closure/device-source
+  checks will be split into bounded processes, with physical inputs, tolerances
+  and frozen evidence unchanged. Key Dev also owns the new water/repair component
+  preflight; Root owns public integration and the regulated compiled job.
+  Key Dev's [fuel continuation launched detached](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05-launch/launch.json)
+  at **10:53:36 UTC**, supervisor PID **1478525**, CPU7. It retains the **26
+  finalized calcium passes** and runs **36 unfinished checks**, with fuel
+  contracts split into six smaller groups. The original coarse accuracy-failure
+  arrays are captured separately and do not add pass credit. Nine scientific
+  files and 164 captured dependencies retain their original identities.
+  Guards remain **1-GiB child-tree RSS / 8-GiB host reserve / 480 seconds per
+  process**. Estimated runtime is **35–60 minutes**, completing around
+  **11:28–11:53 UTC**. Durable logs and result/failure artifacts are linked in
+  the launch receipt; no automatic polling or follow-up is queued.
+
+- **Recorded native geometry now prepares portable passive tissue inputs.**
+  The [geometry workflow](docs/TISSUE_GEOMETRY.md) exposes
+  `cells tissue-geometry prepare`, `validate` and `replay`, with a complete
+  [repository example](examples/tissue_geometry/irregular_native_radial.request.json).
+  It emits ordinary `resolved_tissue@1` inputs from recorded BETSE geometry and
+  explicit physical declarations. Cell-volume policy, physical exterior volumes,
+  thickness, capacitance, diffusivities, contacts, inventories and controls are
+  explicit; native DEC weights do not silently become physical volumes.
+  The [component receipt](/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/result.json)
+  passes **56 host checks**, including five recorded BETSE-generated geometries
+  under two volume policies and **20 independent full physical stages**.
+  Maximum RHS error is **0.029805 of its budget**. The
+  [public-interface receipt](/mnt/workspaces/Cells/tissue-geometry-cli-handoff-20261029-01/result.json)
+  passes **33 checks**, with four fresh processes, exact initial state/artifacts
+  and replay while reads of the original capture directories are blocked.
+  [Root review](/mnt/workspaces/Cells/tissue-geometry-cli-handoff-20261029-01/root-verification.json)
+  verifies **1,654 identities**; the
+  [applied command check](/mnt/workspaces/Cells/tissue-geometry-cli-handoff-20261029-01/root-dispatch-01/verification.json)
+  reproduces the qualified example. A
+  [format-only correspondence](/mnt/workspaces/Cells/tissue-geometry-cli-handoff-20261029-01/root-dispatch-01/format-correspondence.json)
+  confirms that the final dispatcher retains the complete tested AST.
+  Component/interface checks took **30.0 / 19.9 seconds**, peaking at
+  **242.1 / 364.9 MiB** RSS. Inputs use manufactured physical parameters;
+  no measured biological calibration, dynamic geometry, cut/remap, integrated
+  trajectory or GPU claim follows. Source IDs containing colons remain refused
+  by the ordinary model; no implicit renaming is introduced.
+  The [joined geometry/profile adapter](/mnt/workspaces/Cells/geometry-profile-preparation-handoff-20261029-01/result.json)
+  passes **43 component checks**, with **28 independent complete physical stages**
+  across seven preparation cases. [Source/evidence review](/mnt/workspaces/Cells/geometry-profile-preparation-handoff-20261029-01/root-review.json)
+  verifies centroid selection, physical owners, explicit thickness and both full
+  provenance chains. The [public workflow](docs/TISSUE_GEOMETRY.md#apply-static-tissue-profiles)
+  now prepares, validates and replays those portable passive geometry/profile
+  inputs through `cells tissue-profiles`. Its
+  [CLI receipt](/mnt/workspaces/Cells/geometry-profile-cli-development-20261029-01/result.json)
+  passes **66 distinct checks: 16 new workflow/refusal checks and 50 existing
+  direct/composed CLI regressions**. These overlap earlier interface totals.
+  A preserved counterexample showed that Python equality accepted a changed
+  boolean/integer JSON type; validation now compares complete typed JSON digests.
+  Fresh-process replay, both complete recipes, exact initial state/inventories
+  and damaged-artifact refusals pass. The first run retained 65 passes; a test
+  expecting a decoder-specific deep-JSON error was corrected after two retained
+  failures. Only that test function changed; production code and all other test
+  ASTs stayed exact. The final focused retry passes. The main phase took
+  **2m 34s**, with **382 MiB** peak live RSS and **18.37 GiB** minimum reserve.
+  The receipt binds **4,878 identities** and records the separate metadata
+  review's unverified live-resource compliance. No new trajectory or GPU claim.
+
+- **Key Dev's native components are qualified separately.**
+  The [native geometry/operator component](agent-work/cells-worker-01/workfiles/BETSE_GEOMETRY_HANDOFF.md)
+  has 66 checks, 12 native geometries, four grids and 12 retained limitations.
+  [Receipt verification](/mnt/workspaces/Cells/active-excision-development-20261029-01/geometry-receipt-verification.json)
+  confirms 147 source/artifact identities. Native inverse/nullspace and dual
+  walk defects remain explicit; this does not establish coupled tissue parity.
+  The [stochastic-perturbation component](agent-work/cells-worker-01/workfiles/BETSE_PERTURBATIONS_HANDOFF.md)
+  passes **61 checks**, with 21 native cases and 14 retained limitations;
+  [verification](/mnt/workspaces/Cells/active-excision-development-20261029-01/perturbations-receipt-verification.json)
+  binds 158 identities. Native RNG replay and a separate stable world/owner
+  stream convention remain distinct. Source static-noise reset, timestep-dependent
+  protein noise and duplicate-scatter conservation defects remain explicit.
+  Coupled physiological RNG/checkpoint/cut integration remains open.
+  The [B08 environment transport/barrier component](agent-work/cells-worker-01/workfiles/BETSE_ENVIRONMENT_TRANSPORT_HANDOFF.md)
+  now passes **75 checks**, with 23 native cases, 19 retained limitations and
+  three refinement grids. [Receipt verification](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/environment-transport-receipt-verification.json)
+  records 174 hash checks. Literal source stencils/bath overwrites remain distinct
+  from the separately conservative face law. Source checkerboard blindness,
+  nonconservative updates and salt-boundary charge overwrite remain explicit;
+  no coupled field/energy/tissue claim follows.
+  The [B11 fluid-flow component](agent-work/cells-worker-01/workfiles/BETSE_FLUID_FLOW_HANDOFF.md)
+  passes **64 checks**, including 14 native cases, six refinements and 11
+  retained limitations. [Receipt verification](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/fluid-flow-receipt-verification.json)
+  records 179 hash checks. The native loader disables flow; missing inverse,
+  partial writes, boundary problems and the extracellular output's dimensional
+  mismatch remain explicit. This supplies source correspondence, not coupled
+  physical fluid/volume/energy evolution.
+  Key Dev's [B07 live Na/K regulation component](agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_HANDOFF.md)
+  passes **46 checks**: 43 host and three compiled CPU checks, with
+  [151 verified identities](/mnt/workspaces/Cells/calcium-excision-development-20261029-01/integrated-network-regulation-receipt-verification.json).
+  It reads actual free-ion/fuel concentrations, preserves ordered rule writes
+  and multiplies held availability once. Signed/out-of-range factors reject
+  explicitly. This common-stage physical composition is distinct from native
+  SIM ordering and adds no new inventory or ATP cost.
+  Its [public execution receipt](/mnt/workspaces/Cells/regulated-public-execution-20261029-10/result.json)
+  now passes **eight distinct checks** on the frozen source: complete 38-field
+  scalar execution/refinement, two worlds with different absolute control clocks,
+  exact fresh-process scalar/cohort suffixes, four identity-tamper refusals and
+  offline 1/4/16-GPU placement. The **04:11 UTC user-triggered check** found all
+  unfinished phases completed. [Independent receipt review](/mnt/workspaces/Cells/regulated-public-execution-20261029-10/root-review-01/VERIFICATION.json)
+  verifies **2,712 artifact/source comparisons** without mismatch.
+  The manufactured **10-us** transient uses **1.25-us / 0.625-us** steps; scalar
+  error ratios improve from **0.00183 to 0.000130** of the unchanged budget.
+  Cohort error ratios are **0.00183 / 0.00211**. Fresh restores preserve state
+  exactly from the **6.25-us** checkpoint. Maximum observed process high-water
+  memory is **3.22 GiB**, minimum host reserve **11.84 GiB**.
+  The [planning wall refusal](/mnt/workspaces/Cells/regulated-public-execution-20261029-06/phases/plans/failure.json),
+  [oracle independence refusal](/mnt/workspaces/Cells/regulated-public-execution-20261029-07/phases/reference/result.json)
+  and [fine-scalar timeout](/mnt/workspaces/Cells/regulated-public-execution-20261029-09/phases/scalar-fine/failure.json)
+  remain preserved. Repairs remove redundant planning parses, capture the oracle
+  in a clean process and extend unfinished wall allowances to 2,700 seconds.
+  The [reuse proof](/mnt/workspaces/Cells/regulated-public-execution-20261029-10/reuse-proof.json)
+  retains four completed phases and all **1,251 original snapshot files**;
+  physical inputs, tolerances and 4-GiB process / 8-GiB reserve guards are unchanged.
+  This qualification applies to its frozen execution source. The later batch
+  kernel-reuse and restart-preflight changes have separate engine evidence;
+  the frozen result does not automatically qualify those runtime changes.
+  Slow relaxation, native SIM ordering, regulated `@2`, regulated cutting and
+  GPU execution remain separate scopes. No `@1` public job remains active.
+
+- **Channel/junction regulation passes scoped public CPU qualification;
+  cut execution is complete, with final recovery review pending.**
+  Key Dev's [`resolved_calcium_energy_regulated@2` handoff](agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_V2_HANDOFF.md)
+  extends live Na/K regulation to existing shared-channel and junction
+  availability consumers. It retains all 38 parent physical fields, native
+  ordered bounded factors, actual free-ion/fuel concentrations and unchanged
+  intrinsic gates; dimensionless regulation adds no inventory or ATP cost.
+  The [component receipt](/mnt/workspaces/Cells/integrated-network-regulation-v2-handoff-20261029-01/result.json)
+  passes **41 host checks**, including a clean independent oracle and a full
+  63-population **5-us** transient with three refinements and an exact split.
+  [177 verified identities](/mnt/workspaces/Cells/calcium-energy-water-excision-development-20261029-01/regulation-v2-receipt-verification.json)
+  bind source, pinned native dependency, evidence and the originally prepared
+  dispatch patch. Peak process RSS is **223.9 MiB**,
+  with **17.67 GiB** minimum host reserve. Charged voltage-feedback channel
+  factors, junction exterior sampling and dedicated calcium-channel consumers
+  are explicitly unsupported; native SIM lag and broader profile/phase dispatch
+  are not reproduced. This is component validation, not compiled/public tissue
+  qualification. Root reconciled both narrow dispatch patches with the newer
+  water/mitochondrial cut branches: parse/serialization, model selection,
+  control routing and ensemble admission now retain each version explicitly.
+  The [shared-interface receipt](/mnt/workspaces/Cells/regulated-dispatch-development-20261029-01/result.json)
+  passes **seven checks** in **6m 38s**, including exact full initial checkpoint
+  restoration for both versions, unchanged control clocks, ensemble admission,
+  distinct-cohort refusal and four older physical families. Peak RSS is
+  **227.7 MiB**, with **15.07 GiB** minimum host reserve. A
+  [read-only review](/mnt/workspaces/Cells/regulated-dispatch-development-20261029-01/review/REVIEW.json)
+  recovers all four original file ASTs after removing just the new branches and
+  confirms **41 hash comparisons across 31 component files**, with no mismatch.
+  These are interface/engineering checks, separate from trajectory evidence.
+  Key Dev's [@2 public preparation](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-01/preparation-result.json)
+  has **two preflight checks passed**: contracts and a clean independent oracle.
+  [1,338 verified artifacts](/mnt/workspaces/Cells/regulated-dispatch-development-20261029-01/v2-preparation-verification.json)
+  bind the prepared suite and its then-current dispatcher files. Later regulated-cut
+  branches and runtime optimizations remain separate source changes. The
+  [verified continuation preparation](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-02/preparation-result.json)
+  retains all **1,277 frozen source files** and the two passed phases;
+  [root review](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-02/root-verification.json)
+  checks **2,646 identities**. The [detached launch](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-02/job-launch.json)
+  began **04:55:38 UTC, 29 October**, PID **1367858**, CPU2. The **05:17 UTC
+  user-triggered check** found it completed: the
+  [final receipt](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-02/result.json)
+  passes **all eight checks**, with two retained and six newly executed, in
+  **21m 9s** of continuation time. Offline plans, scalar/refinement histories,
+  a two-world batch and fresh scalar/batch restores cover the **38-field, 5-us
+  frozen @2 case**. [Independent data review](/mnt/workspaces/Cells/regulated-v2-public-execution-20261029-02/root-review-01/VERIFICATION.json)
+  verifies **1,478 artifact identities**, all seven stored trace comparisons,
+  exact scalar and both batch suffixes, and the original source/runtime scope.
+  Worst normalized error is **0.000860 of budget**; halving the scalar step
+  reduces error **12.41-fold**. Peak individual RSS is **3.459 GiB**, minimum
+  host reserve **14.555 GiB**, within the original **4-GiB summed-RSS compiled /
+  1-GiB host / 8-GiB reserve** guards. No regulated public job remains active.
+  This frozen qualification does not cover later cut branches, runtime
+  optimizations, the new profile CLI, a full 150-us cut trajectory or GPU execution.
+  The regulated tissue-cut adapter preserves rule order,
+  actual sample/fuel owners and regulated instantaneous fields. Its independent
+  [reference package](/mnt/workspaces/Cells/calcium-energy-regulated-v2-excision-reference-20261029-01/HANDOFF.json)
+  passes **46 checks**, including the full 38-field 50-us prefix/cut/150-us
+  endpoint at two refinements. Segment energy residual is **1.25e-11 pJ**;
+  a separate manufactured floating-field control detects **55.6 microvolts**
+  of error when regulation is incorrectly omitted. [385 verified identities](/mnt/workspaces/Cells/regulated-cut-integration-20261029-01/reference-verification.json)
+  bind all evidence, 63 unchanged reference dependencies and exact test-only
+  corrections: a list/array assertion and a charge-preserving binding perturbation.
+  Original failures remain retained; no equation or tolerance changed. The
+  reference worker is done. Production/public cut qualification remains pending,
+  and the cut-energy remainder is a diagnostic without mechanical-work closure.
+  The [production review](/mnt/workspaces/Cells/regulated-cut-integration-20261029-01/review/REVIEW.json)
+  finds no blocking issue in the copied adapter, with [five reviewed files still matching](/mnt/workspaces/Cells/regulated-cut-integration-20261029-01/review-verification.json).
+  It checks regulated field evaluation, retained rule/sample ownership, device/host
+  handling, provenance and all eight clocks. The [focused component receipt](/mnt/workspaces/Cells/regulated-v2-excision-handoff-20261029-01/result.json)
+  passes **27 host checks**, using 5-us boundary cases with unchanged rate constants.
+  [1,384 verified identities](/mnt/workspaces/Cells/regulated-cut-integration-20261029-01/component-verification.json)
+  bind that evidence, physical dependencies, review and exact patched snapshot.
+  Root [applied the five reviewed shared-file changes](/mnt/workspaces/Cells/regulated-cut-integration-20261029-01/dispatch-application.json):
+  `resolved_calcium_energy_regulated_excision@1` now uses normal parsing,
+  model/cut dispatch, complete archives and ensemble admission. The resulting
+  bytes match the qualified snapshot; no passed numerical check was repeated.
+  The [retained 150-us schedule/archive receipt](/mnt/workspaces/Cells/regulated-v2-excision-full-schedule-20261029-01/result.json)
+  now passes **27 host checks**: the original 25 checks plus two panels using
+  frozen 50/150-us independent checkpoints. The **04:28 UTC user-triggered check**
+  found completion at **04:20:30 UTC**, in **21m 4s**. [2,676 verified identities](/mnt/workspaces/Cells/regulated-v2-excision-full-schedule-20261029-01/root-verification.json)
+  bind the snapshots, unchanged original function ASTs, exact current owned
+  production files and reference checkpoint source. Peak process RSS is
+  **272.3 MiB**, minimum host reserve **12.48 GiB**. Focused boundary cases,
+  expanded schedule coverage and reference panels retain their separate scopes;
+  overlap is not independent biological replication. That host suite is complete.
+  Full compiled cut continuation, GPU execution and mechanical
+  cutting-work closure remain pending.
+  The [eight-check compiled preparation](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-01/preparation-result.json)
+  is sealed **with launch disabled**. It retains all 38 fields, 18 source rules,
+  ten surviving rules and eight control families at the actual 50/150-us clocks.
+  Two timestep resolutions exercise scalar/fresh restart, batch and a genuine
+  intermediate batch suffix; they are one physical case, not biological replicas.
+  [2,802 identities verified](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-01/root-review/VERIFICATION.json),
+  collection and static checks pass. A retained 480-second public-preflight
+  refusal leaves fresh-scalar and batch admission incomplete; completed prefix
+  and scalar plans are preserved. The [sealed successor](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-02/preparation-result.json)
+  now binds the qualified scalar engine: **1,272/1,274 source files** stay exact,
+  with only `runner.py` and `windows.py` changed. All eight tests, physical inputs,
+  reference targets and control clocks are unchanged. Root
+  [verified 3,932 identities](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-02/root-review/VERIFICATION.json)
+  and the exact planner/validation ASTs supporting reuse of four completed
+  admissions. The two pending **host admission checks launched detached at
+  07:18:47 UTC, 29 October**, PID **1413711**, CPU6; the
+  [launch record](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-02/preflight-launch.json)
+  estimates **10–25 minutes**, with **1-GiB live RSS / 8-GiB reserve** and
+  2,700 seconds per phase. They check full-suffix scalar and two-resolution
+  batch planning. Actual 100-us checkpoint restoration remains part of the
+  later compiled suite. No numerical integration, reference recomputation or
+  checkpoint migration is performed. Compiled qualification remains blocked
+  until these admissions pass and are reviewed; no follow-up or polling is queued.
+  The **07:19 UTC user-triggered check** found the fresh-scalar admission still
+  running, with no terminal artifact. It was not polled again during the
+  transport closeout and water/mitochondrial launches. The **07:33 UTC check**
+  found [both new admissions passed](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-02/public-admissions/result.json)
+  in **4m 27s**, with **382 MiB** supervised peak RSS. The
+  [admission review](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-02/root-admission-review/REVIEW.json)
+  verifies all six planning admissions (four retained, two new), all **1,274
+  frozen source files**, physical/reference targets and the eight unchanged
+  compiled test definitions. No numerical trajectory pass is added.
+  After the **07:58 UTC user-triggered capacity review**, the
+  [eight-phase qualification launched detached](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-03-cpu2/launch.json)
+  at **08:02:04 UTC**, PID **1427204**, on **CPU2**, estimated **60–120 minutes**.
+  Water's stopped job freed the compiled slot; CPU5 remains available to the
+  separately launched active-phase refinement. The
+  [CPU relocation](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-03-cpu2/cpu-relocation.json)
+  changes only two launch wrappers. All **1,274 source files**, scientific
+  inputs, tests and six admission receipts remain byte-identical; the original
+  CPU5 preparation is untouched. Launch admitted **19.18 GiB** available against
+  an **18-GiB** minimum. Guards remain **4-GiB PSS/individual RSS, 8-GiB reserve
+  and 2,700 seconds per phase**. The
+  [durable log](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-03-cpu2/driver.log)
+  and terminal result/failure artifacts retain the evidence. No automatic
+  polling, retry or follow-up is queued.
+  The **08:26 UTC user-triggered check** found catalog passed, followed by a
+  [prefix compiler-resource failure](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-03-cpu2/prefix/failure.json)
+  at **08:09:16 UTC**, after **4m 29s**. The
+  [trace](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-03-cpu2/prefix/window-trace.jsonl)
+  ends during the first **184-step kernel compilation**, before compilation
+  completion or an accepted simulation step. Individual high-water RSS reached
+  **4,300,595,200 bytes**, above 4 GiB; charged memory was **3.87 GiB** and minimum
+  reserve **11.20 GiB**. This adds no numerical pass or numerical failure claim.
+  The complete failed source, trace and resource stop remain preserved.
+  The [resource successor is prepared and sealed, but unlaunched](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-04-cpu2/preparation-result.json),
+  with **5,241 identities verified** and all **1,274 sources unchanged**. Only
+  the base prefix receives **6 GiB**; prefix-fine and every other phase retain
+  4 GiB, with the same 8-GiB reserve and 2,700-second limits. Its launcher and
+  driver require **24 GiB available** while the water job has priority. One
+  catalog pass and six planning admissions are retained; seven compiled checks
+  remain pending. No integration, admission rerun or automatic launch occurred.
+  The **09:05 UTC check** confirmed water completed, freeing the compiled slot.
+  A [new admission-only successor](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/preparation-result.json)
+  preserves all **1,274 sources**, tests, six admissions, catalog pass and phase
+  limits; only the aggregate launch gate changes from 24 to **18 GiB**. It
+  reserves 6 GiB for compilation, four 1-GiB host workers and 8 GiB host reserve.
+  The [unit-conversion proof](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/preparation/units-proof.json)
+  confirms the exact `*1024` conversion and records the earlier conservative
+  water metadata error. The [qualification launched detached](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/launch.json)
+  at **09:11:40 UTC**, PID **1447992**, CPU2, with **20.55 GiB available**;
+  expected duration **60–120 minutes**. Seven compiled checks remain pending.
+  Base prefix retains 6 GiB, prefix-fine and later phases 4 GiB, every phase
+  retains the 8-GiB reserve and 2,700-second limit. Suite04 remains untouched.
+  The **09:42 UTC user-triggered check** resolved the
+  [terminal failure](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/failure.json).
+  The [base prefix passed](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/prefix/result.json)
+  at **09:19:20 UTC**, in **7m 38s**: all **38 state fields**, 1,288 accepted
+  steps to 50 us, seven 184-step windows and one compilation. Saved independent
+  comparisons use **0.000924623 of the state-error budget**; the cut transition
+  matches exactly. Peak individual RSS was **4.06 GiB**, with **14.70 GiB**
+  minimum host reserve. A read-only review verifies both 1,274-file source
+  copies, 278 runtime hashes, full histories, all 94 saved observation arrays
+  and both complete snapshots. Independent comparison covers the 38 state
+  fields; it does not independently qualify every derived readout.
+  The [fine prefix stopped](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-05-cpu2/prefix-fine/resource-stop.json)
+  at **09:24:14 UTC**, after **4m 53s**, when individual RSS reached **4.006 GiB**.
+  Its trace ends during the first 214-step compilation, before any accepted
+  step. This is a resource failure, with no numerical failure or fine-prefix
+  pass established. The failed source, logs and checks remain intact.
+  The [prepared successor](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-06-cpu2/preparation-result.json)
+  retains the passed catalog, base prefix and six admissions, with all **1,274
+  scientific source/test files**, reference arrays and numerical environment
+  unchanged. The original base-prefix evidence is copied byte for byte; no
+  checkpoint is migrated. Only the fine-prefix allowance increases to **6 GiB**;
+  subsequent phases retain **4 GiB**, with **8-GiB reserve / 2,700 seconds** each.
+  The [guard proof](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-06-cpu2/preparation/guard-proof.json)
+  checks every phase's actual memory expression and the exact 18-GiB admission
+  boundary. A [preparation-only field-list/count assertion failure](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-06-cpu2/preparation/preparation-failure.json)
+  is preserved with its captured scripts and corrected verifier.
+  [Launched detached](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-06-cpu2/launch.json)
+  at **09:52:28 UTC**, PID **1459996**, CPU2, with **20.94 GiB available**.
+  **Six compiled checks remain**, estimated **45–100 minutes**: fine prefix,
+  two scalar continuations, fresh scalar restart, two-resolution batch and
+  fresh intermediate batch restart. No post-launch polling, automatic retry
+  or subsequent compiled job is queued.
+  The **09:54 UTC user-triggered check** found fine-prefix compilation running;
+  the retained catalog and base prefix remain its only credited compiled passes.
+  The job was not polled again during the water/repair integration below.
+  At the next **10:20 UTC user-triggered check**, **fine prefix and base scalar
+  continuation had passed**, and scalar-fine was running. The
+  [completed-phase review](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/completed-phase-review-06-01/REVIEW.json)
+  verifies all **1,274 frozen sources**, full 38-field comparisons, complete
+  snapshots, 164 exact layout arrays and resource samples. Fine prefix covers
+  **0–50 us at 19.53125 ns**, with **2,568 steps**, taking **558 seconds** at
+  **4.06 GiB RSS**. Its error/budget ratio **0.00092927** passes the established
+  **0.01 oracle/roundoff floor**; it does not establish eightfold convergence.
+  Base scalar covers **50–150 us at 39.0625 ns**, with **2,572 steps**, taking
+  **499 seconds** at **3.77 GiB RSS** and **0.00004028** error/budget. The saved
+  **100-us intermediate checkpoint** matches its history. Each phase compiles
+  once. These add **two compiled checks**, not fresh-restart/batch passes or
+  independent biological cases. Fine scalar, scalar restart, batch and batch
+  restart remained pending at that check; no further polling was performed.
+  The **10:30 UTC user-triggered check** found **fine scalar and fresh scalar
+  restart passed**, with batch execution running. Their
+  [review](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/completed-phase-review-06-02/REVIEW.json)
+  confirms **5,132 fine steps** over 50–150 us at **19.53125 ns**,
+  **0.0000404581** error/budget and **669 seconds** runtime. This again passes
+  the established oracle/roundoff floor, without a convergence-order claim.
+  A distinct process resumed the actual **100-us snapshot**, advanced **1,285
+  steps** and matched all **38 state histories, 94 observation arrays and 164
+  layout arrays** exactly through 150 us; final checkpoint files are byte-identical.
+  Restart took **375 seconds**. Both phases retained all 1,274 source identities,
+  compiled once and stayed within **4-GiB memory / 8-GiB reserve** limits, with
+  approximately **3.77 GiB** peak RSS. These add two compiled checks, including
+  one real scalar recovery check; batch and batch recovery remain separate.
+  The **10:49 UTC user-triggered check** found **batch passed** and the final
+  fresh batch restore running. The [completed batch review](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/completed-batch-review-06-01/REVIEW.json)
+  verifies all 1,274 frozen sources, runtime bindings and sixteen evidence files.
+  Worlds **3 / 79** run two timestep resolutions of the **same physical case**:
+  **2,572 / 5,132 steps** with **38 full fields**, each exactly matching its
+  scalar trajectory, all 94 observation arrays and independent comparison arrays.
+  Error/budget ratios remain **0.0000402765 / 0.0000404581**. The 41-round batch
+  compiles once and takes **15m 42s**, peaking at **3.85 GiB RSS**, with
+  **14.20 GiB** minimum reserve. Its saved batch has world 3 already complete at
+  150 us and world 79 at **102.34375 us with 2,444 steps remaining**; all 164
+  layout arrays per world remain exact. This adds one batch-execution check,
+  not another physical case or a fresh batch-recovery pass. The active restore
+  phase was not polled again during the closeout work.
+  The **11:16 UTC user-triggered parity status check** found the
+  [terminal suite receipt](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/compiled-suite-06-cpu2/result.json)
+  reporting **all eight checks passed**, completed **10:54:27 UTC**. This counts
+  two retained checks and six newly executed compiled checks; the final batch
+  restore process completed in **666 seconds**. The job is no longer active.
+  Its final recovery evidence and combined receipt still await closeout review;
+  no additional audit, retry or successor job was launched during this check.
+
+- **Passive tissue cut/continuation passes scoped CPU qualification.**
+  [`resolved_tissue_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-and-absolute-time-continuation)
+  retains surviving material and charge, archives the full source state/layout,
+  rebuilds the field and starts new local ledgers at the original absolute time.
+  No-op and terminal cuts are explicit. Incompatible retained fields reject
+  without changing the source. The
+  [combined receipt](/mnt/workspaces/Cells/surface-excision-development-20261028-01/development-result.json)
+  binds **99 distinct passing checks**: 69 implementation/regression checks and
+  30 independent checks, combining preserved phases. Engineering controls,
+  refinements and worlds are not extra biological cases. The
+  [independent package](/mnt/workspaces/Cells/surface-excision-reference-20261028-01/HANDOFF.json)
+  has **30 distinct passing checks**; three nested-history repeats add no cases.
+  [Identity verification](/mnt/workspaces/Cells/surface-excision-development-20261028-01/reference-receipt-verification.json)
+  binds its sources and artifacts. The
+  [transient refinement](/mnt/workspaces/Cells/surface-excision-development-20261028-01/transient-01/result.json)
+  passes before and after removal at **39.0625 ns**, with maximum state-error
+  ratios **0.00682 / 0.0577**. The original 10-us fixture grid exceeds the
+  initial fast-mode RK4 stability range; physical rates and clocks are unchanged.
+  The [compiled end-to-end check](/mnt/workspaces/Cells/surface-excision-development-20261028-01/compiled-trajectory-04/result.json)
+  took **4m 9s** and covers a 1-ms prefix, removal, and continuation through
+  **2.5 ms**, with exact scalar/windowed final states and complete disk
+  checkpoint restoration.
+  The [saved independent prefix comparison](/mnt/workspaces/Cells/surface-excision-development-20261028-01/precut-correspondence.json)
+  passes at **0.000464** of its state-error budget; the post-cut comparison
+  uses **0.636**. Maximum continuous energy residual was **1.23e-12 pJ**,
+  material residual **3.25e-17 fmol** and global charge residual **2.44e-27 C**.
+  The [two-world bounded continuation](/mnt/workspaces/Cells/surface-excision-development-20261028-01/compiled-batch-01/result.json)
+  passes in **3m 8s**. [Host remap/archive checks](/mnt/workspaces/Cells/surface-excision-development-20261028-01/host-04/tests.xml),
+  [corrected 1/4/16-GPU plans and checkpoint regressions](/mnt/workspaces/Cells/surface-excision-development-20261028-01/planning-regression-01/result.json)
+  and [zero-remaining-time windows](/mnt/workspaces/Cells/surface-excision-development-20261028-01/zero-epoch-01/result.json)
+  pass. [Static review](/mnt/workspaces/Cells/surface-excision-reference-20261028-01/production-review-01/REVIEW.json)
+  caught the shared window planner's zero-time assumption, now corrected for
+  scalar and batch windows. The [source example](configs/resolved_tissue_excision_source.json)
+  and [serialized after-cut input](/mnt/workspaces/Cells/surface-excision-development-20261028-01/example-after.json)
+  retain the qualified clocks and physical parameters.
+  Preserved failures include the initial adaptive-reference trial, an initial
+  invalid-state test that correctly triggered a stronger charge guard, the
+  undersized offline artifact budget, and three conservative trace/window
+  budget refusals. Physical equations, horizons and tolerances were unchanged;
+  compiled jobs retained a **4-GiB process guard / 8-GiB host reserve**. Peak
+  charged memory was **1.19 GiB**, with **16.98 GiB** minimum host reserve.
+  Cut work remains an unresolved event diagnostic, not a predicted mechanical
+  law. No root qualification remains active and no GPU job was launched.
+  Active channel/pump cutting is now being qualified above. Calcium, fuel,
+  water, organelles, assembly cuts and full native tissue parity remain open.
+
+- **Mitochondrial ion/voltage integration passes scoped CPU qualification.**
+  [`resolved_calcium_energy_mitochondria@1`](docs/TISSUE_RETURN_CURRENT.md#finite-mitochondrial-ion-and-voltage-coupling)
+  adds three internal ion/transfer/heat fields to the 42-field calcium/ER,
+  finite-fuel and configured-transport composition. Its explicit mitochondrial
+  inventory and countercharge preserve actual cytosolic ownership and whole-cell
+  plasma charge. This continuous passive law is distinct from native cached
+  Euler/copy initialization; respiration and ATP synthesis remain outside it.
+  The [combined receipt](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/development-result.json)
+  binds **103 distinct passing checks**: 48 host/planning, two compiled CPU
+  checks and 53 independent checks. Counts combine preserved runs; engineering
+  controls are not extra biological cases. [Host checks](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/host-02/result.json)
+  cover owners, domains, controls, assembly and checkpoints. The
+  [independent package](/mnt/workspaces/Cells/calcium-energy-mitochondria-reference-20261028-01/HANDOFF.json)
+  passes **53 checks**, including full-45-field 50-us refinement and a reduced
+  **127.17-s charged-potassium relaxation** at unchanged diffusivity, covering
+  twelve time constants. That reduced history does not establish whole-cell
+  settling. The lead [verified its sources and artifacts](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/reference-receipt-verification.json).
+  [Compiled two-world rates](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/compiled-stage-02/result.json)
+  pass in **4m 46s**, isolating an invalid world. The
+  [eight ownership/planning checks](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/planning-02/result.json)
+  pass, including offline 1/4/16-GPU placement. The
+  [complete compiled 50-us trajectory](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/compiled-trajectory-01/result.json)
+  took **7m 7s**, passed at **0.101 of its state-error budget**, and restored all
+  45 checkpoint fields and static layout exactly. Energy residual was
+  **9.56e-18 pJ**, mitochondrial material residual **zero**, organelle charge
+  residual **1.72e-28 C** and pool-material residual **2.08e-16 fmol**. Peak
+  charged memory was **3.44 GiB**, with **13.57 GiB** minimum host reserve across
+  successful phases. The two [serialized examples](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/example-check.json)
+  retain the 50-us probe; assembly stochastic histories remain unqualified.
+  Preserved failures are
+  the [initial charge-cancellation check](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/host-01/failure.json),
+  the [3-GiB compilation guard](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/compiled-stage-01/failure.json)
+  and the [240-s planning guard](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/planning-01/failure.json).
+  Charge checks now use increments; physical equations and tolerances are
+  unchanged. Resource retries retained the 8-GiB host reserve. Outputs remain
+  under `/mnt/workspaces/Cells`. No mitochondrial qualification or follow-up
+  run remains active, and no GPU run was launched. Longer full-cell recovery,
+  respiration/ATP synthesis, dynamic water/geometry, GPU execution and wetlab
+  calibration remain separate work. Cut/continuation work is tracked above.
 
 - **The 56-law HCN expansion passes scoped CPU qualification.**
   The lead added `HCNLeak`, `HCN2_cAMP` and `HCN4_cAMP` in
@@ -57,11 +1507,80 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   corrected by passing layout arrays through JAX, and the native package's
   refinement failure corrected with finer steps. Equations and scientific
   tolerances were retained. No HCN job remains active and no GPU job is queued.
-  Longer coupled HCN recovery, 56-law water/repair integration, stochastic
-  assembly, GPU execution and experimental calibration remain separate work.
-  The lead's next integration, configured transport, is qualified below. Key Dev
-  independently owns native cutting/remapping after delivering mitochondria.
-  The lead alone maintains this status file.
+  Longer coupled HCN recovery, compiled/GPU qualification of the 56-law
+  water/repair composition, stochastic assembly histories and experimental
+  calibration remain separate work.
+
+- **The 56-law joint water/repair versions pass public integration and scoped
+  independent CPU qualification:**
+  versions `resolved_calcium_energy_water@2` and
+  `resolved_calcium_energy_water_repair@2`, carrying the full 56-law catalog,
+  actual calcium/ER and fuel owners, and moving-volume accounting. Key Dev's
+  new `*_hcn_extra` schemas/models retain **43 / 48 state fields** and exact
+  HCN-specific layouts. Root added parsing, serialization, right-continuous
+  schedules, model/ensemble routing, exact-type assembly admission and complete
+  water/fuel/repair aggregation checks. Existing version-one files are intact.
+  The [six public contracts passed](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/contracts-02/result.json)
+  in **16 seconds**, at **225 MiB RSS**, with **18.29 GiB** minimum host reserve.
+  They verify full catalog/owner projection, CPU/GPU input admission and control
+  boundaries; GPU input acceptance is not GPU execution. The
+  [first fixture failure](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/contracts-01/failure.json)
+  correctly refused off-grid observation times. The public two-step fixture now
+  observes **0 / 1 / 2 ns**, with no changes to model equations or independent
+  scientific fixtures. Its earlier two control passes are not counted again.
+  The [first detached suite](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/suite-01/launch.json)
+  launched at **10:15:06 UTC** and
+  [stopped after 30 seconds](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/suite-01/failure.json):
+  **eight snapshot/version/assembly checks passed**, but the 16-task offline
+  planning fixture exceeded its inherited **512-MiB output allowance**.
+  The production planner correctly required **679,809,984 bytes** for complete
+  success/recovery artifacts. Only that fixture's allowance changes to **1 GiB**;
+  production limits, physical definitions and tolerances remain unchanged.
+  The [targeted planning retry passed](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/planning-02/result.json)
+  in **67 seconds**, at **239 MiB sampled RSS**, with **17.48 GiB** minimum host
+  reserve. Offline 1/4/16-GPU plans preserve all 16 world IDs and seeds.
+  The [prepared continuation](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/public-preparation-v2.json)
+  retains **15 public passes** without repeating them and freezes **1,695 sources**.
+  The [completed suite](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/suite-02/result.json)
+  finished at **10:37:17 UTC**, confirmed by the **10:49 UTC user-triggered check**.
+  Its [closeout review](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/closeout-02/REVIEW.json)
+  verifies **51 distinct software checks: 15 retained public passes, two real
+  CLI restart checks and 34 adjacent regressions**. Fresh processes resume
+  actual **1-ns checkpoints** through 2 ns, matching all **43 / 48 state fields,
+  146 / 150 layout arrays and 103 / 110 observation arrays** exactly, including
+  the complete saved suffix. These tiny histories test execution and recovery;
+  they are not physical convergence evidence. The four new phases took
+  **7m 29s**, at **830 MiB peak tree RSS**, with **14.20 GiB** minimum reserve,
+  under CPU5 **1-GiB RSS / 8-GiB reserve / 600-second per-phase** guards.
+  Retained phases keep their original limits. Eight source inventories and the
+  309-file frozen runtime authenticate; the separate static-barrier addition
+  after capture is explicitly excluded from this receipt. A
+  [launch-metadata note](/mnt/workspaces/Cells/joint-water-hcn-integration-20261029-01/launch-metadata-note.json)
+  preserves the first suite's inherited conservative timeout label; the new
+  driver computes the aggregate directly from its four phases.
+  Separately, Key Dev's [component result](/mnt/workspaces/Cells/joint-water-hcn-handoff-20261029-01/result.json)
+  passes **46 distinct checks**, with an
+  [independent review](/mnt/workspaces/Cells/joint-water-hcn-handoff-20261029-01/root-review-01/REVIEW.json)
+  binding **748 artifacts and 190 captured sources**. This includes **48 full
+  state-rate comparisons** across initial/manufactured states and two complete
+  **50-us** trajectories, with **63 populations covering all 56 channel laws**.
+  At **0.625 / 0.3125 us** steps, state error/budget falls from
+  **0.00687962 to 0.000428878** for water and **0.339130 to 0.0222444** for repair.
+  Maximum independent trajectory energy residuals are **1.53001e-12 /
+  2.45935e-12 pJ**, below the **1e-9-pJ** budget. Full named states are saved at
+  every declared observation; intermediate accounting is asserted in the tests.
+  Trajectory arrays are compact; padding is checked separately at initial and
+  manufactured stages. Two nearly coincident repair control times remain
+  distinct exact timestamps, not additional biological observations.
+  The review records a stage-helper threshold mismatch: saved residuals reach
+  at most **4.64091e-11 pJ/s**, also satisfying the stricter **1e-10-pJ/s**
+  protocol threshold. Frozen evidence and tolerances were not changed.
+  Source correspondence preserves component physics; later shared-runtime
+  changes and the public software checks are tracked separately. This is
+  bounded NumPy CPU qualification, without a convergence-order, long-term
+  recovery, compiled/GPU, wet-lab or whole-BETSE-equivalence claim. Neither
+  water/repair qualification remains active; further compiled jobs stay held
+  behind the regulated qualification and the next user instruction.
 
 - **Reversible configured transport passes scoped CPU qualification.**
   [`resolved_calcium_energy_transport@1`](docs/TISSUE_RETURN_CURRENT.md#configured-transport-with-owned-calcium-and-finite-fuel)
@@ -95,10 +1614,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   clock/control expectations, and a correctly rejected 16-GPU plan with only
   eight tasks; equations and scientific tolerances were retained.
   No transport qualification remains active and no GPU run is queued. Longer
-  coupled recovery, ATP-driven conversion reactions, water/mitochondrial coupling,
+  coupled recovery, ATP-driven conversion reactions, dynamic water coupling,
   stochastic assembly and full native tissue correspondence remain open.
-  **Next:** integrate the independently developed cutting/topology and organelle
-  components under explicit material ownership; GPU qualifications stay deferred.
+  The organelle composition is tracked above. **Next shared integration:**
+  cutting/topology with explicit removed material and rebuilt solver ownership;
+  GPU qualifications stay deferred.
 
 - **Native mitochondrial ion/voltage component delivered.**
   Key Dev's [receipt](/mnt/workspaces/Cells/betse-mitochondria-handoff-20261028-01/result.json)
@@ -111,10 +1631,79 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   explicitly retains native initialization's extra inventory and cached voltage;
   those are not a conservative organelle partition. ATP production, heat,
   respiration, water and tissue coupling remain unimplemented for this component.
-  Key Dev now owns cell removal, material-removal records and topology rebuilding
-  in separate files. Coordination is limited to handoffs and concrete blockers.
+  The continuous coupled version is tracked above. Coordination with Key Dev
+  is limited to handoffs and concrete blockers.
 
-- **Native configurable transporter component delivered; tissue integration pending.**
+- **Cell-cut/remap component delivered; passive continuation is tracked above.**
+  Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-tissue-cut-handoff-20261028-01/result.json)
+  records **60 passing checks** (57 host, three CPU JAX), three actual native
+  small-geometry cuts and seven retained source limitations. The lead
+  [verified the receipt, source and artifacts](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/cut-receipt-verification.json).
+  The [contract](agent-work/cells-worker-01/workfiles/BETSE_TISSUE_CUT_HANDOFF.md)
+  preserves stable owners and removed-material records. Native environmental
+  volume remapping with unchanged concentrations differs from the conservative
+  Cells policy; source resets and failures remain explicit. The first shared
+  adapter rebuilds passive electrical fields; active owners and physical
+  contacts remain open. No healing, growth or cutting-energy law is claimed.
+
+- **Native reaction/growth component delivered; physical coupling remains open.**
+  The [frozen receipt](/mnt/workspaces/Cells/betse-network-reactions-handoff-20261028-01/result.json)
+  records **92 passing checks** (88 host, four CPU JAX), 38 actual native network
+  cases and eleven source limitations. The lead
+  [verified source and artifact identities](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/reactions-receipt-verification.json).
+  The [contract](agent-work/cells-worker-01/workfiles/BETSE_NETWORK_REACTIONS_HANDOFF.md)
+  distinguishes the different cell/mitochondrial/environment reaction laws,
+  native versus SI gas constants, regulatory targets and explicit material
+  conversion/source/sink records. Linear growth covers **48.48 s**, twelve time
+  constants. Chemical/fuel ownership, physical energy and tissue coupling remain
+  separate implementation work; source rate agreement does not establish them.
+  Configurable modulation is delivered below; physical reaction integration
+  remains shared-platform work.
+
+- **Native network modulation delivered; consumer coupling remains open.**
+  The [frozen component receipt](/mnt/workspaces/Cells/betse-network-modulation-handoff-20261028-01/result.json)
+  records **75 passing checks** (71 host, four CPU JAX), 38 native configurations
+  and fourteen retained limits. The lead
+  [verified the artifacts and frozen reaction dependency](/mnt/workspaces/Cells/calcium-energy-mitochondria-development-20261028-01/modulation-receipt-verification.json).
+  The [contract](agent-work/cells-worker-01/workfiles/BETSE_NETWORK_MODULATION_HANDOFF.md)
+  preserves signed GJ/NaK/TJ factors, ordered target replacement, channel
+  voltage regulation and source precedence/unit quirks. Native channel-dispatch
+  captures use a declared Probe core and zero-current hooks; they establish
+  factor and call order, not channel dynamics or tissue response. The 200-ms
+  control-sample sequence is a restart/order check, not kinetic settling.
+  Shared integration must declare consumer timing and reject or model signed
+  factors incompatible with a physical transport law.
+
+- **Native deformation component delivered; physical mechanics remains open.**
+  Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-deformation-handoff-20261028-01/result.json)
+  records **58 passing checks** (54 host, four CPU JAX), 20 native forcing/operator
+  cases, four display cases and ten retained limitations. The lead
+  [verified 147 source/artifact identities](/mnt/workspaces/Cells/surface-excision-development-20261028-01/deformation-receipt-verification.json).
+  The [contract](agent-work/cells-worker-01/workfiles/BETSE_DEFORMATION_HANDOFF.md)
+  preserves reachable steady displacement, the native pressure auxiliary and
+  display sampling. Native dynamic deformation is loader-disabled; its
+  positive-clock recurrence is an isolated diagnostic, and initialization
+  failures remain recorded. Unresolved pressure units and boundary behavior do
+  not establish a force/energy law or physical geometry update. Peak RSS was
+  **267 MiB**, with **18.2 GiB** available host memory. The tissue-profile
+  component is delivered below; physical mechanics remains shared-platform work.
+
+- **Native tissue profiles and intervention targets delivered; shared binding remains open.**
+  Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-tissue-profiles-handoff-20261028-01/result.json)
+  records **81 passing checks** (77 host, four CPU JAX), 38 valid native cases and
+  19 retained source limitations. The lead
+  [verified 201 source/artifact identities](/mnt/workspaces/Cells/surface-excision-development-20261028-01/tissue-profiles-receipt-verification.json).
+  The [contract](agent-work/cells-worker-01/workfiles/BETSE_TISSUE_PROFILES_HANDOFF.md)
+  preserves stable owners, source selection/overlap order, duplicate target
+  writes, bitmap interpolation and intervention buffers. Native ALL-cell
+  aliasing differs from pick-time membrane ordering; owner-axis sampling and
+  stable carry after removal are explicit Cells choices. Persistent random
+  streams, image provenance, physical geometry and shared control/solver
+  integration remain caller-owned. Peak RSS was **297 MiB**, with **18.7 GiB**
+  host reserve. Key Dev now owns the separate native geometry/operator binding
+  task on CPU7; the lead owns active cut integration and this status file.
+
+- **Native configurable transporter component delivered; broader coupling remains open.**
   Cells Key Dev's [frozen receipt](/mnt/workspaces/Cells/betse-network-transport-handoff-20261028-01/result.json)
   records **123 passing checks** (119 host, four CPU JAX), **39 authenticated
   native expression captures** and three explicitly rejected native failures.
@@ -127,8 +1716,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   ATP or water updates are supplied. Attempts 01–03 remain preserved. Final
   peak RSS was **331 MiB**, with **19.72 GiB** minimum host reserve.
   The lead verified the receipt and production-source identities on receipt;
-  this is component evidence, not coupled tissue qualification. The lead is
-  integrating its reversible species-preserving subset, as recorded above.
+  this is component evidence. Its reversible species-preserving subset has
+  separate coupled CPU qualification, as recorded above.
 
 - **Joint calcium/ER, finite ATP, water and prescribed repair passes CPU integration.**
   [`resolved_calcium_energy_water_repair@1`](docs/TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water)

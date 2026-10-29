@@ -1,0 +1,87 @@
+{
+  "kind": "cells.betse_geometry_contract@1",
+  "law_id": "betse_geometry_source_v1_5_0@1",
+  "purpose": "Qualify stable geometry/owner/operator binding independently of physical amount remap",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+      "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+      "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199"
+    }
+  },
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 180,
+    "gpu": false,
+    "persistent_compilation_cache": false
+  },
+  "automatic_followup": false,
+  "native_runtime": "Actual authenticated imports of DECMesh, Cells and FiniteDiffSolver in existing BETSE venv; empty Cells.__init__ pass bypassed for normalized parameters; no arithmetic hooks",
+  "generation_scope": "Explicit seed clouds or actual seeded single-cell point generator, native init_mesh plus selected cell/environment pipeline; no YAML/lattice-image/full make_world or solver/cut execution",
+  "seed_ownership": "Explicit original/retained/removed IDs; no production RNG consumption, implicit removal or cross-generation coordinate matching",
+  "geometry_semantics": {
+    "measures": "Native radial membrane pie volumes differ from signed CCW polygon area*height; pre-shrink vor_sa remains the DEC control area",
+    "dual": "Native closest-midpoint paired edges; centroid duals need not be orthogonal; tri_sa_o is a repeated reference face area with declared owner, not a physical partition",
+    "contacts": "Explicit reciprocal contact IDs, opposed normals and equal interface areas; contact edges remain distinct from primal field edges",
+    "environment": "C-order uniform MAC grid; nearest owner maps explicit; native true_ecm_vol is membrane surface*gap/2 at occupied sites, uniform volume elsewhere"
+  },
+  "operators": {
+    "primal": "D0 oriented endpoint incidence; D1 CCW face boundary; positive measures and exact D1D0",
+    "closed": "Native btype2 = -D0.T weighted divergence; constant/component nullspaces and area-weighted conservation",
+    "interior_rows": "Native btype1 zeros boundary output rows; does not impose input boundary potentials; world requests core-only and missing auxiliary paths fail",
+    "inverse": "Source factorized pseudoinverse product retained separately from Cells density pseudoinverse; not generally a right inverse",
+    "grid": "Native value row = identity/delta^2, flux missing-neighbor stencil; source asymmetric corner precedence retained",
+    "grid_nullspace": "Native default pinv may retain a spurious constant mode on 8x8/16x16; compatible_gauge uses the declared constant nullspace and requires finite zero-sum RHS",
+    "gauge": "Arithmetic-zero potential per disconnected component; density RHS area-weighted compatible; no silent physical source projection",
+    "xy": "Literal source grad_xy mixing only; no guaranteed Cartesian gradient or centroid-dual continuum Laplacian claim"
+  },
+  "units": {
+    "length": "m",
+    "area": "m2",
+    "volume": "m3",
+    "incidence": "dimensionless",
+    "gradient": "field/m",
+    "divergence": "flux/m",
+    "laplacian": "field/m2",
+    "inverse": "field*m2"
+  },
+  "reference": "Independent stdlib polygon/owner/contact/incidence/stencil loops and pivoted gauge elimination; native topology is an explicit input, not independent Delaunay generation",
+  "tolerances": {
+    "relative": 6e-12,
+    "coordinate_atol_m": 1e-27,
+    "area_atol_m2": 1e-26,
+    "volume_atol_m3": 1e-30,
+    "normal_atol": 2e-14,
+    "derivative_atol_per_m": 3e-08,
+    "laplacian_atol_per_m2": 0.003,
+    "inverse_atol_m2": 3e-24,
+    "compatibility_relative": 2e-12,
+    "conservation_relative": 3e-13
+  },
+  "dense_limits": {
+    "primal_cells": 256,
+    "dual_vertices": 1024,
+    "paired_edges": 1536,
+    "grid_cells": 1024
+  },
+  "scope_limits": [
+    "No material/charge/ATP/water remap or physical geometry evolution",
+    "No cut execution, solver continuation or checkpoint migration",
+    "No full-tissue, mechanical-energy or continuum centroid-dual convergence claim",
+    "Static CPU/JAX numerics; geometry generation and all runtime state remain caller-owned"
+  ]
+}

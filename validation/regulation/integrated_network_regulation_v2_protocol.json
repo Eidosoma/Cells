@@ -1,0 +1,65 @@
+{
+  "kind": "cells.integrated_network_regulation_contract@2",
+  "model_id": "resolved_calcium_energy_regulated@2",
+  "parent": "resolved_calcium_energy@5",
+  "state_fields": 38,
+  "purpose": "Qualify chemical/fuel control of existing channel and junction availability, explicit owners, and unchanged physical accounting",
+  "law": "betse_network_modulation_source_v1_5_0@1",
+  "timing": "common_stage_free_cytosol_exterior_fuel@1",
+  "control_composition": "scheduled_times_ordered_nak_channel_junction_factor@2",
+  "readonly_source_sha256": {
+    "src/cells/processes/betse_network_modulation.py": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+    "src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+    "src/cells/models/surface_calcium_energy.py": "30b4d8ae602aac384cfc6169431f96f4d0d4d13589e39ef51d324e62ef787046",
+    "src/cells/core/surface_calcium_energy_spec.py": "0f1f7ca0614af9c1f5c41c53221eb40aff18ac8135127b426b350d32bcabf113",
+    "validation/regulation/betse_network_modulation_reference.py": "ffaf85c9e5e58a67f063ef2aaebc7e610bb0cb6e6abe4bc7b3184a34762882c3",
+    "validation/tissue/surface_calcium_energy_reference.py": "6c32e08c58771b4294d6b48daffbaf6936be8f43d936ba0672e36537ecaa9c2c",
+    "configs/resolved_hcn_extra_energy.json": "1e2e3b1720a6da4d47e9025e21718c825895187f9707627ea7107d1482beea90",
+    "src/cells/models/surface_calcium_energy_regulated.py": "76c1ddd7ad918e3aa49456c9f106f40f533a48b8550b4254541eb53b24129bc9",
+    "src/cells/core/surface_calcium_energy_regulated_spec.py": "42378ea33c8576b7b132fe8ea72a13d11b73b4594ff02910f90f17b16a501099",
+    "validation/regulation/integrated_network_regulation_fixtures.py": "240aa72a1c80ce408bc23512ccae264a24d0347e3d52bb11a16ef858d81ff0b8"
+  },
+  "frozen_native_handoff": {
+    "path": "/mnt/workspaces/Cells/betse-network-modulation-handoff-20261028-01/result.json",
+    "sha256": "ea86673d75305bc17c8753deefbce320e3db9d509b8756c44e0a2a946cf8f3c2",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2"
+  },
+  "ownership": "Membrane rules require the actual target inside/outside IDs and a fuel pool belonging to that cytosol. GJ rules choose one actual endpoint cytosol and its fuel pool; there is no inferred exterior/edge map. Ephemeral free chemical/fuel samples only.",
+  "native_separation": "Frozen source NaK/GJ max_effect*alpha and channel alpha are reused with native ordered last-writer replacement per existing named target. Common-stage evaluation and once-only schedule multiplication are new Cells composition. No native SIM lag/order, INIT/profile dispatch, factory channel type selection, core.modulator or outer DChan equivalence is claimed.",
+  "domain": "All active factors must remain finite in [0,1], including shadowed/blocked rules. Preserve source inhibitor precedence, direct and independent terms; reject escaped factors without clipping. Channel max Dm must be zero; physical permeability already belongs to target. Charged voltage-Hill feedback, GJ env influencers, native capacity/conductance and dedicated calcium-channel consumers are unsupported.",
+  "reference": "Independent Decimal source factors + independent full 38-field calcium/fuel/Poisson/ledger reference; field/state/control projections reconstructed separately without production imports.",
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "blas_threads": 1,
+    "max_host_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 480,
+    "gpu": false,
+    "persistent_compilation_cache": false,
+    "compiled_execution": false
+  },
+  "tolerances": {
+    "stage_rtol": 3e-10,
+    "stage_atol": 3e-12,
+    "charge_atol_C": 3e-23,
+    "regulator_rtol": 8e-12,
+    "regulator_atol": 3e-15,
+    "energy_stage_atol_pJ_s": 3e-10,
+    "trajectory_rtol": 3e-08,
+    "trajectory_atol_fmol": 2e-11,
+    "adaptive_rtol": 2e-11,
+    "adaptive_atol": 1e-15
+  },
+  "scope_limits": [
+    "Host NumPy complete-stage/trajectory qualification only; compiled @2/public dispatch remains Chief-owned",
+    "Shared channels retain existing law, population and intrinsic gates; native channel labels are factor configuration metadata only",
+    "Junction endpoint selection is explicit and multiple rules replace in list order; no hidden endpoint mean/product",
+    "No native full solver, SIM timing, INIT/profile dispatch, extra ATP cost, physical inventories, or state dimensions",
+    "No polling, changes or reuse claims for active @1 public execution; no automatic follow-up"
+  ],
+  "automatic_followup": false,
+  "channel_scope": "native_voltage_independent_sim_factor_only@1",
+  "junction_scope": "explicit_endpoint_cytosol_no_exterior@1"
+}

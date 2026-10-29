@@ -6,6 +6,7 @@ import numpy as np
 
 from cells.assembly_cluster import MODEL_ID, engine
 from cells.assembly_cluster.finite_energy import accumulate as accumulate_finite_energy
+from cells.assembly_cluster.mitochondria import accumulate as accumulate_mitochondria
 from cells.assembly_cluster.mobile_channels import accumulate as accumulate_mobile_channels
 from cells.assembly_cluster.mobile_pumps import accumulate as accumulate_mobile_pumps
 from cells.assembly_cluster.network_transport import accumulate as accumulate_network_transport
@@ -70,8 +71,11 @@ def aggregate(rows):
                 "resolved_calcium_energy@4",
                 "resolved_calcium_energy@5",
                 "resolved_calcium_energy_transport@1",
+                "resolved_calcium_energy_mitochondria@1",
                 "resolved_calcium_energy_water@1",
+                "resolved_calcium_energy_water@2",
                 "resolved_calcium_energy_water_repair@1",
+                "resolved_calcium_energy_water_repair@2",
                 "resolved_repair@1",
                 "resolved_repair@2",
                 "resolved_repair@3",
@@ -99,8 +103,11 @@ def aggregate(rows):
             "resolved_calcium_energy@4",
             "resolved_calcium_energy@5",
             "resolved_calcium_energy_transport@1",
+            "resolved_calcium_energy_mitochondria@1",
             "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water@2",
             "resolved_calcium_energy_water_repair@1",
+            "resolved_calcium_energy_water_repair@2",
             "resolved_repair@1",
             "resolved_repair@2",
             "resolved_repair@3",
@@ -122,12 +129,20 @@ def aggregate(rows):
             "resolved_calcium_energy@4",
             "resolved_calcium_energy@5",
             "resolved_calcium_energy_transport@1",
+            "resolved_calcium_energy_mitochondria@1",
             "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water@2",
             "resolved_calcium_energy_water_repair@1",
+            "resolved_calcium_energy_water_repair@2",
         ):
             accumulate_finite_energy(arm, row)
-        if row["physical_model"] == "resolved_calcium_energy_transport@1":
+        if row["physical_model"] in (
+            "resolved_calcium_energy_transport@1",
+            "resolved_calcium_energy_mitochondria@1",
+        ):
             accumulate_network_transport(arm, row)
+        if row["physical_model"] == "resolved_calcium_energy_mitochondria@1":
+            accumulate_mitochondria(arm, row)
         if "ip3" in row:
             ip3 = row["ip3"]
             if ip3["cell_ids"] != row["cell_ids"]:
@@ -152,7 +167,9 @@ def aggregate(rows):
         if row["physical_model"] in (
             "resolved_calcium_water@1",
             "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water@2",
             "resolved_calcium_energy_water_repair@1",
+            "resolved_calcium_energy_water_repair@2",
         ):
             if "water" not in row:
                 raise ValueError("Calcium/water cluster requires volume ownership readouts")
@@ -166,7 +183,9 @@ def aggregate(rows):
             )
             joint = row["physical_model"] in (
                 "resolved_calcium_energy_water@1",
+                "resolved_calcium_energy_water@2",
                 "resolved_calcium_energy_water_repair@1",
+                "resolved_calcium_energy_water_repair@2",
             )
             if joint:
                 metadata += ("energy_osmotic_coupling", "osmotic_particle_scope")
@@ -258,8 +277,11 @@ def aggregate(rows):
             "resolved_calcium_energy@4",
             "resolved_calcium_energy@5",
             "resolved_calcium_energy_transport@1",
+            "resolved_calcium_energy_mitochondria@1",
             "resolved_calcium_energy_water@1",
+            "resolved_calcium_energy_water@2",
             "resolved_calcium_energy_water_repair@1",
+            "resolved_calcium_energy_water_repair@2",
             "resolved_repair@1",
             "resolved_repair@2",
             "resolved_repair@3",
@@ -283,6 +305,7 @@ def aggregate(rows):
                 raise ValueError("Cluster channel species/transfer axes invalid")
         if row["physical_model"] in (
             "resolved_calcium_energy_water_repair@1",
+            "resolved_calcium_energy_water_repair@2",
             "resolved_repair@1",
             "resolved_repair@2",
             "resolved_repair@3",

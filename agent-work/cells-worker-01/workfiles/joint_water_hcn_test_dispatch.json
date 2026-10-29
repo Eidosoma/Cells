@@ -1,0 +1,23 @@
+{
+  "base": "/mnt/workspaces/Cells/owned-calcium-profiles-development-20261029-07/workspace",
+  "files": {
+    "src/cells/core/schedule.py": {
+      "base_sha256": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+      "patched_sha256": "0c17b6b2d87e3d330aa1e64ccbbb24763b3584a2bae090580fbe071b6a1e8366"
+    },
+    "src/cells/core/specs.py": {
+      "base_sha256": "7af247eddbe360c0613de7c49f6d74cfc85935aba5a8799d3992a3bf99bfae78",
+      "patched_sha256": "9a1d947d862140fb96962b6c64527c336a1c8bf60e2700b5f1c61fb38a772083"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "d3fdfd69dfa2cb6e4abf5dffffde11ec59d8bd07a8d353bf070450aa7c0eee20",
+      "patched_sha256": "18521b1c1706467f0addd670f7ddc58ef3916b6c540014098111cb763a596652"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "e0061d256a846db25c6dc4e241bc876abe90c5efba0f0b7a9612c2d1d7c57e67",
+      "patched_sha256": "b52d583953e8d01fb7f1cdd6bc73245aae89481d47576c947bdf1b920a8bde91"
+    }
+  },
+  "patch_sha256": "493a5e4a0b9bc126ff17fc65d4691a201900acf4e4f89aa20b92923429fe1af0",
+  "shared_files_written": false
+}

@@ -8,7 +8,7 @@ import numpy as np
 
 from cells.core.grid import EventGrid, checked_grid
 from cells.core.resources import trace_bytes
-from cells.core.runner import _run_segment, validate_checkpoint
+from cells.core.runner import _run_segment, _WindowExecution, validate_checkpoint
 from cells.core.specs import ConfigError, SimulationSpec, _integer, _number, parse_spec
 from cells.core.state import Checkpoint, initialise
 from cells.models.registry import get_model
@@ -54,7 +54,11 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
     grid = EventGrid(spec)
     if checkpoint is not None and type(checkpoint) is not Checkpoint:
         raise ConfigError("Expected a complete Checkpoint")
-    start_time = 0.0 if checkpoint is None else _number(checkpoint.time, "checkpoint time")
+    start_time = (
+        float(getattr(get_model(spec.model), "initial_time", lambda spec: 0.0)(spec))
+        if checkpoint is None
+        else _number(checkpoint.time, "checkpoint time")
+    )
     start = grid.exact_index(start_time)
     remaining = len(grid) - 1 - start
     width = min(policy.window_steps, remaining)
@@ -83,8 +87,11 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
 
 
 def _validate_window_plan(plan, checkpoint):
-    width = min(plan.policy.window_steps, len(plan.grid) - 1 - plan.start_step)
-    checked_grid(plan.spec, window_steps=max(1, width))
+    # Validate the complete declared clock, including before a restart. A short
+    # or completed suffix must not turn that full-history check into one call
+    # per historical step. checked_grid still caps its chunks to the storage
+    # budget; this width changes neither the clock nor the execution window.
+    checked_grid(plan.spec, window_steps=plan.policy.window_steps)
     if checkpoint is not None:
         validate_checkpoint(plan.spec, checkpoint, plan.grid)
 
@@ -120,9 +127,21 @@ def _iter_windows(plan, checkpoint):
     observation_index = bisect_left(requested, checkpoint.time)
     previous_observed = None
     model = get_model(spec.model)
+    remaining = len(plan.grid) - 1 - plan.start_step
+    execution = (
+        _WindowExecution(spec, min(plan.policy.window_steps, remaining))
+        if spec.execution.jit and remaining
+        else None
+    )
     for times in plan.grid.windows(plan.start_step, plan.policy.window_steps):
         stop = bisect_right(requested, float(times[-1]))
-        result = _run_segment(spec, checkpoint, times, requested[observation_index:stop])
+        result = _run_segment(
+            spec,
+            checkpoint,
+            times,
+            requested[observation_index:stop],
+            window_execution=execution,
+        )
         previous_observed = _observation_tail(model, spec, result.observations, previous_observed)
         observation_index = stop
         checkpoint = result.final

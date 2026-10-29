@@ -1,0 +1,15 @@
+{
+  "kind": "cells.init_sim_epoch_isolated_test_dispatch@1",
+  "files": {
+    "src/cells/core/specs.py": {
+      "base_sha256": "e57772b8dea88fa1fa2b1faa7a927c81f143b5f53693460724085d93c702e355",
+      "patched_sha256": "370788dadfd372fe8db7f8216b6632e07452b1005b07b59cbd6562f6890ad5d2"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "ed1bcf689063bc453ee830e42190f3d4b9a0203f719e0ecf2312fd481ef06b39",
+      "patched_sha256": "fe0f1b8a3c637afa05d5812104fac6cfff3153af73ca39358414a21aed4171e8"
+    }
+  },
+  "patch_sha256": "0f3e63361ca830ce600947fb57e3d8d9662c1bce093bec0b58bb74788bb8791b",
+  "scope": "Proposed test-only epoch parse/serialization/registry routes against frozen scheduled Development03 workspace; Root owns actual shared/ensemble integration"
+}

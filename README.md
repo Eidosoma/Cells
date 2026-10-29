@@ -84,8 +84,21 @@ for source roles, existing evidence and the path to independent experimental tes
 
 - **Electrical cells and tissues:** ion transport, membrane voltage, pumps,
   channels, gap junctions and extracellular fields in selected model families.
+- **Tissue geometry:** [prepare passive tissue inputs from recorded BETSE meshes](docs/TISSUE_GEOMETRY.md),
+  with explicit volumes, membrane properties and a portable preparation recipe.
+- **Regional tissue profiles:** [prepare different membrane transport properties
+  and junction barriers](docs/TISSUE_RETURN_CURRENT.md#static-tissue-profile-preparation)
+  from explicit geometry for selected tissue, calcium, fuel, water and regulation
+  models, with a reproducible preparation recipe. Timed interventions support
+  [passive membranes](docs/TISSUE_RETURN_CURRENT.md#scheduled-passive-membrane-profiles)
+  and [tissues with active channels and pumps](docs/TISSUE_RETURN_CURRENT.md#scheduled-active-membrane-profiles).
+  Passive and active tissues support [carrying initialized state into a new experiment](docs/TISSUE_PHASES.md).
+- **Cell removal:** [cut and resume selected tissue models](docs/TISSUE_RETURN_CURRENT.md#cell-removal-and-absolute-time-continuation),
+  preserving surviving material, [channel and junction gate states](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-channels-and-maintained-fuel-pumps)
+  and [calcium/ER stores](docs/TISSUE_RETURN_CURRENT.md#cell-removal-with-owned-calcium-and-er-stores),
+  with complete prior history.
 - **Cell chemistry:** calcium and IP3 signalling, internal compartments and
-  chemical reactions.
+  chemical reactions, including [passive mitochondrial ion exchange and voltage](docs/TISSUE_RETURN_CURRENT.md#finite-mitochondrial-ion-and-voltage-coupling).
 - **Fuel and cell volume:** finite ATP supplies and osmotic water flow, including
   a [combined calcium/ER, ATP and water model](docs/TISSUE_RETURN_CURRENT.md#owned-calcium-finite-fuel-and-compliant-water)
   with [prescribed injury and resealing](docs/TISSUE_RETURN_CURRENT.md#prescribed-repair-with-owned-calcium-finite-fuel-and-water).
@@ -114,6 +127,7 @@ hypothesis.
 - Extending verification of the integrated cell, tissue and assembly models.
 - Bringing new components into the shared configuration, checkpoint and ensemble
   workflows.
+- Qualifying [regional membrane interventions with calcium stores and finite ATP](docs/TISSUE_RETURN_CURRENT.md#scheduled-membrane-profiles-with-calcium-stores-and-finite-fuel).
 
 ## Planned
 

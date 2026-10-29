@@ -1,0 +1,47 @@
+{
+  "kind": "cells.tissue_geometry_cli_contract@1",
+  "geometry_handoff": {
+    "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/result.json",
+    "sha256": "7259b548229f637c5e90889276119ad7cccbb422f5e4ae35a5c20bd8d2dfeba2"
+  },
+  "frozen_example": {
+    "path": "/mnt/workspaces/Cells/geometry-tissue-preparation-handoff-20261029-01/examples/irregular-native-radial",
+    "files_sha256": {
+      "definition.json": "98d22df94b46999763c025f38787f22802c034b1ba547267ac58577203ab7f49",
+      "provenance.json": "3e86751ed96e680854c5ad6713b20b4c44fe2e8e1f8358f78ce7d8cc78fdf8e9",
+      "request.json": "778fa8e8d174b478495baa0cc1d3ad75a83a0ac70baafce8ab74c0dfe1110620"
+    }
+  },
+  "repository_example": {
+    "path": "examples/tissue_geometry/irregular_native_radial.request.json",
+    "sha256": "778fa8e8d174b478495baa0cc1d3ad75a83a0ac70baafce8ab74c0dfe1110620"
+  },
+  "readonly_source_sha256": {
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/core/specs.py": "ce6de2a07494bf77726a308a5d7df0c171289ae3c3ceba85112f7b82cb756c5d",
+    "src/cells/core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/core/schedule.py": "a9b2819df28b29262c2a3e4ef982f4a166649b4c7ae39ceca3a907cc1c5309de",
+    "src/cells/coupling/selective.py": "71259c141fd7508844e07bc4cd60e4f1be5918147d088b8508916a557f96d3fc",
+    "src/cells/core/bioelectric_spec.py": "6faedbf57c6f9ffeffbfbe5fa7e22c91d80cb1cbbc238d785d3fc81f78dd88f7",
+    "src/cells/core/multispecies_spec.py": "f9278040cc6e29edf09cc5f779849c871dd3974a62e7814ee39420a73ce2f61e",
+    "src/cells/core/voltage_gated_spec.py": "addca925d4ed1aef7726658f49d05a5a080f62299399729fbf7ca0218a493edb"
+  },
+  "dispatch_patch": "agent-work/cells-worker-01/workfiles/tissue_geometry_cli_dispatch.patch",
+  "dispatch_metadata": "agent-work/cells-worker-01/workfiles/tissue_geometry_cli_dispatch.json",
+  "resources": {
+    "cpu_affinity": [
+      7
+    ],
+    "max_host_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_command_seconds": 300
+  },
+  "scope": "Public JSON workflow only; frozen geometry/physics component evidence reused, no scientific suite rerun",
+  "automatic_followup": false
+}

@@ -1,0 +1,11 @@
+--- a/agent-work/cells-worker-01/workfiles/check_owned_calcium_profile_interventions.py
++++ b/agent-work/cells-worker-01/workfiles/check_owned_calcium_profile_interventions.py
+@@ -172,6 +172,8 @@
+         ]
+     )
+     for name, selection in phases:
++        if name.startswith("host"):
++            selection = f"({ordinary}) and ({selection})"
+         if args.select:
+             selection = f"({selection}) and ({args.select})"
+         steps.append(

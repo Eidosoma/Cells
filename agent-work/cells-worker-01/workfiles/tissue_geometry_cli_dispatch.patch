@@ -1,0 +1,21 @@
+--- a/src/cells/__main__.py
++++ b/src/cells/__main__.py
+@@ -29,6 +29,7 @@
+     )
+     commands.add_parser("ensemble", help="balanced independent assembly worlds across GPUs")
+     commands.add_parser("tissue-profiles", help="prepare and replay static tissue profiles")
++    commands.add_parser("tissue-geometry", help="prepare and replay initial passive tissue geometry")
+     validate = commands.add_parser("validate", help="validate a definition and its resource bounds")
+     validate.add_argument("config", type=Path)
+     fresh = commands.add_parser("run", help="run a fresh configured world")
+@@ -169,6 +170,10 @@
+ 
+ def main(argv=None) -> int:
+     args = sys.argv[1:] if argv is None else argv
++    if args and args[0] == "tissue-geometry":
++        from cells.tissue_geometry import main as geometry_main
++
++        return geometry_main(args[1:])
+     if args and args[0] == "tissue-profiles":
+         from cells.tissue_profiles import main as profiles_main
+ 
