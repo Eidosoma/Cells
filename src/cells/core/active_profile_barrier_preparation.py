@@ -63,7 +63,9 @@ def prepare(request):
             initial_state_sha256=profiles._state_identity(first),
             initial_state_fields=list(first._fields),
             complete_definition_sha256=digest(final.definition),
-            scope="static background membrane and exterior face coefficients; complete ionic physics",
+            scope=(
+                "static background membrane and exterior face coefficients; complete ionic physics"
+            ),
         )
         provenance["identity"] = digest(provenance)
         return Preparation(final.definition, profiles._json(provenance))

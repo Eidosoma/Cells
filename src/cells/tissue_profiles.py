@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import fields
 from pathlib import Path
 
+from cells.core import active_profile_barrier_preparation as active_combined
 from cells.core import environment_barrier_composition_preparation as composed_barriers
 from cells.core import environment_barrier_preparation as environment_barriers
 from cells.core import geometry_profile_preparation as geometry_profiles
@@ -87,6 +88,8 @@ def _definition_bridge(definition):
 def _provenance_bridge(provenance):
     if type(provenance) is not dict:
         raise ConfigError("Require complete preparation provenance")
+    if provenance.get("kind") == active_combined.KIND:
+        return active_combined
     if provenance.get("kind") == environment_barriers.KIND:
         return environment_barriers
     if provenance.get("kind") == composed_barriers.KIND:
@@ -111,6 +114,8 @@ def _provenance_bridge(provenance):
 def prepare_request(request):
     """Convert a complete JSON request without inferring owners, units or order."""
     try:
+        if type(request) is dict and request.get("kind") == active_combined.REQUEST_KIND:
+            return active_combined.prepare(request)
         if type(request) is dict and request.get("kind") == environment_barriers.REQUEST_KIND:
             return environment_barriers.prepare(request)
         if type(request) is dict and request.get("kind") == composed_barriers.REQUEST_KIND:
@@ -162,6 +167,24 @@ def replay(provenance):
         raise ConfigError("Invalid static tissue-profile provenance: " + str(error)) from error
 
 
+def _write_preparation(directory, prepared):
+    implementation = _provenance_bridge(prepared.provenance)
+    if implementation is not active_combined:
+        return implementation.write_preparation(directory, prepared)
+    checked = replay(prepared.provenance)
+    if digest(checked.definition) != digest(prepared.definition):
+        raise ConfigError("Combined definition disagrees with its complete preparation recipe")
+    directory = Path(directory)
+    if directory.exists() or directory.is_symlink():
+        raise ConfigError("Preparation output already exists")
+    directory.mkdir(parents=True, exist_ok=False)
+    for name, value in (("definition", checked.definition), ("provenance", checked.provenance)):
+        with (directory / (name + ".json")).open("x") as stream:
+            json.dump(value, stream, indent=2, allow_nan=False)
+            stream.write("\n")
+    return directory
+
+
 def _parser():
     parser = argparse.ArgumentParser(prog="cells tissue-profiles", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -188,18 +211,33 @@ def main(argv=None):
                 raise ConfigError(f"Output already exists; choose a new directory: {args.output}")
             value = read_json(args.input)
             prepared = prepare_request(value) if args.command == "prepare" else replay(value)
-            _provenance_bridge(prepared.provenance).write_preparation(args.output, prepared)
+            _write_preparation(args.output, prepared)
+        if prepared.provenance["kind"] == active_combined.KIND:
+            layers = {
+                "membrane": len(
+                    prepared.provenance["profile_preparation"]["provenance"]["changes"]
+                ),
+                "extracellular": len(
+                    prepared.provenance["barrier_preparation"]["provenance"]["changes"]
+                ),
+            }
+            changed = sum(layers.values())
+        else:
+            layers = None
+            changed = len(prepared.provenance["changes"])
         summary = dict(
             status="valid" if args.command == "validate" else "prepared",
             kind=prepared.provenance["kind"],
             model_id=prepared.definition["model"]["id"],
             definition_sha256=digest(prepared.definition),
             preparation_identity=prepared.provenance["identity"],
-            changed_coefficients=len(prepared.provenance["changes"]),
+            changed_coefficients=changed,
             scope="Static tissue preparation; trajectory and resource qualification are separate",
         )
         if args.command != "validate":
             summary["output"] = str(args.output)
+        if layers is not None:
+            summary["coefficient_changes_by_layer"] = layers
         print(json.dumps(summary, indent=2, allow_nan=False))
         return 0
     except (ConfigError, OSError, ValueError, TypeError) as error:

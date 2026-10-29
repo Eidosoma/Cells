@@ -3648,3 +3648,68 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   records the copied supervisor SHA and required pilot arguments explicitly.
   Ruff, shell syntax and repository whitespace checks pass. No shared source,
   PROGRESS, qualified science or ongoing computation changed.
+
+## Combined full56 membrane/ECM schedules, 2026-10-29
+
+- Chief assigned the next separate feature: simultaneous membrane-profile and
+  extracellular-barrier events on exactly resolved_tissue@12. CPU6,1 GiB RSS,
+  8-GiB reserve and<=480-s attached groups only; no long/GPU job, shared routing,
+  PROGRESS or Root water/repair edits. Existing launched jobs are left untouched.
+- New model `resolved_active_profile_barriers@1` has all19 complete ionic fields
+  plus one shared phase clock. Preparation
+  `cells.active_profile_barrier_preparation@1` requires explicit static membrane
+  preparation followed by the full-owner exterior preparation; the exterior
+  recipe must name the exact membrane-prepared definition, including controls.
+  Stale identities, mismatched owners/recipes and implicit ordering refuse.
+- New coefficient capabilities reuse qualified native kernels without reduced
+  physical state/RHS. Both current coefficients reach the exact full56 parent
+  readout at each stage. Accounting uses support unions for both route families;
+  temporary closed-route marker views never reset actual material, charge,
+  channel, pump or dissipated-energy history. Complete-parent step admission
+  sees both coefficient maxima and both ramp-resolution limits.
+- Separate references recompute both static recipes and native schedules before
+  evaluating the independent complete ionic equations. Tests cover simultaneous,
+  one-schedule, INIT/disabled, guarded, signed-safe, duplicate, zero-baseline
+  closure, changed-state stages, complete-history conservation, fresh-process
+  typed snapshots and refusal/step/domain contracts. Four-step/clock probes
+  remain distinct from any full10-us trajectory claim.
+- Development01 freezes the accepted330-file engine plus new owned files and
+  private dispatch in its clone. The first bounded selection checks exact full
+  preparation/initialization and eight independent simultaneous stages. No
+  previously finalized stage, public or trajectory check is rerun.
+- [Development01](/mnt/workspaces/Cells/active-profile-barriers-development-20261029-01/result.json)
+  passed both first checks in21.62 s. Eight complete independent stages have
+  max RHS/budget0.00011398 and energy-rate residual<=1.34e-15 pJ/s. Peak guarded
+  RSS247,062,528 B; reserve>=21,652,664,320 B. The full parent state/layout and
+  all original controls are exact through sequential preparation and replay.
+- [Development02](/mnt/workspaces/Cells/active-profile-barriers-development-20261029-02/result.json)
+  passed19 new checks in150.77 s: the remaining136 independent stages and two
+  four-step/history contracts. Together all144 stages pass; max RHS/budget
+  0.00026188 and independent energy-rate residual<=2.23e-15 pJ/s. Actual complete
+  four-step states retain all histories when both background membrane and face
+  routes close/reopen in explicit clock probes. Original-domain, material and
+  energy checks pass. Peak RSS309,444,608 B; reserve>=21,366,083,584 B.
+- Chief is implementing public shared routing/CLI separately and will not alter
+  the four owned product files. Development03 captures those unchanged files
+  and runs only30 new portable/refusal/step/backend-input and closed-history
+  corruption checks; the finalized21 checks are excluded. Backend admission
+  uses NumPy only and carries no GPU execution claim.
+- [Development03](/mnt/workspaces/Cells/active-profile-barriers-development-20261029-03/result.json)
+  passed all30 remaining checks in166.67 s, including both fresh-process typed
+  snapshots, exact full controls, INIT/disabled bitwise parent identity, static
+  owner/control mismatch refusals, both ramp/domain guards and corrupted
+  histories on currently closed membrane/face routes. Peak child-tree RSS
+  456,540,160 B (snapshot subprocess included); reserve>=20,710,694,912 B.
+- [Combined component handoff](/mnt/workspaces/Cells/active-profile-barriers-handoff-20261029-01/result.json)
+  SHA256 `cf45936049a6405fba838da1c81f14ee31993afccaf41e1543d40855740742bc`
+  consolidates51 unique passes (2+19+30),144 independent full20-field stage
+  comparisons,10 complete-state conservation samples and four manufactured
+  closed/reopened clock probes. Original receipts/JUnits and all numerical
+  arrays remain immutable. All1,760 captured files were verified; all334
+  executed runtime files match across phases, all four owned product files
+  match the current workspace, and retained test-function ASTs remain exact.
+  Finalization performs no numerical rerun. Ruff and whitespace checks pass.
+- Chief receives this stable boundary and the unchanged product identities.
+  Shared public integration stays separate. No full10-us trajectory, INIT/SIM
+  handoff, compiled/GPU or native-loop parity claim; no new long job or automatic
+  follow-up is launched. CPU6 released.

@@ -16,7 +16,9 @@ class IntegrationFailure(RuntimeError):
         self.arrays = arrays
 
 
-def integrate(raw, initial_state=None):
+def integrate(raw, initial_state=None, *, refinement=1):
+    if type(refinement) is not int or refinement not in (1, 2):
+        raise ValueError("Reference refinement must be the integer 1 or 2")
     context = scheduled.bind(raw)
     zero = scheduled.initial(context)
     state = zero.copy() if initial_state is None else np.array(initial_state, copy=True)
@@ -40,7 +42,7 @@ def integrate(raw, initial_state=None):
         )
         for name, shape in context["parent"]["shapes"].items()
     }
-    atol = np.r_[context["process"].flatten(context["parent"], floors), 1e-22]
+    atol = np.r_[context["process"].flatten(context["parent"], floors), 1e-22] / refinement
     saved = {0.0: state.copy()}
     evaluations = 0
     for left, right in zip(clocks[:-1], clocks[1:], strict=True):
@@ -49,9 +51,9 @@ def integrate(raw, initial_state=None):
             (left, right),
             state,
             method="DOP853",
-            rtol=2e-11,
+            rtol=2e-11 / refinement,
             atol=atol,
-            max_step=min(0.0625e-6, right - left),
+            max_step=min(0.0625e-6 / refinement, right - left),
             dense_output=True,
         )
         if not solved.success:
@@ -75,12 +77,12 @@ def integrate(raw, initial_state=None):
         dict(
             method="segmented independent DOP853",
             evaluations=evaluations,
-            rtol=2e-11,
-            amount_volume_energy_atol=2e-14,
-            background_transfer_atol_fmol=1e-24,
-            charge_atol_C=1e-29,
-            clock_atol_s=1e-22,
-            max_step_s=0.0625e-6,
+            rtol=2e-11 / refinement,
+            amount_volume_energy_atol=2e-14 / refinement,
+            background_transfer_atol_fmol=1e-24 / refinement,
+            charge_atol_C=1e-29 / refinement,
+            clock_atol_s=1e-22 / refinement,
+            max_step_s=0.0625e-6 / refinement,
             held_control_boundaries_s=clocks,
             all_observations_compared=True,
         ),

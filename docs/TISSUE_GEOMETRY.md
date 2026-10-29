@@ -210,8 +210,9 @@ its full channel catalog, calcium stores, fuel pools, controls and accounting
 references. Site coefficients change at each integration stage; geometry stays
 fixed. The same event timing, target and amplitude rules apply. Public parsing,
 serialization, snapshots and independent-world admission preserve these owners.
-Ordinary restart retains the phase; transferring phases or changing the physical
-owner requires a separate supported operation.
+Ordinary restart retains the phase. The complete water/repair owners support an
+[explicit INIT-to-SIM preparation](TISSUE_PHASES.md#extracellular-barrier-phases);
+changing the physical owner requires a separate supported operation.
 
 The water variants use current compartment volumes for concentrations, fuel
 kinetics, calcium stores and osmotic forces, while keeping the original volume
@@ -223,5 +224,36 @@ water exchange changes compartment volumes without moving the mesh.
 The public-interface checks use short software probes. Independent stage and
 trajectory qualifications are tracked separately in [Progress](../PROGRESS.md),
 as are compiled execution and GPU qualification. These variants prescribe the
-barrier event; combined membrane-profile/barrier events, phase handoff, cutting
-and assembly compositions require separate integration.
+barrier event. The ionic owner also supports the combined schedules below;
+phase handoff for other owner families, cutting and assembly compositions
+require separate integration.
+
+## Combining membrane and extracellular events
+
+`resolved_active_profile_barriers@1` applies both membrane-profile events and
+one extracellular opening pulse to the complete `resolved_tissue@12` ionic
+owner. It keeps all 19 physical/history arrays and adds one shared phase clock.
+The 63 channel populations, 56 channel laws, junction gates and maintained-fuel
+pumps retain their complete controls and accounting histories. Closing either
+kind of route preserves earlier transfers and heat.
+
+Static preparation has an explicit order: membrane profiles first, extracellular
+barriers second. A `cells.active_profile_barrier_preparation_request@1` request
+contains `order: static_membrane_profiles_then_extracellular_barriers@1`, the
+complete `profile_preparation`, and a `barrier_request` whose definition must
+exactly match that membrane-prepared definition. The existing `tissue-profiles
+prepare`, `validate` and `replay` commands preserve both embedded recipes. Their
+summary reports coefficient changes separately for membranes and extracellular
+faces. A different owner or reversed preparation order is refused.
+
+The scheduled model embeds that artifact as `coupled_preparation`, declares
+`membrane_interventions` and `barrier_intervention`, and uses the existing
+phase, timing and reset policies. INIT holds both schedules inactive; SIM
+evaluates both at each integration stage. The timestep must resolve the
+transition time divided by eight for both event families. Material, energy,
+geometry and gates remain owned by the complete ionic model.
+
+These prescribed coefficient changes add no structural barrier energy or ATP
+cost. The public interface and independent component checks are recorded in
+[Progress](../PROGRESS.md); complete trajectories, calcium/fuel compositions,
+phase handoff and compiled/GPU execution require their own qualifications.

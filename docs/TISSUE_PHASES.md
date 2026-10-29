@@ -13,6 +13,8 @@ place, so transfer and energy balances cover INIT and SIM together.
 | `resolved_calcium_energy_membrane_profiles@1` | `resolved_calcium_energy_membrane_profile_epoch@1` | All 38 finite-fuel arrays, including the actual ATP/ADP/phosphate pools and regeneration/work history |
 | `resolved_calcium_energy_water_membrane_profiles@1` | `resolved_calcium_energy_water_membrane_profile_epoch@1` | All 43 physical arrays, including current water volumes, finite fuel and original water/work accounting |
 | `resolved_calcium_energy_water_repair_membrane_profiles@1` | `resolved_calcium_energy_water_repair_membrane_profile_epoch@1` | All 48 physical arrays, including damage, injury transfers and repair heat history |
+| `resolved_calcium_energy_water_extracellular_barriers@1` | `resolved_calcium_energy_water_extracellular_barrier_epoch@1` | All 43 physical arrays, including actual volumes, finite fuel and extracellular transfer histories |
+| `resolved_calcium_energy_water_repair_extracellular_barriers@1` | `resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1` | All 48 physical arrays, including damage, injury transfers and repair heat history |
 
 Each family adds a phase clock. The active and finite-fuel transitions retain
 their complete 56-law channel catalog and physical owners. Each transition has
@@ -102,10 +104,11 @@ interface and independent component qualifications are tracked separately in
 [Progress](../PROGRESS.md); support in the interface is not a long-term recovery
 or GPU qualification.
 
-The new SIM definition explicitly declares its controls, membrane events,
+The new SIM definition explicitly declares its controls, prescribed events,
 horizon and timestep. Its physical model, static profiles/defaults, owner order
 and physical capacities must match INIT. No material or ledger is rebased.
-The phase clock is the only state field reset to zero. Native membrane defaults
+The phase clock is the only state field reset to zero. For membrane profiles,
+native membrane defaults
 are replayed and the scheduled buffer starts empty before the first pulse
 evaluation; smooth pulse tails can already be nonzero at SIM time zero.
 
@@ -120,6 +123,25 @@ python -m cells windowed validate /mnt/workspaces/Cells/new-sim-epoch/definition
 Independent ensemble admission requires `simulation.execution.jit: true` in
 the request or SIM input. Prepare a new artifact after changing execution
 settings; editing a generated definition alone breaks its recipe identity.
+
+## Extracellular barrier phases
+
+The two complete water/repair barrier models use the same `tissue-phase`
+commands. INIT holds the prepared extracellular coefficients fixed. SIM may
+declare a new opening pulse and controls, while preserving the identical static
+barrier preparation, fixed modulators, physical owners and accounting anchors.
+All earlier face transfers, heat, water, fuel and damage remain in the state.
+
+These models calculate barrier coefficients directly from the phase clock;
+there is no mutable coefficient buffer to clear. At SIM time zero the pulse is
+evaluated using the original static coefficients, including its smooth tails.
+The preparation records that rule explicitly. Timestep admission uses the
+carried fuel pools at the actual compartment volumes. Ordinary restart retains
+both the current SIM clock and the archived INIT clocks.
+
+The initial checks cover carried states and independent instantaneous physics.
+Portable execution, complete trajectories and compiled/GPU qualification retain
+their separate evidence in [Progress](../PROGRESS.md).
 
 ## Clocks and supported scope
 
@@ -140,7 +162,8 @@ parent with maintained fuel. The calcium and finite-fuel transitions support
 exactly the complete `resolved_calcium@6` and `resolved_calcium_energy@5` owners.
 Water and water/repair transitions retain the complete version-two parents and
 their 56-law catalog. Changing static geometry/defaults, owner remaps, cuts,
-pressure/ECM events, configured-transport, mitochondrial or live-regulation transitions require
+pressure events, other barrier-owner families, configured-transport,
+mitochondrial or live-regulation transitions require
 separate contracts. The native
 phase lifecycle motivates the reset policy, while Cells evaluates membrane
 pulses at RK stages; full native solver-loop equivalence remains separate.

@@ -772,6 +772,10 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core import surface_active_profile_barrier_interventions_spec as active_combined
+
+        if isinstance(m, active_combined.SurfaceActiveProfileBarrierInterventionModel):
+            return active_combined.to_dict(self)
         from cells.core import (
             surface_calcium_energy_water_barrier_epoch_spec as water_barrier_epoch,
         )
@@ -1613,6 +1617,13 @@ def parse_spec(data: dict) -> SimulationSpec:
         and data["model"].get("id") == "resolved_membrane_profiles@1"
     ):
         from cells.core.surface_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_profile_barriers@1"
+    ):
+        from cells.core.surface_active_profile_barrier_interventions_spec import parse
 
         return parse(data)
     if (

@@ -193,6 +193,10 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import surface_active_profile_barrier_interventions_spec as active_combined
+
+    if isinstance(spec.model, active_combined.SurfaceActiveProfileBarrierInterventionModel):
+        return control_values(active_combined.owner_spec(spec), times)
     from cells.core import surface_calcium_energy_water_barrier_epoch_spec as water_barrier_epoch
     from cells.core import (
         surface_calcium_energy_water_repair_barrier_epoch_spec as repair_barrier_epoch,

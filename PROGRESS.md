@@ -26,6 +26,63 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   launch detached with durable logs and result/failure artifacts, then return
   control. Status checks wait for the user's request. GPU runs stay deferred.
 
+- **Membrane and extracellular-barrier schedules now compose on the complete
+  ionic owner.** The [combined model](docs/TISSUE_GEOMETRY.md#combining-membrane-and-extracellular-events)
+  preserves all **19 physical fields plus one phase clock**, 63 channel
+  populations, 56 laws and original transfer/energy histories. Static membrane
+  preparation precedes the barrier preparation; mismatched owners/order refuse.
+  Key Dev's [component receipt](/mnt/workspaces/Cells/active-profile-barriers-handoff-20261029-01/result.json)
+  records **51 distinct passes**, including **144 independent complete-state
+  stages**, ten conservation samples and four closed/reopened history probes.
+  Maximum RHS error/budget is **0.000262**; independent energy-rate residual is
+  at most **2.23e-15 pJ/s**. Four-step probes remain separate from full histories.
+  Root added public parsing, controls, model/ensemble routing and portable
+  `tissue-profiles` preparation/validation/replay, with coefficient-change
+  summaries for both layers. The [public suite passed](/mnt/workspaces/Cells/active-profile-barrier-public-integration-20261029-01/contracts-01/verification.json)
+  **15 checks: 11 new plus four adjacent regressions**, in **1m 45s**. Exact
+  INIT/SIM snapshots, fresh-process replay, both coefficient readouts and one
+  **1-ns** evolved software probe are covered. All **1,795 frozen files**, sixty
+  linked component artifacts and the four unchanged physical product files
+  verify; shared dispatch has its separate public qualification. Peak public
+  tree RSS was **431 MiB**, minimum reserve **20.20 GiB**, under
+  **1-GiB / 8-GiB / 480-second** guards. Complete trajectories, INIT-to-SIM,
+  compiled/GPU execution and biological validation remain unclaimed. Key Dev
+  is implementing the combined calcium and finite-fuel owners in separate files.
+
+- **Water/repair extracellular barriers now have an explicit INIT-to-SIM
+  handoff.** The [new phase models](docs/TISSUE_PHASES.md#extracellular-barrier-phases)
+  carry all **43 / 48 physical arrays**, original volume/fuel/energy references
+  and damage/transfer histories. Only the phase clock resets; stateless ECM
+  coefficients use the same static recipe and the new SIM pulse/controls.
+  Public parsing, controls, typed snapshots, `tissue-phase` and ensemble admission
+  select the exact epoch owners. The
+  [four-check preflight passed](/mnt/workspaces/Cells/joint-water-barrier-phase-20261029-01/preflight-01/result.json)
+  in **1m 54s**, including exact carried-state/snapshot contracts and **six
+  independent complete-state stage comparisons**. Maximum RHS error/budget is
+  **0.000145**. Peak tree RSS was **302 MiB**, with **19.88 GiB** minimum reserve,
+  under **1-GiB / 8-GiB / 480-second** guards. These probes carry a **1-ns INIT
+  step** and establish no complete physical trajectory. The
+  [focused review](/mnt/workspaces/Cells/joint-water-barrier-phase-20261029-01/code-review-01/REVIEW.json)
+  found no production blocker; explicit cross-owner refusal tests were added
+  following its coverage suggestion. Portable replay, actual SIM restart,
+  independent carried-fuel turnover and the remaining refusal checks form the
+  [prepared suite](/mnt/workspaces/Cells/joint-water-barrier-phase-20261029-01/suite-preparation.json):
+  **46 expected distinct checks, 40 new-feature checks plus six adjacent
+  regressions**. Four passes are retained; 42 remaining checks run in eight
+  separately finalized processes using **1,786 frozen files**. Only two
+  cross-owner refusal cases were added after preflight; all original test
+  functions and physical sources remain exact. The established strict-ID
+  supervisor retains **1-GiB RSS / 8-GiB reserve / 480-second per-process**
+  guards, with an estimated **15–25-minute** detached runtime on CPU4.
+  The [suite launched detached](/mnt/workspaces/Cells/joint-water-barrier-phase-20261029-01/suite-03/launch.json)
+  at **14:52:37 UTC**, PID **1554527**, with **22.63 GiB** available. Expected
+  completion is approximately **15:08–15:18 UTC**. The receipt links durable
+  logs and terminal result/failure artifacts. No automatic polling, retry or
+  subsequent suite is queued.
+  The **14:53 UTC user-triggered check** found `component-water` finalized and
+  `component-repair` running, without a terminal result or failure. Later phases
+  remain uncredited at that check; no repeated polling is queued.
+
 - **Timed extracellular barriers now extend to complete water/repair owners.**
   Root added the two explicit
   [water/repair barrier models](docs/TISSUE_GEOMETRY.md#schedule-extracellular-barrier-opening),
@@ -111,6 +168,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Expected runtime is **90–180 minutes**, approximately **16:02–17:32 UTC**.
   No full-suite pass is claimed at launch; logs and result/failure paths are in
   the receipt. No automatic polling, retry or later suite is queued.
+  The **14:33 UTC user-triggered check** found it running
+  `ionic-asymmetric-reference-1-chunk1`, with no terminal result or failure.
+  At the **14:53 UTC user-triggered check**, it was running
+  `calcium-asymmetric-reference-2-chunk0`; no terminal result or failure existed.
 
 - **Ionic planning now reuses validated arm/batch-size definitions within one
   planning call.** Physical input, timestep/window admission and conservative
@@ -173,6 +234,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   timesteps over every original observation/control boundary. The incomplete
   pilot contributes no pass credit. No automatic polling, retry or later suite
   is queued; durable logs and output paths are recorded in the launch receipt.
+  The **14:33 UTC user-triggered check** found five case processes completed
+  and the final `repair-zero_endpoint` case running. Full-suite completion and
+  the final evidence review remain pending; the job was not polled again.
+  The **14:53 UTC user-triggered check** found the
+  [six-case suite passed](/mnt/workspaces/Cells/environment-barrier-composition-transients-20261029-01/full-suite-01/result.json)
+  after **39m 43s**, preserving each full **50-us** horizon and all numerical
+  tolerances. The [independent closeout](/mnt/workspaces/Cells/environment-barrier-composition-transients-20261029-01/full-suite-01/root-review-01/REVIEW.json)
+  accepts **six new complete CPU comparisons**: all **43/48 fields**, two
+  DOP853 reference resolutions and two RK4 timesteps, with original material,
+  volume and energy anchors. Maximum error/budget is **0.00685 coarse /
+  0.000426 fine**; reference uncertainty/budget is **1.58e-6**. Maximum
+  independent energy residual is **1.19e-12 pJ**, below **1e-9**. All **1,747
+  source, 36 input and 128 artifact hashes** verify; **9,481 resource samples**
+  satisfy the original guards. Peak RSS was **229 MiB**, minimum host reserve
+  **16.61 GiB**. The failed pilot remains uncredited. These compact manufactured
+  cases qualify static-barrier CPU histories, separately from timed barriers,
+  larger geometries, compiled/GPU execution and biological validation.
 
 - **Explicit water/repair INIT-to-SIM preparation passes public SIM restart
   and corrected offline planning qualification.**
@@ -298,6 +376,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retry or subsequent qualification is queued.
   The **13:48 UTC user-triggered check** found it running the independent
   **INIT-repair reference**; no full-suite completion is yet credited.
+  The **14:33 UTC user-triggered check** found the
+  [suite reported passed](/mnt/workspaces/Cells/joint-water-epoch-refinements-20261029-01/result.json)
+  at **14:27:53 UTC**, with **77 distinct checks: 71 retained plus six new**.
+  The [closeout review](/mnt/workspaces/Cells/joint-water-epoch-refinements-20261029-01/root-review-01/REVIEW.json)
+  accepts that scope: all **44/49 fields**, original anchors and independently
+  chained INIT/SIM endpoints verify. Maximum error/budget falls from **0.31562
+  coarse to 0.018083 fine**; SIM transfer errors fall to **5.68–5.73%** of coarse
+  error. Maximum independent energy residual is **6.39e-12 pJ**. Peak RSS is
+  **237.4 MiB**, with **12.73 GiB** minimum available memory across retained and
+  new evidence. The saved implementation uses **one DOP853 reference per case
+  and two production timesteps**; it does not establish independent-reference
+  refinement. Six tighter reference integrations are being prepared, reusing
+  all twelve production histories and independently rechaining INIT/SIM. Those
+  additional comparisons remain unlaunched; no reference-uncertainty or stronger
+  convergence claim is made before they pass.
 
 - **Scheduled full-catalog water/repair profiles pass scoped independent CPU
   trajectories and separate public restart qualification.**
@@ -516,10 +609,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   successful restart and its eventual peak memory remain unproven. The launch
   receipt binds the accepted review, copied evidence, resource-only patch and
   durable result/failure paths. No automatic polling or retry is queued.
-  The launch receipt links durable logs and result/failure artifacts. Water
-  batch recovery remains unlaunched; no automatic polling, retry or subsequent
-  compiled job is queued. These repeated execution copies add no independent
-  biological cases or GPU qualification.
+  The **14:33 UTC user-triggered check** found the
+  [restart passed](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-mitochondria-restart-02/result.json)
+  at **14:14:08 UTC**, after **17m 36s**. The
+  [closeout review](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-mitochondria-restart-02/root-review-01/REVIEW.json)
+  accepts **one new restart pass**, retaining one compiled baseline and one
+  host admission. Both execution copies preserve all **45 state histories,
+  169 layout arrays and 106 observation arrays including time**, byte-exact
+  against the uninterrupted/scalar suffix from **100 to 150 us**. Independent
+  error/budget is **3.83e-6**. The restart takes **1,286 steps per world** through
+  15 rounds with one integration compilation. All **1,617 retained files,
+  1,568 sources and 270 runtime bindings** verify. Peak memory was **3.67 GiB
+  PSS / 3.80 GiB RSS high-water**, with **16.62 GiB** minimum host reserve.
+  The original 4-GiB failure remains intact. Water batch recovery remains
+  unlaunched; no subsequent compiled job is queued. These repeated execution
+  copies add no independent biological cases or GPU qualification.
 
 - **Scalar windows now reuse one compiled integration shape, including the tail.**
   The [applied repair](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/integration.json)

@@ -129,6 +129,7 @@ def parse_spec(data):
         "resolved_membrane_profile_epoch@1",
         "resolved_membrane_profiles@1",
         "resolved_extracellular_barriers@1",
+        "resolved_active_profile_barriers@1",
         "resolved_calcium_energy_water_extracellular_barrier_epoch@1",
         "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1",
         "resolved_calcium_energy_water_extracellular_barriers@1",
