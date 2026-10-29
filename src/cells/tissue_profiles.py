@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import fields
 from pathlib import Path
 
+from cells.core import environment_barrier_composition_preparation as composed_barriers
 from cells.core import environment_barrier_preparation as environment_barriers
 from cells.core import geometry_profile_preparation as geometry_profiles
 from cells.core import tissue_profile_composition_preparation as composed
@@ -88,6 +89,8 @@ def _provenance_bridge(provenance):
         raise ConfigError("Require complete preparation provenance")
     if provenance.get("kind") == environment_barriers.KIND:
         return environment_barriers
+    if provenance.get("kind") == composed_barriers.KIND:
+        return composed_barriers
     if provenance.get("kind") == geometry_profiles.KIND:
         return geometry_profiles
     if provenance.get("kind") == bridge.KIND:
@@ -110,6 +113,8 @@ def prepare_request(request):
     try:
         if type(request) is dict and request.get("kind") == environment_barriers.REQUEST_KIND:
             return environment_barriers.prepare(request)
+        if type(request) is dict and request.get("kind") == composed_barriers.REQUEST_KIND:
+            return composed_barriers.prepare(request)
         if type(request) is dict and request.get("kind") == geometry_profiles.REQUEST_KIND:
             return geometry_profiles.prepare(request)
         _mapping(request, REQUEST_FIELDS, "preparation request")

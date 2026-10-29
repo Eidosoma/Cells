@@ -75,6 +75,19 @@ class IonicSpec:
         return BatchSpec(worlds, self.worlds, bound, self.max_working_bytes)
 
 
+def validate_population(worlds, world_id_start, seed):
+    """Check scheduler-owned identity without revalidating physical equations."""
+    for key, value, low, high in (
+        ("worlds", worlds, 1, 4096),
+        ("world_id_start", world_id_start, 0, 2**31 - 2),
+        ("seed", seed, 0, 2**32 - 1),
+    ):
+        if type(value) is not int or not low <= value <= high:
+            raise ValueError(f"{key} must be an integer in [{low}, {high}]")
+    if world_id_start + worlds >= 2**31:
+        raise ValueError("Ionic positive world-ID namespace exhausted")
+
+
 def parse_spec(data):
     defaults = dict(
         worlds=16,
@@ -94,10 +107,8 @@ def parse_spec(data):
     ):
         raise ValueError("Require an explicit ionic_worlds@1 simulation definition")
     values = defaults | data
+    validate_population(values["worlds"], values["world_id_start"], values["seed"])
     bounds = {
-        "worlds": (1, 4096),
-        "world_id_start": (0, 2**31 - 2),
-        "seed": (0, 2**32 - 1),
         "window_steps": (1, 4096),
         "max_working_bytes": (1024**2, 2 * 1024**3),
         "max_output_bytes": (1024**2, 8 * 1024**3),
@@ -105,8 +116,6 @@ def parse_spec(data):
     for key, (low, high) in bounds.items():
         if type(values[key]) is not int or not low <= values[key] <= high:
             raise ValueError(f"{key} must be an integer in [{low}, {high}]")
-    if values["world_id_start"] + values["worlds"] >= 2**31:
-        raise ValueError("Ionic positive world-ID namespace exhausted")
     wall = values["max_wall_seconds"]
     if type(wall) not in (int, float) or not math.isfinite(wall) or not 0 < wall <= 43200:
         raise ValueError("Invalid ionic task wall limit")
@@ -168,8 +177,12 @@ def parse_spec(data):
         "resolved_calcium_water@1",
         "resolved_calcium_energy_water_repair@1",
         "resolved_calcium_energy_water_repair@2",
+        "resolved_calcium_energy_water_repair_membrane_profiles@1",
+        "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
         "resolved_calcium_energy_water@1",
         "resolved_calcium_energy_water@2",
+        "resolved_calcium_energy_water_membrane_profiles@1",
+        "resolved_calcium_energy_water_membrane_profile_epoch@1",
         "resolved_calcium_energy@1",
         "resolved_calcium_energy@2",
         "resolved_calcium_energy@3",

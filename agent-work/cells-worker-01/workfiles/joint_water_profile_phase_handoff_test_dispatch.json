@@ -1,0 +1,23 @@
+{
+  "base": "/mnt/workspaces/Cells/joint-water-profiles-development-20261029-02/workspace",
+  "files": {
+    "src/cells/core/schedule.py": {
+      "base_sha256": "00bee4181e7aad86f79286bf74c0b16c75b4da3e54a3cd62055828ddf5c92341",
+      "patched_sha256": "6504a402b1d1f3dfcbf275ba190d280fdc758fa2570f14c9968206586f534dab"
+    },
+    "src/cells/core/specs.py": {
+      "base_sha256": "5a92345c39d37febee979f42875dd4b01ae75b76a2fabb882d17c6db2c2df4ad",
+      "patched_sha256": "891143050aeb394a4e7db0ff31d72c06483fadec5c061097e2eb008ad1b1224a"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "9745423ebd5485d97c53c6078ebfb01bfb6664baf46d5b77837705f38b7cb599",
+      "patched_sha256": "dbdf6f464d53d34c9c30dc0e9ac2fad0152541ef418f7014bfc6c6a6241a6af8"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "4b8c5025fe1ad2be24a8b3b5ea9c77d7c3407e4284428f97901d505e250b1819",
+      "patched_sha256": "3ee109a2e3b64151b85f21f9c36992f534a55fe7875b5aa0dcd4b03fc01c3385"
+    }
+  },
+  "patch_sha256": "01a69567bb555fc702cd1e5590c1683a8c510e3e82c33262dd10f783539a72a9",
+  "shared_files_written": false
+}

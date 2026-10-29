@@ -11,7 +11,10 @@ from validation.topology import surface_profile_interventions_reference as membr
 
 OWNERS = {
     "resolved_calcium_energy_water_membrane_profiles@1": ("resolved_calcium_energy_water@2", water),
-    "resolved_calcium_energy_water_repair_membrane_profiles@1": ("resolved_calcium_energy_water_repair@2", repair),
+    "resolved_calcium_energy_water_repair_membrane_profiles@1": (
+        "resolved_calcium_energy_water_repair@2",
+        repair,
+    ),
 }
 EXTRA = ("profile_preparation", "interventions", "phase", "timing_policy", "reset_policy")
 
@@ -91,27 +94,52 @@ def integrate(raw):
                 key = "controls" if "controls" in row else "schedule"
                 times.update(v["time"] for v in row[key])
     times = sorted(times)
-    atol = np.r_[context["process"].flatten(
-        context["parent"],
-        {name: np.full(shape, 1e-29 if name.endswith("_C") else (1e-24 if name == "membrane_transferred" else 2e-14))
-         for name, shape in context["parent"]["shapes"].items()},
-    ), 1e-22]
+    atol = np.r_[
+        context["process"].flatten(
+            context["parent"],
+            {
+                name: np.full(
+                    shape,
+                    1e-29
+                    if name.endswith("_C")
+                    else (1e-24 if name == "membrane_transferred" else 2e-14),
+                )
+                for name, shape in context["parent"]["shapes"].items()
+            },
+        ),
+        1e-22,
+    ]
     states, evaluations = [state.copy()], 0
     for left, right in zip(times, times[1:], strict=False):
         result = solve_ivp(
             lambda t, y, held=left: evaluate(context, y, held_time=held)[0],
-            (left, right), state, method="DOP853", rtol=2e-11, atol=atol,
-            max_step=min(0.0625e-6, right-left),
+            (left, right),
+            state,
+            method="DOP853",
+            rtol=2e-11,
+            atol=atol,
+            max_step=min(0.0625e-6, right - left),
         )
         if not result.success:
             raise RuntimeError(result.message)
         state = result.y[:, -1]
         states.append(state.copy())
         evaluations += result.nfev
-    return np.asarray(times), np.stack(states), dict(
-        method="segmented DOP853, independent native coefficients and actual full water/repair owner",
-        rhs_evaluations=evaluations, rtol=2e-11, max_step_s=0.0625e-6,
-        charge_atol_C=1e-29, amount_volume_energy_atol=2e-14,
-        background_transfer_atol_fmol=1e-24, phase_clock_atol_s=1e-22,
-        all_observations_and_held_boundaries=True,
+    return (
+        np.asarray(times),
+        np.stack(states),
+        dict(
+            method=(
+                "segmented DOP853, independent native coefficients "
+                "and actual full water/repair owner"
+            ),
+            rhs_evaluations=evaluations,
+            rtol=2e-11,
+            max_step_s=0.0625e-6,
+            charge_atol_C=1e-29,
+            amount_volume_energy_atol=2e-14,
+            background_transfer_atol_fmol=1e-24,
+            phase_clock_atol_s=1e-22,
+            all_observations_and_held_boundaries=True,
+        ),
     )

@@ -3227,9 +3227,43 @@ and complete state; it cannot perform INIT-to-SIM transfer. These families need
 an [explicit phase-transition preparation](TISSUE_PHASES.md) to carry an accepted
 INIT state into a new SIM clock. That preparation preserves every physical
 array and original accounting reference; the finite-fuel transition starts
-with the actual carried pools. Cut contracts remain separate. Water, mitochondria,
+with the actual carried pools. Cut contracts remain separate. The full-catalog
+water and prescribed-repair compositions are described below. Mitochondria,
 live regulation, pressure/ECM events and moving geometry remain separate
 compositions. Implementation and qualification results, including independent
 reference checks and pending execution checks, are tracked in
 [Progress](../PROGRESS.md); interface admission alone is not compiled or GPU
 trajectory qualification.
+
+### Scheduled membrane profiles with water and prescribed repair
+
+Regional membrane-permeability pulses can also bind the full 56-law water and
+repair models:
+
+| Scheduled model | Complete physical parent | Saved fields |
+| --- | --- | --- |
+| `resolved_calcium_energy_water_membrane_profiles@1` | `resolved_calcium_energy_water@2` | 43 physical fields and a phase clock |
+| `resolved_calcium_energy_water_repair_membrane_profiles@1` | `resolved_calcium_energy_water_repair@2` | 48 physical fields and a phase clock |
+
+Both use a complete static profile preparation for their exact parent, followed
+by the same explicit `interventions`, `phase`, `timing_policy` and `reset_policy`
+declarations as the calcium/fuel profiles. Parent versions and their portable
+preparation artifacts must agree; an older channel catalog cannot be substituted.
+
+At each integration stage, the pulse changes background membrane permeability
+while the coupled calculation uses actual calcium, fuel and water volumes.
+Na/K, plasma-calcium and ER pumps share the declared finite fuel pools. Repair
+retains its separate injury/resealing controls, damage, transfer and heat history.
+Closing a background route preserves accumulated transfers and energy; reopening
+continues from that history. Water, chemical and injury losses contribute to the
+timestep bound alongside the native pulse-transition limit.
+
+Public parsing, serialization, ordinary run/restart and independent-world
+planning retain these complete owners. A restart preserves the saved phase
+clock. An [explicit INIT-to-SIM preparation](TISSUE_PHASES.md) carries the full
+accepted physical state into a new local clock; ordinary restart or branching
+cannot perform that transition. Cutting and assembly coupling remain refused
+for these scheduled models. The interface tests use
+two nanoseconds to exercise real execution and fresh-process restart; those
+checks do not establish a physical recovery timescale. Independent trajectory
+qualification and current limitations are recorded in [Progress](../PROGRESS.md).

@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from cells.core import environment_barrier_interventions_spec as schema
+from cells.core.errors import NumericalError
 from cells.core.grid import EventGrid
 from cells.core.schedule import control_values
 from cells.core.specs import ConfigError, digest, parse_spec
@@ -258,7 +259,7 @@ def test_transition_clock_and_runtime_factor_refusals():
         model.check_checkpoint(spec, replace(checkpoint, state=bad_clock))
 
 
-def test_closed_barrier_retains_transfers_from_earlier_opening():
+def zero_barrier_definition():
     raw = deepcopy(definition("reseal"))
     # A zero site modulator is an actually sealed species boundary; opening
     # cannot bypass it. Use a zero native tight factor to allow true reopening.
@@ -277,6 +278,11 @@ def test_closed_barrier_retains_transfers_from_earlier_opening():
         **extra,
         barrier_preparation=dict(definition=prepared.definition, provenance=prepared.provenance),
     )
+    return raw
+
+
+def test_closed_barrier_retains_transfers_from_earlier_opening():
+    raw = zero_barrier_definition()
     spec = parse_spec(raw)
     initial, p = model.initial_values(spec)
     state = initial._replace(phase_clock_s=np.asarray([3e-6]))
@@ -292,6 +298,22 @@ def test_closed_barrier_retains_transfers_from_earlier_opening():
     assert model.domain_valid(closed, p, p.active, xp=np)
     assert model.check_values(closed, spec)["max_energy_balance_error_pJ"] < parent.ENERGY_ATOL_PJ
     evidence("resealed-history", dict(prior_transfers_preserved=True, current_closed=True))
+
+
+def test_zero_amplitude_never_permits_history_on_a_permanently_closed_face():
+    raw = zero_barrier_definition()
+    raw["model"]["intervention"]["amplitude"] = 0.0
+    spec = parse_spec(raw)
+    state, p = model.initial_values(spec)
+    species, face = np.argwhere((p.face_factor == 0) & p.face_active)[0]
+    state.face_transferred[species, face] = 1e-8
+    state.extracellular_amount_increment[species, p.face_sender[face]] -= 1e-8
+    state.extracellular_amount_increment[species, p.face_receiver[face]] += 1e-8
+    assert p.barrier_union_factor[species, face] == 0
+    assert not model.domain_valid(state, p, p.active, xp=np)
+    with pytest.raises(NumericalError, match="ledger"):
+        model.check_values(state, spec)
+    evidence("zero-amplitude-closed-history", dict(impossible_transfer_refused=True))
 
 
 def test_observation_grid_contains_every_requested_boundary():

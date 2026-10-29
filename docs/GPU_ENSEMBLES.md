@@ -78,6 +78,18 @@ worker count and task order do not change a world's random stream. Controls and
 sample counts within a registered campaign are never changed to fill a device. Full event checkpoints remain
 available for completed and interrupted batches.
 
+Offline ionic planning fully validates each arm and exact batch size once per
+plan. Repeated tasks retain deep copies of that complete definition, with every
+world-ID range checked separately; a smaller final batch receives its own
+validation and resource estimate. Each new planning call and every executing
+worker still validates its input. This reduces repeated preparation work without
+changing scientific settings, identities or numerical checks.
+
+The output estimate includes complete checkpoints and serialized source history,
+including carried INIT state for phase-handoff models. A rejected plan reports
+both required and declared bytes. `max_output_bytes` is a disk allowance;
+working-memory and process-memory limits are separate.
+
 `assembly_ensemble@1` retains the original
 fixed-bath `capsid_graph@1` rules; `finite_bond_ensemble@1` requires the finite-pool
 `finite_bond_assembly@1` model in every arm. The latter uses first passage to

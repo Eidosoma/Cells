@@ -209,6 +209,10 @@ def _current_parent(c, state, time):
         raise ValueError("State must be finite")
     fields = unpack(c, state)
     clock = float(fields["phase_clock_s"][0])
+    # SciPy's adaptive solver supplies np.float64 times. Keep configuration
+    # number validation strict while admitting that runtime float scalar.
+    if isinstance(time, np.floating):
+        time = float(time)
     actual_time = _number(time, "absolute stage time", nonnegative=True)
     if abs(clock - actual_time) > c["phase_clock_atol_s"]:
         raise ValueError("State-owned phase clock does not match absolute time")

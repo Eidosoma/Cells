@@ -1,0 +1,1710 @@
+{
+  "schema_version": 1,
+  "model": {
+    "id": "resolved_extracellular_barriers@1",
+    "temperature_K": 310.0,
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      }
+    ],
+    "cells": [
+      {
+        "id": "cell_0",
+        "volume_pL": 2.0,
+        "initial_amount_fmol": {
+          "Na": 24.0,
+          "K": 280.0,
+          "Cl": 20.0
+        },
+        "fixed_charge_equivalent_fmol": -284.00191624981676,
+        "initial_charge_C": -1.8489000000000003e-13
+      },
+      {
+        "id": "cell_1",
+        "volume_pL": 3.0,
+        "initial_amount_fmol": {
+          "Na": 45.0,
+          "K": 390.0,
+          "Cl": 39.0
+        },
+        "fixed_charge_equivalent_fmol": -396.0026999751596,
+        "initial_charge_C": -2.60508e-13
+      }
+    ],
+    "extracellular": [
+      {
+        "id": "sw",
+        "volume_pL": 1.0000000000000002,
+        "initial_amount_fmol": {
+          "Na": 145.00000000000003,
+          "K": 4.000000000000001,
+          "Cl": 120.00000000000003
+        },
+        "fixed_charge_equivalent_fmol": -28.999000884405135,
+        "initial_charge_C": 9.64e-14,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      },
+      {
+        "id": "se",
+        "volume_pL": 1.0000000000000002,
+        "initial_amount_fmol": {
+          "Na": 142.00000000000003,
+          "K": 4.500000000000001,
+          "Cl": 125.00000000000003
+        },
+        "fixed_charge_equivalent_fmol": -21.49887589131308,
+        "initial_charge_C": 1.0846000000000002e-13,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      },
+      {
+        "id": "nw",
+        "volume_pL": 1.0000000000000002,
+        "initial_amount_fmol": {
+          "Na": 147.00000000000003,
+          "K": 5.000000000000001,
+          "Cl": 124.00000000000003
+        },
+        "fixed_charge_equivalent_fmol": -27.99881474212211,
+        "initial_charge_C": 1.1436e-13,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      },
+      {
+        "id": "ne",
+        "volume_pL": 1.0000000000000002,
+        "initial_amount_fmol": {
+          "Na": 139.00000000000003,
+          "K": 4.200000000000001,
+          "Cl": 118.00000000000003
+        },
+        "fixed_charge_equivalent_fmol": -25.198692257183314,
+        "initial_charge_C": 1.26178e-13,
+        "reservoir": false,
+        "boundary_potential_V": 0.0
+      }
+    ],
+    "membranes": [
+      {
+        "id": "membrane_0_sw",
+        "inside": "cell_0",
+        "outside": "sw",
+        "area_m2": 9.999999999999999e-11,
+        "capacitance_F": 1e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_0_se",
+        "inside": "cell_0",
+        "outside": "se",
+        "area_m2": 1.1000000000000001e-10,
+        "capacitance_F": 1.1000000000000002e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_0_nw",
+        "inside": "cell_0",
+        "outside": "nw",
+        "area_m2": 1.2e-10,
+        "capacitance_F": 1.2e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_0_ne",
+        "inside": "cell_0",
+        "outside": "ne",
+        "area_m2": 1.3000000000000002e-10,
+        "capacitance_F": 1.3000000000000001e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_1_sw",
+        "inside": "cell_1",
+        "outside": "sw",
+        "area_m2": 1.2e-10,
+        "capacitance_F": 1.2e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_1_se",
+        "inside": "cell_1",
+        "outside": "se",
+        "area_m2": 1.32e-10,
+        "capacitance_F": 1.32e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_1_nw",
+        "inside": "cell_1",
+        "outside": "nw",
+        "area_m2": 1.44e-10,
+        "capacitance_F": 1.44e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      },
+      {
+        "id": "membrane_1_ne",
+        "inside": "cell_1",
+        "outside": "ne",
+        "area_m2": 1.56e-10,
+        "capacitance_F": 1.56e-12,
+        "permeability_m_per_s": {
+          "Na": 1e-09,
+          "K": 2e-09,
+          "Cl": 8e-10
+        },
+        "law": "constant_field@1"
+      }
+    ],
+    "junctions": [],
+    "faces": [
+      {
+        "id": "face_sw_se",
+        "sender": "sw",
+        "receiver": "se",
+        "area_m2": 1.0000000000000002e-10,
+        "length_m": 1e-05,
+        "diffusivity_m2_per_s": {
+          "Na": 1.4285714285714287e-13,
+          "K": 2.1874999999999998e-13,
+          "Cl": 1.0344827586206897e-13
+        },
+        "law": "logmean_electrodiffusion@1"
+      },
+      {
+        "id": "face_nw_ne",
+        "sender": "nw",
+        "receiver": "ne",
+        "area_m2": 1.0000000000000002e-10,
+        "length_m": 1e-05,
+        "diffusivity_m2_per_s": {
+          "Na": 1.818181818181818e-13,
+          "K": 2.6168224299065414e-13,
+          "Cl": 1.153846153846154e-13
+        },
+        "law": "logmean_electrodiffusion@1"
+      },
+      {
+        "id": "face_sw_nw",
+        "sender": "sw",
+        "receiver": "nw",
+        "area_m2": 1.0000000000000002e-10,
+        "length_m": 1e-05,
+        "diffusivity_m2_per_s": {
+          "Na": 1.4285714285714287e-13,
+          "K": 2.1874999999999998e-13,
+          "Cl": 1.0344827586206897e-13
+        },
+        "law": "logmean_electrodiffusion@1"
+      },
+      {
+        "id": "face_se_ne",
+        "sender": "se",
+        "receiver": "ne",
+        "area_m2": 1.0000000000000002e-10,
+        "length_m": 1e-05,
+        "diffusivity_m2_per_s": {
+          "Na": 1.818181818181818e-13,
+          "K": 2.6168224299065414e-13,
+          "Cl": 1.153846153846154e-13
+        },
+        "law": "logmean_electrodiffusion@1"
+      }
+    ],
+    "closure": {
+      "law": "resolved_capacitor_components_current_continuity@1",
+      "gauge_reference": "sw"
+    },
+    "barrier_preparation": {
+      "definition": {
+        "schema_version": 1,
+        "model": {
+          "id": "resolved_tissue@1",
+          "temperature_K": 310.0,
+          "species": [
+            {
+              "id": "Na",
+              "valence": 1
+            },
+            {
+              "id": "K",
+              "valence": 1
+            },
+            {
+              "id": "Cl",
+              "valence": -1
+            }
+          ],
+          "cells": [
+            {
+              "id": "cell_0",
+              "volume_pL": 2.0,
+              "initial_amount_fmol": {
+                "Na": 24.0,
+                "K": 280.0,
+                "Cl": 20.0
+              },
+              "fixed_charge_equivalent_fmol": -284.00191624981676,
+              "initial_charge_C": -1.8489000000000003e-13
+            },
+            {
+              "id": "cell_1",
+              "volume_pL": 3.0,
+              "initial_amount_fmol": {
+                "Na": 45.0,
+                "K": 390.0,
+                "Cl": 39.0
+              },
+              "fixed_charge_equivalent_fmol": -396.0026999751596,
+              "initial_charge_C": -2.60508e-13
+            }
+          ],
+          "extracellular": [
+            {
+              "id": "sw",
+              "volume_pL": 1.0000000000000002,
+              "initial_amount_fmol": {
+                "Na": 145.00000000000003,
+                "K": 4.000000000000001,
+                "Cl": 120.00000000000003
+              },
+              "fixed_charge_equivalent_fmol": -28.999000884405135,
+              "initial_charge_C": 9.64e-14,
+              "reservoir": false,
+              "boundary_potential_V": 0.0
+            },
+            {
+              "id": "se",
+              "volume_pL": 1.0000000000000002,
+              "initial_amount_fmol": {
+                "Na": 142.00000000000003,
+                "K": 4.500000000000001,
+                "Cl": 125.00000000000003
+              },
+              "fixed_charge_equivalent_fmol": -21.49887589131308,
+              "initial_charge_C": 1.0846000000000002e-13,
+              "reservoir": false,
+              "boundary_potential_V": 0.0
+            },
+            {
+              "id": "nw",
+              "volume_pL": 1.0000000000000002,
+              "initial_amount_fmol": {
+                "Na": 147.00000000000003,
+                "K": 5.000000000000001,
+                "Cl": 124.00000000000003
+              },
+              "fixed_charge_equivalent_fmol": -27.99881474212211,
+              "initial_charge_C": 1.1436e-13,
+              "reservoir": false,
+              "boundary_potential_V": 0.0
+            },
+            {
+              "id": "ne",
+              "volume_pL": 1.0000000000000002,
+              "initial_amount_fmol": {
+                "Na": 139.00000000000003,
+                "K": 4.200000000000001,
+                "Cl": 118.00000000000003
+              },
+              "fixed_charge_equivalent_fmol": -25.198692257183314,
+              "initial_charge_C": 1.26178e-13,
+              "reservoir": false,
+              "boundary_potential_V": 0.0
+            }
+          ],
+          "membranes": [
+            {
+              "id": "membrane_0_sw",
+              "inside": "cell_0",
+              "outside": "sw",
+              "area_m2": 9.999999999999999e-11,
+              "capacitance_F": 1e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_0_se",
+              "inside": "cell_0",
+              "outside": "se",
+              "area_m2": 1.1000000000000001e-10,
+              "capacitance_F": 1.1000000000000002e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_0_nw",
+              "inside": "cell_0",
+              "outside": "nw",
+              "area_m2": 1.2e-10,
+              "capacitance_F": 1.2e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_0_ne",
+              "inside": "cell_0",
+              "outside": "ne",
+              "area_m2": 1.3000000000000002e-10,
+              "capacitance_F": 1.3000000000000001e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_1_sw",
+              "inside": "cell_1",
+              "outside": "sw",
+              "area_m2": 1.2e-10,
+              "capacitance_F": 1.2e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_1_se",
+              "inside": "cell_1",
+              "outside": "se",
+              "area_m2": 1.32e-10,
+              "capacitance_F": 1.32e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_1_nw",
+              "inside": "cell_1",
+              "outside": "nw",
+              "area_m2": 1.44e-10,
+              "capacitance_F": 1.44e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            },
+            {
+              "id": "membrane_1_ne",
+              "inside": "cell_1",
+              "outside": "ne",
+              "area_m2": 1.56e-10,
+              "capacitance_F": 1.56e-12,
+              "permeability_m_per_s": {
+                "Na": 1e-09,
+                "K": 2e-09,
+                "Cl": 8e-10
+              },
+              "law": "constant_field@1"
+            }
+          ],
+          "junctions": [],
+          "faces": [
+            {
+              "id": "face_sw_se",
+              "sender": "sw",
+              "receiver": "se",
+              "area_m2": 1.0000000000000002e-10,
+              "length_m": 1e-05,
+              "diffusivity_m2_per_s": {
+                "Na": 1.4285714285714287e-13,
+                "K": 2.1874999999999998e-13,
+                "Cl": 1.0344827586206897e-13
+              },
+              "law": "logmean_electrodiffusion@1"
+            },
+            {
+              "id": "face_nw_ne",
+              "sender": "nw",
+              "receiver": "ne",
+              "area_m2": 1.0000000000000002e-10,
+              "length_m": 1e-05,
+              "diffusivity_m2_per_s": {
+                "Na": 1.818181818181818e-13,
+                "K": 2.6168224299065414e-13,
+                "Cl": 1.153846153846154e-13
+              },
+              "law": "logmean_electrodiffusion@1"
+            },
+            {
+              "id": "face_sw_nw",
+              "sender": "sw",
+              "receiver": "nw",
+              "area_m2": 1.0000000000000002e-10,
+              "length_m": 1e-05,
+              "diffusivity_m2_per_s": {
+                "Na": 1.4285714285714287e-13,
+                "K": 2.1874999999999998e-13,
+                "Cl": 1.0344827586206897e-13
+              },
+              "law": "logmean_electrodiffusion@1"
+            },
+            {
+              "id": "face_se_ne",
+              "sender": "se",
+              "receiver": "ne",
+              "area_m2": 1.0000000000000002e-10,
+              "length_m": 1e-05,
+              "diffusivity_m2_per_s": {
+                "Na": 1.818181818181818e-13,
+                "K": 2.6168224299065414e-13,
+                "Cl": 1.153846153846154e-13
+              },
+              "law": "logmean_electrodiffusion@1"
+            }
+          ],
+          "closure": {
+            "law": "resolved_capacitor_components_current_continuity@1",
+            "gauge_reference": "sw"
+          }
+        },
+        "experiment": {
+          "end_time": 9.999999999999999e-06,
+          "observation_times": [
+            0.0,
+            1e-06,
+            2e-06,
+            3e-06,
+            3.3e-06,
+            4.9999999999999996e-06,
+            6e-06,
+            7e-06,
+            7.7e-06,
+            8e-06,
+            9e-06,
+            9.999999999999999e-06
+          ],
+          "membrane_controls": [
+            {
+              "membrane_id": "membrane_0_sw",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                },
+                {
+                  "time": 1e-06,
+                  "availability": 1.0
+                },
+                {
+                  "time": 2e-06,
+                  "availability": 1.0
+                },
+                {
+                  "time": 3e-06,
+                  "availability": 1.0
+                },
+                {
+                  "time": 3.3e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 4.9999999999999996e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 6e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 7e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 7.7e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 8e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 9e-06,
+                  "availability": 0.7
+                },
+                {
+                  "time": 9.999999999999999e-06,
+                  "availability": 0.7
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_0_se",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_0_nw",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_0_ne",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_1_sw",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_1_se",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_1_nw",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                }
+              ]
+            },
+            {
+              "membrane_id": "membrane_1_ne",
+              "schedule": [
+                {
+                  "time": 0.0,
+                  "availability": 1.0
+                },
+                {
+                  "time": 7.7e-06,
+                  "availability": 0.4
+                }
+              ]
+            }
+          ],
+          "junction_controls": []
+        },
+        "execution": {
+          "dt": 6.25e-08,
+          "capacity": 2,
+          "jit": true,
+          "max_steps": 4096,
+          "max_trace_bytes": 536870912,
+          "backend": "cpu",
+          "precision": "float64",
+          "solver": "rk4",
+          "edge_capacity": 0,
+          "membrane_capacity": 8,
+          "material_balance_atol_fmol": {
+            "Na": 2e-11,
+            "K": 2e-11,
+            "Cl": 2e-11
+          },
+          "extracellular_capacity": 4,
+          "face_capacity": 4,
+          "field_solver": "capacitive_reduction_gauged_damped_newton@1"
+        }
+      },
+      "provenance": {
+        "kind": "cells.environment_barrier_preparation@1",
+        "bridge_id": "resolved_static_environment_barriers@1",
+        "request": {
+          "schema_version": 1,
+          "kind": "cells.environment_barrier_preparation_request@1",
+          "definition": {
+            "schema_version": 1,
+            "model": {
+              "id": "resolved_tissue@1",
+              "temperature_K": 310.0,
+              "species": [
+                {
+                  "id": "Na",
+                  "valence": 1
+                },
+                {
+                  "id": "K",
+                  "valence": 1
+                },
+                {
+                  "id": "Cl",
+                  "valence": -1
+                }
+              ],
+              "cells": [
+                {
+                  "id": "cell_0",
+                  "volume_pL": 2.0,
+                  "initial_amount_fmol": {
+                    "Na": 24.0,
+                    "K": 280.0,
+                    "Cl": 20.0
+                  },
+                  "fixed_charge_equivalent_fmol": -284.00191624981676,
+                  "initial_charge_C": -1.8489000000000003e-13
+                },
+                {
+                  "id": "cell_1",
+                  "volume_pL": 3.0,
+                  "initial_amount_fmol": {
+                    "Na": 45.0,
+                    "K": 390.0,
+                    "Cl": 39.0
+                  },
+                  "fixed_charge_equivalent_fmol": -396.0026999751596,
+                  "initial_charge_C": -2.60508e-13
+                }
+              ],
+              "extracellular": [
+                {
+                  "id": "sw",
+                  "volume_pL": 1.0000000000000002,
+                  "initial_amount_fmol": {
+                    "Na": 145.00000000000003,
+                    "K": 4.000000000000001,
+                    "Cl": 120.00000000000003
+                  },
+                  "fixed_charge_equivalent_fmol": -28.999000884405135,
+                  "initial_charge_C": 9.64e-14,
+                  "reservoir": false,
+                  "boundary_potential_V": 0.0
+                },
+                {
+                  "id": "se",
+                  "volume_pL": 1.0000000000000002,
+                  "initial_amount_fmol": {
+                    "Na": 142.00000000000003,
+                    "K": 4.500000000000001,
+                    "Cl": 125.00000000000003
+                  },
+                  "fixed_charge_equivalent_fmol": -21.49887589131308,
+                  "initial_charge_C": 1.0846000000000002e-13,
+                  "reservoir": false,
+                  "boundary_potential_V": 0.0
+                },
+                {
+                  "id": "nw",
+                  "volume_pL": 1.0000000000000002,
+                  "initial_amount_fmol": {
+                    "Na": 147.00000000000003,
+                    "K": 5.000000000000001,
+                    "Cl": 124.00000000000003
+                  },
+                  "fixed_charge_equivalent_fmol": -27.99881474212211,
+                  "initial_charge_C": 1.1436e-13,
+                  "reservoir": false,
+                  "boundary_potential_V": 0.0
+                },
+                {
+                  "id": "ne",
+                  "volume_pL": 1.0000000000000002,
+                  "initial_amount_fmol": {
+                    "Na": 139.00000000000003,
+                    "K": 4.200000000000001,
+                    "Cl": 118.00000000000003
+                  },
+                  "fixed_charge_equivalent_fmol": -25.198692257183314,
+                  "initial_charge_C": 1.26178e-13,
+                  "reservoir": false,
+                  "boundary_potential_V": 0.0
+                }
+              ],
+              "membranes": [
+                {
+                  "id": "membrane_0_sw",
+                  "inside": "cell_0",
+                  "outside": "sw",
+                  "area_m2": 9.999999999999999e-11,
+                  "capacitance_F": 1e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_0_se",
+                  "inside": "cell_0",
+                  "outside": "se",
+                  "area_m2": 1.1000000000000001e-10,
+                  "capacitance_F": 1.1000000000000002e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_0_nw",
+                  "inside": "cell_0",
+                  "outside": "nw",
+                  "area_m2": 1.2e-10,
+                  "capacitance_F": 1.2e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_0_ne",
+                  "inside": "cell_0",
+                  "outside": "ne",
+                  "area_m2": 1.3000000000000002e-10,
+                  "capacitance_F": 1.3000000000000001e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_1_sw",
+                  "inside": "cell_1",
+                  "outside": "sw",
+                  "area_m2": 1.2e-10,
+                  "capacitance_F": 1.2e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_1_se",
+                  "inside": "cell_1",
+                  "outside": "se",
+                  "area_m2": 1.32e-10,
+                  "capacitance_F": 1.32e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_1_nw",
+                  "inside": "cell_1",
+                  "outside": "nw",
+                  "area_m2": 1.44e-10,
+                  "capacitance_F": 1.44e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                },
+                {
+                  "id": "membrane_1_ne",
+                  "inside": "cell_1",
+                  "outside": "ne",
+                  "area_m2": 1.56e-10,
+                  "capacitance_F": 1.56e-12,
+                  "permeability_m_per_s": {
+                    "Na": 1e-09,
+                    "K": 2e-09,
+                    "Cl": 8e-10
+                  },
+                  "law": "constant_field@1"
+                }
+              ],
+              "junctions": [],
+              "faces": [
+                {
+                  "id": "face_sw_se",
+                  "sender": "sw",
+                  "receiver": "se",
+                  "area_m2": 1.0000000000000002e-10,
+                  "length_m": 1e-05,
+                  "diffusivity_m2_per_s": {
+                    "Na": 7e-13,
+                    "K": 9e-13,
+                    "Cl": 8e-13
+                  },
+                  "law": "logmean_electrodiffusion@1"
+                },
+                {
+                  "id": "face_nw_ne",
+                  "sender": "nw",
+                  "receiver": "ne",
+                  "area_m2": 1.0000000000000002e-10,
+                  "length_m": 1e-05,
+                  "diffusivity_m2_per_s": {
+                    "Na": 7e-13,
+                    "K": 9e-13,
+                    "Cl": 8e-13
+                  },
+                  "law": "logmean_electrodiffusion@1"
+                },
+                {
+                  "id": "face_sw_nw",
+                  "sender": "sw",
+                  "receiver": "nw",
+                  "area_m2": 1.0000000000000002e-10,
+                  "length_m": 1e-05,
+                  "diffusivity_m2_per_s": {
+                    "Na": 7e-13,
+                    "K": 9e-13,
+                    "Cl": 8e-13
+                  },
+                  "law": "logmean_electrodiffusion@1"
+                },
+                {
+                  "id": "face_se_ne",
+                  "sender": "se",
+                  "receiver": "ne",
+                  "area_m2": 1.0000000000000002e-10,
+                  "length_m": 1e-05,
+                  "diffusivity_m2_per_s": {
+                    "Na": 7e-13,
+                    "K": 9e-13,
+                    "Cl": 8e-13
+                  },
+                  "law": "logmean_electrodiffusion@1"
+                }
+              ],
+              "closure": {
+                "law": "resolved_capacitor_components_current_continuity@1",
+                "gauge_reference": "sw"
+              }
+            },
+            "experiment": {
+              "end_time": 9.999999999999999e-06,
+              "observation_times": [
+                0.0,
+                1e-06,
+                2e-06,
+                3e-06,
+                3.3e-06,
+                4.9999999999999996e-06,
+                6e-06,
+                7e-06,
+                7.7e-06,
+                8e-06,
+                9e-06,
+                9.999999999999999e-06
+              ],
+              "membrane_controls": [
+                {
+                  "membrane_id": "membrane_0_sw",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    },
+                    {
+                      "time": 1e-06,
+                      "availability": 1.0
+                    },
+                    {
+                      "time": 2e-06,
+                      "availability": 1.0
+                    },
+                    {
+                      "time": 3e-06,
+                      "availability": 1.0
+                    },
+                    {
+                      "time": 3.3e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 4.9999999999999996e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 6e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 7e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 7.7e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 8e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 9e-06,
+                      "availability": 0.7
+                    },
+                    {
+                      "time": 9.999999999999999e-06,
+                      "availability": 0.7
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_0_se",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_0_nw",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_0_ne",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_1_sw",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_1_se",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_1_nw",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    }
+                  ]
+                },
+                {
+                  "membrane_id": "membrane_1_ne",
+                  "schedule": [
+                    {
+                      "time": 0.0,
+                      "availability": 1.0
+                    },
+                    {
+                      "time": 7.7e-06,
+                      "availability": 0.4
+                    }
+                  ]
+                }
+              ],
+              "junction_controls": []
+            },
+            "execution": {
+              "dt": 6.25e-08,
+              "capacity": 2,
+              "extracellular_capacity": 4,
+              "membrane_capacity": 8,
+              "edge_capacity": 0,
+              "face_capacity": 4,
+              "backend": "cpu",
+              "jit": true,
+              "precision": "float64",
+              "solver": "rk4",
+              "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+              "max_steps": 4096,
+              "max_trace_bytes": 536870912,
+              "material_balance_atol_fmol": {
+                "Na": 2e-11,
+                "K": 2e-11,
+                "Cl": 2e-11
+              }
+            }
+          },
+          "grid": {
+            "site_ids": [
+              "sw",
+              "se",
+              "nw",
+              "ne"
+            ],
+            "species_ids": [
+              "Na",
+              "K",
+              "Cl"
+            ],
+            "valence": [
+              1,
+              1,
+              -1
+            ],
+            "shape": [
+              2,
+              2
+            ],
+            "coordinates_m": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1e-05,
+                0.0
+              ],
+              [
+                0.0,
+                1e-05
+              ],
+              [
+                1e-05,
+                1e-05
+              ]
+            ],
+            "delta_m": 1e-05,
+            "height_m": 1e-05,
+            "internal_face_ids": [
+              "face_sw_se",
+              "face_nw_ne",
+              "face_sw_nw",
+              "face_se_ne"
+            ],
+            "internal_face_sites": [
+              [
+                "sw",
+                "se"
+              ],
+              [
+                "nw",
+                "ne"
+              ],
+              [
+                "sw",
+                "nw"
+              ],
+              [
+                "se",
+                "ne"
+              ]
+            ],
+            "boundary_face_ids": [
+              "sealed_sw_S",
+              "sealed_sw_W",
+              "sealed_se_S",
+              "sealed_se_E",
+              "sealed_nw_N",
+              "sealed_nw_W",
+              "sealed_ne_N",
+              "sealed_ne_E"
+            ],
+            "boundary_face_sites": [
+              "sw",
+              "sw",
+              "se",
+              "se",
+              "nw",
+              "nw",
+              "ne",
+              "ne"
+            ],
+            "boundary_face_sides": [
+              "S",
+              "W",
+              "S",
+              "E",
+              "N",
+              "W",
+              "N",
+              "E"
+            ],
+            "provenance": {
+              "kind": "manufactured_uniform_grid@1",
+              "purpose": "static barrier coefficients and ownership; not native PDE parity"
+            }
+          },
+          "regions": {
+            "cluster_sites": [
+              "sw",
+              "se",
+              "se"
+            ],
+            "boundary_membrane_sites": [
+              "se",
+              "nw",
+              "nw"
+            ],
+            "neighbor_membrane_sites": [
+              "nw"
+            ],
+            "boundary_cell_sites": [
+              "se"
+            ]
+          },
+          "free_diffusion_m2_s": {
+            "Na": 1e-12,
+            "K": 2e-12,
+            "Cl": 1.5e-12
+          },
+          "relative_TJ": {
+            "Na": 1.0,
+            "K": 0.7,
+            "Cl": 0.4
+          },
+          "adherens_factor": 0.25,
+          "tight_factor": 0.1,
+          "ion_modulators": {
+            "Na": {
+              "sw": 1.0,
+              "se": 1.0,
+              "nw": 1.0,
+              "ne": 1.0
+            },
+            "K": {
+              "sw": 1.0,
+              "se": 1.0,
+              "nw": 1.0,
+              "ne": 1.0
+            },
+            "Cl": {
+              "sw": 1.0,
+              "se": 1.0,
+              "nw": 1.0,
+              "ne": 1.0
+            }
+          },
+          "perimeter_policy": "sealed"
+        },
+        "source_definition_sha256": "1899cc2027e002e34d4f6ac10972cb7208077d5450f1132262411aecf1e8f05d",
+        "prepared_definition_sha256": "2eead1277367e59a0de9c93794b187868afb215e81c3bb0c39321d2a18a09db3",
+        "grid": {
+          "source_law_id": "betse_environment_transport_source_v1_5_0@1",
+          "face_law_id": "bernoulli_fitted_environment_faces@1",
+          "identity": "b945f831049879b522e5c850e06b062331d2ef713ddeb34984c3a60b61ee6594",
+          "site_ids": [
+            "sw",
+            "se",
+            "nw",
+            "ne"
+          ],
+          "species_ids": [
+            "Na",
+            "K",
+            "Cl"
+          ],
+          "shape": [
+            2,
+            2
+          ],
+          "delta_m": 1e-05,
+          "height_m": 1e-05,
+          "internal_face_ids": [
+            "face_sw_se",
+            "face_nw_ne",
+            "face_sw_nw",
+            "face_se_ne"
+          ],
+          "boundary_face_ids": [
+            "sealed_sw_S",
+            "sealed_sw_W",
+            "sealed_se_S",
+            "sealed_se_E",
+            "sealed_nw_N",
+            "sealed_nw_W",
+            "sealed_ne_N",
+            "sealed_ne_E"
+          ],
+          "boundary_sides": [
+            "S",
+            "W",
+            "S",
+            "E",
+            "N",
+            "W",
+            "N",
+            "E"
+          ],
+          "provenance": {
+            "kind": "manufactured_uniform_grid@1",
+            "purpose": "static barrier coefficients and ownership; not native PDE parity"
+          }
+        },
+        "barrier_identity": "a1e5b1b398ceca7205370cff0db3e2dc27860b3e4ddf2603de43fb65d0c7682e",
+        "conversion": "harmonic_ionic_site_diffusion_to_logmean_faces@1",
+        "units": {
+          "diffusion": "m2/s",
+          "coordinates_and_lengths": "m",
+          "face_area": "m2",
+          "grid_volume": "m3",
+          "tissue_volume": "pL",
+          "volume_conversion": "1 m3 = 1e15 pL",
+          "barrier_factors_and_modulators": "dimensionless",
+          "face_conversion": "2*D_left*D_right/(D_left+D_right), zero if either is zero"
+        },
+        "source_correspondence": {
+          "native_version": "1.5.0",
+          "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+          "coefficient_kernel_sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+          "source_law": "betse_environment_transport_source_v1_5_0@1",
+          "native_scope": "Static initDenv overwrite order and prescribed ionic TJ multiplication",
+          "cells_face_law": "logmean_electrodiffusion@1",
+          "excluded": "Native collocated update/bath setters, Bernoulli face law, flow and moving geometry"
+        },
+        "coefficients": {
+          "site_base_m2_s": {
+            "Na": {
+              "sw": 2.5e-13,
+              "se": 1e-13,
+              "nw": 1e-13,
+              "ne": 1e-12
+            },
+            "K": {
+              "sw": 5e-13,
+              "se": 1.3999999999999998e-13,
+              "nw": 1.3999999999999998e-13,
+              "ne": 2e-12
+            },
+            "Cl": {
+              "sw": 3.75e-13,
+              "se": 6.000000000000001e-14,
+              "nw": 6.000000000000001e-14,
+              "ne": 1.5e-12
+            }
+          },
+          "site_effective_m2_s": {
+            "Na": {
+              "sw": 2.5e-13,
+              "se": 1e-13,
+              "nw": 1e-13,
+              "ne": 1e-12
+            },
+            "K": {
+              "sw": 5e-13,
+              "se": 1.3999999999999998e-13,
+              "nw": 1.3999999999999998e-13,
+              "ne": 2e-12
+            },
+            "Cl": {
+              "sw": 3.75e-13,
+              "se": 6.000000000000001e-14,
+              "nw": 6.000000000000001e-14,
+              "ne": 1.5e-12
+            }
+          },
+          "face_m2_s": {
+            "Na": {
+              "face_sw_se": 1.4285714285714287e-13,
+              "face_nw_ne": 1.818181818181818e-13,
+              "face_sw_nw": 1.4285714285714287e-13,
+              "face_se_ne": 1.818181818181818e-13
+            },
+            "K": {
+              "face_sw_se": 2.1874999999999998e-13,
+              "face_nw_ne": 2.6168224299065414e-13,
+              "face_sw_nw": 2.1874999999999998e-13,
+              "face_se_ne": 2.6168224299065414e-13
+            },
+            "Cl": {
+              "face_sw_se": 1.0344827586206897e-13,
+              "face_nw_ne": 1.153846153846154e-13,
+              "face_sw_nw": 1.0344827586206897e-13,
+              "face_se_ne": 1.153846153846154e-13
+            }
+          }
+        },
+        "sodium_weight": {
+          "sw": 0.25,
+          "se": 0.1,
+          "nw": 0.1,
+          "ne": 1.0
+        },
+        "target_site_occurrences": [
+          "se",
+          "nw",
+          "nw",
+          "nw",
+          "se"
+        ],
+        "ionic_modulators": {
+          "Na": {
+            "sw": 1.0,
+            "se": 1.0,
+            "nw": 1.0,
+            "ne": 1.0
+          },
+          "K": {
+            "sw": 1.0,
+            "se": 1.0,
+            "nw": 1.0,
+            "ne": 1.0
+          },
+          "Cl": {
+            "sw": 1.0,
+            "se": 1.0,
+            "nw": 1.0,
+            "ne": 1.0
+          }
+        },
+        "changes": [
+          {
+            "face_id": "face_sw_se",
+            "species_id": "Na",
+            "before_m2_s": 7e-13,
+            "after_m2_s": 1.4285714285714287e-13
+          },
+          {
+            "face_id": "face_sw_se",
+            "species_id": "K",
+            "before_m2_s": 9e-13,
+            "after_m2_s": 2.1874999999999998e-13
+          },
+          {
+            "face_id": "face_sw_se",
+            "species_id": "Cl",
+            "before_m2_s": 8e-13,
+            "after_m2_s": 1.0344827586206897e-13
+          },
+          {
+            "face_id": "face_nw_ne",
+            "species_id": "Na",
+            "before_m2_s": 7e-13,
+            "after_m2_s": 1.818181818181818e-13
+          },
+          {
+            "face_id": "face_nw_ne",
+            "species_id": "K",
+            "before_m2_s": 9e-13,
+            "after_m2_s": 2.6168224299065414e-13
+          },
+          {
+            "face_id": "face_nw_ne",
+            "species_id": "Cl",
+            "before_m2_s": 8e-13,
+            "after_m2_s": 1.153846153846154e-13
+          },
+          {
+            "face_id": "face_sw_nw",
+            "species_id": "Na",
+            "before_m2_s": 7e-13,
+            "after_m2_s": 1.4285714285714287e-13
+          },
+          {
+            "face_id": "face_sw_nw",
+            "species_id": "K",
+            "before_m2_s": 9e-13,
+            "after_m2_s": 2.1874999999999998e-13
+          },
+          {
+            "face_id": "face_sw_nw",
+            "species_id": "Cl",
+            "before_m2_s": 8e-13,
+            "after_m2_s": 1.0344827586206897e-13
+          },
+          {
+            "face_id": "face_se_ne",
+            "species_id": "Na",
+            "before_m2_s": 7e-13,
+            "after_m2_s": 1.818181818181818e-13
+          },
+          {
+            "face_id": "face_se_ne",
+            "species_id": "K",
+            "before_m2_s": 9e-13,
+            "after_m2_s": 2.6168224299065414e-13
+          },
+          {
+            "face_id": "face_se_ne",
+            "species_id": "Cl",
+            "before_m2_s": 8e-13,
+            "after_m2_s": 1.153846153846154e-13
+          }
+        ],
+        "state_fields": [
+          "amount_increment",
+          "extracellular_amount_increment",
+          "membrane_transferred",
+          "junction_transferred",
+          "face_transferred",
+          "reservoir_supplied",
+          "membrane_dissipated_energy_pJ",
+          "junction_dissipated_energy_pJ",
+          "face_dissipated_energy_pJ",
+          "electrode_charge_transferred_C",
+          "reservoir_work_pJ",
+          "electrode_work_pJ"
+        ],
+        "initial_state_sha256": "cc65204e01739462aa1520efadace12f4f643d085e5b8b59f847edf8bd7a5e12",
+        "scope": "Initial static ionic barriers on a finite sealed uniform grid. Existing Cells Logmean transport, charge/current closure and material/energy ledgers remain. No native stencil, bath event, dynamic barrier, moving geometry or flow claim.",
+        "identity": "ebd159c24f9cb65d35c23ce4d612e746affc1f5aad2da1d67e2ece1ad540450c"
+      }
+    },
+    "intervention": {
+      "name": "ecm_opening",
+      "site_ids": [
+        "sw",
+        "se",
+        "nw",
+        "ne"
+      ],
+      "on_s": 2e-06,
+      "off_s": 4.9999999999999996e-06,
+      "change_s": 1e-06,
+      "amplitude": 0.9
+    },
+    "phase": "SIM",
+    "timing_policy": "phase_clock_rk_stage_native_logistic@1"
+  },
+  "experiment": {
+    "end_time": 9.999999999999999e-06,
+    "observation_times": [
+      0.0,
+      1e-06,
+      2e-06,
+      3e-06,
+      3.3e-06,
+      4.9999999999999996e-06,
+      6e-06,
+      7e-06,
+      7.7e-06,
+      8e-06,
+      9e-06,
+      9.999999999999999e-06
+    ],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0_sw",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          },
+          {
+            "time": 1e-06,
+            "availability": 1.0
+          },
+          {
+            "time": 2e-06,
+            "availability": 1.0
+          },
+          {
+            "time": 3e-06,
+            "availability": 1.0
+          },
+          {
+            "time": 3.3e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 4.9999999999999996e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 6e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 7e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 7.7e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 8e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 9e-06,
+            "availability": 0.7
+          },
+          {
+            "time": 9.999999999999999e-06,
+            "availability": 0.7
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_0_se",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_0_nw",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_0_ne",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1_sw",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1_se",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1_nw",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "membrane_1_ne",
+        "schedule": [
+          {
+            "time": 0.0,
+            "availability": 1.0
+          },
+          {
+            "time": 7.7e-06,
+            "availability": 0.4
+          }
+        ]
+      }
+    ],
+    "junction_controls": []
+  },
+  "execution": {
+    "dt": 6.25e-08,
+    "capacity": 2,
+    "jit": true,
+    "max_steps": 4096,
+    "max_trace_bytes": 536870912,
+    "backend": "cpu",
+    "precision": "float64",
+    "solver": "rk4",
+    "edge_capacity": 0,
+    "membrane_capacity": 8,
+    "material_balance_atol_fmol": {
+      "Na": 2e-11,
+      "K": 2e-11,
+      "Cl": 2e-11
+    },
+    "extracellular_capacity": 4,
+    "face_capacity": 4,
+    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "barrier_target_capacity": 4
+  }
+}

@@ -193,6 +193,30 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import surface_calcium_energy_water_profile_epoch_spec as joint_water_epoch
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_epoch_spec as joint_repair_epoch,
+    )
+
+    if isinstance(spec.model, joint_repair_epoch.SurfaceCalciumEnergyWaterRepairProfileEpochModel):
+        return control_values(joint_repair_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, joint_water_epoch.SurfaceCalciumEnergyWaterProfileEpochModel):
+        return control_values(joint_water_epoch.scheduled_spec(spec), times)
+    from cells.core import (
+        surface_calcium_energy_water_profile_interventions_spec as joint_water_profile,
+    )
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_interventions_spec as joint_repair_profile,
+    )
+
+    if isinstance(
+        spec.model, joint_repair_profile.SurfaceCalciumEnergyWaterRepairProfileInterventionModel
+    ):
+        return control_values(joint_repair_profile.owner_spec(spec), times)
+    if isinstance(
+        spec.model, joint_water_profile.SurfaceCalciumEnergyWaterProfileInterventionModel
+    ):
+        return control_values(joint_water_profile.owner_spec(spec), times)
     changes = spec.experiment.changes
     if isinstance(spec.model, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
         original = control_values(joint_hcn_repair_prior(spec), times)

@@ -141,6 +141,36 @@ from cells.models import (
 
 
 def get_model(spec):
+    from cells.core.surface_calcium_energy_water_profile_epoch_spec import (
+        SurfaceCalciumEnergyWaterProfileEpochModel,
+    )
+    from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import (
+        SurfaceCalciumEnergyWaterRepairProfileEpochModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyWaterRepairProfileEpochModel):
+        from cells.models import surface_calcium_energy_water_repair_profile_epoch
+
+        return surface_calcium_energy_water_repair_profile_epoch
+    if isinstance(spec, SurfaceCalciumEnergyWaterProfileEpochModel):
+        from cells.models import surface_calcium_energy_water_profile_epoch
+
+        return surface_calcium_energy_water_profile_epoch
+    from cells.core.surface_calcium_energy_water_profile_interventions_spec import (
+        SurfaceCalciumEnergyWaterProfileInterventionModel,
+    )
+    from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import (
+        SurfaceCalciumEnergyWaterRepairProfileInterventionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
+        from cells.models import surface_calcium_energy_water_repair_profile_interventions
+
+        return surface_calcium_energy_water_repair_profile_interventions
+    if isinstance(spec, SurfaceCalciumEnergyWaterProfileInterventionModel):
+        from cells.models import surface_calcium_energy_water_profile_interventions
+
+        return surface_calcium_energy_water_profile_interventions
     from cells.core.surface_calcium_energy_profile_epoch_spec import (
         SurfaceCalciumEnergyProfileEpochModel,
     )

@@ -772,6 +772,40 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core.surface_calcium_energy_water_profile_epoch_spec import (
+            SurfaceCalciumEnergyWaterProfileEpochModel,
+        )
+        from cells.core.surface_calcium_energy_water_profile_epoch_spec import (
+            to_dict as joint_water_epoch_dict,
+        )
+        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import (
+            SurfaceCalciumEnergyWaterRepairProfileEpochModel,
+        )
+        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import (
+            to_dict as joint_repair_epoch_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyWaterRepairProfileEpochModel):
+            return joint_repair_epoch_dict(self)
+        if isinstance(m, SurfaceCalciumEnergyWaterProfileEpochModel):
+            return joint_water_epoch_dict(self)
+        from cells.core.surface_calcium_energy_water_profile_interventions_spec import (
+            SurfaceCalciumEnergyWaterProfileInterventionModel,
+        )
+        from cells.core.surface_calcium_energy_water_profile_interventions_spec import (
+            to_dict as joint_water_profiles_dict,
+        )
+        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import (
+            SurfaceCalciumEnergyWaterRepairProfileInterventionModel,
+        )
+        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import (
+            to_dict as joint_repair_profiles_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
+            return joint_repair_profiles_dict(self)
+        if isinstance(m, SurfaceCalciumEnergyWaterProfileInterventionModel):
+            return joint_water_profiles_dict(self)
         from cells.core.surface_calcium_energy_profile_epoch_spec import (
             SurfaceCalciumEnergyProfileEpochModel,
         )
@@ -1238,6 +1272,35 @@ def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id")
+        == "resolved_calcium_energy_water_repair_membrane_profile_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_repair_membrane_profiles@1"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_membrane_profiles@1"
+    ):
+        from cells.core.surface_calcium_energy_water_profile_interventions_spec import parse
+
+        return parse(data)
     if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_calcium_membrane_profile_epoch@1"

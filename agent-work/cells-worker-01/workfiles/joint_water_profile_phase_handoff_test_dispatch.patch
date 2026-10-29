@@ -1,0 +1,73 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -772,6 +772,14 @@
+ 
+     def to_dict(self) -> dict:
+         m, e, x = self.model, self.experiment, self.execution
++        from cells.core.surface_calcium_energy_water_profile_epoch_spec import SurfaceCalciumEnergyWaterProfileEpochModel
++        from cells.core.surface_calcium_energy_water_profile_epoch_spec import to_dict as surface_calcium_energy_water_profile_epoch_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterProfileEpochModel):
++            return surface_calcium_energy_water_profile_epoch_dict(self)
++        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import SurfaceCalciumEnergyWaterRepairProfileEpochModel
++        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import to_dict as surface_calcium_energy_water_repair_profile_epoch_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterRepairProfileEpochModel):
++            return surface_calcium_energy_water_repair_profile_epoch_dict(self)
+         from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import SurfaceCalciumEnergyWaterRepairProfileInterventionModel
+         from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import to_dict as surface_calcium_energy_water_repair_profile_interventions_dict
+         if isinstance(m, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
+@@ -1202,6 +1210,12 @@
+     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
+     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
+         raise ConfigError("Only schema_version 1 is supported")
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_membrane_profile_epoch@1":
++        from cells.core.surface_calcium_energy_water_profile_epoch_spec import parse
++        return parse(data)
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_repair_membrane_profile_epoch@1":
++        from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import parse
++        return parse(data)
+     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_repair_membrane_profiles@1":
+         from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import parse
+         return parse(data)
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -141,6 +141,14 @@
+ 
+ 
+ def get_model(spec):
++    from cells.core.surface_calcium_energy_water_profile_epoch_spec import SurfaceCalciumEnergyWaterProfileEpochModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterProfileEpochModel):
++        from cells.models import surface_calcium_energy_water_profile_epoch
++        return surface_calcium_energy_water_profile_epoch
++    from cells.core.surface_calcium_energy_water_repair_profile_epoch_spec import SurfaceCalciumEnergyWaterRepairProfileEpochModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterRepairProfileEpochModel):
++        from cells.models import surface_calcium_energy_water_repair_profile_epoch
++        return surface_calcium_energy_water_repair_profile_epoch
+     from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import SurfaceCalciumEnergyWaterRepairProfileInterventionModel
+     if isinstance(spec, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
+         from cells.models import surface_calcium_energy_water_repair_profile_interventions
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -151,6 +151,8 @@
+         "resolved_calcium_energy_water@2",
+         "resolved_calcium_energy_water_repair_membrane_profiles@1",
+         "resolved_calcium_energy_water_membrane_profiles@1",
++        "resolved_calcium_energy_water_membrane_profile_epoch@1",
++        "resolved_calcium_energy_water_repair_membrane_profile_epoch@1",
+         "resolved_calcium@1",
+         "resolved_calcium@2",
+         "resolved_calcium@3",
+--- a/src/cells/core/schedule.py
++++ b/src/cells/core/schedule.py
+@@ -175,6 +175,12 @@
+ 
+ 
+ def control_values(spec, times):
++    from cells.core import surface_calcium_energy_water_profile_epoch_spec as surface_calcium_energy_water_profile_epoch
++    if isinstance(spec.model, surface_calcium_energy_water_profile_epoch.SurfaceCalciumEnergyWaterProfileEpochModel):
++        return control_values(surface_calcium_energy_water_profile_epoch.scheduled_spec(spec), times)
++    from cells.core import surface_calcium_energy_water_repair_profile_epoch_spec as surface_calcium_energy_water_repair_profile_epoch
++    if isinstance(spec.model, surface_calcium_energy_water_repair_profile_epoch.SurfaceCalciumEnergyWaterRepairProfileEpochModel):
++        return control_values(surface_calcium_energy_water_repair_profile_epoch.scheduled_spec(spec), times)
+     from cells.core import (
+         surface_calcium_energy_water_profile_interventions_spec as joint_water_profile,
+         surface_calcium_energy_water_repair_profile_interventions_spec as joint_repair_profile,

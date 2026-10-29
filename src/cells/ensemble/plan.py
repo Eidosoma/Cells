@@ -49,6 +49,15 @@ def plan(data, slots):
     arms = data["arms"]
     if not isinstance(arms, list) or not 1 <= len(arms) <= 256:
         raise ValueError("Require 1 to 256 registered arms")
+    ionic = data["kind"] == "ionic_ensemble@1"
+    if ionic:
+        from cells.ensemble.ionic import validate_population
+
+    # A fully admitted ionic arm is physically identical for each assigned
+    # world-ID range. Cache only within this call, by arm and exact batch size;
+    # a smaller tail still receives full admission and its own resource bound.
+    # Workers continue to parse and validate each serialized task independently.
+    admitted = {}
     names, queue, offset, definitions, cost_known = set(), [], 0, {}, True
     for arm in arms:
         if set(arm) != {"id", "definition", "worlds", "batch_worlds", "seconds_per_world"}:
@@ -65,6 +74,10 @@ def plan(data, slots):
         width = positive(arm["batch_worlds"], "batch worlds", integer=True)
         if width > count or offset + count > 2**32:
             raise ValueError("Invalid batch size or exhausted world-ID namespace")
+        if ionic:
+            validate_population(width, offset, data["seed"])
+            if offset + count >= 2**31:
+                raise ValueError("Ionic positive world-ID namespace exhausted")
         cost = arm["seconds_per_world"]
         cost_known &= cost is not None
         cost = 1.0 if cost is None else positive(cost, "seconds_per_world")
@@ -83,6 +96,8 @@ def plan(data, slots):
                 "Ensembles require bounded summary recording; full checkpoints are retained"
             )
         definitions[name] = spec.to_dict()
+        if ionic:
+            admitted[name, width] = (definitions[name], output_bound(spec))
         heapq.heappush(queue, (-count * cost, name, offset, count, width, cost))
         offset += count
     tasks, projected_load = [], [0.0] * parallel_slots
@@ -90,20 +105,37 @@ def plan(data, slots):
     while queue:
         _, name, start, remaining, width, cost = heapq.heappop(queue)
         n = min(remaining, width)
-        spec = parse_spec(
-            bind_definition(definitions[name], worlds=n, world_id_start=start, seed=data["seed"])
-        )
+        if ionic:
+            validate_population(n, start, data["seed"])
+            if (name, n) not in admitted:
+                spec = parse_spec(
+                    bind_definition(
+                        definitions[name], worlds=n, world_id_start=start, seed=data["seed"]
+                    )
+                )
+                admitted[name, n] = (spec.to_dict(), output_bound(spec))
+            template, bound = admitted[name, n]
+            definition = bind_definition(
+                template, worlds=n, world_id_start=start, seed=data["seed"]
+            )
+        else:
+            spec = parse_spec(
+                bind_definition(
+                    definitions[name], worlds=n, world_id_start=start, seed=data["seed"]
+                )
+            )
+            definition, bound = spec.to_dict(), output_bound(spec)
         estimate = n * cost
         tasks.append(
             {
                 "id": f"task-{len(tasks):05d}",
                 "arm": name,
-                "definition": spec.to_dict(),
+                "definition": definition,
                 "estimated_seconds": estimate if cost_known else None,
             }
         )
         # Retain a full success checkpoint and room for an interrupted continuation.
-        total_output_bound += 2 * output_bound(spec)
+        total_output_bound += 2 * bound
         projected_load[min(range(parallel_slots), key=projected_load.__getitem__)] += estimate
         if remaining > n:
             heapq.heappush(
@@ -116,7 +148,10 @@ def plan(data, slots):
             "Every allocated GPU needs work; split the registered worlds into more batches"
         )
     if total_output_bound > execution["max_output_bytes"]:
-        raise ValueError("Conservative checkpoint/output bound exceeds ensemble max_output_bytes")
+        raise ValueError(
+            f"Conservative checkpoint/output bound ({total_output_bound} bytes) exceeds "
+            f"ensemble max_output_bytes ({execution['max_output_bytes']} bytes)"
+        )
     return {
         "tasks": tasks,
         "worlds": offset,

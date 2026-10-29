@@ -1,0 +1,94 @@
+--- a/src/cells/core/specs.py
++++ b/src/cells/core/specs.py
+@@ -772,6 +772,14 @@
+ 
+     def to_dict(self) -> dict:
+         m, e, x = self.model, self.experiment, self.execution
++        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import SurfaceCalciumEnergyWaterRepairProfileInterventionModel
++        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import to_dict as surface_calcium_energy_water_repair_profile_interventions_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
++            return surface_calcium_energy_water_repair_profile_interventions_dict(self)
++        from cells.core.surface_calcium_energy_water_profile_interventions_spec import SurfaceCalciumEnergyWaterProfileInterventionModel
++        from cells.core.surface_calcium_energy_water_profile_interventions_spec import to_dict as surface_calcium_energy_water_profile_interventions_dict
++        if isinstance(m, SurfaceCalciumEnergyWaterProfileInterventionModel):
++            return surface_calcium_energy_water_profile_interventions_dict(self)
+         from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import SurfaceCalciumEnergyWaterRepairHCNExtraModel
+         from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import to_dict as surface_calcium_energy_water_repair_hcn_extra_dict
+         if isinstance(m, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
+@@ -1194,6 +1202,12 @@
+     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
+     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
+         raise ConfigError("Only schema_version 1 is supported")
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_repair_membrane_profiles@1":
++        from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import parse
++        return parse(data)
++    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_membrane_profiles@1":
++        from cells.core.surface_calcium_energy_water_profile_interventions_spec import parse
++        return parse(data)
+     if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_calcium_energy_water_repair@2":
+         from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import parse
+         return parse(data)
+--- a/src/cells/models/registry.py
++++ b/src/cells/models/registry.py
+@@ -141,6 +141,14 @@
+ 
+ 
+ def get_model(spec):
++    from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec import SurfaceCalciumEnergyWaterRepairProfileInterventionModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterRepairProfileInterventionModel):
++        from cells.models import surface_calcium_energy_water_repair_profile_interventions
++        return surface_calcium_energy_water_repair_profile_interventions
++    from cells.core.surface_calcium_energy_water_profile_interventions_spec import SurfaceCalciumEnergyWaterProfileInterventionModel
++    if isinstance(spec, SurfaceCalciumEnergyWaterProfileInterventionModel):
++        from cells.models import surface_calcium_energy_water_profile_interventions
++        return surface_calcium_energy_water_profile_interventions
+     from cells.core.surface_calcium_energy_water_repair_hcn_extra_spec import SurfaceCalciumEnergyWaterRepairHCNExtraModel
+     if isinstance(spec, SurfaceCalciumEnergyWaterRepairHCNExtraModel):
+         from cells.models import surface_calcium_energy_water_repair_hcn_extra
+--- a/src/cells/ensemble/ionic.py
++++ b/src/cells/ensemble/ionic.py
+@@ -149,6 +149,8 @@
+         "resolved_calcium_energy_membrane_profiles@1",
+         "resolved_calcium_energy_water_repair@2",
+         "resolved_calcium_energy_water@2",
++        "resolved_calcium_energy_water_repair_membrane_profiles@1",
++        "resolved_calcium_energy_water_membrane_profiles@1",
+         "resolved_calcium@1",
+         "resolved_calcium@2",
+         "resolved_calcium@3",
+--- a/src/cells/core/schedule.py
++++ b/src/cells/core/schedule.py
+@@ -176,6 +176,18 @@
+ 
+ def control_values(spec, times):
+     from cells.core import (
++        surface_calcium_energy_water_profile_interventions_spec as joint_water_profile,
++        surface_calcium_energy_water_repair_profile_interventions_spec as joint_repair_profile,
++    )
++    if isinstance(
++        spec.model, joint_repair_profile.SurfaceCalciumEnergyWaterRepairProfileInterventionModel
++    ):
++        return control_values(joint_repair_profile.owner_spec(spec), times)
++    if isinstance(
++        spec.model, joint_water_profile.SurfaceCalciumEnergyWaterProfileInterventionModel
++    ):
++        return control_values(joint_water_profile.owner_spec(spec), times)
++    from cells.core import (
+         surface_calcium_energy_water_repair_hcn_extra_spec as joint_hcn_repair,
+     )
+     from cells.core import surface_calcium_energy_water_hcn_extra_spec as joint_hcn_water
+--- a/src/cells/core/tissue_profile_composition_preparation.py
++++ b/src/cells/core/tissue_profile_composition_preparation.py
+@@ -26,6 +26,12 @@
+ # Exact serialized parent-to-physical-schema contracts. Unknown families and
+ # existing cut epochs require their own provenance, rather than duck typing.
+ SCHEMAS = {
++    "resolved_calcium_energy_water@2": dict(
++        family="calcium_fuel_water", path=("ionic",), ionic_id="resolved_tissue@12"
++    ),
++    "resolved_calcium_energy_water_repair@2": dict(
++        family="calcium_fuel_water_repair", path=("ionic",), ionic_id="resolved_tissue@12"
++    ),
+     **{
+         f"resolved_tissue@{i}": dict(family="ionic_channels", path=(), ionic_id=None)
+         for i in range(2, 12)

@@ -107,7 +107,11 @@ def initial_values(spec):
     # Historical transfers remain legal when an opened route closes again.
     # This support union is used for accounting only, never for actual rates.
     upper = site.copy()
-    if spec.model.phase == "SIM" and spec.model.intervention is not None:
+    if (
+        spec.model.phase == "SIM"
+        and spec.model.intervention is not None
+        and spec.model.intervention.amplitude > 0
+    ):
         for name in spec.model.intervention.site_ids:
             i = sites.index(name)
             upper[:, i] = np.maximum(upper[:, i], free)

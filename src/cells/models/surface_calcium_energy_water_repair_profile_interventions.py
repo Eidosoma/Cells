@@ -20,12 +20,14 @@ from cells.core.surface_calcium_energy_water_repair_profile_interventions_spec i
     artifact,
     owner_spec,
 )
-from cells.models import surface_calcium_energy_water_repair_hcn_extra as base
 from cells.models import surface_calcium_energy_water_hcn_extra as water_owner
+from cells.models import surface_calcium_energy_water_repair_hcn_extra as base
 from cells.models import surface_profile_interventions as scheduled
 
 STATE_AXES = base.STATE_AXES | {"phase_clock_s": ["phase_clock"]}
-STATE_TYPE = NamedTuple("SurfaceCalciumEnergyWaterRepairProfileState", [(k, object) for k in STATE_AXES])
+STATE_TYPE = NamedTuple(
+    "SurfaceCalciumEnergyWaterRepairProfileState", [(k, object) for k in STATE_AXES]
+)
 LAYOUT_TYPE = NamedTuple(
     "SurfaceCalciumEnergyWaterRepairProfileLayout",
     [(k, object) for k in (*base.LAYOUT_TYPE._fields, *scheduled.EXTRA_LAYOUT)],
@@ -195,9 +197,15 @@ def check_steps(spec, steps, controls):
     base.check_steps(complete, steps, controls)
     _, p = initial_values(spec)
     minimum = p.water_minimum_volume_pL
-    upper = accounting_layout(p, xp=np)._replace(volume=minimum[:p.active.size], extracellular_volume=minimum[p.active.size:])
+    upper = accounting_layout(p, xp=np)._replace(
+        volume=minimum[: p.active.size], extracellular_volume=minimum[p.active.size :]
+    )
     chemical = fuel.bounded_prior_spec(water_owner.minimum_energy_spec(water_projection(complete)))
-    bound = binding.background_loss_bound(upper, max(map(abs, calcium_gates.VOLTAGE_DOMAIN_V))) + calcium.loss_bound(chemical) + base.injury_loss_bound(complete)
+    bound = (
+        binding.background_loss_bound(upper, max(map(abs, calcium_gates.VOLTAGE_DOMAIN_V)))
+        + calcium.loss_bound(chemical)
+        + base.injury_loss_bound(complete)
+    )
     if not np.isfinite(bound) or np.max(steps, initial=0) * bound > 0.25:
         raise ConfigError("Scheduled joint water minimum-volume complete loss exceeds 0.25")
     scheduled.check_steps(spec, steps, controls)
@@ -284,7 +292,9 @@ def observe_history(times, history, layout, requested, spec):
         stage = water_owner.effective_layout(actual, water_layout(current))
         physical = fuel.prior.observe_history(
             np.asarray([time]),
-            fuel.prior.STATE_TYPE(*(v[None] for v in fuel.prior_state(water_owner.prior_state(view)))),
+            fuel.prior.STATE_TYPE(
+                *(v[None] for v in fuel.prior_state(water_owner.prior_state(view)))
+            ),
             fuel.stage_layout(water_owner.prior_state(actual), stage, xp=np),
             [time],
             initial_prior_spec(water_owner.energy_spec(water_projection(spec))),
@@ -335,17 +345,30 @@ def observe_history(times, history, layout, requested, spec):
             water_availability=control.water,
             water_dissipation_pJ_s=w.edge_dissipation_pJ_s,
             cytosol_osmolytes_fmol=np.sum(particles[:, :n], axis=0),
-            cytosol_chemical_concentration_mM=chemical_water.osmolyte_amounts(actual, current)[:, :n] / volume[:n],
+            cytosol_chemical_concentration_mM=chemical_water.osmolyte_amounts(actual, current)[
+                :, :n
+            ]
+            / volume[:n],
             pool_osmolyte_amount_fmol=np.sum(amount, axis=0),
             pool_volume_power_pJ_s=coupled.derivative.pool_volume_work_pJ,
             er_volume_pL=p.er_volume[np.arange(p.er_volume.shape[0]), p.er_er],
         )
         row.update(injury_control=control.injury, resealing_control=control.resealing)
-        records.append((*(row[key] for key in base.OBSERVATION_FIELDS), state.phase_clock_s, signal.permeability, signal.scheduled, signal.pulse))
+        records.append(
+            (
+                *(row[key] for key in base.OBSERVATION_FIELDS),
+                state.phase_clock_s,
+                signal.permeability,
+                signal.scheduled,
+                signal.pulse,
+            )
+        )
     if records:
         return Observations(*(np.stack(v) for v in zip(*records, strict=True)))
     sample = observe_history(times[:1], STATE_TYPE(*(v[:1] for v in history)), p, times[:1], spec)
-    return Observations(*(np.empty((0, *v.shape[1:]), dtype=v.dtype) for v in vars(sample).values()))
+    return Observations(
+        *(np.empty((0, *v.shape[1:]), dtype=v.dtype) for v in vars(sample).values())
+    )
 
 
 def ensemble_voltage(state, layout, spec, time):

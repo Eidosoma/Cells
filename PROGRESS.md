@@ -26,6 +26,250 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   launch detached with durable logs and result/failure artifacts, then return
   control. Status checks wait for the user's request. GPU runs stay deferred.
 
+- **Ionic planning now reuses validated arm/batch-size definitions within one
+  planning call.** Physical input, timestep/window admission and conservative
+  output bounds are checked once per arm and exact batch size; smaller tails
+  get separate validation. Every assigned ID range remains checked, tasks are
+  independent deep copies, and workers still fully validate execution inputs.
+  [37 checks passed](/mnt/workspaces/Cells/ionic-planning-admission-20261029-01/contracts-02/result.json)
+  in **11.2 seconds**, with **17 new checks and 20 existing regressions**.
+  [Three strengthened ownership cases](/mnt/workspaces/Cells/ionic-planning-admission-20261029-01/ownership-03/result.json)
+  also pass and are counted once: full task definitions match their own arms,
+  fresh admission and exact output estimates; no cross-task aliases or stale
+  cross-call physics are accepted. The
+  [verification receipt](/mnt/workspaces/Cells/ionic-planning-admission-20261029-01/verification.json)
+  authenticates both frozen captures and the deduplicated count. The
+  [focused review](/mnt/workspaces/Cells/ionic-planning-admission-20261029-01/code-review-01/REVIEW.json)
+  found no production blocker. Peak tree RSS was **223 MiB**, minimum reserve
+  **15.98 GiB**, under **1-GiB / 8-GiB / 480-second** guards. The
+  [initial test-fixture failure](/mnt/workspaces/Cells/ionic-planning-admission-20261029-01/contracts-01/failure.json)
+  is retained: this older finite-membrane fixture uses explicit leak multipliers,
+  rather than the newer availability-schedule format. No scientific tolerance
+  changed. Larger carried-state planning is being checked in the phase suite below.
+
+- **Static extracellular barriers now compose with five complete full-catalog
+  ionic/calcium/fuel/water/repair owners.** The
+  [adapter](docs/TISSUE_GEOMETRY.md#apply-static-extracellular-barriers) changes
+  only declared face diffusivities and preserves the full initial state,
+  controls, inventories and accounting references. The
+  [verified closeout](/mnt/workspaces/Cells/environment-barrier-composition-20261029-01/closeout.json)
+  records **40 distinct CPU checks: 24 new feature checks plus 16 existing
+  interface regressions**. Ten cases compare **20 complete before/after initial
+  stages**, with all **19 / 34 / 38 / 43 / 48 fields** explicitly matched to
+  independent equations. Maximum error/budget is **0.000226**; maximum independent
+  physical energy residual is **1.46e-11 pJ/s**, below **1e-10**. Reordered/padded
+  layouts, zero endpoint diffusivity, full-state refusal and fresh portable CLI
+  replay are covered. Ten strengthened field-coverage/conservation checks were
+  rerun and counted once. Peak tree RSS was **415 MiB**, minimum reserve
+  **15.91 GiB**, under **1-GiB / 8-GiB / 480-second** guards.
+  The [initial fixture failure](/mnt/workspaces/Cells/environment-barrier-composition-20261029-01/contracts-01/failure.json)
+  remains: removing a synthetic exterior site required explicitly choosing a
+  surviving gauge; no model or tolerance changed. Both the passive coefficient
+  view and full parent must admit. Evolved coupled barriers, richer scheduled
+  barriers, moving geometry, bath/flow and GPU qualification remain separate.
+  The [focused adapter review](/mnt/workspaces/Cells/environment-barrier-composition-20261029-01/code-review-01/REVIEW.json)
+  found no remaining production blocker; the closeout separately verifies the
+  final strengthened stage checks. A parallel worker is preparing full 50-us
+  water/repair barrier histories with independent coefficients, every control
+  boundary and timestep refinement; these have no trajectory pass credit yet.
+
+- **Explicit water/repair INIT-to-SIM preparation passes public SIM restart;
+  offline planning needs a corrected qualification.**
+  The [phase interface](docs/TISSUE_PHASES.md) admits the two complete scheduled
+  water/repair owners and preserves all **43 / 48 physical fields**, actual
+  volumes, calcium/fuel/repair histories and original accounting references.
+  Only the declared phase clock resets. Root added public serialization,
+  model/control/ensemble routing and `tissue-phase` adapter selection, with
+  exact owner boundaries that refuse implicit branching or epoch recapture.
+  The [two public contracts passed](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/contracts-02/result.json)
+  in **101 seconds**, at **294 MiB** sampled tree RSS with **18.24 GiB** minimum
+  reserve under **1-GiB / 8-GiB / 480-second** guards. Their
+  [verification](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/contracts-02/verification.json)
+  authenticates **1,734 frozen sources**, the complete **93 saved state arrays**
+  and unchanged current owned code. The initial
+  [test-harness failure](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/contracts-01/failure.json)
+  remains: the catalog assertion tried hashing JAX scalar arrays. Converting
+  that diagnostic view to NumPy fixed the assertion without model or tolerance
+  changes. These fixtures evolve **one 1-ns INIT step** to exercise typed
+  preparation and snapshots; physical trajectory qualification remains separate.
+  The [water fresh-process CLI check passed](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/cli-water-03/result.json)
+  in **86 seconds**, at **435 MiB** tree RSS with **16.95 GiB** minimum reserve.
+  `from-snapshot`, validation and portable replay preserve the complete recipe
+  after the original source path is unavailable. The repair CLI check is included
+  in the later finalized phases below. Root added complete SIM/restart comparisons,
+  archived/elapsed-clock assertions and offline 1/4/16-GPU owner planning.
+  The [prepared public suite](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/public-preparation.json)
+  retains these **three finalized software checks**, freezes **1,734 sources**,
+  and separates **20 remaining checks** into eight processes: repair CLI,
+  water/repair SIM restart, per-owner admission, offline placement and fourteen
+  adjacent model/phase regressions. Expected total: **23 software checks**.
+  The [suite launched detached](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/suite-04/launch.json)
+  at **12:31:59 UTC**, CPU6, PID **1509114**, with **20.61 GiB** available.
+  New phases use **1-GiB RSS / 8-GiB reserve / 600-second per-process** guards;
+  the wall allowance covers nested handoff validation and offline planning.
+  Retained checks keep their original limits. The **12:54 UTC user-triggered
+  check** found the [suite failed](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/suite-04/failure.json)
+  at **12:51:38 UTC** in offline placement: its conservative output estimate
+  exceeded the test's **1-GiB artifact allowance**, while RAM stayed within its
+  separate guard. The [review](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/suite-04/root-review-01/REVIEW.json)
+  accepts **eight finalized checks: three retained plus five new**. Both actual
+  **1-ns to 2-ns fresh-process SIM continuations** exactly preserve all
+  **44 / 49 state fields, 170 / 174 layouts and 108 / 115 observation arrays**,
+  including INIT/elapsed clocks and portable source records. All **1,734 sources**
+  and **322 runtime identities** verify; peak tree RSS is **0.87 GiB**.
+  Offline placement and fourteen unstarted regressions remain uncredited.
+  Root corrected the declared artifact allowance to **4 GiB**, and is validating
+  once-per-arm/batch-size ionic planning admission without changing equations,
+  world counts, source histories or execution-time validation. The
+  [grouped continuation](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/continuation-05/inputs.json)
+  produced identical sixteen-world **1 / 4 / 16-GPU** plans with an unchanged
+  **1,542,576,384-byte** output estimate, explaining the original 1-GiB refusal.
+  It then [hit its 600-second aggregate wall limit](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/continuation-05/failure.json)
+  during adjacent checks; root underestimated their combined runtime. Its saved
+  planning evidence remains, but there is **no finalized JUnit report and no
+  added pass credit**. Peak tree memory stayed below **1 GiB** and host reserve
+  above **8 GiB**. The [prepared split continuation](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/continuation-06/inputs.json)
+  retains the eight finalized checks and runs fifteen remaining checks in
+  separately finalized placement, profile and inherited-interface processes,
+  using the exact **1,742-file** grouped capture and unchanged numerical limits.
+  It [launched detached](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/continuation-06/launch.json)
+  at **13:17:43 UTC**, CPU6, PID **1524089**, with **15.07 GiB** available.
+  ETA **12–20 minutes**, approximately **13:30–13:38 UTC**, with unchanged
+  **1-GiB RSS / 8-GiB reserve / 600-second per-process** guards. Retained
+  checks keep their original runtime; new planning uses the listed code changes.
+  Durable logs and terminal result/failure paths are in the launch receipt;
+  no automatic polling, retry or follow-up is queued. No GPU execution is implied.
+  The [focused frozen-code review](/mnt/workspaces/Cells/joint-water-phase-integration-20261029-01/component-review-01/REVIEW.json)
+  found no blocker and verifies **264 pinned dependencies**. Actual carried
+  pools/current volumes feed turnover admission; original physical/accounting
+  anchors remain intact, and exact owner checks exclude previous epochs,
+  cuts and assembly wrappers. This review runs no new numerical cases.
+  The **12:33 UTC user-triggered check** found Key Dev's
+  [component suite passed](/mnt/workspaces/Cells/joint-water-phase-development-20261029-05/result.json).
+  Its [independent review](/mnt/workspaces/Cells/joint-water-phase-development-20261029-05/root-review-01/REVIEW.json)
+  accepts **71 distinct checks: six retained plus 65 new**, with zero failures
+  or skips. All **310 runtime files, 240 validation/configuration files and
+  1,587 artifacts** verify. **64 independent complete-stage comparisons** reach
+  maximum error/budget **0.00536**, preserving all physical fields, current
+  volumes/fuel and original anchors. Four SciPy progress flags are false;
+  their physical charge/current residuals pass the unchanged acceptance limits
+  and remain explicitly recorded. Two **250-ns SIM** histories save every
+  **44 / 49 field**, separate from independent full-transient qualification.
+  New finalized phases total **660 seconds**; peak tree RSS was **261 MiB**
+  and minimum reserve **14.99 GiB**, under **1-GiB / 8-GiB / 480-second** guards.
+  Missing-support-import and configuration-bundle setup failures remain intact.
+  With ordinary profile trajectories also closed, Key Dev is preparing the
+  six full INIT/SIM transient and refinement comparisons. The
+  [frozen package](/mnt/workspaces/Cells/joint-water-epoch-refinement-preparation-20261029-02/manifest.json)
+  contains **578 files**, including the original 310 runtime files and 240
+  validation/configuration dependencies. It compares **4-us INIT + 4-us SIM**,
+  coarse/fine timesteps, all **25 INIT / 30 SIM samples**, and independently
+  chained endpoints with original ledgers. Key Dev reports the coarse INIT
+  pilot passed, at maximum error/budget **5.77e-7** and energy residual
+  **5.59e-12 pJ**. Its [pilot receipt](/mnt/workspaces/Cells/joint-water-epoch-refinement-pilot-20261029-01-launch/launch.json)
+  records a persistent CPU4 computation with durable unit logs; the pilot
+  exceeded its original under-ten-minute estimate while preparing the SIM
+  reference. Computation remains untouched; no automatic polling is queued.
+  The full refinement run remains unlaunched pending completed pilot evidence.
+  Key Dev is meanwhile implementing scheduled barriers for full-catalog ionic,
+  calcium and finite-fuel owners in separate files; these are not yet integrated
+  or qualified. No compiled/GPU or native whole-loop claim follows.
+
+- **Scheduled full-catalog water/repair profiles pass scoped independent CPU
+  trajectories and separate public restart qualification.**
+  The [new models](docs/TISSUE_RETURN_CURRENT.md#scheduled-membrane-profiles-with-water-and-prescribed-repair)
+  carry **44 / 49 fields**, including all physical water/fuel/repair histories
+  and an explicit phase clock. Root added public parsing, serialization,
+  complete control routing and ensemble admission. Key Dev finalized **49
+  component contracts**, including **100 independent initial/manufactured
+  full-state stages**. The [focused code review](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/component-review-01/REVIEW.json)
+  found no blocker and verifies **181 pinned dependencies**: the temporary
+  closed-route validity view does not replace physical transfers, fuel demand
+  or observed history. This review adds no numerical cases.
+  The **12:19 UTC user-triggered check** found Key Dev's
+  [four-transient qualification passed](/mnt/workspaces/Cells/joint-water-profiles-development-20261029-03/result.json)
+  at **12:07:13 UTC**. The [independent closeout review](/mnt/workspaces/Cells/joint-water-profiles-development-20261029-03/root-review-01/REVIEW.json)
+  verifies **53 distinct checks: 49 retained contracts plus four new trajectories**.
+  Each **4-us** trajectory compares every **44 / 49 state field** at all **25
+  observation/control boundaries**, covering 63 channel populations and all
+  56 laws. Halving the step from **31.25 to 15.625 ns** reduces maximum full-state
+  error/budget from **0.610484 to 0.0349466**; background-transfer errors improve
+  about **17.5-fold**. Maximum independent energy residual is **5.03e-12 pJ**,
+  below the **1e-9-pJ** budget. The complete arrays, original ledgers and failures
+  remain retained. All executions use the same **305-file frozen runtime**;
+  live `schedule.py` formatting drift did not affect executing code.
+  Four new trajectories took approximately **20 minutes**. Across reviewed
+  phases, peak RSS was **241 MiB** and minimum host reserve **14.74 GiB**; all
+  **6,032 resource samples** satisfy the original **1-GiB / 8-GiB / 480-second**
+  guards. Compact trajectories and the **100 padded manufactured-stage
+  comparisons** remain separate. No convergence-order, physiological recovery,
+  compiled/GPU, native whole-loop or biological-validation claim follows.
+  Root's [12 public contracts passed](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/contracts-01/result.json)
+  in **107 seconds**, at **235 MiB tree RSS**, with **14.84 GiB** minimum reserve.
+  They check complete exact parents and portable replay, CPU/GPU input admission,
+  right-continuous controls, full typed snapshots and unsupported compositions.
+  The [combined interface check](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/execution-02/inputs.json)
+  hit its **540-second wall limit at 12:00:29 UTC**, during offline placement;
+  the [failure is preserved](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/execution-02/failure.json).
+  Both fresh-process **2-ns run / 1-ns restart** comparisons produced exact
+  artifacts before the timeout: **44 / 49 state fields, 170 / 174 layout arrays
+  and 106 / 113 observation arrays**. Their complete saved suffixes and actual
+  restored steps match, but the interrupted process has **no finalized JUnit
+  report** and adds no finalized pass credit. Peak tree RSS was **924 MiB** and
+  minimum host reserve **14.75 GiB**, within the unchanged **1-GiB / 8-GiB**
+  guards. Root underestimated the aggregate runtime. The
+  [prepared continuation](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/continuation-request.json)
+  separates the two restart cases, offline placement and fourteen adjacent
+  checks into individually bounded processes using this exact frozen source.
+  The **12:33 UTC user-triggered check** found the
+  [split suite passed](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/suite-03/result.json)
+  at **12:29:55 UTC**, in **11m 56s**. The
+  [independent review](/mnt/workspaces/Cells/joint-water-profile-integration-20261029-01/suite-03/root-review-01/REVIEW.json)
+  accepts **29 distinct checks: 12 retained plus 17 new**, comprising fifteen
+  public checks and fourteen adjacent regressions. Separate fresh processes
+  recover all **44 / 49 state fields, 170 / 174 layout arrays and 107 / 114
+  observation arrays including time** exactly over the **1-ns to 2-ns** suffix.
+  All sixteen world IDs, seeds and definitions remain identical across offline
+  **1 / 4 / 16-GPU** plans; no GPU execution or utilization was tested.
+  All **1,723 frozen sources** and retained import-only correspondence verify;
+  later live phase-handoff additions remain outside this suite's scope.
+  All **3,250 resource samples**, including retained contracts, meet the original
+  guards; peak process-tree RSS was **0.894 GiB**, minimum host reserve
+  **14.84 GiB**, with **480-second** new-process limits. The earlier timeout
+  remains uncredited. No automatic polling, retry or follow-up is queued.
+  These short histories test software interfaces, not physical recovery.
+  The separate complete-water/repair INIT-to-SIM preparation is described above;
+  ordinary branching, cuts and assembly remain refused for these models.
+
+- **Scheduled extracellular opening/resealing now passes scoped CPU checks.**
+  [`resolved_extracellular_barriers@1`](docs/TISSUE_GEOMETRY.md#schedule-extracellular-barrier-opening)
+  applies one native ECM coefficient pulse to the prepared sealed passive tissue,
+  with actual stage-time fields and all twelve physical histories plus a saved
+  phase clock. Fixed ionic modulators remain explicit; closing a barrier retains
+  earlier transfers and dissipated energy. A [complete example](examples/extracellular_barriers/scheduled.json)
+  uses the ordinary CLI. The [closeout](/mnt/workspaces/Cells/environment-barrier-interventions-20261029-01/closeout.json)
+  binds **184 distinct passes**: 62 model/ownership/numerical checks, 56 independent
+  reference checks, one real fresh-process restart and 65 static-barrier regressions.
+  There are **100 full initial/manufactured stage comparisons**, maximum
+  **0.00035298** error/budget, and two **10-us** opening/resealing histories with
+  all thirteen states at twelve observations and complete accepted-grid arrays.
+  Halving the step from **62.5 to 31.25 ns** reduces error/budget from
+  **0.00389683 to 0.000239001** and **0.00520255 to 0.000319177**. Maximum independent
+  trajectory energy residual is **9.44e-18 pJ** against a **1e-9-pJ** budget.
+  The separate **2-ns CLI** check resumes one real step and preserves all
+  **13 state / 66 layout / 37 observation arrays** exactly; it is execution
+  evidence, not a physical recovery timescale. All **1,721 frozen sources** and
+  **1,106 finite NPZ arrays** authenticate. The final round finished
+  **11:38:17 UTC**, in **114 seconds**, at **647 MiB** peak tree RSS with
+  **17.64 GiB** minimum reserve under **1-GiB / 8-GiB** guards.
+  Review tightened accounting support so a zero-amplitude event cannot admit
+  impossible transfers on a permanently closed face. The earlier GPU-admission
+  test mistake and independent SciPy scalar-time adapter failure remain linked;
+  their fixes changed no equations or numerical tolerances. Preliminary passes
+  are not counted again. These are manufactured CPU checks of prescribed
+  diffusivity: broader coupled owners, native full-loop correspondence,
+  structural barrier energetics, compiled/GPU execution and biology remain open.
+
 - **Static extracellular barriers now prepare ordinary passive tissue inputs.**
   The [barrier workflow](docs/TISSUE_GEOMETRY.md#apply-static-extracellular-barriers)
   binds BETSE's free/adherens/tight coefficient precedence and explicit ionic
@@ -47,11 +291,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **400 MiB tree RSS**, with **18.23 GiB** minimum host reserve under
   1-GiB / 8-GiB guards. These are static preparation and initial-stage checks,
   not evolved trajectories, biological cases or GPU qualification. Native
-  collocated transport, the separate Bernoulli face law, dynamic barriers,
-  bath events, flow and moving geometry remain separate integration work.
+  collocated transport, the separate Bernoulli face law, broader coupled barrier
+  controls, bath events, flow and moving geometry remain separate integration work.
 
 - **Real intermediate batch recovery passes host admission for three coupled
-  cut families; compiled qualification is prepared and held.**
+  cut families; the transporter compiled run and fresh restart have passed.**
   The [shared qualification harness](validation/execution/coupled_excision_batch_restart.py)
   and [tests](tests/integration/test_coupled_excision_batch_restart.py) extend
   transport (**42 fields**), mitochondria (**45**) and water (**43**) from
@@ -78,7 +322,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   They run sequentially under **1-GiB RSS / 8-GiB host reserve / 600-second**
   guards, with durable logs and terminal result/failure artifacts. The first
   transport pass is retained separately, not credited to the updated package.
-  Compiled baseline and restart phases remain **unlaunched**, with 4-GiB
+  At that stage, compiled baseline and restart phases were **unlaunched**, with 4-GiB
   PSS/individual-RSS and 8-GiB reserve guards prepared. No new trajectory,
   GPU or recovery pass is claimed; no polling, retry or subsequent launch is queued.
   The **09:54 UTC user-triggered check** found
@@ -91,7 +335,41 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   their six harness/test copies. Peak RSS was **272 MiB**, with **18.12 GiB**
   minimum host reserve. These are **three host admissions**, with zero new
   compiled restart or independent biological passes. The water case retains
-  its qualified 53-law runtime. Compiled work remains held behind regulated06.
+  its qualified 53-law runtime.
+  With regulated06 closed, the [transporter batch qualification launched](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-transport-01/launch.json)
+  at **11:41:28 UTC**, PID **1492835**, CPU2, with **20.81 GiB available**.
+  It runs the **42-field** baseline and a fresh-process restore in sequence,
+  preserving **1,561 frozen sources** and the original runtime. Both worlds
+  repeat one physical case; the **101.3-us** checkpoint leaves **1,251 steps**
+  through 150 us. The two planned checks do not add biological cases.
+  The **12:06 UTC user-triggered check** found the
+  [two compiled checks passed](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-transport-01/result.json)
+  at **12:06:02 UTC**, in **24m 34s**. The retained host admission is separate.
+  Both baseline and fresh-process continuation retain the original frozen
+  runtime; the completed receipt reports an exact state/layout/clock/observation
+  suffix. The [independent closeout review](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-transport-01/root-review-01/REVIEW.json)
+  found no blocker: all **42 state fields, 160 layout arrays and 93 observation
+  arrays** match exactly through the actual **1,251 remaining steps**. Independent
+  saved-target error/budget is **7.39146e-5** for the baseline and **4.63255e-6**
+  for the restored suffix. All **1,559 original files** remain unchanged, with
+  only two qualification files added, and all **5,103 resource samples** satisfy
+  the guards. Peak charged PSS
+  was **3.47 GiB**, peak individual high-water RSS **3.59 GiB**, with **14.74 GiB**
+  minimum host reserve, within the unchanged **4-GiB PSS / individual RSS,
+  8-GiB reserve / 2,700-second per-phase** guards.
+  The [mitochondrial batch/restart qualification launched detached](/mnt/workspaces/Cells/coupled-excision-batch-restart-20261029-01/compiled-mitochondria-01/launch.json)
+  at **12:53:34 UTC**, CPU2, PID **1516708**, with **18.79 GiB** available.
+  It uses the unchanged runner and **1,568 frozen files** (1,566 original plus
+  two qualification files), preserving the original runtime. The **45-field**
+  baseline and fresh-process restore run sequentially; the **100-us** checkpoint
+  leaves **1,286 accepted steps** and nine observations. Two compiled checks
+  are pending, separate from its retained host admission. ETA **20–45 minutes**,
+  approximately **13:14–13:39 UTC**, with the same **4-GiB charged PSS /
+  individual RSS, 8-GiB reserve and 2,700-second per-process** guards.
+  The launch receipt links durable logs and result/failure artifacts. Water
+  batch recovery remains unlaunched; no automatic polling, retry or subsequent
+  compiled job is queued. These repeated execution copies add no independent
+  biological cases or GPU qualification.
 
 - **Scalar windows now reuse one compiled integration shape, including the tail.**
   The [applied repair](/mnt/workspaces/Cells/scalar-tail-reuse-development-20261029-01/integration.json)
@@ -1025,16 +1303,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   checks will be split into bounded processes, with physical inputs, tolerances
   and frozen evidence unchanged. Key Dev also owns the new water/repair component
   preflight; Root owns public integration and the regulated compiled job.
-  Key Dev's [fuel continuation launched detached](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05-launch/launch.json)
-  at **10:53:36 UTC**, supervisor PID **1478525**, CPU7. It retains the **26
-  finalized calcium passes** and runs **36 unfinished checks**, with fuel
-  contracts split into six smaller groups. The original coarse accuracy-failure
-  arrays are captured separately and do not add pass credit. Nine scientific
-  files and 164 captured dependencies retain their original identities.
-  Guards remain **1-GiB child-tree RSS / 8-GiB host reserve / 480 seconds per
-  process**. Estimated runtime is **35–60 minutes**, completing around
-  **11:28–11:53 UTC**. Durable logs and result/failure artifacts are linked in
-  the launch receipt; no automatic polling or follow-up is queued.
+  The [fuel continuation](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05/result.json)
+  finished at **11:41:14 UTC**, with **62 finalized checks: 26 retained calcium
+  passes and 36 new passes**, zero test failures, errors or skips. Its overall
+  status remains **failed**: Root added two water-family entries to the live
+  composition dispatcher during execution, triggering the final live-source
+  guard. The [independent review](/mnt/workspaces/Cells/owned-calcium-phase-development-20261029-05/root-review-01/REVIEW.json)
+  retains those numerical checks under the unchanged **301-file frozen runtime**;
+  it does not rewrite the failed run or qualify unrelated live-source changes.
+  The review authenticates **884 artifacts**, both **186-file source inventories**
+  and all six complete-state transient comparisons. Worst fine-step full-state
+  error/budget is **0.01518**; SIM transfer errors shrink approximately **16-fold**.
+  The original **31.25-ns accuracy failure, 4.130216 times budget**, remains
+  separate and contributes no passes. Tests and references used live but
+  hash-guarded sources; future runners must freeze those too and distinguish
+  actual executing-source integrity from unrelated shared development.
+  No numerical rerun is needed for this dispatcher-only drift. Original
+  **1-GiB / 8-GiB / 480-second per-process** guards remain part of the record.
+  This closes the declared manufactured transient panel, not physiological
+  equilibration, native whole-loop correspondence or compiled/GPU qualification.
 
 - **Recorded native geometry now prepares portable passive tissue inputs.**
   The [geometry workflow](docs/TISSUE_GEOMETRY.md) exposes
@@ -1143,8 +1430,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Slow relaxation, native SIM ordering, regulated `@2`, regulated cutting and
   GPU execution remain separate scopes. No `@1` public job remains active.
 
-- **Channel/junction regulation passes scoped public CPU qualification;
-  cut execution is complete, with final recovery review pending.**
+- **Channel/junction regulation and its cut/restart composition pass scoped
+  public CPU qualification.**
   Key Dev's [`resolved_calcium_energy_regulated@2` handoff](agent-work/cells-worker-01/workfiles/INTEGRATED_NETWORK_REGULATION_V2_HANDOFF.md)
   extends live Na/K regulation to existing shared-channel and junction
   availability consumers. It retains all 38 parent physical fields, native
@@ -1384,8 +1671,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   reporting **all eight checks passed**, completed **10:54:27 UTC**. This counts
   two retained checks and six newly executed compiled checks; the final batch
   restore process completed in **666 seconds**. The job is no longer active.
-  Its final recovery evidence and combined receipt still await closeout review;
-  no additional audit, retry or successor job was launched during this check.
+  No additional audit, retry or successor job was launched during that check.
+  On the next user instruction, the [final closeout review](/mnt/workspaces/Cells/regulated-v2-cut-qualification-20261029-01/closeout-06-01/REVIEW.json)
+  accepted all **eight distinct checks**, keeping six host admissions separate.
+  World 79 resumes **102.34375–150 us** for **2,444 steps**, matching all **38
+  state fields, 94 observation arrays and 164 layout arrays** byte-for-byte
+  against scalar and batch baselines. World 3 remains terminal with zero steps.
+  The restored independent-target error ratio is **5.10e-6**; all 2,280 final-phase
+  resource samples pass. This closes the declared frozen CPU suite; broader
+  BETSE, live-source, GPU and biological claims remain separate.
 
 - **Passive tissue cut/continuation passes scoped CPU qualification.**
   [`resolved_tissue_excision@1`](docs/TISSUE_RETURN_CURRENT.md#cell-removal-and-absolute-time-continuation)
@@ -1579,8 +1873,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   changes and the public software checks are tracked separately. This is
   bounded NumPy CPU qualification, without a convergence-order, long-term
   recovery, compiled/GPU, wet-lab or whole-BETSE-equivalence claim. Neither
-  water/repair qualification remains active; further compiled jobs stay held
-  behind the regulated qualification and the next user instruction.
+  water/repair qualification remains active; their compiled/GPU checks remain
+  separate and unlaunched. Scheduled membrane-profile versions of both parents
+  preserve all **43 / 48 physical fields** and add a phase clock; their distinct
+  component and public-interface qualification is recorded near the top of this
+  file. The two explicit full-catalog static-profile admissions are added.
 
 - **Reversible configured transport passes scoped CPU qualification.**
   [`resolved_calcium_energy_transport@1`](docs/TISSUE_RETURN_CURRENT.md#configured-transport-with-owned-calcium-and-finite-fuel)

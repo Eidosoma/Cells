@@ -128,7 +128,68 @@ finite exterior owners and a sealed perimeter. Only face diffusivities change;
 initial state, inventories, charges, membrane/junction parameters and schedules
 remain intact. Full inputs and derived coefficients are retained for exact replay.
 
+For complete channel/calcium/fuel/water owners, use
+`cells.composed_environment_barrier_preparation_request@1` with the same fields
+and the complete parent under `definition`. This explicit adapter accepts
+`resolved_tissue@12`, `resolved_calcium@11`, `resolved_calcium_energy@5`,
+`resolved_calcium_energy_water@2` and `resolved_calcium_energy_water_repair@2`.
+All five retain the full 56-law catalog. A passive parameter view binds geometry
+and coefficients only; the complete parent supplies the field and transport
+equations. Both that parameter view and the complete parent must pass their
+existing admission checks; a parent that needs active processes to make the
+passive view solvable is not admitted by this adapter. Preparation preserves
+all initial gates, calcium stores, fuel,
+water, damage, accounting references and control schedules. Replay recomputes
+the full recipe and rejects modified complete state or coefficients.
+
+For water models, the grid volume must match each **initial** exterior volume;
+face areas and distances remain fixed as the model's volumes evolve. This is
+not moving-mesh transport. The adapter accepts ordinary initial definitions;
+scheduled profiles, inherited epochs, cuts and assembly wrappers require their
+own contracts. Manufactured complete-owner inputs are available in
+[`environment_barrier_composition_fixtures.py`](../validation/transport/environment_barrier_composition_fixtures.py).
+
 The prepared tissue uses Cells' existing logmean transport, charge/current field
 and energy accounting. Native collocated transport, the separate Bernoulli face
-operator, bath events, dynamic barriers and fluid flow require further integration.
+operator, bath events and fluid flow require further integration.
 Qualification results and remaining work are in [Progress](../PROGRESS.md).
+
+## Schedule extracellular barrier opening
+
+`resolved_extracellular_barriers@1` adds one opening/resealing event to the sealed
+passive tissue above. The [complete example](../examples/extracellular_barriers/scheduled.json)
+includes its original static preparation and the ordered site IDs to affect:
+
+```bash
+python -m cells validate examples/extracellular_barriers/scheduled.json
+python -m cells run examples/extracellular_barriers/scheduled.json \
+  --output /mnt/workspaces/Cells/scheduled-extracellular-barriers
+```
+
+At each integration stage, BETSE's native `ecmJ` logistic pulse blends the selected
+site coefficients between their prepared barrier values and free diffusion.
+The amplitude lies in `[0, 1]`. Repeated site IDs retain native assignment
+semantics: they do not multiply the opening. Fixed ionic modulators apply after
+this update, followed by harmonic conversion to physical faces. A zero ionic
+modulator therefore remains impermeable throughout the event.
+
+The `SIM` phase applies the pulse; `INIT` holds the prepared barriers fixed.
+The physical state carries a phase clock alongside all twelve original material
+and energy fields, so ordinary snapshots resume the same event. Closing a
+barrier preserves all earlier transfers and dissipated energy. Observation
+outputs include site and face diffusivities, the pulse and native sodium weight;
+that weight is diagnostic and does not alter physical volumes or inventories.
+
+The event declares `on_s`, `off_s` and positive `change_s`; integration steps must
+be at most `change_s / 8`. The on/off times are the native smooth transition
+centres, not discontinuous switches. This version accepts one event or `null`,
+explicit targets and the six native species names. Its physical model must match
+the embedded static preparation; experiment clocks and ordinary held controls
+may differ. Phase transfer, cutting and assembly composition need their own
+integration.
+
+This is a prescribed diffusivity change using Cells' logmean transport and
+existing charge/current closure. There is no added structural barrier energy
+store or ATP cost, and it does not reproduce BETSE's entire solver ordering.
+Current numerical and execution qualification is recorded in
+[Progress](../PROGRESS.md).

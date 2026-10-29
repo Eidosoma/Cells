@@ -15,7 +15,9 @@ bindings = native.bindings
 
 
 @dataclass(frozen=True)
-class SurfaceCalciumEnergyWaterProfileInterventionModel(parent.SurfaceCalciumEnergyWaterHCNExtraModel):
+class SurfaceCalciumEnergyWaterProfileInterventionModel(
+    parent.SurfaceCalciumEnergyWaterHCNExtraModel
+):
     profile_preparation: dict
     interventions: tuple
     phase: str
@@ -33,7 +35,10 @@ def owner_spec(spec):
     return replace(
         spec,
         model=parent.SurfaceCalciumEnergyWaterHCNExtraModel(
-            **{f.name: getattr(spec.model, f.name) for f in fields(parent.SurfaceCalciumEnergyWaterHCNExtraModel)}
+            **{
+                f.name: getattr(spec.model, f.name)
+                for f in fields(parent.SurfaceCalciumEnergyWaterHCNExtraModel)
+            }
         ),
         execution=ParentExecution(
             **{f.name: getattr(spec.execution, f.name) for f in fields(ParentExecution)}
@@ -46,7 +51,9 @@ def to_dict(spec):
 
 
 def parse(data):
-    ordinary, extra, events, ec, tc = native.parse_owner(data, MODEL_ID, PARENT_MODEL_ID, parent.parse)
+    ordinary, extra, events, ec, tc = native.parse_owner(
+        data, MODEL_ID, PARENT_MODEL_ID, parent.parse
+    )
     spec = SimulationSpec(
         SurfaceCalciumEnergyWaterProfileInterventionModel(
             **vars(ordinary.model),
@@ -57,7 +64,9 @@ def parse(data):
             reset_policy=RESET_POLICY,
         ),
         ordinary.experiment,
-        Execution(**vars(ordinary.execution), intervention_capacity=ec, intervention_target_capacity=tc),
+        Execution(
+            **vars(ordinary.execution), intervention_capacity=ec, intervention_target_capacity=tc
+        ),
     )
     try:
         native.bindings(spec.model, spec.execution)

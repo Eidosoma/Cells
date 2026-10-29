@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from cells.core import active_membrane_profile_phase_handoff as active_bridge
+from cells.core import joint_water_profile_phase_handoff as joint_water_bridge
 from cells.core import membrane_profile_phase_handoff as bridge
 from cells.core import owned_calcium_profile_phase_handoff as owned_bridge
 from cells.core import surface_active_profile_epoch_spec as active_epoch
@@ -50,7 +51,7 @@ def replay(provenance):
 
 
 def _adapter(kind, *, request=False):
-    for candidate in (bridge, active_bridge, owned_bridge):
+    for candidate in (bridge, active_bridge, owned_bridge, joint_water_bridge):
         expected = candidate.REQUEST_KIND if request else candidate.KIND
         if kind == expected:
             return candidate
@@ -63,6 +64,9 @@ def _source_adapter(spec):
         return bridge, epoch.POLICIES
     if type(spec.model) is active_scheduled.SurfaceActiveProfileInterventionModel:
         return active_bridge, active_epoch.POLICIES
+    if any(type(spec.model) is candidate.model_type for candidate in joint_water_bridge.OWNERS):
+        contract = joint_water_bridge.owner(spec)
+        return joint_water_bridge, contract.epoch.POLICIES
     contract = owned_bridge.owner(spec)
     return owned_bridge, contract.epoch.POLICIES
 

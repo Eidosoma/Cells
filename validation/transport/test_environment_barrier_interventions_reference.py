@@ -289,6 +289,20 @@ def test_stage_clock_and_left_held_membrane_control_have_distinct_roles():
     assert right[-1] == held[-1] == 1.0
 
 
+def test_numpy_stage_time_matches_python_float_without_relaxing_invalid_times():
+    context = oracle.bind(raw_input())
+    state = oracle.initial(context)
+    state[-1] = 4e-6
+    expected = oracle.evaluate(context, state, 4e-6)
+    actual = oracle.evaluate(context, state, np.float64(4e-6))
+    np.testing.assert_array_equal(actual[0], expected[0])
+    np.testing.assert_array_equal(actual[1], expected[1])
+    assert actual[2] == expected[2]
+    for time in (np.float64("nan"), np.float64("inf"), np.float64(-1), np.bool_(False), False):
+        with pytest.raises(ValueError):
+            oracle.evaluate(context, state, time)
+
+
 def test_new_reference_and_fixture_have_no_direct_production_imports():
     for filename in (
         "environment_barrier_interventions_reference.py",

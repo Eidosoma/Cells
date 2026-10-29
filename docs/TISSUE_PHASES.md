@@ -11,6 +11,8 @@ place, so transfer and energy balances cover INIT and SIM together.
 | `resolved_active_membrane_profiles@1` | `resolved_active_membrane_profile_epoch@1` | All 19 active arrays, including channel/junction gates, channel transfers, pump cycles, heat and maintained-fuel work |
 | `resolved_calcium_membrane_profiles@1` | `resolved_calcium_membrane_profile_epoch@1` | All 34 calcium/ER arrays, including free/bound inventories, gates, reactions and pump/transport history |
 | `resolved_calcium_energy_membrane_profiles@1` | `resolved_calcium_energy_membrane_profile_epoch@1` | All 38 finite-fuel arrays, including the actual ATP/ADP/phosphate pools and regeneration/work history |
+| `resolved_calcium_energy_water_membrane_profiles@1` | `resolved_calcium_energy_water_membrane_profile_epoch@1` | All 43 physical arrays, including current water volumes, finite fuel and original water/work accounting |
+| `resolved_calcium_energy_water_repair_membrane_profiles@1` | `resolved_calcium_energy_water_repair_membrane_profile_epoch@1` | All 48 physical arrays, including damage, injury transfers and repair heat history |
 
 Each family adds a phase clock. The active and finite-fuel transitions retain
 their complete 56-law channel catalog and physical owners. Each transition has
@@ -92,6 +94,14 @@ actually present at the accepted INIT checkpoint. Its initial turnover check
 uses those carried pools. A new phase does not replenish fuel or reset spent
 work. Each owner's complete control families may declare explicit SIM schedules.
 
+The water and water/repair transitions carry the actual evolved volumes as well
+as calcium and fuel pools. Their timestep admission checks pump turnover using
+those carried pools at the current volumes. A new phase does not refill stores,
+restore the original volumes, remove damage or erase repair history. Their public
+interface and independent component qualifications are tracked separately in
+[Progress](../PROGRESS.md); support in the interface is not a long-term recovery
+or GPU qualification.
+
 The new SIM definition explicitly declares its controls, membrane events,
 horizon and timestep. Its physical model, static profiles/defaults, owner order
 and physical capacities must match INIT. No material or ledger is rebased.
@@ -128,8 +138,9 @@ an INIT state into this epoch or silently restart a SIM clock.
 The active transition supports the directly prepared `resolved_tissue@12`
 parent with maintained fuel. The calcium and finite-fuel transitions support
 exactly the complete `resolved_calcium@6` and `resolved_calcium_energy@5` owners.
-Changing static geometry/defaults, owner remaps, cuts, pressure/ECM and water,
-configured-transport, mitochondrial or live-regulation phase transitions require
+Water and water/repair transitions retain the complete version-two parents and
+their 56-law catalog. Changing static geometry/defaults, owner remaps, cuts,
+pressure/ECM events, configured-transport, mitochondrial or live-regulation transitions require
 separate contracts. The native
 phase lifecycle motivates the reset policy, while Cells evaluates membrane
 pulses at RK stages; full native solver-loop equivalence remains separate.

@@ -3263,3 +3263,225 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   35-60 minutes (11:28-11:53 UTC). Launch receipt sent directly to Chief.
   Return control without automatic polling, follow-up audits or other-job
   queries; the user can request the next status check.
+
+## Scheduled full56 joint water/repair profiles, 2026-10-29
+
+- Chief relayed the user's next "go": add scheduled native membrane background
+  D to qualified water@2 and repair@2. New explicit model identities are
+  `resolved_calcium_energy_water_membrane_profiles@1` and
+  `resolved_calcium_energy_water_repair_membrane_profiles@1`. New owned schema,
+  binding and runtime paths were sent before implementation. Root owns shared
+  dispatch/PROGRESS and its extracellular barrier files; none are edited here.
+- The adapters retain every 43/48-field parent array, exact full56 layout and
+  all actual chemical, ATP/ADP/Pi, water and prescribed-repair owners, appending
+  only phase_clock_s (44/49 fields). Native timing/default/duplicate/ion-flag
+  semantics reuse the qualified binding. A distinct sealed artifact kind names
+  the complete joint water owner; physical declarations must match the full
+  composed preparation. Root added the two explicit composed SCHEMAS entries.
+- Physical readouts use current native background P and actual moving volumes,
+  pools and damage. A temporary closed-background integral marker supplies only
+  the inherited fixed-route validity view; every conservation/observer history
+  and original anchor remains actual. Combined background/chemical/injury loss
+  is bounded at minimum allowed volumes, retaining parent water/fuel/damage and
+  native ramp step bounds. No new constitutive equation or INIT-to-SIM bridge.
+- New independent reference/tests/protocol and isolated five-file dispatch patch
+  are drafted under `joint_water_profile_interventions`. Planned evidence is
+  53 component checks: padded initial/manufactured stages, typed complete-owner
+  preservation, current-volume three-pump/particle ownership, exact inactive
+  reductions, closed-route purity/refusals, explicit checkpoint clocks and
+  four compact all-observation transient two-step comparisons with NPZ. Padding
+  claims are stage-only. Stage energy budget is 1e-10 pJ/s; global independent
+  energy budget stays 1e-9 pJ. No native solver-loop/order/physiological claim.
+- Initial two-owner smoke is attached and bounded on CPU4 at
+  `/mnt/workspaces/Cells/joint-water-profiles-development-20261029-01`.
+  Single-thread, <=1 GiB guarded RSS, >=8 GiB reserve, JIT disabled and no GPU.
+  The active CPU7 fuel continuation and all frozen evidence remain untouched
+  and unqueried. Numerical qualification is pending this smoke result.
+- [Profile Development01](/mnt/workspaces/Cells/joint-water-profiles-development-20261029-01/result.json)
+  passed both initial complete-owner smoke cases in 43.47 s.
+  [Profile Development02](/mnt/workspaces/Cells/joint-water-profiles-development-20261029-02/result.json)
+  passed the 47 remaining contracts in 269.81 s, without repeating those two.
+  Combined scope is 49 unique finalized passes and 100 retained independent
+  full-field/RHS stage comparisons. Captured source/workspace hashes stayed
+  unchanged. Peak guarded RSS was 253,104,128 B; host reserve >=19,036,753,920 B.
+- Tightened the unused default trajectory selectors to complete parameter IDs:
+  a bare "water" also matches the shared test module name. Neither completed
+  host-only command used those default groups. The completion driver verifies
+  the exact selector-only text difference against both immutable captures;
+  every scientific source remains unchanged. Collection confirms exactly four
+  disjoint transient cases. No completed numerical check is rerun.
+- Chief reports fuel05 completed all 62 tests without failures, while its raw
+  status flags Root's added two live composed-SCHEMAS entries. Root owns the
+  independent execution/source correspondence review; this worker does not
+  query, rerun or rewrite that evidence. Chief also accepted the prior full56
+  46-check joint water/repair handoff. Its frozen evidence remains unchanged.
+- Following Chief's source-integrity direction, the new completion driver
+  snapshots live shared routes separately, imports all product code through
+  explicit isolated workspace paths and guards the complete executed workspace
+  plus actual ROOT validation/test/driver sources. Runtime overlay hashes must
+  match the capture before execution. Live shared-source drift is reported
+  separately and cannot mask an executed-source change. The finalizer follows
+  these exact source boundaries; no existing/frozen runner was rewritten.
+- Four remaining profile transients launched detached at 11:47:12 UTC,
+  supervisor PID 1494890:
+  [launch receipt](/mnt/workspaces/Cells/joint-water-profiles-development-20261029-03-launch/launch.json).
+  The new run verifies and retains all 49 finalized contracts and runs only
+  SIM/close-reopen for each complete water/repair owner. Expected total is 53
+  unique checks. Four compact full 44/49-field histories at both timesteps,
+  independent arrays, every declared observation/control boundary, original
+  ledgers and independent Decimal energy residuals are retained on pass/failure.
+- CPU4, one thread, <=1 GiB guarded child-tree RSS, >=8 GiB host reserve,
+  480 s per bounded child, JIT disabled and no GPU. All five live shared route
+  files were copied/hash-recorded before launch. Durable request/input/guard/
+  JUnit/NPZ/result/failure/supervisor artifacts live under Development03 and
+  its launch directory. ETA 15-30 minutes (12:02-12:17 UTC). Chief receives
+  this boundary receipt; return control with no automatic polling/follow-up.
+
+## Explicit joint water/repair INIT-to-SIM epochs, 2026-10-29
+
+- Chief assigned the next disjoint feature while the four profile transients
+  remain detached: exact ordinary scheduled water@2/repair@2 INIT checkpoints
+  to new explicit SIM epochs. Epoch model IDs are
+  `resolved_calcium_energy_water_membrane_profile_epoch@1` and
+  `resolved_calcium_energy_water_repair_membrane_profile_epoch@1`. New files
+  are `joint_water_profile_phase_handoff` and separate water/repair
+  `*_profile_epoch_spec`/`*_profile_epoch` pairs, plus fixtures/reference/tests.
+  Identities/paths were sent early. No shared or ordinary profile source edits.
+- The bridge carries all 43/48 physical arrays, original physical/accounting
+  layout, actual current volumes/pools, water transfer/work and repair ledgers;
+  only the explicit phase clock resets. Exact source types exclude ordinary
+  physical parents and existing epochs. Static profiles/defaults and all
+  physical capacities stay identical. A sealed source archives accepted grid,
+  schedule position, complete typed arrays and both original clocks.
+- Epoch admission checks actual carried ATP/ADP/Pi and all SIM pulse/control
+  stages at the carried current volumes against the unchanged 0.05 gross
+  turnover limit. Parent minimum-volume water/chemical/lesion bounds remain.
+  No silent branch, remap, cut/assembly extension, long settling or new repair
+  energetics. New request/preparation kinds distinguish this complete owner.
+- Bounded contract fixtures evolve 0.25 us INIT before handoff. Tests cover
+  exact nonzero original ledgers, full56 independent carried-stage fields/RHS,
+  typed portable/interior checkpoints, refused clock/volume/pool/history/anchor
+  edits, independent current-volume gross turnover and bounded post-handoff
+  steps/actual observers. Long refinement tests are explicitly excluded from
+  this runner until the current parent qualification closes; that job is not
+  queried. The frozen parent workspace is the completed 49-contract capture.
+- CPU7 was released by fuel05 per Chief's completion report; this worker uses
+  it for the new bounded contracts, leaving CPU4 untouched. Chief accepted
+  fuel05 via its independent review, SHA256
+  `76c4a34ff21f3b6f03e14f2bebe57d038256c431ec1d3fb057db7f64dfb91228`.
+  The raw failed-source-drift status and coarse accuracy failure stay frozen;
+  no fuel rerun or evidence rewrite.
+- Following Chief's further source direction, the new runner freezes runtime,
+  tests, references, resource helpers and configuration fixtures, records exact
+  executing import paths and guards every immutable executed file. Live shared
+  routes are separately snapshotted/drift-recorded. Closure includes relative
+  imports and explicitly pins `validation/betse/contact.py`.
+- Epoch Development01 stopped before tests: the initial bundle missed the
+  guard's relative GPU-counter support import (no GPU workload). Development02
+  then exposed a missing configuration fixture before any physical simulation.
+  Both failed receipts are preserved. The bundle now includes the complete
+  relative-import closure and configuration data with hashes; no physical
+  equation changed. Development03 is the attached bounded two-owner smoke:
+  `/mnt/workspaces/Cells/joint-water-phase-development-20261029-03`.
+- [Epoch Development03](/mnt/workspaces/Cells/joint-water-phase-development-20261029-03/result.json)
+  passed the two complete evolved-owner preservation contracts in 46.37 s.
+  [Epoch Development04](/mnt/workspaces/Cells/joint-water-phase-development-20261029-04/result.json)
+  passed two independent carried-stage and two actual-volume fuel-turnover
+  contracts in 88.63 s. This includes 16 complete-field/RHS comparisons against
+  the independent joint references at the carried state and all SIM probes,
+  with the stricter 1e-10 pJ/s energy-rate budget. Every physical state/layout
+  array is exact at handoff; only phase_clock_s resets. Both actual carried
+  pool limits agree with independent route-by-route gross rates and refuse
+  excessive steps.
+- The six finalized checks execute 310 frozen product files and 240 frozen
+  test/reference/configuration files. Their manifests match exactly across
+  both captures. Peak guarded RSS was 264,912,896 B; host reserve was at least
+  16,099,336,192 B. The continuation clones that complete immutable seed,
+  verifies every seed artifact and imports tests/references from the clone;
+  live shared files remain correspondence metadata only. A read-only retention
+  preflight verified all six unique JUnits and both full source manifests.
+- Remaining 65 contracts launched detached at 12:12:10 UTC, supervisor
+  PID 1503080:
+  [launch receipt](/mnt/workspaces/Cells/joint-water-phase-development-20261029-05-launch/launch.json).
+  Expected combined coverage is 71 unique contracts, retaining all six passes
+  and running no old finalized check again. Each group is bounded by CPU7,
+  one thread, <=1 GiB child-tree RSS, >=8 GiB reserve and 480 s; JIT/GPU disabled.
+  ETA 15-30 minutes (12:27-12:42 UTC). Long epoch refinements are explicitly
+  excluded and remain held until the parent profile qualification closes.
+- New phase adapter/schema/runtime APIs, the isolated four-route dispatch patch
+  and hash metadata are available under `joint_water_profile_phase_handoff`.
+  Chief receives the six-check boundary and detached contract launch receipt.
+  Original failures, all frozen evidence and the older CPU4 job are untouched;
+  no detached-job polling or automatic follow-up is performed after launch.
+
+## Full joint epoch transient preparation and pilot, 2026-10-29
+
+- Chief reported ordinary-profile Development03 passed all 53 checks and then
+  independently accepted its 305-file runtime:
+  `/mnt/workspaces/Cells/joint-water-profiles-development-20261029-03/root-review-01/REVIEW.json`,
+  SHA256 `ef1385547c76fcae7f06c64f9494b014bf75d2b1422d205f7429a17f3e9d3a2b`.
+  Canonical compact definitions from those four passed trajectory artifacts
+  supply the new inputs; no static profile, physical owner or coefficient is
+  reconstructed from a reduced model.
+- The 71 epoch contracts were subsequently reported complete and independently
+  accepted, with 64 full independent stage comparisons. Review:
+  `/mnt/workspaces/Cells/joint-water-phase-development-20261029-05/root-review-01/REVIEW.json`,
+  SHA256 `1a2aa05bc5503930de1af0d465c1195ef65c4368ccfc5bd5eacdbf1a0ef2a6b1`.
+  The accepted receipt is used only as an immutable launch input; no numerical
+  contract rerun or raw-evidence rewrite. Root owns public interfaces/restarts,
+  shared docs and PROGRESS. No other active job was queried.
+- New full-transient files are separate from every active/frozen contract input:
+  `joint_water_epoch_transient_fixtures/reference`,
+  `tests/owned_joint_water_epoch_transient_helpers.py`,
+  `tests/unit/test_joint_water_epoch_transients.py`, and prepare/run workfiles.
+  Two INIT and four carried SIM comparisons cover 4 us per phase, both
+  31.25/15.625 ns steps, complete 44/49 states and all held/observation clocks.
+  INIT has 25 samples; each SIM has 30. Physical capacities are compact; fixed
+  gate/store/native slots remain. Padded carried-stage coverage stays with the
+  accepted 71 contracts, separate from the trajectory claim.
+- Independent SIM starts at the independent INIT endpoint. Each production
+  SIM starts at its own dt's complete INIT checkpoint, resets only phase clock
+  and retains original references and all actual water/fuel/repair history.
+  DOP853 tolerances/max step and production state/charge/energy budgets are
+  unchanged. SIM additionally requires resolved background-transfer increment
+  reduction, without claiming convergence order or endpoint-only accuracy.
+  Independent Decimal energy, water, adenylate/phosphorus and damage checks
+  supplement all original full-grid runtime ledgers. Complete accepted-grid
+  state, observed arrays/layouts and source checkpoints are retained.
+- Frozen preparation01 (no numerical runs) has manifest
+  `f129b4c42c803c15e6f0f73f97f4a8fc89e55a849b39338a3ac37418aef3d101`.
+  Pilot-capable preparation02 is
+  [manifest](/mnt/workspaces/Cells/joint-water-epoch-refinement-preparation-20261029-02/manifest.json),
+  SHA256 `085d2a2ee9b92299078064333baddb3c577bdbb4e53b21d00313a7c090973ac9`.
+  Both preserve 578 files, including the same 310 executed runtime files and
+  240 prior frozen test/reference/configuration files. All six new comparisons
+  collect successfully without running science. Collection peak RSS was
+  228,319,232 B with >=20,772,372,480 B host reserve. The launch gate verifies
+  the exact accepted review SHA, 71 unique finalized checks and identical
+  executed source manifests, then retains all original JUnits.
+- Chief authorized a numerical pilot after acceptance. An attached CPU4 pilot
+  is running at
+  `/mnt/workspaces/Cells/joint-water-epoch-refinement-pilot-20261029-01`:
+  independent and coarse-production INIT-water plus changed-control SIM-water,
+  with full all-sample accuracy/energy/ledger checks. It claims no two-dt
+  refinement yet. Passed reference/coarse units will be reused by the complete
+  run; the complete run requires this passed pilot and skips all four completed
+  integration units. Each child retains the 1 GiB/8 GiB/480 s guards, one thread,
+  JIT/GPU disabled. Long full qualification is not launched yet.
+- The accepted-input gate passed against the Chief's exact 71-contract review
+  SHA and both executed source inventories. The coarse INIT-water pilot then
+  passed every one of 25 samples: max full-state budget ratio
+  5.765152958424825e-7, max absolute error 9.992007221626409e-16, independent
+  energy residual <=5.585939087042295e-12 pJ. Independent water ledgers stay
+  <=1.085e-19 pL; adenylate/phosphorus <=2.0e-15 fmol. This is an accuracy
+  pilot only, with no two-dt or convergence-order claim.
+- The independent solves take longer than the initial under-ten-minute pilot
+  estimate. The same computation is left running, last observed in the SIM
+  independent reference, with persistent exec session 58045 and all per-unit
+  inputs/logs/results/failure artifacts. A durable
+  [running receipt](/mnt/workspaces/Cells/joint-water-epoch-refinement-pilot-20261029-01-launch/launch.json)
+  records the changed monitoring decision and CPU4 reservation. Following the
+  long-job return-control rule, stop automatic watching without interrupting
+  the active computation. The frozen full runner is ready and requires a
+  passed pilot; it will reuse its four reference/coarse integration units and
+  retain all 71 contracts when launched. Full qualification is not launched.

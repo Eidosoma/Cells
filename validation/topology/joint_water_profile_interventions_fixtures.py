@@ -19,13 +19,15 @@ def inputs(family="water", case="SIM", *, padded=True):
         if family == "water"
         else repair.definition("preinjured", parent="release", padded=padded)
     )
-    assert {
-        p["id"] for p in raw["model"]["ionic"]["membranes"]
-    } == set(result["geometry"]["layout"]["membrane_ids"])
+    assert {p["id"] for p in raw["model"]["ionic"]["membranes"]} == set(
+        result["geometry"]["layout"]["membrane_ids"]
+    )
     experiment = raw["experiment"]
     experiment.update(
         end_time=4e-6,
-        observation_times=[v * 1e-6 for v in (0, 0.75, 1, 1.125, 1.5, 2, 2.5, 2.875, 3, 3.125, 3.5, 4)],
+        observation_times=[
+            v * 1e-6 for v in (0, 0.75, 1, 1.125, 1.5, 2, 2.5, 2.875, 3, 3.125, 3.5, 4)
+        ],
     )
     for i, (name, rows) in enumerate(
         (name, rows) for name, rows in experiment.items() if name.endswith("_controls")
@@ -45,12 +47,19 @@ def inputs(family="water", case="SIM", *, padded=True):
                 reopened["time"] = off + 0.75e-6
                 row[key] += [closed, reopened]
             if name == "channel_controls" and row["channel_id"] in ("hcn_extra_0", "hcn_extra_2"):
-                row[key] += [dict(time=1.125e-6, availability=0.0), dict(time=2.625e-6, availability=0.6)]
+                row[key] += [
+                    dict(time=1.125e-6, availability=0.0),
+                    dict(time=2.625e-6, availability=0.6),
+                ]
                 row[key].sort(key=lambda v: v["time"])
     times = set(experiment["observation_times"])
     for name, groups in experiment.items():
         if name.endswith("_controls"):
-            times.update(v["time"] for row in groups for v in row["controls" if "controls" in row else "schedule"])
+            times.update(
+                v["time"]
+                for row in groups
+                for v in row["controls" if "controls" in row else "schedule"]
+            )
     experiment["observation_times"] = sorted(times)
     # Explicit unchanged-value knots make every requested transient sample an
     # accepted production boundary, without resampling any control.

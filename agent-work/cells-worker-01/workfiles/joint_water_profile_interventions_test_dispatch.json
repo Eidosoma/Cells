@@ -1,0 +1,27 @@
+{
+  "base": "/mnt/workspaces/Cells/joint-water-hcn-development-20261029-04/workspace",
+  "files": {
+    "src/cells/core/schedule.py": {
+      "base_sha256": "0c17b6b2d87e3d330aa1e64ccbbb24763b3584a2bae090580fbe071b6a1e8366",
+      "patched_sha256": "00bee4181e7aad86f79286bf74c0b16c75b4da3e54a3cd62055828ddf5c92341"
+    },
+    "src/cells/core/specs.py": {
+      "base_sha256": "9a1d947d862140fb96962b6c64527c336a1c8bf60e2700b5f1c61fb38a772083",
+      "patched_sha256": "5a92345c39d37febee979f42875dd4b01ae75b76a2fabb882d17c6db2c2df4ad"
+    },
+    "src/cells/core/tissue_profile_composition_preparation.py": {
+      "base_sha256": "8cb0ea11ac58240d8a6e5bad602c8b54b0b1bb223670797b9b33e02d62f4b56e",
+      "patched_sha256": "875be8d744b1574a0333c53cd7dca3fd37be1ff79d2a5cbe65dc6b1deabdeb28"
+    },
+    "src/cells/ensemble/ionic.py": {
+      "base_sha256": "18521b1c1706467f0addd670f7ddc58ef3916b6c540014098111cb763a596652",
+      "patched_sha256": "9745423ebd5485d97c53c6078ebfb01bfb6664baf46d5b77837705f38b7cb599"
+    },
+    "src/cells/models/registry.py": {
+      "base_sha256": "b52d583953e8d01fb7f1cdd6bc73245aae89481d47576c947bdf1b920a8bde91",
+      "patched_sha256": "4b8c5025fe1ad2be24a8b3b5ea9c77d7c3407e4284428f97901d505e250b1819"
+    }
+  },
+  "patch_sha256": "c2e291a8390763e9a0bae148319d6ca2dbd645125f19b7f41dcdede64bd3b906",
+  "shared_files_written": false
+}
