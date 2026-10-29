@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-29T16:46:25.148124+00:00",
+  "status": "passed_host_only_queue_retention_checks",
+  "checks": [
+    "preserve status",
+    "preserve distinct credit",
+    "preserve receipts",
+    "refuse runtime change",
+    "refuse test change",
+    "refuse launched-plan change",
+    "leave inputs unchanged",
+    "no numerical imports"
+  ],
+  "host_checker_sha256": "6a2bf2dfb5c0303c45d92e5ef79d4326cfa8ad950d3f6c349adf8650a2c6edfd",
+  "scientific_checks_executed": 0
+}

@@ -1,0 +1,3 @@
+# Local immutable copies are retained on this shared node, outside Git history.
+/open-owned-trajectories-prepared-*/
+/open-calcium-bath-trajectories-prepared-*/

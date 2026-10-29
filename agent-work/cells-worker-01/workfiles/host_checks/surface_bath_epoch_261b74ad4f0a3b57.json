@@ -1,0 +1,276 @@
+{
+  "ast_parse": true,
+  "counts": {
+    "tests/unit/test_surface_bath_phase_handoff.py": {
+      "declared_cases": 75,
+      "tests": [
+        {
+          "declared_cases": 8,
+          "function": "test_exact_complete_history_carry_then_separate_sim_controller_operation",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "changed",
+                "empty",
+                "negative",
+                "retarget"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 4,
+          "function": "test_sealed_epoch_replay_and_preparation_storage",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "changed",
+                "empty"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 22,
+          "function": "test_rehashed_source_cannot_drop_work_padding_original_anchors_or_clock",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "fault",
+              "values": [
+                "dtype",
+                "shape",
+                "integer_value",
+                "bool_value",
+                "padding",
+                "missing_chemical_work",
+                "chemical_work",
+                "layout_anchor",
+                "clock",
+                "event_index",
+                "SIM_source"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 12,
+          "function": "test_sim_cannot_rebase_or_replace_a_physical_owner",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "fault",
+              "values": [
+                "volume",
+                "amount",
+                "fixed_background",
+                "charge_anchor",
+                "boundary_voltage",
+                "reservoir_owner"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 10,
+          "function": "test_no_physical_capacity_remap_at_epoch_boundary",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "capacity",
+              "values": [
+                "capacity",
+                "extracellular_capacity",
+                "membrane_capacity",
+                "edge_capacity",
+                "face_capacity"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 1,
+          "function": "test_complete_ionic_channel_slots_cannot_be_remapped",
+          "parameters": []
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_evolved_histories_cannot_be_relabelled_as_an_initial_checkpoint",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 16,
+          "function": "test_rehashed_initial_operation_cannot_hide_a_material_charge_or_work_jump",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "fault",
+              "values": [
+                "dose_fmol",
+                "charge_C",
+                "chemical_work_pJ",
+                "electrochemical_work_pJ",
+                "electrode_work_pJ",
+                "electrode_charge_C",
+                "binding",
+                "clock"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tests/unit/test_surface_bath_phase_reference.py": {
+      "declared_cases": 19,
+      "tests": [
+        {
+          "declared_cases": 4,
+          "function": "test_full_control_and_bath_clock_stages_from_exact_carried_state",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "changed",
+                "empty"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 8,
+          "function": "test_all_original_histories_plus_only_declared_initial_dose_work_and_charge",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "changed",
+                "empty",
+                "negative",
+                "retarget"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 4,
+          "function": "test_observer_archives_both_clocks_and_exposes_continuous_physical_histories",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "changed",
+                "empty"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_empty_controller_retains_all_parent_work_instead_of_starting_over",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 1,
+          "function": "test_independent_epoch_reference_closure_includes_actual_bath_and_56law_helpers",
+          "parameters": []
+        }
+      ]
+    }
+  },
+  "declared_unit_cases": 94,
+  "hashes": {
+    "src/cells/core/surface_active_bath_epoch_spec.py": "42a8e7f8b9f28a6d099e869d4afc92fa734af1ea4cd09fb2b0b07cc185e3deef",
+    "src/cells/core/surface_bath_phase_handoff.py": "010ba4ab7341d067690c749fd99282da8849ae39b32c1895080686e55329a145",
+    "src/cells/core/surface_passive_bath_epoch_spec.py": "5a601044e3dc47a57960d90981f4ba96319f2408e7b0047f708b074c331dbd64",
+    "src/cells/models/surface_active_bath_epoch.py": "0c4272a8ccdb0ef94a35f0b34b62d6ede8fb96746da0bc4eb5aa1bb967a1d5a8",
+    "src/cells/models/surface_bath_epoch.py": "1099c72d507cf92f73a37a1575b12773f9bf81d5d862944ecbd7711f329ad011",
+    "src/cells/models/surface_passive_bath_epoch.py": "6a29e296fd87b0e6cae82d7c5be0ef9226ab284ed0d5384f9cc10031daa3da2d",
+    "tests/unit/test_surface_bath_phase_handoff.py": "9f9aee92acabf643683f8eaf34fd6ab5a304faa84d88badcd88bfbc6c9711714",
+    "tests/unit/test_surface_bath_phase_reference.py": "75de60ee721f5e5e6c9bff10cece78e2cb3890ad3a30ee014af48a1fa55f93cd",
+    "validation/topology/surface_bath_phase_fixtures.py": "082d535eb7ceee270a616e5fc9ae33419e938b400363a5bd24dc36473c77584b",
+    "validation/topology/surface_bath_phase_handoff_reference.py": "fe0643a2e3a036085d7c43024e0c629451a9bfd3fc40a2302d43601047ce0c56"
+  },
+  "kind": "cells.surface_bath_epoch_static_audit@1",
+  "new_reference_production_or_jax_imports": false,
+  "numerical_cases_executed": 0,
+  "ordinary_reference_owner": "Cells Chief Developer: charge-subtraction correction/qualification in progress; dependency is not frozen by worker",
+  "ruff_check": true,
+  "scope": "static source/AST/declared-node audit only; no numerical or GPU launch"
+}

@@ -1,0 +1,166 @@
+{
+  "utc": "2026-10-29T17:51:17.086456+00:00",
+  "status": "standalone_ecm_epoch_static_handoff_numerical_qualification_pending",
+  "gap_confirmed": true,
+  "gap_evidence": [
+    "joint_water_barrier_phase_handoff.OWNERS admits only water@2/repair@2",
+    "Existing combined epoch adapters require coupled_preparation and membrane declarations; no explicit ordinary ionic/calcium/fuel ECM epoch adapter existed."
+  ],
+  "bridge": "cells.core.owned_barrier_phase_handoff",
+  "request_kind": "cells.owned_extracellular_barrier_phase_handoff_request@1",
+  "preparation_kind": "cells.owned_extracellular_barrier_phase_handoff_preparation@1",
+  "bridge_id": "complete_ionic_calcium_fuel_barrier_init_checkpoint_new_sim_epoch@1",
+  "owners": [
+    {
+      "family": "ionic",
+      "schema": "cells.core.surface_active_barrier_epoch_spec",
+      "runtime": "cells.models.surface_active_barrier_epoch",
+      "model_id": "resolved_active_extracellular_barrier_epoch@1",
+      "ordinary_model_id": "resolved_active_extracellular_barriers@1",
+      "parent_model_id": "resolved_tissue@12",
+      "physical_fields": 19,
+      "scheduled_fields": 20
+    },
+    {
+      "family": "calcium",
+      "schema": "cells.core.surface_calcium_barrier_epoch_spec",
+      "runtime": "cells.models.surface_calcium_barrier_epoch",
+      "model_id": "resolved_calcium_extracellular_barrier_epoch@1",
+      "ordinary_model_id": "resolved_calcium_extracellular_barriers@1",
+      "parent_model_id": "resolved_calcium@11",
+      "physical_fields": 34,
+      "scheduled_fields": 35
+    },
+    {
+      "family": "energy",
+      "schema": "cells.core.surface_calcium_energy_barrier_epoch_spec",
+      "runtime": "cells.models.surface_calcium_energy_barrier_epoch",
+      "model_id": "resolved_calcium_energy_extracellular_barrier_epoch@1",
+      "ordinary_model_id": "resolved_calcium_energy_extracellular_barriers@1",
+      "parent_model_id": "resolved_calcium_energy@5",
+      "physical_fields": 38,
+      "scheduled_fields": 39
+    }
+  ],
+  "product_sha256": {
+    "src/cells/core/owned_barrier_phase_handoff.py": "d6f4e993053a773881b2acdf81c2c1521cb158f63f7e915dcd618d3d9f5d28d7",
+    "src/cells/core/surface_active_barrier_epoch_spec.py": "4f7f393a3fbe3863a2f5c31cc2bfb2f34a480cb96e053ff7b0cf2de2a9fc15ad",
+    "src/cells/models/surface_active_barrier_epoch.py": "b0fa3c1d66cae88d8600b841434751beba83a64d6f9eeab3c552fc84b9509d9a",
+    "src/cells/core/surface_calcium_barrier_epoch_spec.py": "4c8a570716ec323a78342690757cde57ba252937233fccd9fdae55f113304aba",
+    "src/cells/models/surface_calcium_barrier_epoch.py": "c43cc6981893b6a79925d3943671ba0d15cec845eab9239d49dbd369e28e7bfb",
+    "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py": "cad114153a46f7922cb8f048b752d3b41969d5a20cc31bff2dad30c7f2e100e0",
+    "src/cells/models/surface_calcium_energy_barrier_epoch.py": "209b942a82e001cdb660f941043ed6c0d11832d048940251dd20e425d4c76b39"
+  },
+  "no_membrane_profile_recipe_or_buffer": true,
+  "only_ecm_phase_clock_resets": true,
+  "all_original_physical_arrays_and_layouts_preserved": true,
+  "guard_risks": [
+    "Energy guard must read actual carried ATP/ADP/Pi, add gross hydrolysis+synthesis and retain all inherited bounds/ramp guards.",
+    "All held-control and ECM on/mid/off admission clocks must be checked.",
+    "Calcium must remain complete@11 and fuel@5; ionic@12 keeps all56laws/63populations.",
+    "Typed source validates every state/layout dtype/shape/value, accepted clock/index and original conservation histories."
+  ],
+  "fixture": "tests/owned_barrier_phase_fixtures.py",
+  "fixture_owner": "Cells Chief Developer; worker will import, not edit",
+  "reference": "validation/topology/owned_barrier_phase_handoff_reference.py",
+  "unit_files": [
+    "tests/unit/test_owned_barrier_phase_handoff.py",
+    "tests/unit/test_owned_barrier_phase_reference.py",
+    "tests/unit/test_owned_barrier_phase_turnover.py"
+  ],
+  "numerical_passes": 0,
+  "no_long_or_gpu_job_launched": true,
+  "shared_routes_and_PROGRESS_owned_by_Chief": true,
+  "declared_unit_cases": 113,
+  "declared_categories": {
+    "test_owned_barrier_phase_handoff.py": {
+      "count": 54,
+      "categories": {
+        "test_ecm_epoch_preserves_all_original_arrays_and_static_recipe": 6,
+        "test_ecm_epoch_refuses_corrupt_actual_source": 18,
+        "test_ecm_epoch_refuses_implicit_physical_and_phase_changes": 15,
+        "test_ecm_epoch_replay_recomputes_complete_handoff_records": 9,
+        "test_standalone_ecm_does_not_admit_a_membrane_profile_recipe": 6
+      }
+    },
+    "test_owned_barrier_phase_reference.py": {
+      "count": 49,
+      "categories": {
+        "test_complete_padded_physical_arrays_and_original_definitions_carry": 6,
+        "test_all_control_and_ecm_stages_from_actual_carried_state": 6,
+        "test_original_chemical_charge_fuel_and_work_accounting_survives_handoff": 6,
+        "test_every_real_absent_owner_mask_rejects_hidden_history": 3,
+        "test_incomplete_or_malformed_chemical_fuel_history_is_rejected": 18,
+        "test_original_store_charge_and_owner_anchors_cannot_change": 9,
+        "test_complete_independent_dependency_closure_includes_legacy_equation_helpers": 1
+      }
+    },
+    "test_owned_barrier_phase_turnover.py": {
+      "count": 10,
+      "categories": {
+        "test_actual_carried_gross_turnover_and_both_sides_of_limit": 2,
+        "test_signed_opposing_routes_are_added_gross_before_pool_division": 2,
+        "test_ecm_admission_knots_are_not_lost_in_complete_control_union": 1,
+        "test_manufactured_conserved_carried_pools_require_a_different_bound": 1,
+        "test_invalid_turnover_step_is_refused": 3,
+        "test_definition_and_step_admission_both_invoke_actual_carried_guard": 1
+      }
+    }
+  },
+  "owned_source_sha256": {
+    "src/cells/core/owned_barrier_phase_handoff.py": "d6f4e993053a773881b2acdf81c2c1521cb158f63f7e915dcd618d3d9f5d28d7",
+    "src/cells/core/surface_active_barrier_epoch_spec.py": "4f7f393a3fbe3863a2f5c31cc2bfb2f34a480cb96e053ff7b0cf2de2a9fc15ad",
+    "src/cells/models/surface_active_barrier_epoch.py": "b0fa3c1d66cae88d8600b841434751beba83a64d6f9eeab3c552fc84b9509d9a",
+    "src/cells/core/surface_calcium_barrier_epoch_spec.py": "4c8a570716ec323a78342690757cde57ba252937233fccd9fdae55f113304aba",
+    "src/cells/models/surface_calcium_barrier_epoch.py": "c43cc6981893b6a79925d3943671ba0d15cec845eab9239d49dbd369e28e7bfb",
+    "src/cells/core/surface_calcium_energy_barrier_epoch_spec.py": "cad114153a46f7922cb8f048b752d3b41969d5a20cc31bff2dad30c7f2e100e0",
+    "src/cells/models/surface_calcium_energy_barrier_epoch.py": "209b942a82e001cdb660f941043ed6c0d11832d048940251dd20e425d4c76b39",
+    "validation/topology/owned_barrier_phase_handoff_reference.py": "23551e0ae2f52e8509d394343ca87803cb9f7fda88d2d6dbc083f2c826ef4512",
+    "tests/unit/test_owned_barrier_phase_handoff.py": "943fda91b5e2f8455064a4a05109d735d7a4262c0010bb50882e156833a9a192",
+    "tests/unit/test_owned_barrier_phase_reference.py": "fadf06b0a787076994aa80dd2b43d1ba0bc14586c68a150dc2383725ded3d754",
+    "tests/unit/test_owned_barrier_phase_turnover.py": "12c2c7d76084dc7d62df58db3ea4d99f09f64edd4c285d7be6541cbeb22219ad"
+  },
+  "shared_fixture_sha256": "738162b1e4f0c5595c5f97d936380f174a66097f55052766191f1fbe9616fd46",
+  "product_adapter_correction": "Chief removed unsupported xp=np at physical_amounts(state,old); exact parents accept two arguments; no formula/tolerance change.",
+  "root_public_separate": {
+    "passed_snapshot_routing_boundary_checks_reported": 3,
+    "result": "/mnt/workspaces/Cells/owned-barrier-phase-20261029-01/public-preflight-02/result.json",
+    "verification": "/mnt/workspaces/Cells/owned-barrier-phase-20261029-01/verification.json",
+    "elapsed_seconds": 62.845,
+    "peak_rss_MiB_reported": 253,
+    "minimum_host_reserve_GiB_reported": 19.95,
+    "does_not_replace_independent_component_acceptance": true
+  },
+  "exact_stage_node_ids": [
+    "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-ionic_owner]",
+    "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-chemical_owner]",
+    "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-fuel_owner]"
+  ],
+  "numerical_component_passes": 0,
+  "worker_numerical_launches": 0,
+  "worker_job_polls": 0,
+  "public_fixture_owned_by_Chief": true,
+  "source_checks": {
+    "Ruff": "passed",
+    "AST": "passed",
+    "new_reference_direct_Cells_JAX_imports": false,
+    "normal_physical_amounts_signature": true,
+    "no_numerical_worker_execution": true
+  },
+  "recommended_initial_stage_group": {
+    "node_ids": [
+      "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-ionic_owner]",
+      "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-chemical_owner]",
+      "tests/unit/test_owned_barrier_phase_reference.py::test_all_control_and_ecm_stages_from_actual_carried_state[changed-fuel_owner]"
+    ],
+    "count": 3,
+    "cpu_one_thread": true,
+    "max_seconds": 480,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_host_reserve_bytes": 8589934592,
+    "timing": "Not benchmarked; bounded pilot only when instructed."
+  },
+  "fixture_source_sha256": "738162b1e4f0c5595c5f97d936380f174a66097f55052766191f1fbe9616fd46",
+  "fresh_subprocess_scope": "Root public tests separately cover snapshots; unit component makes no fresh-process layout claim.",
+  "active_bundles_untouched": true
+}

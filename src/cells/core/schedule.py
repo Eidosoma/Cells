@@ -193,6 +193,91 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
+    from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
+
+    if isinstance(spec.model, energy_bath_epoch.SurfaceOpenCalciumEnergyBathEpochModel):
+        return control_values(energy_bath_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, calcium_bath_epoch.SurfaceOpenCalciumBathEpochModel):
+        return control_values(calcium_bath_epoch.scheduled_spec(spec), times)
+    from cells.core import surface_open_calcium_bath_events_spec as calcium_bath
+    from cells.core import surface_open_calcium_energy_bath_events_spec as energy_bath
+
+    if isinstance(spec.model, energy_bath.SurfaceOpenCalciumEnergyBathEventModel):
+        return control_values(energy_bath.owner_spec(spec), times)
+    if isinstance(spec.model, calcium_bath.SurfaceOpenCalciumBathEventModel):
+        return control_values(calcium_bath.owner_spec(spec), times)
+    from cells.core import surface_open_calcium_energy_spec as open_energy
+    from cells.core import surface_open_calcium_spec as open_calcium
+
+    if isinstance(spec.model, open_energy.SurfaceOpenCalciumEnergyModel):
+        return control_values(open_energy.equation_spec(spec), times)
+    if isinstance(spec.model, open_calcium.SurfaceOpenCalciumModel):
+        return control_values(open_calcium.equation_spec(spec), times)
+    from cells.core import surface_active_bath_epoch_spec as active_bath_epoch
+    from cells.core import surface_passive_bath_epoch_spec as passive_bath_epoch
+
+    if isinstance(spec.model, active_bath_epoch.SurfaceActiveBathEpochModel):
+        return control_values(active_bath_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, passive_bath_epoch.SurfacePassiveBathEpochModel):
+        return control_values(passive_bath_epoch.scheduled_spec(spec), times)
+    from cells.core import surface_active_bath_events_spec as active_bath
+    from cells.core import surface_passive_bath_events_spec as passive_bath
+
+    if isinstance(spec.model, active_bath.SurfaceActiveBathEventModel):
+        return control_values(active_bath.owner_spec(spec), times)
+    if isinstance(spec.model, passive_bath.SurfacePassiveBathEventModel):
+        return control_values(passive_bath.owner_spec(spec), times)
+    from cells.core import (
+        surface_calcium_energy_water_profile_barrier_epoch_spec as water_joint_epoch,
+    )
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_barrier_epoch_spec as repair_joint_epoch,
+    )
+
+    if isinstance(
+        spec.model, repair_joint_epoch.SurfaceCalciumEnergyWaterRepairProfileBarrierEpochModel
+    ):
+        return control_values(repair_joint_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, water_joint_epoch.SurfaceCalciumEnergyWaterProfileBarrierEpochModel):
+        return control_values(water_joint_epoch.scheduled_spec(spec), times)
+    from cells.core import (
+        surface_calcium_energy_water_profile_barrier_interventions_spec as water_combined,
+    )
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_barrier_interventions_spec as repair_combined,
+    )
+
+    if isinstance(
+        spec.model, repair_combined.SurfaceCalciumEnergyWaterRepairProfileBarrierInterventionModel
+    ):
+        return control_values(repair_combined.owner_spec(spec), times)
+    if isinstance(
+        spec.model, water_combined.SurfaceCalciumEnergyWaterProfileBarrierInterventionModel
+    ):
+        return control_values(water_combined.owner_spec(spec), times)
+    from cells.core import (
+        surface_calcium_energy_profile_barrier_epoch_spec as energy_combined_epoch,
+    )
+    from cells.core import surface_calcium_profile_barrier_epoch_spec as calcium_combined_epoch
+
+    if isinstance(spec.model, calcium_combined_epoch.SurfaceCalciumProfileBarrierEpochModel):
+        return control_values(calcium_combined_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, energy_combined_epoch.SurfaceCalciumEnergyProfileBarrierEpochModel):
+        return control_values(energy_combined_epoch.scheduled_spec(spec), times)
+    from cells.core import surface_active_profile_barrier_epoch_spec as combined_epoch
+
+    if isinstance(spec.model, combined_epoch.SurfaceActiveProfileBarrierEpochModel):
+        return control_values(combined_epoch.scheduled_spec(spec), times)
+    from cells.core import (
+        surface_calcium_energy_profile_barrier_interventions_spec as energy_combined,
+    )
+    from cells.core import surface_calcium_profile_barrier_interventions_spec as calcium_combined
+
+    if isinstance(spec.model, calcium_combined.SurfaceCalciumProfileBarrierInterventionModel):
+        return control_values(calcium_combined.owner_spec(spec), times)
+    if isinstance(spec.model, energy_combined.SurfaceCalciumEnergyProfileBarrierInterventionModel):
+        return control_values(energy_combined.owner_spec(spec), times)
     from cells.core import surface_active_profile_barrier_interventions_spec as active_combined
 
     if isinstance(spec.model, active_combined.SurfaceActiveProfileBarrierInterventionModel):
@@ -219,6 +304,16 @@ def control_values(spec, times):
         return control_values(repair_barrier.owner_spec(spec), times)
     if isinstance(spec.model, water_barrier.SurfaceCalciumEnergyWaterBarrierInterventionModel):
         return control_values(water_barrier.owner_spec(spec), times)
+    from cells.core import surface_active_barrier_epoch_spec as active_ecm_epoch
+    from cells.core import surface_calcium_barrier_epoch_spec as calcium_ecm_epoch
+    from cells.core import surface_calcium_energy_barrier_epoch_spec as energy_ecm_epoch
+
+    if isinstance(spec.model, active_ecm_epoch.SurfaceActiveBarrierEpochModel):
+        return control_values(active_ecm_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, calcium_ecm_epoch.SurfaceCalciumBarrierEpochModel):
+        return control_values(calcium_ecm_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, energy_ecm_epoch.SurfaceCalciumEnergyBarrierEpochModel):
+        return control_values(energy_ecm_epoch.scheduled_spec(spec), times)
     from cells.core import surface_active_barrier_interventions_spec as active_barrier
     from cells.core import surface_calcium_barrier_interventions_spec as calcium_barrier
     from cells.core import surface_calcium_energy_barrier_interventions_spec as energy_barrier

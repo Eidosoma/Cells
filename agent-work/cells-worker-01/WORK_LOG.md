@@ -3713,3 +3713,368 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   Shared public integration stays separate. No full10-us trajectory, INIT/SIM
   handoff, compiled/GPU or native-loop parity claim; no new long job or automatic
   follow-up is launched. CPU6 released.
+
+## Combined full56 calcium/fuel schedules, 2026-10-29
+
+- Chief assigned separate complete calcium@11 and finite-fuel@5 combined
+  membrane/ECM schedules on CPU6,1 GiB RSS/8 GiB reserve,<=480-s attached groups.
+  New identities are `resolved_calcium_profile_barriers@1` and
+  `resolved_calcium_energy_profile_barriers@1`; preparation kind is
+  `cells.calcium_profile_barrier_preparation@1`. The accepted ionic four files,
+  Root epoch/water/repair work, shared routes and PROGRESS remain untouched.
+- The six new product files retain all34/38 parent arrays plus one common clock
+  (35/39 fields), exact full56 layouts, current chemical free ions/live neutral
+  fuel and original histories. Composed membrane and exterior recipes must
+  match the exact complete owner. Native coefficient capabilities expose only
+  the direct coefficient record; physical field/RHS use the full parents.
+  Membrane event declaration validation is parameterized with the exact full
+  parent parser, never the older calcium@6 membrane runtime.
+- Separate fixtures/reference/tests cover independent all-field stages at all
+  held/pulse clocks, current free-Ca/K and fuel perturbations, both individual
+  schedule reductions, full-state conservation and actual closed-history/pool
+  observations, fresh-process snapshots, owner/version refusals and domains.
+- Chief review caught an omitted pre-existing summed step guard. Both new
+  runtimes now add GHK background loss at the combined upper layout to the
+  complete calcium loss or conservative bounded-fuel prior loss. All original
+  parent/gross-fuel/ramp checks remain, with the unchanged0.25 ceiling. New
+  independent owner-loop tests exercise below/above that sum boundary and
+  verify the old parent/ramp checks alone admit the counterexample. Root's25
+  public passes remain separate interface evidence on its pre-fix frozen files.
+- Three outgoing TUI updates and the first numerical-launch attempt failed
+  automatic approval review because its selected model was at capacity; no
+  action/process was executed for those attempts. The same authorized bounded
+  launch later passed review normally and started Development01. No approval
+  bypass, alternative model or alternate launch path was used. The first group
+  checks both complete initializations and first joint stages; guard boundary
+  tests will precede the remaining stage groups. Numerical qualification is
+  pending, and all six product APIs remain stable for Root's public wiring.
+- [Development01](/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-01/result.json)
+  passed all four first checks in81.15 s, including exact34/38-array parent
+  initialization and33 independent full35/39-field stages. Max RHS/budget
+  0.00011398; independent energy-rate residual<=3.38e-14 pJ/s. Guard peak
+  261,087,232 B; host reserve>=21,271,588,864 B. The captured six product files
+  already contain the restored background/complete chemical or bounded-fuel
+  sum, and they still match the current workspace exactly.
+- The two strong-background boundary checks could not start: three normal
+  approval attempts failed because the automatic approval model was at
+  capacity. No process or Development02 output was created. These are service
+  failures, not safety determinations; no review was bypassed or model changed.
+  Outgoing Chief updates have also been blocked by the same service condition.
+- Concrete pending work is pinned in
+  `workfiles/owned_calcium_profile_barrier_workqueue.json`:86 remaining checks
+  in seven independent<=480-s groups, guard boundary first. Invoke exactly one
+  group through `workfiles/run_owned_calcium_profile_barrier_group.sh`; it does
+  not advance automatically and enforces expected counts. The private checker
+  now refuses incomplete/skipped groups and saves startup failures only in its
+  newly owned output. Six host-only completion/refusal assertions, Ruff and
+  shell syntax pass. These host checks add no scientific qualification.
+- Component qualification is incomplete until normal approval can launch the
+  boundary, remaining stages, reductions, conservation/history, portable and
+  refusal groups. The four accepted checks are excluded from every queued
+  selection. No new long/GPU job, shared/product-API change or active-job poll;
+  CPU6 has no active process from this worker. Root's separate ionic epoch,
+  water/repair work and all launched scientific bundles remain untouched.
+
+- User requested continuation. Two more normal guard-launch reviews failed
+  (selected review model at capacity, then review deadline); no command or
+  Development02 output was created. A Chief update also failed review and was
+  not delivered. The [work queue](workfiles/owned_calcium_profile_barrier_workqueue.json)
+  records the exact blocker and all86 pending checks. Corrected six-source
+  hashes and the original four accepted checks remain unchanged. No bypass,
+  model/resource/tolerance change, new long job or Root-job query occurred.
+- Prepared `workfiles/finalize_owned_calcium_profile_barriers.py`. It requires
+  all90 unique non-skipped cases, matching complete runtimes and reference
+  files, unchanged frozen inventories, all held/pulse stage clocks, full35/39
+  fields, conservation/history reports, both summed-background boundaries and
+  original resource limits before creating any handoff. Ruff passes. A pure
+  standard-library host check verified first-group inventories/stage reports
+  and correctly refused missing Development02; no numerical imports, model
+  execution or handoff creation. Its receipt is
+  `workfiles/owned_calcium_profile_barrier_finalizer_host_check.json`.
+- Chief reports2 corrected-source public/evolved-history checks and40 new
+  calcium/fuel epoch checks (including12 full-field independent stages); these
+  remain separate and do not qualify the pending component. Chief owns its
+  new epoch files, shared routes and PROGRESS; all are untouched here.
+- The assigned combined water/repair successor follows this component handoff.
+  Static reading identifies exact water@2/repair@2 parents with43/48 physical
+  fields (44/49 scheduled), actual moving-volume/live-fuel layouts and original
+  water/injury histories. Its summed guard must retain minimum-volume chemical,
+  finite-fuel and prescribed-injury bounds plus both coefficient ramps. No
+  successor product, numerical run or extra design document has been created.
+  Pending work is preserved; further approval retries wait for instructions or
+  service recovery.
+
+## Combined full56 water/repair membrane+ECM schedules, 2026-10-29
+
+- Chief explicitly moved new implementation ahead of the blocked calcium/fuel
+  handoff. Its86 checks remain queued, its six frozen physical files are exact
+  and no further approval retries or numerical acceptance claims are made.
+- Added six separate product files: `joint_water_profile_barrier_preparation`
+  and `_binding`, plus water/repair `*_profile_barrier_interventions_spec` and
+  models. Stable identities are `resolved_calcium_energy_water_profile_barriers@1`
+  and `resolved_calcium_energy_water_repair_profile_barriers@1`, on exact@2
+  parents and nested ionic@12. Preparation kind is
+  `cells.joint_water_profile_barrier_preparation@1`; scheduled artifact kind is
+  `cells.scheduled_joint_water_profile_barriers@1`. One shared native stage
+  clock adds to all43/48 actual physical arrays (44/49 total).
+- All current free-ion/chemical stores, actual water volumes, live ATP/ADP/Pi,
+  original water anchors, pool-volume work and prescribed-injury ledgers remain
+  with the complete parents. Only closed background/face transfer markers use
+  temporary readout validity views. Full original histories drive checks and
+  observations. Guards retain minimum-volume background+bounded chemistry
+  (+injury for repair), every inherited water/fuel/damage bound, and both native
+  ramps at the unchanged0.25 ceiling.
+- Added independent fixtures/reference/tests. Decimal profile/ECM recipes
+  verify full physical owners; every full stage rebinds the qualified complete
+  water@2/repair@2 oracle at actual current volumes/fuel. Original material,
+  neutral pools, water, damage and molecular/compliance energy are checked.
+  Test declarations cover125 cases, including both exact standalone reductions,
+  closed histories with active lesion transport, portable snapshots, current
+  volume at all three pump families, original ER volume and both guard boundaries.
+- Private runner reuses the accepted ionic source and four separately qualified
+  water/repair barrier files. The two frozen inputs' physical dependencies match;
+  only old shared routes differ. New routes are patched solely in its clone.
+  CPU6/one thread,1 GiB child-tree RSS/8 GiB host reserve and480 s are unchanged.
+  The launcher runs exactly one selected group and never advances or retries.
+- Ruff, AST, shell syntax, four private-route patches, qualified source pins and
+  supervisor completion/refusal checks pass without Cells/NumPy/JAX/SciPy imports.
+  A host-only selection attempt initially caught a four-case keyword collision;
+  its JSON is retained and the test-name-only correction makes all125 declared
+  cases disjoint across the11 planned groups. No numerical run was launched.
+- Stable APIs, owned hashes, exact commands and the host-only receipt are in
+  [the private work queue](workfiles/joint_water_profile_barrier_workqueue.json).
+  Component acceptance is pending, with zero numerical passes credited. Chief
+  retains all shared routing/PROGRESS and epoch work; these and all active jobs
+  are untouched by this implementation.
+- The one new stable-API notification to Chief was not delivered because
+  automatic permission review timed out. This is recorded in the API queue; no
+  messaging or numerical retry follows. The draft is reviewable in the shared
+  checkout, with static checks passed and numerical acceptance pending.
+
+- Root now owns ordinary numerical continuations and all public interfaces.
+  The ordinary water/repair suite is133 declared cases after eight additional
+  finite closed-route/material and original water/pool-work corruption cases.
+  Root reports four explicit first cases passed (36 full44/49-field stages),
+  with remaining129 detached under its control. Existing physical six files,
+  ordinary tests and all frozen/active bundles remain untouched here.
+- Fixed the worker's future launcher to execute only immutable exact node-ID
+  lists. The prior host check omitted pytest's filename keyword semantics: it
+  incorrectly validated the first selection as4 rather than20 and baseline as8
+  rather than0. The new host check reproduces20/0 with the filename, then checks
+  all133 exact node IDs/counts/disjoint groups and refuses malformed plans.
+  Old receipts and Root's480-s harness failure are preserved. No equation,
+  numerical budget or active scientific source was changed by this correction.
+
+## Complete water/repair combined INIT-to-SIM epochs, 2026-10-29
+
+- Added five separate bridge/schema/model files and independent reference plus
+  three unit files (91 declared cases), using Chief's shared fixture without
+  editing it. APIs are in
+  `workfiles/joint_water_profile_barrier_epoch_workqueue.json`. Exact43/48
+  physical arrays and original layouts carry; only the common clock resets.
+  Both static recipes remain fixed. All inherited minimum-volume sums, injury
+  and ramp bounds remain, with actual carried-pool gross turnover at current
+  volume and every held/both pulse clock. Ruff/AST checks pass.
+- Root reports two public carry probes, two independent stage tests (16 full
+  comparisons), and four conservation cases passed. It corrected only a local
+  reference mapping name that shadowed the finite-energy module; no formula
+  changed. Root owns its frozen qualifications; no worker numerical launch or
+  poll. The phase files remain fixed while Root completes checks.
+
+## Standalone complete ionic/calcium/fuel ECM epochs, 2026-10-29
+
+- Confirmed a concrete adapter gap: standalone ECM epochs existed for water/
+  repair, while ionic@12/calcium@11/fuel@5 had only ordinary ECM schedules or
+  combined membrane/ECM epochs. Added seven new bridge/schema/model files for
+  those exact three standalone owners, with20/35/39 total fields. They require
+  one identical static ECM recipe and carry all19/34/38 original physical arrays
+  and layouts. No membrane-profile recipe/buffer is constructed.
+- `workfiles/owned_barrier_phase_workqueue.json` records stable filenames, IDs
+  and guard risks. The fuel variant checks actual carried minimum pools using
+  gross opposite routes at every complete control and ECM pulse clock; all
+  inherited ordinary guards remain. Product Ruff/AST checks pass. Independent
+  reference/unit work follows; Chief owns the shared fixture, public CLI tests,
+  routing and PROGRESS. No numerical or GPU job is launched by this worker.
+
+- Standalone ECM handoff package is complete for static review: seven products,
+  one independent reference and three unit files (113 declared cases). All
+  product/reference/test files pass Ruff and AST checks. The reference derives
+  physical padding, recomputes only ECM coefficients, retains80-digit original
+  molecular/capacitor energy, full chemical ownership and neutral-pool work, and
+  rejects membrane-profile recipe fields. It uses a distinct energy-chemistry
+  module alias to avoid lookup/module name shadowing.
+- Chief corrected the preservation call's unsupported `xp=np` keyword on the
+  three exact parent `physical_amounts` methods. No formula or tolerance changed;
+  three public routing/snapshot/boundary cases then passed in62.845s, with exact
+  19/34/38-field carry verified separately. Failed public attempt01 is retained
+  by Root. The shared fixture/public tests and all shared routes remain Root's.
+- API hashes,113-case breakdown and the three exact changed-state stage node
+  IDs are in `workfiles/owned_barrier_phase_workqueue.json`. Scientific component
+  qualification remains pending. No worker numerical/long/GPU job or active-job
+  poll is performed. Root owns its existing detached ordinary and phase bundles;
+  their sources/results and the ordinary six product files remain untouched.
+
+## Explicit passive/complete ionic bath controllers, 2026-10-29
+
+- Chief assigned the B08/B13 bath-event gap. Authenticated the pinned native
+  K/Cl/Na setters, SIM-only caller and pulse helper. Native baseline/counterion
+  overwrites, charged overlaps and nonzero initial tails are preserved; the
+  non-ECM legacy whole-field setter remains separate.
+- Added six separate core/model files for passive@1 and complete ionic@12,
+  with14/21 saved fields, plus an independent reference, manufactured fixture
+  and two unit files (90 declared cases). Only explicit ideal reservoirs are
+  controlled. Original anchors and transport histories remain immutable;
+  physical totals add the declared dose, electrode compensation and reversible
+  chemical/electrical work, including an authenticated initial operation.
+  Variable chemical work has its own path integral and per-reservoir identity.
+- Stable API, source hashes, exact first stage IDs, ownership and limits are in
+  `workfiles/surface_bath_events_workqueue.json`; the mathematical scope is in
+  `workfiles/SURFACE_BATH_EVENTS_AUDIT.md`. All10 new Python files pass Ruff and
+  AST checks. Static receipt authenticates3 native sources and hashes21
+  reference-dependency files. No numerical/scientific passes are credited.
+- Preserved static attempt01: its overbroad AST walker treated an uncalled
+  comparison driver's local Cells import as an import of the selected independent
+  scalar helper. The corrected module-initialization closure still audits own
+  and legacy equation bodies and retains full dependency source hashes. No
+  equation, numerical tolerance or prior evidence changed in that correction.
+- Chief owns the four shared routing files, public fixtures/interfaces,
+  PROGRESS and qualification. Worker launches no numerical, long or GPU job
+  and does not poll or alter any frozen/active earlier computation.
+
+- Root's two bath-stage preflights caught cancellation in the analytic sigmoid
+  derivative at an onset argument near10 (relative error9.71e-13 versus the
+  unchanged5e-13 comparison). At Root's explicit request, changed only the
+  ordinary controller runtime to the equivalent even logistic slope, avoiding
+  subtraction from a near-unit sigmoid. Prescribed native pulses/doses,
+  reference, tests and tolerances are unchanged. Ruff/AST pass; Root owns the
+  rerun. Exact before/after hashes and retained failure path are in
+  `workfiles/surface_bath_derivative_correction.json`.
+
+## Explicit bath INIT-to-SIM carry, 2026-10-29
+
+- Chief assigned a separate epoch lane while ordinary bath qualification runs
+  under Root. Added six new bridge/schema/runtime files for passive/complete
+  ionic bath epochs, preserving all13/20 non-clock saved fields (including the
+  variable chemical-work integral) and all original physical layouts/anchors.
+  Only ordinary INIT sources are admitted; a SIM source could retain a dose
+  that a clock reset would otherwise discard. The new SIM logistic-tail dose,
+  electrode compensation and material/work contributions are a separate sealed
+  operation, never a history rebase.
+- Added an independent epoch reference, private fixture and two unit files
+  (94 declared cases). They compare full carried14/21-field stages, original
+  material/charge/energy and explicit source/work jumps, clock readouts and
+  rehashed source/operation corruptions. All10 new Python files pass Ruff/AST.
+  API/hashes/exact first stage IDs are in
+  `workfiles/surface_bath_phase_workqueue.json`; no numerical case was launched.
+- Root reports the ordinary derivative correction passed both stage tests
+  (39 comparisons). It owns the separate ordinary reference charge-subtraction
+  correction and all public/shared work. The new epoch reference delegates to
+  that ordinary reference; the worker deliberately does not freeze that
+  in-progress Root-owned dependency or claim epoch numerical acceptance. All
+  frozen/active previous jobs remain untouched and unpolled.
+
+## Static open-exterior owned calcium/fuel, in progress, 2026-10-29
+
+- Reported two concrete blockers to a bath wrapper: the exact calcium/fuel
+  parsers forbid reservoirs for closed-pool bounds, and owned plasma rates do
+  not maintain held exterior slots or complete their electrode/work ledgers.
+  Chief redirected the feature to separate static open-exterior full56 models
+  first, then explicitly assigned the two parent spec files for a narrow pure
+  declaration-decoder extraction. No other shared ownership changed.
+- Extracted private unadmitted component decoders without changing actual
+  reservoir flags. Static reversal reproduces both original closed parse ASTs
+  exactly; all other existing helpers/classes are AST-identical. Baselines and
+  proof are linked in `workfiles/open_owned_calcium_workqueue.json`.
+- Drafted new34/38-field open models, complete PMCA/NCX/Ca-channel reservoir
+  material/electrode/work closure and hard per-stage ionic-moiety ceilings in
+  fmol. These are domain limits, never conserved pools or state clamps. Actual
+  stores, bound ions, live neutral fuel and histories remain physical. The
+  empty-reservoir case uses original closed admission and raw results exactly.
+- Independent equations and manufactured fixture are drafted; original-anchor
+  conservation, independent bound derivation and unit/regression cases remain.
+  This is work in progress, not a handoff or numerical acceptance. No worker
+  computation is launched. Root owns bath epoch public work and all frozen
+  qualifications; those files/jobs remain untouched and unpolled.
+
+- Static open-owned handoff is complete: eight new product files, two explicitly
+  authorized parent declaration-decoder extractions, one independent reference,
+  one fixture and two unit files (86 declared cases). Ruff/AST and both original
+  closed-parser fingerprints pass;31 reference dependency files are hashed.
+  Exact source hashes, first stage IDs and scope are in
+  `workfiles/open_owned_calcium_workqueue.json`, with one mathematical handoff
+  at `workfiles/OPEN_OWNED_CALCIUM_HANDOFF.md`.
+- Chief reports ten public checks passed, including fresh full-array snapshot
+  and2ns eager restart. Its first component snapshot passed82 and failed only
+  import-audit admission of the documentation-only test package initializer.
+  Failure evidence is retained; corrected audit admits only that documentation
+  body and adds three explicit production-import refusals. Reference entry
+  checks now reject nonpositive physical inventories before logs. Root owns a
+  fresh superseding86-case qualification, with no duplicated numerical credit.
+- Exact empty-reservoir reduction now includes separately evolved two-step
+  histories and every original physical observation. The finite-fuel adapter
+  uses the actual `raw.energy` owner. No worker numerical job or poll occurred.
+  Product/reference/unit files are handed off and remain fixed. The next
+  authorized work is separate full8us mixed-exterior trajectory/refinement
+  qualification preparation only, preserving all durations/control clocks and
+  durable result/failure artifacts; no launch.
+
+## Full8us mixed trajectory preparation, 2026-10-29
+
+- Chief sealed the static open family with96 distinct scoped checks; its accepted receipt is linked in `workfiles/open_owned_calcium_workqueue.json`. Handed-off product/reference/test files remain untouched.
+- Prepared the separate full8us mixed calcium/fuel qualification bundle, preserving all1,901 accepted source files and original physical definitions. Current commands, protocol, hashes and metadata-only receipt are linked in `workfiles/open_owned_trajectory_workqueue.json`; concise handoff: `workfiles/OPEN_OWNED_TRAJECTORIES_PREP.md`.
+- All original clocks already belong to each129/257/513-sample grid; onlydt changes and the original512-step quota stays. Superseded unlaunched preparation01 is retained. Six new Python files pass AST/Ruff and the current frozen inventory check passes.
+- No model parser, state constructor, RHS, integrator or numerical role ran; preparation imported no Cells/JAX. No active/frozen job was queried or changed. Chief owns review, future execution and PROGRESS.md.
+
+## Scheduled full-calcium/fuel ideal baths, 2026-10-29
+
+- Chief assigned new-file-only scheduled bath composition. Six new products, independent reference/fixture and two unit files are handed off through `workfiles/open_calcium_bath_workqueue.json`; accounting and scope: `workfiles/OPEN_CALCIUM_BATH_HANDOFF.md`.
+- Retained all34/38 transport histories plus separate variable chemical work/clock, explicit program dose/electrode/work, original fixed backgrounds, actualATP and hard physical ionic ceilings. New5-ion Cl/M fixtures are distinct from accepted4-ion models. Chief caught missing M store-control keys; all rows now declare them explicitly.
+- Ten AST/Ruff checks,16 raw fixture metadata variants and a33-file independent import audit pass.91 numerical unit cases, including the requested actual-input0.05 turnover boundary/refusal pair, are prepared but unexecuted. Original owned files and full8us02 bundle hashes are unchanged. No parser/state/RHS/integrator/pytest or numerical job ran; no active job was queried. Chief owns all execution and shared integration.
+
+## Full calcium/fuel scheduled bath INIT/SIM, 2026-10-29
+
+- Chief assigned separate new epoch files. Six products now carry35/39 nonclock arrays exactly, reset only the clock and seal the explicit SIM initial dose/charge/work plus actual-carried-pool all-control/all-corner admission witness. Original anchors/background/caps and full8us recipes remain.
+- New independent source/epoch reference, fixture and two component files are handed off via `workfiles/open_calcium_bath_epoch_workqueue.json`; mathematical/API notes: `workfiles/OPEN_CALCIUM_BATH_EPOCH_HANDOFF.md`. Ten AST/Ruff files,8 raw recipe metadata checks and35 reference dependency hashes pass;140 declared numerical cases remain unexecuted by worker.
+- Independent turnover uses absolute individual NaK/PMCA/ER/regeneration rates and actual saved pool deltas. Tests include full typed-source/anchor/refusal/replay coverage, real SIM prefix conservation, separately evolved two-step empty-SIM reduction, and explicitly isolated carried-pool/ionic guard boundaries.
+- Ordinary product/reference/fixture files, existing phase helpers and full8us02 bundle were untouched. Chief separately closed91 ordinary component cases after test-only corrections and is handling shared-window/public qualification work. No worker parser/state/RHS/integrator/pytest or numerical launch; no active job query.
+
+- Chief first epoch stage exposed a reference-only typed-layout mismatch: scalar ER valences were int64 while the physical layout explicitly storesfloat64. Corrected expected dtype for valence/standard_mu, retained strict saved-array checks and added field-specific shape/dtype errors. Only the assigned reference changed; evidence link and new hash are in `workfiles/open_calcium_bath_epoch_reference_dtype_correction.json`. Root owns rerun; no worker numerical execution. Full-trajectory preparation was interrupted to prioritize this defect.
+
+## Full8us scheduled calcium/fuel trajectory preparation, 2026-10-29
+
+- Prepared seven new worker/builder/runner files for ordinary SIM8us and full
+  actual INIT8us→SIM8us, with 40 explicit roles. Chief owns the separate campaign
+  launcher. No handed-off product or shared integration file was changed.
+- Static AST/Ruff and accepted ordinary raw-JSON metadata checks pass: all
+  36/40 physical fields, 87/105 ordinary observer channels, 89/107 epoch channels
+  and exact 129/257/513 grids within the original512-step quota. All original
+  recipes/controls/caps remain; recording windows stream every accepted row.
+- Current receipt/status: `workfiles/open_calcium_bath_trajectory_workqueue.json`;
+  run interface and scientific comparison scope:
+  `workfiles/OPEN_CALCIUM_BATH_TRAJECTORIES_PREP.md`. Final immutable bundle
+  sealing requires Chief's completed epoch receipt and frozen source/evidence.
+  Zero worker numerical launches or active-job polls; no Cells/JAX/model import
+  occurred during preparation. Previous frozen evidence remains untouched.
+
+- Chief next assigned focused short software gate tests. Added only
+  `validation/tissue/test_open_calcium_bath_trajectory_preparation.py`:41 cases
+  pass in2.52s/48MiB under CPU7,1GiB RSS and8GiB host reserve. Synthetic
+  qualification/INIT receipts and execution-trapped source declarations check
+  full40-role preparation, recipe/duration/cap drift, wrong INIT identities and
+  corrupt resources/artifacts. Import/process traps prohibit model/solver or
+  numerical launches. Durable receipt:
+  `/mnt/workspaces/Cells/bath-trajectory-preparation-tests-20261029-01/result.json`;
+  hash is linked in the existing trajectory workqueue. All seven worker files
+  remain exact against their static handoff receipt. These are software checks
+  with no scientific trajectory credit; no active computation was polled.
+
+- Chief's comparison checks fixed cross-chunk dtype/shape provenance. At its
+  explicit next assignment, reproduced two additional receipt-gate defects
+  (self-resealed elapsed481s and zero samples accepted), retaining the41-pass /
+  two-failure evidence. Corrected only `dependencies()` to require finite
+  nonnegative actual elapsed≤480s and positive integer samples. All54 focused
+  host cases now pass in3.03s/48MiB. AST comparison confirms every other common
+  module node, including Chief's chunk fix, is identical. Current static hashes,
+  preserved failure and corrected result are linked in the existing trajectory
+  workqueue through `workfiles/open_calcium_bath_trajectory_receipt_correction.json`.
+  No physical equation/budget changed and no trajectory or active-job poll ran.

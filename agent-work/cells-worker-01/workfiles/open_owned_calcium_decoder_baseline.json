@@ -1,0 +1,15 @@
+{
+  "kind": "cells.open_owned_calcium_decoder_baseline@1",
+  "files": {
+    "src/cells/core/surface_calcium_spec.py": {
+      "source_sha256": "7b87ffe4a530828d19dd9eb5f99152fab0302330a5ffa63fa808715f253507c4",
+      "parse_ast_sha256": "55e7d3dd78fd8dad1e56e562feacef3aa02af7e5dfacbb093f6581b48ecf302d",
+      "snapshot": "agent-work/cells-worker-01/workfiles/frozen/surface_calcium_spec_before_open_decoder_7b87ffe4a530828d.py"
+    },
+    "src/cells/core/surface_calcium_energy_spec.py": {
+      "source_sha256": "0f1f7ca0614af9c1f5c41c53221eb40aff18ac8135127b426b350d32bcabf113",
+      "parse_ast_sha256": "ab7840fce6131206ab3ea5a0d16914a7ecb5d5ae1cd243a80b75be59893b4aaf",
+      "snapshot": "agent-work/cells-worker-01/workfiles/frozen/surface_calcium_energy_spec_before_open_decoder_0f1f7ca0614af9c1.py"
+    }
+  }
+}

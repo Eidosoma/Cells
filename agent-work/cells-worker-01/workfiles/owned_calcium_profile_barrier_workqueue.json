@@ -1,0 +1,169 @@
+{
+  "status": "remaining_validation_blocked_by_automatic_approval_service",
+  "model_ids": [
+    "resolved_calcium_profile_barriers@1",
+    "resolved_calcium_energy_profile_barriers@1"
+  ],
+  "parent_model_ids": [
+    "resolved_calcium@11",
+    "resolved_calcium_energy@5"
+  ],
+  "production_sha256": {
+    "src/cells/core/owned_calcium_profile_barrier_preparation.py": "b06a786e208cc91281d4f37ed14b6678e1586208457a4278d0efa8430377174b",
+    "src/cells/core/owned_calcium_profile_barrier_binding.py": "9004b68f4be118176a5e72184813c2bdb2f25ae309652671aabdd9e7005c4cda",
+    "src/cells/core/surface_calcium_profile_barrier_interventions_spec.py": "ca2bc251cac572ce346f936a37e464dc227ea8e091edd3b186dbbc492d444e0d",
+    "src/cells/core/surface_calcium_energy_profile_barrier_interventions_spec.py": "7384930d5f59272a0d4364661bba1b07559ede4f8594a34c16343c30859af515",
+    "src/cells/models/surface_calcium_profile_barrier_interventions.py": "dd94d513edf0b21b379afcb76a1706d26b984d50d8bae13184af04ceb56698f1",
+    "src/cells/models/surface_calcium_energy_profile_barrier_interventions.py": "5813c0446ba87bdd82fd7e0c6c6d365c1b5bfe97783b29e5c335e17c50930666"
+  },
+  "first_result": {
+    "path": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-01/result.json",
+    "sha256": "f5940f1f50cb6c6e561a90a1268b877de8458663911e3ae449abc6c1bb271493"
+  },
+  "first_passed_checks": 4,
+  "original_ionic_product_files_untouched": true,
+  "root_public_25_checks_separate_pre_guard_interface_evidence": true,
+  "correction": "Restore background_loss_bound(combined upper layout,Vmax) plus full calcium loss or fuel.prior.loss_bound(fuel.bounded_prior_spec(complete)); retain every inherited and ramp guard; unchanged limit0.25.",
+  "review_failure": "Automatic review service capacity failure followed by review deadline failure; no remaining group launched.",
+  "blocked_actions": [
+    "outgoing Chief Dev updates",
+    "remaining two guard-boundary checks"
+  ],
+  "blocked_group_output_exists": false,
+  "remaining_groups": [
+    {
+      "group": "guard",
+      "expected_tests": 2,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-02",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "guard"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "chemical-stage-baseline",
+      "expected_tests": 8,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-03",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "chemical-stage-baseline"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "chemical-stage-changed",
+      "expected_tests": 9,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-04",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "chemical-stage-changed"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "fuel-stage-baseline",
+      "expected_tests": 8,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-05",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "fuel-stage-baseline"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "fuel-stage-changed",
+      "expected_tests": 9,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-06",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "fuel-stage-changed"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "chemical-contracts",
+      "expected_tests": 25,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-07",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "chemical-contracts"
+      ],
+      "status": "not_launched"
+    },
+    {
+      "group": "fuel-contracts",
+      "expected_tests": 25,
+      "output": "/mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-08",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_calcium_profile_barrier_group.sh",
+        "fuel-contracts"
+      ],
+      "status": "not_launched"
+    }
+  ],
+  "total_planned_checks": 90,
+  "expected_remaining_checks": 86,
+  "cpu": 6,
+  "max_child_tree_rss_bytes": 1073741824,
+  "min_host_reserve_bytes": 8589934592,
+  "max_group_seconds": 480,
+  "host_checks": "Ruff and shell syntax passed; six pure supervisor completion/refusal assertions passed; no numerical model imported for host assertions.",
+  "source_apis_stable": true,
+  "component_qualification_complete": false,
+  "full_trajectory_claim": false,
+  "no_long_or_gpu_job_launched": true,
+  "automatic_followup": false,
+  "first_passed_independent_stages": 33,
+  "first_guarded_resources": {
+    "elapsed_seconds": 81.1506050331518,
+    "sampled_peak_process_tree_rss_bytes": 261087232,
+    "minimum_available_host_memory_bytes": 21271588864
+  },
+  "guard_group_review_failures": 5,
+  "guard_group_process_started": false,
+  "six_product_apis_unchanged_after_guard_correction": true,
+  "checker_sha256": "c0bf2bca3abf225d566a9e8545fdddaf853adca46bc0086fe45a78a97c2ef9c3",
+  "single_group_launcher_sha256": "d30e1b630e63dae178fd354e4e2317716db605a80f034a7d7b8ec07743fe3aa9",
+  "expected_counts_enforced_for_remaining_groups": true,
+  "last_resume_utc": "2026-10-29T16:13:43.642617+00:00",
+  "review_failures_on_latest_resume": [
+    "Automatic approval review failed: Selected model is at capacity. Action was not executed; this is not a determination that the action is unsafe.",
+    "The automatic permission approval review did not finish before its deadline. Do not assume the action is unsafe based on the timeout alone."
+  ],
+  "latest_chief_update_delivered": false,
+  "latest_chief_update_error": "Automatic approval review failed: Selected model is at capacity; message was not sent.",
+  "finalizer": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/finalize_owned_calcium_profile_barriers.py",
+    "sha256": "469f340eabbec12b4f27a89a1bc9f3bed5ac87015975d082688a5fa08b5df897",
+    "execution_pending_complete_90_check_evidence": true,
+    "host_refusal_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/owned_calcium_profile_barrier_finalizer_host_check.json",
+      "sha256": "87f8679d1f94003752c9d1f6c150aaabcd2387a161bc7fcaa88cda764fad22b9"
+    }
+  },
+  "root_additional_evidence_separate": {
+    "corrected_source_evolved_history_public_checks": 2,
+    "new_calcium_fuel_epoch_checks_reported": 40,
+    "new_epoch_independent_full_field_stages_reported": 12,
+    "does_not_replace_component_qualification": true
+  },
+  "next_feature": {
+    "scope": "combined membrane+ECM water/repair",
+    "status": "implementation started by subsequent explicit Chief assignment; component acceptance remains pending",
+    "api_and_queue": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/joint_water_profile_barrier_workqueue.json",
+    "existing_calcium_fuel_component_qualification_unchanged": true
+  },
+  "root_epoch_files_and_active_jobs_untouched": true,
+  "automatic_retry": false,
+  "cpu6_worker_process_active": false,
+  "remaining_launch_owner": "Cells Chief Developer",
+  "handoff_of_launch_ownership": "Chief explicitly took remaining86 checks through its normal authorized CPU tools, preserving the same limits and using separate output. Worker must not launch these groups."
+}

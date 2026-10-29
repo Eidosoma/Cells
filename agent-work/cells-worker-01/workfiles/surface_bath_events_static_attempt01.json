@@ -1,0 +1,9 @@
+{
+  "kind": "cells.surface_bath_events_static_audit_failure@1",
+  "scientific_cases_executed": 0,
+  "failure": "AST walker rejected an unexecuted Cells import inside external junction_transport.check.check(); surface_reference imports only its independent decimal_flux helper.",
+  "traceback": "ValueError: Production/JAX import in reference: validation/betse/junction_transport/check.py",
+  "source_snapshot": "agent-work/cells-worker-01/workfiles/frozen/surface_bath_events_reference_static_attempt01_9493677a139f7ab7.py",
+  "source_sha256": "9493677a139f7ab71989537b938faa2ef1b92574739b16495853961f18bef077",
+  "resolution": "Scope import-closure audit to module initialization; separately retain complete source hashes and audit own/legacy reference bodies. No equations or tolerances change."
+}

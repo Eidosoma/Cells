@@ -1,0 +1,31 @@
+{
+  "kind": "cells.open_calcium_bath_trajectory_receipt_correction@1",
+  "utc": "2026-10-29T22:24:18.170106+00:00",
+  "status": "passed_software_only",
+  "worker_owned_changed_function": "dependencies",
+  "pre_correction_common_sha256": "98773ea88d96e3cf8146fb983013917df2595c3a164a2cf070fd295d84603b27",
+  "corrected_common_sha256": "9e12d73aa0fe428c59f4e9e2823c9e4a04a43b8e712523f295e66400976079e0",
+  "all_other_common_AST_nodes_identical": true,
+  "root_chunk_fix_preserved": true,
+  "root_comparison_receipt": {
+    "path": "/mnt/workspaces/Cells/bath-trajectory-comparison-tests-20261029-02/result.json",
+    "sha256": "6a5d73217b3a01f5e6c35e3977a0a095cbe08bd4f23e25a66d24f17bed0a5a78",
+    "scope": "Chief reported24 comparison/chunk/lineage checks; chunk body preserved, not reexecuted by worker"
+  },
+  "retained_failure": {
+    "path": "/mnt/workspaces/Cells/bath-trajectory-preparation-tests-20261029-02/failure.json",
+    "sha256": "18efcfa8b7491f6bc81652495d7e589b3bdc9d29a3f997db9810692365fc3a19",
+    "expected_failures": 2,
+    "previous_passes": 41
+  },
+  "corrected_checks": {
+    "path": "/mnt/workspaces/Cells/bath-trajectory-preparation-tests-20261029-03/result.json",
+    "sha256": "9da3afc788855f845b4fbc6a2f44860d5b40aaafd3f38e09370a6fcb0b4cc880",
+    "checks": 54
+  },
+  "policy": "finite numeric nonnegative elapsed<=480; samples must be a positive integer; other policy unchanged",
+  "physics_or_tolerance_changes": [],
+  "scientific_credit": false,
+  "numerical_launches": 0,
+  "active_job_polls": 0
+}

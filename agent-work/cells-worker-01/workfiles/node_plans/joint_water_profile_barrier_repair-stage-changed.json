@@ -1,0 +1,11 @@
+[
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-joint-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-duplicates-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-INIT-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-disabled-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-membrane-only-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-barrier-only-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-closed-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-guarded-repair_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-negative-safe-repair_owner]"
+]

@@ -91,7 +91,7 @@ def _validate_window_plan(plan, checkpoint):
     # or completed suffix must not turn that full-history check into one call
     # per historical step. checked_grid still caps its chunks to the storage
     # budget; this width changes neither the clock nor the execution window.
-    checked_grid(plan.spec, window_steps=plan.policy.window_steps)
+    checked_grid(plan.spec)
     if checkpoint is not None:
         validate_checkpoint(plan.spec, checkpoint, plan.grid)
 

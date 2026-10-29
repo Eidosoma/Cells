@@ -1,0 +1,176 @@
+{
+  "AST_declared_parametrized_unit_cases": {
+    "tests/unit/test_open_calcium_bath_events.py": 58,
+    "tests/unit/test_open_calcium_bath_events_reference.py": 33
+  },
+  "RHS_or_integrator_calls": 0,
+  "accepted_owned_source_files_unchanged": 14,
+  "active_job_polls": 0,
+  "fixture_assembly": "AST-only raw dictionary transformations against immutable accepted JSON; no fixture/model imports",
+  "full8us02_bundle_unchanged": true,
+  "kind": "cells.open_owned_calcium_bath_static_preparation@1",
+  "model_initializations": 0,
+  "model_parses": 0,
+  "numerical_launches": 0,
+  "python_AST_and_Ruff_files": 10,
+  "raw_fixture_metadata": [
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "overlap",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "df423bb72fae19aaf32f40e651dc67e2afafc46320a5ea01f21e02136c69fdb7"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "single",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "c04e3da314233cfa92dc44701b94893b126bded6cff21d59f8a6d22e09ef04e5"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "negative",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "29f89c11754cadb3552d243fdd8dfe449ae8da183f9caa1eee5b3f59daadc97a"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "empty",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "1599c2fb636a8874ed32e49c93283ffc4543db9c61f76edf63fa1453908742e9"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "disabled",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "508ca7238cd02f80f1627660ef2a75b7cf42b729b5042c925eb54d3b2f078cd1"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "init",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "194c2612fc2e6bd5f435010de643eeb2d7a0b6be60935f3fe8a9c3a92f8e22c2"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "permuted",
+      "chemical_species": 11,
+      "family": "calcium",
+      "ionic_species": 5,
+      "raw_definition_sha256": "4fa1bbf77a0cc5326c0876e7773c9f7578db97f539dd0b487bdf0216f2cab51b"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "cl_only",
+      "chemical_species": 10,
+      "family": "calcium",
+      "ionic_species": 4,
+      "raw_definition_sha256": "f6721f314c8f137283cd4bc0e0fb0cf8e41ca4ec5c338efb3499b52543f526e7"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "overlap",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "299ecdb92eea0ea04ff16648e055961b6cc658b2551f9546ac8b1d1d318227e5"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "single",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "7f8deed79b716f737905c0bc6b66d3ed2cae1c68a76cfc5e0f9f742cf926af16"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "negative",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "45489a8c050d44fdb3d08e2ca43e08d0efc50c1e035b155aec3979b641998c3f"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "empty",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "553921690940fab4206c22566d34a4e2581bb8052d307075d3d597eab4f57dcb"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "disabled",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "5aa215a35898af7f81004aacca197fe6b35fdc7880dd5608f5fd1489a2cbb96a"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "init",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "46cca753090447f3f1e6ecc32377eb6696c47e7cf660b1e46db566471d53ea56"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "permuted",
+      "chemical_species": 11,
+      "family": "energy",
+      "ionic_species": 5,
+      "raw_definition_sha256": "ce12dd6b8670fafbbc32bca3721eb40b8c65bf595a172728438e0faf09dbf670"
+    },
+    {
+      "all_control_species_keys_complete": true,
+      "background_unchanged": true,
+      "case": "cl_only",
+      "chemical_species": 10,
+      "family": "energy",
+      "ionic_species": 4,
+      "raw_definition_sha256": "f647ceac8f109bdc71e80577693dff7ca95a1ed9d42f70c4b8f53a79a42e5006"
+    }
+  ],
+  "sources_sha256": {
+    "src/cells/core/open_calcium_bath_binding.py": "711babd2ee4c974a47da610caa604c962835ca504809be80b75edbb35c8b8cbb",
+    "src/cells/core/surface_open_calcium_bath_events_spec.py": "032bf3257faaf410ff3e6655520a4d5be5b4e9a43ae09942655b393cc72ffaf1",
+    "src/cells/core/surface_open_calcium_energy_bath_events_spec.py": "0c8ec081a668bbb81851c4a5a652b264a7b5af37bf8e55bc88fd4071fd380916",
+    "src/cells/models/open_calcium_bath_runtime.py": "bc70a3ca445dd7982d138c4d090d8d28622092912bcd36b65cfcf1206d0a21f5",
+    "src/cells/models/surface_open_calcium_bath_events.py": "a21886c468ed18fa3ae3b1be3e68b76af0bf7a3caceb1daacfdd9ae0d8bf574b",
+    "src/cells/models/surface_open_calcium_energy_bath_events.py": "ffdabf59bb9b70d0c6e4d0ec88ae297010df83523194d70f319cab14fd84d918",
+    "tests/unit/test_open_calcium_bath_events.py": "38232445be770e1cd22ddb77dcb56358ecde9a684f5c03230200bf52968753b7",
+    "tests/unit/test_open_calcium_bath_events_reference.py": "b76d274c453bd1ae46f0f345009b3b59561460a08bced263ddca6925a21f7365",
+    "validation/tissue/open_calcium_bath_fixtures.py": "9fdb9088e08343032eb7b0480a6b16ea434f3183ded69b94207f11c741ee25d7",
+    "validation/tissue/open_calcium_bath_reference.py": "51c3110709ef6cc4ada361c44558b83756a3374d55a57b5536f0386d112cbc3b"
+  },
+  "status": "static_metadata_passed_scientific_execution_pending",
+  "unexecuted_turnover_boundary_test": "Actual low-Pi cell +K bath input; both inherited static guards required to pass, nearby accepted step and bath-only refusal above0.05; no guards bypassed"
+}

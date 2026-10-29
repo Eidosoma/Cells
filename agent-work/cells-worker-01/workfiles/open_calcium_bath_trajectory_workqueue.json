@@ -1,0 +1,57 @@
+{
+  "kind": "cells.open_calcium_bath_full8us_trajectory_workqueue@1",
+  "status": "new_workers_static_checked_pending_epoch_receipt_no_launch",
+  "source_files": [
+    "validation/tissue/open_calcium_bath_trajectory_common.py",
+    "validation/tissue/open_calcium_bath_trajectory_oracle.py",
+    "validation/tissue/open_calcium_bath_trajectory_production.py",
+    "validation/tissue/open_calcium_bath_trajectory_observers.py",
+    "validation/tissue/open_calcium_bath_trajectory_compare.py",
+    "agent-work/cells-worker-01/workfiles/prepare_open_calcium_bath_trajectories.py",
+    "agent-work/cells-worker-01/workfiles/run_open_calcium_bath_trajectory_role.py"
+  ],
+  "protocol": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_trajectory_protocol.json",
+  "static_receipt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_calcium_bath_trajectories_static_de3eb929d57f743d.json",
+    "sha256": "a6fb78a0bd1d25031333a7ec91ec41dbff96f359632b44faa36db5c1722c5a64"
+  },
+  "planned_roles": 40,
+  "observer_channels": {
+    "epoch-calcium": 89,
+    "epoch-energy": 107,
+    "init-calcium": 87,
+    "init-energy": 105,
+    "ordinary-calcium": 87,
+    "ordinary-energy": 105
+  },
+  "role_dependencies": "matching actual INIT integration -> epoch integration; two independent oracles -> observer projection; six phase receipts -> ordinary compare; twelve INIT+SIM receipts -> epoch compare",
+  "launch_owner": "Cells Chief Developer",
+  "aggregate_launcher_owner": "Cells Chief Developer",
+  "numerical_launches": 0,
+  "active_job_polls": 0,
+  "bundle": null,
+  "launch_ready": false,
+  "required_to_finish": "Chief final epoch completion/source inventory and four qualified raw evidence paths",
+  "handoff": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/OPEN_CALCIUM_BATH_TRAJECTORIES_PREP.md",
+  "software_gate_checks": {
+    "path": "/mnt/workspaces/Cells/bath-trajectory-preparation-tests-20261029-03/result.json",
+    "sha256": "9da3afc788855f845b4fbc6a2f44860d5b40aaafd3f38e09370a6fcb0b4cc880",
+    "checks": 54,
+    "test_file": "validation/tissue/test_open_calcium_bath_trajectory_preparation.py",
+    "synthetic_host_tests_only": true,
+    "scientific_credit": false,
+    "handed_off_worker_files_changed": [
+      "validation/tissue/open_calcium_bath_trajectory_common.py"
+    ]
+  },
+  "previous_static_receipts": [
+    {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_calcium_bath_trajectories_static_d6d5f70433876f08.json",
+      "sha256": "0d7d601f250779a99b131be95a4d4bdf9150e7dd5b0b482fdf123f7b35fa18bb"
+    }
+  ],
+  "source_correction": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_trajectory_receipt_correction.json",
+    "sha256": "b1585dc2132dabf43bbf15b7c4cf5c6877716d9213dc3324f3928f597998c935"
+  }
+}

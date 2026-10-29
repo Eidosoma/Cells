@@ -15,6 +15,7 @@ from cells.core.specs import (
     ConfigError,
     KineticPumpSpec,
     MaintainedMetabolismSpec,
+    SimulationSpec,
     _fields,
     _integer,
 )
@@ -235,7 +236,13 @@ def to_dict(spec):
     return raw
 
 
-def parse(data):
+def _decode_components(data, *, calcium_decoder=prior._decode_components):
+    """Decode actual fuel/chemical ownership without finite-tissue admission.
+
+    The default returns private unadmitted declarations, including actual
+    reservoir flags. Public closed parse retains its admitted calcium parser;
+    separate open families must supply their own complete physical guards.
+    """
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
@@ -368,7 +375,7 @@ def parse(data):
         if extended
         else prior.CATALOG_MODEL_ID
     )
-    original = prior.parse(raw)
+    original = calcium_decoder(raw)
     b = original.model
 
     def finite(pump, key, kind):
@@ -447,6 +454,12 @@ def parse(data):
         ),
         execution=Execution(**vars(original.execution), regeneration_capacity=capacity),
     )
+    return prior._OwnedDeclarations(spec.model, spec.experiment, spec.execution)
+
+
+def parse(data):
+    declared = _decode_components(data, calcium_decoder=prior.parse)
+    spec = SimulationSpec(declared.model, declared.experiment, declared.execution)
     from cells.models import surface_calcium_energy
 
     try:

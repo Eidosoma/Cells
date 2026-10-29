@@ -1,0 +1,50 @@
+{
+  "kind": "cells.open_owned_calcium_decoder_retention@1",
+  "records": {
+    "src/cells/core/surface_calcium_spec.py": {
+      "closed_parse_ast_exact_after_mechanical_extraction_reversal": true,
+      "unchanged_existing_helpers": [
+        "SurfaceCalciumModel",
+        "SurfaceCalciumChannelModel",
+        "SurfaceCalciumSodiumModel",
+        "SurfaceCalciumHCNModel",
+        "SurfaceCalciumKv1Model",
+        "SurfaceCalciumCavModel",
+        "SurfaceCalciumCatalogModel",
+        "SurfaceCalciumExtendedCatalogModel",
+        "SurfaceCalciumActivatedCatalogModel",
+        "SurfaceCalciumMorrisLecarModel",
+        "SurfaceCalciumHCNExtraModel",
+        "model_id",
+        "Execution",
+        "Change",
+        "Experiment",
+        "ionic_spec",
+        "to_dict",
+        "ordered"
+      ],
+      "new_sha256": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce"
+    },
+    "src/cells/core/surface_calcium_energy_spec.py": {
+      "closed_parse_ast_exact_after_mechanical_extraction_reversal": true,
+      "unchanged_existing_helpers": [
+        "FiniteCalciumPump",
+        "SurfaceCalciumEnergyModel",
+        "SurfaceCalciumEnergyCatalogModel",
+        "SurfaceCalciumEnergyActivatedModel",
+        "SurfaceCalciumEnergyMorrisLecarModel",
+        "SurfaceCalciumEnergyHCNExtraModel",
+        "model_id",
+        "Execution",
+        "Control",
+        "Change",
+        "Experiment",
+        "initial_prior_spec",
+        "to_dict"
+      ],
+      "new_sha256": "02d02acd94909050df5e07417353b784cb81867955707e2213376ffe05902aec"
+    }
+  },
+  "static_only": true,
+  "numerical_cases_executed": 0
+}

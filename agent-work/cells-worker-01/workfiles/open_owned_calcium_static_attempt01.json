@@ -1,0 +1,12 @@
+{
+  "kind": "cells.open_owned_reference_audit_failure@1",
+  "host_failure": "ValueError: Non-reference dependency: tests/__init__.py",
+  "root_failed_evidence": "/mnt/workspaces/Cells/open-calcium-public-integration-20261029-01/components-06",
+  "live_before_sha256": "2b4599a99cc321709f4e794e92958db4d94e5deb4f0e5086a5c5f48a82de3b35",
+  "frozen_sha256": "c3d3b68cb60a3ce2c8d7f7efea32e2b8bbc17798b500e0dc465ad2d9714a23db",
+  "functions_changed_since_root_snapshot": [
+    "evaluate"
+  ],
+  "initializer_body": "\"\"\"Independent validation of the M1a engineering fixture.\"\"\"\n",
+  "scientific_cases_executed_by_worker": 0
+}

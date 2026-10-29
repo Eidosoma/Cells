@@ -1,0 +1,17 @@
+[
+  "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[INIT-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[disabled-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[membrane-only-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[barrier-only-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[joint-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[closed-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[joint-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[INIT-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_no_projection_or_older_water_runtime_is_used[water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_live_volume_drives_all_three_pumps_and_neutral_osmolytes_once[water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_both_closed_routes_keep_actual_ledgers_in_observation_and_lesion_rates[water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[membrane-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[barrier-water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_phase_clock_tolerance_keeps_the_actual_physical_horizon[water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_duplicate_occurrences_assign_without_adding_material_or_coefficients[water_owner]"
+]

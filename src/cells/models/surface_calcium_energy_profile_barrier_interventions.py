@@ -221,9 +221,18 @@ def check_definition(spec):
 
 
 def check_steps(spec, steps, controls):
-    # The complete parent's chemical/fuel/transport bounds see the maximum
-    # possible face coefficients, never the closed baseline or passive owner.
-    base.check_steps(accounting_spec(spec), steps, controls)
+    from cells.core import owned_calcium_profile_binding as background
+    from cells.models import surface_calcium_energy as fuel
+    from cells.processes import calcium_gates
+
+    complete = accounting_spec(spec)
+    base.check_steps(complete, steps, controls)
+    _, p = initial_values(spec)
+    bound = background.background_loss_bound(
+        accounting_layout(p, xp=np), max(map(abs, calcium_gates.VOLTAGE_DOMAIN_V))
+    ) + fuel.prior.loss_bound(fuel.bounded_prior_spec(complete))
+    if not np.isfinite(bound) or np.max(steps, initial=0) * bound > 0.25:
+        raise ConfigError("Combined finite-fuel step * background/chemical loss exceeds 0.25")
     binding.check_ramp_steps(spec, steps)
 
 

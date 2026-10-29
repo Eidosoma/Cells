@@ -1,0 +1,83 @@
+{
+  "active_or_frozen_jobs_touched": false,
+  "all_stage_node_ids": [
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-passive]",
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-active]",
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[empty-passive]",
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[empty-active]"
+  ],
+  "bridge_id": "ideal_reservoir_bath_init_checkpoint_explicit_sim_operation@1",
+  "carried_non_clock_fields": {
+    "active": 20,
+    "passive": 13
+  },
+  "declared_unit_cases": 94,
+  "first_stage_node_ids": [
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-passive]",
+    "tests/unit/test_surface_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-active]"
+  ],
+  "fixture": "validation/topology/surface_bath_phase_fixtures.py",
+  "kind": "cells.surface_bath_epoch_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "model_ids": {
+    "active": "resolved_active_bath_epoch@1",
+    "passive": "resolved_passive_bath_epoch@1"
+  },
+  "numerical_qualification": false,
+  "ordinary_ids": {
+    "active": "resolved_active_bath_events@1",
+    "passive": "resolved_passive_bath_events@1"
+  },
+  "ordinary_reference_not_frozen_by_worker": true,
+  "ordinary_runtime_derivative_correction_sha256": "9708d7faa9d464d850459488358f3247a8460ac3e2fefdef0ba8dcc803978562",
+  "preparation_kind": "cells.surface_bath_phase_handoff_preparation@1",
+  "products": [
+    "src/cells/core/surface_bath_phase_handoff.py",
+    "src/cells/core/surface_passive_bath_epoch_spec.py",
+    "src/cells/core/surface_active_bath_epoch_spec.py",
+    "src/cells/models/surface_bath_epoch.py",
+    "src/cells/models/surface_passive_bath_epoch.py",
+    "src/cells/models/surface_active_bath_epoch.py"
+  ],
+  "public_routing_credit": false,
+  "qualification_dependency": "Root-owned ordinary bath reference charge-subtraction correction; freeze current Root-approved dependency for numerical qualification",
+  "reference": "validation/topology/surface_bath_phase_handoff_reference.py",
+  "request_kind": "cells.surface_bath_phase_handoff_request@1",
+  "risks": [
+    "Only INIT sources accepted: resetting a SIM source could otherwise lose its existing analytic dose",
+    "Every transport/history array including reservoir_chemical_work_pJ carries exactly; only phase clock resets",
+    "New SIM initial logistic-tail dose, charge/electrode compensation and work are an explicit separate operation",
+    "Original physical owner, references/fixed background, voltages, topology and every capacity are unchanged",
+    "Carried-state admission uses every held control and bath on/mid/off clock with all inherited bounds",
+    "Independent reference verifies typed histories/padding/anchors/geometry; production bridge verifies all numerical caches exactly",
+    "Independent source/target energy is evaluated against original anchors; no history rebase"
+  ],
+  "scope": "short INIT prefix carry and stage/operation checks; no full trajectory, equilibration or new biological claim",
+  "shared_ownership": "Chief owns shared routing, public fixtures/tests, PROGRESS and numerical launch/qualification",
+  "source_hashes": {
+    "src/cells/core/surface_active_bath_epoch_spec.py": "42a8e7f8b9f28a6d099e869d4afc92fa734af1ea4cd09fb2b0b07cc185e3deef",
+    "src/cells/core/surface_bath_phase_handoff.py": "010ba4ab7341d067690c749fd99282da8849ae39b32c1895080686e55329a145",
+    "src/cells/core/surface_passive_bath_epoch_spec.py": "5a601044e3dc47a57960d90981f4ba96319f2408e7b0047f708b074c331dbd64",
+    "src/cells/models/surface_active_bath_epoch.py": "0c4272a8ccdb0ef94a35f0b34b62d6ede8fb96746da0bc4eb5aa1bb967a1d5a8",
+    "src/cells/models/surface_bath_epoch.py": "1099c72d507cf92f73a37a1575b12773f9bf81d5d862944ecbd7711f329ad011",
+    "src/cells/models/surface_passive_bath_epoch.py": "6a29e296fd87b0e6cae82d7c5be0ef9226ab284ed0d5384f9cc10031daa3da2d",
+    "tests/unit/test_surface_bath_phase_handoff.py": "9f9aee92acabf643683f8eaf34fd6ab5a304faa84d88badcd88bfbc6c9711714",
+    "tests/unit/test_surface_bath_phase_reference.py": "75de60ee721f5e5e6c9bff10cece78e2cb3890ad3a30ee014af48a1fa55f93cd",
+    "validation/topology/surface_bath_phase_fixtures.py": "082d535eb7ceee270a616e5fc9ae33419e938b400363a5bd24dc36473c77584b",
+    "validation/topology/surface_bath_phase_handoff_reference.py": "fe0643a2e3a036085d7c43024e0c629451a9bfd3fc40a2302d43601047ce0c56"
+  },
+  "state_counts": {
+    "active": 21,
+    "passive": 14
+  },
+  "static_audit": {
+    "path": "agent-work/cells-worker-01/workfiles/host_checks/surface_bath_epoch_261b74ad4f0a3b57.json",
+    "sha256": "261b74ad4f0a3b5796eb5f7d318705606136b25c3c8078be9e4a8db099081b91"
+  },
+  "status": "static_handoff_ready_numerical_qualification_pending",
+  "units": [
+    "tests/unit/test_surface_bath_phase_handoff.py",
+    "tests/unit/test_surface_bath_phase_reference.py"
+  ],
+  "worker_numerical_launch": false
+}

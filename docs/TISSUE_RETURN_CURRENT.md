@@ -3267,3 +3267,74 @@ for these scheduled models. The interface tests use
 two nanoseconds to exercise real execution and fresh-process restart; those
 checks do not establish a physical recovery timescale. Independent trajectory
 qualification and current limitations are recorded in [Progress](../PROGRESS.md).
+
+### Static ideal reservoirs with calcium and finite fuel
+
+Two explicit full-catalog families retain owned cytosolic/ER chemistry and all
+56 channel laws while allowing static ideal chemical and voltage reservoirs:
+
+| Model | Energy owner | Saved physical fields |
+| --- | --- | ---: |
+| `resolved_open_calcium@1` | Maintained pump metabolism | 34 |
+| `resolved_open_calcium_energy@1` | Actual cellular ATP/ADP/phosphate shared by Na/K, PMCA and ER pumps | 38 |
+
+The complete ordinary calcium/fuel definition is extended with
+`exterior_policy: static_declared_ideal_chemical_and_voltage_reservoirs@1`,
+`ionic_moiety_domain_policy: hard_global_ionic_moiety_ceilings_fmol_every_stage@1`
+and `ionic_moiety_ceiling_fmol`, a map from every ionic species ID to a positive
+global upper amount in fmol. Each exterior owner's existing `reservoir` flag,
+volume, original inventory and boundary potential remain explicit. Mixed finite
+and ideal exteriors are allowed. With no ideal reservoirs, the ceiling must be
+`null` and the original closed-family admission applies.
+
+An ideal reservoir maintains its declared concentration while recording all
+supplied or removed ions. Plasma calcium pumps, Na/Ca exchange and calcium
+channels contribute to that supply alongside the original ionic routes.
+Electrode charge and external chemical/electrical work remain in the complete
+physical history. A bath does not replenish intracellular ATP: the finite-fuel
+family still consumes actual cellular pools and uses explicit regeneration ports.
+
+Ionic ceilings are hard domain limits checked at every stage. They bound the
+open-system chemical losses used for timestep admission; they are not conserved
+inventories and never clamp an invalid state. Nonionic chemical moieties and
+neutral-fuel adenylate/phosphorus retain their conservation checks. Changing a
+ceiling changes the model definition and cannot be hidden in a restart.
+
+Public loading, complete snapshots and independent-world admission use these
+distinct identities. Scheduled bath composition, INIT-to-SIM operations,
+profiles, cutting and assembly require their own explicit compositions. See
+[Progress](../PROGRESS.md) for measured qualification scope; input admission and
+short checkpoint probes do not establish long trajectories or GPU execution.
+
+### Scheduled baths with calcium and finite fuel
+
+The scheduled counterparts are `resolved_open_calcium_bath_events@1` and
+`resolved_open_calcium_energy_bath_events@1`. They retain the complete 34/38-field
+static calcium/fuel owner and add a bath clock and a reservoir chemical-work
+integral, giving **36 / 40 saved fields**. Current implementation and executed
+qualification scope are recorded in [Progress](../PROGRESS.md).
+
+Use the static owner's complete physical declaration with
+`exterior_policy: scheduled_declared_ideal_chemical_and_fixed_voltage_reservoirs@1`
+and the explicit bath-event, target-site, phase and controller declarations
+described in [scheduled ideal baths](TISSUE_GEOMETRY.md#schedule-ideal-reservoir-bath-composition).
+The native K, Cl and Na setter order is preserved. K/Na setters require an
+explicit M− species with inventories, chemical ownership and transport/control
+declarations; Cl-only schedules can use the four-ion owner. The five-ion test
+fixtures are separate manufactured models, not equivalent trajectories of the
+four-ion fixtures.
+
+Each stage uses the current prescribed bath concentration, actual calcium/ER
+state and actual ATP/ADP/phosphate pools. The controller's ion dose, compensating
+electrode charge and external work remain explicit. Saved parent fields retain
+transport history; `physical_*` observations add the analytic controller
+operation. Variable chemical work has its own integral because a static-bath
+constant-chemical-potential identity does not apply to a changing bath.
+
+The initial operation includes any nonzero logistic tail at time zero. Original
+background charges and chemical/fuel anchors remain unchanged. Hard ionic
+ceilings include the prescribed dose at every stage, and timestep admission
+checks the pulse envelope and finite-pool turnover. Empty, disabled and INIT
+schedules reduce to the corresponding static owner. Ordinary restart retains
+both physical histories and the bath clock; a new INIT-to-SIM handoff requires
+its own explicit composition.

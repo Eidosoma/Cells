@@ -1,0 +1,94 @@
+{
+  "status": "passed_static_only_pending_epoch_qualification",
+  "utc": "2026-10-29T22:24:18.171296+00:00",
+  "files_sha256": {
+    "validation/tissue/open_calcium_bath_trajectory_common.py": "9e12d73aa0fe428c59f4e9e2823c9e4a04a43b8e712523f295e66400976079e0",
+    "validation/tissue/open_calcium_bath_trajectory_oracle.py": "9aa05191980e0891d3230ffe979b636ce63b70d351c79ac57440734bc546cc75",
+    "validation/tissue/open_calcium_bath_trajectory_production.py": "661ace191f2aa755febe354c6794201b047f72bd0c15dbb073bb472c5afc1a89",
+    "validation/tissue/open_calcium_bath_trajectory_observers.py": "6bcbb8717539514262f2ba5a8928056cfa2f106406b9ac2432d269a36386b21e",
+    "validation/tissue/open_calcium_bath_trajectory_compare.py": "d6356456f1358813d0f79001bb0ace55a5cbf8eb8842f28dadf63fa5cc005836",
+    "agent-work/cells-worker-01/workfiles/prepare_open_calcium_bath_trajectories.py": "644ffe58b8bc6fb017b731d9b53e32311c5878f17f0045848ed1c1f315e0f19d",
+    "agent-work/cells-worker-01/workfiles/run_open_calcium_bath_trajectory_role.py": "877772f2451467a85856bdb37232fabe39c46e43655d80dc4e7c37380a4e5d1f"
+  },
+  "protocol_sha256": "bd6024aee6d3ba6c1881f0e35a3541eeb678c4e9a33800e142256417943faaad",
+  "AST_files": 7,
+  "ruff": {
+    "returncode": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": ""
+  },
+  "ordinary_metadata_checks": {
+    "calcium": {
+      "evidence": {
+        "path": "/mnt/workspaces/Cells/open-calcium-bath-public-integration-20261029-01/stage-preflight-01/evidence/open-calcium-bath-events/stages-calcium-overlap.json",
+        "sha256": "8594993a68e48c3515c551f45469001144fbdc6473f73a3a3858e2c6f34b384d"
+      },
+      "definition_sha256": "df423bb72fae19aaf32f40e651dc67e2afafc46320a5ea01f21e02136c69fdb7",
+      "duration_s": 8e-06,
+      "original_max_steps": 512,
+      "accepted_grid_samples": {
+        "1": 129,
+        "2": 257,
+        "4": 513
+      },
+      "state_fields": 36,
+      "ordinary_observer_fields": 87,
+      "epoch_observer_fields": 89,
+      "only_execution_change": "dt",
+      "static_declarations": {
+        "src/cells/models/surface_tissue.py": "OBSERVATION_FIELDS",
+        "src/cells/models/surface_kinetic.py": "STATE_AXES",
+        "src/cells/models/spatial_calcium.py": "ER_FIELDS",
+        "src/cells/models/surface_calcium.py": "OBSERVATION_FIELDS",
+        "src/cells/models/open_calcium_runtime.py": "EXTRA_OBSERVATIONS",
+        "src/cells/models/surface_bath_events.py": "EXTRA_OBSERVATIONS"
+      }
+    },
+    "energy": {
+      "evidence": {
+        "path": "/mnt/workspaces/Cells/open-calcium-bath-public-integration-20261029-01/stage-preflight-01/evidence/open-calcium-bath-events/stages-energy-overlap.json",
+        "sha256": "0c0a6438294777a46ac7f1115b1311c2cca71a6b6c3366dda9233c990f9f775b"
+      },
+      "definition_sha256": "299ecdb92eea0ea04ff16648e055961b6cc658b2551f9546ac8b1d1d318227e5",
+      "duration_s": 8e-06,
+      "original_max_steps": 512,
+      "accepted_grid_samples": {
+        "1": 129,
+        "2": 257,
+        "4": 513
+      },
+      "state_fields": 40,
+      "ordinary_observer_fields": 105,
+      "epoch_observer_fields": 107,
+      "only_execution_change": "dt",
+      "static_declarations": {
+        "src/cells/models/surface_tissue.py": "OBSERVATION_FIELDS",
+        "src/cells/models/surface_kinetic.py": "STATE_AXES",
+        "src/cells/models/spatial_calcium.py": "ER_FIELDS",
+        "src/cells/models/surface_calcium.py": "OBSERVATION_FIELDS",
+        "src/cells/models/surface_calcium_energy.py": "READOUTS",
+        "src/cells/models/open_calcium_runtime.py": "EXTRA_OBSERVATIONS",
+        "src/cells/models/surface_bath_events.py": "EXTRA_OBSERVATIONS"
+      }
+    }
+  },
+  "unchanged_metadata_checks_reused_from": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_calcium_bath_trajectories_static_d6d5f70433876f08.json",
+    "sha256": "0d7d601f250779a99b131be95a4d4bdf9150e7dd5b0b482fdf123f7b35fa18bb"
+  },
+  "software_gate_checks": {
+    "path": "/mnt/workspaces/Cells/bath-trajectory-preparation-tests-20261029-03/result.json",
+    "sha256": "9da3afc788855f845b4fbc6a2f44860d5b40aaafd3f38e09370a6fcb0b4cc880",
+    "checks": 54
+  },
+  "source_correction": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_trajectory_receipt_correction.json",
+    "sha256": "b1585dc2132dabf43bbf15b7c4cf5c6877716d9213dc3324f3928f597998c935"
+  },
+  "preparation_imported_cells_or_jax": false,
+  "numerical_evaluations": 0,
+  "numerical_launches": 0,
+  "active_job_polls": 0,
+  "launch_ready": false,
+  "remaining": "Require Chief completed epoch qualification receipt and matching immutable source/evidence before final bundle freeze"
+}

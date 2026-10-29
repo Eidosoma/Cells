@@ -1,0 +1,115 @@
+{
+  "active_job_polls": 0,
+  "artifacts": [
+    "immutable source+input manifests",
+    "full raw definitions and original control clocks",
+    "per-stage/segment progress logs",
+    "typed full physical state/layout/control NPZ",
+    "compact full-grid trajectories",
+    "independent budget records",
+    "explicit failed trial state/control/time and traceback",
+    "supervisor resource stop and result receipts",
+    "comparison error and refinement metrics"
+  ],
+  "base_dt_s": 6.25e-08,
+  "dt_divisors": [
+    1,
+    2,
+    4
+  ],
+  "duration_s": 8e-06,
+  "epoch_init_duration_s": 8e-06,
+  "epoch_sim_duration_s": 8e-06,
+  "execution_policy": "Root-only future one-role commands under existing run_bounded supervisor; aggregate jobs detached/durable if expected>=10min; no automatic polling or dependent followup launch",
+  "families": [
+    "calcium",
+    "energy"
+  ],
+  "files_planned": [
+    "validation/tissue/open_calcium_bath_trajectory_common.py",
+    "validation/tissue/open_calcium_bath_trajectory_oracle.py",
+    "validation/tissue/open_calcium_bath_trajectory_production.py",
+    "validation/tissue/open_calcium_bath_trajectory_observers.py",
+    "validation/tissue/open_calcium_bath_trajectory_compare.py",
+    "agent-work/cells-worker-01/workfiles/prepare_open_calcium_bath_trajectories.py",
+    "agent-work/cells-worker-01/workfiles/run_open_calcium_bath_trajectory_role.py"
+  ],
+  "input_policy": "qualified recipe/ramps/all controls/8us horizons/resource and shape caps frozen; change execution.dt only",
+  "kind": "cells.open_calcium_bath_full8us_pipeline_protocol@1",
+  "numerical_launches": 0,
+  "observer_boolean_policy": "exact equality; every mismatch exceeds the fixed comparison threshold",
+  "observer_comparison": "all qualified observer-map channels evaluated in separate production-only projection roles at independent standard/tight oracle states; independent field/source/work/invariant checks remain separate; no new all-formula independent-observer claim",
+  "observer_inventory": {
+    "epoch-calcium": 89,
+    "epoch-energy": 107,
+    "init-calcium": 87,
+    "init-energy": 105,
+    "ordinary-calcium": 87,
+    "ordinary-energy": 105
+  },
+  "oracle": {
+    "max_step_s": 6.25e-08,
+    "method": "DOP853 segmented at original control boundaries; bath evaluated at every internal state clock, ordinary experiment controls held at segment-left",
+    "process_independence": "separate oracle process imports no Cells/JAX; uses independent full-node/scalar actual-pool equations",
+    "samples": "full finest accepted grid, all original observer clocks and complete conservation at every accepted sample",
+    "standard": {
+      "charge_atol": 1e-29,
+      "rtol": 2e-11,
+      "state_atol": 2e-14
+    },
+    "tight": {
+      "charge_atol": 1e-30,
+      "rtol": 2e-12,
+      "state_atol": 2e-15
+    }
+  },
+  "ordinary_sim_duration_s": 8e-06,
+  "planned_roles": 40,
+  "product_edits": false,
+  "production": {
+    "backend": "cpu",
+    "field_sampling": "right-continuous controls at exact accepted observation boundaries",
+    "invariant_checks": "original parent production and independent molecular/capacitor/ER/fuel/source/work budgets at every accepted point",
+    "jit": false,
+    "method": "existing classical rk4_step with full-domain checked RHS witness at all4stages and accepted endpoint checks",
+    "precision": "float64",
+    "storage_window_steps": 8
+  },
+  "qualification_receipts": "required immutable ordinary and epoch source receipts; pending Root qualification",
+  "refinement": {
+    "all_three_levels_must_meet_trajectory_budget": true,
+    "common_times": "all coarse accepted times with exact membership in middle/fine grids",
+    "criterion": "If both successive differences are <=1% of accuracy budget, report accuracy below refinement resolution with no observed-order claim; otherwise require decreasing successive differences and observed order>=3",
+    "failure": "No shortening durations, moving controls, loosening tolerances or automatically adding further levels",
+    "roundoff_resolution_fraction": 0.01
+  },
+  "resources": {
+    "cpu": "explicit Root-selected affinity required at future execution",
+    "gpu": false,
+    "max_child_tree_rss_bytes": 1073741824,
+    "max_role_wall_seconds": 480,
+    "memory_metric": "rss",
+    "min_available_host_bytes": 8589934592,
+    "persistent_compilation_cache": false,
+    "threads": 1
+  },
+  "scope": "synthetic full scheduled-bath temporal coupling: ordinary SIM8us and independent actual INIT8us->SIM8us calcium/fuel; no native/biology/performance claim",
+  "source_policy": "each production resolution and independent tolerance carries its own complete actual full8us INIT endpoint; reset only clock; no fresh pools",
+  "status": "static_runners_prepared_qualification_receipt_pending_no_launch",
+  "streaming": "production full-state and every observer row saved in storage-capped overlapping8-step chunks; preserve complete accepted grids on disk",
+  "tolerances": {
+    "charge_atol_C": 3e-25,
+    "clock_atol_s": 1.1368683772161602e-19,
+    "current_atol_A": 3e-23,
+    "energy_atol_pJ": 1e-10,
+    "field_potential_atol_V": 3e-13,
+    "field_potential_rtol": 3e-10,
+    "material_atol_fmol": 3e-14,
+    "oracle_tightening_max_fraction_of_budget": 0.1,
+    "pool_material_atol_fmol": 2e-12,
+    "rate_energy_atol_pJ_s": 1e-10,
+    "trajectory_charge_atol": 3e-23,
+    "trajectory_rtol": 3e-10,
+    "trajectory_state_atol": 3e-12
+  }
+}

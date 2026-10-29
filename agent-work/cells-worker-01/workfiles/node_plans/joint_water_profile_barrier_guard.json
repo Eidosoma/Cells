@@ -1,0 +1,4 @@
+[
+  "tests/unit/test_joint_water_profile_barriers.py::test_strong_background_sum_boundary_keeps_full_minimum_volume_and_injury_guards[water_owner]",
+  "tests/unit/test_joint_water_profile_barriers.py::test_strong_background_sum_boundary_keeps_full_minimum_volume_and_injury_guards[repair_owner]"
+]

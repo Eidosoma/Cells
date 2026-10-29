@@ -1,0 +1,65 @@
+{
+  "AST_declared_cases": 91,
+  "accepted_owned_source_edits": [],
+  "exact_reduction": "corresponding static5-ion owner for empty/disabled/INIT, original34/38 fields+all observations+two independent steps",
+  "first_stage_node_ids": [
+    "tests/unit/test_open_calcium_bath_events_reference.py::test_full36_40_independent_stage_fields_and_all_actual_bath_sources[overlap-calcium]",
+    "tests/unit/test_open_calcium_bath_events_reference.py::test_full36_40_independent_stage_fields_and_all_actual_bath_sources[overlap-energy]"
+  ],
+  "fixed_store_controls": "M explicitly follows declared Cl availability in every chemical passive control row; complete keys asserted",
+  "fixture": "validation/tissue/open_calcium_bath_fixtures.py",
+  "frozen_full8us02_bundle_edits": [],
+  "handoff": "agent-work/cells-worker-01/workfiles/OPEN_CALCIUM_BATH_HANDOFF.md",
+  "kind": "cells.open_owned_calcium_bath_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "model_ids": {
+    "calcium": "resolved_open_calcium_bath_events@1",
+    "energy": "resolved_open_calcium_energy_bath_events@1"
+  },
+  "new_five_ion_model": "distinct physical manufactured inputs; Cl/M split with real complete ownership and unchanged fixed background",
+  "products": [
+    "src/cells/core/open_calcium_bath_binding.py",
+    "src/cells/core/surface_open_calcium_bath_events_spec.py",
+    "src/cells/core/surface_open_calcium_energy_bath_events_spec.py",
+    "src/cells/models/open_calcium_bath_runtime.py",
+    "src/cells/models/surface_open_calcium_bath_events.py",
+    "src/cells/models/surface_open_calcium_energy_bath_events.py"
+  ],
+  "qualification_scope": "pending synthetic scheduled-bath/full56/Ca/ER/live-fuel component qualification; no full trajectory/native/biology/performance claim",
+  "reference": "validation/tissue/open_calcium_bath_reference.py",
+  "reference_dependencies": {
+    "files": 33,
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_reference_dependencies.json",
+    "sha256": "dc440f7c79e251d7b7ea5895a7f6f1dd22a302138616275850d50215a770434e"
+  },
+  "source_hashes": {
+    "src/cells/core/open_calcium_bath_binding.py": "711babd2ee4c974a47da610caa604c962835ca504809be80b75edbb35c8b8cbb",
+    "src/cells/core/surface_open_calcium_bath_events_spec.py": "032bf3257faaf410ff3e6655520a4d5be5b4e9a43ae09942655b393cc72ffaf1",
+    "src/cells/core/surface_open_calcium_energy_bath_events_spec.py": "0c8ec081a668bbb81851c4a5a652b264a7b5af37bf8e55bc88fd4071fd380916",
+    "src/cells/models/open_calcium_bath_runtime.py": "bc70a3ca445dd7982d138c4d090d8d28622092912bcd36b65cfcf1206d0a21f5",
+    "src/cells/models/surface_open_calcium_bath_events.py": "a21886c468ed18fa3ae3b1be3e68b76af0bf7a3caceb1daacfdd9ae0d8bf574b",
+    "src/cells/models/surface_open_calcium_energy_bath_events.py": "ffdabf59bb9b70d0c6e4d0ec88ae297010df83523194d70f319cab14fd84d918",
+    "tests/unit/test_open_calcium_bath_events.py": "38232445be770e1cd22ddb77dcb56358ecde9a684f5c03230200bf52968753b7",
+    "tests/unit/test_open_calcium_bath_events_reference.py": "b76d274c453bd1ae46f0f345009b3b59561460a08bced263ddca6925a21f7365",
+    "validation/tissue/open_calcium_bath_fixtures.py": "9fdb9088e08343032eb7b0480a6b16ea434f3183ded69b94207f11c741ee25d7",
+    "validation/tissue/open_calcium_bath_reference.py": "51c3110709ef6cc4ada361c44558b83756a3374d55a57b5536f0386d112cbc3b"
+  },
+  "source_ownership": "Chief owns shared routes/public fixtures/tests/PROGRESS/numerical qualification; worker new files only",
+  "state_counts": {
+    "calcium": 36,
+    "energy": 40
+  },
+  "static_receipt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_calcium_bath_e452d39b1deae858.json",
+    "sha256": "d75f0dfd6624196df0a210cc73ee1e6e23427175bc97e888cf8cfe4bc30a4444"
+  },
+  "status": "handed_off_static_complete_root_qualification_pending",
+  "turnover_boundary_status": "prepared_unexecuted_actual_input_case_no_guard_bypass",
+  "turnover_boundary_test": "tests/unit/test_open_calcium_bath_events_reference.py::test_actual_bath_corner_gross_turnover_crosses_0p05_with_all_other_guards_kept",
+  "units": [
+    "tests/unit/test_open_calcium_bath_events.py",
+    "tests/unit/test_open_calcium_bath_events_reference.py"
+  ],
+  "worker_active_job_polls": 0,
+  "worker_numerical_launches": 0
+}

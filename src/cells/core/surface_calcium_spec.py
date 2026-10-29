@@ -252,7 +252,29 @@ def ordered(rows, owner_key, names, required):
     return [result[name] for name in names]
 
 
-def parse(data):
+@dataclass(frozen=True)
+class _OwnedDeclarations:
+    """Decoded ownership only; neither an admitted nor executable simulation."""
+
+    model: object
+    experiment: object
+    execution: object
+
+
+def _require_finite_exterior(ion):
+    if any(c.reservoir for c in ion.model.extracellular):
+        raise ConfigError(
+            "Resolved calcium requires finite outside inventories for conserved-pool loss bounds"
+        )
+
+
+def _decode_components(data, *, exterior_check=None):
+    """Decode all actual component/ownership inputs, without tissue admission.
+
+    The closed public parser supplies its existing exterior check at the same
+    point as before. A separate open family must perform its own complete
+    physical/domain/step admission; these declarations carry no such promise.
+    """
     m = _fields(
         data["model"],
         {"id", "ionic", "stores", "plasma_transport", "calcium_channels", "ip3_release"},
@@ -340,10 +362,8 @@ def parse(data):
             execution={k: x[k] for k in ionic.Execution.__dataclass_fields__},
         )
     )
-    if any(c.reservoir for c in ion.model.extracellular):
-        raise ConfigError(
-            "Resolved calcium requires finite outside inventories for conserved-pool loss bounds"
-        )
+    if exterior_check is not None:
+        exterior_check(ion)
     cells, membranes = [c.id for c in ion.model.cells], [p.id for p in ion.model.membranes]
     if not 1 <= len(cells) <= 16:
         raise ConfigError("Resolved calcium supports 1–16 owned stores per world")
@@ -544,7 +564,7 @@ def parse(data):
                 _integer(row["activation_n"], "IP3 power", maximum=8),
             )
         )
-    spec = SimulationSpec(
+    return _OwnedDeclarations(
         (
             SurfaceCalciumHCNExtraModel
             if hcn_extra
@@ -584,6 +604,11 @@ def parse(data):
         ),
         Execution(**vars(ion.execution), chemical_capacity=capacity, reaction_capacity=reactions),
     )
+
+
+def parse(data):
+    declared = _decode_components(data, exterior_check=_require_finite_exterior)
+    spec = SimulationSpec(declared.model, declared.experiment, declared.execution)
     from cells.models.surface_calcium import check_definition
 
     check_definition(spec)

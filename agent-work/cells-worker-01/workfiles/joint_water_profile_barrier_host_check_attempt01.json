@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-29T16:35:21.503515+00:00",
+  "status": "failed_host_only_selection_preflight",
+  "numerical_imports_or_execution": false,
+  "test_source_sha256": "fb3991cb71deb91d10b8003611afd42050433f6558daf27f26ec924de1cd87ef",
+  "group": "first",
+  "expected_checks": 4,
+  "actual_declared_matches": 8,
+  "cause": "The inherited-guard test name also contained complete_parent, so a broad pytest -k keyword included four ramp cases. No group was launched.",
+  "correction": {
+    "rename_from": "test_each_native_ramp_guard_remains_in_addition_to_complete_parent",
+    "rename_to": "test_each_native_ramp_guard_keeps_all_inherited_limits",
+    "test_body_changed": false,
+    "physical_equations_or_budgets_changed": false
+  },
+  "old_source_reconstruction": "Replace rename_to by rename_from once in the current test source."
+}

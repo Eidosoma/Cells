@@ -1,0 +1,109 @@
+{
+  "AST_and_Ruff_files": 10,
+  "AST_declared_unit_cases": {
+    "tests/unit/test_open_calcium_bath_phase_handoff.py": 114,
+    "tests/unit/test_open_calcium_bath_phase_reference.py": 24
+  },
+  "RHS_or_integrator_calls": 0,
+  "Root_ordinary_unit_changes": "Root-owned3 test functions only; not worker edits",
+  "active_job_polls": 0,
+  "carried_pool_bound_has_no_fresh_initial_state_call": true,
+  "existing_shared_phase_helpers_unchanged": [
+    "src/cells/core/surface_bath_phase_handoff.py",
+    "src/cells/models/surface_bath_epoch.py"
+  ],
+  "full8us02_bundle_unchanged": true,
+  "independent_dependency_files": 35,
+  "kind": "cells.open_calcium_bath_epoch_static_handoff@1",
+  "metadata_fixture_method": "AST raw transformations plus source/checkpoint metadata placeholders; no typed source or numerical validation executed",
+  "model_initializations": 0,
+  "model_parses": 0,
+  "numerical_launches": 0,
+  "ordinary_production_reference_fixture_files_unchanged": {
+    "src/cells/core/open_calcium_bath_binding.py": "711babd2ee4c974a47da610caa604c962835ca504809be80b75edbb35c8b8cbb",
+    "src/cells/core/surface_open_calcium_bath_events_spec.py": "032bf3257faaf410ff3e6655520a4d5be5b4e9a43ae09942655b393cc72ffaf1",
+    "src/cells/core/surface_open_calcium_energy_bath_events_spec.py": "0c8ec081a668bbb81851c4a5a652b264a7b5af37bf8e55bc88fd4071fd380916",
+    "src/cells/models/open_calcium_bath_runtime.py": "bc70a3ca445dd7982d138c4d090d8d28622092912bcd36b65cfcf1206d0a21f5",
+    "src/cells/models/surface_open_calcium_bath_events.py": "a21886c468ed18fa3ae3b1be3e68b76af0bf7a3caceb1daacfdd9ae0d8bf574b",
+    "src/cells/models/surface_open_calcium_energy_bath_events.py": "ffdabf59bb9b70d0c6e4d0ec88ae297010df83523194d70f319cab14fd84d918",
+    "validation/tissue/open_calcium_bath_fixtures.py": "9fdb9088e08343032eb7b0480a6b16ea434f3183ded69b94207f11c741ee25d7",
+    "validation/tissue/open_calcium_bath_reference.py": "51c3110709ef6cc4ada361c44558b83756a3374d55a57b5536f0386d112cbc3b"
+  },
+  "policy_copies_identical": true,
+  "pytest_collections": 0,
+  "raw_recipe_metadata": [
+    {
+      "case": "changed",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "calcium",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "empty",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "calcium",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "negative",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "calcium",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "retarget",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "calcium",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "changed",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "energy",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "empty",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "energy",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "negative",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "energy",
+      "original_model_and_caps_unchanged": true
+    },
+    {
+      "case": "retarget",
+      "duration_s": 8e-06,
+      "explicit_M_controls": true,
+      "family": "energy",
+      "original_model_and_caps_unchanged": true
+    }
+  ],
+  "reference_dependency_manifest": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_epoch_reference_dependencies.json",
+    "sha256": "89e74d11ff6484e7ea6d7a259556d888f08d7204b3fbaa1ac9c47b201e8c6027"
+  },
+  "source_sha256": {
+    "src/cells/core/open_calcium_bath_phase_handoff.py": "1f4843c9331ac748c4418a8dccc5cfed81d719237c7cf7fc663d868455d6ea52",
+    "src/cells/core/surface_open_calcium_bath_epoch_spec.py": "8c4f1e78eb29fcc6b2d7265e3b11e4d31d4b27333c54b4a586f8e86a53690d48",
+    "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py": "19ad6b2665081f27b5b375a5e3edf4e63c5ed5095173b1bb8d87233dea90f875",
+    "src/cells/models/open_calcium_bath_epoch.py": "8100ad23b202e58a6fe1a6e7c652271eec1a215c91a344add677a298dbad0208",
+    "src/cells/models/surface_open_calcium_bath_epoch.py": "b4cfaec35e5fd4812b847e29db50a8ef6e0a4971ed1dc652f0f4867b1e6387d5",
+    "src/cells/models/surface_open_calcium_energy_bath_epoch.py": "9ff4b9661ccc4c43a564fde83991088c168767395fa1b78403e0029d838a1224",
+    "tests/unit/test_open_calcium_bath_phase_handoff.py": "c32aad8d2d16953bdc0654bf1d6ad8872728db5d37451e711c60bad381282cbb",
+    "tests/unit/test_open_calcium_bath_phase_reference.py": "b39d0216a286cb58eb980afc36318a43c144a3aa9dcd9141be70006fe6630fee",
+    "validation/topology/open_calcium_bath_phase_fixtures.py": "00f9c75555e56db4910a4d68daa761707f062f652495d955b640f2c9a7b4efd3",
+    "validation/topology/open_calcium_bath_phase_handoff_reference.py": "69c5b7779b720896d66de45cc9971330348057495f4985484c83ee2d1a7c6a65"
+  },
+  "status": "static_complete_numerical_qualification_pending"
+}

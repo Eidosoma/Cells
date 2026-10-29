@@ -11,6 +11,8 @@ from cells.core import active_profile_barrier_preparation as active_combined
 from cells.core import environment_barrier_composition_preparation as composed_barriers
 from cells.core import environment_barrier_preparation as environment_barriers
 from cells.core import geometry_profile_preparation as geometry_profiles
+from cells.core import joint_water_profile_barrier_preparation as water_combined
+from cells.core import owned_calcium_profile_barrier_preparation as calcium_combined
 from cells.core import tissue_profile_composition_preparation as composed
 from cells.core import tissue_profile_preparation as bridge
 from cells.core.specs import ConfigError, digest
@@ -90,6 +92,10 @@ def _provenance_bridge(provenance):
         raise ConfigError("Require complete preparation provenance")
     if provenance.get("kind") == active_combined.KIND:
         return active_combined
+    if provenance.get("kind") == calcium_combined.KIND:
+        return calcium_combined
+    if provenance.get("kind") == water_combined.KIND:
+        return water_combined
     if provenance.get("kind") == environment_barriers.KIND:
         return environment_barriers
     if provenance.get("kind") == composed_barriers.KIND:
@@ -116,6 +122,10 @@ def prepare_request(request):
     try:
         if type(request) is dict and request.get("kind") == active_combined.REQUEST_KIND:
             return active_combined.prepare(request)
+        if type(request) is dict and request.get("kind") == calcium_combined.REQUEST_KIND:
+            return calcium_combined.prepare(request)
+        if type(request) is dict and request.get("kind") == water_combined.REQUEST_KIND:
+            return water_combined.prepare(request)
         if type(request) is dict and request.get("kind") == environment_barriers.REQUEST_KIND:
             return environment_barriers.prepare(request)
         if type(request) is dict and request.get("kind") == composed_barriers.REQUEST_KIND:
@@ -169,7 +179,7 @@ def replay(provenance):
 
 def _write_preparation(directory, prepared):
     implementation = _provenance_bridge(prepared.provenance)
-    if implementation is not active_combined:
+    if implementation not in (active_combined, calcium_combined, water_combined):
         return implementation.write_preparation(directory, prepared)
     checked = replay(prepared.provenance)
     if digest(checked.definition) != digest(prepared.definition):
@@ -212,7 +222,11 @@ def main(argv=None):
             value = read_json(args.input)
             prepared = prepare_request(value) if args.command == "prepare" else replay(value)
             _write_preparation(args.output, prepared)
-        if prepared.provenance["kind"] == active_combined.KIND:
+        if prepared.provenance["kind"] in (
+            active_combined.KIND,
+            calcium_combined.KIND,
+            water_combined.KIND,
+        ):
             layers = {
                 "membrane": len(
                     prepared.provenance["profile_preparation"]["provenance"]["changes"]

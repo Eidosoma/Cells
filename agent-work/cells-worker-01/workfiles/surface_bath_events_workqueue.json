@@ -1,0 +1,76 @@
+{
+  "active_or_frozen_jobs_touched": false,
+  "declared_unit_cases": 90,
+  "derivative_correction": "agent-work/cells-worker-01/workfiles/surface_bath_derivative_correction.json",
+  "first_stage_node_ids": [
+    "tests/unit/test_surface_bath_events_reference.py::test_complete_all_control_and_bath_clock_stages_from_actual_prefix[passive]",
+    "tests/unit/test_surface_bath_events_reference.py::test_complete_all_control_and_bath_clock_stages_from_actual_prefix[active]"
+  ],
+  "fixture": "validation/transport/surface_bath_events_fixtures.py",
+  "initial_operation_kind": "cells.surface_bath_initial_controller_operation@1",
+  "kind": "cells.surface_bath_events_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "limits": [
+    "no worker numerical acceptance or public routing credit",
+    "no full bath trajectory, equilibration or biological claim",
+    "no finite-fuel/calcium-store/water owner or INIT-to-SIM bridge",
+    "non-ECM legacy setter semantics remain outside this physical family"
+  ],
+  "model_ids": {
+    "active": "resolved_active_bath_events@1",
+    "passive": "resolved_passive_bath_events@1"
+  },
+  "parent_ids": {
+    "active": "resolved_tissue@12",
+    "passive": "resolved_tissue@1"
+  },
+  "physics_audit": "agent-work/cells-worker-01/workfiles/SURFACE_BATH_EVENTS_AUDIT.md",
+  "prior_static_audit_matches_current_products": false,
+  "products": [
+    "src/cells/core/surface_bath_events_binding.py",
+    "src/cells/core/surface_passive_bath_events_spec.py",
+    "src/cells/core/surface_active_bath_events_spec.py",
+    "src/cells/models/surface_bath_events.py",
+    "src/cells/models/surface_passive_bath_events.py",
+    "src/cells/models/surface_active_bath_events.py"
+  ],
+  "reference": "validation/transport/surface_bath_events_reference.py",
+  "risks": [
+    "native overlapping counterion overwrite is charged; explicit electrode compensation retained",
+    "nonzero initial logistic tails are explicit material/charge/work preparation against original anchors",
+    "time-varying chemical work cannot use parent fixed-mu shortcut; path integral retained",
+    "no finite exterior concentration clamp or original background/ledger rebase",
+    "stage input view supplies current amounts/charge but is never saved as a new anchor",
+    "empty/disabled/INIT schedules retain exact original parent RHS fields",
+    "all56 ionic laws and all complete controls retained",
+    "physical source powers are exposed; analytically cancelling controller work is separated from transport residual"
+  ],
+  "shared_ownership": "Chief owns shared dispatch, public fixtures/CLI/tests, PROGRESS and qualification",
+  "source_hashes": {
+    "src/cells/core/surface_active_bath_events_spec.py": "6c8a509f24699946a45aca628917e13b61ff51c8d61d4bc7659b6647c237bfdc",
+    "src/cells/core/surface_bath_events_binding.py": "5ca3fad7fb1b6424c6c3cfd6016e73025204b1498780cf65bd46e779b2e42d23",
+    "src/cells/core/surface_passive_bath_events_spec.py": "e2d46e307b06ab8a68b00ca39d8bcc09f710687fded48f13d9fabbc3b29dd337",
+    "src/cells/models/surface_active_bath_events.py": "538c6adb3e3eeafb232bf5f0f98da5df3acac0ad6d73e78fc66176e8691bf2a1",
+    "src/cells/models/surface_bath_events.py": "9708d7faa9d464d850459488358f3247a8460ac3e2fefdef0ba8dcc803978562",
+    "src/cells/models/surface_passive_bath_events.py": "9e8c6aa3408296e09e9cacc2f2b1aa15fd59d7bf1e163b20e6d60671bf4233df",
+    "tests/unit/test_surface_bath_events.py": "c72f4b89dc4c78e861595daf0f005c3fd6cbdc5937b76c0aaf0278d4b7bf78a8",
+    "tests/unit/test_surface_bath_events_reference.py": "a7ec5420a5e92bdad5ddb39e9888145c270879703062b65b3648a335ca14c192",
+    "validation/transport/surface_bath_events_fixtures.py": "43d224a74346ba737c2ad7f19dcefbe8818da80be348784fb0f4cc178562598e",
+    "validation/transport/surface_bath_events_reference.py": "9eeb6481ec7b6a6b6fdbcff0db216fd9cb8687007c07bcc38c70eba0f470128a"
+  },
+  "state_counts": {
+    "active": 21,
+    "passive": 14
+  },
+  "state_semantics": "original transport fields plus explicit variable chemical-work integral and clock; physical_state adds prescribed controller contribution",
+  "static_audit": {
+    "path": "agent-work/cells-worker-01/workfiles/host_checks/surface_bath_events_68041912751e03b7.json",
+    "sha256": "68041912751e03b790e6d8a4ddf8e6ba86fda630911f3b0635f07ace6e4bf5be"
+  },
+  "status": "derivative_cancellation_corrected_root_numerical_rerun_pending",
+  "units": [
+    "tests/unit/test_surface_bath_events.py",
+    "tests/unit/test_surface_bath_events_reference.py"
+  ],
+  "worker_numerical_launch": false
+}

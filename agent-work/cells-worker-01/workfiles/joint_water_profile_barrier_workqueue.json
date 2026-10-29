@@ -1,0 +1,448 @@
+{
+  "status": "implementation_draft_component_acceptance_pending",
+  "utc": "2026-10-29T17:24:40.982277+00:00",
+  "preparation": {
+    "module": "cells.core.joint_water_profile_barrier_preparation",
+    "request_kind": "cells.joint_water_profile_barrier_preparation_request@1",
+    "kind": "cells.joint_water_profile_barrier_preparation@1",
+    "order": "static_membrane_profiles_then_extracellular_barriers@1",
+    "functions": [
+      "prepare(request)",
+      "replay(provenance)"
+    ]
+  },
+  "scheduled_artifact_kind": "cells.scheduled_joint_water_profile_barriers@1",
+  "owners": [
+    {
+      "family": "water",
+      "model_id": "resolved_calcium_energy_water_profile_barriers@1",
+      "parent_model_id": "resolved_calcium_energy_water@2",
+      "schema": "cells.core.surface_calcium_energy_water_profile_barrier_interventions_spec",
+      "runtime": "cells.models.surface_calcium_energy_water_profile_barrier_interventions",
+      "class": "SurfaceCalciumEnergyWaterProfileBarrierInterventionModel",
+      "physical_fields": 43,
+      "scheduled_fields": 44
+    },
+    {
+      "family": "repair",
+      "model_id": "resolved_calcium_energy_water_repair_profile_barriers@1",
+      "parent_model_id": "resolved_calcium_energy_water_repair@2",
+      "schema": "cells.core.surface_calcium_energy_water_repair_profile_barrier_interventions_spec",
+      "runtime": "cells.models.surface_calcium_energy_water_repair_profile_barrier_interventions",
+      "class": "SurfaceCalciumEnergyWaterRepairProfileBarrierInterventionModel",
+      "physical_fields": 48,
+      "scheduled_fields": 49
+    }
+  ],
+  "model_fields": [
+    "coupled_preparation",
+    "membrane_interventions",
+    "barrier_intervention",
+    "phase",
+    "timing_policy",
+    "reset_policy"
+  ],
+  "execution_fields": [
+    "intervention_capacity",
+    "intervention_target_capacity",
+    "barrier_target_capacity"
+  ],
+  "timing_policy": "phase_clock_rk_stage_native_logistic@1",
+  "reset_policy": "fresh_phase_zero_scheduled_sim_only@1",
+  "all_parent_controls_preserved": true,
+  "current_volume_and_fuel_stage_layout": true,
+  "original_accounting_anchors_and_histories_preserved": true,
+  "minimum_volume_summed_guards_and_both_ramps_kept": true,
+  "product_sha256": {
+    "src/cells/core/joint_water_profile_barrier_preparation.py": "0d2861ecacef54074d11ba4dbbae2b9e2d1dcaed024da85d394c2bd3f8c88cb8",
+    "src/cells/core/joint_water_profile_barrier_binding.py": "b0e22c49c40a8da41d068d1926a7a244678e8a26f7a0da830bf8c56d119d0efc",
+    "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py": "474ccc1c1579022e7cf9ac4a48197409fefc8ba6d64d12d2b0f97c5957ed56c2",
+    "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py": "866e88e5e15c2f68fd550031e2882bd2d4c038d1652ab3ec076a932f821cacbc",
+    "src/cells/models/surface_calcium_energy_water_profile_barrier_interventions.py": "209bdaad56208d49302f512814b0ec37dacbe5bdb0ec9042f8803c39e7eb621b",
+    "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_interventions.py": "c7b94c88e49d4f21eac55e2eb2debd3ced37d799f7979bdcf1a065e2c44cf433"
+  },
+  "host_check": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/joint_water_profile_barriers_17dd52999707eb8f.json",
+    "sha256": "22e5abcd2b45eae75327c9d4002de1708eee77b0902970efd1fecd1dd019663c"
+  },
+  "passed_numerical_checks": 0,
+  "shared_routes_and_PROGRESS_owned_by_Chief": true,
+  "root_epochs_and_existing_calcium_fuel_six_files_untouched": true,
+  "no_long_or_gpu_job_launched": true,
+  "automatic_approval_retry": false,
+  "validation_groups": [
+    {
+      "group": "first",
+      "expected_tests": 4,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-01",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "first"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_complete_parent_identity_initialization_and_artifact[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_complete_parent_identity_initialization_and_artifact[repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-joint-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-joint-repair_owner]"
+      ],
+      "planning_filter": "complete_parent or (full_stage and joint and False)",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_first.json",
+      "nodes_file_sha256": "472b9b35e4684b72a28ee0ea529909d481f5123c2100c8b20969d0b34e8f0258"
+    },
+    {
+      "group": "guard",
+      "expected_tests": 2,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-02",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "guard"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_strong_background_sum_boundary_keeps_full_minimum_volume_and_injury_guards[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_strong_background_sum_boundary_keeps_full_minimum_volume_and_injury_guards[repair_owner]"
+      ],
+      "planning_filter": "strong_background",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_guard.json",
+      "nodes_file_sha256": "9524637cad3c1bdb5746736fe8d33bf3cba93a0616954d646c9ce0522a14f181"
+    },
+    {
+      "group": "water-stage-baseline",
+      "expected_tests": 8,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-03",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "water-stage-baseline"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-duplicates-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-INIT-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-disabled-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-membrane-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-barrier-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-closed-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-guarded-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-negative-safe-water_owner]"
+      ],
+      "planning_filter": "full_stage and water_owner and False and not joint",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_water-stage-baseline.json",
+      "nodes_file_sha256": "553242b86e58179170b1553e087b52ed663a7c6e2b8a34421fa9ec62235a4751"
+    },
+    {
+      "group": "water-stage-changed",
+      "expected_tests": 9,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-04",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "water-stage-changed"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-joint-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-duplicates-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-INIT-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-disabled-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-membrane-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-barrier-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-closed-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-guarded-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-negative-safe-water_owner]"
+      ],
+      "planning_filter": "full_stage and water_owner and True",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_water-stage-changed.json",
+      "nodes_file_sha256": "39a4b9721e5195efad9021fbaeb031e57bf5f08e0d469c8ccaa4c45773966399"
+    },
+    {
+      "group": "repair-stage-baseline",
+      "expected_tests": 8,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-05",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "repair-stage-baseline"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-duplicates-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-INIT-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-disabled-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-membrane-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-barrier-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-closed-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-guarded-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[False-negative-safe-repair_owner]"
+      ],
+      "planning_filter": "full_stage and repair_owner and False and not joint",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_repair-stage-baseline.json",
+      "nodes_file_sha256": "2c1e36b5f572eff56415405ef20e46015fed07f9616d053dd474abba5c660927"
+    },
+    {
+      "group": "repair-stage-changed",
+      "expected_tests": 9,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-06",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "repair-stage-changed"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-joint-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-duplicates-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-INIT-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-disabled-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-membrane-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-barrier-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-closed-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-guarded-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_full_stage_actual_volume_stores_fuel_damage_and_both_coefficients[True-negative-safe-repair_owner]"
+      ],
+      "planning_filter": "full_stage and repair_owner and True",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_repair-stage-changed.json",
+      "nodes_file_sha256": "c9ee3a78489835dc2e785561ace5101b9229883058f784f1af629d893d453d76"
+    },
+    {
+      "group": "water-physics",
+      "expected_tests": 15,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-07",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "water-physics"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[INIT-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[disabled-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[membrane-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[barrier-only-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[joint-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[closed-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[joint-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[INIT-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_no_projection_or_older_water_runtime_is_used[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_live_volume_drives_all_three_pumps_and_neutral_osmolytes_once[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_both_closed_routes_keep_actual_ledgers_in_observation_and_lesion_rates[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[membrane-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[barrier-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_phase_clock_tolerance_keeps_the_actual_physical_horizon[water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_duplicate_occurrences_assign_without_adding_material_or_coefficients[water_owner]"
+      ],
+      "planning_filter": "water_owner and not full_stage and not complete_parent and not strong_background and not mismatched and not corruption and not cannot_be_hidden",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_water-physics.json",
+      "nodes_file_sha256": "b47ce7bf693c7dcd8cb5a0b6d836b4a72b493d0d0df06f0e107a1cfeb5b2d307"
+    },
+    {
+      "group": "water-refusals",
+      "expected_tests": 31,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-08",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "water-refusals"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[owner-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[stores-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[fuel-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[water-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[injury-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[old_parent-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[ionic_parent-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[order-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[stale-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[phase-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[reset-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[capacity-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[negative-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[excess-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[missing-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[mixed_owner-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_closed_history_corruption_and_both_step_bounds_refuse[membrane_transferred-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_closed_history_corruption_and_both_step_bounds_refuse[face_transferred-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-clock-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[clock-nan-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[clock-end-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[volume-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[fuel-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[padding-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-face-heat-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-membrane-heat-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[water-ledger-nan-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_finite_closed_route_corruption_fails_original_material_checks[membrane_transferred-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_finite_closed_route_corruption_fails_original_material_checks[face_transferred-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_water_and_pool_work_corruption_fails_original_accounting[water_transferred_pL-water_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_water_and_pool_work_corruption_fails_original_accounting[pool_volume_work_pJ-water_owner]"
+      ],
+      "planning_filter": "water_owner and (mismatched or corruption or cannot_be_hidden)",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_water-refusals.json",
+      "nodes_file_sha256": "b82b032d65d702c9ca1c7dad162784b9599764c691fe74e383f38c9bd9ec7c02"
+    },
+    {
+      "group": "repair-physics",
+      "expected_tests": 15,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-09",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "repair-physics"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[INIT-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_disabled_matches_exact_full_parent_bitwise[disabled-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[membrane-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_exact_single_schedule_reductions_keep_full_owner[barrier-only-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[joint-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_four_step_conservation_actual_pool_and_closed_history[closed-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[joint-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_portable_snapshots_full_controls_and_recipe[INIT-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_no_projection_or_older_water_runtime_is_used[repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_live_volume_drives_all_three_pumps_and_neutral_osmolytes_once[repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_both_closed_routes_keep_actual_ledgers_in_observation_and_lesion_rates[repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[membrane-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_each_native_ramp_guard_keeps_all_inherited_limits[barrier-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_phase_clock_tolerance_keeps_the_actual_physical_horizon[repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_duplicate_occurrences_assign_without_adding_material_or_coefficients[repair_owner]"
+      ],
+      "planning_filter": "repair_owner and not full_stage and not complete_parent and not strong_background and not mismatched and not corruption and not cannot_be_hidden",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_repair-physics.json",
+      "nodes_file_sha256": "d3ee59010008a60d9b3e001735e74913a3a7c425547c106611906b8d67ea07a6"
+    },
+    {
+      "group": "repair-refusals",
+      "expected_tests": 31,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-10",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "repair-refusals"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[owner-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[stores-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[fuel-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[water-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[injury-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[old_parent-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[ionic_parent-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[order-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[stale-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[phase-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[reset-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[capacity-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[negative-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[excess-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[missing-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_mismatched_full_owner_or_schedule_refused[mixed_owner-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_closed_history_corruption_and_both_step_bounds_refuse[membrane_transferred-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_closed_history_corruption_and_both_step_bounds_refuse[face_transferred-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-clock-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[clock-nan-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[clock-end-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[volume-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[fuel-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[padding-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-face-heat-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[negative-membrane-heat-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_volume_pool_and_original_histories_cannot_be_hidden_by_init[water-ledger-nan-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_finite_closed_route_corruption_fails_original_material_checks[membrane_transferred-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_finite_closed_route_corruption_fails_original_material_checks[face_transferred-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_water_and_pool_work_corruption_fails_original_accounting[water_transferred_pL-repair_owner]",
+        "tests/unit/test_joint_water_profile_barriers.py::test_actual_water_and_pool_work_corruption_fails_original_accounting[pool_volume_work_pJ-repair_owner]"
+      ],
+      "planning_filter": "repair_owner and (mismatched or corruption or cannot_be_hidden)",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_repair-refusals.json",
+      "nodes_file_sha256": "23f6f5c3608d22845d058f58f8040b268d3877052f8795ae0ba897b1912f158a"
+    },
+    {
+      "group": "oracle-source",
+      "expected_tests": 1,
+      "output": "/mnt/workspaces/Cells/joint-water-profile-barriers-development-20261029-11",
+      "command": [
+        "bash",
+        "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_joint_water_profile_barrier_group.sh",
+        "oracle-source"
+      ],
+      "status": "not_launched",
+      "declared_test_ids": [
+        "tests/unit/test_joint_water_profile_barriers.py::test_independent_equation_source_has_no_cells_or_jax_imports"
+      ],
+      "planning_filter": "independent_equation_source",
+      "execution_selection": "exact node IDs; no pytest keyword filter",
+      "nodes_file": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/node_plans/joint_water_profile_barrier_oracle-source.json",
+      "nodes_file_sha256": "f9cb5d59c926a951764d4013aa6216691c0c0ef8d45c40c38a8636af13bcb7ff"
+    }
+  ],
+  "qualification_source_sha256": {
+    "src/cells/core/joint_water_profile_barrier_preparation.py": "0d2861ecacef54074d11ba4dbbae2b9e2d1dcaed024da85d394c2bd3f8c88cb8",
+    "src/cells/core/joint_water_profile_barrier_binding.py": "b0e22c49c40a8da41d068d1926a7a244678e8a26f7a0da830bf8c56d119d0efc",
+    "src/cells/core/surface_calcium_energy_water_profile_barrier_interventions_spec.py": "474ccc1c1579022e7cf9ac4a48197409fefc8ba6d64d12d2b0f97c5957ed56c2",
+    "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_interventions_spec.py": "866e88e5e15c2f68fd550031e2882bd2d4c038d1652ab3ec076a932f821cacbc",
+    "src/cells/models/surface_calcium_energy_water_profile_barrier_interventions.py": "209bdaad56208d49302f512814b0ec37dacbe5bdb0ec9042f8803c39e7eb621b",
+    "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_interventions.py": "c7b94c88e49d4f21eac55e2eb2debd3ced37d799f7979bdcf1a065e2c44cf433",
+    "validation/transport/joint_water_profile_barrier_interventions_fixtures.py": "d21ef0454c909abe266dada878cbacc6741384baf7025b4abf30c21f930cc813",
+    "validation/transport/joint_water_profile_barrier_interventions_reference.py": "18ff146610b8bc37ce5025174bb2a51d9f41069d162957aa77878ffb73606cfc",
+    "tests/unit/test_joint_water_profile_barriers.py": "1fae9d5db7c72328b1a9659745ce2049f165e21004138ba8cff529e1b59200a7",
+    "agent-work/cells-worker-01/workfiles/check_joint_water_profile_barriers.py": "47e249d9f70f439beee2b92aa6349067ffe47352f3e0c512e5c2a34e4f78e8df"
+  },
+  "api_boundary_stable_for_Chief_routing": true,
+  "component_qualification_complete": false,
+  "prior_calcium_fuel_queue": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/owned_calcium_profile_barrier_workqueue.json",
+  "prior_calcium_fuel_launch_owner": "Cells Chief Developer",
+  "normal_approval_retry_suppressed": true,
+  "cpu6_launch_coordination": "Root owns the existing calcium/fuel continuation; this worker has not launched water/repair component groups.",
+  "host_failed_attempts": [
+    "/home/robert/Cells/agent-work/cells-worker-01/workfiles/joint_water_profile_barrier_host_check_attempt01.json"
+  ],
+  "preserved_failed_host_source": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/frozen/test_joint_water_profile_barriers_host_selection_01.py",
+  "queue_retention_host_check": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/joint_water_profile_barrier_queue_retention_check.json",
+  "root_public_evidence_separate": {
+    "passed_checks_reported": 25,
+    "new_checks_reported": 22,
+    "ionic_regressions_reported": 3,
+    "receipt": "/mnt/workspaces/Cells/joint-water-profile-barrier-public-integration-20261029-01/verification.json",
+    "sha256": "b7e0efc14b9d3448352442de3195e5432f4195bc6d238623869936ebd6187253",
+    "does_not_replace_component_qualification": true
+  },
+  "chief_api_update_delivered": false,
+  "chief_api_update_failure": "Previous notification timed out during automatic review; this continuation makes no messaging retry.",
+  "api_frozen_utc": "2026-10-29T16:49:49.045997+00:00",
+  "static_reviewer_reported_no_product_ownership_or_guard_blocker": true,
+  "remaining_component_launches_owner": "Cells Key Developer after CPU6 coordination with Chief",
+  "fresh_subprocess_component_scope": "Field count only; complete state/layout checked in process. Root public tests separately verify fresh-process state digest/fingerprint/phase; no fresh-process layout claim.",
+  "ordinary_six_product_files_frozen": true,
+  "ordinary_component_tests_declared": 133,
+  "execution_selection": "strict exact node IDs; no pytest -k",
+  "legacy_selector_limitation": "Earlier host checks matched bare function/parameter labels and omitted pytest module/filename keywords. They did not validate CLI selection. Old evidence and Root failed attempts remain preserved.",
+  "root_reported_first_group": {
+    "path": "/mnt/workspaces/Cells/joint-water-profile-barriers-explicit-checks-20261029-01/first-01",
+    "passed_checks": 4,
+    "independent_stages": 36,
+    "elapsed_seconds": 207.5,
+    "max_rhs_error_over_budget": 0.000113979,
+    "max_independent_energy_residual_pJ_s": 1.46e-11
+  },
+  "numeric_launch_owner": "Cells Chief Developer; worker will not launch or poll the sealed continuations.",
+  "strict_node_launcher_fixed": true,
+  "all_old_failed_and_host_evidence_preserved": true,
+  "no_ordinary_product_or_test_edits_during_frozen_jobs": true
+}

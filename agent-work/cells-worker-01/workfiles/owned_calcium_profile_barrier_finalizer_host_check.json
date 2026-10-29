@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-29T15:58:24.422806+00:00",
+  "status": "passed_host_only_incomplete_evidence_refusal",
+  "finalizer_sha256": "469f340eabbec12b4f27a89a1bc9f3bed5ac87015975d082688a5fa08b5df897",
+  "first_group_source_and_stage_reports_verified": true,
+  "expected_refusal": "Incomplete qualification: missing /mnt/workspaces/Cells/owned-calcium-profile-barriers-development-20261029-02/result.json",
+  "numerical_models_imported": false,
+  "numerical_work_performed": false,
+  "handoff_created": false
+}

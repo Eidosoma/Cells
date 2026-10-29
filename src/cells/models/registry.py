@@ -141,6 +141,125 @@ from cells.models import (
 
 
 def get_model(spec):
+    from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
+    from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
+
+    if isinstance(spec, energy_bath_epoch.SurfaceOpenCalciumEnergyBathEpochModel):
+        from cells.models import surface_open_calcium_energy_bath_epoch
+
+        return surface_open_calcium_energy_bath_epoch
+    if isinstance(spec, calcium_bath_epoch.SurfaceOpenCalciumBathEpochModel):
+        from cells.models import surface_open_calcium_bath_epoch
+
+        return surface_open_calcium_bath_epoch
+    from cells.core import surface_open_calcium_bath_events_spec as calcium_bath
+    from cells.core import surface_open_calcium_energy_bath_events_spec as energy_bath
+
+    if isinstance(spec, energy_bath.SurfaceOpenCalciumEnergyBathEventModel):
+        from cells.models import surface_open_calcium_energy_bath_events
+
+        return surface_open_calcium_energy_bath_events
+    if isinstance(spec, calcium_bath.SurfaceOpenCalciumBathEventModel):
+        from cells.models import surface_open_calcium_bath_events
+
+        return surface_open_calcium_bath_events
+    from cells.core import surface_open_calcium_energy_spec as open_energy
+    from cells.core import surface_open_calcium_spec as open_calcium
+
+    if isinstance(spec, open_energy.SurfaceOpenCalciumEnergyModel):
+        from cells.models import surface_open_calcium_energy
+
+        return surface_open_calcium_energy
+    if isinstance(spec, open_calcium.SurfaceOpenCalciumModel):
+        from cells.models import surface_open_calcium
+
+        return surface_open_calcium
+    from cells.core import surface_active_bath_epoch_spec as active_bath_epoch
+    from cells.core import surface_passive_bath_epoch_spec as passive_bath_epoch
+
+    if isinstance(spec, active_bath_epoch.SurfaceActiveBathEpochModel):
+        from cells.models import surface_active_bath_epoch
+
+        return surface_active_bath_epoch
+    if isinstance(spec, passive_bath_epoch.SurfacePassiveBathEpochModel):
+        from cells.models import surface_passive_bath_epoch
+
+        return surface_passive_bath_epoch
+    from cells.core import surface_active_bath_events_spec as active_bath
+    from cells.core import surface_passive_bath_events_spec as passive_bath
+
+    if isinstance(spec, active_bath.SurfaceActiveBathEventModel):
+        from cells.models import surface_active_bath_events
+
+        return surface_active_bath_events
+    if isinstance(spec, passive_bath.SurfacePassiveBathEventModel):
+        from cells.models import surface_passive_bath_events
+
+        return surface_passive_bath_events
+    from cells.core import (
+        surface_calcium_energy_water_profile_barrier_epoch_spec as water_joint_epoch,
+    )
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_barrier_epoch_spec as repair_joint_epoch,
+    )
+
+    if isinstance(spec, repair_joint_epoch.SurfaceCalciumEnergyWaterRepairProfileBarrierEpochModel):
+        from cells.models import surface_calcium_energy_water_repair_profile_barrier_epoch
+
+        return surface_calcium_energy_water_repair_profile_barrier_epoch
+    if isinstance(spec, water_joint_epoch.SurfaceCalciumEnergyWaterProfileBarrierEpochModel):
+        from cells.models import surface_calcium_energy_water_profile_barrier_epoch
+
+        return surface_calcium_energy_water_profile_barrier_epoch
+    from cells.core import (
+        surface_calcium_energy_water_profile_barrier_interventions_spec as water_combined,
+    )
+    from cells.core import (
+        surface_calcium_energy_water_repair_profile_barrier_interventions_spec as repair_combined,
+    )
+
+    if isinstance(
+        spec, repair_combined.SurfaceCalciumEnergyWaterRepairProfileBarrierInterventionModel
+    ):
+        from cells.models import surface_calcium_energy_water_repair_profile_barrier_interventions
+
+        return surface_calcium_energy_water_repair_profile_barrier_interventions
+    if isinstance(spec, water_combined.SurfaceCalciumEnergyWaterProfileBarrierInterventionModel):
+        from cells.models import surface_calcium_energy_water_profile_barrier_interventions
+
+        return surface_calcium_energy_water_profile_barrier_interventions
+    from cells.core import (
+        surface_calcium_energy_profile_barrier_epoch_spec as energy_combined_epoch,
+    )
+    from cells.core import surface_calcium_profile_barrier_epoch_spec as calcium_combined_epoch
+
+    if isinstance(spec, calcium_combined_epoch.SurfaceCalciumProfileBarrierEpochModel):
+        from cells.models import surface_calcium_profile_barrier_epoch
+
+        return surface_calcium_profile_barrier_epoch
+    if isinstance(spec, energy_combined_epoch.SurfaceCalciumEnergyProfileBarrierEpochModel):
+        from cells.models import surface_calcium_energy_profile_barrier_epoch
+
+        return surface_calcium_energy_profile_barrier_epoch
+    from cells.core import surface_active_profile_barrier_epoch_spec as combined_epoch
+
+    if isinstance(spec, combined_epoch.SurfaceActiveProfileBarrierEpochModel):
+        from cells.models import surface_active_profile_barrier_epoch
+
+        return surface_active_profile_barrier_epoch
+    from cells.core import (
+        surface_calcium_energy_profile_barrier_interventions_spec as energy_combined,
+    )
+    from cells.core import surface_calcium_profile_barrier_interventions_spec as calcium_combined
+
+    if isinstance(spec, calcium_combined.SurfaceCalciumProfileBarrierInterventionModel):
+        from cells.models import surface_calcium_profile_barrier_interventions
+
+        return surface_calcium_profile_barrier_interventions
+    if isinstance(spec, energy_combined.SurfaceCalciumEnergyProfileBarrierInterventionModel):
+        from cells.models import surface_calcium_energy_profile_barrier_interventions
+
+        return surface_calcium_energy_profile_barrier_interventions
     from cells.core import surface_active_profile_barrier_interventions_spec as active_combined
 
     if isinstance(spec, active_combined.SurfaceActiveProfileBarrierInterventionModel):
@@ -173,6 +292,22 @@ def get_model(spec):
         from cells.models import surface_calcium_energy_water_barrier_interventions
 
         return surface_calcium_energy_water_barrier_interventions
+    from cells.core import surface_active_barrier_epoch_spec as active_ecm_epoch
+    from cells.core import surface_calcium_barrier_epoch_spec as calcium_ecm_epoch
+    from cells.core import surface_calcium_energy_barrier_epoch_spec as energy_ecm_epoch
+
+    if isinstance(spec, active_ecm_epoch.SurfaceActiveBarrierEpochModel):
+        from cells.models import surface_active_barrier_epoch
+
+        return surface_active_barrier_epoch
+    if isinstance(spec, calcium_ecm_epoch.SurfaceCalciumBarrierEpochModel):
+        from cells.models import surface_calcium_barrier_epoch
+
+        return surface_calcium_barrier_epoch
+    if isinstance(spec, energy_ecm_epoch.SurfaceCalciumEnergyBarrierEpochModel):
+        from cells.models import surface_calcium_energy_barrier_epoch
+
+        return surface_calcium_energy_barrier_epoch
     from cells.core import surface_active_barrier_interventions_spec as active_barrier
     from cells.core import surface_calcium_barrier_interventions_spec as calcium_barrier
     from cells.core import surface_calcium_energy_barrier_interventions_spec as energy_barrier

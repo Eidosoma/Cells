@@ -1,0 +1,83 @@
+{
+  "authorized_parent_decoder_files": [
+    "src/cells/core/surface_calcium_spec.py",
+    "src/cells/core/surface_calcium_energy_spec.py"
+  ],
+  "closed_reduction": "original admission/guards + exact full state/layout/RHS, separately evolved2step histories and all original physical observations; three open readouts separate",
+  "declared_unit_cases": 86,
+  "decoder_baseline": "agent-work/cells-worker-01/workfiles/open_owned_calcium_decoder_baseline.json",
+  "decoder_retention": "agent-work/cells-worker-01/workfiles/open_owned_calcium_decoder_retention.json",
+  "failed_static_attempt": "agent-work/cells-worker-01/workfiles/open_owned_calcium_static_attempt01.json",
+  "first_stage_node_ids": [
+    "tests/unit/test_open_calcium.py::test_full_owned_control_stages_and_independent_reservoir_closure[all-calcium]",
+    "tests/unit/test_open_calcium.py::test_full_owned_control_stages_and_independent_reservoir_closure[all-energy]"
+  ],
+  "fixture": "validation/tissue/open_calcium_fixtures.py",
+  "handoff": "agent-work/cells-worker-01/workfiles/OPEN_OWNED_CALCIUM_HANDOFF.md",
+  "kind": "cells.open_owned_calcium_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "limits": [
+    "scheduled baths/epochs/water/moving topology outside scope",
+    "full original8us accuracy/refinement not yet qualified",
+    "CPU compiled/GPU performance not claimed"
+  ],
+  "model_ids": {
+    "calcium": "resolved_open_calcium@1",
+    "energy": "resolved_open_calcium_energy@1"
+  },
+  "next_authorized_task": "Full8us mixed trajectory/refinement preparation complete; see open_owned_trajectory_workqueue.json; no launch",
+  "products": [
+    "src/cells/core/open_calcium_declarations.py",
+    "src/cells/core/surface_open_calcium_spec.py",
+    "src/cells/core/surface_open_calcium_energy_spec.py",
+    "src/cells/models/open_calcium_reservoirs.py",
+    "src/cells/models/open_calcium_admission.py",
+    "src/cells/models/open_calcium_runtime.py",
+    "src/cells/models/surface_open_calcium.py",
+    "src/cells/models/surface_open_calcium_energy.py"
+  ],
+  "reference": "validation/tissue/open_calcium_reference.py",
+  "reference_audit_fix": "admit only documentation-only tests package initializer; three explicit production-import refusal cases added; strict physical positivity entry checks added to evaluate; rate/conservation/loss algorithms unchanged",
+  "root_completion_receipt": {
+    "path": "/mnt/workspaces/Cells/open-calcium-public-integration-20261029-01/completion-verification.json",
+    "sha256": "bb9e7c70a6eb4d5443e387fe1d78e19c164fb02b231fcbaa37c3445002e9b6c7"
+  },
+  "root_failed_component_bundle": "/mnt/workspaces/Cells/open-calcium-public-integration-20261029-01/components-06",
+  "root_public_reported_passes": 10,
+  "root_reported_component_result": "86 passed in corrected components-07; superseded components-06 failure preserved; no double credit",
+  "root_review": "/mnt/workspaces/Cells/open-calcium-public-integration-20261029-01/code-review-01/REVIEW.json",
+  "root_scoped_unique_checks": 96,
+  "scope": "STATIC ideal reservoirs; original complete physical state/histories; explicit hard fmol domain ceilings, not conserved open pools; no unconditional RK positivity or native/biology/trajectory acceptance",
+  "shared_ownership": "Root owns routing/public tests/PROGRESS/qualification; only two existing parent spec files explicitly assigned for private decoder extraction",
+  "source_hashes": {
+    "src/cells/core/open_calcium_declarations.py": "f61460e256ffb4c5b1c86a090c951a143fa2628521f0c763731ef5eb21b00a06",
+    "src/cells/core/surface_calcium_energy_spec.py": "02d02acd94909050df5e07417353b784cb81867955707e2213376ffe05902aec",
+    "src/cells/core/surface_calcium_spec.py": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce",
+    "src/cells/core/surface_open_calcium_energy_spec.py": "7162b1e672c3abe56c1c047521b7fd2cbbf9e4e11e1ba54ac70fdde42d499781",
+    "src/cells/core/surface_open_calcium_spec.py": "e2bc41bfdc85b21e3fe9e51e8a5b24a29b1c022ece534b7be9808b1c8e093e7b",
+    "src/cells/models/open_calcium_admission.py": "97bbed3bd3c1b657ebaf24a4c5656d221b8c61f2e76fdca68113ae51435f91d0",
+    "src/cells/models/open_calcium_reservoirs.py": "fda4c7e1df2ae08f13e07a31d06c4c659fda3094e23c82fc34625d28d4f8bfc5",
+    "src/cells/models/open_calcium_runtime.py": "cf609fa7a5a7870ac6e839ef95bc9be9acb521759c78146e598d9107bc51799c",
+    "src/cells/models/surface_open_calcium.py": "e6fef48a8a98884ec5a142dab3412d6b0ba100d9f626ea9f2ad954b4336a6277",
+    "src/cells/models/surface_open_calcium_energy.py": "59ffcec863ecd146c3f8819e525f4e0308b717a9f7b23f3f0bef3065351c47b4",
+    "tests/unit/test_open_calcium.py": "15d1decaaf223b9692df55a7f73819102c068c0465e27fdc94c82b8afaea4d36",
+    "tests/unit/test_open_calcium_regression.py": "1126b398b16c827f669a39edc69002528ebfbc5e962c83d968b8f018a8c2595d",
+    "validation/tissue/open_calcium_fixtures.py": "5a7868b2f2203684f51c86ba49f83d4ec23ec3da9e3199b7e79eeda201cca7fa",
+    "validation/tissue/open_calcium_reference.py": "c770038e9322d72c37fcea6f196a923dce94db6792244223ca301ce24e67c343"
+  },
+  "state_counts": {
+    "calcium": 34,
+    "energy": 38
+  },
+  "static_audit": {
+    "path": "agent-work/cells-worker-01/workfiles/host_checks/open_owned_calcium_d2dd26521c51415b.json",
+    "sha256": "d2dd26521c51415b8652d7bae38b238a261bd6835e0e4ae75e3f3dace3539d6c"
+  },
+  "status": "qualified_by_chief_96_distinct_scoped_checks_products_handed_off",
+  "units": [
+    "tests/unit/test_open_calcium.py",
+    "tests/unit/test_open_calcium_regression.py"
+  ],
+  "worker_active_or_frozen_job_polls": 0,
+  "worker_numerical_launch": false
+}

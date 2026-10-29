@@ -80,8 +80,9 @@ def test_complete_resume_can_change_window_and_recording_policy(name, tmp_path):
 
 @pytest.mark.parametrize("name", MODELS)
 @pytest.mark.parametrize("remaining", [0, 1])
+@pytest.mark.parametrize("width", [1, 7])
 def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
-    monkeypatch, name, remaining
+    monkeypatch, name, remaining, width
 ):
     import jax
 
@@ -99,11 +100,12 @@ def test_late_restart_preflight_checks_the_complete_clock_in_bounded_chunks(
         checked.append((steps.copy(), jax.tree.map(np.copy, controls)))
 
     monkeypatch.setattr(model, "check_steps", check)
-    width = 7
     plan = plan_windows(spec, WindowPolicy(width), point)
     assert plan.start_step == point.step_index
     assert plan.window_count == 1
-    assert len(checked) == (len(full.times) - 2 + width) // width
+    # These short complete clocks fit one storage-capped validation chunk.
+    # Tiny execution windows must not repeat whole-model admission per step.
+    assert len(checked) == 1
     np.testing.assert_array_equal(np.concatenate([s for s, _ in checked]), np.diff(full.times))
     actual_controls = jax.tree.map(
         lambda *arrays: np.concatenate(arrays), *(controls for _, controls in checked)

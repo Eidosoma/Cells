@@ -1,0 +1,91 @@
+{
+  "utc": "2026-10-29T16:57:11.279430+00:00",
+  "status": "stable_epoch_api_reference_and_unit_draft_numerical_acceptance_pending",
+  "request_kind": "cells.joint_water_profile_barrier_phase_handoff_request@1",
+  "preparation_kind": "cells.joint_water_profile_barrier_phase_handoff_preparation@1",
+  "bridge_id": "complete_water_fuel_repair_profile_barrier_init_checkpoint_new_sim_epoch@1",
+  "owners": [
+    {
+      "family": "water",
+      "model_id": "resolved_calcium_energy_water_profile_barrier_epoch@1",
+      "ordinary_model_id": "resolved_calcium_energy_water_profile_barriers@1",
+      "physical_fields": 43,
+      "scheduled_fields": 44
+    },
+    {
+      "family": "repair",
+      "model_id": "resolved_calcium_energy_water_repair_profile_barrier_epoch@1",
+      "ordinary_model_id": "resolved_calcium_energy_water_repair_profile_barriers@1",
+      "physical_fields": 48,
+      "scheduled_fields": 49
+    }
+  ],
+  "files": {
+    "src/cells/core/joint_water_profile_barrier_phase_handoff.py": "f58656ce1dc9d61089d246a6226671eb47135c1c7bdfae6fd85571b521658e86",
+    "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py": "96db867599096fc0270edae56a0d97557f16a38fbb183bf34a3b1ed4c24bfd17",
+    "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py": "321bfa46bb0cfd96f836c4051536ac3a1c221590b77d02b44be8b5272b2497aa",
+    "src/cells/models/surface_calcium_energy_water_profile_barrier_epoch.py": "d4abc623e69a783db553b7345e7502bf9ad0ca16643dfa82ce5caceb4a5942fa",
+    "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_epoch.py": "69b0abc5f4d2f149ef7766363fbf99345c3bf089d0043a3bcd74a717504d6423"
+  },
+  "policy": "carry every physical array and original layout exactly; only phase clock resets; both complete static recipes fixed",
+  "guard_risks_and_handling": [
+    "Minimum-volume background+chemical(+injury) sum and both ramps remain inherited from ordinary models.",
+    "Carried ATP/ADP/Pi amounts supply the denominator, not the original pools.",
+    "Current carried volume supplies all three pump concentrations and osmolytes.",
+    "Hydrolysis and synthesis are summed gross before pool division; opposing signed routes cannot cancel.",
+    "All held controls and both membrane/ECM pulse on/mid/off clocks are checked.",
+    "Original water references, pool-volume work, free energy and damage ledgers carry without rebasing.",
+    "Internal bounded calcium views retain water/fuel experiment/execution; model-type/catalog checks replace invalid standalone to_dict assertions in tests."
+  ],
+  "reference": "validation/topology/joint_water_profile_barrier_phase_handoff_reference.py",
+  "expected_fixtures": "tests/joint_water_profile_barrier_phase_fixtures.py",
+  "expected_tests": [
+    "tests/unit/test_joint_water_profile_barrier_phase_handoff.py",
+    "tests/unit/test_joint_water_profile_barrier_phase_reference.py",
+    "tests/unit/test_joint_water_profile_barrier_phase_turnover.py"
+  ],
+  "numerical_passes": 0,
+  "no_numerical_launch": true,
+  "ordinary_component_declared_tests": 133,
+  "ordinary_six_apis_unchanged": true,
+  "shared_routes_and_PROGRESS_owned_by_Chief": true,
+  "fixture_owner": "Cells Chief Developer; worker imports the shared phase fixture and will not edit it",
+  "api_and_adapter_differences": "No adapter API differences from combined calcium/fuel epochs; new IDs and full water/repair owners only.",
+  "declared_unit_cases": 91,
+  "owned_source_sha256": {
+    "src/cells/core/joint_water_profile_barrier_phase_handoff.py": "f58656ce1dc9d61089d246a6226671eb47135c1c7bdfae6fd85571b521658e86",
+    "src/cells/core/surface_calcium_energy_water_profile_barrier_epoch_spec.py": "96db867599096fc0270edae56a0d97557f16a38fbb183bf34a3b1ed4c24bfd17",
+    "src/cells/core/surface_calcium_energy_water_repair_profile_barrier_epoch_spec.py": "321bfa46bb0cfd96f836c4051536ac3a1c221590b77d02b44be8b5272b2497aa",
+    "src/cells/models/surface_calcium_energy_water_profile_barrier_epoch.py": "d4abc623e69a783db553b7345e7502bf9ad0ca16643dfa82ce5caceb4a5942fa",
+    "src/cells/models/surface_calcium_energy_water_repair_profile_barrier_epoch.py": "69b0abc5f4d2f149ef7766363fbf99345c3bf089d0043a3bcd74a717504d6423",
+    "validation/topology/joint_water_profile_barrier_phase_handoff_reference.py": "1321bb6305d1a1e26d4f98649d23eacdad58e32c7e5d5f67acd2dc88c7433a0b",
+    "tests/unit/test_joint_water_profile_barrier_phase_handoff.py": "e7c1ef6d99fb125c8051c56120f2a20a3fb519f1f0d3507705407acd50ec031d",
+    "tests/unit/test_joint_water_profile_barrier_phase_reference.py": "7696eed845289818859eaf6431da8aa2f24f06530c11b438fded1dad779f5a15",
+    "tests/unit/test_joint_water_profile_barrier_phase_turnover.py": "5450a2efc0879c84ecbff10d4c91307984deb2f4e4003814ecd4a04ffdec71d1"
+  },
+  "shared_fixture_sha256": "5077202f306a35813f3505a53f1789b5b8c51b3a8eb78aa55dace2be8b0d110f",
+  "shared_fixture_owner": "Cells Chief Developer; not edited by this worker",
+  "full_stage_first_node_ids": [
+    "tests/unit/test_joint_water_profile_barrier_phase_reference.py::test_all_control_and_both_pulse_stages_from_actual_carried_state[changed-water_owner]",
+    "tests/unit/test_joint_water_profile_barrier_phase_reference.py::test_all_control_and_both_pulse_stages_from_actual_carried_state[changed-repair_owner]"
+  ],
+  "root_public_separate": {
+    "passed_smokes_reported": 2,
+    "receipt": "/mnt/workspaces/Cells/joint-water-profile-barrier-phase-20261029-01/verification.json",
+    "sha256": "d69fb0fac02372b367cda1113e1654abcaf52ecca40244d820c977c912930861",
+    "no_component_credit": true
+  },
+  "ordinary_declared_cases": 133,
+  "ordinary_root_selected_launches_exclusively_owned_by_Chief": true,
+  "static_checks": "Ruff and AST pass; no unit/reference numerical execution by this worker.",
+  "last_epoch_api_notification_delivered": true,
+  "last_epoch_api_notification_failure": null,
+  "root_reported_component_stage_checks_passed": 2,
+  "root_reported_complete_stage_comparisons": 16,
+  "root_reported_max_stage_error_over_budget": 6.24e-05,
+  "root_reported_max_independent_energy_residual_pJ_s": 7.28e-12,
+  "root_reported_conservation_checks_passed": 4,
+  "reference_fix_owner": "Chief renamed local pools mapping to pool_rows; physical/numerical formula unchanged",
+  "current_reference_sha256": "1321bb6305d1a1e26d4f98649d23eacdad58e32c7e5d5f67acd2dc88c7433a0b",
+  "further_phase_edits": "None; Root owns active qualification/review and reference identifier correction."
+}

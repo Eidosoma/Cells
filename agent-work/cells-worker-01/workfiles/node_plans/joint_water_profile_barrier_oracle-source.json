@@ -1,0 +1,3 @@
+[
+  "tests/unit/test_joint_water_profile_barriers.py::test_independent_equation_source_has_no_cells_or_jax_imports"
+]

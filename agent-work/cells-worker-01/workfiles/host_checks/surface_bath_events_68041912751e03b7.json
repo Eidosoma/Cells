@@ -1,0 +1,310 @@
+{
+  "ast_parse": true,
+  "counts": {
+    "tests/unit/test_surface_bath_events.py": {
+      "declared_cases": 65,
+      "tests": [
+        {
+          "declared_cases": 14,
+          "function": "test_literal_native_bath_setters_and_explicit_controllers",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "overlap",
+                "single",
+                "negative",
+                "empty",
+                "disabled",
+                "init",
+                "permuted"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_initial_logistic_tails_are_explicit_original_anchor_operation",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 6,
+          "function": "test_empty_or_disabled_program_reduces_exactly_to_complete_parent",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "empty",
+                "disabled",
+                "init"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_variable_chemical_work_replaces_only_the_invalid_constant_mu_identity",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 38,
+          "function": "test_refuse_ambiguous_native_or_physical_bath_ownership",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "bad",
+              "values": [
+                "finite_target",
+                "duplicate_target",
+                "unknown_target",
+                "missing_M",
+                "wrong_M",
+                "wrong_K",
+                "reordered",
+                "duplicate_kind",
+                "unknown_kind",
+                "negative_domain",
+                "reversed_window",
+                "outside_window",
+                "zero_change",
+                "nan_amplitude",
+                "bool_amplitude",
+                "bool_guard",
+                "implicit_policy",
+                "implicit_baseline",
+                "implicit_clock"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_ramp_bound_and_all_inherited_parent_step_checks",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 1,
+          "function": "test_disabled_native_Cl_guard_requires_neither_Cl_nor_its_counterion",
+          "parameters": []
+        }
+      ]
+    },
+    "tests/unit/test_surface_bath_events_reference.py": {
+      "declared_cases": 25,
+      "tests": [
+        {
+          "declared_cases": 2,
+          "function": "test_complete_all_control_and_bath_clock_stages_from_actual_prefix",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 8,
+          "function": "test_original_material_charge_energy_and_variable_work_with_initial_dose",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "case",
+              "values": [
+                "overlap",
+                "single",
+                "negative",
+                "permuted"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_accepted_observer_exposes_physical_totals_and_distinct_maintenance",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 10,
+          "function": "test_finite_ledger_corruption_is_rejected_without_repair",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            },
+            {
+              "name": "ledger",
+              "values": [
+                "reservoir_supplied",
+                "reservoir_work_pJ",
+                "electrode_charge_transferred_C",
+                "electrode_work_pJ",
+                "reservoir_chemical_work_pJ"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 2,
+          "function": "test_clock_padding_and_finite_reservoir_history_cannot_hide_programming",
+          "parameters": [
+            {
+              "name": "family",
+              "values": [
+                "passive",
+                "active"
+              ]
+            }
+          ]
+        },
+        {
+          "declared_cases": 1,
+          "function": "test_independent_reference_dependency_closure_has_no_production_imports",
+          "parameters": []
+        }
+      ]
+    }
+  },
+  "declared_cases": 90,
+  "independent_reference_closure": {
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+    "validation/betse/pump_contact/pump_reference.py": "7f5bf4a4d66e0b6a21857b551499243d17e677df808b098b92f37a0ea12e5231",
+    "validation/betse/voltage_gate_audit/gate_independent.py": "ae99739ae74c2ee95421cc9451b57a4662a0f86fdaeaa8bbe78006bbd6ab4b1b",
+    "validation/channels/calcium_activated_potassium_reference.py": "ca0852c7424be2d0e497933017161f5a7c5014f12ada5f8f8fd15c61c1c2ca2d",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/leak_channels_reference.py": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+    "validation/tissue/cav_reference.py": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+    "validation/tissue/hcn_reference.py": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+    "validation/tissue/kir_reference.py": "688bef58c2353fd22c1dcc937935b9bd155c67fcebe63c568f158c12cd4b2965",
+    "validation/tissue/kv1_reference.py": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/tissue/sodium_reference.py": "0c3f30645ac75abbb6f8b9799163425dd201bc35ec8ac9e30e74c6add8383c91",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_kinetic_reference.py": "9edcf61080688872757afaa2d8fc0e537266bfc23e6770e0c9f163161ab1bda3",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/transport/surface_bath_events_reference.py": "9eeb6481ec7b6a6b6fdbcff0db216fd9cb8687007c07bcc38c70eba0f470128a"
+  },
+  "kind": "cells.surface_bath_events_static_audit@1",
+  "native_pins": {
+    "betse/science/math/toolbox.py": {
+      "authenticated": true,
+      "expected_sha256": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "functions": {
+        "pulse": {
+          "ast_sha256": "a450406c3f33449741849d0cd3b11fc2405768d2d92a077bf44fabf0b19c4d16",
+          "line": 353
+        }
+      },
+      "sha256": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3"
+    },
+    "betse/science/sim.py": {
+      "authenticated": true,
+      "expected_sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "functions": {},
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    "betse/science/tissue/tishandler.py": {
+      "authenticated": true,
+      "expected_sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "functions": {
+        "_finalize_events_global": {
+          "ast_sha256": "809f13dd8a3ccd912d22f47c5019a679f655ce10cd171f083010834fb07f99d6",
+          "line": 469
+        },
+        "_fire_events_global": {
+          "ast_sha256": "7ddbc0fa0fa90355159e40721299c990d818579d8c7a8e1a5c61ce613996856f",
+          "line": 728
+        }
+      },
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+    }
+  },
+  "native_source": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "numerical_qualification": false,
+  "own_and_legacy_reference_bodies_audited": true,
+  "prior_static_failure": "agent-work/cells-worker-01/workfiles/surface_bath_events_static_attempt01.json",
+  "product_and_test_hashes": {
+    "src/cells/core/surface_active_bath_events_spec.py": "6c8a509f24699946a45aca628917e13b61ff51c8d61d4bc7659b6647c237bfdc",
+    "src/cells/core/surface_bath_events_binding.py": "5ca3fad7fb1b6424c6c3cfd6016e73025204b1498780cf65bd46e779b2e42d23",
+    "src/cells/core/surface_passive_bath_events_spec.py": "e2d46e307b06ab8a68b00ca39d8bcc09f710687fded48f13d9fabbc3b29dd337",
+    "src/cells/models/surface_active_bath_events.py": "538c6adb3e3eeafb232bf5f0f98da5df3acac0ad6d73e78fc66176e8691bf2a1",
+    "src/cells/models/surface_bath_events.py": "2502b109fbc86df6a3d7c13346d1be8a2856659bd22d59150f249ba031ddf7a2",
+    "src/cells/models/surface_passive_bath_events.py": "9e8c6aa3408296e09e9cacc2f2b1aa15fd59d7bf1e163b20e6d60671bf4233df",
+    "tests/unit/test_surface_bath_events.py": "c72f4b89dc4c78e861595daf0f005c3fd6cbdc5937b76c0aaf0278d4b7bf78a8",
+    "tests/unit/test_surface_bath_events_reference.py": "a7ec5420a5e92bdad5ddb39e9888145c270879703062b65b3648a335ca14c192",
+    "validation/transport/surface_bath_events_fixtures.py": "43d224a74346ba737c2ad7f19dcefbe8818da80be348784fb0f4cc178562598e",
+    "validation/transport/surface_bath_events_reference.py": "9eeb6481ec7b6a6b6fdbcff0db216fd9cb8687007c07bcc38c70eba0f470128a"
+  },
+  "production_imports_at_module_initialization": false,
+  "ruff_check_passed": true,
+  "scientific_cases_executed": 0,
+  "scope": "static AST/hash/source authentication only; no numerical or GPU launch"
+}

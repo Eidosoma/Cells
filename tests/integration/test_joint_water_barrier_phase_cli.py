@@ -169,11 +169,15 @@ def test_water_barrier_epoch_fresh_sim_execution_and_complete_intermediate_resta
 ):
     schema, model = components(family)
     value = prepared(family)
-    spec = parse_spec(value.definition)
+    definition = deepcopy(value.definition)
+    # Admission fixtures enable JIT, but this probe qualifies the eager runner.
+    # Its explicit lower().compile() path is not disabled by JAX_DISABLE_JIT.
+    definition["execution"]["jit"] = False
+    spec = parse_spec(definition)
     source, before = source_checkpoint(family)
     parent = handoff.owner(source).runtime
     config = tmp_path / "epoch.json"
-    config.write_text(json.dumps(value.definition))
+    config.write_text(json.dumps(definition))
     original, resumed = tmp_path / "original", tmp_path / "resumed"
     invoke(tmp_path, "run", "run", config, "--output", original, "--checkpoint-at", DT)
     manifest = json.loads((original / "manifest.json").read_text())
@@ -225,10 +229,14 @@ def test_water_barrier_epoch_fresh_sim_execution_and_complete_intermediate_resta
     summary = json.loads((resumed / "summary.json").read_text())
     assert summary["executed_steps"] == 1
     assert summary["model"] == schema.MODEL_ID
+    for directory in (original, resumed):
+        metadata = json.loads((directory / "manifest.json").read_text())
+        assert metadata["numerics"]["jit"] is False
+        assert metadata["timings"]["compile_or_cache_seconds"] == 0
     evidence(
         "joint-water-barrier-epoch-fresh-sim-" + family,
         dict(
-            definition=value.definition,
+            definition=definition,
             init_time_s=before.time,
             sim_end_time_s=2 * DT,
             complete_fields=FIELDS[family],

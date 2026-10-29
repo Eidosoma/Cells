@@ -74,7 +74,8 @@ def prepare(request):
             initial_state_fields=list(first._fields),
             complete_definition_sha256=digest(final.definition),
             scope=(
-                "static background membrane and exterior face coefficients; complete calcium/fuel physics"
+                "static background membrane and exterior face coefficients; "
+                "complete calcium/fuel physics"
             ),
         )
         provenance["identity"] = digest(provenance)

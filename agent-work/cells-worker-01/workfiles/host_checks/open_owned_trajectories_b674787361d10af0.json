@@ -1,0 +1,40 @@
+{
+  "active_job_polls": 0,
+  "bundle": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-02",
+  "bundle_manifest_sha256": "6685de9efd939d9d7ce751ce0aa4cc47859dca2edb48fedbb391a3b85c1f2cfa",
+  "duration_s": 8e-06,
+  "input_changes": [
+    "execution.dt only"
+  ],
+  "kind": "cells.open_owned_full8us_preparation_static_receipt@1",
+  "metadata_only_runner_check": "passed",
+  "model_or_oracle_executions": 0,
+  "new_source_sha256": {
+    "agent-work/cells-worker-01/workfiles/prepare_open_owned_trajectories.py": "6cb5dc5d5f03943617122ecbdc4126058fa21378931fa9a5dff8fa1426c9c408",
+    "agent-work/cells-worker-01/workfiles/run_open_owned_trajectory_role.py": "9d90b0260452a27d37d31ef146d5de1483c34349d1caabf448ac5d7f029042f5",
+    "validation/tissue/open_calcium_trajectory_common.py": "caa1bba1281fb5463d1b15e6d1971342a821bd69fd07693aeb9eb84b02bcb78f",
+    "validation/tissue/open_calcium_trajectory_compare.py": "2e53ab631e523032dfb519f760084d485eec6ce5ce6eb6b72df425aabb555b0d",
+    "validation/tissue/open_calcium_trajectory_oracle.py": "bb1b018f1ba333d0a3c659ba05c772ebd1ac75df98765ee280f2420b33f44f2f",
+    "validation/tissue/open_calcium_trajectory_production.py": "3a0102e81dd99ff670f093008be27ee8bbb96095fae2dff6901eb0407308389b"
+  },
+  "numerical_launches": 0,
+  "original_max_steps": 512,
+  "preparation_imported_cells_or_jax": false,
+  "python_files_ast_and_ruff_passed": 6,
+  "qualified_original_source_changes": [],
+  "qualified_original_source_files_preserved": 1901,
+  "roles_prepared": 12,
+  "samples_per_level": [
+    129,
+    257,
+    513
+  ],
+  "scientific_accuracy_credit": false,
+  "status": "passed_metadata_only",
+  "superseded_preparation": {
+    "current": false,
+    "manifest_sha256": "e66dd6bbcdae8fe8e640b16854ddefae61014b58a10deeed495cfa7a64de6358",
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-01",
+    "reason": "Removed unnecessary max_steps increase; no numerical execution"
+  }
+}

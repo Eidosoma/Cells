@@ -1,0 +1,28 @@
+{
+  "active_job_polls": 0,
+  "aggregate_launch_or_polling": false,
+  "bundle": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-02",
+  "bundle_manifest_sha256": "6685de9efd939d9d7ce751ce0aa4cc47859dca2edb48fedbb391a3b85c1f2cfa",
+  "commands": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-02/commands.json",
+  "handoff": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/OPEN_OWNED_TRAJECTORIES_PREP.md",
+  "kind": "cells.open_owned_full8us_trajectory_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "numerical_launches": 0,
+  "plan": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-02/plan.json",
+  "protocol": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open-owned-trajectories-prepared-20261029-02/protocol.json",
+  "qualification_scope": "Pending full original8us mixed-exterior accepted-grid accuracy/refinement; no new numerical credit",
+  "root_selects_cpu": true,
+  "source_files": [
+    "validation/tissue/open_calcium_trajectory_common.py",
+    "validation/tissue/open_calcium_trajectory_oracle.py",
+    "validation/tissue/open_calcium_trajectory_production.py",
+    "validation/tissue/open_calcium_trajectory_compare.py",
+    "agent-work/cells-worker-01/workfiles/prepare_open_owned_trajectories.py",
+    "agent-work/cells-worker-01/workfiles/run_open_owned_trajectory_role.py"
+  ],
+  "static_receipt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_owned_trajectories_b674787361d10af0.json",
+    "sha256": "5825a78bcf8f6279f642a81f52bc106faba634764ea2d5e92c2ddb756e3e1ab9"
+  },
+  "status": "prepared_and_held_for_chief_review_no_launch"
+}

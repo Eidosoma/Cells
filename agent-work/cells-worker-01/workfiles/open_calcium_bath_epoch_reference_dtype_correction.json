@@ -1,0 +1,17 @@
+{
+  "AST_and_Ruff": "passed",
+  "active_job_polls": 0,
+  "before_sha256": "69c5b7779b720896d66de45cc9971330348057495f4985484c83ee2d1a7c6a65",
+  "changed_files": [
+    "validation/topology/open_calcium_bath_phase_handoff_reference.py"
+  ],
+  "contract": "src/cells/models/compartment_reactions.py initial_values explicitly stores valence float64; scalar reference stores integral valences as int64",
+  "correction": "Reference expected er_valence/standard_mu_RT explicitly float64; saved typed arrays remain strictly validated",
+  "diagnostic": "field, expected/saved shape and dtype included on typed-layout refusal",
+  "kind": "cells.open_calcium_bath_epoch_reference_dtype_correction@1",
+  "numerical_launches": 0,
+  "production_or_tolerance_changes": [],
+  "reference_sha256": "5d3d6492124ee4be0a2224d11717a85632b7690b024b1cc4d4571c4f1cb513d7",
+  "reported_failure": "/mnt/workspaces/Cells/open-calcium-bath-phase-public-integration-20261029-01/first-stage-public-01/stdout.log",
+  "rerun_owner": "Cells Chief Developer"
+}

@@ -210,12 +210,12 @@ def conservation(context, vector):
                 * (voltage + before)
             )
         if "energy_amount_increment_fmol" in fields:
-            initial = parent["energy_initial"]
-            current = initial + fields["energy_amount_increment_fmol"]
+            pool_initial = parent["energy_initial"]
+            current = pool_initial + fields["energy_amount_increment_fmol"]
             stored += sum(
                 dec(
                     pools.free_energy_change(
-                        initial[:, i],
+                        pool_initial[:, i],
                         current[:, i],
                         parent["vi"][i],
                         parent["vi"][i],

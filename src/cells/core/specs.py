@@ -772,6 +772,91 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
+        from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
+
+        if isinstance(m, energy_bath_epoch.SurfaceOpenCalciumEnergyBathEpochModel):
+            return energy_bath_epoch.to_dict(self)
+        if isinstance(m, calcium_bath_epoch.SurfaceOpenCalciumBathEpochModel):
+            return calcium_bath_epoch.to_dict(self)
+        from cells.core import surface_open_calcium_bath_events_spec as calcium_bath
+        from cells.core import surface_open_calcium_energy_bath_events_spec as energy_bath
+
+        if isinstance(m, energy_bath.SurfaceOpenCalciumEnergyBathEventModel):
+            return energy_bath.to_dict(self)
+        if isinstance(m, calcium_bath.SurfaceOpenCalciumBathEventModel):
+            return calcium_bath.to_dict(self)
+        from cells.core import surface_open_calcium_energy_spec as open_energy
+        from cells.core import surface_open_calcium_spec as open_calcium
+
+        if isinstance(m, open_energy.SurfaceOpenCalciumEnergyModel):
+            return open_energy.to_dict(self)
+        if isinstance(m, open_calcium.SurfaceOpenCalciumModel):
+            return open_calcium.to_dict(self)
+        from cells.core import surface_active_bath_epoch_spec as active_bath_epoch
+        from cells.core import surface_passive_bath_epoch_spec as passive_bath_epoch
+
+        if isinstance(m, active_bath_epoch.SurfaceActiveBathEpochModel):
+            return active_bath_epoch.to_dict(self)
+        if isinstance(m, passive_bath_epoch.SurfacePassiveBathEpochModel):
+            return passive_bath_epoch.to_dict(self)
+        from cells.core import surface_active_bath_events_spec as active_bath
+        from cells.core import surface_passive_bath_events_spec as passive_bath
+
+        if isinstance(m, active_bath.SurfaceActiveBathEventModel):
+            return active_bath.to_dict(self)
+        if isinstance(m, passive_bath.SurfacePassiveBathEventModel):
+            return passive_bath.to_dict(self)
+        from cells.core import (
+            surface_calcium_energy_water_profile_barrier_epoch_spec as water_joint_epoch,
+        )
+        from cells.core import (
+            surface_calcium_energy_water_repair_profile_barrier_epoch_spec as repair_joint_epoch,
+        )
+
+        if isinstance(
+            m, repair_joint_epoch.SurfaceCalciumEnergyWaterRepairProfileBarrierEpochModel
+        ):
+            return repair_joint_epoch.to_dict(self)
+        if isinstance(m, water_joint_epoch.SurfaceCalciumEnergyWaterProfileBarrierEpochModel):
+            return water_joint_epoch.to_dict(self)
+        from cells.core import (
+            surface_calcium_energy_water_profile_barrier_interventions_spec as water_combined,
+        )
+        from cells.core import (
+            surface_calcium_energy_water_repair_profile_barrier_interventions_spec as repair_joint,
+        )
+
+        if isinstance(
+            m, repair_joint.SurfaceCalciumEnergyWaterRepairProfileBarrierInterventionModel
+        ):
+            return repair_joint.to_dict(self)
+        if isinstance(m, water_combined.SurfaceCalciumEnergyWaterProfileBarrierInterventionModel):
+            return water_combined.to_dict(self)
+        from cells.core import (
+            surface_calcium_energy_profile_barrier_epoch_spec as energy_combined_epoch,
+        )
+        from cells.core import surface_calcium_profile_barrier_epoch_spec as calcium_combined_epoch
+
+        if isinstance(m, calcium_combined_epoch.SurfaceCalciumProfileBarrierEpochModel):
+            return calcium_combined_epoch.to_dict(self)
+        if isinstance(m, energy_combined_epoch.SurfaceCalciumEnergyProfileBarrierEpochModel):
+            return energy_combined_epoch.to_dict(self)
+        from cells.core import surface_active_profile_barrier_epoch_spec as combined_epoch
+
+        if isinstance(m, combined_epoch.SurfaceActiveProfileBarrierEpochModel):
+            return combined_epoch.to_dict(self)
+        from cells.core import (
+            surface_calcium_energy_profile_barrier_interventions_spec as energy_combined,
+        )
+        from cells.core import (
+            surface_calcium_profile_barrier_interventions_spec as calcium_combined,
+        )
+
+        if isinstance(m, calcium_combined.SurfaceCalciumProfileBarrierInterventionModel):
+            return calcium_combined.to_dict(self)
+        if isinstance(m, energy_combined.SurfaceCalciumEnergyProfileBarrierInterventionModel):
+            return energy_combined.to_dict(self)
         from cells.core import surface_active_profile_barrier_interventions_spec as active_combined
 
         if isinstance(m, active_combined.SurfaceActiveProfileBarrierInterventionModel):
@@ -798,6 +883,16 @@ class SimulationSpec:
             return repair_barrier.to_dict(self)
         if isinstance(m, water_barrier.SurfaceCalciumEnergyWaterBarrierInterventionModel):
             return water_barrier.to_dict(self)
+        from cells.core import surface_active_barrier_epoch_spec as active_ecm_epoch
+        from cells.core import surface_calcium_barrier_epoch_spec as calcium_ecm_epoch
+        from cells.core import surface_calcium_energy_barrier_epoch_spec as energy_ecm_epoch
+
+        if isinstance(m, active_ecm_epoch.SurfaceActiveBarrierEpochModel):
+            return active_ecm_epoch.to_dict(self)
+        if isinstance(m, calcium_ecm_epoch.SurfaceCalciumBarrierEpochModel):
+            return calcium_ecm_epoch.to_dict(self)
+        if isinstance(m, energy_ecm_epoch.SurfaceCalciumEnergyBarrierEpochModel):
+            return energy_ecm_epoch.to_dict(self)
         from cells.core import surface_active_barrier_interventions_spec as active_barrier
         from cells.core import surface_calcium_barrier_interventions_spec as calcium_barrier
         from cells.core import surface_calcium_energy_barrier_interventions_spec as energy_barrier
@@ -1310,6 +1405,73 @@ def parse_spec(data: dict) -> SimulationSpec:
         raise ConfigError("Only schema_version 1 is supported")
     if (
         isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_open_calcium_bath_epoch@1"
+    ):
+        from cells.core.surface_open_calcium_bath_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_open_calcium_energy_bath_epoch@1"
+    ):
+        from cells.core.surface_open_calcium_energy_bath_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_open_calcium_bath_events@1"
+    ):
+        from cells.core.surface_open_calcium_bath_events_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_open_calcium_energy_bath_events@1"
+    ):
+        from cells.core.surface_open_calcium_energy_bath_events_spec import parse
+
+        return parse(data)
+    if isinstance(data["model"], dict) and data["model"].get("id") == "resolved_open_calcium@1":
+        from cells.core.surface_open_calcium_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_open_calcium_energy@1"
+    ):
+        from cells.core.surface_open_calcium_energy_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_passive_bath_epoch@1"
+    ):
+        from cells.core.surface_passive_bath_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_bath_epoch@1"
+    ):
+        from cells.core.surface_active_bath_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_passive_bath_events@1"
+    ):
+        from cells.core.surface_passive_bath_events_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_bath_events@1"
+    ):
+        from cells.core.surface_active_bath_events_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_calcium_energy_water_membrane_profile_epoch@1"
     ):
         from cells.core.surface_calcium_energy_water_profile_epoch_spec import parse
@@ -1620,6 +1782,72 @@ def parse_spec(data: dict) -> SimulationSpec:
 
         return parse(data)
     if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_profile_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_profile_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id")
+        == "resolved_calcium_energy_water_repair_profile_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_profile_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_profile_barriers@1"
+    ):
+        from cells.core.surface_calcium_energy_water_profile_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_repair_profile_barriers@1"
+    ):
+        from cells.core import (
+            surface_calcium_energy_water_repair_profile_barrier_interventions_spec as repair_joint,
+        )
+
+        return repair_joint.parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_profile_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_profile_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id") == "resolved_calcium_energy_profile_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_profile_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data.get("model"), dict)
+        and data["model"].get("id") == "resolved_active_profile_barrier_epoch@1"
+    ):
+        from cells.core.surface_active_profile_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_profile_barriers@1"
+    ):
+        from cells.core.surface_calcium_profile_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_profile_barriers@1"
+    ):
+        from cells.core.surface_calcium_energy_profile_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
         isinstance(data["model"], dict)
         and data["model"].get("id") == "resolved_active_profile_barriers@1"
     ):
@@ -1654,6 +1882,27 @@ def parse_spec(data: dict) -> SimulationSpec:
         == "resolved_calcium_energy_water_repair_extracellular_barriers@1"
     ):
         from cells.core.surface_calcium_energy_water_repair_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_extracellular_barrier_epoch@1"
+    ):
+        from cells.core.surface_active_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_extracellular_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_extracellular_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_barrier_epoch_spec import parse
 
         return parse(data)
     if (

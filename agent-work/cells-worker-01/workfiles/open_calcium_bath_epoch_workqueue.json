@@ -1,0 +1,67 @@
+{
+  "AST_declared_unit_cases": 140,
+  "actual_carried_pool_guard": "all SIM held controls and independent pulse-box corners; actual complete carried chemical/gate/fuel arrays; original0.05 ceiling",
+  "bridge": "cells.core.open_calcium_bath_phase_handoff",
+  "carried_nonclock_arrays": {
+    "calcium": 35,
+    "energy": 39
+  },
+  "claim_scope": "pending synthetic explicit INIT/SIM full source/controller coupling qualification; no new full trajectory/native/biology/performance credit",
+  "exact_reduction": "two independently evolved empty-SIM local RK4 steps versus corresponding static full34/38 owner from actual carried source",
+  "existing_source_changes": [],
+  "first_stage_node_ids": [
+    "tests/unit/test_open_calcium_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-calcium]",
+    "tests/unit/test_open_calcium_bath_phase_reference.py::test_full_control_and_bath_clock_stages_from_exact_carried_state[changed-energy]"
+  ],
+  "fixture": "validation/topology/open_calcium_bath_phase_fixtures.py",
+  "handoff": "agent-work/cells-worker-01/workfiles/OPEN_CALCIUM_BATH_EPOCH_HANDOFF.md",
+  "kind": "cells.open_calcium_bath_epoch_workqueue@1",
+  "launch_owner": "Cells Chief Developer",
+  "model_ids": {
+    "calcium": "resolved_open_calcium_bath_epoch@1",
+    "energy": "resolved_open_calcium_energy_bath_epoch@1"
+  },
+  "products": [
+    "src/cells/core/open_calcium_bath_phase_handoff.py",
+    "src/cells/core/surface_open_calcium_bath_epoch_spec.py",
+    "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py",
+    "src/cells/models/open_calcium_bath_epoch.py",
+    "src/cells/models/surface_open_calcium_bath_epoch.py",
+    "src/cells/models/surface_open_calcium_energy_bath_epoch.py"
+  ],
+  "reference": "validation/topology/open_calcium_bath_phase_handoff_reference.py",
+  "reference_dependencies": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/open_calcium_bath_epoch_reference_dependencies.json",
+    "sha256": "89e74d11ff6484e7ea6d7a259556d888f08d7204b3fbaa1ac9c47b201e8c6027"
+  },
+  "resources_and_shape_caps_retained": true,
+  "shared_ownership": "Root owns routes/tissue_phase/public fixtures/tests/PROGRESS and numerical qualification",
+  "source_SIM_recipe_duration_s": 8e-06,
+  "source_hashes": {
+    "src/cells/core/open_calcium_bath_phase_handoff.py": "1f4843c9331ac748c4418a8dccc5cfed81d719237c7cf7fc663d868455d6ea52",
+    "src/cells/core/surface_open_calcium_bath_epoch_spec.py": "8c4f1e78eb29fcc6b2d7265e3b11e4d31d4b27333c54b4a586f8e86a53690d48",
+    "src/cells/core/surface_open_calcium_energy_bath_epoch_spec.py": "19ad6b2665081f27b5b375a5e3edf4e63c5ed5095173b1bb8d87233dea90f875",
+    "src/cells/models/open_calcium_bath_epoch.py": "8100ad23b202e58a6fe1a6e7c652271eec1a215c91a344add677a298dbad0208",
+    "src/cells/models/surface_open_calcium_bath_epoch.py": "b4cfaec35e5fd4812b847e29db50a8ef6e0a4971ed1dc652f0f4867b1e6387d5",
+    "src/cells/models/surface_open_calcium_energy_bath_epoch.py": "9ff4b9661ccc4c43a564fde83991088c168767395fa1b78403e0029d838a1224",
+    "tests/unit/test_open_calcium_bath_phase_handoff.py": "c32aad8d2d16953bdc0654bf1d6ad8872728db5d37451e711c60bad381282cbb",
+    "tests/unit/test_open_calcium_bath_phase_reference.py": "35395bc5b0d05e6bacd7ea316da2f9ad593983fd0cc792c5cc2f07b8d1d759db",
+    "validation/topology/open_calcium_bath_phase_fixtures.py": "00f9c75555e56db4910a4d68daa761707f062f652495d955b640f2c9a7b4efd3",
+    "validation/topology/open_calcium_bath_phase_handoff_reference.py": "69c5b7779b720896d66de45cc9971330348057495f4985484c83ee2d1a7c6a65"
+  },
+  "state_counts": {
+    "calcium": 36,
+    "energy": 40
+  },
+  "static_receipt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/host_checks/open_calcium_bath_epoch_f84cc0225dbbc140.json",
+    "sha256": "3c95cc7a3e55fc9f5406ab44c40d83c060c71c7406c449345f73bcce7fe58d43"
+  },
+  "status": "handed_off_static_complete_root_qualification_pending",
+  "units": [
+    "tests/unit/test_open_calcium_bath_phase_handoff.py",
+    "tests/unit/test_open_calcium_bath_phase_reference.py"
+  ],
+  "worker_active_job_polls": 0,
+  "worker_numerical_launches": 0
+}
