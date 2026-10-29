@@ -1,0 +1,56 @@
+{
+  "status": "prepared_full_suite_held_for_chief_launch",
+  "records": {
+    "preparation_manifest": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-refinement-preparation-20261029-01/manifest.json",
+      "sha256": "b2e1b5d7c979d9e3c3feec8784b700963677d9585f507bd78c063001713c62b2"
+    },
+    "passed_pilot": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-refinement-pilot-20261029-01/result.json",
+      "sha256": "b5a888502f83b9a9011f4530637e5c58730e2f39776a37d8def4f08a7bdfa83e"
+    },
+    "pilot_comparison": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-refinement-pilot-20261029-01/evidence/energy-reseal/pilot-comparison.json",
+      "sha256": "ddf9a010f149ab621cc3f0fc6640d8649b435bc5253fc4d185681786660fd8f8"
+    },
+    "continuation_preservation": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-continuation-contract-20261029-01/evidence/result.json",
+      "sha256": "6ab557937d6825193999a749c2e4e72ab8b5dfad557b0980c206a0c95a9f5123"
+    },
+    "continuation_resources": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-continuation-contract-20261029-01/result.json",
+      "sha256": "5b8aef9c70b853e7f95b081c5f1bc4d75a0b4e5ba11affd8cc132f308a92107f"
+    },
+    "stage_handoff": {
+      "path": "/mnt/workspaces/Cells/owned-barrier-stage-handoff-20261029-01/result.json",
+      "sha256": "b9743a520c71871d98b0f61f12f165cae03d0c565875df9a5f2f911acd69f303"
+    },
+    "launch_script": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/launch_owned_barrier_refinements.sh",
+      "sha256": "229ef9689fdde3c7cc5a8a276799f0513c7d380906c869d02d5475c5130f381f"
+    },
+    "continuation_checker": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/check_owned_barrier_continuation.py",
+      "sha256": "9a68b6a3af2fce2b9c976167d5e3267f1f557fcbe7987a0d2cef3e06e0a6ee0c"
+    }
+  },
+  "retained_stage_checks": 62,
+  "retained_public_integration_checks": 17,
+  "new_full_comparisons_prepared": 6,
+  "pilot_only": true,
+  "pilot_horizon_s": 5e-07,
+  "full_horizon_s": 1e-05,
+  "full_suite_launched_by_worker": false,
+  "new_zero_time_continuation_contracts": 8,
+  "pilot_prefix_integrations_reused_by_full_run": 4,
+  "cpu": 3,
+  "max_child_tree_rss_bytes": 1073741824,
+  "min_host_reserve_bytes": 8589934592,
+  "honest_full_eta_minutes": [
+    90,
+    180
+  ],
+  "source_and_pilot_artifacts_verified": true,
+  "shared_files_written": false,
+  "automatic_followup": false
+}

@@ -193,6 +193,38 @@ def event_index(spec, time):
 
 
 def control_values(spec, times):
+    from cells.core import surface_calcium_energy_water_barrier_epoch_spec as water_barrier_epoch
+    from cells.core import (
+        surface_calcium_energy_water_repair_barrier_epoch_spec as repair_barrier_epoch,
+    )
+
+    if isinstance(
+        spec.model, repair_barrier_epoch.SurfaceCalciumEnergyWaterRepairBarrierEpochModel
+    ):
+        return control_values(repair_barrier_epoch.scheduled_spec(spec), times)
+    if isinstance(spec.model, water_barrier_epoch.SurfaceCalciumEnergyWaterBarrierEpochModel):
+        return control_values(water_barrier_epoch.scheduled_spec(spec), times)
+    from cells.core import surface_calcium_energy_water_barrier_interventions_spec as water_barrier
+    from cells.core import (
+        surface_calcium_energy_water_repair_barrier_interventions_spec as repair_barrier,
+    )
+
+    if isinstance(
+        spec.model, repair_barrier.SurfaceCalciumEnergyWaterRepairBarrierInterventionModel
+    ):
+        return control_values(repair_barrier.owner_spec(spec), times)
+    if isinstance(spec.model, water_barrier.SurfaceCalciumEnergyWaterBarrierInterventionModel):
+        return control_values(water_barrier.owner_spec(spec), times)
+    from cells.core import surface_active_barrier_interventions_spec as active_barrier
+    from cells.core import surface_calcium_barrier_interventions_spec as calcium_barrier
+    from cells.core import surface_calcium_energy_barrier_interventions_spec as energy_barrier
+
+    if isinstance(spec.model, active_barrier.SurfaceActiveBarrierInterventionModel):
+        return control_values(active_barrier.owner_spec(spec), times)
+    if isinstance(spec.model, calcium_barrier.SurfaceCalciumBarrierInterventionModel):
+        return control_values(calcium_barrier.owner_spec(spec), times)
+    if isinstance(spec.model, energy_barrier.SurfaceCalciumEnergyBarrierInterventionModel):
+        return control_values(energy_barrier.owner_spec(spec), times)
     from cells.core import surface_calcium_energy_water_profile_epoch_spec as joint_water_epoch
     from cells.core import (
         surface_calcium_energy_water_repair_profile_epoch_spec as joint_repair_epoch,

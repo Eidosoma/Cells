@@ -1,0 +1,48 @@
+{
+  "status": "repository_supervision_correction_verified",
+  "reviewed_supervisor": {
+    "path": "/mnt/workspaces/Cells/owned-barrier-refinement-supervision-20261029-01/runner.py",
+    "sha256": "d0b8bbd75f4a6143b84b700ba2422d36dc554cc6f782c37e0b7df1ba0b273a3d"
+  },
+  "reviewed_patch": {
+    "path": "/mnt/workspaces/Cells/owned-barrier-refinement-supervision-20261029-01/runner.patch",
+    "sha256": "f3d8ff59aff0d52dd09728516cff68c8c9b9db8d7e1f508928eefa22c61c5c7b"
+  },
+  "repository_supervisor": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/run_owned_barrier_transients.py",
+    "sha256": "429948be62f6bc2ee008efb97e83a1cdf8fa678eddd6cdef11ba55c9e084646e"
+  },
+  "reviewed_supervisor_AST_exact": true,
+  "host_checks": {
+    "path": "/mnt/workspaces/Cells/owned-barrier-supervision-sync-20261029-01/result.json",
+    "sha256": "6599eef3def2befee385fe35213d64835ea24627eec0b802e8d043419e6b98b3"
+  },
+  "host_check_count": 17,
+  "checker": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/check_owned_barrier_supervision.py",
+    "sha256": "2458212f1f557a5f38e299a6a6989d26fe60e080741c00e82b03910c72908a90"
+  },
+  "preparation": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/prepare_owned_barrier_transients.py",
+    "sha256": "df9611e84eb440d657f7da024169ea0e05e8fba665da3e1c06399ed06abf2c94"
+  },
+  "corrected_launcher": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/launch_owned_barrier_refinements.sh",
+    "sha256": "a8e8cc1690447e3a7b6b9221f5e2a4f8fcec311304e60d163e5b9b29fb7453a9"
+  },
+  "preserved_original_launcher": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/frozen/launch_owned_barrier_refinements_20261029_01.sh",
+    "sha256": "229ef9689fdde3c7cc5a8a276799f0513c7d380906c869d02d5475c5130f381f"
+  },
+  "historical_handoff": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/owned_barrier_refinement_handoff.json",
+    "sha256": "170fddde2a644209ba4c21f73b0698d1f1ef8c868c021b7c11bb11fea4aa4820"
+  },
+  "historical_launch_script_record_superseded": true,
+  "pilot_required_worker_argument": "--runner-sha256",
+  "numerical_work_run": false,
+  "active_jobs_polled": false,
+  "launched_or_frozen_artifacts_modified": false,
+  "shared_product_or_status_files_modified": false,
+  "automatic_followup": false
+}

@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from cells.core import active_membrane_profile_phase_handoff as active_bridge
+from cells.core import joint_water_barrier_phase_handoff as joint_water_barrier_bridge
 from cells.core import joint_water_profile_phase_handoff as joint_water_bridge
 from cells.core import membrane_profile_phase_handoff as bridge
 from cells.core import owned_calcium_profile_phase_handoff as owned_bridge
@@ -51,7 +52,13 @@ def replay(provenance):
 
 
 def _adapter(kind, *, request=False):
-    for candidate in (bridge, active_bridge, owned_bridge, joint_water_bridge):
+    for candidate in (
+        bridge,
+        active_bridge,
+        owned_bridge,
+        joint_water_bridge,
+        joint_water_barrier_bridge,
+    ):
         expected = candidate.REQUEST_KIND if request else candidate.KIND
         if kind == expected:
             return candidate
@@ -60,6 +67,9 @@ def _adapter(kind, *, request=False):
 
 def _source_adapter(spec):
     """Exact owner types prevent an epoch or coupled state reaching a parent adapter."""
+    if any(type(spec.model) is c.model_type for c in joint_water_barrier_bridge.OWNERS):
+        contract = joint_water_barrier_bridge.owner(spec)
+        return joint_water_barrier_bridge, contract.epoch.POLICIES
     if type(spec.model) is scheduled.SurfaceProfileInterventionModel:
         return bridge, epoch.POLICIES
     if type(spec.model) is active_scheduled.SurfaceActiveProfileInterventionModel:

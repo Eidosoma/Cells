@@ -772,6 +772,38 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        from cells.core import (
+            surface_calcium_energy_water_barrier_epoch_spec as water_barrier_epoch,
+        )
+        from cells.core import (
+            surface_calcium_energy_water_repair_barrier_epoch_spec as repair_barrier_epoch,
+        )
+
+        if isinstance(m, repair_barrier_epoch.SurfaceCalciumEnergyWaterRepairBarrierEpochModel):
+            return repair_barrier_epoch.to_dict(self)
+        if isinstance(m, water_barrier_epoch.SurfaceCalciumEnergyWaterBarrierEpochModel):
+            return water_barrier_epoch.to_dict(self)
+        from cells.core import (
+            surface_calcium_energy_water_barrier_interventions_spec as water_barrier,
+        )
+        from cells.core import (
+            surface_calcium_energy_water_repair_barrier_interventions_spec as repair_barrier,
+        )
+
+        if isinstance(m, repair_barrier.SurfaceCalciumEnergyWaterRepairBarrierInterventionModel):
+            return repair_barrier.to_dict(self)
+        if isinstance(m, water_barrier.SurfaceCalciumEnergyWaterBarrierInterventionModel):
+            return water_barrier.to_dict(self)
+        from cells.core import surface_active_barrier_interventions_spec as active_barrier
+        from cells.core import surface_calcium_barrier_interventions_spec as calcium_barrier
+        from cells.core import surface_calcium_energy_barrier_interventions_spec as energy_barrier
+
+        if isinstance(m, active_barrier.SurfaceActiveBarrierInterventionModel):
+            return active_barrier.to_dict(self)
+        if isinstance(m, calcium_barrier.SurfaceCalciumBarrierInterventionModel):
+            return calcium_barrier.to_dict(self)
+        if isinstance(m, energy_barrier.SurfaceCalciumEnergyBarrierInterventionModel):
+            return energy_barrier.to_dict(self)
         from cells.core.surface_calcium_energy_water_profile_epoch_spec import (
             SurfaceCalciumEnergyWaterProfileEpochModel,
         )
@@ -1581,6 +1613,57 @@ def parse_spec(data: dict) -> SimulationSpec:
         and data["model"].get("id") == "resolved_membrane_profiles@1"
     ):
         from cells.core.surface_profile_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_extracellular_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id")
+        == "resolved_calcium_energy_water_repair_extracellular_barrier_epoch@1"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_barrier_epoch_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_water_extracellular_barriers@1"
+    ):
+        from cells.core.surface_calcium_energy_water_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id")
+        == "resolved_calcium_energy_water_repair_extracellular_barriers@1"
+    ):
+        from cells.core.surface_calcium_energy_water_repair_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_active_extracellular_barriers@1"
+    ):
+        from cells.core.surface_active_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_extracellular_barriers@1"
+    ):
+        from cells.core.surface_calcium_barrier_interventions_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_extracellular_barriers@1"
+    ):
+        from cells.core.surface_calcium_energy_barrier_interventions_spec import parse
 
         return parse(data)
     if (

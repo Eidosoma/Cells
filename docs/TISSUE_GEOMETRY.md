@@ -193,3 +193,35 @@ existing charge/current closure. There is no added structural barrier energy
 store or ATP cost, and it does not reproduce BETSE's entire solver ordering.
 Current numerical and execution qualification is recorded in
 [Progress](../PROGRESS.md).
+
+The same prescribed coefficient event now has explicit complete-owner variants:
+
+| Scheduled model | Exact physical parent | Saved state fields |
+| --- | --- | --- |
+| `resolved_active_extracellular_barriers@1` | `resolved_tissue@12` | 20 |
+| `resolved_calcium_extracellular_barriers@1` | `resolved_calcium@11` | 35 |
+| `resolved_calcium_energy_extracellular_barriers@1` | `resolved_calcium_energy@5` | 39 |
+| `resolved_calcium_energy_water_extracellular_barriers@1` | `resolved_calcium_energy_water@2` | 44 |
+| `resolved_calcium_energy_water_repair_extracellular_barriers@1` | `resolved_calcium_energy_water_repair@2` | 49 |
+
+Each embeds a complete static barrier preparation from the section above and
+adds only `phase_clock_s` to its parent's physical state. The exact parent keeps
+its full channel catalog, calcium stores, fuel pools, controls and accounting
+references. Site coefficients change at each integration stage; geometry stays
+fixed. The same event timing, target and amplitude rules apply. Public parsing,
+serialization, snapshots and independent-world admission preserve these owners.
+Ordinary restart retains the phase; transferring phases or changing the physical
+owner requires a separate supported operation.
+
+The water variants use current compartment volumes for concentrations, fuel
+kinetics, calcium stores and osmotic forces, while keeping the original volume
+references for energy accounting. The repair variant also carries its actual
+damage, injury-transfer and heat histories. Closing an extracellular face keeps
+all earlier transfers and heat. Faces keep their declared area and separation;
+water exchange changes compartment volumes without moving the mesh.
+
+The public-interface checks use short software probes. Independent stage and
+trajectory qualifications are tracked separately in [Progress](../PROGRESS.md),
+as are compiled execution and GPU qualification. These variants prescribe the
+barrier event; combined membrane-profile/barrier events, phase handoff, cutting
+and assembly compositions require separate integration.

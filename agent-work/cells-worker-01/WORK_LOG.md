@@ -3485,3 +3485,166 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   the active computation. The frozen full runner is ready and requires a
   passed pilot; it will reuse its four reference/coarse integration units and
   retain all 71 contracts when launched. Full qualification is not launched.
+
+## Scheduled complete-owner extracellular barriers, 2026-10-29
+
+- Chief accepted the completed six-unit joint epoch pilot and owns the full
+  refinement launch. Its numerical integration package and earlier evidence
+  are left frozen. No duplicate launch or detached-job polling is performed.
+- New owned schemas, binding and runtimes wrap ionic @12, calcium @11 and
+  finite-fuel @5 with one stage-clock ECM pulse. Only exterior face coefficients
+  change. All 19/34/38 parent fields and original accounting references remain;
+  the clock makes complete states of 20/35/39 fields. Coefficient helpers from
+  qualified passive scheduling supply no physical fields or RHS.
+- The closed-face marker receives a temporary validity view for the exact
+  parent readout. Every actual transfer and dissipated-energy history remains
+  in state, checks and observations. Complete-parent admission sees the union
+  of possible open routes, including full chemical and fuel step limits.
+- Independent references recompute the static recipe and native pulse in
+  Decimal arithmetic, then evaluate the complete independent full56 parents.
+  Separate tests exercise changed live fuel, full fields/RHS, held controls,
+  disabled events, duplicate occurrences, and closure after prior transfers.
+  Four RK4 steps are explicitly a coupling smoke, with no trajectory claim.
+- The private runner clones and verifies Chief's accepted static composition
+  `contracts-02/source` inventory. Dispatch changes occur only in that clone;
+  Chief owns live specs/schedule/registry/ensemble and PROGRESS. Chief reported
+  17 public integration checks passed separately; these are not rerun here.
+- Development01 preserved a test-only failure before numerical comparison:
+  the assertion tried to read an `id` attribute from a typed parent model.
+  Model identity is serialized data; the assertion now uses its canonical
+  definition. Frozen inputs, failure receipt and original logs remain at
+  `/mnt/workspaces/Cells/owned-barrier-development-20261029-01`.
+- [Development02](/mnt/workspaces/Cells/owned-barrier-development-20261029-02/result.json)
+  passed all five selected checks in 61.26 s: exact complete parent state/layout
+  initialization, artifact/serialization checks for all three owners, and ten
+  independent ionic stage comparisons across initial/manufactured states.
+  Max full-RHS error/budget is 0.00025914; independent ionic energy-rate
+  residual <=1.34e-15 pJ/s. Peak child-tree RSS 243,040,256 B; host reserve
+  >=20,896,141,312 B. Frozen source inventories remain exact.
+- Development03 captures the same seven product files and adds the remaining
+  calcium/fuel/asymmetric/zero-baseline stages, closed-history observations and
+  four-step coupling smoke. Previously finalized Development02 checks are
+  excluded. Its CPU3 child has the same 1 GiB/8 GiB limits and 420 s ceiling.
+- Development03 passed five additional stage checks (25 independent full-field
+  comparisons), then correctly refused an invalid resealing fixture before
+  stage evaluation. Closing all charged species removed the field's required
+  return paths. The new fixture closes sodium at TJ sites and preserves return
+  paths through the other charged species; fixed zero modulators stay zero.
+  No product equation, domain, tolerance or qualified static helper changed.
+  Its original disconnected-input failure remains preserved. Development04
+  runs only the corrected/unexecuted stage/history/smoke cases; the five passed
+  Development03 checks and all five Development02 checks are excluded.
+- [Development04](/mnt/workspaces/Cells/owned-barrier-development-20261029-04/result.json)
+  passed all 17 selected new checks in 120.00 s. Together with the retained
+  checks, all 90 independent full20/35/39-field stages passed; max RHS/budget
+  0.00029804, independent energy-rate residual <=3.56e-14 pJ/s, production
+  residual <=3.91e-14 pJ/s (unchanged 1e-10 limits). All three closed-face tests
+  preserve actual histories and report them exactly while matching the full
+  independent RHS. Four accepted RK4 steps per owner pass all original ledgers.
+  Peak RSS 252,391,424 B; reserve >=19,871,948,800 B. All seven product files
+  match Development02/03 exactly. No full-transient/refinement credit is claimed.
+- Development05 runs only the remaining 35 new disabled/duplicate/refusal and
+  full-parent step/history admission checks with the same CPU3 bounded guard.
+- [Development05](/mnt/workspaces/Cells/owned-barrier-development-20261029-05/result.json)
+  passed all 35 in 212.59 s, with 253,538,304 B peak child-tree RSS and
+  >=20,551,147,520 B host reserve. Every executed frozen input stayed exact;
+  the captured source inventory contains 1,752 files, including 330 runtime
+  files. No finalized earlier check was rerun.
+- [Component handoff](/mnt/workspaces/Cells/owned-barrier-stage-handoff-20261029-01/result.json)
+  SHA256 `b9743a520c71871d98b0f61f12f165cae03d0c565875df9a5f2f911acd69f303`
+  indexes all 62 unique successful checks (5 + 5 retained + 17 + 35), all
+  90 independent stage comparisons, three closed-history comparisons and
+  three four-step full-owner smokes. Its consolidated JUnit includes only
+  those successful cases; original JUnits/failures remain untouched. All
+  frozen source inventories, result/input/JUnit/resource records and numerical
+  evidence hashes were verified without another numerical run. The seven
+  owned product files match every executed phase and the current workspace.
+- Chief receives the concrete boundary for review. Shared public integration
+  and PROGRESS remain Chief-owned. Long transients, two-dt refinement, compiled
+  execution, GPU execution and native-loop trajectory parity remain outside
+  this component's qualified scope. No automatic follow-up job is launched.
+
+## Full scheduled-barrier trajectory preparation, 2026-10-29
+
+- Chief assigned six adequate full10-us trajectories: ionic/calcium/energy,
+  each with asymmetric modulation and zero-baseline sodium resealing. New
+  fixtures/references/helpers/tests and separate prepare/runner workfiles own
+  this chunk. The seven completed product files, shared routes and earlier
+  finalized checks stay frozen; Root owns PROGRESS and long-job launch.
+- Inputs come directly from passed full-stage artifacts, preserving physical
+  definitions, all original held controls and the complete10-us horizon.
+  Physical execution capacities become compact; fixed gate/store/native slots
+  remain. Four continuous2.5-us intervals retain every original anchor, actual
+  state/history and absolute phase clock. No boundary resets or rebasing.
+- Each condition has two independent segmented DOP853 solves (2e-11/1e-11
+  rtol,62.5/31.25-ns max steps; tighter charge/face-history/clock floors) and
+  production RK4 at62.5/31.25 ns. Compare all20/35/39 fields at every sample
+  and control boundary, reference uncertainty<=0.1 of original trajectory
+  budgets, actual closed-face histories, and dt-error reduction with explicitly
+  recorded precision limits. Direct80-digit molecular/capacitive energy and
+  independent route-by-route material/neutral-pool accounting supplement all
+  existing production checks. No convergence-order/native-loop/biology claim.
+- The authorized short CPU3 pilot is the original0.5-us prefix of energy-reseal,
+  with two independent and two production resolutions plus comparison. Its
+  units have120-s limits (comparison60 s),1-GiB child-tree RSS and8-GiB reserve.
+  It receives no full-trajectory credit. A later Root full launch requires the
+  exact passed pilot and reuses all four accepted prefixes, continuing from
+  0.5 us without rerunning them. The full>=10-minute suite stays held for Root.
+- [Frozen preparation](/mnt/workspaces/Cells/owned-barrier-refinement-preparation-20261029-01/manifest.json)
+  SHA256 `b2e1b5d7c979d9e3c3feec8784b700963677d9585f507bd78c063001713c62b2`
+  preserves the exact accepted330-file runtime and retains62 stage/contracts
+  plus17 public integration checks separately. Six new full comparisons collect
+  successfully. Preparation performs no integration and never reads other jobs.
+- [Pilot](/mnt/workspaces/Cells/owned-barrier-refinement-pilot-20261029-01/result.json)
+  passed all five process units in95.14 s total; receipt SHA256
+  `b5a888502f83b9a9011f4530637e5c58730e2f39776a37d8def4f08a7bdfa83e`.
+  Both complete39-field comparisons pass: coarse/fine max state-budget ratios
+  2.62e-7/4.67e-7, absolute state errors<=6.67e-16. Face-history error improves
+  6.97423e-19 to4.39685e-20 fmol; independent face uncertainty9.67801e-23 fmol.
+  Independent total energy residual<=1.203e-14 pJ; material/neutral-pool ledgers
+  <=3.10e-23 fmol. The prefix does not reach closure or qualify the full10 us.
+  Peak RSS227,598,336 B; minimum host reserve17,970,556,928 B.
+- [Continuation contract](/mnt/workspaces/Cells/owned-barrier-continuation-contract-20261029-01/evidence/result.json)
+  passed eight new zero-time preservation checks in19.36 s. Both independent
+  settings and both production resolutions preserve every actual state array
+  across pilot-prefix reuse and next-interval loading; production layouts are
+  exact. This invokes frozen readout/accounting checks on saved states, with
+  zero new integration time or integrator RHS evaluations. It adds no numerical
+  trajectory credit. Guard peak231,677,952 B; reserve>=18,466,758,656 B.
+- Full launch is concrete but unexecuted by this worker:
+  `workfiles/launch_owned_barrier_refinements.sh`. The machine-readable
+  `workfiles/owned_barrier_refinement_handoff.json` pins preparation, passed
+  pilot, continuation evidence,62-check handoff and launch-script hashes. All
+  preparation and pilot artifacts were reverified read-only. Honest full ETA
+  remains90–180 minutes; each integration worker is bounded480 s,1 GiB/8 GiB.
+  Chief owns launch and status; no automatic follow-up is started. CPU3 released.
+
+## Future supervisor correction, 2026-10-29
+
+- Chief's review found that the initial supervisor could report passed despite
+  missing/skipped comparisons or a later resource failure. Chief created and
+  reviewed a separate corrected supervisor, then authorized synchronizing that
+  correction into this repository's future runner. The full launched job,
+  original scientific bundle, numerical pilot and reviewed supervisor remain
+  untouched; no numerical rerun, job launch or active-job polling was performed.
+- `run_owned_barrier_transients.py` now requires every planned command to finish
+  and exactly six passing comparisons for full success/trajectory credit.
+  Source drift, resource failure and skipped/missing comparisons fail closed.
+  Newly owned outputs receive durable startup failures; existing outputs remain
+  untouched. Execute and pilot workers verify `--runner-sha256`; launch records
+  supervisor identity and propagates that hash to its detached worker.
+- Repository formatting differs from Chief's reviewed supervisor, while its AST
+  is exactly equal. Reviewed SHA256
+  `d0b8bbd75f4a6143b84b700ba2422d36dc554cc6f782c37e0b7df1ba0b273a3d`;
+  repository SHA256
+  `429948be62f6bc2ee008efb97e83a1cdf8fa678eddd6cdef11ba55c9e084646e`.
+  [Host checks](/mnt/workspaces/Cells/owned-barrier-supervision-sync-20261029-01/result.json)
+  passed17 cases, including the reviewed13, three pilot SHA/startup cases and
+  exact reviewed-AST correspondence. No physical model was imported or run.
+- The launcher now verifies and invokes the reviewed corrected supervisor.
+  The original launcher is preserved byte-exact under `workfiles/frozen/`;
+  its original handoff record is historical and superseded by
+  `workfiles/owned_barrier_supervision_sync.json`. Future preparation protocol
+  records the copied supervisor SHA and required pilot arguments explicitly.
+  Ruff, shell syntax and repository whitespace checks pass. No shared source,
+  PROGRESS, qualified science or ongoing computation changed.
