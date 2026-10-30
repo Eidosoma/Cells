@@ -32,8 +32,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   source/runtime identity and retained failures before accepting the stated
   scope. Failed jobs retain an owner and next action; no automatic retry follows.
   The [30 October completion audit](/mnt/workspaces/Cells/qualification-completion-audit-20261030-01/historical-disposition.json)
-  locates terminal evidence for **96 historical launch receipts**, one currently
-  running job and one previously documented host OOM without a worker receipt.
+  locates terminal evidence for **96 historical launch receipts**, one job
+  active at that audit and one previously documented host OOM without a worker receipt.
   This is an accounting check, not renewed scientific qualification. It found
   two older failure outcomes still described as pending below; those entries
   are corrected and remain unqualified.
@@ -43,38 +43,65 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
   | Owner | Outstanding qualification | Latest reviewed disposition / next action |
   | --- | --- | --- |
-  | Root continuation / Key implementation | Complete charged-loop batch, 79 checks | Failed the 480-second fuel-round limit after 38 passed checks; preparing a fresh continuation with 900-second fuel phases, unchanged science and retained failures |
-  | Key Dev / Root review | Charged blocker calendar, 111 checks | Running on CPU3 with 59 completed phases at the requested check; review terminal evidence when available |
-  | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Running on CPU4 with three completed host phases at the requested check; terminal evidence remains pending |
+  | Root continuation / Key implementation | Complete charged-loop batch, 79 checks | At the requested 17:24 UTC check, successor was running `round-fuel-native-2` on CPU7, with 38 retained checks and no new completed phase; original failure preserved |
+  | Key Dev / Root review | Charged blocker calendar, 111 checks | All 111 checks and 38 reference forms verified; final wrapper failed on authorized live-source drift. Metadata-only closeout preserves that failure; no numerical rerun |
+  | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Reviewed pass for full NumPy rates/fields and staged admission; compiled CPU/GPU and thermal trajectories remain separate |
   | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint before a new qualification. The cohort-axis refusal defect is now closed separately |
-  | Root | Half-second salt/water/fuel response | First-interval diagnosis reproduces unresolved fuel-recovery energy quadrature; qualify suitable local time resolution before another full comparison |
+  | Root | Explicit numerical refinement | Prior 25 checks/reference retained; one compiled scalar check passed with a bounded 2-GiB cap. Compiled batches/GPU and depleted recovery remain unqualified |
+  | Root | Half-second salt/water/fuel response | Local 32/64-step grids pass conservation but fail the stricter regeneration-heat reference budget; 128/256-step successor prepared, unlaunched. Full recovery remains unqualified |
   | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
 
 - **Three parallel development owners are active.** Root owns the numerical
   resolution repair, charged-loop continuation and shared qualification/status;
-  Cells Key Developer owns native normal-solver components, with current
-  construction and ion/material ordering now under completion review;
-  Cells Specialist Developer owns temperature arrays and native thermal clocks.
-  The older blocker job uses CPU3, staged NumPy uses CPU4, native component
-  comparisons use CPU1, and Root's short refinement qualification uses CPU2.
+  Cells Key Developer owns native normal-solver components and per-ion gap-gate
+  chronology; Cells Specialist Developer owns native thermal-calendar replay.
+  The detached batch continuation uses CPU7, native component comparisons use
+  CPU1, Specialist's short checks use CPU6, and Root coordinates CPU2/CPU5.
+  The older blocker and staged NumPy jobs are terminal.
   Each process is limited to one thread and bounded memory. Finite-family
   reservoir and active-family temperature restrictions remain explicit.
 
-- **Explicit local numerical refinement is implemented and under CPU
-  qualification.** Optional `execution.refinement_times` currently belongs only
+- **Explicit local numerical refinement passed eager and compiled scalar CPU
+  checks; the original compiler-memory failure remains preserved.** Optional
+  `execution.refinement_times` belongs only
   to `resolved_cotransport_water@1`. Empty settings preserve the legacy serialized
   fingerprint. The scalar and windowed clocks use one exact grid; numerical
   boundaries do not add biological events or random draws. Batch work/storage
   admission counts the extra boundaries before timeline allocation.
   [Frozen inputs](/mnt/workspaces/Cells/numerical-refinement-20261030-02/inputs.json)
-  define **24 software checks**, eager restart/window/mixed-grid batch checks,
-  compiled scalar comparison and two fresh independent reference integrations
-  of a **2.5-us** history with all **31 state fields**. This validates execution
-  support, not the depleted half-second recovery. Compiled batches and GPU
-  execution remain separate. The first attempt retained **23 passing software
+  define **24 passing software checks** and **one passing eager execution check**
+  covering restart, windows and a mixed-grid batch. Two fresh, production-denied
+  reference integrations of a **2.5-us** history compare all **31 state fields**:
+  [reference result](/mnt/workspaces/Cells/numerical-refinement-20261030-02/independent-result.json)
+  reports maximum error **0.00003018** of budget and uncertainty **0.000008814**.
+  The eager phase took **286.54 s**; its original accounting/domain checks passed.
+  The [compiled failure](/mnt/workspaces/Cells/numerical-refinement-20261030-02/compiled/resource-stop.json)
+  records **1,093,857,280 bytes** tree RSS after **45.99 s**, above the **1-GiB**
+  cap. That original qualification remains a partial result.
+  The [completion review](/mnt/workspaces/Cells/numerical-refinement-20261030-02/review-verification.json)
+  verifies **25 unique passes**, all **2,166 frozen source files**, three native
+  pins, saved accepted histories, runtime inventories and all nine Root-owned
+  live files. It explicitly records the unqualified compiled path.
+  This validates eager execution support, not the depleted half-second recovery.
+  The first attempt retained **23 passing software
   checks and one refusal-path failure**: a generic model lacked `MODEL_ID`.
   [That failure](/mnt/workspaces/Cells/numerical-refinement-20261030-01/failure.json)
   remains intact; the successor corrects the exception without changing physics.
+
+  A separate [compiled-only successor](/mnt/workspaces/Cells/numerical-refinement-compiled-20261030-01/result.json)
+  passed the original **one compiled scalar check** on identical frozen source,
+  input and tolerance settings. It raised only the process-memory cap to **2 GiB**,
+  retaining CPU2, one thread, **480 seconds** and **8 GiB** host reserve. The run
+  took **104.97 s**, peaked at **1,889,603,584 bytes** sampled tree RSS and
+  **1,931,747,328 bytes** process HWM, with **19,149,467,648 bytes** minimum
+  reserve. The earlier 25 passes and two independent solves were reused without
+  rerunning or adding case credit. This completes **26 unique execution/software
+  checks** for the declared scope. Compiled batches, GPU execution and the
+  depleted recovery trajectory remain unqualified.
+  Its [completion review](/mnt/workspaces/Cells/numerical-refinement-compiled-20261030-01/review-verification.json)
+  verifies **2,202 artifacts**, all source/runtime pins and nine live Root files.
+  Maximum compiled/eager difference is **0.000000685** of the unchanged budget;
+  accepted times and all **84 layout fields** match exactly.
 
 - **Native normal-current construction passed 26 reviewed checks.**
   [Completion verification](/mnt/workspaces/Cells/betse-normal-current-tests-20261030-01/completion-verification.json)
@@ -85,8 +112,57 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   verify; two of the 118 protected live files subsequently changed for Root's
   declared refinement work, outside this stateless kernel. This is the
   post-flux current path through `sim.Jc`, without trajectory or full field-solver
-  credit. Key Dev has also completed the separate ion/material join; its retained
-  failure and corrected ledger assertion are under independent review.
+  credit.
+
+- **Native normal ion/material ordering passed 42 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-normal-ion-join-tests-20261030-02/completion-verification.json)
+  verifies **15 native captures**, **24 independent Decimal forms**, **48 carried
+  calls**, **888 complete frames** and **8,880 arrays** exactly matching native
+  values and dtypes. Maximum independent error is **0.0002758** of budget.
+  The [first attempt](/mnt/workspaces/Cells/betse-normal-ion-join-tests-20261030-01/failure.json)
+  retains 41 passes and a ledger assertion failure. Its residual is below
+  **0.866 bath-inventory ULP**; the corrected bound accounts for subtracting the
+  gross bath inventories. Production, native/reference equations and main
+  physical/comparison tolerances are byte-identical, and all 48 actual call
+  archives match between attempts. Native unweighted bath mixing, clipping
+  losses, stale membrane state and in-place voltage perturbation remain explicit.
+  This qualifies the no-ECM, fixed-gap ion/material join, not physical
+  conservation or full simulator parity. Key Dev's next separate component is
+  the native normal boundary-potential/voltage update and its carried coupling
+  to the current and ion joins.
+
+- **Native normal boundary/voltage coupling passed 40 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-normal-voltage-tests-20261030-02/completion-verification.json)
+  verifies **16 native captures**, **24 independent Decimal forms**, **36 coupled
+  calls** and **720 material frames**. Every material frame matches native
+  exactly; independent comparisons cover complete call endpoints, current and
+  voltage arrays. Maximum independent error is **0.00002088** of budget.
+  The original **2-ms-step** zero-conductivity case still refuses material call 3
+  after two successful voltage calls. Original input/logs and the replayed
+  prefix/partial-state archives are retained. The separate **1-us-step,
+  three-call** ordinary case does not repair or refine that failed case.
+  Production changes preserve failure evidence; native/reference equations and
+  main budgets remain unchanged. Supplied inverse/gauge preparation and the
+  HH/Gaussian environment calculations remain outside the qualified adapter.
+
+- **Native per-ion gap-gate coupling passed 34 scoped correspondence checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-normal-gated-join-tests-20261030-01/completion-verification.json)
+  verifies **16 native captures**, **24 Decimal answers**, **36 outer calls**,
+  **648 material frames** and **96 gate updates**, with exact native arrays,
+  dtypes and class caches. The native gate receives a full timestep for each
+  moving ion and multiplies its stored state by the blocker; initialization,
+  pre-offset voltage and retained failure behavior remain literal source semantics.
+  All **2,203 frozen sources**, seven owned live files and 137 protected files
+  verify. CPU1 took **20.88 s**, with **110.5 MiB** peak tree RSS.
+
+  The propagated independent error budgets become uninformative in later calls:
+  allowances reach **1.41e28** for gate opening and **4.24e78 V** for voltage.
+  Actual saved discrepancies are **5.22e-13**, **1.47e-14 V** and **1.75e-11 A/m²**
+  for gate opening, voltage and membrane current. The small normalized fraction
+  therefore provides no physical-accuracy claim. Acceptance covers exact native
+  behavior only. Key Dev is preparing stronger conditional per-call comparisons
+  using pre-existing component budgets alongside the next pump join; frozen
+  evidence and existing tolerances remain untouched.
 
 - **The separate native fast equivalent-circuit component passed 45 reviewed
   checks.** Key Dev's [source map](agent-work/cells-worker-01/workfiles/BETSE_FAST_SOLVER_NOTES.md)
@@ -134,6 +210,32 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   stops at the first failing identity, so later checks are not credited.
   CPU6 production/reference phases took **3.53 / 11.32 s**, with **184.58 MiB**
   maximum RSS. Local resolution around fuel restoration needs further work.
+
+- **The first local recovery meshes pass accounting but still fail full-state
+  reference accuracy.** [Registered inputs](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-01/inputs.json)
+  define **32 geometric intervals** and their exact **64-interval bisection** over
+  the original **12.5 us**, using the same conditional supply-off prefix,
+  original anchors, controls and tolerances. All **384 stages**, **96 endpoints**
+  and both complete histories pass the original domain/accounting checks.
+  Final cumulative energy residuals are **1.47445e-8 / 1.42550e-8 pJ**, below
+  the unchanged **2e-8-pJ** limit. Nine grid-software checks also pass.
+
+  The [retained failure](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-01/failure.json)
+  is the stricter independent endpoint comparison. Regeneration heat alone is
+  outside its **2.01176e-11-pJ** budget: errors are **5.28632e-10 / 3.94314e-11 pJ**,
+  or **26.2771 / 1.96005** of budget. All other endpoint fields pass. The two
+  fresh reference solves agree within **0.074143** of the original stricter
+  reference-stability budget, so reference uncertainty does not explain this
+  failure. A separate saved-stage comparison establishes exact RHS, balance and
+  admission correspondence with the original frozen implementation, despite
+  intervening channel-catalog additions. No accepted-prefix migration or full
+  half-second recovery is credited.
+
+  The [128/256-step successor](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-02/preparation.json)
+  is prepared without launching. It bisects the same actual float intervals,
+  keeps all physical sources and tolerances, and binds both failed resolutions.
+  Expected runtime is **3–5 minutes**; the next requested round will test these
+  finer meshes before any full response qualification.
 
   The original full-response test now saves complete proposed history/layout
   before unchanged accounting checks. Its [focused real-step refusal check](/mnt/workspaces/Cells/cotransport-response-capture-20261030-01/result.json)
@@ -398,14 +500,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   biological cases. Original guards, anchors and ledgers remain unchanged;
   thermal evolution, physical heat accounting and GPU qualification are separate.
 
-- **Staged temperature-array execution is under detached NumPy qualification.**
+- **Staged temperature-array execution passed 56 reviewed NumPy checks.**
   The [launch receipt](/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-launch/launch.json)
   records **16:44:54 UTC**, PID **1997661**, CPU4 and durable result/failure
-  destinations. The frozen preparation pins **2,157 source files** and four
-  native files. Seven bounded phases target **56 checks**, including **20 new
-  staged checks**, and **40 full-reference records**. Expected duration is
-  **10–15 minutes**; each phase retains one thread, **480 seconds / 1 GiB RSS /
-  8 GiB host reserve**. No automatic polling, retry or follow-up is queued.
+  destinations. The [completion review](/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01/review-verification.json)
+  verifies **2,462 artifacts**, **2,158 frozen source files** (including the
+  capture plugin), four native pins and all four live owned files. The
+  **56 checks** comprise **20 new staged checks** and **36 repeated prior IDs**;
+  the fresh independent process verifies **40 instantaneous full-rate records**,
+  all **56 active laws** and **32 physical fields per record**. Maximum errors
+  are **0.003426 / 0.00004881 / 0.011260** of rate/potential/field budgets.
+  Seven phases took **335.33 s**, with **270,667,776 bytes** peak HWM and
+  **20,935,446,528 bytes** minimum reserve, under the original
+  **480-second / 1-GiB / 8-GiB reserve** caps. Six pytest runtime inventories
+  verify; the fresh denied-import reference has process guards but no separate
+  imported-module/binary inventory or directly measured affinity record.
+  Saved evidence includes **120 axis declarations / 240 refusals**, **30 raw
+  invalid proposals** and five sets of physical-predicate checks.
 
   Source review finds the seven original qualified functions AST-identical.
   The new path separates coefficient preparation, complete world physics and
@@ -413,8 +524,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   original predicates. Caller-supplied `WorldStages` callbacks are trusted code;
   a family label does not authenticate cached outputs against a world. This
   NumPy qualification cannot establish compiled JAX success, a reduced compiler
-  memory footprint or GPU performance. Specialist is tracing native temperature
-  clocks while it runs; the frozen qualification remains untouched.
+  memory footprint or GPU performance. Native temperature-calendar replay has
+  since completed separately and awaits independent review; this NumPy result
+  adds no accepted thermal evolution or heat law.
 
 - **Random physical tissue preparation passed 35 verified checks.** The new
   [preparation bridge](docs/PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
@@ -507,17 +619,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [retention review](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01/root-retention-review-01.json)
   verifies all **2,131 frozen files**, **20 qualified round snapshots** and
   **18 histories**. The failed round's published snapshot and proposals remain
-  uncredited because its restore assertions never finished. Root is preparing
+  uncredited because its restore assertions never finished. Root prepared
   **41 remaining checks / 30 phases**, plus six fresh independent replay phases,
   in a new tree. Fuel round/history phases receive **900 seconds**; all other
   phase caps, one-thread/1-GiB/8-GiB resource guards, durations and numerical
   tolerances stay unchanged. Expected remaining runtime is **90–120 minutes**.
+  The [successor launch receipt](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-02/launch.json)
+  records **17:18 UTC**, PID **2009470**, CPU7, detached logs and terminal
+  artifact paths. Root's admission verification confirms exact retained evidence
+  and unchanged frozen science; later shared-code changes are disclosed
+  separately and are not qualified by this original-source continuation.
+  No automatic polling or follow-up is scheduled.
   The planned comparison covers independent world
   histories, actual packets, full ionic endpoints, cumulative work, isolated
   refusals and durable restart; a passing outcome has not been established.
 
-- **Native blocker calendars with complete charged loops passed their 12-check
-  preflight; the full 111-check qualification is detached and pending.**
+- **Native blocker calendars passed all 111 scientific checks on frozen
+  sources; the final wrapper failure is retained separately.**
   The [preflight receipt](agent-work/cells-worker-01/workfiles/physiology_protein_block_calendar_preflight_receipt.json)
   covers four families, both RNG modes, INIT, exact restart and retained failed
   proposals, with four fresh independent answer forms. Its maximum error is
@@ -525,10 +643,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   declare **18 histories / 52 calls** and **38 fresh reference forms** for the
   full run. The [launch receipt](/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/launch.json)
   records **15:51 UTC**, PID **1979666**, CPU3, one thread and the same
-  **480-second / 1-GiB / 8-GiB reserve** guards. At the requested check,
-  **59 phases** had completed and the supervisor remained active;
-  no final result/failure existed. Key Dev is developing separate native
-  normal-solver components while this job runs.
+  **480-second / 1-GiB / 8-GiB reserve** guards. The requested 17:24 UTC check
+  found a post-run wrapper failure on live `grid.py` hash equality. The
+  [scoped closeout](/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/root-review-01/closeout.json)
+  verifies all **111 checks**, **38 fresh reference forms**, **18 histories**,
+  **52 complete calls** and **120 physical subintervals**, plus **398 nested
+  manifests** and the **2,154 frozen sources**. Maximum error is **0.0249665**
+  of budget; reference uncertainty is **0.000007971**. All **111 bounded phases**
+  completed in **5,371.44 s** total, with **322,396,160 bytes** maximum HWM and
+  **20,328,288,256 bytes** minimum reserve. Root made a metadata-only closeout:
+  original failure/driver remain untouched, no original `result.json` was
+  inserted and no numerical work was rerun. The acceptance covers the frozen
+  source; parallel changes in the live checkout are explicitly outside it.
 
 - **Held boundary-voltage rates passed 71 verified checks.** The
   [boundary adapter](docs/PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)

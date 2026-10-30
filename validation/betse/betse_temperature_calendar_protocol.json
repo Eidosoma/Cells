@@ -1,0 +1,95 @@
+{
+  "kind": "cells.betse_temperature_calendar_protocol@1",
+  "law_id": "betse_temperature_calendar_source_v1_5_0@1",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "version": "1.5.0",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4"
+    }
+  },
+  "source_scope": [
+    "Original INIT/SIM phase counts/calendar/sample loop and event guard sites",
+    "Full fire_events and global setter methods with non-temperature setters disabled",
+    "Actual HH/ML methods on explicit held-target clock probes through normalized tissue hook",
+    "Full fast_sim_init, GHK helper and get_ion with declared fixed material and no network channels",
+    "Original owner-matrix and initial/post-update_V conductivity assignments",
+    "Original electroflux coefficient prefix including nonce, Nernst-Planck alpha and configured conductivity function"
+  ],
+  "supplied_interfaces": [
+    "Fixed source geometry/material and held coefficient-probe voltages",
+    "Explicit entry runtime T when carried; fresh mode executes original configured-T copy",
+    "Selected HH/ML probe targets/tau/units/Phi; not 55 complete channel-class trajectories",
+    "Normalized tissue/makeAllChanges hooks carry only the selected clock probes"
+  ],
+  "exclusions": [
+    "No native current/ion/voltage integration",
+    "No conservative field, heat, thermal transition or accepted tissue checkpoint",
+    "No cache refresh on temperature events",
+    "No external callbacks accepted by component",
+    "No source stepping or compilation/GPU claim beyond the declared microcase"
+  ],
+  "clock_policy": "Original complete N labels span [0,N*dt] while calls and gate updates retain dt; restart never rebases N",
+  "cache_policy": "Full original fixed-material fast initializer cache retained; live/configured source factors remain separately named",
+  "restart_policy": "Exact binary64 state archive and full source-prefix reconstruction against the caller original binding identity",
+  "constant_profiles": [
+    "literal_native",
+    "matched_SI"
+  ],
+  "resources": {
+    "cpu": [
+      6
+    ],
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "tolerances": {
+    "relative": 6e-12,
+    "temperature_absolute_K": 3e-12,
+    "dimensionless_absolute": 3e-13,
+    "conductance_absolute_S_m2": 3e-13,
+    "conductivity_absolute_S_m": 3e-13,
+    "voltage_absolute_V": 3e-14,
+    "gate_absolute": 3e-14,
+    "clock_reference_ULPs": 4,
+    "raw_source_binary64": "exact or explicitly stated roundoff budget",
+    "restart_and_parent": "exact",
+    "reference_self_resolution_fraction": 0.1
+  },
+  "stricter_component_guard": "Positive finite temperatures, finite complete probes/gate intermediates and gate probabilities in[0,1]; source raw refusal buffers retained without publication",
+  "numerical_work_started": false,
+  "Chief_scope_approved": true,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "compiled_JAX": false,
+  "heat_law_assigned": false,
+  "planned_checks": 82,
+  "planned_complete_source_streams": 34,
+  "planned_source_call_rows": 192,
+  "planned_raw_refusal_cases": 3,
+  "planned_disk_restart_splits": 16,
+  "units": {
+    "temperature": "K",
+    "event_labels_and_physical_dt": "s",
+    "HH_ML_time_unit": "native units per second; declared taus use those same native units",
+    "electroflux_alpha": "dimensionless",
+    "nernst_planck_alpha": "m^2/(V*s)",
+    "configured_conductivity": "S/m^2",
+    "normal_sigma": "S/m",
+    "gate_probability": "dimensionless",
+    "Phi": "declared fixed native scale, no thermal dependence"
+  },
+  "sampling_scope": "Original declared p.t_resample; isolated INIT/SIM dt selector and count sites do not invert a YAML sampling period"
+}

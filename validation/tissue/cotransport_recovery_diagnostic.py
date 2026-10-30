@@ -41,10 +41,47 @@ def load(root):
     return inputs, off, recovery
 
 
+def diagnostic_grid(inputs, subdivisions, start, end):
+    """Use a predeclared exact local grid, or the original uniform diagnostic."""
+    import numpy as np
+
+    counts = inputs["subdivisions"]
+    if (
+        type(counts) is not list
+        or any(type(n) is not int or n < 1 for n in counts)
+        or len(counts) != len(set(counts))
+        or subdivisions not in counts
+    ):
+        raise ValueError("Require distinct positive subdivision counts")
+    declared = inputs.get("numerical_grids_s")
+    if declared is None:
+        times = np.linspace(start, end, subdivisions + 1)
+    else:
+        if type(declared) is not dict or set(declared) != {str(n) for n in counts}:
+            raise ValueError("Declared grids must exactly match the diagnostic cases")
+        row = declared[str(subdivisions)]
+        if (
+            type(row) is not list
+            or len(row) != subdivisions + 1
+            or any(type(t) not in (int, float) for t in row)
+        ):
+            raise ValueError("Each declared grid requires one real boundary per interval")
+        times = np.array(row, dtype=np.float64)
+    if (
+        not np.isfinite(times).all()
+        or times[0] != start
+        or times[-1] != end
+        or np.any(np.diff(times) <= 0)
+    ):
+        raise ValueError("Diagnostic boundaries must strictly increase over the same horizon")
+    return times
+
+
 def production(root):
     import numpy as np
 
     from cells.core.errors import NumericalError
+    from cells.core.grid import EventGrid
     from cells.core.schedule import control_values
     from cells.core.specs import parse_spec
     from cells.models import surface_cotransport_water as model
@@ -57,6 +94,11 @@ def production(root):
     _, off_layout = model.initial_values(off_spec)
     for first, second in zip(layout, off_layout, strict=True):
         np.testing.assert_array_equal(first, second)
+    original_layout = root / "inputs/original-diagnostic-source.npz"
+    if "inputs/original-diagnostic-source.npz" in inputs["evidence_sha256"]:
+        with np.load(original_layout, allow_pickle=False) as saved:
+            for name, value in layout._asdict().items():
+                np.testing.assert_array_equal(value, saved["layout__" + name])
     before = [0.0, np.nextafter(0.25, 0.0)]
     for first, second in zip(
         control_values(spec, before), control_values(off_spec, before), strict=True
@@ -67,6 +109,12 @@ def production(root):
         assert saved["accepted_times"][index] == 0.25
         start, end = map(float, saved["accepted_times"][index : index + 2])
         state = model.STATE_TYPE(*(saved[name][index].copy() for name in model.STATE_TYPE._fields))
+    if any(start < change.time < end for change in spec.experiment.changes):
+        raise ValueError("This diagnostic requires one held-control interval")
+    if "inputs/original-diagnostic-source.npz" in inputs["evidence_sha256"]:
+        with np.load(original_layout, allow_pickle=False) as saved:
+            for name, value in state._asdict().items():
+                np.testing.assert_array_equal(value, saved[name])
     parent_diagnostics = model.check_values(state, spec)
     table = control_values(spec, [start])
     held = type(table)(*(v[0] for v in table))
@@ -90,6 +138,7 @@ def production(root):
             negative_pool_volume_work_pJ=-float(np.sum(value.pool_volume_work_pJ)),
         )
         return dict(
+            all_balances=balances,
             energy_residual_pJ=float(balances["energy"]),
             pool_energy_residual_pJ=float(np.max(np.abs(balances["pool_energy"]))),
             signed_pool_terms=parts,
@@ -115,7 +164,22 @@ def production(root):
     results = []
     for subdivisions in inputs["subdivisions"]:
         current = model.STATE_TYPE(*(v.copy() for v in state))
-        times = np.linspace(start, end, subdivisions + 1)
+        times = diagnostic_grid(inputs, subdivisions, start, end)
+        declared_execution = None
+        if "numerical_grids_s" in inputs:
+            declared = deepcopy(raw)
+            declared["execution"]["refinement_times"] = times[1:-1].tolist()
+            numerical_spec = parse_spec(declared)
+            grid = EventGrid(numerical_spec)
+            first, last = grid.exact_index(start), grid.exact_index(end)
+            np.testing.assert_array_equal(
+                np.array([grid[i] for i in range(first, last + 1)]), times
+            )
+            model.check_steps(
+                numerical_spec, np.diff(times), control_values(numerical_spec, times[:-1])
+            )
+            assert numerical_spec.experiment == spec.experiment
+            declared_execution = numerical_spec.to_dict()["execution"]
         arrays, stages, endpoints = {}, [], []
         failure = None
         for step, dt in enumerate(np.diff(times)):
@@ -191,12 +255,33 @@ def production(root):
                 failure = dict(type=type(error).__name__, message=str(error), step=step)
                 break
         np.savez_compressed(root / f"stages-r{subdivisions}.npz", **arrays)
+        history_accounting = dict(original_accounting_pass=False, complete=False)
+        if failure is None and len(endpoints) == subdivisions:
+            history = model.STATE_TYPE(
+                *(
+                    np.stack(
+                        [getattr(state, name), *[arrays[e["key"] + "__" + name] for e in endpoints]]
+                    )
+                    for name in state._fields
+                )
+            )
+            try:
+                history_accounting = dict(
+                    original_accounting_pass=True,
+                    complete=True,
+                    diagnostics=model.check_values(history, spec),
+                )
+            except NumericalError as error:
+                history_accounting.update(complete=True, accounting_failure=str(error))
         result = dict(
             subdivisions=subdivisions,
+            declared_times_s=times.tolist(),
+            execution_definition=declared_execution,
             completed_intervals=len(endpoints),
             stages=stages,
             endpoints=endpoints,
             failure=failure,
+            complete_history_accounting=history_accounting,
             original_energy_limit_pJ=2e-8,
             qualification_pass=False,
         )
@@ -267,6 +352,8 @@ def independent(root):
     )
     for count in inputs["subdivisions"]:
         row = json.loads((root / f"stages-r{count}.json").read_text())
+        expected_times = diagnostic_grid(inputs, count, start, start + duration)
+        np.testing.assert_array_equal(row["declared_times_s"], expected_times)
         with np.load(root / f"stages-r{count}.npz", allow_pickle=False) as saved:
             for stage in row["stages"]:
                 if not stage["valid"]:

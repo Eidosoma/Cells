@@ -96,6 +96,8 @@ def fixture(case="simple"):
     )
     drives = []
     for j, step in enumerate(base["steps"][:3]):
+        if case == "zero_sigma_polarized":
+            step["dt_s"] = 1e-6
         bounds = dict(R=2e-4, L=-1e-4, T=3e-4, B=-4e-4)
         if case == "zero_bounds":
             bounds = {key: 0.0 for key in bounds}

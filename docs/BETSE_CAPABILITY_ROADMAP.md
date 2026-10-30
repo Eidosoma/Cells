@@ -100,6 +100,16 @@ omitted junction-gate factors and stale coefficients after live controls remain
 explicit source behavior. This does not replace Cells' conservative tissue model
 or establish equivalence between detailed and reduced simulations.
 
+The separate [normal-solver source inventory](../agent-work/cells-worker-01/workfiles/NATIVE_NORMAL_CORRESPONDENCE_NOTES.md)
+and [ion/material join](../agent-work/cells-worker-01/workfiles/BETSE_NORMAL_ION_JOIN_NOTES.md)
+cover current construction and explicit membrane/gap/bulk update ordering.
+They retain native stale buffers, clipping, unweighted bath mixing and in-place
+voltage perturbations. Reproducing these source semantics is a calibration
+comparison; it does not establish physical conservation or the full native
+feedback loop. Field/voltage reconstruction, per-ion gating, initialization and
+other omitted chronological components require their own joined comparisons.
+Current results and retained failures are recorded in [Progress](../PROGRESS.md).
+
 The [global temperature/block/voltage setter components](PHYSIOLOGY_RANDOM_STREAMS.md#global-control-setters)
 retain source baselines, ordered writes and invalid-input diagnostics. Their
 [combined held-rate view](PHYSIOLOGY_RANDOM_STREAMS.md#combining-temperature-voltage-and-blocker-readouts)

@@ -130,6 +130,7 @@ def current_values(sim, observed):
 def evaluate(inputs):
     if not 1 <= len(inputs["drives"]) <= 16:
         raise ValueError("Refuse unbounded coupled voltage capture")
+    rng_before = copy.deepcopy(np.random.get_state())
     namespace, current_source, sites, pins = capture()
     cd, vd = inputs["current_definition"], inputs["voltage_definition"]
     state = copy.deepcopy(inputs["initial"])
@@ -143,7 +144,22 @@ def evaluate(inputs):
         )
         captures.append(material)
         if material["status"] != "source_completed":
-            raise ValueError("Material dependency refused before voltage capture")
+            failure = dict(
+                type="MaterialDependencyRefused",
+                call_index=index + 1,
+                source_failure=material["failure"],
+                message="Actual material stage refused before current/voltage",
+            )
+            history.append(
+                dict(
+                    call_index=index + 1,
+                    material=material,
+                    failure=failure,
+                    voltage=None,
+                    final_state=material["final_state"],
+                )
+            )
+            break
         sim = SimpleNamespace(**copy.deepcopy(material["raw_simulator_state"]))
         cells = SimpleNamespace(**copy.deepcopy(material["source_geometry"]))
         cells.cell_sa = np.asarray(cd["geometry"]["cell_area_m2"], np.float64)
@@ -173,11 +189,11 @@ def evaluate(inputs):
         sim.extra_rho_cells = np.asarray(forcing["extra_charge_C_m3"], np.float64)
         sim.extra_J_mem = np.asarray(forcing["extra_current_A_m2"], np.float64)
         observations, current_observations = {}, {}
-        namespace["_observe_voltage"] = lambda name, value: observations.__setitem__(
+        namespace["_observe_voltage"] = lambda name, value, actual=observations: actual.__setitem__(
             name, np.array(value, copy=True)
         )
-        current_source["_observe"] = lambda name, value: current_observations.__setitem__(
-            name, np.array(value, copy=True)
+        current_source["_observe"] = lambda name, value, actual=current_observations: (
+            actual.__setitem__(name, np.array(value, copy=True))
         )
         old = sim.vm.copy()
         with warnings.catch_warnings(record=True) as caught:
@@ -221,6 +237,7 @@ def evaluate(inputs):
         )
         if failure:
             break
+    rng_after = np.random.get_state()
     return dict(
         kind="cells.native_normal_voltage_capture@1",
         inputs=inputs,
@@ -230,13 +247,23 @@ def evaluate(inputs):
         warnings=all_warnings,
         native_source=pins,
         source_sites=sites,
-        RNG_unchanged=all(record["RNG_unchanged"] for record in captures),
+        RNG_before=rng_before,
+        RNG_after=rng_after,
+        RNG_unchanged=(
+            all(record["RNG_unchanged"] for record in captures)
+            and rng_before[0] == rng_after[0]
+            and np.array_equal(rng_before[1], rng_after[1])
+            and rng_before[2:] == rng_after[2:]
+        ),
         runtime=dict(
             python=platform.python_version(),
             numpy=np.__version__,
             measured_cpu_affinity=sorted(os.sched_getaffinity(0)),
         ),
-        dependency_adapter="Actual B23 current prefix plus boundary block; environment HH/Gaussian readouts omitted",
+        dependency_adapter=(
+            "Actual B23 current prefix plus boundary block; "
+            "environment HH/Gaussian readouts omitted"
+        ),
         inverse_preparation_executed=False,
         full_native_solver_correspondence=False,
     )

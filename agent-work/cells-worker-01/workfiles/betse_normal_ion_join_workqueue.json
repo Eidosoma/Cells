@@ -18,7 +18,7 @@
     "test_signed_bath_is_retained_and_mixing_is_the_source_unweighted_mean": 1,
     "test_trial_arrays_are_immutable_and_readout_is_repeatable": 1
   },
-  "Chief_acceptance": "pending independent review",
+  "Chief_acceptance": "Independently reviewed by Chief and entered in shared PROGRESS.md",
   "active_qualification": null,
   "contract": "agent-work/cells-worker-01/workfiles/BETSE_NORMAL_ION_JOIN_NOTES.md",
   "coordinated_shared_edit_authority": "Chief explicitly announced these active local numerical-refinement edits; historical frozen evidence untouched",
@@ -269,7 +269,7 @@
   },
   "runner": "agent-work/cells-worker-01/workfiles/betse_normal_ion_join_checks.py",
   "sources_frozen_after_qualification": true,
-  "status": "42_check_qualification_passed_pending_Chief_review",
+  "status": "qualification_passed_Chief_independent_review_complete",
   "validation_history": [
     {
       "attempt": 1,

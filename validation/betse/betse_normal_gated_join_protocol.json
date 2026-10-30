@@ -1,0 +1,63 @@
+{
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "float_budgets": {
+    "independent": "1024*eps*(ions+membranes+gridpoints+32*call_index+96)*propagated_gross + existing material floors or1e-30; pre-nonce voltage floor1e-40",
+    "initialization": "128*eps*(membranes+32)*abs(reference)+1e-30 per named cache unit",
+    "native": "Exact every named material/current/voltage/gate array and dtype and actual class cache",
+    "physical_tolerances": "unchanged",
+    "reference_self_resolution_fraction": 0.1
+  },
+  "gate_parameters": {
+    "A1_per_mV": 0.077,
+    "A2_per_mV": 0.14,
+    "Ao_unused": 0.217,
+    "lamb_per_ms": 0.0013,
+    "minimum": "supplied scalar [0,1]",
+    "threshold_units": "mV"
+  },
+  "kind": "cells.betse_normal_gated_join_contract@1",
+  "law_id": "betse_normal_active_gap_join_v1_5_0@1",
+  "limitations": [
+    "Source recurrence and explicit-clock correspondence only; distinct from physical continuous-time Cells gate/availability",
+    "Current-prefix/BVP adapter, supplied inverse/gauge and no full-native/physical/GPU parity limits retained",
+    "No ECM/events/pumps/networks/conditioning/thermal-clock program",
+    "Actual source overflow/nonfinite caches retained; component finite-cache/output guard explicitly stricter",
+    "Source mixing/clipping/signed buffers unchanged"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    },
+    "version": "1.5.0"
+  },
+  "purpose": "Close per-moving-ion native voltage-sensitive gate evolution into the scoped normal material/current/voltage join",
+  "reference": "Pure stdlib Decimal90/140 source rates/implicit recurrence and material, current, supplied BVP/voltage equations; propagated gate-rate/GHK/current/voltage feedback gross scales",
+  "resources": {
+    "cpu": 1,
+    "cpu_coordination": "Chief explicitly approved B26 new-file scope and guarded CPU1 qualification",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_gated_join_source_map.json",
+  "source_policy": {
+    "default_weights": "No active-run multiplication after supplied initial sim opening",
+    "gate_elapsed": "N_moving full dt consumptions per single physical outer dt; ordered/cumulative invocation indices retained",
+    "initialization": "Actual class init writes self.gjopen only; supplied sim.gjopen unchanged",
+    "per_ion": "Recompute pre-nonce gap voltage, rates, implicit opening with full outer dt*1000; multiply stored sim opening by block; then gap electroflux nonce and mask",
+    "preparation_layout": "Frozen B24 geometry/constant binding reused; new active binding/callback owns policy; captured runtime p.v_sensitive_gj=True",
+    "temperature": "No rate temperature scaling"
+  }
+}

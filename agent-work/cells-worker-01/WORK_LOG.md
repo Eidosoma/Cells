@@ -4948,3 +4948,134 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   plus all component partial trials, survive as raw archives. Seven owned
   sources are frozen for Chief's independent review. No broader follow-up run,
   detached-job poll, shared-doc edit, git stage or commit was performed.
+
+## B25 native normal boundary/voltage join, 2026-10-30
+
+- Chief requested the next substantial normal field/voltage correspondence
+  component and approved the concrete dependency boundary plus CPU1. New
+  component executes source update_V arithmetic with B23 current-prefix and
+  literal boundary-potential dependencies, coupled B24 -> B23 -> B25 -> next
+  B24 with explicit elapsed/dt/call lineage and source stale caches. The
+  actual native adapter executes complete source bodies at that declared
+  dependency cut. Environment HH/Gaussian readouts, caller-owned inverse/gauge
+  preparation, conditioning and whole-native/physical parity are excluded.
+- Added new immutable component/capture/stdlib-reference/fixture/protocol/map/
+  tests and own preparation files only. Source boundary order R,L,T,B retains
+  corner overwrites; direct/polarized branches retain boundary subtraction
+  differences, ion-mean sigma/configured temperature, unweighted vm mean,
+  in-cell field conventions and nonce-updated pre-voltage dvm. Independent
+  Decimal90/140 equations carry gross cancellation/feedback scales through
+  GHK, amount, current, conductivity and voltage in named units.
+- Static lint/format/syntax/source/import-closure/matrix checks pass six Python
+  files. Frozen39-check package covers12 three-call coupled histories/36 calls,
+  720 complete material-stage states,15 native captures and24 fresh reference
+  forms. Inputs:
+  `/mnt/workspaces/Cells/betse-normal-voltage-tests-20261030-01/inputs.json`
+  SHA61a26c26150db046b25687f58db65e0c1ed721918037798c67d2d78075ea8bb4.
+  [Preparation receipt](workfiles/betse_normal_voltage_preparation_receipt.json)
+  records all source pins, twelve authenticated native copies and129 protected
+  files; Chief's prior two historical shared-file exceptions stay explicit.
+  No scientific imports, numerical/collection runs or active-status reads
+  occurred during preparation. B25 bounded CPU1 qualification is next.
+- Attempt01 terminal:38/39 pass, eleven carried comparisons/33 calls/660
+  material states complete,14 native captures and22 reference forms; maximum
+  independent fraction2.088337e-05. The zero-conductivity polarized history at
+  dt0.002s becomes unstable in a later material stage. Original failure
+  SHA0ed1471dcebe94d5aaf87cee96e53d0afb7bd87fe5fd03d27f22cc9583f620ca
+  and original inputs/stdout remain intact. The original adapter raised before
+  serializing that failed material, so the old failed process has no raw
+  material archive; this limitation is explicit in the queue. Its exact input
+  SHAce0c0b3f10fd3528ff3492e9c5f8785960cc1c2d48bf85173840acd9e2364b27
+  is now a new owned lossless replay fixture. Corrected only capture/exception
+  packaging to preserve full actual failed material and successful voltage
+  prefixes. The unstable source case remains an explicit adversarial test;
+  ordinary zero-conductivity comparison explicitly uses dt1e-6s. Constitutive
+  equations, physical and independent error budgets remain unchanged.
+- Fresh attempt02 plans40 checks,16 native captures/24 reference forms and the
+  same36 ordinary calls/720 complete material states, plus the exact unstable
+  dependency replay. Lint/format/static checks pass;129 prior sources remain
+  protected. No shared API/status, historical source, active job or unrelated
+  numeric computation changed. Chief received the first terminal outcome.
+- Capture02 inputs
+  `/mnt/workspaces/Cells/betse-normal-voltage-tests-20261030-02/inputs.json`
+  SHAb60db2055a25bf5ec55a2c27af1c0c913e1e7c7627dba861b21281c3ef0c33cd;
+  [Preparation receipt02](workfiles/betse_normal_voltage_preparation_receipt_02.json)
+  SHAb17ac164ba08884b5f485af9a5936d252d84d5bfe906ddd2ce019836eb8c8737
+  captures2187 files,129 protected sources and twelve native source copies.
+- Capture02 passes all40 checks in20.395s on CPU1:16 native captures,24 fresh
+  independent forms,36 ordinary coupled calls and720 complete material-stage
+  states. Every named native array/dtype matches exactly; independent maximum
+  fraction2.088337e-05. Main/native/reference report CPU1; tree RSS<=115507200B,
+  individual HWM<=61145088B, reserve>=22584647680B. All129 protected sources
+  and the full frozen capture remain exact; no shared-edit modules load in
+  scientific tests. Terminal result:
+  `/mnt/workspaces/Cells/betse-normal-voltage-tests-20261030-02/result.json`
+  SHA144449679c8bc40a2173cf829a1689ecdac44f568a85529ec102ce199fe1b3b8.
+  Actual nonfinite fields, infinity, NaN-only voltage gate refusal and the
+  original materially unstable input all retain raw arrays/full source and
+  component lineage. The original failed attempt is untouched. Static AST
+  comparison confirms unchanged voltage bind/equations and independent
+  reference body between attempts. Eight owned files are frozen for Chief
+  review. The declared current-prefix/BVP dependency boundary, supplied
+  inverse/gauge and no-full-native/no-physical-parity limits remain explicit.
+  No follow-up regression, active-job poll, shared edit or git mutation ran.
+- Chief confirms independent review of B23/B24 is complete and their results
+  are entered in Root-owned PROGRESS.md. Their own queues now reflect that
+  review; historical evidence/source bytes remain unchanged.
+- To distinguish B25 acceptance from source stability: the original dt0.002s
+  zero-conductivity input still fails in the material source. The new check
+  passes by reproducing that refusal and preserving its actual full partial
+  state and completed voltage prefix; it does not repair or accept the
+  unstable history. The dt1e-6s ordinary history is a separate comparison.
+  The queue names both raw source/component replay archive paths and actual
+  failed-call/type/status explicitly. B25 independent review remains pending.
+
+## B26 native active gap-gate normal join, 2026-10-30
+
+- Chief assigned the next normal-loop join and approved the sent scope/CPU1:
+  actual voltage-sensitive Gap_Junction class, per-moving-ion full-dt update,
+  stored-state blocking, stale caches and coupling through frozen B23-B25.
+  New files only. Root owns all blocker/batch/refinement investigations;
+  Specialist owns thermal clocks. No shared files/status or jobs were touched.
+- Added a new active binding/state/initialization/material/coupled component,
+  isolated authenticated actual native class/body capture, independent Decimal
+  source equations and cases. Source class-only gjopen initialization, ms unit
+  conversion, pre-nonce vgj, repeated blocking, boundary gating before masking,
+  ignored active-run default weights and above-one finite states remain
+  explicit. Gate updates and physical outer elapsed clocks are distinct.
+- Static preparation passes lint/format/syntax/independent import-closure and
+  matrix/source audits. Material AST matches the qualified B24 body with only
+  namespace qualification and fixed-opening-to-gate-callback substitution;
+  the frozen original is untouched. Planned34 checks:12 three-call histories,
+  36 outer calls/648 full material states/96 gate updates,16 native captures,
+  24 independent forms at Decimal90/140. Constructor, no/one/all moving ions,
+  order, fractional/zero/restored blocks, cached initialization, nonce, default
+  weights, gate/voltage overflow and complete failed-state paths are included.
+- Frozen inputs:
+  `/mnt/workspaces/Cells/betse-normal-gated-join-tests-20261030-01/inputs.json`
+  SHA8e9d7e73c32ae3425b8485de8b2a641e27979d8b2a996052982da2f41fb3fbde.
+  [Preparation receipt](workfiles/betse_normal_gated_join_preparation_receipt.json)
+  pins15 original functions/seven source files,14 authenticated native copies,
+  137 protected files and all prepared inputs. No scientific imports,
+  numerical/collection runs or active-status reads during preparation. Next
+  is the explicitly coordinated bounded CPU1 qualification.
+- First frozen qualification passes all34 checks in20.882s on CPU1:16 actual
+  native captures,24 independent answer forms,36 carried outer calls,648 full
+  material-stage states and96 gate invocations. Every named native array/dtype
+  and class cache matches exactly; maximum independent fraction0.001061570.
+  Main/native/reference report CPU1. Tree RSS<=115867648B, individual
+  HWM<=60276736B, reserve>=23368216576B. All137 protected files and the full
+  frozen source remain exact; no shared-edit modules load in scientific tests.
+  Terminal result:
+  `/mnt/workspaces/Cells/betse-normal-gated-join-tests-20261030-01/result.json`
+  SHAd1f11ecf9293bc33e8dc0bf7c73a1aa2d28c1bfb66d9862b1165ce135b112f5b.
+- Complete raw class-cache/rate overflow and coupled gate/material/voltage
+  failure states survive as lossless source and model archives. Source can
+  complete with a nonfinite unused class-initialization cache or finite vm
+  with nonfinite fields; its runtime gate overflow produces actual source
+  refusal. The stricter component refusals preserve those measured limits;
+  source behavior is not repaired. Stored-state block multiplication and
+  full-dt-per-moving-ion clock remain explicit, distinct from physical Cells
+  gate controls. Seven new owned sources are frozen for Chief review. Own
+  queue links exact result/resources/inputs/failure statuses. No retry,
+  follow-up regression, active-job poll, shared edit or git mutation ran.

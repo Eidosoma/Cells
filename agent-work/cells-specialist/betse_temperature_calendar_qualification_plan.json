@@ -1,0 +1,96 @@
+{
+  "kind": "cells.betse_temperature_calendar_qualification_plan@1",
+  "status": "qualified_and_completion_verified",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_temperature_calendar.py": "fed5ced4515025b74e5445400284833eb4dc12550bae951ab0a7d5d7e7348248",
+    "src/cells/betse_temperature_calendar_io.py": "d9cb5d1fe9703e49b331f6a4a12c0e75649ff08d2511f521af7c62b4368be103",
+    "validation/betse/betse_temperature_calendar_native.py": "1d3efe37361ad73b3cc47ac3c3bebe5d1cb14148d2fc994d6a06d7afd94dba1c",
+    "validation/betse/betse_temperature_calendar_reference.py": "208140748df9d312126a246351f33aba9ca7d035b76976ca546791da92387ba4",
+    "validation/betse/betse_temperature_calendar_fixtures.py": "e0b2624511cb98d32a774b9aae4ce6b57bbc75ea8d59f9c5918c637c8d532902",
+    "validation/betse/betse_temperature_calendar_replay.py": "c751e1b145d2d791f8d11e7f1b7ad5b7d3a3f8e842c79d7a94c8b27b49b22312",
+    "validation/betse/betse_temperature_calendar_protocol.json": "3e6328bc45f86659a2bfa4b8610b4e9ee32af61638bf8859517dd1a9feb03e5c",
+    "tests/unit/test_betse_temperature_calendar.py": "75ac3eef0ce89f94d85dca74bc75e8c82ae2627294b2d480c2a9dca2077c1067"
+  },
+  "source_AST": "passed",
+  "ruff": "passed",
+  "Chief_scope_approved": true,
+  "CPU6_checks_authorized": true,
+  "expected_checks": 82,
+  "expected_complete_source_streams": 34,
+  "expected_source_call_rows": 192,
+  "expected_raw_refusal_cases": 3,
+  "expected_disk_restart_splits": 16,
+  "source_native_files": 9,
+  "constant_profiles": [
+    "literal_native",
+    "matched_SI"
+  ],
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-temperature-calendar-20261030-01-checks.py",
+  "runner_sha256": "95ecab71a071dea640d8941a9eab30d19c2c051d84dcbc63e75db8764af53103",
+  "resources": {
+    "cpu": [
+      6
+    ],
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "tolerances": {
+    "relative": 6e-12,
+    "temperature_absolute_K": 3e-12,
+    "dimensionless_absolute": 3e-13,
+    "conductance_absolute_S_m2": 3e-13,
+    "conductivity_absolute_S_m": 3e-13,
+    "voltage_absolute_V": 3e-14,
+    "gate_absolute": 3e-14,
+    "clock_reference_ULPs": 4,
+    "raw_source_binary64": "exact or explicitly stated roundoff budget",
+    "restart_and_parent": "exact",
+    "reference_self_resolution_fraction": 0.1
+  },
+  "phases": [
+    "checks",
+    "native-replay",
+    "reference-replay"
+  ],
+  "runtime_estimate_minutes": [
+    2,
+    5
+  ],
+  "estimate_basis": "Small fixed-material NumPy/Decimal replay with at most7 source calls in qualification cases; not measured yet",
+  "launch_mode": "attached_watcher_under10min_expected",
+  "source_scope": "Declared source temperature, explicit HH/ML clocks, isolated transport factors and full fixed-material fast initializer cache; both native event guards",
+  "excluded_scope": [
+    "No ionic/current/voltage integration",
+    "No55completechannelclass trajectories",
+    "No physical thermal transition or heat law",
+    "No shared API/model/guard change",
+    "No compiled JAX/GPU or memory-improvement claim"
+  ],
+  "restart": "Exact binary64 disk buffers and original complete phase/source-prefix reconstruction; content association, not proof of external native completed work",
+  "outputs_root": "/mnt/workspaces/Cells",
+  "active_CPU3_4_7_jobs_inspected": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "numerical_work_started": true,
+  "completed_capture": "/mnt/workspaces/Cells/betse-temperature-calendar-20261030-01",
+  "result_sha256": "8223c5c94fcd075d5ab19f4c141b2c7d2028473642da03ddbadbb21f7e0bcd1b",
+  "completion_receipt": "/mnt/workspaces/Cells/betse-temperature-calendar-20261030-01/completion-verification.json",
+  "measured_checks": 82,
+  "measured_complete_source_streams": 34,
+  "measured_source_call_rows": 192,
+  "measured_raw_refusal_cases": 3,
+  "measured_disk_restart_splits": 16,
+  "maximum_error_fraction": 7.613299259545843e-05,
+  "maximum_reference_resolution_fraction": 0.0,
+  "measured_sum_phase_seconds": 18.10880798008293,
+  "measured_peak_process_high_water_bytes": 202014720,
+  "measured_minimum_host_reserve_bytes": 22581067776,
+  "runtime_files_verified": 714,
+  "frozen_source_files": 2191,
+  "native_and_reference_import_denied_replays": "passed",
+  "compiled_JAX": false,
+  "accepted_tissue_steps": false,
+  "heat_law_assigned": false
+}

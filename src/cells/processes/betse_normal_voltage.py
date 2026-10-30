@@ -350,7 +350,11 @@ def advance(
             or not math.isfinite(elapsed_s + drive.dt_s)
         ):
             raise ValueError("Declare explicit elapsed call boundary")
-        material = ions.step(ion_binding, parent, drive)
+        try:
+            material = ions.step(ion_binding, parent, drive)
+        except ions.IonJoinRejected as error:
+            material = error.trial
+            raise
         state = material.candidate.values
         readout = current.evaluate(
             cb,

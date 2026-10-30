@@ -1,0 +1,119 @@
+{
+  "active_gate_policy": {
+    "default_weights": "No active-run multiplication after supplied initial sim opening",
+    "gate_elapsed": "N_moving full dt consumptions per single physical outer dt; ordered/cumulative invocation indices retained",
+    "initialization": "Actual class init writes self.gjopen only; supplied sim.gjopen unchanged",
+    "per_ion": "Recompute pre-nonce gap voltage, rates, implicit opening with full outer dt*1000; multiply stored sim opening by block; then gap electroflux nonce and mask",
+    "preparation_layout": "Frozen B24 geometry/constant binding reused; new active binding/callback owns policy; captured runtime p.v_sensitive_gj=True",
+    "temperature": "No rate temperature scaling"
+  },
+  "adapter": {
+    "caller_owned": "Original ravel-grid inverse, gauge provenance, grid maps, radii/diviterm, free diffusion and old voltage",
+    "excluded": [
+      "Environment HH/Gaussian/ECM readouts",
+      "Inverse/gauge preparation",
+      "Native initialization/events/networks/voltage-sensitive callbacks"
+    ],
+    "executed": "Full update_V, actual B23 current prefix, actual seven-statement no-ECM BVP block, source check_v; B24 material source per carried call"
+  },
+  "full_native_solver_correspondence_qualified": false,
+  "kind": "cells.betse_normal_gated_join_source_map@1",
+  "numerical_runs": 0,
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  },
+  "source_sites": {
+    "betse/science/cells.py": {
+      "cellMatrices": {
+        "AST_sha256": "0a138ebac00024b96fec201b11cb2281b1dcd5452b3239751d25f2e3686aa891",
+        "first_line": 1276,
+        "last_line": 1333
+      }
+    },
+    "betse/science/channels/gap_junction.py": {
+      "__init__": {
+        "AST_sha256": "2a936a1a3dbe5b18bb0d106406fa6326cdcc61b7d13deada6845ca4b32ee3277",
+        "first_line": 17,
+        "last_line": 19
+      },
+      "init": {
+        "AST_sha256": "82c842c543f4e7386cfbf0c78691f28451bd91e55416f32a651d46aaf0a53db7",
+        "first_line": 22,
+        "last_line": 50
+      },
+      "run": {
+        "AST_sha256": "8fa2d92029d9e65af6f8f140b58da18edd7a4a9ed0f55d173a71729a32b28c58",
+        "first_line": 53,
+        "last_line": 75
+      }
+    },
+    "betse/science/physics/ion_current.py": {
+      "get_current": {
+        "AST_sha256": "cf2539a4f127759ccb8f9d17915a9cd8acea5866696ec1ef4bdc5a26092702c1",
+        "first_line": 13,
+        "last_line": 171
+      }
+    },
+    "betse/science/sim.py": {
+      "_run_sim_core_loop": {
+        "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "first_line": 1132,
+        "last_line": 1390
+      },
+      "init_dynamics": {
+        "AST_sha256": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+        "first_line": 758,
+        "last_line": 1012
+      },
+      "update_V": {
+        "AST_sha256": "555dffb27f1a0c803c47af3fab58c92c88a52bf893fb0859658d7cba9753e574",
+        "first_line": 2007,
+        "last_line": 2083
+      },
+      "update_all_concs": {
+        "AST_sha256": "4526d87d85b86e4392eb0ba28d09f6a2fb66bebcca5273d3910876c9c8a3052d",
+        "first_line": 2086,
+        "last_line": 2111
+      },
+      "update_gj": {
+        "AST_sha256": "e1d1c7e08977c3212d6334d35bef3881ac765bdbecb86132256e8621aeb3fd26",
+        "first_line": 2162,
+        "last_line": 2206
+      },
+      "update_intra": {
+        "AST_sha256": "0bf90e600b6a169932d0b4730eabec6a84763c7068469399e8d00b361ac7b6d9",
+        "first_line": 2257,
+        "last_line": 2310
+      }
+    },
+    "betse/science/sim_toolbox.py": {
+      "check_v": {
+        "AST_sha256": "10cd76d9870074b9e68af20653b837750515c28def7c16fdf26790c234286380",
+        "first_line": 332,
+        "last_line": 344
+      },
+      "electroflux": {
+        "AST_sha256": "fdea0e87111b95676927b226fdd3dd56db1ca20849dcd55da581c350d2eb4183",
+        "first_line": 18,
+        "last_line": 69
+      },
+      "no_negs": {
+        "AST_sha256": "ca58dc1cd3fc9003db9009190f1b134a4c8a678256ecf3692d12f79a66cdb29c",
+        "first_line": 475,
+        "last_line": 503
+      },
+      "update_Co": {
+        "AST_sha256": "21056d19c4b6ecdb6cc7966cee7b9623e546b555ccbd6bd5d0b73dc61f0a75f6",
+        "first_line": 1155,
+        "last_line": 1207
+      }
+    }
+  }
+}

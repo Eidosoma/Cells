@@ -1,0 +1,70 @@
+{
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "chronology": [
+    "B24 ordered material/nonce mutation",
+    "B23 current reads committed bulk and fluxes",
+    "BVP R,L,T,B overwrites corners",
+    "sigma overwrites with ion mean at configured T",
+    "native voltage branch/field/dvm using nonce-updated old vm",
+    "candidate vm feeds next B24 call; other cached arrays remain source-stale"
+  ],
+  "clock": "Explicit elapsed start/end, call index and supplied dt; no event-calendar equivalence",
+  "dependency_adapter": {
+    "caller_owned": "Original ravel-grid inverse, gauge provenance, grid maps, radii/diviterm, free diffusion and old voltage",
+    "excluded": [
+      "Environment HH/Gaussian/ECM readouts",
+      "Inverse/gauge preparation",
+      "Native initialization/events/networks/voltage-sensitive callbacks"
+    ],
+    "executed": "Full update_V, actual B23 current prefix, actual seven-statement no-ECM BVP block, source check_v; B24 material source per carried call"
+  },
+  "float_budgets": {
+    "independent": "1024*eps*(ions+membranes+gridpoints+16*call_index+64)*propagated_gross + existing material floors or1e-30 in each named current/voltage unit",
+    "native": "Every named array and dtype exactly equals actual host native source with declared adapter",
+    "physical_tolerances": "unchanged",
+    "reference_resolution_fraction": 0.1
+  },
+  "kind": "cells.betse_normal_voltage_contract@1",
+  "law_id": "betse_normal_boundary_voltage_v1_5_0@1",
+  "limitations": [
+    "Source arithmetic correspondence only; no full-native or physical electrostatic/material/energy parity",
+    "Manufactured supplied inverse; no field operator or gauge solve qualification",
+    "Signed buffers and source mixing/clipping unchanged",
+    "Stricter finite output guard preserves actual NaN/infinity and source NaN-only gate behavior"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    },
+    "version": "1.5.0"
+  },
+  "purpose": "Literal normal update_V and boundary potential, joined to qualified B23/B24 components at an explicit current-prefix/BVP adapter boundary",
+  "reference": "Independent Decimal boundary/voltage equations plus frozen pure-stdlib B23/B24 references at precision90/140, binary64 component store seams; gross feedback scales use |B(alpha)|<=1+|alpha|, |B'(alpha)|<=1 for Bernoulli GHK factors",
+  "resources": {
+    "cpu": 1,
+    "cpu_coordination": "Chief explicitly approved B25 CPU1 short guarded comparisons",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "retained_material_failure": {
+    "correction": "Preserve full failed material dependency and successful voltage prefix; original numerical instability retained, no equations/tolerances changed",
+    "inputs_sha256": "ce0c0b3f10fd3528ff3492e9c5f8785960cc1c2d48bf85173840acd9e2364b27",
+    "original_dt_s": 0.002,
+    "original_inputs": "/mnt/workspaces/Cells/betse-normal-voltage-tests-20261030-01/evidence/normal-voltage/isolated-zero_sigma_polarized/inputs.json",
+    "replay_fixture": "validation/betse/betse_normal_voltage_material_failure.json",
+    "stable_comparison_dt_s": 1e-06
+  },
+  "source_map": "validation/betse/betse_normal_voltage_source_map.json"
+}
