@@ -114,6 +114,26 @@ class CalciumPhysicsStages(NamedTuple):
         return self.completion(state, layout, control, self.ionic(state, layout, control))
 
 
+class FuelIonicStage(NamedTuple):
+    """Live finite-pool pump layout and the unchanged world's ionic prefix."""
+
+    calcium_layout: object
+    ionic: object
+
+
+class FuelPhysicsStages(NamedTuple):
+    """Three physical executables with the same full state/layout/control."""
+
+    ionic: object
+    calcium: object
+    completion: object
+
+    def __call__(self, state, layout, control):
+        ionic = self.ionic(state, layout, control)
+        calcium_values = self.calcium(state, layout, control, ionic)
+        return self.completion(state, layout, control, calcium_values)
+
+
 class StagedValues(NamedTuple):
     raw_proposal: Proposal
     raw_runtime_layout: object
@@ -686,4 +706,74 @@ def compiled_calcium_world_stages():
             jax.jit(lambda s, p, u: calcium.ionic_stage(s, u, p)),
             jax.jit(lambda s, p, u, ionic: compact_calcium_completion(s, p, u, ionic)),
         )
+    )
+
+
+def _fuel_stage_types(state, layout, control):
+    family = IMPLEMENTATIONS["resolved_calcium_energy@5"]
+    if (
+        type(state) is not family.STATE_TYPE
+        or type(layout) is not family.LAYOUT_TYPE
+        or type(control) is not FuelControl
+    ):
+        raise ValueError("Fuel stages require the exact closed finite-fuel family and control")
+
+
+def fuel_ionic_stage(state, layout, control, *, xp=jnp):
+    """Project all pump families from live fuel, then solve the ionic prefix."""
+    _fuel_stage_types(state, layout, control)
+    current = fuel.stage_layout(state, layout, xp=xp)
+    ionic = calcium.ionic_stage(
+        fuel.prior_state(state), fuel.prior_control(control), current, xp=xp
+    )
+    return FuelIonicStage(current, ionic)
+
+
+def fuel_calcium_stage(state, layout, control, ionic, *, xp=jnp):
+    """Complete calcium/ER with the same live pump layout as the ionic prefix."""
+    _fuel_stage_types(state, layout, control)
+    if (
+        type(ionic) is not FuelIonicStage
+        or type(ionic.calcium_layout) is not IMPLEMENTATIONS["resolved_calcium@11"].LAYOUT_TYPE
+        or type(ionic.ionic) is not calcium.IonicStage
+    ):
+        raise ValueError("Fuel calcium stage requires its complete live-pool ionic stage")
+    return calcium.complete_ionic_stage(
+        fuel.prior_state(state),
+        fuel.prior_control(control),
+        ionic.calcium_layout,
+        ionic.ionic,
+        xp=xp,
+    )
+
+
+def compact_fuel_completion(state, layout, control, calcium_values, *, xp=jnp):
+    """Retain full fuel rates, field/energy accounting and gross turnover."""
+    _fuel_stage_types(state, layout, control)
+    if type(calcium_values) is not calcium.Values:
+        raise ValueError("Fuel completion requires the complete calcium/ER readout")
+    result = fuel.complete_calcium_stage(state, control, layout, calcium_values, xp=xp)
+    return CompactPhysics(
+        result.field,
+        result.derivative,
+        result.valid,
+        result.exchange.gross_hydrolysis_fmol_s,
+        result.exchange.gross_synthesis_fmol_s,
+    )
+
+
+def compiled_fuel_world_stages():
+    """Build five executables for held, closed finite-fuel/calcium rates.
+
+    The unjitted cohort orchestrator preserves all boundaries and original
+    per-world ownership. Compiled memory, GPU execution, thermal work and
+    trajectories need separate qualification; open baths are not admitted.
+    """
+    stages = compiled_world_stages("resolved_calcium_energy@5")
+    return stages._replace(
+        physics=FuelPhysicsStages(
+            jax.jit(lambda s, p, u: fuel_ionic_stage(s, p, u)),
+            jax.jit(lambda s, p, u, ionic: fuel_calcium_stage(s, p, u, ionic)),
+            jax.jit(lambda s, p, u, value: compact_fuel_completion(s, p, u, value)),
+        ),
     )

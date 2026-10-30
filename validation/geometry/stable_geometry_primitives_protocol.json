@@ -1,0 +1,107 @@
+{
+  "kind": "cells.stable_geometry_primitives_contract@1",
+  "law_id": "cells_stable_binary64_geometry_primitives@1",
+  "status": "static_candidate_implementation_and_checks_unrun",
+  "purpose": "Address the retained product-cancellation centroid and thin-triangle failures through a separate host arithmetic law, without substituting literal BETSE arithmetic.",
+  "diagnostic": {
+    "report": "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/analysis-01/REPORT.json",
+    "input_records": "validation/geometry/stable_geometry_primitives_regressions.json",
+    "centroid_finding": "Fsum of already-rounded terms cannot recover lost cross-product/numerator bits; both translated float64 variants still exceeded the original budget. Exact binary rational evaluation matched the selected reference bits.",
+    "triangle_finding": "Heron side-length and subtraction errors dominate the thin triangle. Determinant area with the same side lengths passed the selected fixed budget; sorted Kahan Heron alone still failed.",
+    "original_failed_campaign_reclassified": false
+  },
+  "input_domain": {
+    "primitive": ["polygon", "triangle"],
+    "point_count": [3, 64],
+    "triangle_count": 3,
+    "coordinates": "Explicit list/tuple rows of two finite Python binary64 floats. Literal integers up to absolute 2**53 are converted exactly. No boolean, Decimal, ndarray or wider-float coercion.",
+    "polygon": "Distinct vertices in the caller's simple boundary order. Concavity and forward collinear edges are allowed. Repeated, crossing, touching nonadjacent and backtracking edges are refused with explicit codes.",
+    "triangle": "Three distinct, exactly noncollinear supplied points; orientation does not change positive area or radii.",
+    "floating_environment": "Binary radix, 53-bit mantissa, exponents -1021/1024; runtime probes require nearest-even and gradual underflow before evaluating geometry.",
+    "representation": "Every required output must round to finite binary64. A nonzero exact output rounding to zero is refused, as is overflow. Unresolved bounded exact rounding is refused rather than approximated.",
+    "caller_options": "No adjustable tolerance, fallback threshold or rounding budget. The 32-ULP policy and bounded refinement schedule belong to the versioned law."
+  },
+  "quantities": {
+    "polygon": ["centroid_x_m", "centroid_y_m", "signed_area_m2"],
+    "triangle": ["circumcenter_x_m", "circumcenter_y_m", "circumradius_m", "inradius_m", "area_m2"]
+  },
+  "arithmetic": {
+    "fast_path": "Local-coordinate triangle-fan polygon moments and a local circumcenter solve. Area uses a determinant; circumradius is the norm of the local centre offset. No Heron area is used in production.",
+    "enclosure": "Propagate outward binary64 endpoint bounds through basic operations. Sum bounds use outward sequential addition; fsum supplies only a candidate and is not assumed to recover exact product bits. Square roots are bracketed and checked using exact integer squared comparisons.",
+    "certification": "Accept a candidate only if the complete enclosure lies within 32 ULPs of that candidate. Unresolved zero coordinates and uncertain denominators cause exact fallback. The criterion has no fixture-specific absolute floor.",
+    "predicates": "Filtered orientation signs with exact binary rational fallback. Boundary-order validation is confined to the supplied primitive and supplies no whole-mesh topology qualification.",
+    "rational_fallback": "Re-evaluate the complete affected primitive from original binary64 coordinates using exact Fraction arithmetic. Do not reuse rounded differences or products. Polygon moments and centre/area ratios round once to binary64.",
+    "sqrt_fallback": "Use integer isqrt on scaled exact radicands to construct dyadic lower/upper bounds. Resolve radius and inradius only when both endpoints round to the same binary64 result. Refine at 80,160,320,640,1280,2560,5120,8192 bits; retain and refuse unresolved rounding.",
+    "provenance": "Record the selected method, fallback reason, predicate counters, complete input/output hex encodings, exact ratios or intervals and the versioned policy.",
+    "performance_qualified": false,
+    "acceleration_qualified": false
+  },
+  "independent_reference": {
+    "module": "validation/geometry/stable_geometry_primitives_reference.py",
+    "dependencies": "Standard-library integers and Decimal only; no Fraction arithmetic or production/scientific-package imports.",
+    "rational_definitions": "Scale original float ratios onto a common exact integer grid. Use global edge shoelace moments and global integer circumcenter determinants, independently of the production local fan and translated Fraction expressions.",
+    "decimal_definitions": "Preserve separate global Decimal shoelace, pivoted perpendicular-bisector Gaussian solve, radius and high-precision Heron outputs. Authoritative rational quantities and squared circumradius are also evaluated from the independent integer grid.",
+    "precision": "Primary max(4096,6*input_decimal_span+160) digits; refined primary+512 digits; refuse above 16384 digits. Retain full decimal strings and both precision reports before comparison.",
+    "rounding_controls": "Use exact integer nearest-neighbour/ties-to-even comparisons for rational output hex targets, including exact-zero and midpoint cases.",
+    "comparison": "Compare actual binary64 values directly with full-precision decimal targets, not shortened displays or only rounded reference floats. Verify reported enclosures and exact rational identities independently.",
+    "fresh_process": "Deny Cells, BETSE, NumPy, SciPy, JAX, Torch and Pillow before provider import. Reconstruct declared input recipes and compare saved independent reports. No native-equivalence lane exists."
+  },
+  "controls": {
+    "positive_cases": 54,
+    "base_cases": 12,
+    "power_of_two_scale_cases": 16,
+    "polygon_cyclic_and_reverse_cases": 8,
+    "triangle_permutation_cases": 6,
+    "translation_cases": 8,
+    "combined_scale_translation_cases": 4,
+    "domain_refusals": 21,
+    "ownership_and_tampering_checks": 9,
+    "expected_pytest_checks": 84,
+    "fresh_reference_records": 75,
+    "guarded_units_on_success": 160,
+    "transforms": "Apply exact rational affine recipes, round transformed coordinates once and retain every coordinate quantization ratio. Exact affine/order invariance is asserted only when the transformed binary64 inputs equal the exact recipe. Otherwise compare the changed inputs independently without an invariance claim.",
+    "regular_polygon": "The 64-point manufactured polygon uses recorded math.sin/cos binary64 coordinates; no ideal regular-polygon geometry is claimed.",
+    "original_failures": "Retain both original input bit records and native failure outputs unchanged. Assert the saved failures still exceed their fixed budget; passing a new primitive never changes the old campaign status."
+  },
+  "tolerances": {
+    "fast_path": "At most 32 ULPs of the actual binary64 candidate, checked against full-precision references and the stored enclosure.",
+    "rational_fallback": "Correctly rounded exact ratio and matching independent rounded target bits.",
+    "sqrt_fallback": "Both exact dyadic interval endpoints round to the emitted value; compare independent high-precision targets and retain full intervals.",
+    "original_centroid_and_circumc_outputs": "1e-27 + 6e-12*abs(full_precision_reference), unchanged.",
+    "additional_area_outputs": "1e-26 + 6e-12*abs(full_precision_reference), plus the stronger 32-ULP primitive requirement.",
+    "reference_resolution": "At most 0.01 ULP and 0.1 of the fixed comparison budget.",
+    "failure_policy": "Preserve all declared cases, refusals and errors. Do not move fixtures, widen budgets, silently substitute a method or reclassify prior failures to pass."
+  },
+  "ownership": "Requests and results are immutable tuples/frozen records; identity seals input bits, method and certificates. Caller list aliases and resealed mutable/untyped records do not obtain result authority.",
+  "resources_proposal": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "whole_job_resources_proposal": {
+    "cpu": 6,
+    "max_wall_seconds": 7200,
+    "max_process_tree_rss_bytes": 2147483648,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "artifact_policy": "Independent guarded workers and finalization; one JSON record at a time, 16-MiB metadata bound, streamed file/runtime/library hashes. Preserve raw output before assertions, unexpected completions and partial guard failures. Long qualification launches detached; no automatic polling or retry.",
+  "scope": {
+    "new_native_equivalence": false,
+    "whole_mesh_credit": false,
+    "topology_qualified": false,
+    "physical_geometry_admitted": false,
+    "native_exact_primitives_changed": false,
+    "frozen_lifecycle_replaced": false,
+    "original_19_of_22_limitation_closed": false
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

@@ -1,0 +1,100 @@
+{
+  "kind": "cells.stable_initial_mesh_preparation_contract@1",
+  "law_id": "cells_stable_initial_constructor_pre_mesh@1",
+  "status": "static_candidate_checks_unrun",
+  "purpose": "Assess whether the separately versioned stable primitive arithmetic repairs the complete constructor/pre_mesh boundary while retaining unchanged native topology, ordering and caches and exposing any remaining whole-mesh geometric defects.",
+  "boundary": {
+    "entry": "An authenticated betse_initial_mesh_preparation.Request plus an explicit exact new-law opt-in token.",
+    "exit": "Complete constructor and pre_mesh caches/events or a retained partial failure. Before clipping, refinement, operators or physical adapter admission.",
+    "original_flags": "Keep authenticated caller flags unchanged, including allow_merging, rect/tri mesh type, alpha filtering and centroid selection. No rewritten caller recipes.",
+    "repaired_methods": ["area", "poly_centroid", "circumc"],
+    "unchanged_methods": ["__init__", "make_single_cell_points", "pre_mesh", "create_tri_mesh", "trimesh_core_calcs", "sanity_check", "merge_tri_mesh", "create_tri_map", "process_primary_edges", "create_mappings", "define_vorverts", "process_voredges", "quad_circumc", "cc_sort_inds"],
+    "maximum_seed_occurrences": 64,
+    "maximum_delegated_polygon_vertices": 64,
+    "primitive_law": "cells_stable_binary64_geometry_primitives@1",
+    "primitive_frozen_bundle_sha256": "71add3636c486e9a2ec2f6690ed1b48a51c4011f6ded3d3da4e49e8f1dbb55b8",
+    "primitive_source_sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+    "primitive_qualification_inherited": false,
+    "input_conversion": "Only original float64 point arrays cross the adapter, preserving their input bits, row order and dimensions. Explicit float64-to-Python-float copies feed stable primitive requests. Returned scalars are converted to the original NumPy float64 scalar/tuple interface.",
+    "primitive_refusals": "Repeated, non-simple, degenerate, out-of-range or unresolved primitive inputs retain their trial and stop this mesh. No point deduplication, canonicalization, jitter, alternate triangulation or fallback to native arithmetic is added."
+  },
+  "source_equivalence_lane": {
+    "claim": "Conditional source equivalence given the supplied repaired primitive scalar values or refusals, never exact native arithmetic equivalence.",
+    "provider": "validation/geometry/stable_initial_mesh_preparation_native.py",
+    "method": "Compile the original pinned 17-method native closure. Replace exactly three primitive bodies with a tape call. Authenticate exact typed call argument signatures, including scalar/array types, bits, shape, strides and container order, before consuming each saved output/refusal. All other native AST bodies remain unchanged.",
+    "comparisons": "Every original event after filtering only the extra primitive-repair events, complete constructor/final caches, original return types, source ordering, deletion indices and source occurrence IDs, all full MT19937 words/position/cached Gaussian state and warnings.",
+    "constructor_kwargs": "Only the outer keyword map is compared by exact key set and exact per-value typed signature. This does not relax cache, event or nested container ordering.",
+    "failures": "Retain both complete raw failures. Qhull transient reason text is excluded only from typed top-level failure-payload comparison; every other member stays exact. Unexpected primitive failure types cannot be replayed as accepted tape values.",
+    "fresh_process": "Deny Cells, BETSE, JAX, Torch and Pillow before native provider import. NumPy/SciPy are available to execute pinned original source in the isolated namespace."
+  },
+  "independent_geometry_lane": {
+    "provider": "validation/geometry/stable_initial_mesh_preparation_reference.py",
+    "arithmetic": "Standard-library integer-grid predicates and Decimal only, reusing the pinned independent primitive definition and certificate comparison code. No production geometry calls or native arithmetic formulas supply mathematical targets.",
+    "repairs": "Recompute every recorded primitive from exact supplied input bits at both independent precision levels; check all 32-ULP certificates and unchanged fixed budgets, output adapter bits, request/result digests and full precision targets.",
+    "whole_mesh": "Independently check primal triangles/retained quads and all supplied dual polygons, signed areas/centroids, circumcentres/radii, fourth-vertex circle membership for retained quads, endpoint-derived lengths/midpoints/tangents, exact supplied coordinate ownership and mathematical edge/face/vertex incidence.",
+    "geometric_invariants": "Independently check simple positive rings, exact oriented interior edge cancellation, incidence multiplicity, boundary degrees, boundary/face Green-area balance, boundary intersections and disjoint polygon interiors. Check full primal convex-hull coverage only when alpha filtering is disabled; otherwise use the retained-complex boundary and retain holes.",
+    "dual_mapping": "Treat native vor_edges as a selected subset of the complete dual polygon edge complex. Do not require the stored subset to contain every exterior edge. Check membership, duplicate selected edges and the paired primal-edge incident-centre/reflection geometry independently; retain nearest-midpoint and orientation-flip source behavior unchanged.",
+    "delaunay": "Exact integer empty-circle and cocircular-tie diagnostics on supplied original simplices. No independent topology generation and no canonical Qhull tie-order claim. Any strict geometric violation remains visible.",
+    "signed_zero": "Mathematical coordinate/incidence checks identify +0 and -0; the typed source replay still distinguishes their bits.",
+    "precision": "Primitive references use their frozen adaptive max(4096,6*input decimal span+160) digit policy and +512-digit refinement. Whole-mesh distances/moments use 4096 and 4608 digits. Retain both full reports before comparing.",
+    "fresh_process": "Deny Cells, BETSE, SciPy, JAX, Torch and Pillow before reference provider import. NumPy is used only by the independent typed archive transport; the mathematical module itself has no scientific-package imports.",
+    "scope": "Checking the supplied complete mesh is not topology generation, global topology qualification or biological/physical geometry admission."
+  },
+  "tolerances": {
+    "primitive": "Frozen 32-ULP certificate policy and unchanged 1e-27 + 6e-12*abs(full precision reference), with area floor 1e-26.",
+    "mesh_coordinates_lengths_centres_radii": "1e-27 + 6e-12*abs(full precision reference).",
+    "mesh_signed_areas": "1e-26 + 6e-12*abs(full precision reference).",
+    "mesh_dimensionless_tangents": "1e-14 + 6e-12*abs(full precision reference).",
+    "reference_resolution": "At most 0.1 of each fixed budget; primitive comparison also requires at most 0.01 ULP.",
+    "integer_geometry": "Exact signs, equalities and incidence on supplied finite binary64 coordinates. No snapping or topology tolerance.",
+    "failure_policy": "A remaining native quad, mapping, topology or geometric defect leaves this candidate open. Keep all original failures, budgets and input recipes; no selective case removal or relabelling as native accuracy."
+  },
+  "controls": {
+    "authentic_complete_mesh_cases": 9,
+    "raw_source_failure_cases": 2,
+    "existing_B09_physical_refusal": 1,
+    "request_admission_checks": 6,
+    "state_ownership_checks": 6,
+    "independent_geometric_controls": 8,
+    "expected_pytest_checks": 32,
+    "fresh_conditional_source_records": 11,
+    "fresh_independent_geometry_records": 11,
+    "guarded_units_on_full_panel": 55,
+    "original_failed_callers": ["caller-square-zero", "caller-hex-disordered"],
+    "B09": "Reuse the four originally admitted B09 inputs only. merged-square-aux remains refused by the unchanged physical adapter before construction; the separate constructor-only B09 adapter is not used."
+  },
+  "ownership": "New Request and State exact types and identities; immutable inherited typed cache snapshots. Per-call stable requests/results/certificates, raw adapter outputs and failure trials are owned by the event ledger. No registration into the physical adapter or default native path.",
+  "resources_proposal": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "whole_job_resources_proposal": {
+    "cpu": 6,
+    "max_wall_seconds": 7200,
+    "max_process_tree_rss_bytes": 2147483648,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "artifact_policy": "Durable actual buffers and outcomes before any source/reference assertions. All declared units are bounded and distinct. Continue the predeclared panel after ordinary assertion failures to retain the complete verdict; stop on resource, cleanup, startup or collection failures. No retry. Finalize one bounded metadata record at a time, including failed scientific assertions and partial results. Root owns the mandatory external startup-failure wrapper and any detached launch.",
+  "scope": {
+    "exact_native_arithmetic_equivalence": false,
+    "conditional_source_equivalence_qualified": false,
+    "whole_mesh_geometry_qualified": false,
+    "topology_qualified": false,
+    "physical_geometry_admitted": false,
+    "native_literal_path_changed": false,
+    "frozen_lifecycle_changed": false,
+    "stable_primitives02_changed": false,
+    "original_19_of_22_limitation_closed": false
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

@@ -113,7 +113,7 @@
   "scope_review_pending": true,
   "qualification_driver_prepared": true,
   "fresh_production_denied_replays_prepared": true,
-  "numerical_launch_authorized": false,
+  "numerical_launch_authorized": true,
   "numerical_execution": false,
   "source_modules_imported": false,
   "fixture_generation": false,
@@ -126,7 +126,7 @@
   "Root_shared_sources_changed": false,
   "automatic_retry": false,
   "automatic_followup": false,
-  "next_action": "Chief static preflight and directed Root launch only. No clipping numeric launch performed; upstream accuracy qualification remains open.",
+  "next_action": "Authorized for one Root detached launch into the declared absent output; terminal evidence review waits for the next requested status check.",
   "reference_coefficient_domain_checks": 4,
   "predecessor": {
     "receipt": "/mnt/workspaces/Cells/betse-mesh-clip-preparation-20261030-01.json",
@@ -177,7 +177,7 @@
   "runner_sha256": "62bcdf036b254ed3a2ef6a5c43e5a5422d494e915a5c171a7704f2164b13cdb6",
   "prepared_bundle": "/mnt/workspaces/Cells/betse-mesh-clip-preparation-prepared-20261030-03",
   "prepared_bundle_manifest_sha256": "f01d185bf76a00a80021c8808dca387676af892083875f473795e9936eb3df1a",
-  "authorized_bundle_manifest_sha256": null,
+  "authorized_bundle_manifest_sha256": "f01d185bf76a00a80021c8808dca387676af892083875f473795e9936eb3df1a",
   "planned_qualification_output": "/mnt/workspaces/Cells/betse-mesh-clip-preparation-20261030-01",
   "external_dependency_sha256": {
     "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/result.json": {
@@ -1171,10 +1171,14 @@
   ],
   "observed_branch_reporting": true,
   "isolated_keeper_witness_is_whole_partial_case": false,
-  "Chief_static_preflight_accepted": false,
-  "Chief_static_preflight_receipt": null,
-  "Chief_static_preflight_sha256": null,
-  "authorization": null,
+  "Chief_static_preflight_accepted": true,
+  "Chief_static_preflight_receipt": "/mnt/workspaces/Cells/betse-mesh-clip-preflight-20261030-02/REVIEW.json",
+  "Chief_static_preflight_sha256": "7d82a4e2c904cc23c571e12f886ed8e379cc2d3a53cb409d973720d229d2b07f",
+  "authorization": {
+    "coordinator": "Chief",
+    "basis": "User continuation on 2026-10-30 authorizes the prepared clipping qualification; source/runner review complete. Root coordinates CPU6 and keeps the separate CPU5 recovery run untouched.",
+    "authorized_utc": "2026-10-30T21:50:51.980198+00:00"
+  },
   "previous_static_preparation": {
     "receipt": "/mnt/workspaces/Cells/betse-mesh-clip-preparation-20261030-02.json",
     "sha256": "061e4d2cfd36379d61f7e675b043ac06d1579e6162fc7e165981c5ce5cdfc0b4",

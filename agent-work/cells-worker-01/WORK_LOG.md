@@ -5477,3 +5477,258 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   no-ECM mean-bath volume defect; Chief agreed both the literal source-effective
   ledger and physical single-bath defect must remain explicit, separate from
   directed-GJ imbalance. No physical conservation claim or source repair.
+- Native nonempty molecule chemistry/transport package statically frozen
+  in10 new files. Two genuine Molecule objects, original GAD/reaction builders
+  and full run_loop/molecule_mover execute in the planned seam, including D0.
+  Complete dynamic buffers/cache presence, parameters, geometry, controls and
+  both voltage nonce stores are owned and persist. Actual native dynamic maps
+  versus production live aliases are prepared for exact comparison.
+  [Scope](workfiles/BETSE_NORMAL_MOLECULE_JOIN_NOTES.md);
+  [static receipt](workfiles/betse_normal_molecule_join_static_receipt_01.json)
+  SHAe8eccdd2cc7c8ed8b1d21d45fe816ad84db47bc24a050ddf3d4644eddae962c7.
+  Inputs `/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json`
+  SHA9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8.
+  Verified2362 source files,38 native+4 bound review/input copies,10 owned/215
+  protected current/frozen hashes (all209 prior paths unchanged;6 readonly legacy
+  source/protocol pins added).22 numeric body ASTs,3 exception classes and5
+  unchanged outer helpers match independent original-AST construction. Compile/
+  names/Ruff and3-file stdlib reference closure pass, without scientific AST
+  execution. Planned21 checks:12 coupled+3 component-control three-call histories,
+ 2 source partial failures and4 dependencies;17 native captures,45 actual
+  positive conditional points/90 fresh Decimal forms/0 carried. Legacy reaction/
+  transporter passes are not counted as new coupled or mover credit.
+  Both source-effective M*vol_env and declared single-bath defect ledgers are
+  explicit, with unchanged volume metadata. Independently predicted bath defect
+  dt*(1-1/M)*sum(f*A) stays separate from directed-GJ imbalance; no physical
+  global conservation claim or source repair. All raw/pre/partial states and
+  full error/budget/unit/defect arrays are planned before assertions. No molecule
+  scientific import, collection, reference/native/model run or numerical launch.
+  Chief owns review and later requested execution; Root shared edits, active jobs,
+  frozen/failed evidence, PROGRESS and git metadata remain untouched.
+- Chief assigned configured active-transporter execution on a new prefix,
+  static only. Source audit confirms real wrapper activation and normal call
+  order: clear, transporters, channels, modulators, core. Actual executor adds
+  current before species writes, omits stoichiometric coefficients from internal
+  membrane-buffer changes, and uses cell-volume divergence for no-ECM bath
+  changes. These are preserved, including exact subset-target partial writes.
+- During this work Chief reported first Root molecule qualification stopped:
+  four dependency passes, two raw failures and fifteen unrun; missing
+  `ignore_ECM_pump` raised AttributeError before the intended instability check.
+  At Chief request, explicit source initialization True is now supplied and
+  validated in the shared molecule parameters. Both unchanged hydration loops
+  propagate it. [Before/after attribute audit](workfiles/betse_normal_molecule_adapter_attribute_audit.py)
+  covers42 reachable attributes, including branch conditions, with no remaining
+  missing producer in either bridge. Inverse AST recovers frozen01 after
+  removing one parameter member/guard and one fixture keyword. Six of ten
+  scientific files, all three native capture files,22 scientific bodies,
+  references/budgets, five outer helpers and215 protected files remain exact.
+  Molecule02 inputs `/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json`
+  SHAef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc;
+  [receipt02](workfiles/betse_normal_molecule_join_static_receipt_02.json)
+  SHA3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73.
+  Verified2378 frozen source,38 native and7 bound evidence copies. Original
+  prepared01 and failed captures untouched. No worker numerical retry.
+- Configured transporter01 is separately frozen and handed to Chief:
+  `/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-01/inputs.json`
+  SHAc16f3ddacd3c47e20e3eeff5a6c01d4b3ba367badbc24f29ca3949b521a0f558;
+  [receipt01](workfiles/betse_normal_transporter_join_static_receipt_01.json)
+  SHAf76b8c062b194892443a0ff370a465a17d1a0d09fed574caf9622a5e460be60d.
+  Ten new scientific files,225 protected paths with exactly four authorized
+  molecule02 adapter refreshes and221 other paths unchanged.27 literal bodies,
+  three exception classes, five unchanged outer helpers, actual/ported phase
+  order, parameter hydration and four-file stdlib reference closure pass static
+  compile/names/Ruff/AST audits. Verified2376 source,42 native and10 binding copies.
+  Planned25 checks:18 three-call histories, two subset partial-write failures,
+  five dependency controls;54 pre-transporter and54 pre-chemistry points,
+ 216 fresh Decimal90/140 forms, zero carried trajectories. Non-unit coefficients
+  expose membrane-buffer discrepancy. Source-effective environment weights,
+  physical single-bath defect and buffer defect remain separate, with original
+  volume metadata. Legacy source F/R stay unchanged; secondary fixed-constant
+  component comparisons cover factors/net_z and irreversible rates. No physical
+  conservation, full lifecycle, GRN or biological credit. Zero new scientific
+  imports, collection, native/reference/model execution or numerical launch.
+  Chief owns scheduling; own logs/workfiles updated, shared PROGRESS/git and
+  active/frozen/failed evidence left untouched.
+- Chief reports molecule02 fully accepted:21 checks/45 local points/90 fresh
+  forms, maximum0.001285 of budget. Root review
+  `/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-02/root-review-01/REVIEW.json`
+  SHA747b98ca85f05ce444999cd752c575d83bd54da4e6844fcfa1deb3f71f6217b5.
+  Source single-bath conservation remains unqualified. No worker polling/run.
+- Root's first transporter round stopped at dependencies:4 intended passes,
+  1 admission failure and20 unrun. At Chief request, both component seams now
+  use finite/integral/range-checked, lossless int64 valence axes; actual source
+  float64 valence buffers, constants and component contract stay unchanged.
+  [Saved witness](workfiles/betse_normal_transporter_admission_saved_witness_02.json)
+  confirms all four prior refusal messages were intended. New dependency tests
+  first admit a valid baseline and assert exact terminal reasons; runner checks
+  the exact five witness reports. Inverse AST preserves all other source/test
+  code,27 scientific bodies, six other scientific files including all three
+  native capture files, references/budgets, five outer helpers and225 protected
+  paths. Transporter02 inputs
+  `/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-02/inputs.json`
+  SHA0dd64b4ea2183721e6903b59622e509bf23535c74ad4b71978f456eb4be84713;
+  [receipt02](workfiles/betse_normal_transporter_join_static_receipt_02.json)
+  SHA05a004f78ecdead2c366f9f725f2ce4d301488712d8eaa971951b00c9f3ab516.
+  Verified2391 source,42 native and13 bound copies;25 planned IDs unchanged.
+  Frozen01/failed evidence retained; no worker numerical retry.
+- Chief approved genuine normal GRN lifecycle/dispatch scope before coding.
+  The new prefix uses original sim initialization884-900, MasterOfGenes
+  read_gene_config, genuine Core constructor/read_substances/tissue_init,
+  original defaults/zero-Q charge initialization and normal dispatch1306-1319.
+  Molecules owner disabled; actual wrapper flags/core identity captured. Neutral
+  X/Y configured cross-gene/ion GAD regulation and ion-driven modulators run.
+  Complete public owner/Core/Molecule/reaction/modulator fields, expressions,
+  boundary and simulator network writes persist; explicit hot hydration never
+  reruns cold readers. Cold initialization and subsequent calls are distinct.
+  [Scope and limits](workfiles/BETSE_NORMAL_GRN_JOIN_NOTES.md).
+  GRN01 inputs `/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-01/inputs.json`
+  SHA2c7d6c2b835fae9f7deb68c931da51463e5c9b22ae3ce12b9a62f9b51d2d0ad8;
+  [receipt01](workfiles/betse_normal_grn_join_static_receipt_01.json)
+  SHA3903939110e71af7a277d1146c3be4d05aa14070400dd73e7affb30fc1ff8e48.
+  Verified2394 source files,42 native+10 bound copies,10 owned/235 protected
+  exact.41 original body ASTs, five unchanged outer helpers,42-attribute default
+  hydration,17 Python compile/names/Ruff checks and three-file stdlib reference
+  closure pass.56-file import closure has no pending transporter dependency.
+  Planned19 checks:10 three-call histories, two cold KeyErrors, two runtime
+  partial failures and five precise dependency controls;10 cold points/20 fresh
+  forms plus30 warm points/60 forms, zero carried trajectories,14 native captures.
+  Initial exact assignments/matrix/simulator writes and warm regulated equations
+  have separate independent references. Original physical/source-effective bath
+  ledgers and directed-GJ term stay separate. Standalone sim-grn, reinitialize,
+  charged compensation, full mesh/Simulator lifecycle, finite/shared-fuel and
+  physical/trajectory conservation claims excluded. Zero scientific imports,
+  collection, reference/model/native execution or numerical launch. Chief has
+  both successor packages for scheduling; shared PROGRESS/git, pending packages
+  and active/frozen/failed evidence remain untouched.
+- Chief's transporter02 round passed five dependencies and two raw checks, then
+  stopped on three controls at a secondary comparator's immutable configuration
+  container; fifteen checks remained unrun. Three first-call native network and
+  pre-transporter captures and twelve fresh forms were retained as partial
+  evidence, with no completed-history credit. Transporter03 deep-thaws only the
+  secondary comparator's configuration using the existing `ions.data`; source
+  stepping, constants, native bodies, references and budgets are unchanged.
+  Inputs `/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03/inputs.json`
+  SHA8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd;
+  [receipt03](workfiles/betse_normal_transporter_join_static_receipt_03.json)
+  SHAb91f93021d046f74c572d46962e0d2dad4f27691591d32992217693116fdad24.
+  Saved-container witness and inverse AST audit retain the exact repair scope.
+  Chief owns any requested qualification; no worker numerical retry.
+- Chief held neutral GRN01 at static preflight before a numerical run. GRN02
+  corrects configuration/validator/reference regulator keys to the actual native
+  `Km decay ...` / `n decay ...` spellings, archives unexpected valid-constructor
+  failures, and refreshes exactly three authorized, nonimported transporter03
+  side pins. All sixteen native keys and eight symbolic lookup groups match.
+  Scientific bodies/native captures, warm equations/budgets, five outer helpers
+  and all other protected pins remain unchanged. Inputs
+  `/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-02/inputs.json`
+  SHA8f4eb95501b5dfa7defbb32912b8cd26454b95ffb4ab744a1ebd52cc061d04f2;
+  [receipt02](workfiles/betse_normal_grn_join_static_receipt_02.json)
+  SHAe11bdb1e2588bb920cba1918c76a39b9392db2e3ed13f3a998548927bc5fcd08.
+  Frozen01/preflight and pending transporter evidence preserved; no new run.
+- Chief authorized the separate charged GRN package after review of concrete
+  cold compensation context. Genuine sixth M(-1), actual Na/K/M indices, full
+  boundary vector and caller M/P split are explicit. Original weighted Q sums,
+  cell-before-env compensation, actual capacity exception and source flag/write
+  timing remain literal. Compensated ionic arrays now enter the immutable
+  material parent before ordinary call1 without changing voltage/gate clocks or
+  pump proxies. Ionic membrane caches remain stale as in source. Read-only
+  before/after compensation events preserve all partial ionic/boundary/rho writes.
+  The negative-cell bulk-admission/membrane-refusal gap is explicitly diagnosed,
+  including its balanced=True publication without cell removal.
+  [Scope and accounting](workfiles/BETSE_NORMAL_CHARGED_GRN_JOIN_NOTES.md).
+  Inputs `/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-01/inputs.json`
+  SHA078333d66671b1688495368b85c7638a9a8a6f93c7f2c03285d7ec7f0f823ab0;
+  [receipt01](workfiles/betse_normal_charged_grn_join_static_receipt_01.json)
+  SHAa0002ce8ffebb3486f8a7bf7e69f1eea52bc57532318f1a9af3f17e15462ddd1.
+  Verified2417 frozen source files,42 native+17 evidence copies; ten new owned
+  scientific files and245 protected pins exact. Static compile/names/Ruff,
+  forty-one original body ASTs, original capacity exception, five unchanged
+  helpers, all16 GAD keys,42-attribute mover/default closure and compensated
+  handoff checks pass. Three-file stdlib reference closure and56-file scientific
+  import closure contain neither pending neutral nor transporter imports.
+  Planned22 checks:12 three-call histories (nine new/three controls), four raw
+  cold capacity refusals and six precise dependencies. Thirty-six warm points
+  and sixteen independent cold points plan104 fresh Decimal90/140 forms, zero
+  carried forms. Inputs precede constructors; ion/gene counts and ionic/formal
+  charge books, raw partial states, errors/budgets and exact native handoff are
+  retained. Counterion removal remains a material sink, boundary scalar is not
+  an inventory, and source scaling affects charge rather than raw gene amounts.
+  Cold environment rho, normal no-ECM zero publication and disabled-publication
+  carry stay distinct. Warm reference equations/budgets remain unchanged; no
+  physical/energetic conservation, fuel, biological or trajectory claim.
+  One initial freeze invocation used an unsupported `--out` argument and exited
+  in argparse without creating a snapshot; the corrected positional invocation
+  completed. No scientific import, AST execution, fixture/packet/reference/model
+  evaluation, pytest collection or numerical launch occurred. Chief receives the
+  frozen handoff and owns scheduling. Shared PROGRESS/git, neutral/transporter
+  scientific packages and all active/frozen/failed evidence remain untouched.
+- Chief reports neutral GRN accepted:19 checks/80 fresh forms. Root review
+  `/mnt/workspaces/Cells/betse-normal-grn-tests-20261030-01/root-review-01/REVIEW.json`
+  SHA6cccb0a9c1c759f00de3bfb725f99ce97eb05f1904d4a7a6e4ccc37620bbff31.
+  Transporter03 has25 passes per Chief, pending its terminal review. No polling
+  or worker follow-up numerical job was performed.
+- Charged01 static preflight found one test/protocol mismatch before numerics:
+  the cold ionic-charge budget used actual after values instead of independent
+  predicted after values. Charged02 changes only that gross term to
+  `target['ionic_state'][key]`; actual charge deltas remain actual. Inverse AST
+  recovers the entire01 test exactly. Factors/equations/targets/cases/order,
+  seven other scientific files,41 bodies/five helpers and245 protected pins are
+  unchanged. Other cold budget descriptions/expressions were audited for
+  reference-fixed data dependence; [witness02](workfiles/betse_normal_charged_grn_budget_witness_02.json).
+  Inputs `/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-02/inputs.json`
+  SHAfb485491ad4f5c319df210100de71b6a4ad9e3b1c756abab99a960227c918500;
+  [receipt02](workfiles/betse_normal_charged_grn_join_static_receipt_02.json)
+  SHAf9a0e728640cb4377ddc7d37fcb3bc301dc41e915791125302fe96dd54613f33.
+  Verified2431 source/42 native+20 bound copies. Frozen01 preserved, no numerical
+  failure/run/collection/import/evaluation. Chief received the resealed successor.
+- Chief next assigned genuine standalone `sim_grn` orchestration. The separate
+  prefix retains the original SimRunner new-owner branch and entire original
+  `run_core_sim`, actual reinitialize, clear_cache, write_data/report and
+  init_saving/CSV exporter bodies. Explicit initialized phase inputs are used;
+  no normal-solver GRN label/guard or ordinary solver step substitutes for it.
+  Source forces publication False, overwrites standalone clocks, reinitializes
+  without resetting concentrations, resets sampled histories/owner time and
+  appends simulator time across repeated advancing invocations. Configured
+  modulators are present but not dispatched, and no per-step clear is inserted.
+  Original N-point linspace over N*dt, first t0 advancement, truncated sampling
+  and source dt versus timestamp spacing are independently referenced.
+  Source sample<dt can stall its index loop; admission refuses this boundary.
+  [Scope, retained semantics and limits](workfiles/BETSE_SIM_GRN_NOTES.md).
+  Inputs `/mnt/workspaces/Cells/betse-sim-grn-prepared-20261030-01/inputs.json`
+  SHA4e33d8c2fa4997255852c862e6de7aa84ce88a6ebf35bb941426793d847a9c07;
+  [receipt01](workfiles/betse_sim_grn_static_receipt_01.json)
+  SHA799ea195df62eea58772d4b028c9ba343fabd82a4d45c7d092cae845fd3cf102.
+  Verified2434 frozen source files,44 native+23 bound copies, seven owned and255
+  protected paths exact. Static compile/names/Ruff, returned native-AST compile
+  without execution,46 original scientific bodies, actual capacity exception,
+  new-owner branch, original standalone order, complete common bridge and warm
+  reference inverse AST pass. Eight cold/hot object-container producers audited,
+  including empty transporters required by standalone clear_cache and exports.
+  This hydration gap was corrected during static review before source freeze.
+  Three-file stdlib reference and60-file scientific import closures exclude
+  pending charged/transporter imports and bind the accepted neutral review.
+  Planned22 checks:10 two-invocation histories (seven new/three controls), five
+  partial failures and seven exact dependency refusals. Sixty-five pre-Core
+  points,10 cold points and20 independent clock points plan190 fresh Decimal
+  forms, zero carried. Typed full native state/order/chemistry/mover/sample/cache
+  comparisons and independent reference-fixed rate/material/amount budgets are
+  retained, including source-effective/single-bath/directed-GJ books.
+  Original CSV bodies write into explicit in-memory sinks; saveSim argument
+  identity/scientific state and directory/output order are observed. Actual
+  pickle/filesystem persistence, full loading/Simulator lifecycle, mitochondrial
+  or ECM state, fluid/cuts, physical/energetic conservation, fuel, biological and
+  independently carried trajectory accuracy receive no credit. Raw cold,
+  first/second molecule, second-invocation reinitialize-before-clear and late
+  plot-cell failures preserve partial state, clocks, prior writes and tracebacks.
+  Initial static-freeze permission review timed out before process creation;
+  no directory was created. The explicitly permitted single retry succeeded.
+  No scientific import/AST execution, fixture/packet/reference/model evaluation,
+  pytest collection or numerical launch occurred. Chief receives the handoff;
+  shared PROGRESS/git and active/frozen/failed predecessor evidence stay untouched.
+- Chief subsequently coordinated an unrelated exact readout-tail extraction and
+  family guards in `src/cells/models/open_calcium_runtime.py`, outside native GRN
+  controlled pins/import closure. Standalone01 freeze/receipt preceded that
+  message; no overlapping freeze or worker computation remained. A later
+  authorized whole-tree freeze should account for that shared live path without
+  altering existing snapshots. Chief reports charged22 run completed with its
+  terminal review active; this is not recorded as acceptance yet. No status poll.

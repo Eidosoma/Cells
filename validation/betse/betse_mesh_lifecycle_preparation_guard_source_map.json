@@ -1,0 +1,94 @@
+{
+  "kind": "cells.lifecycle_guard_source_closure@1",
+  "purpose": "Reuse the established live process guard without importing its model/CLI dependency graph in the controller.",
+  "source_files_sha256": {
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "validation/ensemble/profile_cluster.py": "7fe1d7100af19d91435650ac3828fc267605aba26f63921d303cd7334211b1b7",
+    "src/cells/assembly/cli.py": "55d55a396e126b780ce0d17a7c05473b7a56ff44c8a708c9c9acaa3b22508c0d",
+    "src/cells/assembly/io.py": "7998c7f4ac38f4dd37091aa714bcb1b6f17c1a11a7988b1fdf01ba9b6b36400c"
+  },
+  "definitions": {
+    "ProcessBudgetExceeded": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 19,
+      "last_line": 20,
+      "ast_sha256": "964d87ca52e320ccb554c8b2a18a94cb09f23e5b5a86518352cfe7cf676da088"
+    },
+    "same_live_process": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 23,
+      "last_line": 28,
+      "ast_sha256": "b084372731b732e660b87bea221e6b1627ca9fe28cb1e5e57674ec72391c2c67"
+    },
+    "memory_metric": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 31,
+      "last_line": 34,
+      "ast_sha256": "95c1012663d88da77058f796426f3d8f5a800869d15bafac5ceedd7fe032c073"
+    },
+    "proportional_memory": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 37,
+      "last_line": 81,
+      "ast_sha256": "5af5155ab6e9bb67676cb8153938ef6c0b4689ef79bcb965fd15f4469e7cfd06"
+    },
+    "kcmp_vm": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 84,
+      "last_line": 106,
+      "ast_sha256": "fa86d063755efb224c0c1e032e433aeb7edd1f83b750cec2f8a0406157457ccf"
+    },
+    "address_space_comparison": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 109,
+      "last_line": 123,
+      "ast_sha256": "b1cc6c41a35b90e326822afe9bab7a5572706bac96737c3f100401ee0880896a"
+    },
+    "proportional_tree_memory": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 126,
+      "last_line": 177,
+      "ast_sha256": "95046b52c35915d5e235b1ad4441ba923f61a3d4832a6db5bb2d0f325830b18e"
+    },
+    "run_bounded": {
+      "source": "validation/assembly/component_process.py",
+      "first_line": 180,
+      "last_line": 380,
+      "ast_sha256": "ce080639c9913f9dfd3e16e6280ea9ef0fc8864a6c47b23dfd46fdc50032b135"
+    },
+    "process_sample": {
+      "source": "validation/ensemble/profile_cluster.py",
+      "first_line": 167,
+      "last_line": 185,
+      "ast_sha256": "35873903d0686f3f68277bab86c3d52ebf8f27fe9befbc2795b01f00af587ef5"
+    },
+    "memory_available": {
+      "source": "validation/ensemble/profile_cluster.py",
+      "first_line": 188,
+      "last_line": 193,
+      "ast_sha256": "56335518820a2d425b45f3334ba262c1595a4c0a2613811c80f103d0bdf90956"
+    },
+    "process_tree": {
+      "source": "validation/ensemble/profile_cluster.py",
+      "first_line": 196,
+      "last_line": 209,
+      "ast_sha256": "04e6b06cdb63f9d256965a5c9f0267a99ce9bfcfd5a98f5c225186525835f2e1"
+    },
+    "utc": {
+      "source": "src/cells/assembly/cli.py",
+      "first_line": 29,
+      "last_line": 30,
+      "ast_sha256": "a6f770e15b6e1c4ba6d4625e32b20e192e2fc38828e501be1ae9a146995aa038"
+    },
+    "write_json": {
+      "source": "src/cells/assembly/io.py",
+      "first_line": 53,
+      "last_line": 62,
+      "ast_sha256": "028cc277845c901ef43ba41729afc58d1b88d19a59d881ea4e6b6ce8acf73cae"
+    }
+  },
+  "functions_and_class_ast_equal": 13,
+  "source_limits_unchanged": true,
+  "scientific_function_execution": false,
+  "numerical_execution": false
+}

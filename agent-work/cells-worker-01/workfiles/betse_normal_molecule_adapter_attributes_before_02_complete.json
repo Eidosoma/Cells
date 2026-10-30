@@ -1,0 +1,649 @@
+{
+  "adapter_sha256": {
+    "src/cells/processes/betse_normal_molecule_source.py": "0a08d7776b2a1f7680aec26bec15cff24e95cdbdc431a547b376b3673fdac8f5",
+    "src/cells/processes/betse_normal_network_join_source.py": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+    "validation/betse/betse_normal_molecule_join_native.py": "97e3fb9d2b5bbbd0e58bd1d79b849b3d139b8cc45e7b81e5c0a9305844f896cd",
+    "validation/betse/betse_normal_molecule_join_native_helpers.py": "d7438c667600aa3ffa4a14dd78be950f23b911f86561f18626549ee87c5adfba",
+    "validation/betse/betse_normal_molecule_join_native_network.py": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a"
+  },
+  "excluded_scope_requires_additional_state": true,
+  "factory_parameter_setattr_loops": {
+    "src/cells/processes/betse_normal_molecule_source.py": 814,
+    "validation/betse/betse_normal_molecule_join_native_network.py": 253
+  },
+  "inventories": {
+    "native": {
+      "cells": [
+        "M_sum_mems",
+        "R_rads",
+        "X",
+        "bflags_mems",
+        "cell_i",
+        "cell_sa",
+        "cell_to_mems",
+        "cell_vol",
+        "delta",
+        "diviterm",
+        "gj_default_weights",
+        "gj_len",
+        "lapENVinv",
+        "map_mem2ecm",
+        "mem_i",
+        "mem_sa",
+        "mem_to_cells",
+        "mem_vects_flat",
+        "nn_i"
+      ],
+      "p": [
+        "Ca_dyn",
+        "F",
+        "R",
+        "T",
+        "_mover_observe",
+        "alpha_Ca",
+        "alpha_NaK",
+        "cell_polarizability",
+        "cell_radius",
+        "cluster_open",
+        "cm",
+        "dt",
+        "gj_min",
+        "gj_surface",
+        "gj_vthresh",
+        "ions_dict",
+        "is_ecm",
+        "substances_affect_charge",
+        "tm",
+        "true_cell_size",
+        "v_sensitive_gj",
+        "vol_env"
+      ],
+      "self": [
+        "Dgj",
+        "Dm",
+        "Do",
+        "Kgd",
+        "Mu_mem",
+        "TJ_factor",
+        "active_pumping",
+        "c_bound",
+        "c_cello",
+        "c_cells",
+        "c_env",
+        "c_memo",
+        "cc_at_mem",
+        "cell_clamp",
+        "change_at_bounds",
+        "change_bounds",
+        "change_bounds_end",
+        "change_bounds_rate",
+        "change_bounds_start",
+        "change_bounds_target",
+        "decay_max",
+        "flux_intra",
+        "gad_scale_factor",
+        "gating_Hill_K",
+        "gating_Hill_n",
+        "gating_extracell",
+        "gating_ion",
+        "gating_max_val",
+        "gating_mod",
+        "growth_activators_Km",
+        "growth_activators_list",
+        "growth_activators_n",
+        "growth_inhibitors_Km",
+        "growth_inhibitors_list",
+        "growth_inhibitors_n",
+        "growth_mod_function_cells",
+        "growth_profiles_list",
+        "growth_targets_cell",
+        "ignoreGJ",
+        "ignoreTJ",
+        "ion_activators_Km",
+        "ion_activators_list",
+        "ion_activators_n",
+        "ion_channel_gating",
+        "ion_inhibitors_Km",
+        "ion_inhibitors_list",
+        "ion_inhibitors_n",
+        "make_ani",
+        "make_plots",
+        "modify_time_factor",
+        "n_decay",
+        "name",
+        "plot_autoscale",
+        "plot_max",
+        "plot_min",
+        "pump_Km",
+        "pump_max_val",
+        "pump_to_cell",
+        "pumps_use_ATP",
+        "r_decay",
+        "r_production",
+        "scale_factor",
+        "simple_growth",
+        "transmem",
+        "u_mt",
+        "update_intra_conc",
+        "use_gating_ligand",
+        "use_pumping",
+        "z"
+      ],
+      "sim": [
+        "CaATP_block",
+        "D_free",
+        "D_gj",
+        "Dm_cells",
+        "E_gj_x",
+        "E_gj_y",
+        "Egj",
+        "NaKATP_block",
+        "T",
+        "bound_V",
+        "cc_at_mem",
+        "cc_cells",
+        "cc_env",
+        "cdl",
+        "dyna",
+        "edl",
+        "extra_J_mem",
+        "extra_rho_cells",
+        "fluxes_gj",
+        "fluxes_mem",
+        "get_ion",
+        "gj_block",
+        "gj_funk",
+        "gjopen",
+        "iCa",
+        "iK",
+        "iNa",
+        "mdl",
+        "met_concs",
+        "movingIons",
+        "rate_CaATP",
+        "rate_NaKATP",
+        "rho_channel",
+        "rho_pump",
+        "vgj",
+        "vm",
+        "zs"
+      ]
+    },
+    "production": {
+      "cells": [
+        "M_sum_mems",
+        "R_rads",
+        "bflags_mems",
+        "cell_i",
+        "cell_vol",
+        "gj_len",
+        "map_mem2ecm",
+        "mem_i",
+        "mem_sa",
+        "mem_to_cells",
+        "nn_i"
+      ],
+      "p": [
+        "F",
+        "R",
+        "T",
+        "_mover_observe",
+        "cluster_open",
+        "dt",
+        "ions_dict",
+        "is_ecm",
+        "substances_affect_charge",
+        "tm",
+        "vol_env"
+      ],
+      "self": [
+        "Dgj",
+        "Dm",
+        "Do",
+        "Kgd",
+        "Km_products_list",
+        "Km_reactants_list",
+        "Mu_mem",
+        "TJ_factor",
+        "active_pumping",
+        "alpha_eval_string",
+        "c_bound",
+        "c_cello",
+        "c_cells",
+        "c_env",
+        "c_memo",
+        "cc_at_mem",
+        "cell_clamp",
+        "change_at_bounds",
+        "change_bounds",
+        "change_bounds_end",
+        "change_bounds_rate",
+        "change_bounds_start",
+        "change_bounds_target",
+        "decay_max",
+        "delta_Go",
+        "flux_intra",
+        "gad_scale_factor",
+        "gating_Hill_K",
+        "gating_Hill_n",
+        "gating_extracell",
+        "gating_ion",
+        "gating_max_val",
+        "gating_mod",
+        "growth_activators_Km",
+        "growth_activators_list",
+        "growth_activators_n",
+        "growth_inhibitors_Km",
+        "growth_inhibitors_list",
+        "growth_inhibitors_n",
+        "growth_mod_function_cells",
+        "growth_profiles_list",
+        "growth_targets_cell",
+        "ignoreGJ",
+        "ignoreTJ",
+        "ion_activators_Km",
+        "ion_activators_list",
+        "ion_activators_n",
+        "ion_channel_gating",
+        "ion_inhibitors_Km",
+        "ion_inhibitors_list",
+        "ion_inhibitors_n",
+        "make_ani",
+        "make_plots",
+        "max_val",
+        "mit_enabled",
+        "modify_time_factor",
+        "modulator_activators_Km",
+        "modulator_activators_list",
+        "modulator_activators_n",
+        "modulator_activators_zone",
+        "modulator_inhibitors_Km",
+        "modulator_inhibitors_list",
+        "modulator_inhibitors_n",
+        "modulator_inhibitors_zone",
+        "n_decay",
+        "name",
+        "plot_autoscale",
+        "plot_max",
+        "plot_min",
+        "products_coeff",
+        "products_list",
+        "pump_Km",
+        "pump_max_val",
+        "pump_to_cell",
+        "pumps_use_ATP",
+        "r_decay",
+        "r_production",
+        "reactants_coeff",
+        "reactants_list",
+        "reaction_activators_Km",
+        "reaction_activators_list",
+        "reaction_activators_n",
+        "reaction_activators_zone",
+        "reaction_inhibitors_Km",
+        "reaction_inhibitors_list",
+        "reaction_inhibitors_n",
+        "reaction_inhibitors_zone",
+        "reaction_zone",
+        "scale_factor",
+        "simple_growth",
+        "target_ion",
+        "target_label",
+        "transmem",
+        "u_mt",
+        "update_intra_conc",
+        "use_gating_ligand",
+        "use_pumping",
+        "vmax",
+        "z"
+      ],
+      "sim": [
+        "NaKATP_block",
+        "NaKATP_block_o",
+        "T",
+        "cc_at_mem",
+        "cc_cells",
+        "cc_env",
+        "cdl",
+        "edl",
+        "extra_J_mem",
+        "extra_Jenv_x",
+        "extra_Jenv_y",
+        "extra_rho_cells",
+        "extra_rho_env",
+        "get_ion",
+        "gj_block",
+        "gj_block_o",
+        "gjopen",
+        "mdl",
+        "rho_channel",
+        "vgj",
+        "vm"
+      ]
+    }
+  },
+  "kind": "cells.native_molecule_adapter_attribute_coverage@1",
+  "known_control_metadata": {
+    "cmems is None": false,
+    "len(cmems) == sim.mdl": true,
+    "p.is_ecm": false,
+    "self.transmem": false,
+    "self.update_intra_conc": false,
+    "transmem": false,
+    "update_at_mems": false,
+    "update_intra": false
+  },
+  "literal_source_default": {
+    "line": 385,
+    "path": "betse/science/chemistry/networks.py",
+    "statement": "mol.ignore_ECM_pump = True",
+    "value": true
+  },
+  "missing": {
+    "native": {
+      "self": [
+        "ignore_ECM_pump"
+      ]
+    },
+    "production": {
+      "self": [
+        "ignore_ECM_pump"
+      ]
+    }
+  },
+  "numerical_runs": 0,
+  "reachability": {
+    "Molecule.transport": {
+      "excluded_branches": [],
+      "reachable_attributes": {
+        "cells": [],
+        "p": [],
+        "phase": [],
+        "self": [
+          "Dgj",
+          "Dm",
+          "Do",
+          "Mu_mem",
+          "TJ_factor",
+          "c_bound",
+          "c_cells",
+          "c_env",
+          "cc_at_mem",
+          "ignoreGJ",
+          "ignoreTJ",
+          "ignore_ECM_pump",
+          "modify_time_factor",
+          "name",
+          "transmem",
+          "u_mt",
+          "update_intra_conc",
+          "z"
+        ],
+        "sim": [
+          "rho_channel"
+        ]
+      },
+      "source_lines": [
+        5671,
+        5701
+      ]
+    },
+    "Molecule.update_intra": {
+      "excluded_branches": [
+        {
+          "condition": "self.update_intra_conc is False",
+          "omitted_lines": [
+            5728
+          ],
+          "taken": true
+        }
+      ],
+      "reachable_attributes": {
+        "cells": [
+          "R_rads",
+          "mem_to_cells"
+        ],
+        "p": [],
+        "phase": [],
+        "self": [
+          "Do",
+          "c_cells",
+          "cc_at_mem",
+          "name",
+          "update_intra_conc",
+          "z"
+        ],
+        "sim": []
+      },
+      "source_lines": [
+        5714,
+        5806
+      ]
+    },
+    "electroflux": {
+      "excluded_branches": [],
+      "reachable_attributes": {
+        "cells": [],
+        "p": [
+          "F",
+          "R"
+        ],
+        "phase": [],
+        "self": [],
+        "sim": []
+      },
+      "source_lines": [
+        18,
+        69
+      ]
+    },
+    "molecule_mover": {
+      "excluded_branches": [
+        {
+          "condition": "p.is_ecm is True",
+          "omitted_lines": [
+            941
+          ],
+          "taken": false
+        },
+        {
+          "condition": "cmems is None",
+          "omitted_lines": [
+            948
+          ],
+          "taken": false
+        },
+        {
+          "condition": "len(cmems) == sim.mdl",
+          "omitted_lines": [],
+          "taken": true
+        },
+        {
+          "condition": "update_intra is False",
+          "omitted_lines": [
+            999,
+            1001
+          ],
+          "taken": true
+        },
+        {
+          "condition": "update_intra is False and ignoreGJ and (transmem is True)",
+          "omitted_lines": [
+            1009,
+            1010,
+            1013,
+            1016,
+            1022,
+            1023,
+            1028,
+            1029,
+            1034,
+            1042,
+            1043,
+            1048,
+            1051,
+            1053,
+            1056,
+            1058
+          ],
+          "taken": false
+        },
+        {
+          "condition": "p.is_ecm is True",
+          "omitted_lines": [
+            1065,
+            1067
+          ],
+          "taken": false
+        }
+      ],
+      "reachable_attributes": {
+        "cells": [
+          "M_sum_mems",
+          "bflags_mems",
+          "cell_vol",
+          "gj_len",
+          "mem_i",
+          "mem_sa",
+          "mem_to_cells",
+          "nn_i"
+        ],
+        "p": [
+          "T",
+          "cluster_open",
+          "dt",
+          "is_ecm",
+          "tm"
+        ],
+        "phase": [],
+        "self": [],
+        "sim": [
+          "T",
+          "gj_block",
+          "gjopen",
+          "mdl",
+          "vgj",
+          "vm"
+        ]
+      },
+      "source_lines": [
+        909,
+        1153
+      ]
+    },
+    "no_negs": {
+      "excluded_branches": [],
+      "reachable_attributes": {
+        "cells": [],
+        "p": [],
+        "phase": [],
+        "self": [],
+        "sim": []
+      },
+      "source_lines": [
+        475,
+        503
+      ]
+    },
+    "update_Co": {
+      "excluded_branches": [
+        {
+          "condition": "update_at_mems is False",
+          "omitted_lines": [
+            1185,
+            1186
+          ],
+          "taken": true
+        },
+        {
+          "condition": "p.is_ecm is True",
+          "omitted_lines": [
+            1192,
+            1195
+          ],
+          "taken": false
+        }
+      ],
+      "reachable_attributes": {
+        "cells": [
+          "M_sum_mems",
+          "cell_vol",
+          "mem_sa",
+          "mem_to_cells"
+        ],
+        "p": [
+          "dt",
+          "is_ecm",
+          "vol_env"
+        ],
+        "phase": [],
+        "self": [],
+        "sim": []
+      },
+      "source_lines": [
+        1155,
+        1207
+      ]
+    }
+  },
+  "reachable_required": {
+    "cells": [
+      "M_sum_mems",
+      "R_rads",
+      "bflags_mems",
+      "cell_vol",
+      "gj_len",
+      "mem_i",
+      "mem_sa",
+      "mem_to_cells",
+      "nn_i"
+    ],
+    "p": [
+      "F",
+      "R",
+      "T",
+      "cluster_open",
+      "dt",
+      "is_ecm",
+      "tm",
+      "vol_env"
+    ],
+    "phase": [],
+    "self": [
+      "Dgj",
+      "Dm",
+      "Do",
+      "Mu_mem",
+      "TJ_factor",
+      "c_bound",
+      "c_cells",
+      "c_env",
+      "cc_at_mem",
+      "ignoreGJ",
+      "ignoreTJ",
+      "ignore_ECM_pump",
+      "modify_time_factor",
+      "name",
+      "transmem",
+      "u_mt",
+      "update_intra_conc",
+      "z"
+    ],
+    "sim": [
+      "T",
+      "gj_block",
+      "gjopen",
+      "mdl",
+      "rho_channel",
+      "vgj",
+      "vm"
+    ]
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": "Complete reachable attributes for declared no-ECM, instant intra, transmem False, Dm0/nonzero and ignoreGJ True/False; no numerical/body execution",
+  "source_sha256": {
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  }
+}

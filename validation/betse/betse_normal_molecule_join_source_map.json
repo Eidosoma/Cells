@@ -1,0 +1,298 @@
+{
+  "adapter_field_repair_02": {
+    "authority": "Chief requested a narrow adapter repair after first Root molecule qualification; no numerical retry by worker",
+    "before_after": {
+      "molecule_adapter_after_witness": {
+        "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_after_02.json",
+        "sha256": "32c0d819fbc664470f4359d5a06b3ec13b88678ab533718596e4a0f8c36cfe66"
+      },
+      "molecule_adapter_before_witness": {
+        "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_before_02_complete.json",
+        "sha256": "2c60375e33b3c92022d9b0d01143c84e7b535386dce62778ee1cda74e84ba503"
+      }
+    },
+    "bridge": "Both production _molecules and native attach already setattr every supplied parameter; complete validated parameters/fixture now include the source True value",
+    "budgets_and_reference_unchanged": true,
+    "failure_report": "Chief directly reported CPU3 first qualification:4 dependency passes,2 raw failures,15 unrun; AttributeError ignore_ECM_pump before intended instability check",
+    "field": "ignore_ECM_pump",
+    "inverse_AST_proof": "Remove one PARAMETERS member and one validation guard from source, and one fixture keyword: all remaining AST exactly equals frozen01",
+    "literal_source": "betse/science/chemistry/networks.py:385; transport eager read5688",
+    "missing_after": {
+      "native": {},
+      "production": {}
+    },
+    "numerical_runs": 0,
+    "original_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+      "sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8"
+    },
+    "physical_failure_credit": false,
+    "preserved_failed_run": "/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-01",
+    "protected_files_unchanged": 215,
+    "required_reachable_attributes": 42,
+    "scientific_bodies_unchanged": 22,
+    "unchanged_native_capture_code": true,
+    "unchanged_outer_helpers": 5,
+    "unchanged_scientific_files": {
+      "src/cells/processes/betse_normal_molecule_join.py": "08ef7b4350e1574d6956d56427165d43fc20decab1b4f868b6bd18e8a5c003bd",
+      "tests/unit/test_betse_normal_molecule_join.py": "3c8659f38ed54b149f3e0ddb9503e060b3e574096c164ff56ed8df5573b6937b",
+      "validation/betse/betse_normal_molecule_join_native.py": "97e3fb9d2b5bbbd0e58bd1d79b849b3d139b8cc45e7b81e5c0a9305844f896cd",
+      "validation/betse/betse_normal_molecule_join_native_helpers.py": "d7438c667600aa3ffa4a14dd78be950f23b911f86561f18626549ee87c5adfba",
+      "validation/betse/betse_normal_molecule_join_native_network.py": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+      "validation/betse/betse_normal_molecule_join_reference.py": "15bd5dd8f4f3da80af3124b8dd92cbaf2fa0dd84458a15ebef59f154963a94d3"
+    },
+    "value": true
+  },
+  "exception_classes": {
+    "BetseException": {
+      "AST_sha256": "08814be85106748f1f1f1d57e88bdc57cf94f2b6d3b0285e296b02793a04857c",
+      "unchanged": true
+    },
+    "BetseSimException": {
+      "AST_sha256": "90eac5f91111a4c52806e509d534877d47b8574a0986f8f70654d7a3e7eee205",
+      "unchanged": true
+    },
+    "BetseSimUnstableException": {
+      "AST_sha256": "38e94c63bdc10cf3f16bf2440864c0056ae2e7667659fb384b6b99572b0715a3",
+      "unchanged": true
+    }
+  },
+  "inspected_unexecuted_lifecycle": {
+    "Molecule_constructor": [
+      5614,
+      5668
+    ],
+    "init_growth": [
+      6000,
+      6043
+    ],
+    "path": "betse/science/chemistry/networks.py",
+    "read_substances": [
+      120,
+      303
+    ],
+    "scope": "Audited state-assignment correspondence only; no high-level initialization/charge-balance execution parity",
+    "tissue_init": [
+      307,
+      657
+    ]
+  },
+  "kind": "cells.native_molecule_chemistry_transport_source_map@1",
+  "literal_numeric_bodies": {
+    "MasterOfNetworks.clear_run_loop": {
+      "first_line": 2790,
+      "last_line": 2801,
+      "numeric_AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.create_reaction_matrix": {
+      "first_line": 2686,
+      "last_line": 2725,
+      "numeric_AST_sha256": "f483aa568c2c67ceee4f05fd35574b7f2ac3cd472f1695784508c9ee6d723637",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.default_zones": {
+      "first_line": 4738,
+      "last_line": 4750,
+      "numeric_AST_sha256": "844298847a625fce940e6580abf0b613501f0b6948e977d161b87d87be66fcd0",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.energy_charge": {
+      "first_line": 3996,
+      "last_line": 4012,
+      "numeric_AST_sha256": "2e5f7c63a8f35d660b97ee59e695b8e85a63f0f67a5d46ad83851afdc418fd21",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.get_influencers": {
+      "first_line": 5084,
+      "last_line": 5602,
+      "numeric_AST_sha256": "177d03102e838564b8cefdcb9f29a320069c1b9cdf8f7c0e975b365e50f6472c",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.read_modulators": {
+      "first_line": 1112,
+      "last_line": 1185,
+      "numeric_AST_sha256": "75e95cffc9b7165953699d5c4ee917b43721a56151b6c4bf43f155d371935bd4",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.read_reactions": {
+      "first_line": 814,
+      "last_line": 922,
+      "numeric_AST_sha256": "3e08c2753f7ef2330ae637459859858dda28a3f0702f9f997cddb998156a20d6",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.run_loop": {
+      "first_line": 2805,
+      "last_line": 2982,
+      "numeric_AST_sha256": "a54a72fcd2ccd2e9c6ad8cf74ea8b0d2ed866579e441ff9cbd48373cdc495b2b",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.run_loop_modulators": {
+      "first_line": 3282,
+      "last_line": 3325,
+      "numeric_AST_sha256": "4bb9a1a16912bfde9ec3de8c89a38b44b790b95054120558d338be737abb3083",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.write_growth_and_decay": {
+      "first_line": 1187,
+      "last_line": 1310,
+      "numeric_AST_sha256": "164f1be2e65891453555026d7d7e230a01f85a1a74f698e371ad60928f5fea2b",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "MasterOfNetworks.write_reactions": {
+      "first_line": 1312,
+      "last_line": 1572,
+      "numeric_AST_sha256": "5e85cf5f0e661a3f3794f717468863ec326a1b7ff112346d59b86f751bfc9897",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Modulator.__init__": {
+      "first_line": 6662,
+      "last_line": 6673,
+      "numeric_AST_sha256": "60d0ad04d5ccfe38e7398b5596ad5bf5c7fc23c435e397a18b9036b874faa5c4",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Modulator.init_modulator": {
+      "first_line": 6676,
+      "last_line": 6696,
+      "numeric_AST_sha256": "2d4a50a5fbe71a87969a22bdb82761e021c73d2bd9a5f1df9ad520d6e1ef39c5",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Molecule.__init__": {
+      "first_line": 5614,
+      "last_line": 5668,
+      "numeric_AST_sha256": "fb9554a42460b1a370129b9f150efd4709588220e8a302de05854f98fffcde60",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Molecule.init_growth": {
+      "first_line": 6000,
+      "last_line": 6043,
+      "numeric_AST_sha256": "b5ae0409c46bd3d77311221930362b547eb8be43f13c20a2d7e499c02b7496a5",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Molecule.transport": {
+      "first_line": 5671,
+      "last_line": 5701,
+      "numeric_AST_sha256": "09cb573693bf2dfd2a76d62292ff84a4513893c26cfab60fc23b6e0aba6c61f2",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Molecule.update_intra": {
+      "first_line": 5714,
+      "last_line": 5806,
+      "numeric_AST_sha256": "53195e760fc1e22d04e9374c988cfaf70d281e8e89766c3e7b567d0de297a11b",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "Reaction.__init__": {
+      "first_line": 6356,
+      "last_line": 6377,
+      "numeric_AST_sha256": "1615b34794b013bc2ee1944534bc92d1ce0e3e35d1f66874e5cea26f4d9bc99a",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/chemistry/networks.py"
+    },
+    "electroflux": {
+      "first_line": 18,
+      "last_line": 69,
+      "numeric_AST_sha256": "e0f2c84a0df780122f6b25ea641d854d85468411c08e92a36adc613ac56717de",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/sim_toolbox.py"
+    },
+    "molecule_mover": {
+      "first_line": 909,
+      "last_line": 1153,
+      "numeric_AST_sha256": "240d1d4628e09ebd74cbc593f30020422a648b9007111aa345a697c7e9cb9aa5",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/sim_toolbox.py"
+    },
+    "no_negs": {
+      "first_line": 475,
+      "last_line": 503,
+      "numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/sim_toolbox.py"
+    },
+    "update_Co": {
+      "first_line": 1155,
+      "last_line": 1207,
+      "numeric_AST_sha256": "305af54d6215c25d63d18486f125410657123cf3ae4510f2c0e937185e548620",
+      "observational_AST_equal": true,
+      "source_path": "betse/science/sim_toolbox.py"
+    }
+  },
+  "mover_skipped_at_D0": false,
+  "outer_helpers": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "unchanged_from_accepted_feedback": true
+    },
+    "_initialize_gate": {
+      "AST_sha256": "d2aeba3bcc7554afb6f47f3cf213f6c2c8bf98015521aeeb686c366daefc3d9e",
+      "unchanged_from_accepted_feedback": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "unchanged_from_accepted_feedback": true
+    },
+    "_pumped_material_step": {
+      "AST_sha256": "0267ad0721be564763a42fb15a825ae3a7e7cb6fc50af92506926971e185c2f2",
+      "unchanged_from_accepted_feedback": true
+    },
+    "vector_state": {
+      "AST_sha256": "63e7e2ff3e7d218f3b6f56f134f1e93f87ea010469fe4c7c1891a0093bdf8aa7",
+      "unchanged_from_accepted_feedback": true
+    }
+  },
+  "ownership": {
+    "c_cells": "Actual Molecule.c_cells; dynamic cell_concs setter replaces the live row/object array",
+    "c_env": "Actual membrane-sized vector; scalar intermediate from update_Co and final broadcast retained in frames",
+    "cc_at_mem": "Actual cache refreshed for all molecules before RHS, stale across chemistry until original update_Co/GJ refresh",
+    "charge_current": "Literal scale-weighted accumulation, partial cache and publication-switch behavior",
+    "f_mem/f_gj": "Actual return arrays; absent before first transport and on an incomplete first tuple assignment",
+    "fenvx/fenvy": "Original no-ECM scalar zeros after transport, not fabricated spatial fields",
+    "flux_intra": "Persistent stale source cache when update_intra_conc=False, not reset or invented",
+    "geometry_controls": "Native owner/partner maps, areas/volumes/radii/GJ lengths, gjopen, gj_block/rho and runtime/configured T explicitly owned"
+  },
+  "physical_global_conservation_credit": false,
+  "scientific_AST_executions": 0,
+  "source_effective_and_physical_ledgers_separate": true,
+  "source_equation_repair": false,
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_sha256": {
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "stdlib_AST_builder_execution_only": true,
+  "supplied_chemical_results": false
+}

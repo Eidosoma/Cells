@@ -1,0 +1,227 @@
+{
+  "acceptance": {
+    "amount": "factor*(abs(reference_initial)+abs(reference_final)+abs(reference_chemical)+abs(reference_directed_GJ)) + unchanged concentration floors times input volume; factor128*eps*(ions+2+cells+membranes+64)",
+    "clock": "Exact independent binary64 timestamps/sample indices plus exact captured original parameter rewrites; timestamps and dt advancement reported separately",
+    "cold": "Exact source/default fields and independently built matrix/publication writes; unchanged concentration floors and1e-25 exact-assignment envelope",
+    "dependency": "Every dependency first admits a valid cold baseline then reaches exact terminal ValueError reason; no source failure credit",
+    "independent": "Fresh Decimal90/140 cold configuration, explicit independent binary64 clock specification with Decimal count of dt advanced, and independent local GAD/reaction/mover equations before each outgoing Core call; zero carried reference forms",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385"
+    },
+    "no_outcome_tuning": true,
+    "primary": "Exact native cold/full public state, all orchestration/per-core/mover/chemistry frames, full repeated-invocation caches/clocks/samples/boundary/parameters, original output call order and CSV text, original partial exceptions",
+    "reaction_rates": "Unchanged standalone rate_atol2e-14 mM/s + relative5e-12; delta has3*atol +relative*gross",
+    "self_resolution_fraction": 0.1,
+    "warm_material": "128*eps*(ion_count+molecule_count+cell_count+membrane_count+64)*actual local Decimal gross + unchanged B24 concentration/flux floors"
+  },
+  "accounting": {
+    "charged_environment": "Source publishes no molecular extra_rho_env in no-ECM mode; retain this omission and make no closed electrochemical/field-energy claim",
+    "declared_single_bath": "Use original single vol_env times mean(c_env). Independently predict residual after chemistry and directed-GJ subtraction as dt*(1-1/M)*sum(f_mem*A). Report observed/predicted defect and its difference separately.",
+    "directed_GJ": "Report -dt*modify_time_factor*sum(f_gj*A) explicitly. Do not assume zero for the supplied directed geometry/controls and do not absorb it into the bath defect.",
+    "energetic_conservation_credit": false,
+    "growth_conversion": "Separate real GAD source/sink amounts from stoichiometric X/Y conversion; preserve declared equal z*scale weighting",
+    "physical_global_conservation_credit": false,
+    "scale": "Native numeric concentration/amount ledger; source scale_factor is explicitly retained in charge/current projections. No physiological calibration inferred.",
+    "single_bath_metadata": "Original bath_volume_m3/vol_env is unchanged",
+    "source_effective": "update_Co averages per-membrane environmental changes; source-effective ledger uses sum(env[j]*vol_env), equivalently M*vol_env at uniform final mean. This is an algebraic source ledger, not a physical volume reinterpretation.",
+    "standalone": "No ordinary ion evolution or physical publication solve; source forces publication off and retains simulator fields. Explicit concentration/count/source ledgers stay conditional and local"
+  },
+  "binding_evidence": {
+    "accepted_feedback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "accepted_feedback_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "ba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943"
+    },
+    "accepted_molecule02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json",
+      "sha256": "ef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc"
+    },
+    "accepted_molecule02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "747b98ca85f05ce444999cd752c575d83bd54da4e6844fcfa1deb3f71f6217b5"
+    },
+    "accepted_neutral_grn_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "6cccb0a9c1c759f00de3bfb725f99ce97eb05f1904d4a7a6e4ccc37620bbff31"
+    },
+    "accepted_prepared_ER_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+      "sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896"
+    },
+    "accepted_prepared_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "authorized_nonimported_transporter03_pin_source": {
+      "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03/inputs.json",
+      "sha256": "8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd"
+    },
+    "charged_grn_key_schema01": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_key_schema_witness_01.json",
+      "sha256": "d2aa47647994ee7beada381fade09a7e98ce4f18a20ef1d44485ef8fc6a7806f"
+    },
+    "charged_reference_fixed_budget_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_budget_witness_02.json",
+      "sha256": "dd962d3e8366f1d9e2c5e485f06d8731b0f1023ce54e5c9e52dad106e6cf86ed"
+    },
+    "held_charged01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-01/inputs.json",
+      "sha256": "078333d66671b1688495368b85c7638a9a8a6f93c7f2c03285d7ec7f0f823ab0"
+    },
+    "held_charged01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_01.json",
+      "sha256": "a0002ce8ffebb3486f8a7bf7e69f1eea52bc57532318f1a9af3f17e15462ddd1"
+    },
+    "held_grn01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-01/inputs.json",
+      "sha256": "2c7d6c2b835fae9f7deb68c931da51463e5c9b22ae3ce12b9a62f9b51d2d0ad8"
+    },
+    "held_grn01_preflight": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-preflight-20261030-01/REVIEW.json",
+      "sha256": "d12086bd12fc34ee0f1c87fff4f2b597cd954f5eab3409e0dbb976dc9886b223"
+    },
+    "molecule02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_02.json",
+      "sha256": "3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73"
+    },
+    "molecule_adapter_after_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_after_02.json",
+      "sha256": "32c0d819fbc664470f4359d5a06b3ec13b88678ab533718596e4a0f8c36cfe66"
+    },
+    "molecule_adapter_before_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_before_02_complete.json",
+      "sha256": "2c60375e33b3c92022d9b0d01143c84e7b535386dce62778ee1cda74e84ba503"
+    },
+    "native_key_schema_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_key_schema_witness_02.json",
+      "sha256": "dbf77c9f32c920417057ab2b6be7616a0b34d9e39dfa09b84df7c6e975907634"
+    },
+    "neutral_grn02_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-02/inputs.json",
+      "sha256": "8f4eb95501b5dfa7defbb32912b8cd26454b95ffb4ab744a1ebd52cc061d04f2"
+    },
+    "neutral_grn02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_join_static_receipt_02.json",
+      "sha256": "e11bdb1e2588bb920cba1918c76a39b9392db2e3ed13f3a998548927bc5fcd08"
+    },
+    "prior_molecule_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+      "sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8"
+    },
+    "protected_charged02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-02/inputs.json",
+      "sha256": "fb485491ad4f5c319df210100de71b6a4ad9e3b1c756abab99a960227c918500"
+    },
+    "protected_charged02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_02.json",
+      "sha256": "f9a0e728640cb4377ddc7d37fcb3bc301dc41e915791125302fe96dd54613f33"
+    }
+  },
+  "blockers": {
+    "unsafe_sampling": "sample<dt can stall the original int(i+t_resample) loop; require sample>=dt rather than alter native timing",
+    "unsupported_state": "Mitochondria, ECM, fluid/cuts and file restarts require independent state/data boundaries; explicit dependency refusals retain these distinctions"
+  },
+  "failures": {
+    "positive_credit": false,
+    "raw": [
+      "cold_missing_Y_Dm",
+      "first_negative",
+      "second_negative",
+      "second_call_missing_Y_Dm",
+      "late_plot_cell"
+    ],
+    "retention": "Exact native partial owner/ionic/boundary/clock/sample/default/output state and tracebacks; second-invocation reinitialize refusal precedes cache clear; invalid plot cell refuses after all three first-invocation Core steps and save/directory boundary"
+  },
+  "input_versus_execution": {
+    "executed": "Actual new-owner branch and full standalone source body; scientific equations unchanged",
+    "output_boundary": "In-memory native CSV output and save-call observation only",
+    "supplied": "Explicit phase dictionaries and native gene config"
+  },
+  "kind": "cells.native_standalone_sim_grn_static_contract@1",
+  "law_id": "betse_standalone_sim_grn_v1_5_0@1",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "planned": {
+    "actual_pre_core_points": 65,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 22,
+    "completed_positive_mover_invocations_per_implementation": 130,
+    "component_control_histories": 3,
+    "dependency_controls": 7,
+    "fresh_Decimal_reference_forms": 190,
+    "fresh_clock_Decimal_forms": 40,
+    "fresh_cold_Decimal_forms": 20,
+    "fresh_warm_Decimal_forms": 130,
+    "independent_clock_points": 20,
+    "independent_cold_points": 10,
+    "native_captures": 15,
+    "new_standalone_histories": 7,
+    "positive_standalone_invocations": 20,
+    "positive_two_invocation_histories": 10,
+    "raw_partial_failures": 5
+  },
+  "purpose": "Entire original standalone run_core_sim orchestration at an explicit supplied-phase boundary with cold and advancing repeated-invocation capture",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch in this static assignment; later explicit requested/CPU-coordinated round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scope": {
+    "IO": "Original init_saving and CSV exporter bodies execute against explicit in-memory directory/file sinks; saveSim records argument identities and complete scientific state. No pickle/filesystem-persistence credit",
+    "clock": "N=int(total/dt), linspace(0,N*dt,N); first t0 advances dt. Timestamp spacing is N*dt/(N-1), except N1 only t0. Sampling repeatedly truncates i+t_resample; owner time/cache resets while sim.time appends across invocations",
+    "cold": "Original SimRunner.sim_grn new-owner true-branch constructs actual local MasterOfGenes and calls read_gene_config; owner remains local rather than a normal-solver GRN label",
+    "distinctions": "No per-step clear_run_loop, channel or configured modulator dispatch. Configured ion modulators remain present but unused; source controls and charge/current publications persist. Vm/Vgj change only through original molecular mover nonces",
+    "exclusions": [
+      "SEED/INIT/SIM file loading, automatic seeding/initialization, actual pickle restart or file persistence",
+      "Mitochondrial/ECM spatial state, fluid/cut/event dynamics, optimizers, transporters/channels, charged cold counterion initialization",
+      "Normal material/pump/gate/current/voltage solver dispatch",
+      "Physical global or energetic conservation, finite/shared fuel, biological calibration or independently carried trajectory accuracy"
+    ],
+    "run": "Entire original MasterOfGenes.run_core_sim, actual reinitialize, clear_cache, Core/Molecule scientific bodies, write_data/report, init_saving and CSV export bodies",
+    "source_order": "Force charge publication False; overwrite standalone clocks; construct linspace/sampling; reinitialize without resetting concentrations; clear sampled caches; reset owner time; actual Core loop; sample/report; save boundary; init_saving; export_eval_strings; export_equations",
+    "state": "All public owner/Core/Molecule/reaction/modulator fields, complete simulator and parameter state, boundary values, sample caches and captured output texts persist between invocations through explicit hydration; native retains actual live objects",
+    "supplied_phase": "Explicit initialized no-ECM three-cell/nine-membrane/five-ion phase; no world loading, init_core, init_dynamics/profile generation or full SimRunner parity claim"
+  },
+  "source_map": "validation/betse/betse_sim_grn_source_map.json",
+  "status": "static_unqualified_no_numerics"
+}

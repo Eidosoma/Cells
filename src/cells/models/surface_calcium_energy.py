@@ -281,6 +281,16 @@ def stage_layout(state, p, *, xp=jnp):
 def readouts(state, control, p, *, xp=jnp):
     current = stage_layout(state, p, xp=xp)
     ionic = prior.readouts(prior_state(state), prior_control(control), current, xp=xp)
+    return complete_calcium_stage(state, control, p, ionic, xp=xp)
+
+
+def complete_calcium_stage(state, control, p, ionic, *, xp=jnp):
+    """Finish the original finite-pool readout after its calcium/ER calculation.
+
+    The caller retains the same full state, control and projected fuel layout.
+    The calcium result must use that state's live pool-derived pump layout.
+    This boundary neither advances time nor changes any material/energy owner.
+    """
     params = pool_parameters(p, xp=xp)
     amount = energy_amounts(state, p)
     pools = energy.thermodynamics(amount, p.volume, params, xp=xp)

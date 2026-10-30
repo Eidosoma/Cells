@@ -1,0 +1,25 @@
+{
+  "after_test_preformat_sha256": "d236da1c9250f73625032941fe1c0d385070cef16d68f819d973c18510fc19cc",
+  "before_test_sha256": "2271c934a35326a989fb89558e8083f650d2d75aae69e4d27021b3f7616448a5",
+  "change": "Cold ionic charge gross uses independent target ionic_state rather than actual model after",
+  "inverse_AST_equal": true,
+  "kind": "cells.charged_grn_reference_fixed_budget_repair@1",
+  "numeric_factors_targets_equations_case_order_unchanged": true,
+  "numerical_runs": 0,
+  "other_cold_budget_audit": {
+    "all_data_dependent_budget_terms_reference_fixed": true,
+    "boundary": "floor+factor*(abs(before)+abs(predicted_after))",
+    "concentration": "floor+factor*(abs(before)+abs(predicted_after))",
+    "counts": "factor*independent_before_after_gross+1e-40",
+    "factor": "128*eps*(ions+cells+membranes+64)",
+    "gene_count": "2*factor*abs(predicted_amount)+1e-40; unchanged before/after cold gene inventory",
+    "ionic_charge": "1e-25+factor*(F*sum(abs(z)*(abs(before)+abs(predicted_after)))+abs(independent_formal_charge))",
+    "simulator_fields": "1e-25+factor*F*max(independent_source_Q_gross)"
+  },
+  "prior_inputs": {
+    "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-01/inputs.json",
+    "sha256": "078333d66671b1688495368b85c7638a9a8a6f93c7f2c03285d7ec7f0f823ab0"
+  },
+  "pytest_collection_runs": 0,
+  "scientific_imports": 0
+}

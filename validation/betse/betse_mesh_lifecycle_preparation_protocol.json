@@ -1,0 +1,194 @@
+{
+  "kind": "cells.betse_mesh_lifecycle_preparation_contract@1",
+  "law_id": "betse_owned_post_clip_lifecycle_v1_5_0@1",
+  "status": "guarded_driver_and_fresh_replays_prepared_static_only",
+  "purpose": "Pin the post-clipping source boundary, stale-cache lineage and independent pseudoinverse rank domain before any new numerical claim.",
+  "source_map": "validation/betse/betse_mesh_lifecycle_preparation_source_map.json",
+  "native_source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_boundary": {
+    "original_method": "DECMesh.clip_and_refine",
+    "prefix_reused": [
+      "self.pre_mesh()",
+      "self.clip_to_curve(imagemask)"
+    ],
+    "owned_suffix_name": "after_clip_lifecycle",
+    "new_methods": [
+      "init_mesh",
+      "create_core_operators",
+      "create_aux_operators",
+      "mesh_quality_calc",
+      "refine_mesh",
+      "laplacian_smoothing"
+    ],
+    "original_class_methods_compiled_without_execution": 26,
+    "original_helper_registry_entries_compiled_without_execution": 20,
+    "original_numeric_dot_sites": 5,
+    "original_numeric_pinv_sites": 5,
+    "original_coordinate_update_sites": 4,
+    "old_native_exact_primitives_changed": false
+  },
+  "input_boundary": {
+    "required": "The exact owned initial request and complete finite clipped/rebuilt source state, with the same image-prelude authority and full MT19937 stream.",
+    "point_occurrences": [
+      1,
+      32
+    ],
+    "matching_axes": [
+      "tri_verts",
+      "vor_cents",
+      "n_tverts",
+      "retained_point_ids"
+    ],
+    "make_all_operators": false,
+    "lifecycle_steps": [
+      0,
+      25
+    ],
+    "convergence": "Finite positive scalar; no tolerance enters native branch selection.",
+    "owned_caller": "Derive all controls from the authenticated make_voronoi prelude. Its smoothing is None and fix_bounds is True.",
+    "manufactured_options": "Separate kind cells.manufactured_native_mesh_lifecycle_options@1 and provenance. Only the five lifecycle parameters may change; absolute smoothing is bounded by 4 * cell_radius**2.",
+    "auxiliary_operators": "Retain the source implementation needed by the lifecycle closure. Test direct auxiliary construction only on explicit manufactured topology; no new public auxiliary caller admission."
+  },
+  "source_semantics": [
+    "smoothing=None skips the smoothing branch. smoothing=0 still calls init_mesh, computes operators and a pseudoinverse, updates x then y, and rebuilds.",
+    "Each source pre_mesh leaves old operator arrays and inverses present until the source overwrites them. Preserve partial updates and stale inverses on failures.",
+    "Refinement computes norm(circumcentres-centres, axis=1)**2 without rewriting the norm or reduction.",
+    "Each iteration resets removed_bad_verts before comparing the exact native UU > convergence predicate.",
+    "fix_bounds=True copies only inner_voronoi_centres to their original point slots; False copies all slots. Point identities do not follow nearest coordinates.",
+    "Only the convergence branch stores mesh_qual. Max-step exhaustion and zero steps do not invent convergence or refresh stale mesh_qual.",
+    "The lifecycle rebuilds after refine_mesh even for zero steps or immediate convergence, then always rebuilds core operators.",
+    "Core incidence writes the target endpoint +1 before the source endpoint -1; a self-loop therefore ends at -1.",
+    "Auxiliary face incidence preserves roll direction, paired ordered cKDTree queries, exact zero predicates, raw tie decisions and source ordering.",
+    "All np.dot and np.linalg.pinv calls retain their source arguments and defaults. Hooks only capture inputs, outputs, partial locals and failures."
+  ],
+  "ownership_and_lineage": {
+    "runtime": "Replay the original prefix using a private full-state RNG, then require the exact clipped cache identity, retained IDs and RNG before continuing. This preserves source aliases and array layouts.",
+    "snapshots": "Reuse immutable typed numeric, object and ragged cache snapshots, retaining dtypes, bytes, strides and source shape.",
+    "coordinate_ids": "IDs remain attached to moving point slots. Subsequent exact native deletion indices remove those occurrences; no nearest-neighbour identity recovery or coordinate canonicalization.",
+    "tree_locals": "Retain owned tree-input tokens rather than exporting live cKDTree objects.",
+    "random_stream": "No new random draws are expected after clipping. Compare the complete MT19937 state, including position, cached Gaussian flag and value; preserve the module-global stream."
+  },
+  "raw_evidence": {
+    "before_expectations": "Save actual State or rejected trial, full native typed cache and events, then independent reports before source-completion or numerical assertions. Save isolated-helper unexpected completions as well as expected failures.",
+    "source_failures": "Retain partial local matrices, public caches, operator presence, first failure origin, warnings, full RNG and point IDs. Do not clean up or substitute state.",
+    "reference_failures": "Retain partial independent reports, including Decimal values outside the float64 range.",
+    "ancillary_checks": "Cache-ownership and call-order checks also save their lifecycle trial before expectations.",
+    "artifact_root": "/mnt/workspaces/Cells"
+  },
+  "independent_reference": {
+    "implementation": "Standard-library Decimal and Fraction only; Decimal precisions 100 and 160. No source SVD, NumPy, SciPy or production imports.",
+    "geometry_boundary": "Rounded captured areas, lengths, centres, points and source topology are supplied inputs. This does not independently generate or qualify those quantities.",
+    "incidence": "Construct endpoint entries and ordered face-edge signs independently from supplied topology. Duplicate directed matches remain unresolved diagnostics; no canonical tie-index claim.",
+    "graph_pseudoinverse": "For bounded grounded incidence, construct the connected-component gauge projector P and solve (A.T*A + P)^(-1)*A.T using Decimal elimination. Handle transposed incidence independently.",
+    "graph_rank_separation": "With n <=32 columns, an anchored path bound or mean-zero path bound gives nonzero sigma >=1/(n+1); sigma_max <=sqrt(2*maximum_degree). Require the resulting conservative relative gap to exceed 1000 times the pinned default rcond.",
+    "other_pseudoinverses": "Use exact constant-matrix rank-zero/rank-one formulas or independently invert a bounded square full-rank matrix. Bound its relative singular gap by 1/sqrt(norm1(A)*normInf(A)*norm1(Ainv)*normInf(Ainv)).",
+    "cutoff": "Pin NumPy 2.5.3 linalg/_linalg.py and its AST default branch rcond=1e-15 in the source map. The native oracle authenticates the loaded package source. Never silently override rcond.",
+    "rank_refusal": "Unsupported or unresolved rank domains retain their report and fail a declared numerical check. No independent truncated-SVD result is claimed.",
+    "identities": "Independently calculate all four Moore-Penrose identities on the captured rounded A and Aplus.",
+    "smoothing": "Assemble the metric-weighted matrix from exact rational representations of the captured input floats, solve independently in the resolved rank domain, and compare the full resulting coordinates.",
+    "other_checks": "Independent matrix/vector products, quality squared distances, normalized energy and exact refinement copies. Energy branch disagreements are diagnostics and do not change native selection.",
+    "dimensional_products": "Retain term1 and LL products as diagnostics in m^-2 without inventing an absolute accuracy budget for them. Assert dimensionless term2 and coordinate products."
+  },
+  "candidate_panel": {
+    "fixture_declarations": "validation/betse/betse_mesh_lifecycle_preparation_fixtures.py",
+    "owned_caller_cases": 8,
+    "manufactured_native_option_cases": 8,
+    "manufactured_helper_cases": 8,
+    "raw_helper_failures": 2,
+    "undeclared_control_refusals": 5,
+    "resealed_input_refusals": 4,
+    "ancillary_checks": 4,
+    "expected_checks": 39,
+    "coverage": "Square and hex prefixes; core-only, zero refinement steps, early convergence and step exhaustion; zero/positive smoothing; inner/all-point refinement; connected/disconnected incidence; direct auxiliary operators; singular constant smoothing; raw nonfinite solve and out-of-range endpoint failures.",
+    "observed_branch_credit": "Only branches present in saved actual traces receive qualification credit. Manufactured helpers do not imply whole-mesh branch coverage."
+  },
+  "proposed_tolerances": {
+    "native": "Exact full typed cache, layouts, events, point IDs and full RNG.",
+    "coordinates_m": "1e-27 + 6e-12*abs(reference)",
+    "quality_m2": "1e-26 + 6e-12*abs(reference)",
+    "dimensionless_matrix_energy_pinv_and_identities": "2e-14 + 6e-12*abs(reference)",
+    "reference_resolution_fraction": 0.1,
+    "source_incidence_and_refinement_copies": "Exact entries and point IDs.",
+    "failure_policy": "Preserve and report failed fixtures and budgets. Do not shift fixtures, widen tolerances, change native primitives or relabel failures to pass."
+  },
+  "upstream_initial_qualification": {
+    "checks_passed": 19,
+    "checks_total": 22,
+    "status": "open_failed_accuracy_qualification",
+    "review": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+    "review_sha256": "e8f382d700c6b21afbff4d2a7cd0274bc5a17181a9d831f105f9fd05a02055d5",
+    "known_limits": "Merged constructor input was refused upstream; square nearzero centroid and hex radius/inradius exceeded fixed numerical budgets. Saved-input diagnosis belongs to Root. No requalification here."
+  },
+  "upstream_clipping_qualification": "Root accepted clipping continuation after31 reused checks,21 native and21 independent records plus4 domain records. Old failure is preserved. This component takes no new upstream qualification credit.",
+  "excluded_claims": [
+    "Independent topology generation, universal mesh validity or canonical ties",
+    "Physical cell surface/volume admission or biological geometry",
+    "Stable geometry arithmetic path or repaired native primitives",
+    "SVG/single-cell caller admission or public auxiliary-operator flag changes",
+    "Global convergence from bounded step exhaustion"
+  ],
+  "qualification_preconditions": [
+    "Chief reviews the exact39 IDs, frozen dependency closure, source/cache/RNG lineage and independent rank scope.",
+    "Chief accepts the guarded fresh-process replay and metadata finalization package; the numerical gate remains false during preparation.",
+    "Root schedules the detached qualification in its next round; no scientific imports, fixture generation, collection or numerical work occur in static preparation."
+  ],
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "pytest_collection": false,
+  "topology_qualified": false,
+  "physical_geometry_admitted": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "ECM_lane_touched": false,
+  "Root_shared_sources_changed": false,
+  "upstream_clipping_review": {
+    "path": "/mnt/workspaces/Cells/betse-mesh-clip-replay-continuation-20261030-02/root-review-01/REVIEW.json",
+    "sha256": "a56601ec88870d41c8d3d9a962349e7dd7be5f818d4ef7f2bc0e28491736746c",
+    "initial_primitive_accuracy_limitation_still_open": true
+  },
+  "resources_proposal": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "prepared_execution": {
+    "exact_pytest_checks": 39,
+    "isolated_pytest_processes": 39,
+    "isolated_native_replays": 26,
+    "isolated_reference_records": 26,
+    "independent_reference_domains": 2,
+    "guarded_finalizer_processes": 1,
+    "numerical_units": 93,
+    "total_guarded_units_on_success": 94,
+    "one_thread": true,
+    "run_expected_at_least_ten_minutes": true,
+    "launch_policy": "Root launches detached with durable logs; no automatic polling, retry or follow-up audit.",
+    "parent_imports": "Standard library and mechanically extracted metadata/resource guard only.",
+    "guard_source_map": "validation/betse/betse_mesh_lifecycle_preparation_guard_source_map.json",
+    "guard_source_definitions_ast_equal": 13
+  },
+  "bounded_evidence_processing": {
+    "native": "Hold actual and fresh proof; release actual before reading the saved native record. Save fresh raw output before expectations.",
+    "reference": "Reiterable saved-event view decodes one typed payload at a time. Saved reports are read one at a time; keep only the two independent refined reports needed for fixed budgets.",
+    "finalization": "Separate guarded process. Read one actual record at a time; retain only compact coverage rows. Stream file hashes and deduplicate runtime paths; never aggregate raw actual/native JSON.",
+    "controller_metadata_bytes": 16777216,
+    "max_artifact_files": 50000,
+    "max_relative_path_bytes": 1024,
+    "max_runtime_files": 20000,
+    "numeric_restore_elements": 262144,
+    "numeric_restore_storage_bytes": 8388608,
+    "object_restore": "Safe np.empty(object) with declared contiguous layouts; never interpret pointer bytes as object storage.",
+    "failure": "Stop numerical units on first failure. Only guarded partial evidence finalization follows; preserve partial raw output and guard stop receipts."
+  },
+  "whole_job_resources_proposal": {
+    "cpu": 6,
+    "max_wall_seconds": 7200,
+    "max_process_tree_rss_bytes": 2147483648,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss",
+    "scope": "Aggregate supervisor cap covers controller setup, workers and finalization; individual worker limits stay 1 GiB/480 s."
+  }
+}

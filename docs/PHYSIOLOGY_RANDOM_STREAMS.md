@@ -1426,6 +1426,46 @@ CPU qualification and narrow memory margin. This does not qualify GPU execution
 or advancing trajectories; finite-fuel and open-bath families are not admitted
 by this factory.
 
+`compiled_fuel_world_stages()` provides the corresponding candidate for the
+closed `resolved_calcium_energy@5` family. It separates input projection,
+live-pool pump preparation and ionic physics, calcium/ER completion, finite-pool
+exchange and energy accounting, and admission checks into five executables.
+The ionic and calcium stages share the same pump layout; fuel completion uses
+the original full fuel layout and its anchors. Signed Na/K, PMCA and ER cycles
+retain their original order, and gross hydrolysis/synthesis remain available to
+the turnover checks. No stage advances the world or changes the equations.
+Use the same unjitted cohort orchestrator. Open baths and temperature-changing
+trajectories remain outside this factory; current NumPy, compiled-memory and
+GPU qualification status is recorded in [Progress](../PROGRESS.md).
+
+The finite-fuel CPU qualification also has an explicit warmup memory policy:
+compile and retain each executable, synchronize its outputs, then release JAX
+staging caches and unused glibc allocator pages before compiling the next stage.
+All live world buffers and executable objects remain owned by the caller. The
+complete cohort comparisons subsequently reuse those executables. Cache release
+belongs to this dedicated CPU warmup; it adds no work to simulation steps and
+does not establish the default factory's memory bound or a GPU memory bound.
+The original attempt and the separate cache-managed check retain distinct
+result and failure records in Progress.
+
+The host interface
+[`compile_cpu_stages`](../src/cells/core/physiology_active_temperature_compilation.py)
+now packages that preparation for callers. Supply the complete trusted cohort
+and its batched proposals; it revalidates cohort provenance before compiling
+one world's stage shapes. Closed ionic, calcium and finite-fuel cohorts use
+three, four and five retained executables respectively. The fuel-only
+`compile_fuel_cpu_stages` entry point preserves its original admission contract.
+The returned `WorldStages` can be reused through
+`evaluate_batch_staged(..., stages=stages)` across host-admitted cohorts with
+identical per-world shapes, including different leading world counts. Set
+`release_frontend=True` explicitly to release staging caches during warmup in
+a dedicated CPU worker. An optional observer records admission, compilation
+and cleanup events during preparation. Subsequent cohort evaluation invokes
+the retained executable objects, with no host re-admission or cleanup callback.
+No simulation time advances during preparation. Open-bath families are refused
+before compilation. CPU memory qualifications and the remaining backend/trajectory
+limits are recorded in Progress.
+
 ### Combining temperature, voltage and blocker readouts
 
 [`physiology_global_control_view`](../src/cells/core/physiology_global_control_view.py)

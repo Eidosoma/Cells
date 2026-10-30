@@ -1,0 +1,147 @@
+{
+  "accounting": {
+    "charged_environment": "Source publishes no molecular extra_rho_env in no-ECM mode; retain this omission and make no closed electrochemical/field-energy claim",
+    "declared_single_bath": "Use original single vol_env times mean(c_env). Independently predict residual after chemistry and directed-GJ subtraction as dt*(1-1/M)*sum(f_mem*A). Report observed/predicted defect and its difference separately.",
+    "directed_GJ": "Report -dt*modify_time_factor*sum(f_gj*A) explicitly. Do not assume zero for the supplied directed geometry/controls and do not absorb it into the bath defect.",
+    "growth_conversion": "Separate real GAD source/sink amounts from stoichiometric X/Y conversion; preserve declared equal z*scale weighting",
+    "physical_global_conservation_credit": false,
+    "scale": "Native numeric concentration/amount ledger; source scale_factor is explicitly retained in charge/current projections. No physiological calibration inferred.",
+    "single_bath_metadata": "Original bath_volume_m3/vol_env is unchanged",
+    "source_effective": "update_Co averages per-membrane environmental changes; source-effective ledger uses sum(env[j]*vol_env), equivalently M*vol_env at uniform final mean. This is an algebraic source ledger, not a physical volume reinterpretation."
+  },
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "accepted_feedback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "accepted_feedback_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "ba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943"
+    },
+    "accepted_prepared_ER_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+      "sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896"
+    },
+    "accepted_prepared_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    }
+  },
+  "binding_evidence_copies": 4,
+  "component_control_distinction": {
+    "credit": "Legacy component passes are not rerun or counted. New caller controls are separated from the12 coupled cases; real mover still executes at D0.",
+    "distinction": "betse_network_transport is a configurable transporter law, not molecule_mover. Its previous qualification is not new passive-mover credit.",
+    "legacy_source_laws": {
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385",
+      "validation/transport/betse_network_transport_protocol.json": "299dedbd4ce356225d1cc25142e95f3b451c5adaa9e0af3106354474f07f960d"
+    },
+    "new_caller_controls": [
+      "reaction_only",
+      "growth_only",
+      "transport_only"
+    ]
+  },
+  "coordinated_unrelated_physics_edits": {
+    "authority": "Chief owns complete_calcium_stage/5-stage compiled refactor and tests; no edits by worker",
+    "frozen_bytes_still_hashed": true,
+    "outside_protected_and_import_closure": true,
+    "paths": [
+      "src/cells/models/surface_calcium_energy.py",
+      "src/cells/models/physiology_active_temperature_arrays.py"
+    ]
+  },
+  "driver_sha256": "c3b59d9aa2706e89393f0a8e5a711d670be2d06ff2074263fe0e95cd8315eadf",
+  "exception_class_ASTs": 3,
+  "extra_readonly_legacy_source_protocol_pins": 6,
+  "failure_retention": {
+    "old_evidence": "All accepted/failed/frozen predecessor trees remain unchanged; the original zero-Molecule nonempty-reaction stack refusal stays a failure, not repaired/reclassified",
+    "partial": "Preserve all pre-RHS/after-commit/internal-mover states, rate/delta caches, nonce stores and partially accumulated current/charge; failed transport tuple assignment may leave global molecule fields at the chemical commit",
+    "positive_credit": false,
+    "raw": [
+      "first_molecule_negative",
+      "second_molecule_negative"
+    ],
+    "retry": "No automatic retry, parameter or dt adjustment, or follow-up regression"
+  },
+  "initialization_scope": "Complete configured inputs and actual low-level constructor/all-target init_growth; no full native lifecycle/wrapper initialization claim",
+  "inputs": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+  "inputs_sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8",
+  "kind": "cells.native_molecule_chemistry_transport_static_receipt@1",
+  "literal_numeric_AST_bodies": 22,
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_observer_serialization": "Only _mover_observe callable excluded; every scientific parameter retained",
+  "native_source_copies": 38,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 10,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_pre_network_points": 45,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 21,
+    "component_control_histories": 3,
+    "dependency_controls": 4,
+    "fresh_Decimal_reference_forms": 90,
+    "native_captures": 17,
+    "new_coupled_cases": 12,
+    "positive_completed_mover_calls_per_implementation": 90,
+    "positive_native_outer_calls": 45,
+    "positive_three_call_histories": 15,
+    "raw_partial_failures": 2
+  },
+  "planned_groups": {
+    "context": 6,
+    "controls": 3,
+    "core": 6,
+    "dependencies": 4,
+    "raw": 2
+  },
+  "protected_files": 215,
+  "pytest_collection_runs": 0,
+  "real_molecule_ownership": "Complete dynamic buffers/flux-cache presence in joined state identity plus immutable parameter/geometry/control context",
+  "reference_closure": {
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_molecule_join_reference.py": "15bd5dd8f4f3da80af3124b8dd92cbaf2fa0dd84458a15ebef59f154963a94d3",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+  },
+  "reference_runs": 0,
+  "resource_limits": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch in this static assignment; later explicit requested/CPU-coordinated round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_execution": "Original generated growth/reaction RHS, all-rate stack/matrix and sequential real molecule_mover; no D0 shortcut or supplied chemistry result",
+  "source_snapshot_files": 2362,
+  "static_checks": {
+    "compile_without_import": "passed",
+    "exact_unique_pytest_ID_validator_AST_unchanged": true,
+    "exception_class_ASTs": 3,
+    "global_name_resolution": "passed",
+    "independent_native_observational_AST_builder": "passed; stdlib transformation only",
+    "literal_numeric_AST_bodies": 22,
+    "planned_fixture_and_budget_pins": "passed",
+    "post_output_terminal_failure_capture_AST": "passed",
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "unchanged_outer_helper_ASTs": 5,
+    "unresolved": {}
+  },
+  "status": "static_frozen_unqualified_no_molecule_numerics",
+  "unchanged_outer_helpers": 5,
+  "unchanged_prior_protected_files": 209
+}

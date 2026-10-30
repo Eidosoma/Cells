@@ -1,0 +1,164 @@
+{
+  "kind": "cells.native_grn_regulator_key_schema_audit@1",
+  "native_source": {
+    "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/networks.py",
+    "sha256": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177"
+  },
+  "native_field_lookup_schema": {
+    "growth_activators_list": {
+      "key": "activators",
+      "line": 414,
+      "default": null
+    },
+    "growth_activators_zone": {
+      "key": "zone activators",
+      "line": 415,
+      "default": null
+    },
+    "growth_activators_Km": {
+      "key": "Km activators",
+      "line": 416,
+      "default": null
+    },
+    "growth_activators_n": {
+      "key": "n activators",
+      "line": 417,
+      "default": null
+    },
+    "growth_inhibitors_list": {
+      "key": "inhibitors",
+      "line": 419,
+      "default": null
+    },
+    "growth_inhibitors_zone": {
+      "key": "zone inhibitors",
+      "line": 420,
+      "default": null
+    },
+    "growth_inhibitors_Km": {
+      "key": "Km inhibitors",
+      "line": 421,
+      "default": null
+    },
+    "growth_inhibitors_n": {
+      "key": "n inhibitors",
+      "line": 422,
+      "default": null
+    },
+    "decay_activators_list": {
+      "key": "decay activators",
+      "line": 434,
+      "default": null
+    },
+    "decay_activators_zone": {
+      "key": "zone decay activators",
+      "line": 435,
+      "default": null
+    },
+    "decay_activators_Km": {
+      "key": "Km decay activators",
+      "line": 436,
+      "default": null
+    },
+    "decay_activators_n": {
+      "key": "n decay activators",
+      "line": 437,
+      "default": null
+    },
+    "decay_inhibitors_list": {
+      "key": "decay inhibitors",
+      "line": 439,
+      "default": null
+    },
+    "decay_inhibitors_zone": {
+      "key": "zone decay inhibitors",
+      "line": 440,
+      "default": null
+    },
+    "decay_inhibitors_Km": {
+      "key": "Km decay inhibitors",
+      "line": 441,
+      "default": null
+    },
+    "decay_inhibitors_n": {
+      "key": "n decay inhibitors",
+      "line": 442,
+      "default": null
+    }
+  },
+  "all16_regulator_keys_match_original": true,
+  "allowed_bounded_GAD_keys": [
+    "Km activators",
+    "Km decay activators",
+    "Km decay inhibitors",
+    "Km inhibitors",
+    "activators",
+    "apply to",
+    "decay activators",
+    "decay inhibitors",
+    "decay max",
+    "decay rate",
+    "inhibitors",
+    "n activators",
+    "n decay activators",
+    "n decay inhibitors",
+    "n inhibitors",
+    "production rate",
+    "scale factor"
+  ],
+  "fixture_used_GAD_keys": [
+    "Km activators",
+    "Km decay inhibitors",
+    "Km inhibitors",
+    "activators",
+    "apply to",
+    "decay inhibitors",
+    "decay max",
+    "decay rate",
+    "inhibitors",
+    "n activators",
+    "n decay inhibitors",
+    "n inhibitors",
+    "production rate",
+    "scale factor"
+  ],
+  "symbolic_validator_reference_lookup_pairs": {
+    "validator/growth/activators": [
+      "Km activators",
+      "n activators"
+    ],
+    "validator/growth/inhibitors": [
+      "Km inhibitors",
+      "n inhibitors"
+    ],
+    "validator/decay/activators": [
+      "Km decay activators",
+      "n decay activators"
+    ],
+    "validator/decay/inhibitors": [
+      "Km decay inhibitors",
+      "n decay inhibitors"
+    ],
+    "reference/growth/activators": [
+      "Km activators",
+      "n activators"
+    ],
+    "reference/growth/inhibitors": [
+      "Km inhibitors",
+      "n inhibitors"
+    ],
+    "reference/decay/activators": [
+      "Km decay activators",
+      "n decay activators"
+    ],
+    "reference/decay/inhibitors": [
+      "Km decay inhibitors",
+      "n decay inhibitors"
+    ]
+  },
+  "zone_scope": "Zone keys omitted and refused in this bounded scope; original default_zones supplies cell zones",
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "fixture_packet_reference_evaluations": 0,
+  "numerical_runs": 0
+}

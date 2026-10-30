@@ -40,6 +40,7 @@ def molecule(name):
             TJ_factor=1.0,
             ignoreTJ=True,
             ignoreGJ=False,
+            ignore_ECM_pump=True,
             update_intra_conc=False,
             transmem=False,
             modify_time_factor=1.0,
@@ -64,7 +65,7 @@ def molecule(name):
             c_env=[0.6 if name == "X" else 0.2] * 9,
             flux_intra=[(j - 4) * 1e-17 for j in range(9)],
         ),
-        provenance="Manufactured complete configured molecular state; no native initialization or biological claim",
+        provenance="Declared complete molecular state; no native lifecycle or biology claim",
     )
 
 
@@ -85,7 +86,7 @@ def fixture(case="coupled"):
     network = definition["network"]
     network["owner"] = "molecules"
     network["provenance"] = (
-        "Two actual Molecule instances and original generated growth/reaction equations; original mover executes even at D0"
+        "Two actual Molecules; generated RHS and original mover execute, including D0"
     )
     network["molecules"] = [molecule("X"), molecule("Y")]
     network["radius_m"] = copy.deepcopy(data["voltage_definition"]["geometry"]["radius_m"])

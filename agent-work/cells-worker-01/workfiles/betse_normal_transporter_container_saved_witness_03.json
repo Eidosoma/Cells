@@ -1,0 +1,145 @@
+{
+  "API_audit": {
+    "area_temperature_voltage_rho_source_fields_preserved": true,
+    "configuration_dict_and_all_substrate_multiplier_Km_transfer_and_regulator_lists": true,
+    "integer_valence_axis_existing_checked_helper": true,
+    "no_direct_row_mutation_in_component_bind_AST": true,
+    "owner_axes_integer_distinct_two_active_compartments": true,
+    "site_value_matrix_float64_species_by_two": true
+  },
+  "actual_pre_network_points": 3,
+  "actual_pre_transporter_points": 3,
+  "carried_forms": 0,
+  "full_control_histories_qualified": false,
+  "inverse_test_AST_exact": true,
+  "kind": "cells.transporter_saved_component_boundary_audit@1",
+  "numerical_runs": 0,
+  "points": [
+    {
+      "case": "transporter_only",
+      "component_owner_axes": {
+        "compartment_active": [
+          true,
+          true
+        ],
+        "inside": [
+          0
+        ],
+        "outside": [
+          1
+        ]
+      },
+      "configuration_count": 3,
+      "site_inputs_finite_and_shaped": true,
+      "sites": 9,
+      "species": [
+        "Na",
+        "K",
+        "Cl",
+        "P",
+        "Ca",
+        "X",
+        "Y"
+      ],
+      "valence_value_lossless": true,
+      "value_matrix_shape": [
+        7,
+        2
+      ]
+    },
+    {
+      "case": "zero_capacity",
+      "component_owner_axes": {
+        "compartment_active": [
+          true,
+          true
+        ],
+        "inside": [
+          0
+        ],
+        "outside": [
+          1
+        ]
+      },
+      "configuration_count": 3,
+      "site_inputs_finite_and_shaped": true,
+      "sites": 9,
+      "species": [
+        "Na",
+        "K",
+        "Cl",
+        "P",
+        "Ca",
+        "X",
+        "Y"
+      ],
+      "valence_value_lossless": true,
+      "value_matrix_shape": [
+        7,
+        2
+      ]
+    },
+    {
+      "case": "zero_rho",
+      "component_owner_axes": {
+        "compartment_active": [
+          true,
+          true
+        ],
+        "inside": [
+          0
+        ],
+        "outside": [
+          1
+        ]
+      },
+      "configuration_count": 3,
+      "site_inputs_finite_and_shaped": true,
+      "sites": 9,
+      "species": [
+        "Na",
+        "K",
+        "Cl",
+        "P",
+        "Ca",
+        "X",
+        "Y"
+      ],
+      "valence_value_lossless": true,
+      "value_matrix_shape": [
+        7,
+        2
+      ]
+    }
+  ],
+  "repair": "One secondary component.bind row now uses ions.data(config): new dict/list containers recursively, original order and scalar/array payloads preserved, no input mutation",
+  "saved_files": {
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-network-0/inputs.json": "c92861181bf7cfb6a613a933f2f09950620027dc8030a7fc07326bf95a203d08",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-network-0/reference-1.json": "9083dc891c4c2feb47fdfcd9d8b27933655837006757e0ce1abc2bb66bb67890",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-network-0/reference-2.json": "d86baac3c468a6fcaabf837cb212d3a0c03e41da56bd55477e5bb303805b0f69",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-transporters-0/inputs.json": "dca8ec4c696b61951fe7a1a1e5a793c2d40741146e2ee04098cb57e3a1fb6e04",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-transporters-0/reference-1.json": "5afe7474520953fd8b583f7629abf014191e8ba15e4cf8378448769e618ceac4",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-transporter_only/pre-transporters-0/reference-2.json": "4cf233233dcc7251a91ab3b294fa10c967a3fbf0896a9bee0753d2fa55d1cdfe",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-network-0/inputs.json": "c977b369beeb311bbbc796bf89500489d7a15fe64142c876c830ed74e4ee0fd3",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-network-0/reference-1.json": "f05da2e5570c0191f6de1d9f0484b8fbbb7cbc9ca66ed256c349377f55559640",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-network-0/reference-2.json": "2bc0c47c115fea0034036f04862bd49ccc20aec40ba727e10564024e96a14cfd",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-transporters-0/inputs.json": "2b17dd6fb95e0b6566cb072290ae836f7c9585ff3f0e1309c7374cc9bec8c2ce",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-transporters-0/reference-1.json": "da141c1bfff6ec3d280dfe6b3b700768de40c95a875dbe11adb8fe5c1fb4ca11",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_capacity/pre-transporters-0/reference-2.json": "a3c4d86f706d9e6caaca85045632e20810d3ead5be85b516684287ca62033c39",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-network-0/inputs.json": "b411103332f84fca3991fcd65f33996da170ac45f5804737aa176c7aaab01097",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-network-0/reference-1.json": "f05da2e5570c0191f6de1d9f0484b8fbbb7cbc9ca66ed256c349377f55559640",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-network-0/reference-2.json": "2bc0c47c115fea0034036f04862bd49ccc20aec40ba727e10564024e96a14cfd",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-transporters-0/inputs.json": "eb749bbbabd172a53ebf272d2e1dec0bd35cc71ee42499de92b42133ff690ec2",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-transporters-0/reference-1.json": "da141c1bfff6ec3d280dfe6b3b700768de40c95a875dbe11adb8fe5c1fb4ca11",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/evidence/normal-transporter-join/isolated-zero_rho/pre-transporters-0/reference-2.json": "a3c4d86f706d9e6caaca85045632e20810d3ead5be85b516684287ca62033c39",
+    "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02/run-controls/process/stdout.log": "644e4c520a32c02341e54a0cec5d8f7c71cbba3deb43ae03f1033c24deba5471"
+  },
+  "saved_fresh_forms": 12,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_inputs": {
+    "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-02/inputs.json",
+    "sha256": "0dd64b4ea2183721e6903b59622e509bf23535c74ad4b71978f456eb4be84713"
+  },
+  "source_run": "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-02"
+}

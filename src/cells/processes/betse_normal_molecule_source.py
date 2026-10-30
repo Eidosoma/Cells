@@ -8,8 +8,8 @@ Static preparation only; no numeric qualification has run.
 import copy
 from abc import ABCMeta
 from collections import OrderedDict
-from collections.abc import MutableMapping
-from types import SimpleNamespace
+from collections.abc import Mapping, MutableMapping
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 
@@ -548,6 +548,7 @@ PARAMETERS = {
     "TJ_factor",
     "ignoreTJ",
     "ignoreGJ",
+    "ignore_ECM_pump",
     "update_intra_conc",
     "transmem",
     "modify_time_factor",
@@ -663,6 +664,8 @@ def validate(definition, ion_binding, current_binding, configured_temperature_K)
             or set(growth) != GROWTH
         ):
             raise ValueError("Require complete molecule transport and growth parameters")
+        if params["ignore_ECM_pump"] is not True:
+            raise ValueError("Require the literal native ignore_ECM_pump=True initialization")
         flags = (
             "ignoreTJ",
             "ignoreGJ",
@@ -797,6 +800,7 @@ class Concentrations(MutableMapping):
 
 
 def _molecules(definition, incoming_cache, sim, cells, p):
+    _require_immutable(incoming_cache)
     if (
         incoming_cache is None
         or "molecule_states" not in incoming_cache
@@ -830,6 +834,22 @@ def _molecules(definition, incoming_cache, sim, cells, p):
             setattr(obj, key, copy.deepcopy(dynamic[key]))
         result[obj.name] = obj
     return result
+
+
+def _require_immutable(value):
+    if isinstance(value, np.ndarray):
+        if value.flags.writeable or not np.isfinite(value).all():
+            raise ValueError("Require immutable finite owned molecular buffers")
+    elif isinstance(value, Mapping):
+        if not isinstance(value, MappingProxyType):
+            raise ValueError("Require immutable owned molecular mappings")
+        for item in value.values():
+            _require_immutable(item)
+    elif isinstance(value, (list, tuple)):
+        if isinstance(value, list):
+            raise ValueError("Require immutable owned molecular sequences")
+        for item in value:
+            _require_immutable(item)
 
 
 def cache(net):

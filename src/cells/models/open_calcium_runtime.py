@@ -84,6 +84,19 @@ class Adapter:
     def readouts(self, state, control, p, *, xp=jnp):
         value, physical = self.parent_state(state), self.parent_layout(p)
         raw = self.base.readouts(value, control, physical, xp=xp)
+        return self.complete_parent_readouts(state, p, raw, xp=xp)
+
+    def complete_parent_readouts(self, state, p, raw, *, xp=jnp):
+        """Close a complete parent readout without recomputing its physics."""
+        if (
+            type(state) is not self.STATE_TYPE
+            or type(p) is not self.LAYOUT_TYPE
+            or type(raw) is not (fuel.Values if self.finite_fuel else calcium.Values)
+        ):
+            raise ValueError(
+                "Open reservoir completion requires exact family state/layout/readouts"
+            )
+        value, physical = self.parent_state(state), self.parent_layout(p)
         if self.finite_fuel:
             internal = xp.sum(
                 energy.chemical_power_pJ_s(raw.exchange.amount_fmol_s, raw.energy, xp=xp)

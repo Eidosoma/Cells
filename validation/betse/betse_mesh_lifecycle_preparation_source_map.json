@@ -265,5 +265,16 @@
   "upstream_clipping_qualification": "Root-owned frozen package, not promoted here",
   "numerical_execution": false,
   "topology_qualified": false,
-  "physical_geometry_admitted": false
+  "physical_geometry_admitted": false,
+  "numpy_pinv_default": {
+    "numpy_version": "2.5.3",
+    "module_relative_path": "linalg/_linalg.py",
+    "preparation_source": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/linalg/_linalg.py",
+    "sha256": "fb51e084cbb05b72a571a088299222055f3f176792ea9ea66186327a31ec787f",
+    "pinv_ast_sha256": "c9909cb2f32aefd10899296dd26e8793cf3b4d92e913cb99fd561265ff53d06b",
+    "function_line": 2154,
+    "rcond_assignment_line": 2239,
+    "default_rcond_literal": 1e-15,
+    "source_numeric_calls_changed": false
+  }
 }

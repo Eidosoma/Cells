@@ -1,0 +1,276 @@
+{
+  "accounting": {
+    "charged_environment": "Source publishes no molecular extra_rho_env in no-ECM mode; retain this omission and make no closed electrochemical/field-energy claim",
+    "declared_single_bath": "Use original single vol_env times mean(c_env). Independently predict residual after chemistry and directed-GJ subtraction as dt*(1-1/M)*sum(f_mem*A). Report observed/predicted defect and its difference separately.",
+    "directed_GJ": "Report -dt*modify_time_factor*sum(f_gj*A) explicitly. Do not assume zero for the supplied directed geometry/controls and do not absorb it into the bath defect.",
+    "growth_conversion": "Separate real GAD source/sink amounts from stoichiometric X/Y conversion; preserve declared equal z*scale weighting",
+    "molecule_mover": {
+      "declared_single_bath": "Use original single vol_env times mean(c_env). Independently predict residual after chemistry and directed-GJ subtraction as dt*(1-1/M)*sum(f_mem*A). Report observed/predicted defect and its difference separately.",
+      "directed_GJ": "Report -dt*modify_time_factor*sum(f_gj*A) explicitly. Do not assume zero for the supplied directed geometry/controls and do not absorb it into the bath defect.",
+      "source_effective": "update_Co averages per-membrane environmental changes; source-effective ledger uses sum(env[j]*vol_env), equivalently M*vol_env at uniform final mean. This is an algebraic source ledger, not a physical volume reinterpretation."
+    },
+    "physical_global_conservation_credit": false,
+    "scale": "Native numeric concentration/amount ledger; source scale_factor is explicitly retained in charge/current projections. No physiological calibration inferred.",
+    "single_bath_metadata": "Original bath_volume_m3/vol_env is unchanged",
+    "source_effective": "update_Co averages per-membrane environmental changes; source-effective ledger uses sum(env[j]*vol_env), equivalently M*vol_env at uniform final mean. This is an algebraic source ledger, not a physical volume reinterpretation.",
+    "transporter_buffer": "For each internal term, literal membrane delta is sigma*f_j*A_j/mem_vol_j*dt, whereas stoichiometric delta is sigma*nu*f_j*A_j/mem_vol_j*dt. Preserve discrepancy sigma*(1-nu)*f_j*A_j/mem_vol_j*dt and compare it separately from the source-effective/physical amount ledgers. Membrane buffers are samples/caches, never added as a second independent bulk inventory.",
+    "transporter_current": "Unconditional source extra_J_mem += net_z*flux*F precedes target commits, remains separate from ordinary flux storage, and may survive source failure. No closed electrical/energy/ATP/heat accounting claim.",
+    "transporter_physical_bath": "Keep original vol_env*mean(c_env). For each external term of signed coefficient sigma*nu, predict bath change sigma*nu*dt*vol_env/M*sum_i(n_i*sum_{owner=j=i}(f_j*A_j)/V_i), and bulk change from internal terms sigma*nu*dt*sum_j(f_j*A_j). Compare observed defect to predicted defect, not to zero.",
+    "transporter_source_effective": "For all targets, use w_j=cell_vol[owner_j]/membrane_count(owner_j) for the per-membrane env aliases. sum(w_j*delta_env_j) cancels the configured bulk transfer for pure transport. This algebraic ledger does not redefine physical bath geometry or volume."
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": {
+    "authority": "Chief requested component-boundary integer representation and precise admission/refusal witnesses, after Root dependencies4pass1fail20unrun; static successor only",
+    "conversion": "Check nonempty1D real numeric, finite, [-8,8] without abs overflow, exactly integral; cast np.int64 and assert value equality. Reject fractional, nonfinite, bool and invalid rank/range. Native/source float64 valence buffers unchanged.",
+    "numerical_retry": false,
+    "planned_checks_unchanged": 25,
+    "precise_terminal_refusal_message_assertions": true,
+    "runner_requires_exact_dependency_witness_set": true,
+    "saved_refusal_audit": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_transporter_admission_saved_witness_02.json",
+      "sha256": "dd46748f385ced441c40f531b63e00a54d5de62e957b437e74ffb5fadd8bdc77"
+    },
+    "seams": [
+      "src/cells/processes/betse_normal_transporter_source.py:validate/component.bind",
+      "tests/unit/test_betse_normal_transporter_join.py:transporter_comparisons/component.bind"
+    ],
+    "source_and_test_inverse_AST": "Remove one integer helper and invert its single validation call: all remaining AST equals01; Restore only dependency function, remove import re and invert secondary axis call: every other AST equals01",
+    "unchanged_component_contract": true,
+    "unchanged_constants_references_budgets": true,
+    "unchanged_native_capture_files": 3,
+    "unchanged_protected_files": 225,
+    "unchanged_scientific_bodies": 27,
+    "unchanged_scientific_files": {
+      "src/cells/processes/betse_normal_transporter_join.py": "fb747992b58843c3b4f03fde77a6767e4c9db0d8fbe898cd288749838e1218e7",
+      "validation/betse/betse_normal_transporter_join_fixtures.py": "9ad9bc6255f75af617a3e160016c42799523fdce82331ade73ca34b2a2c7c602",
+      "validation/betse/betse_normal_transporter_join_native.py": "59862f3566734604a600c1fa7d1aa872333aaad58f03a62b2b5810dbe207830d",
+      "validation/betse/betse_normal_transporter_join_native_helpers.py": "b5af7b862ddae0286c5d49a27a77ce2051a54bc1c9c93ff9457bcf1587ff5b32",
+      "validation/betse/betse_normal_transporter_join_native_network.py": "f3c5d467fdc21b383f8f6c3055dad33c188687345a0b2eb39655223c464f4741",
+      "validation/betse/betse_normal_transporter_join_reference.py": "7329f07d3f73f3760e4958fb4f8b298bc3cf2739c05b00f1bad3e02a7fa5caa4"
+    },
+    "valid_baseline_before_each_dependency": true
+  },
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "accepted_feedback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "accepted_feedback_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "ba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943"
+    },
+    "accepted_molecule02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "747b98ca85f05ce444999cd752c575d83bd54da4e6844fcfa1deb3f71f6217b5"
+    },
+    "accepted_prepared_ER_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+      "sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896"
+    },
+    "accepted_prepared_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "molecule_adapter_after_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_after_02.json",
+      "sha256": "32c0d819fbc664470f4359d5a06b3ec13b88678ab533718596e4a0f8c36cfe66"
+    },
+    "molecule_adapter_before_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_before_02_complete.json",
+      "sha256": "2c60375e33b3c92022d9b0d01143c84e7b535386dce62778ee1cda74e84ba503"
+    },
+    "prior_molecule_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+      "sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8"
+    },
+    "prior_molecule_failed_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_01.json",
+      "sha256": "e8eccdd2cc7c8ed8b1d21d45fe816ad84db47bc24a050ddf3d4644eddae962c7"
+    },
+    "prior_molecule_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json",
+      "sha256": "ef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc"
+    },
+    "prior_molecule_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_02.json",
+      "sha256": "3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73"
+    },
+    "prior_transporter02_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-02/inputs.json",
+      "sha256": "0dd64b4ea2183721e6903b59622e509bf23535c74ad4b71978f456eb4be84713"
+    },
+    "prior_transporter_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-01/inputs.json",
+      "sha256": "c16f3ddacd3c47e20e3eeff5a6c01d4b3ba367badbc24f29ca3949b521a0f558"
+    },
+    "transporter_admission_saved_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_transporter_admission_saved_witness_02.json",
+      "sha256": "dd46748f385ced441c40f531b63e00a54d5de62e957b437e74ffb5fadd8bdc77"
+    },
+    "transporter_container_saved_witness03": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_transporter_container_saved_witness_03.json",
+      "sha256": "beff4e5b8fc0c60c5b7d4623eb1d96eaa6375b5357c3994b74e8fee38040c666"
+    }
+  },
+  "binding_evidence_copies": 15,
+  "configuration_container_repair_03": {
+    "API_audit": {
+      "area_temperature_voltage_rho_source_fields_preserved": true,
+      "configuration_dict_and_all_substrate_multiplier_Km_transfer_and_regulator_lists": true,
+      "integer_valence_axis_existing_checked_helper": true,
+      "no_direct_row_mutation_in_component_bind_AST": true,
+      "owner_axes_integer_distinct_two_active_compartments": true,
+      "site_value_matrix_float64_species_by_two": true
+    },
+    "authority": "Chief requested a secondary component API container-only correction; Root02 deps5/raw2pass, controls3fail,15unrun; no numerical retry",
+    "changed_call": "component.bind([ions.data(config)], ...)",
+    "inverse_test_AST_exact": true,
+    "numerical_runs": 0,
+    "saved_scope": {
+      "actual_pre_network_points": 3,
+      "actual_pre_transporter_points": 3,
+      "fresh_forms": 12,
+      "full_control_history_credit": false
+    },
+    "saved_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_transporter_container_saved_witness_03.json",
+      "sha256": "beff4e5b8fc0c60c5b7d4623eb1d96eaa6375b5357c3994b74e8fee38040c666"
+    },
+    "unchanged_constants_reference_and_budgets": true,
+    "unchanged_helpers": 5,
+    "unchanged_native_and_production_source": true,
+    "unchanged_protected_files": 225,
+    "unchanged_scientific_bodies": 27,
+    "unchanged_scientific_files": {
+      "src/cells/processes/betse_normal_transporter_join.py": "fb747992b58843c3b4f03fde77a6767e4c9db0d8fbe898cd288749838e1218e7",
+      "src/cells/processes/betse_normal_transporter_source.py": "a431fc8fba86d961ff815ee0d9c0acb2db343728527e4ab08c128f8211ef6920",
+      "validation/betse/betse_normal_transporter_join_fixtures.py": "9ad9bc6255f75af617a3e160016c42799523fdce82331ade73ca34b2a2c7c602",
+      "validation/betse/betse_normal_transporter_join_native.py": "59862f3566734604a600c1fa7d1aa872333aaad58f03a62b2b5810dbe207830d",
+      "validation/betse/betse_normal_transporter_join_native_helpers.py": "b5af7b862ddae0286c5d49a27a77ce2051a54bc1c9c93ff9457bcf1587ff5b32",
+      "validation/betse/betse_normal_transporter_join_native_network.py": "f3c5d467fdc21b383f8f6c3055dad33c188687345a0b2eb39655223c464f4741",
+      "validation/betse/betse_normal_transporter_join_reference.py": "7329f07d3f73f3760e4958fb4f8b298bc3cf2739c05b00f1bad3e02a7fa5caa4"
+    }
+  },
+  "controlled_dependency_refresh": {
+    "authority": "Chief-requested explicit native ignore_ECM_pump=True adapter default; no new scientific equations or numerical retry",
+    "budgets_and_references_unchanged": true,
+    "changed_protected_paths": {
+      "src/cells/processes/betse_normal_molecule_source.py": {
+        "new_sha256": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+        "old_sha256": "0a08d7776b2a1f7680aec26bec15cff24e95cdbdc431a547b376b3673fdac8f5"
+      },
+      "validation/betse/betse_normal_molecule_join_fixtures.py": {
+        "new_sha256": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+        "old_sha256": "446f8b582bb16ffda423fdcf296ba5d2350c186d4589af6deae4976dd2bfda2d"
+      },
+      "validation/betse/betse_normal_molecule_join_protocol.json": {
+        "new_sha256": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad",
+        "old_sha256": "c941551fde7c9b2275f782cb7a81bce9e6dcb1d5357e018dd1c9f2b256da26d2"
+      },
+      "validation/betse/betse_normal_molecule_join_source_map.json": {
+        "new_sha256": "6087c1d84bd265416e05f579d718d0794a124ca244d9caf7d9260f9b0a48c269",
+        "old_sha256": "54d0954f36d6461166e8789f861572832e470b29683c68dbdf4fed6ebf768d7a"
+      }
+    },
+    "molecule02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json",
+      "sha256": "ef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc"
+    },
+    "molecule02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_02.json",
+      "sha256": "3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73"
+    },
+    "no_hash_exemptions": true,
+    "numeric_AST_bodies_unchanged": 22,
+    "unchanged_other_protected_files": 221
+  },
+  "driver_sha256": "7ef5997b13b01c58a7ebf897cb8b34f340e82e691c2d61223aee269b743200c9",
+  "inputs": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03/inputs.json",
+  "inputs_sha256": "8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd",
+  "kind": "cells.native_transporter_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_source_copies": 42,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 10,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_pre_network_points": 54,
+    "actual_pre_transporter_points": 54,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 25,
+    "component_control_histories": 3,
+    "dependency_controls": 5,
+    "fresh_Decimal_reference_forms": 216,
+    "native_captures": 20,
+    "new_coupled_cases": 15,
+    "positive_completed_mover_calls_per_implementation": 108,
+    "positive_native_outer_calls": 54,
+    "positive_three_call_histories": 18,
+    "raw_partial_failures": 2
+  },
+  "planned_groups": {
+    "context": 9,
+    "controls": 3,
+    "core": 6,
+    "dependencies": 5,
+    "raw": 2
+  },
+  "protected_files": 225,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_molecule_join_reference.py": "15bd5dd8f4f3da80af3124b8dd92cbaf2fa0dd84458a15ebef59f154963a94d3",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/betse/betse_normal_transporter_join_reference.py": "7329f07d3f73f3760e4958fb4f8b298bc3cf2739c05b00f1bad3e02a7fa5caa4"
+  },
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2407,
+  "static_checks": {
+    "compile_without_import": "passed",
+    "exact_unique_pytest_ID_validator_AST_unchanged": true,
+    "exception_class_ASTs": 3,
+    "global_name_resolution": "passed",
+    "inherited_molecule_adapter_missing": {
+      "native": {},
+      "production": {}
+    },
+    "inherited_molecule_adapter_required_attributes": 42,
+    "literal_numeric_AST_bodies": 27,
+    "native_checkout_installed_pins": "all21 exact",
+    "new_native_parameter_hydration_loop_unchanged": true,
+    "normal_source_call_order_AST": "passed",
+    "original_source_and_independent_native_observational_AST": "passed",
+    "post_output_terminal_failure_capture_AST": "passed",
+    "production_and_native_phase_order_AST": {
+      "native": [
+        "run_loop_transporters",
+        "run_loop_channels",
+        "run_loop_modulators",
+        "run_loop"
+      ],
+      "production": [
+        "run_loop_transporters",
+        "_run_cache",
+        "run_loop_modulators",
+        "run_loop"
+      ]
+    },
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "unchanged_outer_helper_ASTs": 5,
+    "unchanged_transporter_tolerances": true,
+    "unresolved": {}
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

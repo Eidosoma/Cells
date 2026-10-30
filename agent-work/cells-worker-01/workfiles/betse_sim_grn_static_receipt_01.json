@@ -1,0 +1,193 @@
+{
+  "accounting": {
+    "charged_environment": "Source publishes no molecular extra_rho_env in no-ECM mode; retain this omission and make no closed electrochemical/field-energy claim",
+    "declared_single_bath": "Use original single vol_env times mean(c_env). Independently predict residual after chemistry and directed-GJ subtraction as dt*(1-1/M)*sum(f_mem*A). Report observed/predicted defect and its difference separately.",
+    "directed_GJ": "Report -dt*modify_time_factor*sum(f_gj*A) explicitly. Do not assume zero for the supplied directed geometry/controls and do not absorb it into the bath defect.",
+    "energetic_conservation_credit": false,
+    "growth_conversion": "Separate real GAD source/sink amounts from stoichiometric X/Y conversion; preserve declared equal z*scale weighting",
+    "physical_global_conservation_credit": false,
+    "scale": "Native numeric concentration/amount ledger; source scale_factor is explicitly retained in charge/current projections. No physiological calibration inferred.",
+    "single_bath_metadata": "Original bath_volume_m3/vol_env is unchanged",
+    "source_effective": "update_Co averages per-membrane environmental changes; source-effective ledger uses sum(env[j]*vol_env), equivalently M*vol_env at uniform final mean. This is an algebraic source ledger, not a physical volume reinterpretation.",
+    "standalone": "No ordinary ion evolution or physical publication solve; source forces publication off and retains simulator fields. Explicit concentration/count/source ledgers stay conditional and local"
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "accepted_feedback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "accepted_feedback_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "ba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943"
+    },
+    "accepted_molecule02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json",
+      "sha256": "ef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc"
+    },
+    "accepted_molecule02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "747b98ca85f05ce444999cd752c575d83bd54da4e6844fcfa1deb3f71f6217b5"
+    },
+    "accepted_neutral_grn_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "6cccb0a9c1c759f00de3bfb725f99ce97eb05f1904d4a7a6e4ccc37620bbff31"
+    },
+    "accepted_prepared_ER_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+      "sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896"
+    },
+    "accepted_prepared_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "authorized_nonimported_transporter03_pin_source": {
+      "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03/inputs.json",
+      "sha256": "8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd"
+    },
+    "charged_grn_key_schema01": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_key_schema_witness_01.json",
+      "sha256": "d2aa47647994ee7beada381fade09a7e98ce4f18a20ef1d44485ef8fc6a7806f"
+    },
+    "charged_reference_fixed_budget_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_budget_witness_02.json",
+      "sha256": "dd962d3e8366f1d9e2c5e485f06d8731b0f1023ce54e5c9e52dad106e6cf86ed"
+    },
+    "held_charged01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-01/inputs.json",
+      "sha256": "078333d66671b1688495368b85c7638a9a8a6f93c7f2c03285d7ec7f0f823ab0"
+    },
+    "held_charged01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_01.json",
+      "sha256": "a0002ce8ffebb3486f8a7bf7e69f1eea52bc57532318f1a9af3f17e15462ddd1"
+    },
+    "held_grn01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-01/inputs.json",
+      "sha256": "2c7d6c2b835fae9f7deb68c931da51463e5c9b22ae3ce12b9a62f9b51d2d0ad8"
+    },
+    "held_grn01_preflight": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-preflight-20261030-01/REVIEW.json",
+      "sha256": "d12086bd12fc34ee0f1c87fff4f2b597cd954f5eab3409e0dbb976dc9886b223"
+    },
+    "molecule02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_02.json",
+      "sha256": "3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73"
+    },
+    "molecule_adapter_after_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_after_02.json",
+      "sha256": "32c0d819fbc664470f4359d5a06b3ec13b88678ab533718596e4a0f8c36cfe66"
+    },
+    "molecule_adapter_before_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_before_02_complete.json",
+      "sha256": "2c60375e33b3c92022d9b0d01143c84e7b535386dce62778ee1cda74e84ba503"
+    },
+    "native_key_schema_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_key_schema_witness_02.json",
+      "sha256": "dbf77c9f32c920417057ab2b6be7616a0b34d9e39dfa09b84df7c6e975907634"
+    },
+    "neutral_grn02_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-02/inputs.json",
+      "sha256": "8f4eb95501b5dfa7defbb32912b8cd26454b95ffb4ab744a1ebd52cc061d04f2"
+    },
+    "neutral_grn02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_join_static_receipt_02.json",
+      "sha256": "e11bdb1e2588bb920cba1918c76a39b9392db2e3ed13f3a998548927bc5fcd08"
+    },
+    "prior_molecule_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+      "sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8"
+    },
+    "protected_charged02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-02/inputs.json",
+      "sha256": "fb485491ad4f5c319df210100de71b6a4ad9e3b1c756abab99a960227c918500"
+    },
+    "protected_charged02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_02.json",
+      "sha256": "f9a0e728640cb4377ddc7d37fcb3bc301dc41e915791125302fe96dd54613f33"
+    }
+  },
+  "binding_evidence_copies": 23,
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "43951f1c393c40a9a7d9de327f36bb1107a86770ca4b3f066b1b1881cefd7361",
+  "inputs": "/mnt/workspaces/Cells/betse-sim-grn-prepared-20261030-01/inputs.json",
+  "inputs_sha256": "4e33d8c2fa4997255852c862e6de7aa84ce88a6ebf35bb941426793d847a9c07",
+  "kind": "cells.native_sim_grn_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 44,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 7,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_pre_core_points": 65,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 22,
+    "completed_positive_mover_invocations_per_implementation": 130,
+    "component_control_histories": 3,
+    "dependency_controls": 7,
+    "fresh_Decimal_reference_forms": 190,
+    "fresh_clock_Decimal_forms": 40,
+    "fresh_cold_Decimal_forms": 20,
+    "fresh_warm_Decimal_forms": 130,
+    "independent_clock_points": 20,
+    "independent_cold_points": 10,
+    "native_captures": 15,
+    "new_standalone_histories": 7,
+    "positive_standalone_invocations": 20,
+    "positive_two_invocation_histories": 10,
+    "raw_partial_failures": 5
+  },
+  "planned_groups": {
+    "context": 4,
+    "controls": 3,
+    "core": 3,
+    "dependencies": 7,
+    "raw": 5
+  },
+  "protected_files": 255,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/betse/betse_sim_grn_reference.py": "5c5302c3f3fd28185d9011064e459e6a6421a1fb519698be34bc80a3e16de8e4"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2434,
+  "static_checks": {
+    "actual_entire_run_core_sim": true,
+    "actual_reinitialize_clear_sample_report_export": true,
+    "compile_without_import": "passed",
+    "complete_public_state_hydration_AST": true,
+    "exact_unique_pytest_ID_validator_AST_unchanged": true,
+    "global_name_resolution": "passed",
+    "independent_clock_and_sample_reference": true,
+    "independent_reference_closure_stdlib": true,
+    "literal_original_scientific_bodies": 46,
+    "no_normal_solver_dispatch_substitution": true,
+    "numerical_runs": 0,
+    "original_new_owner_branch": true,
+    "pending_charged_transporter_import_dependency": false,
+    "post_output_terminal_failure_capture_AST": "passed",
+    "pytest_collection_runs": 0,
+    "reference_fixed_budgets": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_effective_and_single_bath_books_separate": true,
+    "warm_reference_inverse_AST_equal": true
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

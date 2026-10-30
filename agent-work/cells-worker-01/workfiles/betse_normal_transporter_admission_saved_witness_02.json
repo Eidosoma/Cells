@@ -1,0 +1,65 @@
+{
+  "conclusion": "All4 saved dependency passes hit their intended branches; the valid missing-flux seed failed earlier at the integer-axis boundary. No false-positive claim.",
+  "inverse_source_AST": "Remove one integer helper and invert its single validation call: all remaining AST equals01",
+  "inverse_test_AST": "Restore only dependency function, remove import re and invert secondary axis call: every other AST equals01",
+  "kind": "cells.transporter_saved_admission_refusal_audit@1",
+  "numerical_runs": 0,
+  "old_native_component_contract": {
+    "integer_valence_axis_required": true,
+    "path": "src/cells/processes/betse_network_transport.py",
+    "sha256": "6004e87b44d99d9ede041358add93493347f863b4002bcd58fde4d885fa83726"
+  },
+  "saved_refusals": {
+    "missing_configuration": {
+      "files": {
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_configuration-expected-refusal/arrays.npz": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_configuration-expected-refusal/data.json": "01a1bd287dbfd88339175128991ad801bfdd26e0c86841aa7a7ae28e2bb15a6a",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_configuration-expected-refusal/manifest.json": "834635b9f9d2c5a1cd5e3e7d99dbb942f4b9431dc1185bd678b9f959abccd1a6"
+      },
+      "intended_branch": true,
+      "message": "Unsupported or incomplete native transporter configuration",
+      "type": "ValueError"
+    },
+    "missing_membrane_volume": {
+      "files": {
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_membrane_volume-expected-refusal/arrays.npz": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_membrane_volume-expected-refusal/data.json": "ded6a346f7b0588d1b8562e6e82284e90bcb710c8f84d02e724d12cc59f2a002",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/missing_membrane_volume-expected-refusal/manifest.json": "519eaaeb137559325d64409ca92c9ed902c652ef0bb3b770d4f57848864ba75f"
+      },
+      "intended_branch": true,
+      "message": "Require configured transporters, membrane volumes and profile ownership",
+      "type": "ValueError"
+    },
+    "mitochondrial_zone": {
+      "files": {
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/mitochondrial_zone-expected-refusal/arrays.npz": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/mitochondrial_zone-expected-refusal/data.json": "024a596c1337103000ff2b57a6674962b31b18bbeb36716d130b183f1d1a2650",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/mitochondrial_zone-expected-refusal/manifest.json": "1146a6bc6c9edc3c33efd3785359b6e94096c96d3ec5d8a42eee96478b9b7214"
+      },
+      "intended_branch": true,
+      "message": "Require unique transporter names and supported cell reaction zone",
+      "type": "ValueError"
+    },
+    "unknown_profile": {
+      "files": {
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/unknown_profile-expected-refusal/arrays.npz": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/unknown_profile-expected-refusal/data.json": "f9a728c32a18aa134c334e28140a3e75aa2c96e70cc0155dc64871f371ba0152",
+        "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/evidence/normal-transporter-join/unknown_profile-expected-refusal/manifest.json": "2f515312ebfddbd07d49e827838fe77af5b04f026d13352a2a64d6964c73d3da"
+      },
+      "intended_branch": true,
+      "message": "Require all targets or completely supplied named profiles",
+      "type": "ValueError"
+    }
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_inputs": {
+    "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-01/inputs.json",
+    "sha256": "c16f3ddacd3c47e20e3eeff5a6c01d4b3ba367badbc24f29ca3949b521a0f558"
+  },
+  "source_run": "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01",
+  "stdout": {
+    "path": "/mnt/workspaces/Cells/betse-normal-transporter-tests-20261030-01/run-dependencies/process/stdout.log",
+    "sha256": "36af894e74dd6675a76640714a0f31cc51f479654b9afd16efef33590c6da60c"
+  }
+}

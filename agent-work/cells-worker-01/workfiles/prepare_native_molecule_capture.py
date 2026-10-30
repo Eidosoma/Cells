@@ -1,5 +1,7 @@
 """Extend only the separate native capture boundary and observation fields."""
 
+# ruff: noqa: E501 -- captured source templates are formatted in their outputs.
+
 from pathlib import Path
 
 base = Path("validation/betse")

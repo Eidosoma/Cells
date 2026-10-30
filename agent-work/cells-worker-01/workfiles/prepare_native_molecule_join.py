@@ -1,5 +1,7 @@
 """Copy the accepted outer engine and add owned chemistry state at its late seam."""
 
+# ruff: noqa: E501 -- captured source templates are formatted in their outputs.
+
 from pathlib import Path
 
 source = Path("src/cells/processes/betse_normal_network_join.py").read_text()

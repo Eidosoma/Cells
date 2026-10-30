@@ -115,6 +115,26 @@ def compare_events(actual, archive, saved, saved_archive, proof, *, failed):
         )
 
 
+def compare_constructor_arguments(left, right):
+    """Keyword order is irrelevant; every argument's typed value remains exact."""
+    wire.validate(left)
+    wire.validate(right)
+
+    def arguments(cache):
+        assert cache["tree"]["type"] == "dict"
+        values = {}
+        for key, value in cache["tree"]["values"]:
+            assert key["type"] == "str" and type(key["value"]) is str
+            assert key["value"] not in values
+            values[key["value"]] = wire.signature(value)
+        return values
+
+    a, b = arguments(left), arguments(right)
+    assert a.keys() == b.keys(), "Constructor keyword sets differ"
+    for name in a:
+        assert a[name] == b[name], "Constructor argument differs: " + name
+
+
 def native_case(provider, path, actual, archive, replay_root):
     case = path.stem.removesuffix("-actual")
     saved = json.loads(path.with_name(case + "-native.json").read_text())
@@ -157,7 +177,7 @@ def native_case(provider, path, actual, archive, replay_root):
         failed = actual["state"]["status"] == "retained_source_failure"
     retain_native(replay_root / case, proof)
     if constructor_check is not None:
-        transport.compare_cache(constructor_check, caller_cache)
+        compare_constructor_arguments(constructor_check, caller_cache)
     assert proof["status"] == ("source_failed" if failed else "source_completed")
     if failed:
         expected = actual["failure_type"] if helper else actual["state"]["failure_type"]

@@ -1,0 +1,2016 @@
+{
+  "kind": "cells.stable_geometry_primitives_prepared_plan@1",
+  "status": "accepted_initial_qualification_authorized_launch_pending",
+  "prepared_utc": "2026-10-30T23:05:52.013815+00:00",
+  "law_id": "cells_stable_binary64_geometry_primitives@1",
+  "owned_source_sha256": {
+    "src/cells/processes/stable_geometry_primitives.py": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+    "tests/unit/test_stable_geometry_primitives.py": "850af2664913c9cbdc1af606bb3ba2d97db33846a51530edc28e4b568333ee09",
+    "validation/geometry/stable_geometry_primitives_checks.py": "9fbae0fd51f7b94876686876dc13cf029d749d984e88e7b4545d6b436b45d18f",
+    "validation/geometry/stable_geometry_primitives_finalize.py": "09dce3a7a1640e9b1bfdf15809dd5dca3839fbbb7e8553b9d24ea534ae6f28ca",
+    "validation/geometry/stable_geometry_primitives_fixtures.py": "e202d659182c86dfbd3d57dc0c5030f347976aeff9357d7d434f49fe9638cb56",
+    "validation/geometry/stable_geometry_primitives_protocol.json": "ce675b51b3e791287116cf56c585bdcc6492042639bb797be4af19e9770232b6",
+    "validation/geometry/stable_geometry_primitives_reference.py": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569",
+    "validation/geometry/stable_geometry_primitives_regressions.json": "5465958ce96019474d7883baafabe900a21981585aa08c9393451ea0d755b818",
+    "validation/geometry/stable_geometry_primitives_replay.py": "ec41a4d31e8810ee2f5ffccc9b4e2925933f23ddcc342a61e43500700b6ebd1b",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc"
+  },
+  "dependency_source_sha256": {
+    "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "resource_guard.py": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec"
+  },
+  "external_dependency_sha256": {
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/centroid.json": {
+      "sha256": "a95e9c88916cff11648e65d4746e88a8f8c042dada5d5c6621de2fb5abe471c3",
+      "frozen_relative": "dependencies/diagnostic/centroid.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/driver.py": {
+      "sha256": "c31357045f90db8fd22c952c26f9e92800b578e2972e41ae6b3aaaa54253041c",
+      "frozen_relative": "dependencies/diagnostic/driver.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard-source-AST.json": {
+      "sha256": "3c1dbeaff24d532b01bbd2e4b966a817b860b5c4097d855c7414cc70c73e28af",
+      "frozen_relative": "dependencies/diagnostic/guard-source-AST.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/host-resources.jsonl": {
+      "sha256": "310ba7352c2d7a793cc7ccaff19b030097617e8f458a4d8d6bbc8343ccda88e3",
+      "frozen_relative": "dependencies/diagnostic/guard/host-resources.jsonl"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/process-inputs.json": {
+      "sha256": "f83c3179706d40f0f27b3583791a8309c37d22ca078cfc3caab60fb43eda9ff6",
+      "frozen_relative": "dependencies/diagnostic/guard/process-inputs.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/process-started.json": {
+      "sha256": "f8841e0384d2940e76e0ac68b1dd60930468490ef534a55ab0ec0b084f5702ac",
+      "frozen_relative": "dependencies/diagnostic/guard/process-started.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/result.json": {
+      "sha256": "957668cc451e70364dbf18555836acf9ba3fe41257311405052775ba0d806b83",
+      "frozen_relative": "dependencies/diagnostic/guard/result.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frozen_relative": "dependencies/diagnostic/guard/stderr.log"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/guard/stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frozen_relative": "dependencies/diagnostic/guard/stdout.log"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs.json": {
+      "sha256": "50e8f26f268a42f503e7681981882e63b14235745749280f78c30068b11d3ff6",
+      "frozen_relative": "dependencies/diagnostic/inputs.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-actual.json": {
+      "sha256": "b7d281240ec7c7aee9630ca452611c91eb230fc2d4492ad396ebe0d7b2c74440",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-actual.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-actual.npz": {
+      "sha256": "dcd51e822ecc63a39202b1062b38c70a8041a2f03416e190dec7e87c7f9fe73c",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-actual.npz"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-native.json": {
+      "sha256": "d044a4cac86e4ac584bd4667a0d04e14168d0712a3a9a1944b39ef592e0726dc",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-native.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-native.npz": {
+      "sha256": "b24c0d43322f4872a991998cee77496eb42387b52fe487e6c29fd1ae45c61e19",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-native.npz"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-reference-1.json": {
+      "sha256": "72305bed7e71db2d18e7baf72417513c8c47f83ad48f8057c5d94d8788f5dce7",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-reference-1.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-hex-disordered-reference-2.json": {
+      "sha256": "05f12ad108b88582fc949e54c44ec0745f35dcb4d4dc310aac896c7595479d3f",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-hex-disordered-reference-2.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-actual.json": {
+      "sha256": "83bd0878d221da7e50833b1e9f755355d7930f84dd9d87e69b4fa8eb859ea68f",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-actual.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-actual.npz": {
+      "sha256": "c52a8c5c91ccab88be28ba5b65c36adf236b5eb260c344bda03eca1cb315a65b",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-actual.npz"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-native.json": {
+      "sha256": "d57f9c0369738a3cb575822229c00afb0b9ddfe5cdbd25f2b13b68cf285109dc",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-native.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-native.npz": {
+      "sha256": "0c6c4f6ed7b4b804dda3590590307c40f80e46f7cfb999f13603a28513ae6a47",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-native.npz"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-reference-1.json": {
+      "sha256": "ad96b9d3a6a6abd56c4081b5f27ef917ee21783d99a56289f252e50d3742be08",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-reference-1.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/caller-square-zero-reference-2.json": {
+      "sha256": "cec07f9a1dc7dcde62990e8b249426d2d2937d465fd9ae0be252c00c1e75b644",
+      "frozen_relative": "dependencies/diagnostic/inputs/caller-square-zero-reference-2.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/parent-failure.json": {
+      "sha256": "8bbc83283798f82b1691c4ef360059ae6c25dcd2cf34bcac26da78a0f8ff6846",
+      "frozen_relative": "dependencies/diagnostic/inputs/parent-failure.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/parent-inputs.json": {
+      "sha256": "f3bb3717846d39b31ecf92a38c1488c203bfdebe06b105ec0b1816f03dd8dcfd",
+      "frozen_relative": "dependencies/diagnostic/inputs/parent-inputs.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/parent-result.json": {
+      "sha256": "54fc1514f1c97a3c80e64d759ba5858086c966fe8848a7d8550203f0c7226431",
+      "frozen_relative": "dependencies/diagnostic/inputs/parent-result.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/inputs/parent-review.json": {
+      "sha256": "e8f382d700c6b21afbff4d2a7cd0274bc5a17181a9d831f105f9fd05a02055d5",
+      "frozen_relative": "dependencies/diagnostic/inputs/parent-review.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/launch.json": {
+      "sha256": "8d4ecf341b1e31db4e7bc474ec2b3c76def2e50745711d2a2101395e2f5c3ef6",
+      "frozen_relative": "dependencies/diagnostic/launch.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/preparation.json": {
+      "sha256": "0f7e41883a710e4d887525fef7c1afe40b8ab82a77f51eefcc770823aa92cd83",
+      "frozen_relative": "dependencies/diagnostic/preparation.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/runtime.json": {
+      "sha256": "cb81bc2c841ae76480d2a699675924b376f9a2b817abb13f100f9594fc0584ff",
+      "frozen_relative": "dependencies/diagnostic/runtime.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/assembly_cli.py": {
+      "sha256": "55d55a396e126b780ce0d17a7c05473b7a56ff44c8a708c9c9acaa3b22508c0d",
+      "frozen_relative": "dependencies/diagnostic/source/assembly_cli.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/assembly_io.py": {
+      "sha256": "7998c7f4ac38f4dd37091aa714bcb1b6f17c1a11a7988b1fdf01ba9b6b36400c",
+      "frozen_relative": "dependencies/diagnostic/source/assembly_io.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/component_process.py": {
+      "sha256": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+      "frozen_relative": "dependencies/diagnostic/source/component_process.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/native_mesh.py": {
+      "sha256": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+      "frozen_relative": "dependencies/diagnostic/source/native_mesh.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/owned_kernel.py": {
+      "sha256": "7102de6bae1f5da0ecb5c99064ffa03b26e20b2b7b8855b72f5066fd20a0089c",
+      "frozen_relative": "dependencies/diagnostic/source/owned_kernel.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/profile_cluster.py": {
+      "sha256": "7fe1d7100af19d91435650ac3828fc267605aba26f63921d303cd7334211b1b7",
+      "frozen_relative": "dependencies/diagnostic/source/profile_cluster.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/source/reference.py": {
+      "sha256": "a56492d8ab2d36c7cebe426a1576fbc16b2d27210a437459e27d22b398ea4229",
+      "frozen_relative": "dependencies/diagnostic/source/reference.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/triangle.json": {
+      "sha256": "2c60bcfb437e05f786f28172e5525aaf92d6b8b9a8505ad99a252f73bcf6f5e8",
+      "frozen_relative": "dependencies/diagnostic/triangle.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/worker-result.json": {
+      "sha256": "11281e0a0b600b19198a5edd6c3b17d41fda308a1707e0a8c2043d7a357f30b6",
+      "frozen_relative": "dependencies/diagnostic/worker-result.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/worker.py": {
+      "sha256": "f16d103b368045950e215a04c8a848f664634f54c1d4cc3767815684c5577986",
+      "frozen_relative": "dependencies/diagnostic/worker.py"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/result.json": {
+      "sha256": "b5877c5e127752ca850d6a50ed2393714961df046749629a39f4a6ebc84c9f1a",
+      "frozen_relative": "dependencies/diagnostic/result.json"
+    },
+    "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/analysis-01/REPORT.json": {
+      "sha256": "86f2249e39641de49678696246e6a5e2ff383c8c4a6991f6e9e1bdfe0a95c138",
+      "frozen_relative": "dependencies/diagnostic/analysis-01/REPORT.json"
+    },
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/result.json": {
+      "sha256": "54fc1514f1c97a3c80e64d759ba5858086c966fe8848a7d8550203f0c7226431",
+      "frozen_relative": "dependencies/failed-initial-campaign/result.json"
+    },
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/failure.json": {
+      "sha256": "8bbc83283798f82b1691c4ef360059ae6c25dcd2cf34bcac26da78a0f8ff6846",
+      "frozen_relative": "dependencies/failed-initial-campaign/failure.json"
+    },
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json": {
+      "sha256": "e8f382d700c6b21afbff4d2a7cd0274bc5a17181a9d831f105f9fd05a02055d5",
+      "frozen_relative": "dependencies/failed-initial-campaign/root-review-01/REVIEW.json"
+    },
+    "/mnt/workspaces/Cells/betse-mesh-lifecycle-preparation-prepared-20261030-02/source/validation/betse/betse_mesh_lifecycle_preparation_guard.py": {
+      "sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+      "frozen_relative": "dependencies/guard/resource_guard.py"
+    },
+    "/mnt/workspaces/Cells/betse-mesh-lifecycle-preparation-prepared-20261030-02/source/validation/betse/betse_mesh_lifecycle_preparation_guard_source_map.json": {
+      "sha256": "ff7cbc7cfb6fd7a8c20fc82ad4e41d4abe1f4f950dc2c8a63d37f1183d81336d",
+      "frozen_relative": "dependencies/guard/source-map.json"
+    },
+    "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-01/manifest.json": {
+      "sha256": "5cfdbd60d138b275f96c2f8b2d33df9fabf9e5063435ce21dac32e27de3da542",
+      "frozen_relative": "dependencies/metadata-predecessor/manifest.json"
+    },
+    "/mnt/workspaces/Cells/stable-geometry-primitives-preparation-20261030-01.json": {
+      "sha256": "32b368cee86962ae9804bb8e44cd4bdacf5d80d55f19b57bf825df3ee40b4886",
+      "frozen_relative": "dependencies/metadata-predecessor/receipt.json"
+    }
+  },
+  "note": "agent-work/cells-specialist/STABLE_GEOMETRY_PRIMITIVES.md",
+  "note_sha256": "9b0793adfed7c03bca867138b331c73cf4d2cb54a4ee9661b2f9b54289b3bb4f",
+  "static_checker": "/mnt/workspaces/Cells/specialist-runners/stable-geometry-primitives-20261030-01-static.py",
+  "static_checker_sha256": "0252aa911cdd1f5bcec37b224a0bacaa0b9030f7531580fed8fc9fce2776866a",
+  "static_preparation_receipt": "/mnt/workspaces/Cells/stable-geometry-primitives-preparation-20261030-02.json",
+  "runner": "/mnt/workspaces/Cells/specialist-runners/stable-geometry-primitives-20261030-02-checks.py",
+  "runner_sha256": "b8cddc77731961d8ce9acedbdbdd61c3e9f19380f62514c1c537edad2d84ed69",
+  "supervisor": "/mnt/workspaces/Cells/specialist-runners/stable-geometry-primitives-20261030-01-supervise.py",
+  "supervisor_sha256": "d7aa34deb18d248436515ce871b31a2e7bdd6e25c7ba968231ae3de7ed0b8cde",
+  "prepared_bundle": "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-02",
+  "prepared_bundle_manifest_sha256": "71add3636c486e9a2ec2f6690ed1b48a51c4011f6ded3d3da4e49e8f1dbb55b8",
+  "authorized_bundle_manifest_sha256": "71add3636c486e9a2ec2f6690ed1b48a51c4011f6ded3d3da4e49e8f1dbb55b8",
+  "planned_qualification_output": "/mnt/workspaces/Cells/stable-geometry-primitives-qualification-20261030-01",
+  "planned_whole_job_guard_output": "/mnt/workspaces/Cells/stable-geometry-primitives-whole-job-20261030-01",
+  "check_units": [
+    {
+      "unit": "check-000",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[retained-centroid]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[retained-centroid]"
+      },
+      "role": "positive",
+      "case": "retained-centroid"
+    },
+    {
+      "unit": "check-001",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[retained-thin]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[retained-thin]"
+      },
+      "role": "positive",
+      "case": "retained-thin"
+    },
+    {
+      "unit": "check-002",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[box-offset]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[box-offset]"
+      },
+      "role": "positive",
+      "case": "box-offset"
+    },
+    {
+      "unit": "check-003",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[box-zero]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[box-zero]"
+      },
+      "role": "positive",
+      "case": "box-zero"
+    },
+    {
+      "unit": "check-004",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[concave]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[concave]"
+      },
+      "role": "positive",
+      "case": "concave"
+    },
+    {
+      "unit": "check-005",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[collinear-edge]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[collinear-edge]"
+      },
+      "role": "positive",
+      "case": "collinear-edge"
+    },
+    {
+      "unit": "check-006",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[dynamic-range]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[dynamic-range]"
+      },
+      "role": "positive",
+      "case": "dynamic-range"
+    },
+    {
+      "unit": "check-007",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[right]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[right]"
+      },
+      "role": "positive",
+      "case": "right"
+    },
+    {
+      "unit": "check-008",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[thin-dyadic]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[thin-dyadic]"
+      },
+      "role": "positive",
+      "case": "thin-dyadic"
+    },
+    {
+      "unit": "check-009",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[large-representable]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[large-representable]"
+      },
+      "role": "positive",
+      "case": "large-representable"
+    },
+    {
+      "unit": "check-010",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[tiny-representable]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[tiny-representable]"
+      },
+      "role": "positive",
+      "case": "tiny-representable"
+    },
+    {
+      "unit": "check-011",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[regular64-offset]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[regular64-offset]"
+      },
+      "role": "positive",
+      "case": "regular64-offset"
+    },
+    {
+      "unit": "check-012",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--80]"
+      },
+      "role": "positive",
+      "case": "scale-retained-centroid--80"
+    },
+    {
+      "unit": "check-013",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--20]"
+      },
+      "role": "positive",
+      "case": "scale-retained-centroid--20"
+    },
+    {
+      "unit": "check-014",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-20]"
+      },
+      "role": "positive",
+      "case": "scale-retained-centroid-20"
+    },
+    {
+      "unit": "check-015",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-80]"
+      },
+      "role": "positive",
+      "case": "scale-retained-centroid-80"
+    },
+    {
+      "unit": "check-016",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--80]"
+      },
+      "role": "positive",
+      "case": "scale-retained-thin--80"
+    },
+    {
+      "unit": "check-017",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--20]"
+      },
+      "role": "positive",
+      "case": "scale-retained-thin--20"
+    },
+    {
+      "unit": "check-018",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-20]"
+      },
+      "role": "positive",
+      "case": "scale-retained-thin-20"
+    },
+    {
+      "unit": "check-019",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-80]"
+      },
+      "role": "positive",
+      "case": "scale-retained-thin-80"
+    },
+    {
+      "unit": "check-020",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--80]"
+      },
+      "role": "positive",
+      "case": "scale-box-offset--80"
+    },
+    {
+      "unit": "check-021",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--20]"
+      },
+      "role": "positive",
+      "case": "scale-box-offset--20"
+    },
+    {
+      "unit": "check-022",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-20]"
+      },
+      "role": "positive",
+      "case": "scale-box-offset-20"
+    },
+    {
+      "unit": "check-023",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-80]"
+      },
+      "role": "positive",
+      "case": "scale-box-offset-80"
+    },
+    {
+      "unit": "check-024",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-right--80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right--80]"
+      },
+      "role": "positive",
+      "case": "scale-right--80"
+    },
+    {
+      "unit": "check-025",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-right--20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right--20]"
+      },
+      "role": "positive",
+      "case": "scale-right--20"
+    },
+    {
+      "unit": "check-026",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-right-20]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right-20]"
+      },
+      "role": "positive",
+      "case": "scale-right-20"
+    },
+    {
+      "unit": "check-027",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[scale-right-80]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right-80]"
+      },
+      "role": "positive",
+      "case": "scale-right-80"
+    },
+    {
+      "unit": "check-028",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-order-0]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-0]"
+      },
+      "role": "positive",
+      "case": "polygon-order-0"
+    },
+    {
+      "unit": "check-029",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-order-1]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-1]"
+      },
+      "role": "positive",
+      "case": "polygon-order-1"
+    },
+    {
+      "unit": "check-030",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-order-2]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-2]"
+      },
+      "role": "positive",
+      "case": "polygon-order-2"
+    },
+    {
+      "unit": "check-031",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-order-3]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-3]"
+      },
+      "role": "positive",
+      "case": "polygon-order-3"
+    },
+    {
+      "unit": "check-032",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-0]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-0]"
+      },
+      "role": "positive",
+      "case": "polygon-reverse-0"
+    },
+    {
+      "unit": "check-033",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-1]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-1]"
+      },
+      "role": "positive",
+      "case": "polygon-reverse-1"
+    },
+    {
+      "unit": "check-034",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-2]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-2]"
+      },
+      "role": "positive",
+      "case": "polygon-reverse-2"
+    },
+    {
+      "unit": "check-035",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-3]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-3]"
+      },
+      "role": "positive",
+      "case": "polygon-reverse-3"
+    },
+    {
+      "unit": "check-036",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-012]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-012]"
+      },
+      "role": "positive",
+      "case": "triangle-order-012"
+    },
+    {
+      "unit": "check-037",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-021]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-021]"
+      },
+      "role": "positive",
+      "case": "triangle-order-021"
+    },
+    {
+      "unit": "check-038",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-102]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-102]"
+      },
+      "role": "positive",
+      "case": "triangle-order-102"
+    },
+    {
+      "unit": "check-039",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-120]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-120]"
+      },
+      "role": "positive",
+      "case": "triangle-order-120"
+    },
+    {
+      "unit": "check-040",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-201]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-201]"
+      },
+      "role": "positive",
+      "case": "triangle-order-201"
+    },
+    {
+      "unit": "check-041",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[triangle-order-210]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-210]"
+      },
+      "role": "positive",
+      "case": "triangle-order-210"
+    },
+    {
+      "unit": "check-042",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-large]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-large]"
+      },
+      "role": "positive",
+      "case": "translate-retained-centroid-large"
+    },
+    {
+      "unit": "check-043",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-small]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-small]"
+      },
+      "role": "positive",
+      "case": "translate-retained-centroid-small"
+    },
+    {
+      "unit": "check-044",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-large]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-large]"
+      },
+      "role": "positive",
+      "case": "translate-retained-thin-large"
+    },
+    {
+      "unit": "check-045",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-small]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-small]"
+      },
+      "role": "positive",
+      "case": "translate-retained-thin-small"
+    },
+    {
+      "unit": "check-046",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-large]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-large]"
+      },
+      "role": "positive",
+      "case": "translate-box-offset-large"
+    },
+    {
+      "unit": "check-047",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-small]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-small]"
+      },
+      "role": "positive",
+      "case": "translate-box-offset-small"
+    },
+    {
+      "unit": "check-048",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-right-large]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-right-large]"
+      },
+      "role": "positive",
+      "case": "translate-right-large"
+    },
+    {
+      "unit": "check-049",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[translate-right-small]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-right-small]"
+      },
+      "role": "positive",
+      "case": "translate-right-small"
+    },
+    {
+      "unit": "check-050",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid--40]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid--40]"
+      },
+      "role": "positive",
+      "case": "combined-retained-centroid--40"
+    },
+    {
+      "unit": "check-051",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid-40]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid-40]"
+      },
+      "role": "positive",
+      "case": "combined-retained-centroid-40"
+    },
+    {
+      "unit": "check-052",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin--40]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin--40]"
+      },
+      "role": "positive",
+      "case": "combined-retained-thin--40"
+    },
+    {
+      "unit": "check-053",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin-40]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin-40]"
+      },
+      "role": "positive",
+      "case": "combined-retained-thin-40"
+    },
+    {
+      "unit": "check-054",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-collinear]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-collinear]"
+      },
+      "role": "domain",
+      "case": "triangle-collinear"
+    },
+    {
+      "unit": "check-055",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-repeated]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-repeated]"
+      },
+      "role": "domain",
+      "case": "triangle-repeated"
+    },
+    {
+      "unit": "check-056",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-collinear]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-collinear]"
+      },
+      "role": "domain",
+      "case": "polygon-collinear"
+    },
+    {
+      "unit": "check-057",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-bowtie]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-bowtie]"
+      },
+      "role": "domain",
+      "case": "polygon-bowtie"
+    },
+    {
+      "unit": "check-058",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-touching]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-touching]"
+      },
+      "role": "domain",
+      "case": "polygon-touching"
+    },
+    {
+      "unit": "check-059",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-backtrack]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-backtrack]"
+      },
+      "role": "domain",
+      "case": "polygon-backtrack"
+    },
+    {
+      "unit": "check-060",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-repeated]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-repeated]"
+      },
+      "role": "domain",
+      "case": "polygon-repeated"
+    },
+    {
+      "unit": "check-061",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[too-few]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[too-few]"
+      },
+      "role": "domain",
+      "case": "too-few"
+    },
+    {
+      "unit": "check-062",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[too-many]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[too-many]"
+      },
+      "role": "domain",
+      "case": "too-many"
+    },
+    {
+      "unit": "check-063",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[wrong-axis]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[wrong-axis]"
+      },
+      "role": "domain",
+      "case": "wrong-axis"
+    },
+    {
+      "unit": "check-064",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[nan]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[nan]"
+      },
+      "role": "domain",
+      "case": "nan"
+    },
+    {
+      "unit": "check-065",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[infinity]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[infinity]"
+      },
+      "role": "domain",
+      "case": "infinity"
+    },
+    {
+      "unit": "check-066",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[boolean]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[boolean]"
+      },
+      "role": "domain",
+      "case": "boolean"
+    },
+    {
+      "unit": "check-067",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[large-integer]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[large-integer]"
+      },
+      "role": "domain",
+      "case": "large-integer"
+    },
+    {
+      "unit": "check-068",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[unsupported-scalar]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[unsupported-scalar]"
+      },
+      "role": "domain",
+      "case": "unsupported-scalar"
+    },
+    {
+      "unit": "check-069",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[unknown-primitive]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[unknown-primitive]"
+      },
+      "role": "domain",
+      "case": "unknown-primitive"
+    },
+    {
+      "unit": "check-070",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-arity]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-arity]"
+      },
+      "role": "domain",
+      "case": "triangle-arity"
+    },
+    {
+      "unit": "check-071",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-overflow]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-overflow]"
+      },
+      "role": "domain",
+      "case": "polygon-area-overflow"
+    },
+    {
+      "unit": "check-072",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-underflow]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-underflow]"
+      },
+      "role": "domain",
+      "case": "polygon-area-underflow"
+    },
+    {
+      "unit": "check-073",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-radius-overflow]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-radius-overflow]"
+      },
+      "role": "domain",
+      "case": "triangle-radius-overflow"
+    },
+    {
+      "unit": "check-074",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-output-underflow]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-output-underflow]"
+      },
+      "role": "domain",
+      "case": "triangle-output-underflow"
+    },
+    {
+      "unit": "check-075",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[request_identity]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[request_identity]"
+      },
+      "role": "ownership",
+      "case": "request_identity"
+    },
+    {
+      "unit": "check-076",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[mutable_points]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[mutable_points]"
+      },
+      "role": "ownership",
+      "case": "mutable_points"
+    },
+    {
+      "unit": "check-077",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[private_integer_points]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[private_integer_points]"
+      },
+      "role": "ownership",
+      "case": "private_integer_points"
+    },
+    {
+      "unit": "check-078",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[result_values]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[result_values]"
+      },
+      "role": "ownership",
+      "case": "result_values"
+    },
+    {
+      "unit": "check-079",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[certificates]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[certificates]"
+      },
+      "role": "ownership",
+      "case": "certificates"
+    },
+    {
+      "unit": "check-080",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[provenance]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[provenance]"
+      },
+      "role": "ownership",
+      "case": "provenance"
+    },
+    {
+      "unit": "check-081",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[method]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[method]"
+      },
+      "role": "ownership",
+      "case": "method"
+    },
+    {
+      "unit": "check-082",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_resealed_primitive_identity_ownership_and_method_tampering[mutable_quantities]",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_resealed_primitive_identity_ownership_and_method_tampering[mutable_quantities]"
+      },
+      "role": "ownership",
+      "case": "mutable_quantities"
+    },
+    {
+      "unit": "check-083",
+      "nodeid": "tests/unit/test_stable_geometry_primitives.py::test_caller_aliases_and_primitive_output_scope",
+      "pytest_id": {
+        "classname": "tests.unit.test_stable_geometry_primitives",
+        "name": "test_caller_aliases_and_primitive_output_scope"
+      },
+      "role": "ownership",
+      "case": null
+    }
+  ],
+  "replay_units": [
+    {
+      "unit": "reference-000",
+      "case": "retained-centroid",
+      "role": "positive",
+      "source_check": "check-000"
+    },
+    {
+      "unit": "reference-001",
+      "case": "retained-thin",
+      "role": "positive",
+      "source_check": "check-001"
+    },
+    {
+      "unit": "reference-002",
+      "case": "box-offset",
+      "role": "positive",
+      "source_check": "check-002"
+    },
+    {
+      "unit": "reference-003",
+      "case": "box-zero",
+      "role": "positive",
+      "source_check": "check-003"
+    },
+    {
+      "unit": "reference-004",
+      "case": "concave",
+      "role": "positive",
+      "source_check": "check-004"
+    },
+    {
+      "unit": "reference-005",
+      "case": "collinear-edge",
+      "role": "positive",
+      "source_check": "check-005"
+    },
+    {
+      "unit": "reference-006",
+      "case": "dynamic-range",
+      "role": "positive",
+      "source_check": "check-006"
+    },
+    {
+      "unit": "reference-007",
+      "case": "right",
+      "role": "positive",
+      "source_check": "check-007"
+    },
+    {
+      "unit": "reference-008",
+      "case": "thin-dyadic",
+      "role": "positive",
+      "source_check": "check-008"
+    },
+    {
+      "unit": "reference-009",
+      "case": "large-representable",
+      "role": "positive",
+      "source_check": "check-009"
+    },
+    {
+      "unit": "reference-010",
+      "case": "tiny-representable",
+      "role": "positive",
+      "source_check": "check-010"
+    },
+    {
+      "unit": "reference-011",
+      "case": "regular64-offset",
+      "role": "positive",
+      "source_check": "check-011"
+    },
+    {
+      "unit": "reference-012",
+      "case": "scale-retained-centroid--80",
+      "role": "positive",
+      "source_check": "check-012"
+    },
+    {
+      "unit": "reference-013",
+      "case": "scale-retained-centroid--20",
+      "role": "positive",
+      "source_check": "check-013"
+    },
+    {
+      "unit": "reference-014",
+      "case": "scale-retained-centroid-20",
+      "role": "positive",
+      "source_check": "check-014"
+    },
+    {
+      "unit": "reference-015",
+      "case": "scale-retained-centroid-80",
+      "role": "positive",
+      "source_check": "check-015"
+    },
+    {
+      "unit": "reference-016",
+      "case": "scale-retained-thin--80",
+      "role": "positive",
+      "source_check": "check-016"
+    },
+    {
+      "unit": "reference-017",
+      "case": "scale-retained-thin--20",
+      "role": "positive",
+      "source_check": "check-017"
+    },
+    {
+      "unit": "reference-018",
+      "case": "scale-retained-thin-20",
+      "role": "positive",
+      "source_check": "check-018"
+    },
+    {
+      "unit": "reference-019",
+      "case": "scale-retained-thin-80",
+      "role": "positive",
+      "source_check": "check-019"
+    },
+    {
+      "unit": "reference-020",
+      "case": "scale-box-offset--80",
+      "role": "positive",
+      "source_check": "check-020"
+    },
+    {
+      "unit": "reference-021",
+      "case": "scale-box-offset--20",
+      "role": "positive",
+      "source_check": "check-021"
+    },
+    {
+      "unit": "reference-022",
+      "case": "scale-box-offset-20",
+      "role": "positive",
+      "source_check": "check-022"
+    },
+    {
+      "unit": "reference-023",
+      "case": "scale-box-offset-80",
+      "role": "positive",
+      "source_check": "check-023"
+    },
+    {
+      "unit": "reference-024",
+      "case": "scale-right--80",
+      "role": "positive",
+      "source_check": "check-024"
+    },
+    {
+      "unit": "reference-025",
+      "case": "scale-right--20",
+      "role": "positive",
+      "source_check": "check-025"
+    },
+    {
+      "unit": "reference-026",
+      "case": "scale-right-20",
+      "role": "positive",
+      "source_check": "check-026"
+    },
+    {
+      "unit": "reference-027",
+      "case": "scale-right-80",
+      "role": "positive",
+      "source_check": "check-027"
+    },
+    {
+      "unit": "reference-028",
+      "case": "polygon-order-0",
+      "role": "positive",
+      "source_check": "check-028"
+    },
+    {
+      "unit": "reference-029",
+      "case": "polygon-order-1",
+      "role": "positive",
+      "source_check": "check-029"
+    },
+    {
+      "unit": "reference-030",
+      "case": "polygon-order-2",
+      "role": "positive",
+      "source_check": "check-030"
+    },
+    {
+      "unit": "reference-031",
+      "case": "polygon-order-3",
+      "role": "positive",
+      "source_check": "check-031"
+    },
+    {
+      "unit": "reference-032",
+      "case": "polygon-reverse-0",
+      "role": "positive",
+      "source_check": "check-032"
+    },
+    {
+      "unit": "reference-033",
+      "case": "polygon-reverse-1",
+      "role": "positive",
+      "source_check": "check-033"
+    },
+    {
+      "unit": "reference-034",
+      "case": "polygon-reverse-2",
+      "role": "positive",
+      "source_check": "check-034"
+    },
+    {
+      "unit": "reference-035",
+      "case": "polygon-reverse-3",
+      "role": "positive",
+      "source_check": "check-035"
+    },
+    {
+      "unit": "reference-036",
+      "case": "triangle-order-012",
+      "role": "positive",
+      "source_check": "check-036"
+    },
+    {
+      "unit": "reference-037",
+      "case": "triangle-order-021",
+      "role": "positive",
+      "source_check": "check-037"
+    },
+    {
+      "unit": "reference-038",
+      "case": "triangle-order-102",
+      "role": "positive",
+      "source_check": "check-038"
+    },
+    {
+      "unit": "reference-039",
+      "case": "triangle-order-120",
+      "role": "positive",
+      "source_check": "check-039"
+    },
+    {
+      "unit": "reference-040",
+      "case": "triangle-order-201",
+      "role": "positive",
+      "source_check": "check-040"
+    },
+    {
+      "unit": "reference-041",
+      "case": "triangle-order-210",
+      "role": "positive",
+      "source_check": "check-041"
+    },
+    {
+      "unit": "reference-042",
+      "case": "translate-retained-centroid-large",
+      "role": "positive",
+      "source_check": "check-042"
+    },
+    {
+      "unit": "reference-043",
+      "case": "translate-retained-centroid-small",
+      "role": "positive",
+      "source_check": "check-043"
+    },
+    {
+      "unit": "reference-044",
+      "case": "translate-retained-thin-large",
+      "role": "positive",
+      "source_check": "check-044"
+    },
+    {
+      "unit": "reference-045",
+      "case": "translate-retained-thin-small",
+      "role": "positive",
+      "source_check": "check-045"
+    },
+    {
+      "unit": "reference-046",
+      "case": "translate-box-offset-large",
+      "role": "positive",
+      "source_check": "check-046"
+    },
+    {
+      "unit": "reference-047",
+      "case": "translate-box-offset-small",
+      "role": "positive",
+      "source_check": "check-047"
+    },
+    {
+      "unit": "reference-048",
+      "case": "translate-right-large",
+      "role": "positive",
+      "source_check": "check-048"
+    },
+    {
+      "unit": "reference-049",
+      "case": "translate-right-small",
+      "role": "positive",
+      "source_check": "check-049"
+    },
+    {
+      "unit": "reference-050",
+      "case": "combined-retained-centroid--40",
+      "role": "positive",
+      "source_check": "check-050"
+    },
+    {
+      "unit": "reference-051",
+      "case": "combined-retained-centroid-40",
+      "role": "positive",
+      "source_check": "check-051"
+    },
+    {
+      "unit": "reference-052",
+      "case": "combined-retained-thin--40",
+      "role": "positive",
+      "source_check": "check-052"
+    },
+    {
+      "unit": "reference-053",
+      "case": "combined-retained-thin-40",
+      "role": "positive",
+      "source_check": "check-053"
+    },
+    {
+      "unit": "reference-054",
+      "case": "triangle-collinear",
+      "role": "domain",
+      "source_check": "check-054"
+    },
+    {
+      "unit": "reference-055",
+      "case": "triangle-repeated",
+      "role": "domain",
+      "source_check": "check-055"
+    },
+    {
+      "unit": "reference-056",
+      "case": "polygon-collinear",
+      "role": "domain",
+      "source_check": "check-056"
+    },
+    {
+      "unit": "reference-057",
+      "case": "polygon-bowtie",
+      "role": "domain",
+      "source_check": "check-057"
+    },
+    {
+      "unit": "reference-058",
+      "case": "polygon-touching",
+      "role": "domain",
+      "source_check": "check-058"
+    },
+    {
+      "unit": "reference-059",
+      "case": "polygon-backtrack",
+      "role": "domain",
+      "source_check": "check-059"
+    },
+    {
+      "unit": "reference-060",
+      "case": "polygon-repeated",
+      "role": "domain",
+      "source_check": "check-060"
+    },
+    {
+      "unit": "reference-061",
+      "case": "too-few",
+      "role": "domain",
+      "source_check": "check-061"
+    },
+    {
+      "unit": "reference-062",
+      "case": "too-many",
+      "role": "domain",
+      "source_check": "check-062"
+    },
+    {
+      "unit": "reference-063",
+      "case": "wrong-axis",
+      "role": "domain",
+      "source_check": "check-063"
+    },
+    {
+      "unit": "reference-064",
+      "case": "nan",
+      "role": "domain",
+      "source_check": "check-064"
+    },
+    {
+      "unit": "reference-065",
+      "case": "infinity",
+      "role": "domain",
+      "source_check": "check-065"
+    },
+    {
+      "unit": "reference-066",
+      "case": "boolean",
+      "role": "domain",
+      "source_check": "check-066"
+    },
+    {
+      "unit": "reference-067",
+      "case": "large-integer",
+      "role": "domain",
+      "source_check": "check-067"
+    },
+    {
+      "unit": "reference-068",
+      "case": "unsupported-scalar",
+      "role": "domain",
+      "source_check": "check-068"
+    },
+    {
+      "unit": "reference-069",
+      "case": "unknown-primitive",
+      "role": "domain",
+      "source_check": "check-069"
+    },
+    {
+      "unit": "reference-070",
+      "case": "triangle-arity",
+      "role": "domain",
+      "source_check": "check-070"
+    },
+    {
+      "unit": "reference-071",
+      "case": "polygon-area-overflow",
+      "role": "domain",
+      "source_check": "check-071"
+    },
+    {
+      "unit": "reference-072",
+      "case": "polygon-area-underflow",
+      "role": "domain",
+      "source_check": "check-072"
+    },
+    {
+      "unit": "reference-073",
+      "case": "triangle-radius-overflow",
+      "role": "domain",
+      "source_check": "check-073"
+    },
+    {
+      "unit": "reference-074",
+      "case": "triangle-output-underflow",
+      "role": "domain",
+      "source_check": "check-074"
+    }
+  ],
+  "expected_pytest_ids": [
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[retained-centroid]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[retained-thin]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[box-offset]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[box-zero]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[concave]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[collinear-edge]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[dynamic-range]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[right]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[thin-dyadic]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[large-representable]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[tiny-representable]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[regular64-offset]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid--20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-centroid-80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin--20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-retained-thin-80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset--20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-box-offset-80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right--80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right--20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right-20]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[scale-right-80]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-0]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-1]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-2]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-order-3]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-0]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-1]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-2]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[polygon-reverse-3]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-012]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-021]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-102]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-120]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-201]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[triangle-order-210]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-large]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-centroid-small]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-large]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-retained-thin-small]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-large]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-box-offset-small]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-right-large]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[translate-right-small]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid--40]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-centroid-40]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin--40]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_stable_full_precision_original_scale_translation_order_controls[combined-retained-thin-40]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-collinear]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-repeated]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-collinear]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-bowtie]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-touching]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-backtrack]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-repeated]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[too-few]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[too-many]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[wrong-axis]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[nan]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[infinity]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[boolean]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[large-integer]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[unsupported-scalar]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[unknown-primitive]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-arity]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-overflow]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[polygon-area-underflow]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-radius-overflow]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_explicit_degeneracy_shape_range_and_scalar_refusals[triangle-output-underflow]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[request_identity]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[mutable_points]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[private_integer_points]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[result_values]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[certificates]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[provenance]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[method]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_resealed_primitive_identity_ownership_and_method_tampering[mutable_quantities]"
+    },
+    {
+      "classname": "tests.unit.test_stable_geometry_primitives",
+      "name": "test_caller_aliases_and_primitive_output_scope"
+    }
+  ],
+  "positive_cases": [
+    "retained-centroid",
+    "retained-thin",
+    "box-offset",
+    "box-zero",
+    "concave",
+    "collinear-edge",
+    "dynamic-range",
+    "right",
+    "thin-dyadic",
+    "large-representable",
+    "tiny-representable",
+    "regular64-offset",
+    "scale-retained-centroid--80",
+    "scale-retained-centroid--20",
+    "scale-retained-centroid-20",
+    "scale-retained-centroid-80",
+    "scale-retained-thin--80",
+    "scale-retained-thin--20",
+    "scale-retained-thin-20",
+    "scale-retained-thin-80",
+    "scale-box-offset--80",
+    "scale-box-offset--20",
+    "scale-box-offset-20",
+    "scale-box-offset-80",
+    "scale-right--80",
+    "scale-right--20",
+    "scale-right-20",
+    "scale-right-80",
+    "polygon-order-0",
+    "polygon-order-1",
+    "polygon-order-2",
+    "polygon-order-3",
+    "polygon-reverse-0",
+    "polygon-reverse-1",
+    "polygon-reverse-2",
+    "polygon-reverse-3",
+    "triangle-order-012",
+    "triangle-order-021",
+    "triangle-order-102",
+    "triangle-order-120",
+    "triangle-order-201",
+    "triangle-order-210",
+    "translate-retained-centroid-large",
+    "translate-retained-centroid-small",
+    "translate-retained-thin-large",
+    "translate-retained-thin-small",
+    "translate-box-offset-large",
+    "translate-box-offset-small",
+    "translate-right-large",
+    "translate-right-small",
+    "combined-retained-centroid--40",
+    "combined-retained-centroid-40",
+    "combined-retained-thin--40",
+    "combined-retained-thin-40"
+  ],
+  "domain_cases": [
+    "triangle-collinear",
+    "triangle-repeated",
+    "polygon-collinear",
+    "polygon-bowtie",
+    "polygon-touching",
+    "polygon-backtrack",
+    "polygon-repeated",
+    "too-few",
+    "too-many",
+    "wrong-axis",
+    "nan",
+    "infinity",
+    "boolean",
+    "large-integer",
+    "unsupported-scalar",
+    "unknown-primitive",
+    "triangle-arity",
+    "polygon-area-overflow",
+    "polygon-area-underflow",
+    "triangle-radius-overflow",
+    "triangle-output-underflow"
+  ],
+  "pytest_version": "9.1.1",
+  "expected_checks": 84,
+  "independent_replay_records": 75,
+  "guarded_success_units": 160,
+  "resources": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "whole_job_resources": {
+    "cpu": 6,
+    "max_wall_seconds": 7200,
+    "max_process_tree_rss_bytes": 2147483648,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "guard_definitions_ast_equal": 13,
+  "expected_numerical_outcomes_confirmed": false,
+  "original_failed_result_sha256": "54fc1514f1c97a3c80e64d759ba5858086c966fe8848a7d8550203f0c7226431",
+  "original_failed_artifacts_verified": 2614,
+  "original_failed_campaign_reclassified": false,
+  "original_19_of_22_limitation_open": true,
+  "lifecycle_owned_files_unchanged": true,
+  "lifecycle_job_status_polled": false,
+  "native_equivalence": false,
+  "whole_mesh_credit": false,
+  "topology_qualified": false,
+  "physical_geometry_admitted": false,
+  "acceleration_qualified": false,
+  "numerical_launch_authorized": true,
+  "numerical_execution": false,
+  "source_modules_imported": false,
+  "scientific_function_execution": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "Chief_static_preflight_accepted": true,
+  "Chief_static_preflight_receipt": "/mnt/workspaces/Cells/stable-geometry-primitives-preflight-20261030-02/REVIEW.json",
+  "Chief_static_preflight_sha256": "c17d1bec1808d17102bdcab3767ff0b2888df50798b072d05047f9f98a776495",
+  "authorization": {
+    "coordinator": "Chief",
+    "basis": "Current user lets go authorizes initial bounded CPU qualification after accepted scientific and metadata-delta preflights, with mandatory pinned Root external startup-failure wrapper. No retry or followup is authorized automatically.",
+    "authorized_utc": "2026-10-30T23:14:50.387901+00:00",
+    "mandatory_external_wrapper": "/mnt/workspaces/Cells/stable-geometry-primitives-launch-20261030-01/supervise.py",
+    "mandatory_external_wrapper_sha256": "9c0116825ec5fbec7ffdf614e7b08305372ee0e216fab8fe649c8a4791cd58e7"
+  },
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "runtime_estimate": {
+    "measured": false,
+    "may_exceed_ten_minutes": true,
+    "basis": "84 isolated checks,75 fresh independent records and guarded finalization;4096+ digit references. Root launches detached."
+  },
+  "next_action": "Root launches once via pinned external wrapper; terminal review waits for requested status. No numerical retry, automatic polling or followup.",
+  "prepared_command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-02/supervise.py",
+    "--bundle",
+    "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-02",
+    "--output",
+    "/mnt/workspaces/Cells/stable-geometry-primitives-qualification-20261030-01",
+    "--guard-output",
+    "/mnt/workspaces/Cells/stable-geometry-primitives-whole-job-20261030-01"
+  ],
+  "metadata_lookup_repair": true,
+  "scientific_source_cases_and_budgets_unchanged": true,
+  "previous_bundle": "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-01",
+  "previous_manifest_sha256": "5cfdbd60d138b275f96c2f8b2d33df9fabf9e5063435ce21dac32e27de3da542",
+  "previous_preparation_receipt": "/mnt/workspaces/Cells/stable-geometry-primitives-preparation-20261030-01.json",
+  "previous_preparation_receipt_sha256": "32b368cee86962ae9804bb8e44cd4bdacf5d80d55f19b57bf825df3ee40b4886"
+}

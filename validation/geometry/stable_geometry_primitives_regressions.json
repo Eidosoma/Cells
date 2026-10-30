@@ -1,0 +1,137 @@
+{
+  "kind": "cells.stable_geometry_retained_failure_inputs@1",
+  "diagnostic_report": "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/analysis-01/REPORT.json",
+  "diagnostic_report_sha256": "86f2249e39641de49678696246e6a5e2ff383c8c4a6991f6e9e1bdfe0a95c138",
+  "diagnostic_result_sha256": "b5877c5e127752ca850d6a50ed2393714961df046749629a39f4a6ebc84c9f1a",
+  "rows": [
+    {
+      "name": "retained-centroid",
+      "primitive": "polygon",
+      "source": "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/centroid.json",
+      "source_sha256": "a95e9c88916cff11648e65d4746e88a8f8c042dada5d5c6621de2fb5abe471c3",
+      "event": 224,
+      "source_method": "poly_centroid",
+      "input": {
+        "bits_C": "a226fa7c9411d7befa9cbb5d2f4df13ea226fa7c9411d73efa9cbb5d2f4df13ea326fa7c9411d73e4ab0389cf9d5fc3ea326fa7c9411d7be4eb0389cf9d5fc3e",
+        "dtype": "<f8",
+        "shape": [
+          4,
+          2
+        ],
+        "values": [
+          [
+            -5.5e-06,
+            1.65e-05
+          ],
+          [
+            5.5e-06,
+            1.65e-05
+          ],
+          [
+            5.500000000000001e-06,
+            2.7499999999999998e-05
+          ],
+          [
+            -5.500000000000001e-06,
+            2.750000000000001e-05
+          ]
+        ]
+      },
+      "saved_native_output": {
+        "bits_C": "7ead9e1d9bc98ebba426fa7c9411f73e",
+        "dtype": "<f8",
+        "shape": [
+          2
+        ],
+        "values": [
+          -8.149389516745991e-22,
+          2.2000000000000006e-05
+        ]
+      },
+      "saved_rounded_reference": {
+        "bits_C": "53555555555595bba326fa7c9411f73e",
+        "dtype": "<f8",
+        "shape": [
+          2
+        ],
+        "values": [
+          -1.1293772630057333e-21,
+          2.2000000000000003e-05
+        ]
+      },
+      "old_failure_reclassified": false
+    },
+    {
+      "name": "retained-thin",
+      "primitive": "triangle",
+      "source": "/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/triangle.json",
+      "source_sha256": "2c60bcfb437e05f786f28172e5525aaf92d6b8b9a8505ad99a252f73bcf6f5e8",
+      "event": 223,
+      "source_method": "circumc",
+      "input": {
+        "A": {
+          "bits_C": "f93632fac931da3e4ac91c392cbc0e3f",
+          "dtype": "<f8",
+          "shape": [
+            2
+          ],
+          "values": [
+            6.2452526520381655e-06,
+            5.8622455198070205e-05
+          ]
+        },
+        "B": {
+          "bits_C": "13103d300e120a3f575ff9c577bf0e3f",
+          "dtype": "<f8",
+          "shape": [
+            2
+          ],
+          "values": [
+            4.972558784158156e-05,
+            5.8647005741262435e-05
+          ]
+        },
+        "C": {
+          "bits_C": "f78cb11bb18bb3be575ff9c577bf0e3f",
+          "dtype": "<f8",
+          "shape": [
+            2
+          ],
+          "values": [
+            -1.165012789149803e-06,
+            5.8647005741262435e-05
+          ]
+        }
+      },
+      "saved_native_output": {
+        "bits_C": "ac835fa7b075f93e49fa7b593a1e7b3fa7202fa8c8e07a3fa590d615665c4a3e",
+        "dtype": "<f8",
+        "shape": [
+          4
+        ],
+        "values": [
+          2.428028752621588e-05,
+          0.006620624473497269,
+          0.006562026802335342,
+          1.2275265854848189e-08
+        ]
+      },
+      "saved_rounded_reference": {
+        "bits_C": "ab835fa7b075f93e3ffa7b593a1e7b3fdade29a8c8e07a3f8cb8db15665c4a3e",
+        "dtype": "<f8",
+        "shape": [
+          4
+        ],
+        "values": [
+          2.4280287526215877e-05,
+          0.00662062447349726,
+          0.006562026802036514,
+          1.2275265855407189e-08
+        ]
+      },
+      "old_failure_reclassified": false
+    }
+  ],
+  "extraction": "Copied existing JSON input/bit records only; no point decoding, transforms or primitive execution.",
+  "numerical_execution": false
+}

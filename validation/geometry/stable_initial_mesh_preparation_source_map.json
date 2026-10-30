@@ -1,0 +1,157 @@
+{
+  "kind": "cells.stable_initial_mesh_boundary_source_map@1",
+  "law_id": "cells_stable_initial_constructor_pre_mesh@1",
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625"
+  },
+  "source_methods": {
+    "__init__": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 86,
+      "last_line": 144,
+      "ast_sha256": "7389dc879a9947db7acb46045c706a3f5230652b16dc44ae82c57b59d7c2c0a8"
+    },
+    "area": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2413,
+      "last_line": 2443,
+      "ast_sha256": "959859cc5f8ac553e942efef63c4100e692da71a2baf0288614b264b56d32cde"
+    },
+    "cc_sort_inds": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2634,
+      "last_line": 2647,
+      "ast_sha256": "3ca9e6f23a15d930dc3a7dd1e9eff7d846731383856aa7a0ca18aaa4236bdeb1"
+    },
+    "circumc": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2482,
+      "last_line": 2532,
+      "ast_sha256": "eb254c8d459a9829bd65901d99205549d4c0297f87df139d4c6e124ef3973d0e"
+    },
+    "create_mappings": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 699,
+      "last_line": 743,
+      "ast_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82"
+    },
+    "create_tri_map": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 677,
+      "last_line": 696,
+      "ast_sha256": "144ef580df8bd92abf80a9544872b5dcc5fcf608c24b810f3d3e75531a30d3b7"
+    },
+    "create_tri_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 235,
+      "last_line": 287,
+      "ast_sha256": "b05c96de3959d9e16b9b3caeaa09c02879962349cebe3d0ae5db8555591b9854"
+    },
+    "define_vorverts": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 746,
+      "last_line": 845,
+      "ast_sha256": "7c7fc289221deb330ff6f49c9b35efd176c36ab6d266c10eb48652bf9faef7f8"
+    },
+    "make_single_cell_points": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 212,
+      "last_line": 233,
+      "ast_sha256": "2b8feb3141752a676e89f21de0be5a0ebab6d75f10d6a969ad78b96e448bce44"
+    },
+    "merge_tri_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 404,
+      "last_line": 578,
+      "ast_sha256": "29997262239109511667e8adec1c1f742e024a6e61949546d7a30c09a24a003b"
+    },
+    "poly_centroid": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2445,
+      "last_line": 2480,
+      "ast_sha256": "f0d79e46ae1693f8dcc48cc5deedd9ef53527d7579e7d87627bd7b3d855d2208"
+    },
+    "pre_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 156,
+      "last_line": 164,
+      "ast_sha256": "669fb0d34d67aac95b533c85c4d94be193b7dc99efe3db7dfccf17193f4edb08"
+    },
+    "process_primary_edges": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 581,
+      "last_line": 674,
+      "ast_sha256": "a368f0be24710d5206118aaeb0e7660e1b09a4a135950f5aa4ce115a105ce637"
+    },
+    "process_voredges": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 848,
+      "last_line": 1007,
+      "ast_sha256": "49b1218cc039c5ed24c5ef7f6fb9b3260b7e62406239def65bae9acaeba2f274"
+    },
+    "quad_circumc": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2534,
+      "last_line": 2558,
+      "ast_sha256": "839e22900a5de3f33d5078c093c61c05ca168f38ceb140919371c48fc1ddd61c"
+    },
+    "sanity_check": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 1010,
+      "last_line": 1041,
+      "ast_sha256": "415dafcd08ab963862ef08e6ea7e3653a16f59db35d00b6fd6fd9d1f5718a8ab"
+    },
+    "trimesh_core_calcs": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 290,
+      "last_line": 385,
+      "ast_sha256": "eb4510e5acbd96b335c391c331a82e86dc5869b5de6806b20b52ca9538be0a9b"
+    }
+  },
+  "repaired_arithmetic_methods": [
+    "area",
+    "poly_centroid",
+    "circumc"
+  ],
+  "unchanged_inherited_methods": [
+    "__init__",
+    "pre_mesh",
+    "make_single_cell_points",
+    "create_tri_mesh",
+    "trimesh_core_calcs",
+    "merge_tri_mesh",
+    "process_primary_edges",
+    "create_tri_map",
+    "create_mappings",
+    "define_vorverts",
+    "process_voredges",
+    "sanity_check",
+    "quad_circumc",
+    "cc_sort_inds"
+  ],
+  "unchanged_native_ast_body_count": 14,
+  "dependency_source_sha256": {
+    "stable_geometry_primitives": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+    "betse_initial_mesh_preparation": "ef33e60ea5cd741d3618bccaaba494ac472664b02f4c82d08942b3e2c52c89b0",
+    "betse_initial_mesh_preparation_kernel": "7102de6bae1f5da0ecb5c99064ffa03b26e20b2b7b8855b72f5066fd20a0089c",
+    "betse_geometry_initialization": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de"
+  },
+  "adapter_source_sha256": "056cb2e47772a63416a9eebd89dd60a7019fcf217d3433403b9b053a209bedc4",
+  "native_arithmetic_equivalence": false,
+  "conditional_source_equivalence_only": true,
+  "physical_admission_guard_unchanged": true,
+  "original_constructor_flags_rewritten": false
+}
