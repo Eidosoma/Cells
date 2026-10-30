@@ -45,8 +45,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   | --- | --- | --- |
   | Key Dev / Root review | Complete charged-loop batch, 79 checks | Running on CPU7 at the requested check; review terminal evidence when available |
   | Key Dev / Root review | Charged blocker calendar, 111 checks | Running on CPU3 at the requested check; review terminal evidence when available |
-  | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint and fix the reviewed cohort-axis refusal gap before a new qualification |
-  | Root | Half-second salt/water/fuel response | Failed energy accounting during supply recovery; diagnose saved evidence before a new comparison |
+  | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Launched detached on CPU4 at 16:44 UTC; awaiting the next requested status check |
+  | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint before a new qualification. The cohort-axis refusal defect is now closed separately |
+  | Root | Half-second salt/water/fuel response | First-interval diagnosis reproduces unresolved fuel-recovery energy quadrature; qualify suitable local time resolution before another full comparison |
   | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
 
 - **Three parallel development owners are active.** Root owns reproducible
@@ -54,9 +55,62 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Cells Key Developer owns charged-loop qualifications and the native fast-solver
   component; Cells Specialist Developer owns temperature arrays and combined
   global control readouts. Key's detached jobs use CPU7 and CPU3. Root's short
-  handoff checks use CPU2; voltage CPU5 and temperature CPU4 jobs have ended.
+  handoff checks used CPU2; voltage CPU5 and the earlier temperature CPU4 job
+  have ended. The new staged NumPy qualification uses CPU4.
   Each process is limited to one thread and bounded memory. Finite-family
   reservoir and active-family temperature restrictions remain explicit.
+
+- **The separate native fast equivalent-circuit component passed 45 reviewed
+  checks.** Key Dev's [source map](agent-work/cells-worker-01/workfiles/BETSE_FAST_SOLVER_NOTES.md)
+  and [completion review](/mnt/workspaces/Cells/betse-fast-solver-tests-20261030-01/completion-verification.json)
+  reconcile **32 authenticated native captures**, **32 independent Decimal
+  answer processes** and **80 main Euler endpoints**. Maximum difference is
+  **0.016156** of budget; the run took **18.87 s**, with **104.88 MiB** peak
+  tree RSS on CPU1. Actual failed NaN/Inf coefficients and trials are retained.
+  Runtime versions and affinity are captured; interpreter/library binary hashes
+  are not. Decimal precision refinement is not Euler timestep convergence.
+
+  Native preparation/order, old-voltage readouts, omitted junction-gate factors
+  and stale coefficients after live controls remain explicit. This approximate
+  circuit neither replaces conservative tissue equations nor establishes full
+  native initialization, ionic evolution or physical energy closure. Key Dev's
+  next separate component concerns normal-solver current aggregation/smoothing.
+
+- **The salt/water recovery failure now has a focused numerical diagnosis.**
+  [Frozen inputs](/mnt/workspaces/Cells/cotransport-recovery-diagnostic-20261030-01/inputs.json)
+  retain the original **1,280 source files** plus one diagnostic module and
+  the complete supply-off state at **0.25 s**. All physical inputs and prior
+  controls match the recovery case; the lost recovery history was not available
+  for a bitwise comparison. This is a conditional common-prefix diagnosis,
+  not an accepted recovery checkpoint.
+
+  Over the same **12.5-us interval**, **1 / 2 / 4** RK4 substeps keep all
+  **28 stages** domain-valid but finish with total energy residuals
+  **4.33293e-6 / 2.08442e-6 / 1.00460e-6 pJ**, all above the unchanged
+  **2e-8-pJ** limit. The [saved diagnostic](/mnt/workspaces/Cells/cotransport-recovery-diagnostic-20261030-01/result.json)
+  retains every full stage and endpoint, original anchors and failed accounting.
+  The [independent review](/mnt/workspaces/Cells/cotransport-recovery-diagnostic-20261030-01/review-verification.json)
+  verifies **1,318 artifacts**, both runtime inventories and **854 adaptive
+  reference trial states**. The two solves agree within **0.07414** of the
+  original, stricter reference-stability budget. Independent 80-digit pool
+  free energy changes the residual by only **2.78e-17 pJ**. Regeneration heat
+  carries essentially all the added discrepancy. This supports under-resolved
+  energy integration near depleted ATP; it does not qualify the full half-second run.
+  The first diagnostic normalized RHS differences with state tolerances; that
+  number is not an RHS acceptance score. A separate
+  [saved-stage comparison](/mnt/workspaces/Cells/cotransport-recovery-rate-comparison-20261030-01/result.json)
+  reuses the original component's derivative limits and saves all 28 actual,
+  independent and budget arrays. Maximum rate error is **0.044761** of that
+  budget; no new trajectory was integrated. The live diagnostic now separates
+  these derivative limits from endpoint-state limits. Endpoint accounting
+  stops at the first failing identity, so later checks are not credited.
+  CPU6 production/reference phases took **3.53 / 11.32 s**, with **184.58 MiB**
+  maximum RSS. Local resolution around fuel restoration needs further work.
+
+  The original full-response test now saves complete proposed history/layout
+  before unchanged accounting checks. Its [focused real-step refusal check](/mnt/workspaces/Cells/cotransport-response-capture-20261030-01/result.json)
+  passed in **33.99 s**, retaining all 31 fields and the same exception after
+  an injected rejection. This software check adds no recovery-trajectory credit.
 
 - **Initialization-to-loop handoff passed 19 reviewed CPU checks and five
   separate bundle-containment checks.**
@@ -280,7 +334,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   adds five records for per-world control-axis refusals. These matched-cohort
   comparisons remain valid, but review found an untested leading-axis mismatch:
   the NumPy batch could silently omit worlds when given fewer proposals.
-  Specialist owns the explicit cohort-size refusal and its focused validation.
+  The [reviewed correction](/mnt/workspaces/Cells/physiology-active-temperature-arrays-axis-20261030-01/review-verification.json)
+  now passes **10 checks / 120 malformed-axis refusals** before array physics,
+  covering proposal, control, state, layout and certificate leading axes.
+  [Five matched rechecks](/mnt/workspaces/Cells/physiology-active-temperature-arrays-matched-20261030-01/review-verification.json)
+  preserve 15 complete reference records and bitwise-identical existing valid
+  inputs/results. These repeat prior IDs: the distinct array total is **36**,
+  not 41. Physics formulas remain unchanged; compiled JAX execution is separate.
 
   The [CPU JAX launch](/mnt/workspaces/Cells/physiology-active-temperature-arrays-cpu-20261030-01-launch/launch.json)
   at **15:36 UTC** ended in a [resource failure](/mnt/workspaces/Cells/physiology-active-temperature-arrays-cpu-20261030-01/failure.json)
@@ -290,9 +350,43 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The [failure audit](agent-work/cells-specialist/active_temperature_arrays_cpu01_failure_audit.json)
   retains the successful shape/projection prefix separately. Memory reduction
   is development work; the guard and scientific tolerances remain unchanged.
-  Combined temperature/voltage/blocker readouts are prepared in separate files
-  with **62 checks / 81 reference records planned but unrun**. No thermal
+  Combined temperature/voltage/blocker readouts have a separate completed host
+  run, recorded below. No thermal
   evolution, accepted heat law or GPU qualification follows from these stages.
+
+- **Combined global control readouts passed 62 reviewed host checks.** The
+  [combined view](docs/PHYSIOLOGY_RANDOM_STREAMS.md#combining-temperature-voltage-and-blocker-readouts)
+  binds native temperature, voltage, junction and Na/K blockers to the same
+  original checkpoint, physical owners and independent event clock. The
+  [completion review](/mnt/workspaces/Cells/physiology-global-control-view-20261030-01/review-verification.json)
+  verifies **81 fresh independent full-rate / 32-field comparisons**: 48 combined,
+  21 single-control reductions, six disabled identities and six restored states.
+  The active cases include all 56 channel laws. Maximum RHS/field errors are
+  **0.004029 / 0.024869** of budget; maximum stage energy residual is
+  **4.974e-14 pJ/s**. Eight CPU4 phases took **289.61 s**, with **243.58 MiB**
+  maximum HWM and **19.43 GiB** minimum reserve. All **2,410 artifacts**, **2,152
+  source files** and seven captured runtime inventories verify. These are instantaneous
+  comparisons of initial or one-step-evolved states, not 81 trajectories or
+  biological cases. Original guards, anchors and ledgers remain unchanged;
+  thermal evolution, physical heat accounting and GPU qualification are separate.
+
+- **Staged temperature-array execution is under detached NumPy qualification.**
+  The [launch receipt](/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-launch/launch.json)
+  records **16:44:54 UTC**, PID **1997661**, CPU4 and durable result/failure
+  destinations. The frozen preparation pins **2,157 source files** and four
+  native files. Seven bounded phases target **56 checks**, including **20 new
+  staged checks**, and **40 full-reference records**. Expected duration is
+  **10–15 minutes**; each phase retains one thread, **480 seconds / 1 GiB RSS /
+  8 GiB host reserve**. No automatic polling, retry or follow-up is queued.
+
+  Source review finds the seven original qualified functions AST-identical.
+  The new path separates coefficient preparation, complete world physics and
+  admission checks while preserving full derivatives, fields, fuel flows and
+  original predicates. Caller-supplied `WorldStages` callbacks are trusted code;
+  a family label does not authenticate cached outputs against a world. This
+  NumPy qualification cannot establish compiled JAX success, a reduced compiler
+  memory footprint or GPU performance. Specialist is tracing native temperature
+  clocks while it runs; the frozen qualification remains untouched.
 
 - **Random physical tissue preparation passed 35 verified checks.** The new
   [preparation bridge](docs/PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)

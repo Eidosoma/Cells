@@ -4792,3 +4792,54 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   behavior. New files/own note only; no graft into conservative tissue solves,
   full physical parity claim, initialization/shared-doc edits or numerical runs
   without a coordinated free CPU. CPU3/7 active qualifications stay untouched.
+- Verified checkout HEAD and matching installed bytes for eight pinned source
+  files. [Source map](../../validation/betse/betse_fast_solver_source_map.json)
+  records18 functions, original count statements and initialization call order.
+  Important literal limits: gjopen is updated but absent from voltage/current;
+  GHK groups valence by sign; post-Euler readouts use old gap voltage and omit
+  leak current; live Dm/T changes do not refresh prepared conductances. Full
+  run calls update_V after fast initialization, overwriting conductivity from
+  the dynamics sum with an ion mean. Initial voltage remains caller owned.
+- Added separate `src/cells/processes/betse_fast_solver.py`, authenticated full
+  fast initializer/loop/field/NaN-gate capture, pure Decimal90/140 equations,
+  deterministic raw fixtures and strict source protocol. No conservative solve,
+  full electrostatic initializer, networks, gate callbacks, thermodynamic law
+  or GPU parity is introduced. Actual source exceptions and complete numeric
+  states, warning text, RNG state and nonfinite trials have an executable raw
+  archive path; the component explicitly has a stricter finite/readout guard.
+- Prepared45 checks:16 carried INIT/SIM histories /80 main endpoints,32 fresh
+  authenticated native captures and32 independent reference answers. Cases
+  include both environment layouts, mixed valences, asymmetric geometry,
+  temperature split, fixed-conductance/gate omissions, sampling, exact parent
+  preservation, invalid coefficients, native infinity acceptance, zero readout
+  conductivity, singular GHK and original empty/single/terminal phase bounds.
+- Lint and format pass six Python files; static AST/source audits preserve111
+  protected sources (including active B20/B21) and authenticate16 native input
+  copies. Frozen package:
+  `/mnt/workspaces/Cells/betse-fast-solver-tests-20261030-01/inputs.json`
+  SHA5e4d0324ae41962151488e1f4533663a61d59ffec4ff7399756f8ca13dd2261e.
+  [Preparation receipt](workfiles/betse_fast_solver_preparation_receipt.json)
+  links all source pins and the static matrix; [own queue](workfiles/betse_fast_solver_workqueue.json)
+  records the unassigned CPU. No scientific imports, pytest collection or
+  numerical runs occurred; no active-job status was read. Numerical
+  qualification remains pending a coordinated free CPU. No unrecorded terminal
+  computation exists in this lane; earlier terminal work/failures have receipts.
+- Chief assigned CPU1 for the frozen qualification. The single bounded attached
+  phase passes45 checks,32 authenticated native captures and32 independent
+  answers over80 main circuit endpoints in18.874s. Maximum error fraction
+  0.016155872. Sampled process-tree RSS<=109973504B, individual HWM<=58388480B;
+  host reserve>=23163179008B. Main and native/reference children report CPU1.
+  Complete failed coefficients/trials and native NaN/infinity limitations are
+  retained;111 protected files remain exact. Terminal receipt:
+  `/mnt/workspaces/Cells/betse-fast-solver-tests-20261030-01/result.json`
+  SHA851c80e827ca3dbd95a151612617d9e4b8c5000c60ffff79e335da51e75da88b.
+  Qualification passes its declared source-circuit scope; Chief's independent
+  review/acceptance is pending. No follow-up/regression or other job poll ran.
+
+## B23 full-normal native correspondence inventory, 2026-10-30
+
+- Chief requested a broader native FULL-loop call-order/field/boundary/
+  initialization inventory and one implementable missing component in new
+  files. Scope will be sent before any shared API work. Root retains shared
+  initialization and salt/water energy failure; Specialist retains combined
+  global-control readouts. Other qualifications remain untouched.

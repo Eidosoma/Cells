@@ -102,6 +102,9 @@ def isolated(tmp_path, name, inputs):
         subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT, check=True, timeout=180)
     record = archive_read(folder / "native")
     assert record["production_imports_denied"] and not record["loaded_production_modules"]
+    if cpu := os.environ.get("CELLS_FAST_CPU"):
+        assert record["runtime"]["measured_cpu_affinity"] == [int(cpu)]
+    assert record["RNG_unchanged"]
     return folder, record
 
 

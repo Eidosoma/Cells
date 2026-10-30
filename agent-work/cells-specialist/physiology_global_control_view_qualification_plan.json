@@ -1,6 +1,6 @@
 {
   "kind": "cells.physiology_global_control_view_preparation@1",
-  "status": "source_prepared_numerics_not_launched",
+  "status": "host_qualified_and_completion_verified",
   "policy": "active_uniform_isothermal_fixed_empirical_kinetics@1",
   "owned_source_sha256": {
     "src/cells/core/physiology_global_control_view.py": "82d1f3f146bddc08c5605699009c20fd83d85b386a07e1496c8e34f7925f6d57",
@@ -10,7 +10,7 @@
   },
   "source_AST_checked": true,
   "static_lint": "passed",
-  "numerical_checks_run": false,
+  "numerical_checks_run": true,
   "planned_tests": 62,
   "planned_independent_records": 81,
   "planned_main_records": 48,
@@ -99,8 +99,8 @@
     "resolved_open_calcium_energy@1"
   ],
   "prepared_runner": "/tmp/cells_global_control_view_checks.py",
-  "prepared_runner_sha256": "874892ceadf4e7b4fc62fafa9c269b55dcb467143791d8feaf4195548ceabf09",
-  "runner_launch_status": "held_for_Chief_coordination_after_failure_and_source_review",
+  "prepared_runner_sha256": "d6df8bd7ad50b5299093ccc523e3bd3f4455903f8700f66e75ee93a5ae0197f6",
+  "runner_launch_status": "completed_passed_Chief_authorized_CPU4",
   "resource_estimate": {
     "basis": "Earlier full held-T and array NumPy captures, not a measurement of this new suite",
     "total_wall_minutes_range": [
@@ -114,5 +114,31 @@
     "rss_guard_bytes": 1073741824,
     "host_reserve_bytes": 8589934592,
     "phase_wall_cap_s": 480
-  }
+  },
+  "bounded_phase_count": 8,
+  "phase_groups": [
+    "main-passive",
+    "main-ionic",
+    "main-calcium",
+    "main-fuel",
+    "main-open-calcium",
+    "main-open-fuel",
+    "reductions-identities-refusals-restores",
+    "isolated-reference"
+  ],
+  "source_review": "Chief confirmed read-only review clear",
+  "scope": "81 instantaneous independent derivative/full-field comparison records over declared initial/original-evolved states; not 81 independent trajectories or biological cases",
+  "completed_capture": "/mnt/workspaces/Cells/physiology-global-control-view-20261030-01",
+  "result_sha256": "4563a7458de7ba8636176cef5112e17f9fcfd83200cfcf546d94fe750ba1a181",
+  "completion_receipt": "/mnt/workspaces/Cells/physiology-global-control-view-20261030-01/completion-verification.json",
+  "measured_checks": 62,
+  "measured_independent_records": 81,
+  "measured_maximum_rate_error_fraction": 0.004028391308875811,
+  "measured_maximum_potential_error_fraction": 1.3435900398627018e-05,
+  "measured_maximum_physical_field_error_fraction": 0.024868995751541657,
+  "measured_maximum_stage_energy_residual_pJ_s": 4.973799150320701e-14,
+  "measured_sum_phase_seconds": 289.6108936511446,
+  "measured_peak_process_high_water_bytes": 255414272,
+  "measured_minimum_host_reserve_bytes": 20862783488,
+  "automatic_followup": false
 }

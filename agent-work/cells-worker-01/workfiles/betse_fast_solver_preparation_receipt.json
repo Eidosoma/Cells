@@ -1,0 +1,57 @@
+{
+  "AST_check_counts": {
+    "test_INIT_refuses_a_new_event_packet_and_keeps_original_parent": 1,
+    "test_definition_and_trial_buffers_are_immutable_and_detached_from_callers": 1,
+    "test_empty_single_and_terminal_original_phase_bounds": 4,
+    "test_incomplete_or_undefined_inputs_refuse_before_coefficients": 8,
+    "test_junction_gate_is_readout_only_in_literal_source": 2,
+    "test_leak_changes_voltage_but_is_absent_from_current_readout": 1,
+    "test_live_diffusion_temperature_inputs_do_not_reinitialize_native_conductances": 1,
+    "test_monotone_euler_bound_is_diagnostic_without_dt_repair": 1,
+    "test_resealed_context_changes_refuse_before_euler": 6,
+    "test_sampling_changes_storage_without_changing_native_evolution": 1,
+    "test_singular_GHK_keeps_native_and_component_coefficient_failures": 1,
+    "test_source_and_independent_carried_histories": 16,
+    "test_source_nan_only_gate_and_stricter_finite_guard_preserve_actual_trials": 1,
+    "test_zero_readout_conductivity_is_an_explicit_stricter_component_refusal": 1
+  },
+  "active_job_status_reads": 0,
+  "automatic_followup": false,
+  "execution_requires_Chief_cpu_coordination": true,
+  "format_check": {
+    "files": 6,
+    "returncode": 0,
+    "stdout": "6 files already formatted\n"
+  },
+  "full_native_initializer_networks_or_GPU_qualified": false,
+  "inputs": "/mnt/workspaces/Cells/betse-fast-solver-tests-20261030-01/inputs.json",
+  "inputs_sha256": "5e4d0324ae41962151488e1f4533663a61d59ffec4ff7399756f8ca13dd2261e",
+  "kind": "cells.betse_fast_solver_preparation_receipt@1",
+  "lint": {
+    "files": 6,
+    "returncode": 0,
+    "stdout": "All checks passed!\n"
+  },
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "numerical_runs": 0,
+  "owned_sha256": {
+    "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+    "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+    "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+    "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "validation/betse/betse_fast_solver_protocol.json": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+    "validation/betse/betse_fast_solver_reference.py": "652412cf3f3d6f741b601e05b1e237636c6611f1e9567fc6ac4f8b006af8468e",
+    "validation/betse/betse_fast_solver_source_map.json": "ad2ba5a2da0410a3d989845b0c0cd2f2a1ecd1ac7368b77c75e45c4a6e1a1cea"
+  },
+  "physical_tissue_parity": false,
+  "pinned_native_source_copies_verified": 16,
+  "planned_checks": 45,
+  "planned_independent_reference_forms": 32,
+  "planned_native_captures": 32,
+  "protected_sources_unchanged": 111,
+  "pytest_collection_runs": 0,
+  "scientific_module_imports_during_preparation": 0,
+  "source_files_verified": 2164,
+  "source_functions_mapped": 18,
+  "status": "prepared_not_numerically_qualified"
+}

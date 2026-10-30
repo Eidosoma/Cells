@@ -1,11 +1,12 @@
-# Combined global held-control view: source preparation
+# Combined global held-control view
 
 Chief assigned new `physiology_global_control_view*` implementation, independent
-reference and tests while the detached CPU4 array qualification is reserved.
-This deliverable is **code/source/preparation only**. No numerical test,
-simulation, job poll or overlapping numerical workload was started. Root owns
-shared documents/initialization and Key owns charged blocker loops; those files
-and the frozen temperature/voltage/array evidence remain untouched.
+reference and tests. After source review and the focused cohort-axis checks,
+Chief authorized the host qualification on CPU4. Its verified result and
+completion receipt are linked in
+`physiology_global_control_view_qualification_plan.json`. Root owns shared
+status/initialization and Key owns charged blocker loops; frozen evidence remains
+untouched.
 
 The new binding/view identities are
 `cells.physiology_global_control_view_binding@1` and
@@ -71,16 +72,20 @@ Existing independent scalar/full-node laws remain the numerical oracles; the
 passive field-column assembly is adapted from the qualified active reference
 without assigning fabricated active owners or model IDs.
 
-The prepared suite contains 62 tests, with 81 planned full independent records:
+The qualified suite contains 62 tests, with 81 full independent records:
 48 simultaneous initial/original-evolved/padded/reordered views, 21 admitted
 single-control reductions, six disabled identities and six real snapshot
 restores. Additional cases cover source/native ordering, same-side negative
 writes, finite voltage refusals, carried unmapped voltages, nonphysical/overflow
 T proposals, asymmetric contacts, corner conflicts, policy resealing and wrong
-physical clock metadata. These are planned checks, not passed evidence.
+physical clock metadata. Run `physiology-global-control-view-20261030-01` passed
+all checks and import-denied replay. These are instantaneous derivative/field
+records over initial and one original-step evolved states, not 81 trajectories
+or biological cases. The machine-readable receipt contains measured resource
+use, errors and verified source/runtime hashes.
 
-Future qualification must wait for Chief's explicit CPU release/instruction.
-Reuse the established frozen CPU4 runner, durable raw failure/input/result logs,
+Follow-up qualification waits for Chief's next instruction. Reuse the
+established frozen CPU4 runner, durable raw failure/input/result logs,
 one thread, 1 GiB process-tree RSS, at least 8 GiB host reserve and 480 s per
 phase. If estimated at ten minutes or longer, launch detached and return without
 automatic polling. Replay saved independent rate/field columns in a fresh

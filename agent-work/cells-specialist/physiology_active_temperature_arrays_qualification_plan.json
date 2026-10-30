@@ -2,15 +2,15 @@
   "kind": "cells.physiology_active_temperature_arrays_qualification@1",
   "owned_source_sha256": {
     "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
-    "src/cells/models/physiology_active_temperature_arrays.py": "fd8481755fb892e370f3801733ec18ba457e14af5fd097278a5f044beb6c0dd2",
-    "validation/tissue/physiology_active_temperature_arrays_reference.py": "8eae27450d1ceb1df1c638153bce448a46147dedca0b15042dc1f9641090c3cf",
-    "tests/unit/test_physiology_active_temperature_arrays.py": "daa026ee21999b07e45ac061a7cf12b571f4a1ff32adcd1a5ca6da4fcdf86255"
+    "src/cells/models/physiology_active_temperature_arrays.py": "fcd23bf72d0220c8432301d167c15b0b620115137a4081d282c7f0c8d34f926d",
+    "validation/tissue/physiology_active_temperature_arrays_reference.py": "f219ce68061aaed79a7f2890c961d9f6808c8158f94ccb43e93b0a117ddd3ce4",
+    "tests/unit/test_physiology_active_temperature_arrays.py": "c829a1c808bba3b019b68d15dea57f40db8bda20be3b1a6f344ec20ad2d22a32"
   },
-  "expected_numpy_checks": 36,
+  "expected_numpy_checks": 56,
   "expected_cpu_jax_checks": 5,
-  "expected_numpy_reference_records": 25,
+  "expected_numpy_reference_records": 40,
   "expected_compiled_reference_records": 10,
-  "expected_raw_invalid_records": 30,
+  "expected_raw_invalid_records": 60,
   "resources": {
     "cpu": [
       4
@@ -28,13 +28,151 @@
   "completed_numpy_base_capture": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-numpy-20261030-04",
   "base_checks": 21,
   "base_independent_records": 20,
-  "planned_full_test_count": 41,
+  "planned_full_test_count": 61,
   "planned_batch_axis_tests": 10,
   "planned_batch_axis_refusals": 120,
-  "new_batch_axis_tests_run": false,
+  "new_batch_axis_tests_run": true,
   "cpu01_status": "failed_process_tree_rss_guard_during_full_RHS_compilation",
   "cpu01_completed_phases": 0,
   "compile_memory_guard_increase": false,
   "automatic_retry": false,
-  "memory_refactor_status": "proposal_only_not_implemented"
+  "memory_refactor_status": "separate_pure_world_stage_candidate_implemented_unrun",
+  "status": "compact_stage_candidate_source_prepared_numerically_unrun",
+  "new_batch_axis_tests_scope": "Qualified old path in frozen axis-01 and matched-01; new staged entrypoint extensions remain unrun",
+  "compact_candidate_numerics_run": false,
+  "compact_candidate_compiled": false,
+  "compact_candidate_additional_prepared_checks": 20,
+  "compact_candidate_full_independent_records": 15,
+  "compact_candidate_staged_raw_invalid_records": 30,
+  "planned_batch_axis_refusal_declarations": 120,
+  "planned_batch_axis_refusal_calls": 240,
+  "physical_refusal_predicates": 7,
+  "total_reason_predicates": 13,
+  "compiled_memory_reduction_measured": false,
+  "no_compiled_JAX_retry": true,
+  "prepared_host_runner": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-preparation/runner.py",
+  "prepared_host_runner_sha256": "82dc1c6ce0d7f172a605f34626a2402ae52350564c07f819f184224a8bb62cff",
+  "prepared_host_phase_groups": [
+    "host-ionic",
+    "host-calcium",
+    "host-fuel",
+    "host-open-calcium",
+    "host-open-fuel",
+    "preparation-refusals",
+    "isolated-reference"
+  ],
+  "prepared_host_runner_status": "Chief_authorized_CPU4_after_association_review_clearance",
+  "prepared_host_aggregate_estimate_minutes": [
+    10,
+    15
+  ],
+  "prepared_host_estimate_basis": "Conservative estimate using earlier captures plus new full parity/turnover/refusal checks; not measured for this candidate",
+  "prepared_host_launch_mode": "detached_durable_logs_no_automatic_polling",
+  "future_compiled_capture": "requires distinct source freeze, fresh bounded compiler stages and separately executed complete unbatched physics; runner not yet prepared",
+  "static_checks": {
+    "timestamp_UTC": "2026-10-30T16:38:35.438444+00:00",
+    "AST": "passed",
+    "ruff": "passed",
+    "runner_and_replay_parse": true,
+    "unchanged_qualified_numeric_functions": [
+      "project",
+      "_amounts",
+      "_passive_fraction",
+      "_world_protocol",
+      "evaluate_world",
+      "_batch_world_count",
+      "evaluate_batch"
+    ],
+    "unchanged_qualified_function_comparison_source": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-matched-20261030-01/source",
+    "independent_input_predicate_expressions_unchanged": true,
+    "exact_compact_stage_frame_protocol_prepared": true,
+    "no_new_numerical_job_launched": true
+  },
+  "complete_qualification_coverage": [
+    "all56 supported active channel laws",
+    "all5 active families",
+    "all derivative fields",
+    "all32 physical field comparison columns",
+    "exact raw proposals and projected arrays",
+    "original host-certified temperature and maximum step",
+    "all13 reason predicates",
+    "actual per-owner gross hydrolysis and synthesis",
+    "complete leading cohort axes",
+    "exact reorder/partition",
+    "original source history and anchors"
+  ],
+  "candidate_stage_functions": [
+    "prepare_numeric_world",
+    "compact_physics_world",
+    "check_physics_world",
+    "assemble_staged_values"
+  ],
+  "candidate_cohort_wrapper": "evaluate_batch_staged with three separate family-bound WorldStages; do not jit the composition",
+  "qualified_frozen_captures": {
+    "numpy-base": {
+      "directory": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-numpy-20261030-04",
+      "checks": 21,
+      "full_independent_records": 20,
+      "result_sha256": "f8202fae0d0a9829fcc1676e0874522a7e8bf150f51ec9983be13bec7511c19b",
+      "completion_receipt": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-numpy-20261030-04/completion-verification.json",
+      "owned_source_sha256": {
+        "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
+        "src/cells/models/physiology_active_temperature_arrays.py": "d8243dcf725de19cf2e95a9d1fa323de64b1e6c04223342825515d27d7acab97",
+        "validation/tissue/physiology_active_temperature_arrays_reference.py": "f35d56e42c621c406e3dc85461c6adf680ff1712a04c99318c11178b2d67925e",
+        "tests/unit/test_physiology_active_temperature_arrays.py": "cacdcfcac8b9455c1581d0750d9fcaf968981d1a0a47b92f1b90e5934e68f6e2"
+      },
+      "scope": "Frozen capture only; compact candidate not numerically qualified"
+    },
+    "exact-control-shapes": {
+      "directory": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-shapes-20261030-02",
+      "checks": 5,
+      "full_independent_records": 5,
+      "result_sha256": "d8ac69fdd7e6560571d5a9857e6bcce28a71866a437c89e745922051f3b55e59",
+      "completion_receipt": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-shapes-20261030-02/completion-verification.json",
+      "owned_source_sha256": {
+        "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
+        "src/cells/models/physiology_active_temperature_arrays.py": "46e71354370bae53952e24ba0ee2545e7beff3eb20933a2025638a5de40b1e86",
+        "validation/tissue/physiology_active_temperature_arrays_reference.py": "f35d56e42c621c406e3dc85461c6adf680ff1712a04c99318c11178b2d67925e",
+        "tests/unit/test_physiology_active_temperature_arrays.py": "f18ba9a7f50262130101169750a3b53caef0e2d257fc3ce43a6c37657628e6ff"
+      },
+      "scope": "Frozen capture only; compact candidate not numerically qualified"
+    },
+    "complete-cohort-axes": {
+      "directory": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-axis-20261030-01",
+      "checks": 10,
+      "full_independent_records": 0,
+      "result_sha256": "6990cf13c9ffcc1a31197b8ff5de66d6f61c2483267a2c6ba2579a301f30e96d",
+      "completion_receipt": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-axis-20261030-01/completion-verification.json",
+      "owned_source_sha256": {
+        "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
+        "src/cells/models/physiology_active_temperature_arrays.py": "fd8481755fb892e370f3801733ec18ba457e14af5fd097278a5f044beb6c0dd2",
+        "validation/tissue/physiology_active_temperature_arrays_reference.py": "8eae27450d1ceb1df1c638153bce448a46147dedca0b15042dc1f9641090c3cf",
+        "tests/unit/test_physiology_active_temperature_arrays.py": "daa026ee21999b07e45ac061a7cf12b571f4a1ff32adcd1a5ca6da4fcdf86255"
+      },
+      "scope": "Frozen capture only; compact candidate not numerically qualified"
+    },
+    "positive-matched-after-axis-guard": {
+      "directory": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-matched-20261030-01",
+      "checks": 5,
+      "full_independent_records": 15,
+      "result_sha256": "e2670283ed11e92d7292bad0ba47f3259762c8b087e9fa3b9c5f620b5884f724",
+      "completion_receipt": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-matched-20261030-01/completion-verification.json",
+      "owned_source_sha256": {
+        "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
+        "src/cells/models/physiology_active_temperature_arrays.py": "fd8481755fb892e370f3801733ec18ba457e14af5fd097278a5f044beb6c0dd2",
+        "validation/tissue/physiology_active_temperature_arrays_reference.py": "8eae27450d1ceb1df1c638153bce448a46147dedca0b15042dc1f9641090c3cf",
+        "tests/unit/test_physiology_active_temperature_arrays.py": "daa026ee21999b07e45ac061a7cf12b571f4a1ff32adcd1a5ca6da4fcdf86255"
+      },
+      "scope": "Frozen capture only; compact candidate not numerically qualified"
+    }
+  },
+  "prepared_host_source_snapshot": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-preparation/source",
+  "prepared_host_freeze_manifest": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-preparation/freeze.json",
+  "prepared_host_output": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01",
+  "prepared_host_review": "water_reference static association review pending; no dependent numerical launch before clear",
+  "prepared_host_output_root": "/mnt/workspaces/Cells",
+  "prepared_host_authorization": "Chief explicit 56-check/40-record source-split host qualification on CPU4 after review clearance; detached no polling",
+  "source_split_host_qualification": true,
+  "prepared_host_launcher": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-staged-numpy-20261030-01-preparation/launch.py",
+  "prepared_host_launcher_sha256": "4e5f8654e348148f977679fefa1dfc09b9c1f1fc320f265aa10b224ea512feed"
 }

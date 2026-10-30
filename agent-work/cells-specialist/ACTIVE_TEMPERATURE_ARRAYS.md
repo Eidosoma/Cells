@@ -63,8 +63,8 @@ arrays and explicit reason bits without JSON sanitizing the raw buffers.
 Independent replays deny Cells/JAX/BETSE imports and reconstruct from actual
 source declarations and the new point-certificate semantics.
 
-CPU JAX qualification is staged per family: shape tracing, compiled numeric
-projection, then lowering/compiling/executing the full two-world RHS/field
+The original CPU JAX attempt was staged per family: shape tracing, compiled
+numeric projection, then lowering/compiling/executing the full two-world RHS/field
 function with host validators disabled by test tripwires. All tests retain x64,
 the existing rate/charge/potential/field budgets and CPU4/one-thread caps: 1 GiB
 summed process-tree RSS, at least 8 GiB host reserve, 480 s per phase. The five
@@ -98,20 +98,57 @@ nonempty world axis before any per-world physics or vmap. Temperature and step
 are exactly one scalar per prepared world. Ten prepared tests cover short/long
 T, step and control arrays, single control/state leaves, truncated layouts and
 certificates, and empty cohorts in NumPy and JAX shape tracing. A tripwire
-forbids evaluating a prefix world. These new refusals are source-prepared and
-**unrun**; the earlier matched-world numerical evidence remains scoped to its
-frozen versions.
+forbids evaluating a prefix world. The focused axis run
+`physiology-active-temperature-arrays-axis-20261030-01` passed ten checks and
+120 independently replayed malformed declarations. The separate positive run
+`physiology-active-temperature-arrays-matched-20261030-01` passed five family
+cohorts and 15 independent complete derivative/field records. Their completion
+receipts verify frozen sources, runtime files, imports and measured limits.
+These captures precede the compact-stage candidate below; the qualification
+plan links each exact frozen version.
 
-Memory reduction is a proposal pending coordination. First isolate shape,
-projection and full-RHS compiler stages in fresh bounded processes. Telemetry
-at durable stage boundaries suggests roughly 275 MiB after tracing, 300 MiB
-after projection, and 312 MiB at full compilation start, so cache isolation
-alone is not established as sufficient. Next consider compiling a compact
-complete derivative/physical-field result, retaining raw proposals, original
-arrays and diagnostic projections in separate buffers and composing unchanged
-admission predicates without a giant nested duplicate result tree. If needed,
-compile one unbatched physical world and map it across the cohort rather than
-vectorizing the nonlinear solve graph. All 56 laws, all five families, every
-physical derivative/field and reason predicate, exact owner maps, invalid raw
-proposals, reorder/partition tests and existing tolerances must remain. No
-increased guard, dropped law, relaxed check or automatic retry is authorized.
+Chief then authorized compact-output source development, with no compiled JAX
+retry. Telemetry at durable stage boundaries suggests roughly 275 MiB after
+tracing, 300 MiB after projection, and 312 MiB at full compilation start, so
+fresh-process cache isolation alone is not established as sufficient.
+
+The new candidate exposes separate pure world stages. `prepare_numeric_world`
+keeps raw projections, safe arithmetic inputs and all six input predicates.
+`compact_physics_world` runs the original complete readout kernel and returns
+one complete derivative, the whole physical field tree, original model validity
+and actual per-owner gross hydrolysis/synthesis. Nested parent readout copies
+are not compiler outputs. `check_physics_world` retains the seven physical
+predicates, including original domain checks, field convergence, complete finite
+rates, energy, dissipation and actual passive/fuel turnover. Assembly attaches
+the unchanged thirteen reason bits and exact raw proposal without another
+derivative leaf copy.
+
+`WorldStages` can carry three individually compiled family-bound functions.
+`evaluate_batch_staged` first checks the complete cohort protocol, then calls
+each world separately and stacks every output. Neither the nonlinear field
+solve nor its complete rate graph is vmapped in this path. Compiling the entire
+composition would fuse/unroll it again, so the convenience world/batch wrappers
+must not be jitted as one executable. Separate stage calls are an execution
+boundary, not a changed physical law. Original `project`, `evaluate_world`,
+`evaluate_batch` and their protocol/turnover helpers are AST-identical to the
+verified matched capture; the monolithic path remains available for parity.
+
+Twenty additional prepared tests cover exact shared output parity and all 32
+independent fields, stage call boundaries, raw nonfinite proposals, actual gross
+fuel flows, exact cohort reorder/partition, all seven physical refusal
+predicates and separate JAX shape tracing. Both batch entrypoints must refuse
+all malformed world axes before prefix projection/physics. The independent
+reference's six input predicates are factored without changing their
+expressions so raw nonfinite NPZ evidence can also replay under import denial.
+
+This candidate is **source-prepared, statically checked and numerically unrun**.
+No reduced compiled RSS or successful compiled RHS is claimed. The prepared
+host runner selects 56 checks and 40 independent full-rate/field records in
+seven bounded phases, with compiled JAX disabled. A future compiled runner must
+freeze a distinct capture, isolate compiler stages in fresh bounded processes
+and execute the separate complete unbatched physical stage before mapping all
+worlds. Aggregate runs expected to reach ten minutes launch detached and are
+not automatically polled. Chief's next instruction is required for either
+qualification. All 56 laws, five families, complete physical outputs/predicates,
+exact owners and existing tolerances remain required; the 1 GiB/8 GiB/480 s
+limits are unchanged.

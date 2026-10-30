@@ -1409,6 +1409,28 @@ The [contract note](../agent-work/cells-specialist/ACTIVE_TEMPERATURE_CONTRACT.m
 details these assumptions; [Progress](../PROGRESS.md) records tested regimes,
 source comparisons and execution limits.
 
+### Combining temperature, voltage and blocker readouts
+
+[`physiology_global_control_view`](../src/cells/core/physiology_global_control_view.py)
+binds one native setter program to complete physical owners, explicit boundary
+reservoirs and exclusive junction membrane pairs. Its
+[complete rate view](../src/cells/models/physiology_global_control_view.py)
+requires the original complete checkpoint and the explicit held-temperature
+policy above. It applies temperature, junction block, Na/K pump block and
+voltage in source order, then evaluates the complete coupled rates and field.
+Junction factors multiply the supplied baseline once. Na/K blocking does not
+silently block plasma or ER calcium pumps.
+
+The original history, charge anchors and accepted physical clock are checked
+before projection. `event_time_s` remains an explicit setter label; it is not
+inferred from physical time. Finite-exterior models retain their voltage
+restrictions, and all original and projected domain/step checks apply.
+Restored device arrays are normalized at the host boundary. This composes held
+readouts across the six supported families; it does not accept a temperature
+jump, evolve a changed-temperature trajectory or invent heat accounting.
+[Progress](../PROGRESS.md) links the combined comparisons separately from each
+standalone control's evidence.
+
 ### Applying blockers to ordinary tissue rates
 
 [`physiology_block_control_view`](../src/cells/models/physiology_block_control_view.py)

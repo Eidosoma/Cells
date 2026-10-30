@@ -367,15 +367,16 @@ def test_exact_control_shape_protocol_refuses_broadcast_and_keeps_valid_full_rat
         changed = proposal._replace(
             control=proposal.control._replace(**{name: np.zeros(bad_shape)})
         )
-        with pytest.raises(ValueError, match="shape/type"):
-            arrays.evaluate_world(
-                numeric.state,
-                numeric.layout,
-                numeric.certificate,
-                changed,
-                family=cohort.family,
-                xp=np,
-            )
+        for evaluate in (arrays.evaluate_world, arrays.evaluate_world_staged):
+            with pytest.raises(ValueError, match="shape/type"):
+                evaluate(
+                    numeric.state,
+                    numeric.layout,
+                    numeric.certificate,
+                    changed,
+                    family=cohort.family,
+                    xp=np,
+                )
     actual = arrays.evaluate_world(
         numeric.state, numeric.layout, numeric.certificate, proposal, family=cohort.family, xp=np
     )
@@ -437,6 +438,11 @@ def test_complete_batch_axes_refuse_short_long_or_missing_worlds_before_any_phys
         "evaluate_world",
         lambda *a, **k: pytest.fail("A malformed cohort started prefix physics"),
     )
+    monkeypatch.setattr(
+        arrays,
+        "prepare_numeric_world",
+        lambda *a, **k: pytest.fail("A malformed staged cohort started prefix projection"),
+    )
     declarations = []
     for bad_numeric, bad_proposal in damaged:
         declaration = dict(
@@ -451,19 +457,22 @@ def test_complete_batch_axes_refuse_short_long_or_missing_worlds_before_any_phys
         )
         assert not reference.complete_world_axes(declaration)
         declarations.append(declaration)
-        with pytest.raises(ValueError, match="batch|cohort|world"):
-            if backend == "numpy":
-                arrays.evaluate_batch(bad_numeric, bad_proposal, family=cohort.family, xp=np)
-            else:
-                shaped_numeric, shaped_proposal = jax.tree.map(
-                    lambda value: jax.ShapeDtypeStruct(value.shape, value.dtype),
-                    (bad_numeric, bad_proposal),
-                )
-                jax.eval_shape(
-                    lambda n, p: arrays.evaluate_batch(n, p, family=cohort.family, xp=jnp),
-                    shaped_numeric,
-                    shaped_proposal,
-                )
+        for evaluate in (arrays.evaluate_batch, arrays.evaluate_batch_staged):
+            with pytest.raises(ValueError, match="batch|cohort|world"):
+                if backend == "numpy":
+                    evaluate(bad_numeric, bad_proposal, family=cohort.family, xp=np)
+                else:
+                    shaped_numeric, shaped_proposal = jax.tree.map(
+                        lambda value: jax.ShapeDtypeStruct(value.shape, value.dtype),
+                        (bad_numeric, bad_proposal),
+                    )
+                    jax.eval_shape(
+                        lambda n, p, evaluate=evaluate: evaluate(
+                            n, p, family=cohort.family, xp=jnp
+                        ),
+                        shaped_numeric,
+                        shaped_proposal,
+                    )
     evidence(
         "batch-axis-refusals-" + kind + "-" + backend,
         dict(
@@ -471,9 +480,343 @@ def test_complete_batch_axes_refuse_short_long_or_missing_worlds_before_any_phys
             family=cohort.family,
             backend=backend,
             malformed_cases=len(damaged),
+            entrypoints=["evaluate_batch", "evaluate_batch_staged"],
             declarations=declarations,
             no_prefix_worlds_evaluated=True,
             array_physics_evaluated=False,
+        ),
+    )
+
+
+def exact_tree(first, second):
+    assert jax.tree.structure(first) == jax.tree.structure(second)
+    for a, b in zip(jax.tree.leaves(first), jax.tree.leaves(second), strict=True):
+        a, b = np.asarray(a), np.asarray(b)
+        assert a.dtype == b.dtype and a.shape == b.shape
+        np.testing.assert_array_equal(a, b)
+
+
+def exact_staged_shared_outputs(staged, original):
+    for name in arrays.Values._fields:
+        if name != "readouts":
+            exact_tree(getattr(staged, name), getattr(original, name))
+    exact_tree(staged.readouts.field, original.readouts.field)
+    exact_tree(staged.readouts.valid, original.readouts.valid)
+    parent = original.readouts.parent if hasattr(original.readouts, "parent") else original.readouts
+    if hasattr(staged.arithmetic_runtime_layout, "energy_initial_amount_fmol"):
+        exact_tree(staged.readouts.gross_hydrolysis_fmol_s, parent.exchange.gross_hydrolysis_fmol_s)
+        exact_tree(staged.readouts.gross_synthesis_fmol_s, parent.exchange.gross_synthesis_fmol_s)
+    else:
+        zeros = np.zeros_like(staged.arithmetic_runtime_layout.active, dtype=np.float64)
+        exact_tree(staged.readouts.gross_hydrolysis_fmol_s, zeros)
+        exact_tree(staged.readouts.gross_synthesis_fmol_s, zeros)
+
+
+@pytest.mark.parametrize("kind", KINDS)
+def test_numpy_separate_stages_keep_complete_fields_reasons_and_cohort_invariance(
+    kind, monkeypatch
+):
+    cases, cohort, proposal = fixtures(kind)
+    original = arrays.evaluate_batch(cohort.numeric, proposal, family=cohort.family, xp=np)
+    for name in ("initial_values", "check_values", "check_steps"):
+        monkeypatch.setattr(
+            arrays.IMPLEMENTATIONS[cohort.family],
+            name,
+            lambda *a, **k: pytest.fail("A numeric stage invoked a host validator"),
+        )
+    monkeypatch.setattr(
+        host, "_runtime", lambda *a, **k: pytest.fail("A numeric stage invoked host projection")
+    )
+    visits = []
+
+    def inputs(p, c, v):
+        visits.append("inputs")
+        return arrays.prepare_numeric_world(p, c, v, family=cohort.family, xp=np)
+
+    def physics(s, p, u):
+        visits.append("physics")
+        return arrays.compact_physics_world(s, p, u, family=cohort.family, xp=np)
+
+    def checks(s, p, u, h, v):
+        visits.append("checks")
+        return arrays.check_physics_world(s, p, u, h, v, family=cohort.family, xp=np)
+
+    stages = arrays.WorldStages(cohort.family, inputs, physics, checks)
+    actual = arrays.evaluate_batch_staged(
+        cohort.numeric, proposal, family=cohort.family, xp=np, stages=stages
+    )
+    assert visits == ["inputs", "physics", "checks"] * 3
+    with pytest.raises(ValueError, match="family-bound"):
+        arrays.evaluate_batch_staged(
+            cohort.numeric,
+            proposal,
+            family=cohort.family,
+            xp=np,
+            stages=stages._replace(family="unreviewed-family"),
+        )
+    assert visits == ["inputs", "physics", "checks"] * 3
+    exact_staged_shared_outputs(actual, original)
+    assert len(jax.tree.leaves(actual)) < len(jax.tree.leaves(original))
+    for i, case in enumerate(cases):
+        check_world(
+            case,
+            cohort.worlds[i],
+            jax.tree.map(lambda value, i=i: value[i], proposal),
+            jax.tree.map(lambda value, i=i: value[i], actual),
+            f"staged-numpy-{kind}-{i}",
+        )
+    reversed_values = arrays.evaluate_batch_staged(
+        jax.tree.map(lambda value: value[::-1], cohort.numeric),
+        jax.tree.map(lambda value: value[::-1], proposal),
+        family=cohort.family,
+        xp=np,
+    )
+    exact_tree(actual, jax.tree.map(lambda value: value[::-1], reversed_values))
+    parts = []
+    for indices in ((0,), (1, 2)):
+        parts.append(
+            arrays.evaluate_batch_staged(
+                jax.tree.map(lambda value, indices=indices: value[list(indices)], cohort.numeric),
+                jax.tree.map(lambda value, indices=indices: value[list(indices)], proposal),
+                family=cohort.family,
+                xp=np,
+            )
+        )
+    exact_tree(actual, jax.tree.map(lambda *values: np.concatenate(values), *parts))
+    evidence(
+        "staged-cohort-invariance-" + kind,
+        dict(
+            kind="staged_complete_outputs",
+            family=cohort.family,
+            world_count=3,
+            complete_derivative_and_field_equal=True,
+            all_thirteen_reason_predicates_equal=True,
+            original_and_raw_arrays_equal=True,
+            actual_gross_fuel_flows_equal=True,
+            separate_world_stage_calls=visits,
+            reorder_partition_exact=True,
+            monolithic_output_leaves=len(jax.tree.leaves(original)),
+            staged_output_leaves=len(jax.tree.leaves(actual)),
+            compiled_memory_measured=False,
+        ),
+    )
+
+
+@pytest.mark.parametrize("kind", KINDS)
+def test_separate_physical_checks_retain_all_seven_physical_refusal_predicates(kind):
+    _, cohort, proposal = fixtures(kind, count=1)
+    numeric = jax.tree.map(lambda value: value[0], cohort.numeric)
+    raw = jax.tree.map(lambda value: value[0], proposal)
+    inputs = arrays.prepare_numeric_world(
+        numeric.layout, numeric.certificate, raw, family=cohort.family, xp=np
+    )
+    p, u, h = (
+        inputs.arithmetic_runtime_layout,
+        inputs.arithmetic_control,
+        inputs.arithmetic_step_s,
+    )
+    physics = arrays.compact_physics_world(numeric.state, p, u, family=cohort.family, xp=np)
+
+    def checked(v, step=h):
+        checks = arrays.check_physics_world(
+            numeric.state, p, u, step, v, family=cohort.family, xp=np
+        )
+        return arrays.assemble_staged_values(raw, inputs, v, checks, xp=np)
+
+    baseline = checked(physics)
+    assert baseline.valid
+    malformed = (
+        physics._replace(gross_hydrolysis_fmol_s=np.asarray(0.0)),
+        physics._replace(valid=np.ones((1,), dtype=np.bool_)),
+        physics._replace(
+            derivative=physics.derivative._replace(
+                amount_increment=physics.derivative.amount_increment[..., :-1]
+            )
+        ),
+    )
+    for changed in malformed:
+        with pytest.raises(ValueError, match="axes and dtypes"):
+            checked(changed)
+    with pytest.raises(ValueError, match="complete typed"):
+        arrays.assemble_staged_values(
+            raw,
+            inputs._replace(reason_validity=inputs.reason_validity.astype(np.float64)),
+            physics,
+            arrays.PhysicalChecks(
+                baseline.passive_fraction, baseline.fuel_fraction, baseline.reason_validity[6:]
+            ),
+            xp=np,
+        )
+    nonfinite = physics.derivative.amount_increment.copy()
+    nonfinite.flat[0] = np.nan
+    dissipated_name = next(
+        name for name, value in physics.derivative._asdict().items()
+        if name.endswith("_dissipated_energy_pJ") and value.size
+    )
+    bad_dissipation = physics.derivative._replace(
+        **{dissipated_name: np.full_like(getattr(physics.derivative, dissipated_name), -2e-12)}
+    )
+    faults = [
+        (6, physics._replace(valid=np.asarray(False))),
+        (7, physics._replace(field=physics.field._replace(converged=np.asarray(False)))),
+        (8, physics._replace(derivative=physics.derivative._replace(amount_increment=nonfinite))),
+        (9, physics._replace(field=physics.field._replace(energy_balance_pJ_s=np.asarray(2e-10)))),
+        (10, physics._replace(derivative=bad_dissipation)),
+    ]
+    rows = []
+    for bit, changed in faults:
+        actual = checked(changed)
+        assert not actual.valid and int(actual.reason_mask) & (1 << bit)
+        rows.append(dict(expected_refusal_bit=bit, actual_reason_mask=int(actual.reason_mask)))
+    assert baseline.passive_fraction > 0
+    passive = checked(physics, h * (0.06 / baseline.passive_fraction))
+    assert not passive.valid and int(passive.reason_mask) & (1 << 11)
+    rows.append(dict(expected_refusal_bit=11, actual_reason_mask=int(passive.reason_mask)))
+    if hasattr(p, "energy_initial_amount_fmol"):
+        amount = arrays.fuel.energy_amounts(numeric.state, p)
+        gross = np.where(p.active, 0.06 * np.min(amount, axis=0) / h, 0.0)
+        changed = physics._replace(
+            gross_hydrolysis_fmol_s=gross,
+            gross_synthesis_fmol_s=np.zeros_like(gross),
+        )
+        fuel_limit = checked(changed)
+        assert not fuel_limit.valid and int(fuel_limit.reason_mask) & (1 << 12)
+        rows.append(dict(expected_refusal_bit=12, actual_reason_mask=int(fuel_limit.reason_mask)))
+    else:
+        assert baseline.fuel_fraction == 0 and baseline.reason_validity[12]
+    evidence(
+        "staged-physical-predicates-" + kind,
+        dict(
+            kind="separate_physical_refusal_predicates",
+            family=cohort.family,
+            synthetic_output_faults=True,
+            malformed_stage_frames_refused=4,
+            faults=rows,
+            passive_turnover_ceiling=0.05,
+            finite_fuel_turnover_ceiling=0.05,
+            finite_fuel_owner=hasattr(p, "energy_initial_amount_fmol"),
+            nonfuel_pool_predicate_true_without_fabricated_owner=True,
+        ),
+    )
+
+
+@pytest.mark.parametrize("kind", KINDS)
+def test_numpy_separate_stages_preserve_invalid_raw_buffers_and_all_reason_bits(kind):
+    _, cohort, proposal = fixtures(kind, count=1)
+    numeric = jax.tree.map(lambda value: value[0], cohort.numeric)
+    raw = jax.tree.map(lambda value: value[0], proposal)
+    damaged = [
+        raw._replace(temperature_K=np.asarray(value))
+        for value in (0.0, -1.0, float("nan"), float("inf"), 273.16)
+    ]
+    damaged.append(
+        raw._replace(
+            control=raw.control._replace(membrane=np.full_like(raw.control.membrane, 2.0)),
+            step_s=numeric.certificate.maximum_step_s * 2,
+        )
+    )
+    for i, changed in enumerate(damaged):
+        with np.errstate(all="ignore"):
+            original = arrays.evaluate_world(
+                numeric.state, numeric.layout, numeric.certificate, changed,
+                family=cohort.family, xp=np,
+            )
+            actual = arrays.evaluate_world_staged(
+                numeric.state, numeric.layout, numeric.certificate, changed,
+                family=cohort.family, xp=np,
+            )
+        exact_staged_shared_outputs(actual, original)
+        assert not actual.valid and actual.arithmetic_substitution
+        expected_inputs = reference.proposal_input_validity(
+            float(changed.temperature_K),
+            float(changed.step_s),
+            changed.control._asdict(),
+            float(numeric.certificate.temperature_K),
+            float(numeric.certificate.maximum_step_s),
+        )
+        np.testing.assert_array_equal(actual.reason_validity[:6], expected_inputs)
+        evidence(
+            f"staged-raw-invalid-{kind}-{i}",
+            dict(
+                kind="staged_raw_invalid_proposal",
+                family=cohort.family,
+                certified_temperature_K=float(numeric.certificate.temperature_K),
+                maximum_step_s=float(numeric.certificate.maximum_step_s),
+                reason_mask=int(actual.reason_mask),
+                reason_validity=actual.reason_validity.tolist(),
+                monolithic_and_staged_equal=True,
+                raw_proposal_retained=True,
+                safe_arithmetic_does_not_admit_raw=True,
+            ),
+            dict(
+                raw_temperature_K=actual.raw_proposal.temperature_K,
+                raw_step_s=actual.raw_proposal.step_s,
+                **{
+                    "raw_control__" + key: value
+                    for key, value in actual.raw_proposal.control._asdict().items()
+                },
+                **{
+                    "raw_runtime__" + key: value
+                    for key, value in actual.raw_runtime_layout._asdict().items()
+                },
+            ),
+        )
+
+
+@pytest.mark.parametrize("kind", KINDS)
+def test_separate_world_stages_trace_full_outputs_without_host_callbacks(kind, monkeypatch):
+    _, cohort, proposal = fixtures(kind, count=1)
+    numeric = jax.tree.map(lambda value: value[0], cohort.numeric)
+    raw = jax.tree.map(lambda value: value[0], proposal)
+    for name in ("initial_values", "check_values", "check_steps"):
+        monkeypatch.setattr(
+            arrays.IMPLEMENTATIONS[cohort.family],
+            name,
+            lambda *a, **k: pytest.fail("Shape tracing invoked a host validator"),
+        )
+    monkeypatch.setattr(
+        host, "_runtime", lambda *a, **k: pytest.fail("Shape tracing invoked host projection")
+    )
+    inputs = jax.eval_shape(
+        lambda p, c, v: arrays.prepare_numeric_world(p, c, v, family=cohort.family, xp=jnp),
+        numeric.layout, numeric.certificate, raw,
+    )
+    physics = jax.eval_shape(
+        lambda s, p, u: arrays.compact_physics_world(s, p, u, family=cohort.family, xp=jnp),
+        numeric.state, inputs.arithmetic_runtime_layout, inputs.arithmetic_control,
+    )
+    checks = jax.eval_shape(
+        lambda s, p, u, h, v: arrays.check_physics_world(
+            s, p, u, h, v, family=cohort.family, xp=jnp
+        ),
+        numeric.state, inputs.arithmetic_runtime_layout, inputs.arithmetic_control,
+        inputs.arithmetic_step_s, physics,
+    )
+    result = jax.eval_shape(
+        lambda proposal, inputs, physics, checks: arrays.assemble_staged_values(
+            proposal, inputs, physics, checks, xp=jnp
+        ),
+        raw, inputs, physics, checks,
+    )
+    assert inputs.reason_validity.shape == (6,) and checks.reason_validity.shape == (7,)
+    assert result.reason_validity.shape == (len(arrays.REASONS),)
+    assert result.reason_mask.shape == result.valid.shape == ()
+    assert result.reason_mask.dtype == np.uint32 and result.valid.dtype == np.bool_
+    assert type(result.derivative) is type(numeric.state)
+    assert result.readouts.gross_hydrolysis_fmol_s.shape == numeric.layout.active.shape
+    assert result.readouts.gross_synthesis_fmol_s.shape == numeric.layout.active.shape
+    evidence(
+        "staged-shape-" + kind,
+        dict(
+            kind="separate_world_stage_shapes",
+            family=cohort.family,
+            input_predicates=6,
+            physical_predicates=7,
+            derivative_fields=list(result.derivative._fields),
+            physical_field_tree_preserved=True,
+            no_host_callbacks=True,
+            compiled=False,
+            numerics_executed=False,
         ),
     )
 

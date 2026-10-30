@@ -1,0 +1,66 @@
+{
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "capture_scope": "Exact parameter inverse-sharpness assignment, init_dynamics smoothing block, cellMatrices owner block and get_current prefix through sim.Jc; read-only intermediate copies",
+  "float_budgets": {
+    "independent": "32*eps*(ions+membranes+16)*gross + 1e-30 in each named output unit",
+    "native_host": "exact array values/dtypes for supplied identical NumPy inputs",
+    "physical_tissue_material_charge_energy_tolerances": "unchanged; no conservative solver integration",
+    "reference_self_resolution_fraction": 0.1
+  },
+  "inventory": "agent-work/cells-worker-01/workfiles/native_normal_solver_inventory.json",
+  "kind": "cells.betse_normal_current_contract@1",
+  "law_id": "betse_normal_intracellular_current_v1_5_0@1",
+  "limitations": [
+    "Stateless post-flux snapshots, not evolved trajectories",
+    "No ECM HH/Gaussian/BVP",
+    "No voltage/initializer",
+    "No global-control program",
+    "No salt/water energy",
+    "No material update or physical conservation inference",
+    "Stricter finite guards retain actual refused arrays",
+    "No full-native solver or GPU parity"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    "version": "1.5.0"
+  },
+  "parameters": {
+    "F": "Explicit source F, including separately rounded native constant",
+    "sharpness_cell": "Native smooth_cells=1/float(sharpness_cell); zero parser division refuses; no silent clipping of finite nonconvex weights"
+  },
+  "purpose": "Native intracellular post-flux charge/current construction and literal smoothing only; missing primitive in larger FULL-normal inventory",
+  "reference": "Independent stdlib Decimal owner loops at precisions90/140; gross scales propagated through signs, smoothing, area and projection",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination_required_before_numerical_runs": true,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_signs": {
+    "I_mem": "inward current",
+    "Jmem_Jgj_Jn": "outward current density",
+    "junction_flux": "positive outward",
+    "membrane_flux": "positive inward"
+  },
+  "units": {
+    "area": "m2",
+    "charge_density": "C/m3",
+    "concentration": "mol/m3",
+    "current_density": "A/m2",
+    "flux": "mol/(m2*s)",
+    "inward_current": "A"
+  }
+}

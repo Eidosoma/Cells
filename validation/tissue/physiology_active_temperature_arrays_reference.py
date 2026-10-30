@@ -50,10 +50,9 @@ REASONS = (
 )
 
 
-def evaluate(raw, fields, binding_record, certified_temperature_K, maximum_step_s, proposal):
-    temperature, step = proposal["temperature_K"], proposal["step_s"]
-    controls = proposal["control"]
-    flags = [
+def proposal_input_validity(temperature, step, controls, certified_temperature_K, maximum_step_s):
+    """Independent six predicates, also replayable from raw nonfinite NPZ buffers."""
+    return [
         math.isfinite(temperature),
         200 <= temperature <= 400,
         temperature == certified_temperature_K,
@@ -64,6 +63,14 @@ def evaluate(raw, fields, binding_record, certified_temperature_K, maximum_step_
         math.isfinite(step) and step > 0,
         step <= maximum_step_s,
     ]
+
+
+def evaluate(raw, fields, binding_record, certified_temperature_K, maximum_step_s, proposal):
+    temperature, step = proposal["temperature_K"], proposal["step_s"]
+    controls = proposal["control"]
+    flags = proposal_input_validity(
+        temperature, step, controls, certified_temperature_K, maximum_step_s
+    )
     target = temperature if all(flags[:3]) else certified_temperature_K
     effective_control = (
         controls

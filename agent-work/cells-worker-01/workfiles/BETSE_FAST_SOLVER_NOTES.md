@@ -72,3 +72,27 @@ preserve actual nonfinite failures, and test INIT/SIM labels, block omission,
 sampling, terminal/refused calls and immutable parent state. Exact source/RNG
 absence plus finite/domain/unit tolerances remain explicit. Full physical,
 network, electrostatic initialization and GPU parity are outside this claim.
+
+The prepared matrix has45 checks. Sixteen original five-call histories cover
+eight input profiles x INIT/SIM, with80 complete component endpoints. Thirty-two
+fresh authenticated native captures and32 fresh independent Decimal answers
+exercise the normal histories, gate omission, live-coefficient staleness,
+sampling, singular GHK, zero readout conductivity, native infinity acceptance
+and zero/single/terminal phase bounds. All native/reference children report
+actual CPU affinity and deny production imports. Parent/state association,
+immutable input buffers and stronger finite guards are separate assertions.
+
+The native microcase wrapper is bounded to64 calls,16 cells and128 membrane
+faces; it copies complete raw state and time storage for scientific evidence.
+This is an isolated source-body capture with explicitly normalized lifecycle
+interfaces, not a whole BETSE invocation. Original pinned source/installed
+bytes, revision, AST sites, warning text, failed numerical arrays and runtime
+versions are retained. The component uses an analytic one-hot owner inverse;
+the native capture executes the original owner matrix/pseudoinverse code.
+
+The checker reuses run_bounded with480s/1GiB/8GiB reserve and one thread.
+Preparation reads/copies/hashes source and inspects AST only. It does not import
+scientific modules, collect tests, run native/component equations or inspect
+active jobs. A numerical invocation needs an explicitly coordinated CPU; until
+then the source/component and scientifically adequate validation are prepared,
+with numerical qualification unclaimed.

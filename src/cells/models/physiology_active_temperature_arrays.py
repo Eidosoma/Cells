@@ -68,6 +68,61 @@ class Values(NamedTuple):
     valid: object
 
 
+class NumericInputs(NamedTuple):
+    """Light input/projection stage; raw and arithmetic buffers stay distinct."""
+
+    raw_runtime_layout: object
+    arithmetic_runtime_layout: object
+    arithmetic_control: object
+    arithmetic_step_s: object
+    reason_validity: object
+    arithmetic_substitution: object
+
+
+class CompactPhysics(NamedTuple):
+    """Complete physical outputs without nested parent/readout duplicates."""
+
+    field: object
+    derivative: object
+    valid: object
+    gross_hydrolysis_fmol_s: object
+    gross_synthesis_fmol_s: object
+
+
+class PhysicalChecks(NamedTuple):
+    passive_fraction: object
+    fuel_fraction: object
+    reason_validity: object
+
+
+class WorldStages(NamedTuple):
+    """Three separately compiled family-bound functions, or pure equivalents."""
+
+    family: str
+    inputs: object
+    physics: object
+    checks: object
+
+
+class StagedValues(NamedTuple):
+    raw_proposal: Proposal
+    raw_runtime_layout: object
+    arithmetic_runtime_layout: object
+    arithmetic_control: object
+    readouts: CompactPhysics
+    passive_fraction: object
+    fuel_fraction: object
+    reason_validity: object
+    reason_mask: object
+    arithmetic_substitution: object
+    valid: object
+
+    @property
+    def derivative(self):
+        """Expose the complete derivative without another output-tree copy."""
+        return self.readouts.derivative
+
+
 def project(layout, temperature_K, *, xp=jnp):
     values = dict(
         temperature=temperature_K,
@@ -281,6 +336,197 @@ def evaluate_world(state, layout, certificate, proposal, *, family, xp=jnp):
     )
 
 
+def prepare_numeric_world(layout, certificate, proposal, *, family, xp=jnp):
+    """Pure numeric projection, separate from original host preparation.
+
+    This stage can be compiled independently from the physical solve. It retains
+    every raw proposed coefficient even when arithmetic uses the certified point.
+    """
+    _world_protocol(layout, certificate, proposal, family, xp=xp)
+    t, h = proposal.temperature_K, proposal.step_s
+    flags = xp.stack(
+        (
+            xp.isfinite(t),
+            (t >= 200.0) & (t <= 400.0),
+            t == certificate.temperature_K,
+            xp.all(
+                xp.stack(
+                    [
+                        xp.all(xp.isfinite(value) & (value >= 0) & (value <= 1))
+                        for value in proposal.control
+                    ]
+                )
+            ),
+            xp.isfinite(h) & (h > 0),
+            h <= certificate.maximum_step_s,
+        )
+    )
+    safe_t = xp.where(xp.all(flags[:3]), t, certificate.temperature_K)
+    safe_h = xp.where(xp.all(flags[4:]), h, certificate.maximum_step_s)
+    control = type(proposal.control)(
+        *(xp.where(flags[3], value, 0.0) for value in proposal.control)
+    )
+    return NumericInputs(
+        project(layout, t, xp=xp),
+        project(layout, safe_t, xp=xp),
+        control,
+        safe_h,
+        flags,
+        ~xp.all(flags),
+    )
+
+
+def compact_physics_world(state, runtime_layout, control, *, family, xp=jnp):
+    """Complete unbatched RHS/field stage with one copy of each physical tree.
+
+    All original rate laws and validity calculations execute. Nested readout
+    parents are not compiler outputs; actual per-owner gross fuel flows remain
+    available to the separate unchanged turnover checks.
+    """
+    if (
+        family not in IMPLEMENTATIONS
+        or type(state) is not IMPLEMENTATIONS[family].STATE_TYPE
+        or type(runtime_layout) is not IMPLEMENTATIONS[family].LAYOUT_TYPE
+    ):
+        raise ValueError("Compact physical stage requires the exact reviewed family state/layout")
+    result = IMPLEMENTATIONS[family].readouts(state, control, runtime_layout, xp=xp)
+    hydrolysis = synthesis = xp.zeros_like(runtime_layout.active, dtype=xp.float64)
+    if hasattr(runtime_layout, "energy_initial_amount_fmol"):
+        parent = result.parent if hasattr(result, "parent") else result
+        hydrolysis = parent.exchange.gross_hydrolysis_fmol_s
+        synthesis = parent.exchange.gross_synthesis_fmol_s
+    return CompactPhysics(result.field, result.derivative, result.valid, hydrolysis, synthesis)
+
+
+def check_physics_world(state, runtime_layout, control, step_s, physics, *, family, xp=jnp):
+    """Seven physical admission predicates, outside the complete RHS executable."""
+    if family not in IMPLEMENTATIONS or type(physics) is not CompactPhysics:
+        raise ValueError("Physical checks require a reviewed family and compact physical tree")
+    implementation = IMPLEMENTATIONS[family]
+    if (
+        type(state) is not implementation.STATE_TYPE
+        or type(runtime_layout) is not implementation.LAYOUT_TYPE
+        or type(physics.derivative) is not implementation.STATE_TYPE
+        or any(
+            value.shape != getattr(state, name).shape
+            for name, value in physics.derivative._asdict().items()
+        )
+        or getattr(physics.valid, "shape", None) != ()
+        or getattr(physics.valid, "dtype", None) != xp.bool_
+        or any(
+            getattr(value, "shape", None) != runtime_layout.active.shape
+            or getattr(value, "dtype", None) != xp.float64
+            for value in (physics.gross_hydrolysis_fmol_s, physics.gross_synthesis_fmol_s)
+        )
+    ):
+        raise ValueError(
+            "Physical checks require exact family/derivative/gross-owner axes and dtypes"
+        )
+    if step_s.shape != () or step_s.dtype != xp.float64:
+        raise ValueError("Physical checks require an explicit scalar float64 arithmetic step")
+    derivative, field = physics.derivative, physics.field
+    stage_domain = IMPLEMENTATIONS[family].domain_valid(
+        state, runtime_layout, runtime_layout.active, xp=xp
+    )
+    finite = xp.all(xp.stack([xp.all(xp.isfinite(value)) for value in derivative]))
+    energy = xp.isfinite(field.energy_balance_pJ_s) & (xp.abs(field.energy_balance_pJ_s) <= 1e-10)
+    dissipated = xp.all(
+        xp.stack(
+            [
+                xp.all(value >= -1e-12)
+                for name, value in derivative._asdict().items()
+                if name.endswith("_dissipated_energy_pJ")
+            ]
+        )
+    )
+    passive, transport_valid = _passive_fraction(
+        state, control, runtime_layout, field, step_s, xp=xp
+    )
+    fuel_fraction = xp.asarray(0.0)
+    if hasattr(runtime_layout, "energy_initial_amount_fmol"):
+        amount = fuel.energy_amounts(state, runtime_layout)
+        gross = physics.gross_hydrolysis_fmol_s + physics.gross_synthesis_fmol_s
+        fraction = xp.where(
+            runtime_layout.active,
+            gross / xp.where(runtime_layout.active, xp.min(amount, axis=0), 1.0),
+            0.0,
+        )
+        fuel_fraction = step_s * xp.max(fraction, initial=0.0)
+    flags = xp.stack(
+        (
+            stage_domain & physics.valid,
+            field.converged,
+            finite,
+            energy,
+            dissipated,
+            transport_valid & xp.isfinite(passive) & (passive <= 0.05),
+            xp.isfinite(fuel_fraction) & (fuel_fraction <= 0.05),
+        )
+    )
+    return PhysicalChecks(passive, fuel_fraction, flags)
+
+
+def assemble_staged_values(proposal, inputs, physics, checks, *, xp=jnp):
+    """Attach raw evidence and all thirteen reasons without repeating physics."""
+    if (
+        type(proposal) is not Proposal
+        or type(inputs) is not NumericInputs
+        or type(physics) is not CompactPhysics
+        or type(checks) is not PhysicalChecks
+        or inputs.reason_validity.shape != (6,)
+        or checks.reason_validity.shape != (7,)
+        or inputs.reason_validity.dtype != xp.bool_
+        or checks.reason_validity.dtype != xp.bool_
+    ):
+        raise ValueError("Staged assembly requires the complete typed per-world stage outputs")
+    flags = xp.concatenate((inputs.reason_validity, checks.reason_validity))
+    reason_mask = xp.sum(
+        xp.where(
+            flags,
+            xp.uint32(0),
+            xp.left_shift(xp.uint32(1), xp.arange(len(REASONS), dtype=xp.uint32)),
+        ),
+        dtype=xp.uint32,
+    )
+    return StagedValues(
+        proposal,
+        inputs.raw_runtime_layout,
+        inputs.arithmetic_runtime_layout,
+        inputs.arithmetic_control,
+        physics,
+        checks.passive_fraction,
+        checks.fuel_fraction,
+        flags,
+        reason_mask,
+        inputs.arithmetic_substitution,
+        reason_mask == 0,
+    )
+
+
+def evaluate_world_staged(state, layout, certificate, proposal, *, family, xp=jnp):
+    """Convenience composition for parity; compile its three stages separately.
+
+    Jitting this composition would recreate a fused graph. A bounded compiled
+    caller instead executes prepare_numeric_world, compact_physics_world and
+    check_physics_world as separate executables for each original world, then
+    assembles the result. No new compiled-memory or execution claim is implied.
+    """
+    inputs = prepare_numeric_world(layout, certificate, proposal, family=family, xp=xp)
+    physics = compact_physics_world(
+        state, inputs.arithmetic_runtime_layout, inputs.arithmetic_control, family=family, xp=xp
+    )
+    checks = check_physics_world(
+        state,
+        inputs.arithmetic_runtime_layout,
+        inputs.arithmetic_control,
+        inputs.arithmetic_step_s,
+        physics,
+        family=family,
+        xp=xp,
+    )
+    return assemble_staged_values(proposal, inputs, physics, checks, xp=xp)
+
+
 def _batch_world_count(numeric, proposal, family):
     """Static complete-cohort protocol, identical for NumPy and JAX tracing."""
     if (
@@ -340,3 +586,44 @@ def evaluate_batch(numeric, proposal, *, family, xp=jnp):
     return jax.vmap(lambda s, p, c, raw: evaluate_world(s, p, c, raw, family=family, xp=xp))(
         numeric.state, numeric.layout, numeric.certificate, proposal
     )
+
+
+def evaluate_batch_staged(numeric, proposal, *, family, xp=jnp, stages=None):
+    """Map complete separately executed worlds after the full cohort protocol.
+
+    Supply WorldStages with three independently compiled family-bound functions
+    to keep executable boundaries between projection, physics and checks. The
+    default calls their pure equivalents. Do not jit this orchestration wrapper:
+    that would fuse the stages and unroll the full cohort into one compiler graph.
+    """
+    count = _batch_world_count(numeric, proposal, family)
+    if stages is None:
+        stages = WorldStages(
+            family,
+            lambda p, c, raw: prepare_numeric_world(p, c, raw, family=family, xp=xp),
+            lambda s, p, u: compact_physics_world(s, p, u, family=family, xp=xp),
+            lambda s, p, u, h, v: check_physics_world(s, p, u, h, v, family=family, xp=xp),
+        )
+    if (
+        type(stages) is not WorldStages
+        or stages.family != family
+        or not all(callable(value) for value in stages[1:])
+    ):
+        raise ValueError("Staged cohort execution requires all three exact family-bound stages")
+    rows = []
+    for i in range(count):
+        world = jax.tree.map(lambda value, i=i: value[i], numeric)
+        raw = jax.tree.map(lambda value, i=i: value[i], proposal)
+        inputs = stages.inputs(world.layout, world.certificate, raw)
+        physics = stages.physics(
+            world.state, inputs.arithmetic_runtime_layout, inputs.arithmetic_control
+        )
+        checks = stages.checks(
+            world.state,
+            inputs.arithmetic_runtime_layout,
+            inputs.arithmetic_control,
+            inputs.arithmetic_step_s,
+            physics,
+        )
+        rows.append(assemble_staged_values(raw, inputs, physics, checks, xp=xp))
+    return jax.tree.map(lambda *values: xp.stack(values), *rows)

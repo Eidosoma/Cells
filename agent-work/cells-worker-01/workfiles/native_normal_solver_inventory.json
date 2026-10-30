@@ -1,0 +1,555 @@
+{
+  "coverage": [
+    {
+      "existing": [
+        "src/cells/core/physiology_native_calendar.py",
+        "src/cells/core/physiology_block_calendar.py"
+      ],
+      "gap": "Full source lifecycle/config initialization and all event joins remain separate",
+      "stage": "calendar and event guards"
+    },
+    {
+      "existing": [
+        "src/cells/processes/kinetic_pump.py",
+        "src/cells/processes/source_electrochemistry.py",
+        "src/cells/processes/junction_gate.py"
+      ],
+      "gap": "Per-ion gate invocation count, source flux-buffer ownership and chronological old/new concentration use",
+      "stage": "membrane pumps/electroflux and junctions"
+    },
+    {
+      "existing": [
+        "src/cells/processes/betse_environment_transport.py",
+        "src/cells/processes/betse_geometry.py"
+      ],
+      "gap": "Full field/transport/bath feedback; scatter aliases, gauge and boundary chronology",
+      "stage": "ECM transport and geometry"
+    },
+    {
+      "existing": [
+        "src/cells/processes/finite_calcium_pumps.py",
+        "src/cells/processes/betse_network_transport.py",
+        "src/cells/processes/betse_network_reactions.py",
+        "src/cells/processes/betse_network_modulation.py",
+        "src/cells/processes/betse_perturbations.py"
+      ],
+      "gap": "Full native source hook ordering and current/extra-charge publication through network guards",
+      "stage": "calcium/networks/noise"
+    },
+    {
+      "existing": [
+        "src/cells/processes/betse_fluid_flow.py",
+        "src/cells/processes/betse_deformation.py",
+        "src/cells/processes/betse_tissue_cut.py"
+      ],
+      "gap": "Full native geometry/material/field remap and coupled work law; Root salt/water energy diagnosis excluded",
+      "stage": "forces and geometry mutation"
+    },
+    {
+      "existing": [
+        "src/cells/core/physiology_tissue_step.py",
+        "src/cells/core/physiology_protein_loop.py"
+      ],
+      "gap": "Conservative dynamics are distinct from native update_Co then GJ bulk-only update and clipping",
+      "stage": "final material commit"
+    },
+    {
+      "existing": [],
+      "gap": "Selected new betse_normal_current prefix, through sim.Jc",
+      "stage": "post-flux intracellular charge/current"
+    },
+    {
+      "existing": [
+        "src/cells/numerics/extracellular_field.py",
+        "src/cells/numerics/surface_field.py"
+      ],
+      "gap": "Native HH/Gaussian/BVP/screening and polarized voltage chronology; existing conservative field remains distinct",
+      "stage": "extracellular field and voltage feedback"
+    },
+    {
+      "existing": [
+        "src/cells/physiology_initial_preparation_io.py",
+        "src/cells/physiology_initial_loop_io.py"
+      ],
+      "gap": "Root-owned full initialization/caller handoff; no whole native initializer equivalence inferred",
+      "stage": "initialization and handoff"
+    }
+  ],
+  "full_native_solver_correspondence_qualified": false,
+  "kind": "cells.native_full_normal_correspondence_inventory@1",
+  "lexical_loop_trace": [
+    {
+      "calls": [
+        {
+          "callee": "time.time",
+          "line": 1172
+        }
+      ],
+      "first_line": 1171,
+      "guard": "is_time_step_first",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1172,
+      "ordinal": 0
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.fluxes_mem.fill",
+          "line": 1175
+        }
+      ],
+      "first_line": 1175,
+      "guard": null,
+      "iterator": null,
+      "kind": "Expr",
+      "last_line": 1175,
+      "ordinal": 1
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.fluxes_gj.fill",
+          "line": 1176
+        }
+      ],
+      "first_line": 1176,
+      "guard": null,
+      "iterator": null,
+      "kind": "Expr",
+      "last_line": 1176,
+      "ordinal": 2
+    },
+    {
+      "calls": [
+        {
+          "callee": "np.zeros",
+          "line": 1179
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1180
+        },
+        {
+          "callee": "len",
+          "line": 1179
+        },
+        {
+          "callee": "len",
+          "line": 1180
+        }
+      ],
+      "first_line": 1178,
+      "guard": "p.is_ecm",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1180,
+      "ordinal": 3
+    },
+    {
+      "calls": [
+        {
+          "callee": "phase.dyna.fire_events",
+          "line": 1188
+        }
+      ],
+      "first_line": 1187,
+      "guard": "phase.kind is SimPhaseKind.SIM",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1188,
+      "ordinal": 4
+    },
+    {
+      "calls": [
+        {
+          "callee": "np.zeros",
+          "line": 1194
+        }
+      ],
+      "first_line": 1193,
+      "guard": "p.alpha_NaK == 0.0",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1194,
+      "ordinal": 5
+    },
+    {
+      "calls": [
+        {
+          "callee": "stb.pumpNaKATP",
+          "line": 1199
+        },
+        {
+          "callee": "stb.pumpNaKATP",
+          "line": 1212
+        }
+      ],
+      "first_line": 1196,
+      "guard": "p.alpha_NaK > 0.0",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1234,
+      "ordinal": 6
+    },
+    {
+      "calls": [
+        {
+          "callee": "np.ones",
+          "line": 1254
+        },
+        {
+          "callee": "self.update_gj",
+          "line": 1272
+        },
+        {
+          "callee": "self.update_intra",
+          "line": 1279
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 1257
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 1261
+        },
+        {
+          "callee": "self.update_ecm",
+          "line": 1276
+        }
+      ],
+      "first_line": 1253,
+      "guard": null,
+      "iterator": "self.movingIons",
+      "kind": "For",
+      "last_line": 1279,
+      "ordinal": 7
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.ca_handler",
+          "line": 1283
+        }
+      ],
+      "first_line": 1282,
+      "guard": "p.ions_dict['Ca'] == 1",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1283,
+      "ordinal": 8
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.molecules.core.clear_run_loop",
+          "line": 1291
+        },
+        {
+          "callee": "self.molecules.core.run_loop",
+          "line": 1303
+        },
+        {
+          "callee": "self.molecules.core.run_loop_transporters",
+          "line": 1294
+        },
+        {
+          "callee": "self.molecules.core.run_loop_channels",
+          "line": 1297
+        },
+        {
+          "callee": "self.molecules.core.run_loop_modulators",
+          "line": 1300
+        }
+      ],
+      "first_line": 1290,
+      "guard": "p.molecules_enabled",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1303,
+      "ordinal": 9
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.grn.core.clear_run_loop",
+          "line": 1307
+        },
+        {
+          "callee": "self.grn.core.run_loop",
+          "line": 1319
+        },
+        {
+          "callee": "self.grn.core.run_loop_transporters",
+          "line": 1310
+        },
+        {
+          "callee": "self.grn.core.run_loop_channels",
+          "line": 1313
+        },
+        {
+          "callee": "self.grn.core.run_loop_modulators",
+          "line": 1316
+        }
+      ],
+      "first_line": 1306,
+      "guard": "p.grn_enabled",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1319,
+      "ordinal": 10
+    },
+    {
+      "calls": [
+        {
+          "callee": "stb.update_Co",
+          "line": 1330
+        },
+        {
+          "callee": "np.random.random",
+          "line": 1327
+        }
+      ],
+      "first_line": 1322,
+      "guard": "p.dynamic_noise == 1 and p.ions_dict['P'] == 1 and (phase.kind is SimPhaseKind.SIM)",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1339,
+      "ordinal": 11
+    },
+    {
+      "calls": [
+        {
+          "callee": "osmotic_P",
+          "line": 1345
+        }
+      ],
+      "first_line": 1344,
+      "guard": "p.deform_osmo",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1345,
+      "ordinal": 12
+    },
+    {
+      "calls": [
+        {
+          "callee": "getFlow",
+          "line": 1348
+        }
+      ],
+      "first_line": 1347,
+      "guard": "p.fluid_flow",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1348,
+      "ordinal": 13
+    },
+    {
+      "calls": [
+        {
+          "callee": "timeDeform",
+          "line": 1352
+        },
+        {
+          "callee": "getDeformation",
+          "line": 1354
+        }
+      ],
+      "first_line": 1350,
+      "guard": "p.deformation",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1354,
+      "ordinal": 14
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.update_all_concs",
+          "line": 1357
+        }
+      ],
+      "first_line": 1357,
+      "guard": null,
+      "iterator": null,
+      "kind": "Expr",
+      "last_line": 1357,
+      "ordinal": 15
+    },
+    {
+      "calls": [
+        {
+          "callee": "self.update_V",
+          "line": 1360
+        }
+      ],
+      "first_line": 1360,
+      "guard": null,
+      "iterator": null,
+      "kind": "Expr",
+      "last_line": 1360,
+      "ordinal": 16
+    },
+    {
+      "calls": [
+        {
+          "callee": "stb.check_v",
+          "line": 1363
+        }
+      ],
+      "first_line": 1363,
+      "guard": null,
+      "iterator": null,
+      "kind": "Expr",
+      "last_line": 1363,
+      "ordinal": 17
+    },
+    {
+      "calls": [
+        {
+          "callee": "phase.callbacks.progressed_next",
+          "line": 1371
+        },
+        {
+          "callee": "self.write2storage",
+          "line": 1374
+        },
+        {
+          "callee": "anim_cells.plot_frame",
+          "line": 1381
+        }
+      ],
+      "first_line": 1368,
+      "guard": "t in time_steps_sampled",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1381,
+      "ordinal": 18
+    },
+    {
+      "calls": [
+        {
+          "callee": "self._log_solver_time_estimate",
+          "line": 1389
+        }
+      ],
+      "first_line": 1384,
+      "guard": "is_time_step_first",
+      "iterator": null,
+      "kind": "If",
+      "last_line": 1390,
+      "ordinal": 19
+    }
+  ],
+  "lexical_not_runtime_trace": true,
+  "numerical_runs": 0,
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "selected_component": {
+    "end_assignment": "sim.Jc",
+    "excludes": [
+      "ECM HH/Gaussian/BVP",
+      "voltage/initialization",
+      "salt/water energy",
+      "global-control program readouts",
+      "conservative solver integration"
+    ],
+    "inputs": [
+      "bulk concentrations",
+      "complete membrane and gap fluxes",
+      "extra charge/current",
+      "original owner/area/normal axes",
+      "source F and sharpness"
+    ],
+    "name": "betse_normal_current",
+    "native_file": "betse/science/physics/ion_current.py"
+  },
+  "source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  },
+  "source_sites": {
+    "betse/science/physics/ion_current.py": {
+      "get_current": {
+        "AST_sha256": "cf2539a4f127759ccb8f9d17915a9cd8acea5866696ec1ef4bdc5a26092702c1",
+        "first_line": 13,
+        "last_line": 171
+      }
+    },
+    "betse/science/sim.py": {
+      "_plot_loop": {
+        "AST_sha256": "4d065b9d5d554bca00b712d6f09f3c8df51f311ad1e5beaf4d7629e8e975735f",
+        "first_line": 2403,
+        "last_line": 2503
+      },
+      "_run_sim_core_loop": {
+        "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "first_line": 1132,
+        "last_line": 1390
+      },
+      "init_dynamics": {
+        "AST_sha256": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+        "first_line": 758,
+        "last_line": 1012
+      },
+      "run_sim_core": {
+        "AST_sha256": "86d7910fa4e55eaba60afa058765aba37a0ac228288462118311237b3784cfb2",
+        "first_line": 1016,
+        "last_line": 1128
+      },
+      "update_V": {
+        "AST_sha256": "555dffb27f1a0c803c47af3fab58c92c88a52bf893fb0859658d7cba9753e574",
+        "first_line": 2007,
+        "last_line": 2083
+      },
+      "update_all_concs": {
+        "AST_sha256": "4526d87d85b86e4392eb0ba28d09f6a2fb66bebcca5273d3910876c9c8a3052d",
+        "first_line": 2086,
+        "last_line": 2111
+      },
+      "update_ecm": {
+        "AST_sha256": "bcc90f6e57c22dc787cd8854802fe0770354732dafa35c9cc98db4942caa53ab",
+        "first_line": 2209,
+        "last_line": 2254
+      },
+      "update_gj": {
+        "AST_sha256": "e1d1c7e08977c3212d6334d35bef3881ac765bdbecb86132256e8621aeb3fd26",
+        "first_line": 2162,
+        "last_line": 2206
+      },
+      "update_intra": {
+        "AST_sha256": "0bf90e600b6a169932d0b4730eabec6a84763c7068469399e8d00b361ac7b6d9",
+        "first_line": 2257,
+        "last_line": 2310
+      }
+    },
+    "betse/science/sim_toolbox.py": {
+      "HH_Decomp": {
+        "AST_sha256": "91d42d8824c058ee0b3c5b4d621fd42d9d1032ec058a4a35bdadcd694133cf66",
+        "first_line": 1236,
+        "last_line": 1290
+      },
+      "div_env": {
+        "AST_sha256": "572aed95565ebd3bba167568ba72cd73ecc94acacef73ea1ea187099c65cdada",
+        "first_line": 1209,
+        "last_line": 1234
+      },
+      "no_negs": {
+        "AST_sha256": "ca58dc1cd3fc9003db9009190f1b134a4c8a678256ecf3692d12f79a66cdb29c",
+        "first_line": 475,
+        "last_line": 503
+      },
+      "update_Co": {
+        "AST_sha256": "21056d19c4b6ecdb6cc7966cee7b9623e546b555ccbd6bd5d0b73dc61f0a75f6",
+        "first_line": 1155,
+        "last_line": 1207
+      }
+    }
+  }
+}
