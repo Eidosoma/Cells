@@ -1,0 +1,231 @@
+{
+  "kind": "cells.worker_atp_transport_workqueue@1",
+  "status": "qualified_frozen_handed_to_chief",
+  "model_id": "resolved_calcium_energy_atp_transport@1",
+  "owner": "Cells Key Developer",
+  "chief_owner": "shared dispatch/public tests/docs",
+  "owned": [
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
+    "src/cells/models/surface_calcium_energy_atp_transport.py",
+    "validation/tissue/calcium_energy_atp_transport_reference.py",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py"
+  ],
+  "protocol": "agent-work/cells-worker-01/workfiles/calcium_energy_atp_transport_protocol.json",
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py": "ba4f209dde5217bc43fe94846114fa67c8c795485039b1494b843ef3fd7fd59b",
+    "src/cells/models/surface_calcium_energy_irreversible_transport.py": "51c060491c372e04500d87da59df9b674348a330d2799ad8d68e76ad6d56e7a2",
+    "validation/tissue/calcium_energy_irreversible_transport_reference.py": "0cf09a1b4102b11d734949bcf4490e6518791c0268b8317f62d3713ae706888c",
+    "validation/tissue/calcium_energy_irreversible_transport_fixtures.py": "ea77de626d1975c8f838b4bc76f789a8e1727b03b3d1f9ec22b7fc0ca67404aa",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport.py": "c80e6df4b02a39aa7134b9fd4a31a7421ce1b3a8e84dddbd2be3b0cecb63ac51",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport_reference.py": "c6f789bd2c38897a249fae16069d85d2b6b8719d920498ffcbd943aca7b5a2ab"
+  },
+  "runs": [
+    {
+      "attempt": "preflight01",
+      "result": "agent-work/cells-worker-01/workfiles/calcium_energy_atp_transport_preflight_attempt01.json",
+      "status": "driver_preflight_failed_no_child"
+    },
+    {
+      "attempt": "02",
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-02",
+      "status": "failed_after_reference_calculation_in_evidence_writer",
+      "physics_source_changed": false
+    },
+    {
+      "attempt": "03",
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-03",
+      "status": "isolated_reference_passed_host46_passed6_failed_reverse_fixture_not_reverse"
+    },
+    {
+      "attempt": "04",
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-04",
+      "status": "isolated_reference_passed_host51_passed1_failed_bad_test_clock"
+    },
+    {
+      "attempt": "05",
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-05",
+      "status": "isolated_reference_passed_host51_passed1_failed_missing_test_control_event"
+    },
+    {
+      "attempt": "06",
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-06",
+      "status": "passed",
+      "result": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-06/result.json",
+      "sha256": "d15fc77aa5c86756bb6572209ca27d0d3fac51cebe2427428e69ca9fcd5ebaf2",
+      "checks": 75
+    }
+  ],
+  "pending": [
+    "Chief public integration qualification and shared documentation"
+  ],
+  "long_jobs_launched": false,
+  "campaign_polled": false,
+  "corrections": [
+    {
+      "source": "validation/tissue/calcium_energy_atp_transport_fixtures.py",
+      "reason": "Actual initial membrane voltage is about -34mV: seven transported Na gave affinity -501.911248J/mol, so intended synthesis arm hydrolyzed. Increase both conserved ionic coefficients to eight; physical laws and all acceptance budgets fixed.",
+      "failure": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-03/production-host-tests.xml"
+    },
+    {
+      "source": "tests/unit/test_surface_calcium_energy_atp_transport.py",
+      "reason": "Gross-bound unit supplied a lone nominal step while retaining the0.75dt observation. Supply the actual accepted event/observation differences; admission equation/budgets unchanged.",
+      "failure": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-04/production-host-tests.xml"
+    },
+    {
+      "source": "tests/unit/test_surface_calcium_energy_atp_transport.py",
+      "reason": "The focused gross test replaced the kcl schedule and thereby deleted the actual0.75dt event while retaining its observation; supplying steps alone cannot add a physical control event. Preserve the original schedules while filtering route IDs. Scientific sources/budgets fixed.",
+      "failure": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-05/production-host-tests.xml"
+    }
+  ],
+  "owned_source_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600"
+  },
+  "qualification": {
+    "result": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-06/result.json",
+    "sha256": "d15fc77aa5c86756bb6572209ca27d0d3fac51cebe2427428e69ca9fcd5ebaf2",
+    "inputs": "/mnt/workspaces/Cells/calcium-energy-atp-transport-development-20261030-06/inputs.json",
+    "inputs_sha256": "91681338d56b5d23ac8b0438df7d4cf44138b70c2a6f5fdf1e35eaaf51d620b9",
+    "checks": 75,
+    "counts": {
+      "production_host": 52,
+      "production_cpu_jax": 1,
+      "independent": 22
+    },
+    "metrics": {
+      "complete_stage_comparisons": 28,
+      "max_rate_error_fraction": 0.003763341958883924,
+      "max_independent_rate_energy_residual_pJ_s": 2.1344037648418634e-14,
+      "histories": {
+        "reverse": {
+          "dt_error_fraction": 0.035258699896646005,
+          "half_dt_error_fraction": 0.0027090825301618235,
+          "oracle_uncertainty_fraction": 1.196156906028461e-06
+        },
+        "active": {
+          "dt_error_fraction": 0.03517884469798876,
+          "half_dt_error_fraction": 0.0027041236178174037,
+          "oracle_uncertainty_fraction": 1.3220653389307616e-06
+        },
+        "mixed": {
+          "dt_error_fraction": 0.03517946024972551,
+          "half_dt_error_fraction": 0.002705354723408927,
+          "oracle_uncertainty_fraction": 1.1470820955915049e-06
+        }
+      },
+      "isolated_mixed_endpoint_balance_pJ": -2.3312921688598e-15
+    },
+    "resources": {
+      "isolated-reference": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 4.7801554531324655,
+        "sampled_peak_process_tree_rss_bytes": 83750912,
+        "sampled_peak_charged_memory_bytes": 83750912,
+        "sampled_peak_summed_process_memory_bytes": 83750912,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 83750912,
+        "minimum_available_host_memory_bytes": 24293679104,
+        "samples": 20,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 180,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T00:06:44.834647+00:00",
+        "automatic_retry": false
+      },
+      "production-host": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 10.810020828153938,
+        "sampled_peak_process_tree_rss_bytes": 198557696,
+        "sampled_peak_charged_memory_bytes": 198557696,
+        "sampled_peak_summed_process_memory_bytes": 198557696,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 198557696,
+        "minimum_available_host_memory_bytes": 22881431552,
+        "samples": 44,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 180,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T00:06:55.646913+00:00",
+        "automatic_retry": false
+      },
+      "production-cpu-jax": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 39.255663997959346,
+        "sampled_peak_process_tree_rss_bytes": 642646016,
+        "sampled_peak_charged_memory_bytes": 642646016,
+        "sampled_peak_summed_process_memory_bytes": 642646016,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 642646016,
+        "minimum_available_host_memory_bytes": 21377421312,
+        "samples": 157,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 180,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T00:07:34.905167+00:00",
+        "automatic_retry": false
+      },
+      "independent": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 44.97535370406695,
+        "sampled_peak_process_tree_rss_bytes": 238157824,
+        "sampled_peak_charged_memory_bytes": 238157824,
+        "sampled_peak_summed_process_memory_bytes": 238157824,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 238157824,
+        "minimum_available_host_memory_bytes": 21776224256,
+        "samples": 180,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 180,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T00:08:19.882732+00:00",
+        "automatic_retry": false
+      }
+    },
+    "sources_unchanged": true,
+    "all_previous_irreversible_sources_unchanged": true
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/CALCIUM_ENERGY_ATP_TRANSPORT_HANDOFF.md",
+  "worker_physics_complete": true
+}

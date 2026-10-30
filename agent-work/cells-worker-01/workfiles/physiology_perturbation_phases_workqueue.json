@@ -1,0 +1,168 @@
+{
+  "kind": "cells.worker_physiology_perturbation_phases@1",
+  "status": "qualified_frozen_handed_to_chief",
+  "owned": [
+    "src/cells/core/physiology_perturbation_phases.py",
+    "validation/perturbations/physiology_perturbation_phases_reference.py",
+    "tests/unit/test_physiology_perturbation_phases.py"
+  ],
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e",
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38",
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "tests/unit/test_physiology_permeability_view.py": "8575cbde3863c26b5fb0d390cb9de7bd8a82c75e383266ec2c121545e1dd9948",
+    "src/cells/core/physiology_tissue_step.py": "c0d8b139101ef48278ab4c9e6e116c8d3ed3715026fa67ecbcb8ec39f9140b58",
+    "validation/tissue/physiology_tissue_step_reference.py": "b525533a90403d2c20c3ff3ee3a8805d5314ba8403d3ab292afb4ea816acec80",
+    "tests/unit/test_physiology_tissue_step.py": "52198656a99237d3b90a42611b0dc554dbc87751781ce450c0e577382f07562c",
+    "src/cells/core/physiology_perturbation_step.py": "fb33883921eb8e01d3fd4e51a2672aec67134260a5c52c3c460d05fc265d2279",
+    "tests/unit/test_physiology_perturbation_step.py": "65c24ef2f4b21aa99e0d7035b460685f933c09491df1fc9286a372951f2bd546",
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/core/physiology_tissue_loop.py": "c0e61d871f9438f0a3e447b3c394c80d6fb4c93fe5cd63bc8ee715c9c7d8c069",
+    "validation/tissue/physiology_tissue_loop_reference.py": "9c5a92b58a6552a7824ba33fc691c3b7434688729dcbb88ee991bce10ccd2a48",
+    "tests/unit/test_physiology_tissue_loop.py": "1ddde275ad3c201f8da7efef7fb05172ec7e7e0438a32ec7b1fba49ea44a452a",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/core/surface_calcium_spec.py": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/core/physiology_protein_projection.py": "b90eb054ef0d670538c53771b0e185229ebf8f84e65cd41ffd0a918efbc44ba7",
+    "validation/tissue/physiology_protein_projection_reference.py": "41a3e916c347af2f8dbeebd1957348ff19fa48661530bff4d6b2849344e7ce22",
+    "tests/unit/test_physiology_protein_projection.py": "c692be4232b28c73e42c7ad85a9c109fc87a3b965a5f30274a1b1cba69ff3e89",
+    "src/cells/core/physiology_protein_thermodynamics.py": "3a240c5dfcf6a93674588325801d99943a8e4a89592d2b525b70dc29ff12f1b3",
+    "validation/tissue/physiology_protein_thermodynamics_reference.py": "c1b2419294db2a2eaf5ce7aaa9b4384d95afb7d3cc50638173a905d4624a6bde",
+    "tests/unit/test_physiology_protein_thermodynamics.py": "e24b9425cdf45f81356e230fb6405547876f52760819956f432ea6431dae68c4",
+    "validation/perturbations/betse_perturbations_reference.py": "06f0aaa041e84bcdf1e4ac1899ad5c309a6be66700505bc6c5cadf720634d6dc",
+    "validation/perturbations/betse_perturbations_fixtures.py": "749937d8cfe23523a5c4fb649683d5819a87335ea8c060c0cbc3c662596fe554"
+  },
+  "api": [
+    "prepare(state,binding)->PerturbationPreparation",
+    "finish(state,binding,preparation)->existing PerturbationTransition"
+  ],
+  "contract": "agent-work/cells-worker-01/workfiles/PHYSIOLOGY_PERTURBATION_PHASES_NOTES.md",
+  "source_order_audit": "agent-work/cells-worker-01/workfiles/physiology_loop_bridge_source_audit.json",
+  "scope": "Pure pre-ion held diffusion preparation and post-ion exactly one qualified full-dt component proposal; complete source/RNG/cache/binding seals, no accepted publication, numeric evolution, coupling/native-loop/failure-prefix claim",
+  "qual_plan": {
+    "unit_cases": 35,
+    "initial_and_evolved_component_calls": 36,
+    "reference_prepare_finish_forms": 72,
+    "profiles": 6,
+    "rng_laws": [
+      "native_cached_MT19937",
+      "stable_qualified_Threefry"
+    ],
+    "production_imports_denied": [
+      "cells",
+      "jax",
+      "jaxlib"
+    ],
+    "own_continuous_reference": true
+  },
+  "tolerances": {
+    "protein_relative": 5e-13,
+    "protein_absolute_mol_m3": 2e-14,
+    "diffusion_relative": 5e-13,
+    "diffusion_absolute_m2_s": 1e-30,
+    "source_and_qualified_transition": "exact complete-state/tape equality",
+    "conservation": "unchanged original component guard"
+  },
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "runs": [
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-perturbation-phases-tests-20261030-01",
+      "status": "all35 cases and fresh36-call/72-form/12-sequence independent replay pass"
+    }
+  ],
+  "pending": [],
+  "shared_files_changed": [],
+  "long_job_launched": false,
+  "campaign_polled": false,
+  "owned_sha256": {
+    "src/cells/core/physiology_perturbation_phases.py": "3dfaef25629b1e067f4af37b2cd66fda3c07279a015ec39b485ad7ec9663c7f8",
+    "validation/perturbations/physiology_perturbation_phases_reference.py": "fe8a59a9e45ea1d544a7b64f07fe7c480ea0d030675976e1649bec6f2acd6900",
+    "tests/unit/test_physiology_perturbation_phases.py": "44aac991139f130b91137abdaece9cd4561122c07b3acad9d9e732cae67e33a8"
+  },
+  "owned_sources_frozen": true,
+  "receipt": {
+    "path": "/mnt/workspaces/Cells/physiology-perturbation-phases-tests-20261030-01/result.json",
+    "sha256": "1aef291755bac4381bb86019097d358525980816ee04e4eefa52cdd5feb97ee2",
+    "checks": 35,
+    "actual_component_calls": 36,
+    "prepare_finish_forms": 72,
+    "continuous_reference_sequences": 12,
+    "maximum_reference_error_fraction": 0.0004396922551123043,
+    "production_imports_denied": true,
+    "resource_results": {
+      "unit": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 8.30299718491733,
+        "sampled_peak_process_tree_rss_bytes": 303939584,
+        "sampled_peak_charged_memory_bytes": 303939584,
+        "sampled_peak_summed_process_memory_bytes": 303939584,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 303939584,
+        "minimum_available_host_memory_bytes": 21749342208,
+        "samples": 34,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T04:57:02.944164+00:00",
+        "automatic_retry": false
+      },
+      "isolated-reference": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 0.5211045360192657,
+        "sampled_peak_process_tree_rss_bytes": 33062912,
+        "sampled_peak_charged_memory_bytes": 33062912,
+        "sampled_peak_summed_process_memory_bytes": 33062912,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 33062912,
+        "minimum_available_host_memory_bytes": 23582851072,
+        "samples": 3,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T04:57:03.467485+00:00",
+        "automatic_retry": false
+      }
+    }
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/PHYSIOLOGY_PERTURBATION_PHASES_NOTES.md"
+}

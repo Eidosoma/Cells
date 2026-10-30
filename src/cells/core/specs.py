@@ -1071,6 +1071,34 @@ class SimulationSpec:
 
         if isinstance(m, SurfaceCalciumEnergyTransportExcisionModel):
             return to_dict(self)
+        from cells.core.surface_calcium_energy_irreversible_transport_excision_spec import (
+            SurfaceCalciumEnergyIrreversibleTransportExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyIrreversibleTransportExcisionModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_irreversible_transport_spec import (
+            SurfaceCalciumEnergyIrreversibleTransportModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyIrreversibleTransportModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_atp_transport_excision_spec import (
+            SurfaceCalciumEnergyATPTransportExcisionModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyATPTransportExcisionModel):
+            return to_dict(self)
+        from cells.core.surface_calcium_energy_atp_transport_spec import (
+            SurfaceCalciumEnergyATPTransportModel,
+            to_dict,
+        )
+
+        if isinstance(m, SurfaceCalciumEnergyATPTransportModel):
+            return to_dict(self)
         from cells.core.surface_calcium_energy_transport_spec import (
             SurfaceCalciumEnergyTransportModel,
             to_dict,
@@ -1598,6 +1626,34 @@ def parse_spec(data: dict) -> SimulationSpec:
         and data["model"].get("id") == "resolved_calcium_energy_transport_excision@1"
     ):
         from cells.core.surface_calcium_energy_transport_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_irreversible_transport_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_irreversible_transport_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_irreversible_transport@1"
+    ):
+        from cells.core.surface_calcium_energy_irreversible_transport_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_atp_transport_excision@1"
+    ):
+        from cells.core.surface_calcium_energy_atp_transport_excision_spec import parse
+
+        return parse(data)
+    if (
+        isinstance(data["model"], dict)
+        and data["model"].get("id") == "resolved_calcium_energy_atp_transport@1"
+    ):
+        from cells.core.surface_calcium_energy_atp_transport_spec import parse
 
         return parse(data)
     if (

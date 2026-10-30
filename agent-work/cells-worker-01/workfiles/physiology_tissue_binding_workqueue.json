@@ -1,0 +1,95 @@
+{
+  "kind": "cells.worker_physiology_tissue_binding@1",
+  "status": "qualified_frozen_chief_bound_checkpoint_passed",
+  "owned": [
+    "src/cells/core/physiology_tissue_binding.py",
+    "tests/unit/test_physiology_tissue_binding.py"
+  ],
+  "scope": "Approved exact ordinary passive@1, ionic@12, calcium@11, fuel@5 owner/units binding; native matrix mode, no timing/noise draw/protein charge",
+  "api": [
+    "bind_tissue",
+    "initial_diffusion",
+    "permeability_to_diffusion",
+    "diffusion_to_permeability",
+    "component_permeability",
+    "binding_record",
+    "restore_binding",
+    "validate_binding"
+  ],
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_seconds": 180,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "runs": [
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-01",
+      "status": "63_passed1_test_roundoff_assertion_failed"
+    },
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-02",
+      "status": "passed",
+      "result": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-02/result.json",
+      "sha256": "75355c0cb7fec463be1175ce793eaac1156ebff65ae4997947b85a464f01e033",
+      "checks": 75
+    }
+  ],
+  "pending": [],
+  "long_job_launched": false,
+  "campaign_polled": false,
+  "correction": {
+    "source": "tests/unit/test_physiology_tissue_binding.py",
+    "reason": "Protein flux stocks are around1e-20mol, double accumulation residual1.504632769052528e-36mol; arbitrary new absolute1e-38 test was below floating rounding. Use unchanged component BALANCE_RELATIVE_TOLERANCE3e-13 times gross; independent per-owner Decimal3e-15 relative checks unchanged. Added malformed JSON replay and inverse current/base/scheduled domain coverage.",
+    "physical_code_changed": false,
+    "failure": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-01/tests.xml"
+  },
+  "worker_binding_complete": true,
+  "owned_source_sha256": {
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e"
+  },
+  "qualification": {
+    "result": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-02/result.json",
+    "sha256": "75355c0cb7fec463be1175ce793eaac1156ebff65ae4997947b85a464f01e033",
+    "inputs": "/mnt/workspaces/Cells/physiology-tissue-binding-tests-20261030-02/inputs.json",
+    "inputs_sha256": "34bc2e238b396e8f837197947fa8feac647cc604f073c2652209f842063399d8",
+    "checks": 75,
+    "resources": {
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_seconds": 4.531191386049613,
+      "sampled_peak_process_tree_rss_bytes": 198729728,
+      "sampled_peak_charged_memory_bytes": 198729728,
+      "sampled_peak_summed_process_memory_bytes": 198729728,
+      "shared_address_space_samples": 0,
+      "process_tree_memory_metric": "rss",
+      "rss_fallback_samples": 0,
+      "observed_process_high_water_bytes": 198729728,
+      "minimum_available_host_memory_bytes": 24416591872,
+      "samples": 19,
+      "limits": {
+        "process_tree_memory_metric": "rss",
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_individual_process_rss_bytes": 1073741824,
+        "min_available_host_memory_bytes": 8589934592,
+        "max_wall_seconds": 180,
+        "sample_interval_seconds": 0.25,
+        "max_process_tree_rss_bytes": 1073741824
+      },
+      "utc": "2026-10-30T00:24:31.247171+00:00",
+      "automatic_retry": false
+    },
+    "sources_unchanged": true
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/PHYSIOLOGY_TISSUE_BINDING_HANDOFF.md",
+  "chief_integration": {
+    "status": "passed_as_reported_by_chief",
+    "result": "/mnt/workspaces/Cells/physiology-tissue-checkpoint-tests-20261030-01/result.json",
+    "new_checks": 24,
+    "regression_checks": 49,
+    "seconds": 32.95,
+    "kind": "cells.physiology_tissue_checkpoint@3"
+  }
+}

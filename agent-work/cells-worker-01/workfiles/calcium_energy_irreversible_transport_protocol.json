@@ -1,0 +1,38 @@
+{
+  "kind": "cells.irreversible_owned_transport_short_CPU_protocol@1",
+  "scope": "new synthetic None-energy species-preserving physical coupling; parent38+6route fields; no whole native/GPU/long relaxation claim",
+  "model_id": "resolved_calcium_energy_irreversible_transport@1",
+  "source_branch": "literal None/stringNone unchanged; signed native rates/regulation retained",
+  "physical_work": "chemical=RT sum(nu log(co/ci)); electric=-F sum(z nu) Vm; heat=extent*(W-chemical-electric)/1000",
+  "ownership": "actual owned free chemical cytosol and finite exterior; external signed work explicit; no direct ATP consumption",
+  "guard": "all inherited physical/pool/chemical bounds; native participating substrates positive even blocked; actual physical heat nonnegative; no clipping",
+  "new_files": [
+    "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py",
+    "src/cells/models/surface_calcium_energy_irreversible_transport.py",
+    "validation/tissue/calcium_energy_irreversible_transport_reference.py",
+    "validation/tissue/calcium_energy_irreversible_transport_fixtures.py",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport.py",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport_reference.py"
+  ],
+  "tolerances": {
+    "state_rtol": 3e-10,
+    "state_atol": 3e-12,
+    "charge_atol_C": 3e-23,
+    "potential_atol_V": 3e-13,
+    "rate_energy_atol_pJ_s": 1e-10,
+    "endpoint_energy_atol_pJ": 1e-10,
+    "oracle_uncertainty_share": 0.1
+  },
+  "history": "2 original1.25us steps plus exact0.75dt route-only boundary; dt anddt/2 vs independent DOP853 standard/tight; no settling/order claim",
+  "resources": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 180,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "gpu": false,
+    "persistent_cache": false
+  },
+  "automatic_retry": false,
+  "active_job_polls": 0
+}

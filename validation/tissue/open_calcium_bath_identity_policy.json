@@ -1,0 +1,20 @@
+{
+  "kind": "cells.open_calcium_bath_comparison_policy@2",
+  "integration_protocol_kind": "cells.open_calcium_bath_full8us_pipeline_protocol@1",
+  "integration_protocol_sha256": "8eea432dbf4ed3b230c2eb433e0a3766349fd47853e39776477079230a84b305",
+  "temporal_order_exempt_channels": ["observer__energy_balance_pJ_s"],
+  "exemption_scope": "Temporal-order acceptance only, for the instantaneous maintenance-parent algebraic energy closure; retain its original raw refinement metrics.",
+  "unchanged_gates": [
+    "all full-grid state, potential and observer accuracy budgets",
+    "independent reference tightening uncertainty share",
+    "temporal refinement of every other channel",
+    "absolute instantaneous energy closure at the original rate_energy_atol_pJ_s",
+    "independent accepted-state material, charge, fuel and accumulated-energy invariants",
+    "original RK4 stage, domain and held-control receipts",
+    "independent physical observer checks",
+    "complete original grids, durations, source identities and actual same-variant INIT carry"
+  ],
+  "new_numerical_tolerances": {},
+  "scope": "Post hoc reanalysis of saved manufactured trajectories. Original failures remain failures. No new trajectory, observed convergence order, independent biological case, native BETSE correspondence or GPU qualification is established.",
+  "future_claim_requirement": "Before extending beyond these saved recipes, predeclare and qualify fresh full trajectories and held-out states; solver refinements and reruns are not independent biological cases."
+}

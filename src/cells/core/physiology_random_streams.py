@@ -16,8 +16,16 @@ from cells.processes import betse_perturbations as perturb
 
 KIND = "cells.physiology_random_stream@1"
 MAX_TICK = 2**64 - 1
+_NO_BINDING = object()
 RECORD_FIELDS = {
-    "kind", "law_id", "stream_id", "world_id", "next_tick", "layout_identity", "rng", "identity"
+    "kind",
+    "law_id",
+    "stream_id",
+    "world_id",
+    "next_tick",
+    "layout_identity",
+    "rng",
+    "identity",
 }
 
 
@@ -33,7 +41,11 @@ def _uint(value, bits, name):
 
 
 def _identity(value):
-    if type(value) is not str or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+    if (
+        type(value) is not str
+        or len(value) != 64
+        or any(c not in "0123456789abcdef" for c in value)
+    ):
         raise ValueError("Require a complete canonical layout identity")
 
 
@@ -42,16 +54,23 @@ def _binding_identity(binding):
         raise ValueError("Require an explicit qualified perturbation Binding")
     for name in ("cell_ids", "membrane_ids", "environment_ids", "ion_ids"):
         ids = getattr(binding, name)
-        if (type(ids) is not tuple or not 0 < len(ids) <= perturb.MAX_OWNERS
+        if (
+            type(ids) is not tuple
+            or not 0 < len(ids) <= perturb.MAX_OWNERS
             or any(type(value) is not str or not value for value in ids)
-            or len(set(ids)) != len(ids)):
+            or len(set(ids)) != len(ids)
+        ):
             raise ValueError("Invalid explicit perturbation owner axis: " + name)
     _identity(binding.identity)
     try:
         payload = dict(
-            law_id=perturb.LAW_ID, cell_ids=binding.cell_ids, membrane_ids=binding.membrane_ids,
-            environment_ids=binding.environment_ids, ion_ids=binding.ion_ids,
-            boundary_occurrences=binding.boundary_cell_occurrences, mode=binding.environment_mode,
+            law_id=perturb.LAW_ID,
+            cell_ids=binding.cell_ids,
+            membrane_ids=binding.membrane_ids,
+            environment_ids=binding.environment_ids,
+            ion_ids=binding.ion_ids,
+            boundary_occurrences=binding.boundary_cell_occurrences,
+            mode=binding.environment_mode,
             provenance=json.loads(binding.provenance_json),
             kernel={key: value.tolist() for key, value in binding.kernel._asdict().items()},
         )
@@ -60,11 +79,17 @@ def _binding_identity(binding):
         raise ValueError("Invalid perturbation binding identity") from error
     if not same:
         raise ValueError("Perturbation owners/layout changed after binding")
-    for owner, count in ((binding.kernel.owner, len(binding.cell_ids)),
-                         (binding.kernel.environment_owner, len(binding.environment_ids))):
+    for owner, count in (
+        (binding.kernel.owner, len(binding.cell_ids)),
+        (binding.kernel.environment_owner, len(binding.environment_ids)),
+    ):
         value = np.asarray(owner)
-        if (value.shape != (len(binding.membrane_ids),) or value.dtype.kind not in "iu"
-            or np.any(value < 0) or np.any(value >= count)):
+        if (
+            value.shape != (len(binding.membrane_ids),)
+            or value.dtype.kind not in "iu"
+            or np.any(value < 0)
+            or np.any(value >= count)
+        ):
             raise ValueError("Invalid explicit membrane cell/environment ownership")
     return binding.identity
 
@@ -107,11 +132,11 @@ def new_stream(binding, rng, *, stream_id, world_id, next_tick=0):
     return PhysiologyRandomStream(stream_id, world_id, next_tick, _binding_identity(binding), rng)
 
 
-def _checked(stream, binding=None):
+def _checked(stream, binding=_NO_BINDING):
     if type(stream) is not PhysiologyRandomStream:
         raise ValueError("Require an explicit physiological random stream")
     stream.__post_init__()
-    if binding is not None and stream.layout_identity != _binding_identity(binding):
+    if binding is not _NO_BINDING and stream.layout_identity != _binding_identity(binding):
         raise ValueError("Stream belongs to another layout; explicitly rebind surviving owners")
 
 
@@ -141,9 +166,15 @@ def draw(stream, binding, *, site, enabled=True):
 def stream_record(stream):
     """Return a fresh JSON record, preserving MT19937's complete Gaussian cache."""
     _checked(stream)
-    payload = dict(kind=KIND, law_id=perturb.LAW_ID, stream_id=stream.stream_id,
-        world_id=stream.world_id, next_tick=stream.next_tick,
-        layout_identity=stream.layout_identity, rng=_rng_record(stream.rng, stream.world_id))
+    payload = dict(
+        kind=KIND,
+        law_id=perturb.LAW_ID,
+        stream_id=stream.stream_id,
+        world_id=stream.world_id,
+        next_tick=stream.next_tick,
+        layout_identity=stream.layout_identity,
+        rng=_rng_record(stream.rng, stream.world_id),
+    )
     return payload | dict(identity=_digest(payload))
 
 
@@ -166,8 +197,13 @@ def restore_stream(record, binding):
         rng = perturb.StableCoordinates(raw["seed"], raw["world_id"])
     else:
         raise ValueError("Unsupported physiological RNG record")
-    stream = new_stream(binding, rng, stream_id=record["stream_id"], world_id=record["world_id"],
-                        next_tick=record["next_tick"])
+    stream = new_stream(
+        binding,
+        rng,
+        stream_id=record["stream_id"],
+        world_id=record["world_id"],
+        next_tick=record["next_tick"],
+    )
     if stream_record(stream) != record:
         raise ValueError("Noncanonical or incomplete physiological stream record")
     return stream

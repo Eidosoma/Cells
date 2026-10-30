@@ -11,6 +11,8 @@ from cells.core.excision import (
     is_active,
     is_calcium,
     is_calcium_energy,
+    is_calcium_energy_atp_transport,
+    is_calcium_energy_irreversible_transport,
     is_calcium_energy_mitochondria,
     is_calcium_energy_regulated_v2,
     is_calcium_energy_transport,
@@ -25,6 +27,10 @@ CALCIUM_KIND = "cells.calcium_tissue_excision@1"
 CALCIUM_ENERGY_KIND = "cells.calcium_energy_tissue_excision@1"
 CALCIUM_ENERGY_REGULATED_V2_KIND = "cells.calcium_energy_regulated_v2_tissue_excision@1"
 CALCIUM_ENERGY_TRANSPORT_KIND = "cells.calcium_energy_transport_tissue_excision@1"
+CALCIUM_ENERGY_IRREVERSIBLE_TRANSPORT_KIND = (
+    "cells.calcium_energy_irreversible_transport_tissue_excision@1"
+)
+CALCIUM_ENERGY_ATP_TRANSPORT_KIND = "cells.calcium_energy_atp_transport_tissue_excision@1"
 CALCIUM_ENERGY_MITOCHONDRIA_KIND = "cells.calcium_energy_mitochondria_tissue_excision@1"
 CALCIUM_ENERGY_WATER_KIND = "cells.calcium_energy_water_tissue_excision@1"
 
@@ -36,6 +42,10 @@ def _kind(spec):
         return CALCIUM_ENERGY_WATER_KIND
     if is_calcium_energy_mitochondria(spec):
         return CALCIUM_ENERGY_MITOCHONDRIA_KIND
+    if is_calcium_energy_irreversible_transport(spec):
+        return CALCIUM_ENERGY_IRREVERSIBLE_TRANSPORT_KIND
+    if is_calcium_energy_atp_transport(spec):
+        return CALCIUM_ENERGY_ATP_TRANSPORT_KIND
     if is_calcium_energy_transport(spec):
         return CALCIUM_ENERGY_TRANSPORT_KIND
     if is_calcium_energy(spec):
@@ -112,6 +122,8 @@ def load_excision(directory):
             CALCIUM_ENERGY_KIND,
             CALCIUM_ENERGY_REGULATED_V2_KIND,
             CALCIUM_ENERGY_TRANSPORT_KIND,
+            CALCIUM_ENERGY_IRREVERSIBLE_TRANSPORT_KIND,
+            CALCIUM_ENERGY_ATP_TRANSPORT_KIND,
             CALCIUM_ENERGY_MITOCHONDRIA_KIND,
             CALCIUM_ENERGY_WATER_KIND,
         )

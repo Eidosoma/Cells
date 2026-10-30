@@ -1,0 +1,145 @@
+{
+  "kind": "cells.worker_physiology_permeability_view@1",
+  "status": "qualified_frozen_handed_to_chief",
+  "owned": [
+    "src/cells/models/physiology_permeability_view.py",
+    "validation/tissue/physiology_permeability_view_reference.py",
+    "tests/unit/test_physiology_permeability_view.py"
+  ],
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e",
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38"
+  },
+  "scope": "Exact ordinary four-family host view; only passive membrane P changes; full original RHS/readouts; explicit held control and step, no clock synchronization or update",
+  "api": "evaluate(spec,state,layout,control,binding,component,*,step_s)->PermeabilityView(runtime_layout,readouts,derivative,physical_permeability,admission)",
+  "admission": {
+    "source": "complete actual source/binding replay; exact original layout/state/control types/shapes/precision",
+    "physical": "all original state/balance/actual-control/method/loss checks using only changed-P declaration internally",
+    "step": "positive step <= source nominaldt with8epsilon*horizon clock representation bound",
+    "turnover": "0.05 actual passive absolute membrane transfer per finite free-ion owner and0.05 all-consumer fuel gross turnover",
+    "structural_limitation": "Existing original domain refuses P=0 with nonzero old passive transfer ledger; no history reset"
+  },
+  "budgets": {
+    "rate_absolute": 3e-12,
+    "rate_relative": 3e-10,
+    "charge_rate_absolute_C_s": 3e-23,
+    "potential_absolute_V": 3e-13,
+    "energy_rate_absolute_pJ_s": 1e-10
+  },
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "runs": [
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-permeability-view-tests-20261030-01",
+      "status": "passed",
+      "checks": 43,
+      "result": "/mnt/workspaces/Cells/physiology-permeability-view-tests-20261030-01/result.json",
+      "sha256": "a1408a9a551e9b355bd5a4dcf5862826f5203d306a5661594100e29b97306db7"
+    }
+  ],
+  "pending": [
+    "Chief future driver/checkpoint integration; no numerical followup authorized by this handoff"
+  ],
+  "long_job_launched": false,
+  "campaign_polled": false,
+  "worker_view_complete": true,
+  "owned_source_sha256": {
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "tests/unit/test_physiology_permeability_view.py": "8575cbde3863c26b5fb0d390cb9de7bd8a82c75e383266ec2c121545e1dd9948"
+  },
+  "qualification": {
+    "result": "/mnt/workspaces/Cells/physiology-permeability-view-tests-20261030-01/result.json",
+    "sha256": "a1408a9a551e9b355bd5a4dcf5862826f5203d306a5661594100e29b97306db7",
+    "inputs": "/mnt/workspaces/Cells/physiology-permeability-view-tests-20261030-01/inputs.json",
+    "inputs_sha256": "eead092a567ad4e460831eb152952c6489e6eca22672f962a2821a98da327a15",
+    "checks": 43,
+    "metrics": {
+      "complete_initial_evolved_RHS_comparisons": 32,
+      "state_field_counts": [
+        12,
+        19,
+        34,
+        38
+      ],
+      "max_RHS_error_fraction": 0.003802780170869254,
+      "max_passive_fraction": 8.087209805683089e-08,
+      "max_fuel_fraction": 3.071556071384246e-08,
+      "fresh_independent_actual_RHS_cases": 32,
+      "fresh_independent_max_replay_error_fraction": 0.0
+    },
+    "resources": {
+      "host": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 11.815214909845963,
+        "sampled_peak_process_tree_rss_bytes": 239206400,
+        "sampled_peak_charged_memory_bytes": 239206400,
+        "sampled_peak_summed_process_memory_bytes": 239206400,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 239206400,
+        "minimum_available_host_memory_bytes": 24349093888,
+        "samples": 48,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T01:21:32.093723+00:00",
+        "automatic_retry": false
+      },
+      "isolated-reference": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 2.5188057720661163,
+        "sampled_peak_process_tree_rss_bytes": 84074496,
+        "sampled_peak_charged_memory_bytes": 84074496,
+        "sampled_peak_summed_process_memory_bytes": 84074496,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 84074496,
+        "minimum_available_host_memory_bytes": 24497152000,
+        "samples": 11,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T01:21:34.614626+00:00",
+        "automatic_retry": false
+      }
+    },
+    "independence": "/mnt/workspaces/Cells/physiology-permeability-view-tests-20261030-01/evidence/independence.json",
+    "independence_sha256": "aa4f74198194ab29da6f2998a7b8a8532a6a874b695095f9cb1dba5f6cfd163a",
+    "captured_sources_unchanged": true
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/PHYSIOLOGY_PERMEABILITY_VIEW_HANDOFF.md"
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "cells.physiology_perturbation_step_workqueue@1",
+  "status": "implemented_short_CPU_checks_passed_handed_to_chief",
+  "owned_files": {
+    "src/cells/core/physiology_perturbation_step.py": "fb33883921eb8e01d3fd4e51a2672aec67134260a5c52c3c460d05fc265d2279",
+    "tests/unit/test_physiology_perturbation_step.py": "65c24ef2f4b21aa99e0d7035b460685f933c09491df1fc9286a372951f2bd546"
+  },
+  "receipt": {
+    "path": "/mnt/workspaces/Cells/physiology-perturbation-step-tests-20261029-01/result.json",
+    "sha256": "d9eee3247cebd6da0ac6da9faccf6e4266d889047a588d55228882a68399081f",
+    "checks": 29
+  },
+  "frozen_dependencies": {
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56"
+  },
+  "state_class": "PhysiologyPerturbationState",
+  "state_fields": [
+    "protein",
+    "diffusion",
+    "stream",
+    "controls",
+    "time_s",
+    "loop_calls"
+  ],
+  "public_api": [
+    "initialise(binding,controls,protein,diffusion_m2_s,stream)->PhysiologyPerturbationState",
+    "advance(state,binding)->PerturbationTransition(state,packet,diagnostics)",
+    "validate_state(state,binding)->same validated state"
+  ],
+  "exception_class": "PerturbationRejected(NumericalError)",
+  "exception_fields": [
+    "trial",
+    "packet",
+    "stream",
+    "diagnostics",
+    "stage"
+  ],
+  "initialisation": "unconditional static_K draw; base is pre-noise; time_s=0 and loop_calls=0",
+  "loop_policy": "SIM finalize base+scheduled before protein branch; dynamic_active guard; exactly one dt per explicit loop call including first label0; successful inactive calls advance time/count but consume no draw",
+  "admission": "finite nonnegative protein/current/base; signed finite scheduled modifiers; original strict conservative protein_domain_valid at each trial; no clipping, source_fast correction or reseeding",
+  "rejection": "typed immutable trial retained where constructed; draw/proposed RNG retained if already sampled; no input state mutation or implicit failed-step commit",
+  "scope": "frozen perturbation component composition only; no downstream bulk refresh/clipping, whole physiology solver, RK-stage sampling, sqrt(dt), automatic tissue mapping or disabled microtubule activation",
+  "resource_result": {
+    "status": "completed",
+    "returncode": 0,
+    "elapsed_seconds": 3.786590669071302,
+    "sampled_peak_process_tree_rss_bytes": 254955520,
+    "sampled_peak_charged_memory_bytes": 254955520,
+    "sampled_peak_summed_process_memory_bytes": 254955520,
+    "shared_address_space_samples": 0,
+    "process_tree_memory_metric": "rss",
+    "rss_fallback_samples": 0,
+    "observed_process_high_water_bytes": 254955520,
+    "minimum_available_host_memory_bytes": 22166265856,
+    "samples": 16,
+    "limits": {
+      "process_tree_memory_metric": "rss",
+      "max_process_tree_memory_bytes": 1073741824,
+      "max_individual_process_rss_bytes": 1073741824,
+      "min_available_host_memory_bytes": 8589934592,
+      "max_wall_seconds": 180,
+      "sample_interval_seconds": 0.25,
+      "max_process_tree_rss_bytes": 1073741824
+    },
+    "utc": "2026-10-29T22:59:58.509000+00:00",
+    "automatic_retry": false
+  },
+  "shared_or_frozen_files_changed": [],
+  "handoff": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/PHYSIOLOGY_PERTURBATION_STEP_HANDOFF.md",
+  "chief_owned_checkpoint_module": "src/cells/physiology_checkpoint.py",
+  "long_jobs_or_active_job_polls": 0
+}

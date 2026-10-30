@@ -1,0 +1,85 @@
+{
+  "kind": "cells.physiology_perturbation_remap_workqueue@1",
+  "status": "implemented_short_CPU_checks_passed_handed_to_chief",
+  "owned_files": {
+    "src/cells/core/physiology_perturbation_remap.py": "d817cb9e6253154bdda63bc387ac8d6b4914e030ffca0ba94e4f1586b2e3049f",
+    "tests/unit/test_physiology_perturbation_remap.py": "79522ddd0902ac3f393bc59061f1bfda96444ca1b5c78674e0dfe45c68fafd3d"
+  },
+  "receipt": {
+    "path": "/mnt/workspaces/Cells/physiology-perturbation-remap-tests-20261029-01/result.json",
+    "sha256": "3cd36355a4f13f55feb3717852acc90689afc255c2d725c540271c21ffae1dda",
+    "checks": 24
+  },
+  "frozen_dependencies": {
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "src/cells/core/physiology_perturbation_step.py": "fb33883921eb8e01d3fd4e51a2672aec67134260a5c52c3c460d05fc265d2279",
+    "src/cells/processes/betse_tissue_cut.py": "2ca66f3f0e3c95b210586c85826668ff681579e908ba896e7c11201c868bc0b1",
+    "src/cells/physiology_checkpoint.py": "55f3f5425decdbb683020d9607a61cbc45418a93435166c11281727b404fe809",
+    "validation/perturbations/betse_perturbations_fixtures.py": "749937d8cfe23523a5c4fb649683d5819a87335ea8c060c0cbc3c662596fe554",
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "pyproject.toml": "6fcf3f444faa6c82d78b816b059decc3c1aea8b9c56c07f338e1e65a122406f0"
+  },
+  "public_api": "remap_component(state,old_binding,new_binding)->PerturbationRemapResult(state,archive,diagnostics)",
+  "archive_class": "PerturbationRemovalArchive",
+  "archive_fields": [
+    "cell_ids",
+    "membrane_ids",
+    "environment_ids",
+    "ion_ids",
+    "protein",
+    "diffusion",
+    "cell_volume_m3",
+    "membrane_area_m2",
+    "environment_effective_volume_m3",
+    "cell_amount_mol",
+    "environment_amount_mol"
+  ],
+  "scope": "explicit cell removal and owner reordering; every surviving membrane and complete environment/ion sets retained; exact geometry/mode/precision",
+  "quantity_policy": "reuse cut OwnedField density+volume mol ledger; membrane concentration views and permeability are archived state only; removed protein is an explicit sink without exterior release",
+  "invariants": [
+    "six surviving buffers preserved by named axes",
+    "native full RNG/cache and stable coordinates retained without sampling",
+    "controls/elapsed/count/world/next_tick unchanged",
+    "all removed buffers archived in old owner/ion order",
+    "cell/environment volume-based amount partition cancels exactly by owner"
+  ],
+  "unsupported": [
+    "terminal empty binding",
+    "new wound or reassigned owners",
+    "partial membrane removal from surviving cell",
+    "environment/ion deletion",
+    "changed areas,volumes,precision or environment mode",
+    "mixed-bath effective-volume change",
+    "nonrepresentable protein quantities/totals",
+    "automatic numeric geometry/field remap or full native cut parity"
+  ],
+  "resource_result": {
+    "status": "completed",
+    "returncode": 0,
+    "elapsed_seconds": 7.062300819903612,
+    "sampled_peak_process_tree_rss_bytes": 258453504,
+    "sampled_peak_charged_memory_bytes": 258453504,
+    "sampled_peak_summed_process_memory_bytes": 258453504,
+    "shared_address_space_samples": 0,
+    "process_tree_memory_metric": "rss",
+    "rss_fallback_samples": 0,
+    "observed_process_high_water_bytes": 258453504,
+    "minimum_available_host_memory_bytes": 23056433152,
+    "samples": 29,
+    "limits": {
+      "process_tree_memory_metric": "rss",
+      "max_process_tree_memory_bytes": 1073741824,
+      "max_individual_process_rss_bytes": 1073741824,
+      "min_available_host_memory_bytes": 8589934592,
+      "max_wall_seconds": 180,
+      "sample_interval_seconds": 0.25,
+      "max_process_tree_rss_bytes": 1073741824
+    },
+    "utc": "2026-10-29T23:12:11.366638+00:00",
+    "automatic_retry": false
+  },
+  "shared_or_frozen_files_changed": [],
+  "long_jobs_or_active_job_polls": 0,
+  "handoff": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/PHYSIOLOGY_PERTURBATION_REMAP_HANDOFF.md"
+}

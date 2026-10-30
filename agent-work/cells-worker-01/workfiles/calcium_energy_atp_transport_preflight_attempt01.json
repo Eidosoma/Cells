@@ -1,0 +1,8 @@
+{
+  "stage": "qualification_driver_preflight",
+  "error": "KeyError: tests/unit/test_surface_calcium_energy_irreversible_transport.py",
+  "cause": "Frozen prior test hashes were asserted before adding those two test files to the source capture set.",
+  "numerical_child_launched": false,
+  "output_directory_created": false,
+  "correction": "Include all protected paths in captured files; no scientific source or tolerance change."
+}

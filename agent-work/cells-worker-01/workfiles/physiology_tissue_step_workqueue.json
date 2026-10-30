@@ -1,0 +1,194 @@
+{
+  "kind": "cells.worker_physiology_tissue_step@1",
+  "status": "qualified_with_original_coarse_accuracy_failure_retained",
+  "owned": [
+    "src/cells/core/physiology_tissue_step.py",
+    "validation/tissue/physiology_tissue_step_reference.py",
+    "tests/unit/test_physiology_tissue_step.py"
+  ],
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e",
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38",
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "tests/unit/test_physiology_permeability_view.py": "8575cbde3863c26b5fb0d390cb9de7bd8a82c75e383266ec2c121545e1dd9948"
+  },
+  "api": "advance(spec,checkpoint,binding,component,*,end_time_s=None)->TissueStepResult; array_rk4_step(state,control,runtime_layout,step_s,*,implementation,xp)->RK4Trial",
+  "scope": "One exact next original EventGrid interval; mapped current P fixed with original passive support; unchanged component/binding/layout; no draws/component timing/protein charge",
+  "admission": {
+    "host": "original ordinary checkpoint validation at input/output; source schedule selects held control; exact next grid point only",
+    "stages": "original domain/readouts/field plus actual absolute passive and all-consumer fuel gross; no exact integrated-energy tests on RK intermediates",
+    "endpoint": "two-row original and changed-P full conservation/energy/monotonic histories; right-continuous field domain",
+    "rejections": "raw RK trial states/derivatives/status retained without committing accepted input",
+    "support": "original zero/nonzero passive P mask must match"
+  },
+  "budgets": {
+    "state_absolute": 3e-12,
+    "state_relative": 3e-10,
+    "charge_state_absolute_C": 3e-23,
+    "potential_absolute_V": 3e-13,
+    "oracle_uncertainty_fraction": 0.1,
+    "conservation": "unchanged original model tolerances"
+  },
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "runs": [
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-step-tests-20261030-01",
+      "status": "24 host passed; one original passive coarse endpoint trajectory-potential failure; preserved"
+    },
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-step-cpu-jax-20261030-01",
+      "status": "one pure CPU-JAX eager parity passed, 19.12s / 430837760 bytes"
+    },
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-step-diagnostics-20261030-02",
+      "status": "both original coarse passive intervals exceed unchanged trajectory-phi gate; four restored-layout tests failed in NumPy-only test fingerprint before advance; evidence preserved"
+    },
+    {
+      "directory": "/mnt/workspaces/Cells/physiology-tissue-step-tests-20261030-03",
+      "status": "29 host passed / 1 strict expected coarse accuracy failure; 20 isolated actual reference replays; 1 prior CPU-JAX parity retained by source correspondence"
+    }
+  ],
+  "coarse_accuracy_failure": {
+    "source_dt_s": 0.0001,
+    "compared_physical_horizon_s": 0.0002,
+    "trajectory_potential_error_fractions": [
+      1.1032134363766088,
+      1.1525784376021992
+    ],
+    "full_state_error_fractions": [
+      0.02105094381296041,
+      0.020067644676441128
+    ],
+    "internal_half_step_potential_error_fractions": [
+      0.06824233475252009,
+      0.07130699252919316
+    ],
+    "qualification": "Original source dt is unqualified at the original endpoint trajectory-phi gate. Strict expected failure catches only EndpointPotentialAccuracyError after all values/other gates are checked."
+  },
+  "source_refinement": {
+    "source_dt_s": 5e-05,
+    "declared_before_initialization": true,
+    "accepted_grid_steps": 4,
+    "compared_physical_horizon_s": 0.0002,
+    "original_experiment_end_time_s": 0.002,
+    "original_geometry_events_controls_and_budgets_preserved": true,
+    "oracle": "Chained standard/tight independent DOP from the same original initial state; saved values before assertions",
+    "additional_biological_cases": 0,
+    "max_state_error_fraction": 0.0024763818694769433,
+    "max_trajectory_potential_error_fraction": 0.14224734897439842,
+    "max_reference_uncertainty_fraction": 1.3543904884139702e-07
+  },
+  "minimal_restart_fix": {
+    "core_sha256": "c0d8b139101ef48278ab4c9e6e116c8d3ed3715026fa67ecbcb8ec39f9140b58",
+    "change": "Temporary NumPy original-layout view in the host endpoint guard; accepted checkpoint retains identical source layout",
+    "shared_with_chief_for_independent_restart_checks": true
+  },
+  "pending": [],
+  "long_job_launched": false,
+  "campaign_polled": false,
+  "owned_sha256": {
+    "src/cells/core/physiology_tissue_step.py": "c0d8b139101ef48278ab4c9e6e116c8d3ed3715026fa67ecbcb8ec39f9140b58",
+    "validation/tissue/physiology_tissue_step_reference.py": "b525533a90403d2c20c3ff3ee3a8805d5314ba8403d3ab292afb4ea816acec80",
+    "tests/unit/test_physiology_tissue_step.py": "52198656a99237d3b90a42611b0dc554dbc87751781ce450c0e577382f07562c"
+  },
+  "final_qualification": {
+    "receipt": "/mnt/workspaces/Cells/physiology-tissue-step-tests-20261030-03/result.json",
+    "receipt_sha256": "4272709fa95382d0ebd41ff26317a960e48bfbf7878179771ced6c999a92489a",
+    "positive_checks": 30,
+    "host_positive_checks": 29,
+    "reused_cpu_jax_checks": 1,
+    "expected_unqualified_coarse_cases": 1,
+    "qualified_original_intervals": 14,
+    "retained_unqualified_original_intervals": 2,
+    "qualified_refined_source_steps": 4,
+    "independent_replays": 20,
+    "reference_production_imports_denied": true,
+    "reference_loaded_production_modules": [],
+    "source_mode": "private captured original dependencies plus final worker sources; all hashes unchanged during checks",
+    "source_correspondence": "/mnt/workspaces/Cells/physiology-tissue-step-tests-20261030-03/cpu-jax-source-correspondence.json",
+    "resource_results": {
+      "host": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 146.02440840913914,
+        "sampled_peak_process_tree_rss_bytes": 282718208,
+        "sampled_peak_charged_memory_bytes": 282718208,
+        "sampled_peak_summed_process_memory_bytes": 282718208,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 282718208,
+        "minimum_available_host_memory_bytes": 21813977088,
+        "samples": 582,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T02:19:39.707012+00:00",
+        "automatic_retry": false
+      },
+      "isolated-reference": {
+        "status": "completed",
+        "returncode": 0,
+        "elapsed_seconds": 49.236189446179196,
+        "sampled_peak_process_tree_rss_bytes": 85409792,
+        "sampled_peak_charged_memory_bytes": 85409792,
+        "sampled_peak_summed_process_memory_bytes": 85409792,
+        "shared_address_space_samples": 0,
+        "process_tree_memory_metric": "rss",
+        "rss_fallback_samples": 0,
+        "observed_process_high_water_bytes": 85409792,
+        "minimum_available_host_memory_bytes": 21922770944,
+        "samples": 197,
+        "limits": {
+          "process_tree_memory_metric": "rss",
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_individual_process_rss_bytes": 1073741824,
+          "min_available_host_memory_bytes": 8589934592,
+          "max_wall_seconds": 480,
+          "sample_interval_seconds": 0.25,
+          "max_process_tree_rss_bytes": 1073741824
+        },
+        "utc": "2026-10-30T02:20:28.945502+00:00",
+        "automatic_retry": false
+      }
+    },
+    "scope": "One next original-grid held-P tissue interval for four ordinary families; unchanged component/RNG/layout. Original passive100us recipe remains unqualified for temporal phi; predeclared50us SOURCE dt is qualified on the same0..200us compared horizon with original2ms experiment/events/caps unchanged. No whole2ms trajectory, GPU, protein charge or component-update claim.",
+    "independent_replays_add_no_new_biological_cases": true
+  },
+  "chief_reported_public_integration": {
+    "receipt": "/mnt/workspaces/Cells/physiology-tissue-step-checkpoint-20261030-02/result.json",
+    "passed": 46,
+    "new": 22,
+    "retained": 24,
+    "elapsed_s": 51.8,
+    "scope": "Four-family native/stable exact event-split restart, RNG/cache/stream independence, associations and refusal/publication contracts; no trajectory accuracy credit",
+    "worker_polled_job": false
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/PHYSIOLOGY_TISSUE_STEP_HANDOFF.md",
+  "owned_sources_frozen": true
+}

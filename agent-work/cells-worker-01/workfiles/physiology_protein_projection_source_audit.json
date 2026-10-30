@@ -1,0 +1,58 @@
+{
+  "purpose": "Protein amount/charge projection ownership and baseline audit; no native/numeric model execution",
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f"
+  },
+  "additional_native_file_verified_against_git_revision": "betse/science/physics/ion_current.py",
+  "cells_source_sha256": {
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/core/surface_calcium_spec.py": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378"
+  },
+  "native": {
+    "protein_valence": -1,
+    "faraday_C_mol": 96485,
+    "charge_density": "rho_cells=dot(zs*F,cc_cells)+extra_rho_cells; rho_env=dot(zs*F,cc_env)+extra_rho_env",
+    "units": "concentration mol/m3; amount=concentration*declared owner m3; charge_C=valence*F*amount_mol",
+    "source_locations": {
+      "betse/science/parameters.py": [
+        1093,
+        1106
+      ],
+      "betse/science/physics/ion_current.py": [
+        19,
+        75
+      ],
+      "betse/science/sim.py": [
+        2007,
+        2029
+      ]
+    }
+  },
+  "cells": {
+    "faraday_expression": "6.02214076e23 * 1.602176634e-19",
+    "charge_reference": "original initial_cell_charge_C/initial_outside_charge_C plus mobile-ion charge increments",
+    "binding_volume": "actual declared model.cells.volume_pL*1e-15; matrix actual exterior volume per owner",
+    "calcium": "ionic cell volume equals owned chemical cytosol volume; plasma charge anchor is declared whole-cell charge; do not add ER/store volume or charge again",
+    "membrane": "gathered concentration view, not separate inventory",
+    "projection_policy": "Require explicit reference/current protein, valence and Faraday constant; report absolute owner stocks and concentration-difference delta; never mutate tissue anchors, inventories or field kernels",
+    "representability": "Report unchanged3e-13 gross strict balance separately from input-stock ULP resolution and exact projection-rounding diagnostics; no residual repair; field closure remains separate"
+  },
+  "qualification_authorization": "Chief latest round authorizes bounded CPU contract/reference checks after prior no-further-launch constraint",
+  "shared_files_changed": []
+}

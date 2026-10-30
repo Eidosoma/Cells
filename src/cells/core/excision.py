@@ -2,7 +2,19 @@
 
 from cells.core.specs import ConfigError
 from cells.core.surface_active_excision_spec import SurfaceActiveExcisionModel
+from cells.core.surface_calcium_energy_atp_transport_excision_spec import (
+    SurfaceCalciumEnergyATPTransportExcisionModel,
+)
+from cells.core.surface_calcium_energy_atp_transport_spec import (
+    SurfaceCalciumEnergyATPTransportModel,
+)
 from cells.core.surface_calcium_energy_excision_spec import SurfaceCalciumEnergyExcisionModel
+from cells.core.surface_calcium_energy_irreversible_transport_excision_spec import (
+    SurfaceCalciumEnergyIrreversibleTransportExcisionModel,
+)
+from cells.core.surface_calcium_energy_irreversible_transport_spec import (
+    SurfaceCalciumEnergyIrreversibleTransportModel,
+)
 from cells.core.surface_calcium_energy_mitochondria_excision_spec import (
     SurfaceCalciumEnergyMitochondriaExcisionModel,
 )
@@ -51,6 +63,20 @@ def is_calcium_energy_transport(spec):
     )
 
 
+def is_calcium_energy_irreversible_transport(spec):
+    return type(spec.model) in (
+        SurfaceCalciumEnergyIrreversibleTransportModel,
+        SurfaceCalciumEnergyIrreversibleTransportExcisionModel,
+    )
+
+
+def is_calcium_energy_atp_transport(spec):
+    return type(spec.model) in (
+        SurfaceCalciumEnergyATPTransportModel,
+        SurfaceCalciumEnergyATPTransportExcisionModel,
+    )
+
+
 def is_calcium_energy_mitochondria(spec):
     return type(spec.model) in (
         SurfaceCalciumEnergyMitochondriaModel,
@@ -79,6 +105,12 @@ def excise(spec, checkpoint, removed_cell_ids):
         from cells.core.calcium_energy_water_tissue_excision import excise as operation
     elif is_calcium_energy_mitochondria(spec):
         from cells.core.calcium_energy_mitochondria_tissue_excision import excise as operation
+    elif is_calcium_energy_irreversible_transport(spec):
+        from cells.core.calcium_energy_irreversible_transport_tissue_excision import (
+            excise as operation,
+        )
+    elif is_calcium_energy_atp_transport(spec):
+        from cells.core.calcium_energy_atp_transport_tissue_excision import excise as operation
     elif is_calcium_energy_transport(spec):
         from cells.core.calcium_energy_transport_tissue_excision import excise as operation
     elif is_calcium_energy(spec):
@@ -93,6 +125,8 @@ def excise(spec, checkpoint, removed_cell_ids):
         raise ConfigError(
             "Cuts support resolved_tissue@1, resolved_tissue@12, resolved_calcium@11, "
             "resolved_calcium_energy@5, resolved_calcium_energy_transport@1, "
+            "resolved_calcium_energy_irreversible_transport@1, "
+            "resolved_calcium_energy_atp_transport@1, "
             "resolved_calcium_energy_mitochondria@1, resolved_calcium_energy_water@1 "
             "and their excision epochs"
         )

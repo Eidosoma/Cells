@@ -1,0 +1,382 @@
+{
+  "purpose": "Pin the actual native ordering, guards and label-vs-duration distinction before proposing a new scheduling bridge; no native or numerical computation executed",
+  "protocol": "validation/perturbations/betse_perturbations_protocol.json",
+  "protocol_sha256": "437ef9fbf7a975e5422164406deb74fde20622782fa1dab5889efb9539c811de",
+  "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "all_ten_source_hashes_verified": true,
+  "verified_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+  },
+  "loops": {
+    "_run_sim_core_loop": {
+      "source_lines": [
+        1132,
+        1390
+      ],
+      "iteration": "t in time_steps",
+      "ordered_statements": [
+        {
+          "line": 1171,
+          "end_line": 1172,
+          "type": "If",
+          "condition_or_call": "is_time_step_first"
+        },
+        {
+          "line": 1175,
+          "end_line": 1175,
+          "type": "Expr",
+          "condition_or_call": "self.fluxes_mem.fill(0)"
+        },
+        {
+          "line": 1176,
+          "end_line": 1176,
+          "type": "Expr",
+          "condition_or_call": "self.fluxes_gj.fill(0)"
+        },
+        {
+          "line": 1178,
+          "end_line": 1180,
+          "type": "If",
+          "condition_or_call": "p.is_ecm"
+        },
+        {
+          "line": 1187,
+          "end_line": 1188,
+          "type": "If",
+          "condition_or_call": "phase.kind is SimPhaseKind.SIM"
+        },
+        {
+          "line": 1193,
+          "end_line": 1194,
+          "type": "If",
+          "condition_or_call": "p.alpha_NaK == 0.0"
+        },
+        {
+          "line": 1196,
+          "end_line": 1234,
+          "type": "If",
+          "condition_or_call": "p.alpha_NaK > 0.0"
+        },
+        {
+          "line": 1253,
+          "end_line": 1279,
+          "type": "For",
+          "condition_or_call": "for i in self.movingIons:"
+        },
+        {
+          "line": 1282,
+          "end_line": 1283,
+          "type": "If",
+          "condition_or_call": "p.ions_dict['Ca'] == 1"
+        },
+        {
+          "line": 1290,
+          "end_line": 1303,
+          "type": "If",
+          "condition_or_call": "p.molecules_enabled"
+        },
+        {
+          "line": 1306,
+          "end_line": 1319,
+          "type": "If",
+          "condition_or_call": "p.grn_enabled"
+        },
+        {
+          "line": 1322,
+          "end_line": 1339,
+          "type": "If",
+          "condition_or_call": "p.dynamic_noise == 1 and p.ions_dict['P'] == 1 and (phase.kind is SimPhaseKind.SIM)"
+        },
+        {
+          "line": 1344,
+          "end_line": 1345,
+          "type": "If",
+          "condition_or_call": "p.deform_osmo"
+        },
+        {
+          "line": 1347,
+          "end_line": 1348,
+          "type": "If",
+          "condition_or_call": "p.fluid_flow"
+        },
+        {
+          "line": 1350,
+          "end_line": 1354,
+          "type": "If",
+          "condition_or_call": "p.deformation"
+        },
+        {
+          "line": 1357,
+          "end_line": 1357,
+          "type": "Expr",
+          "condition_or_call": "self.update_all_concs(cells, p)"
+        },
+        {
+          "line": 1360,
+          "end_line": 1360,
+          "type": "Expr",
+          "condition_or_call": "self.update_V(cells, p)"
+        },
+        {
+          "line": 1363,
+          "end_line": 1363,
+          "type": "Expr",
+          "condition_or_call": "stb.check_v(self.vm)"
+        },
+        {
+          "line": 1368,
+          "end_line": 1381,
+          "type": "If",
+          "condition_or_call": "t in time_steps_sampled"
+        },
+        {
+          "line": 1384,
+          "end_line": 1390,
+          "type": "If",
+          "condition_or_call": "is_time_step_first"
+        }
+      ],
+      "rng_calls": [
+        {
+          "line": 1327,
+          "call": "np.random.random(self.mdl)"
+        }
+      ],
+      "event_guards": [
+        {
+          "line": 1187,
+          "guard": "phase.kind is SimPhaseKind.SIM",
+          "body": "if phase.kind is SimPhaseKind.SIM:\n    phase.dyna.fire_events(phase=phase, t=t)"
+        }
+      ]
+    },
+    "_run_fast_sim_core_loop": {
+      "source_lines": [
+        1454,
+        1640
+      ],
+      "iteration": "t in time_steps",
+      "ordered_statements": [
+        {
+          "line": 1491,
+          "end_line": 1492,
+          "type": "If",
+          "condition_or_call": "is_time_step_first"
+        },
+        {
+          "line": 1495,
+          "end_line": 1495,
+          "type": "Expr",
+          "condition_or_call": "self.fluxes_mem.fill(0)"
+        },
+        {
+          "line": 1496,
+          "end_line": 1496,
+          "type": "Expr",
+          "condition_or_call": "self.fluxes_gj.fill(0)"
+        },
+        {
+          "line": 1500,
+          "end_line": 1501,
+          "type": "If",
+          "condition_or_call": "phase.kind is SimPhaseKind.SIM"
+        },
+        {
+          "line": 1508,
+          "end_line": 1521,
+          "type": "If",
+          "condition_or_call": "p.molecules_enabled"
+        },
+        {
+          "line": 1524,
+          "end_line": 1537,
+          "type": "If",
+          "condition_or_call": "p.grn_enabled"
+        },
+        {
+          "line": 1540,
+          "end_line": 1540,
+          "type": "Assign",
+          "condition_or_call": "self.vgj = self.vm_ave[cells.cell_nn_i[:, 1]] - self.vm_ave[cells.cell_nn_i[:, 0]]"
+        },
+        {
+          "line": 1542,
+          "end_line": 1548,
+          "type": "If",
+          "condition_or_call": "p.v_sensitive_gj is True"
+        },
+        {
+          "line": 1550,
+          "end_line": 1550,
+          "type": "Assign",
+          "condition_or_call": "Jgj = self.G_gj * np.dot(cells.M_sum_mems, self.vgj)"
+        },
+        {
+          "line": 1552,
+          "end_line": 1552,
+          "type": "Assign",
+          "condition_or_call": "Jmem = np.dot(cells.M_sum_mems, self.extra_J_mem * cells.mem_sa) / cells.cell_sa"
+        },
+        {
+          "line": 1554,
+          "end_line": 1554,
+          "type": "AugAssign",
+          "condition_or_call": "self.vm_ave += p.dt * (1 / p.cm) * (Jgj - Jmem - self.G_Leak * (self.vm_ave - self.E_Leak))"
+        },
+        {
+          "line": 1556,
+          "end_line": 1556,
+          "type": "Assign",
+          "condition_or_call": "self.vm = self.vm_ave[cells.mem_to_cells]"
+        },
+        {
+          "line": 1559,
+          "end_line": 1559,
+          "type": "Assign",
+          "condition_or_call": "Jtot = -self.vgj * self.G_gj[cells.mem_to_cells] + self.extra_J_mem"
+        },
+        {
+          "line": 1561,
+          "end_line": 1561,
+          "type": "Assign",
+          "condition_or_call": "self.Jn = Jtot"
+        },
+        {
+          "line": 1563,
+          "end_line": 1563,
+          "type": "Assign",
+          "condition_or_call": "Jmx = self.Jn * cells.mem_vects_flat[:, 2]"
+        },
+        {
+          "line": 1564,
+          "end_line": 1564,
+          "type": "Assign",
+          "condition_or_call": "Jmy = self.Jn * cells.mem_vects_flat[:, 3]"
+        },
+        {
+          "line": 1566,
+          "end_line": 1566,
+          "type": "Assign",
+          "condition_or_call": "self.Emx, self.Emy = cells.single_cell_div_free(Jmx / (0.1 * self.sigma_cell.mean()), Jmy / (0.1 * self.sigma_cell.mean()))"
+        },
+        {
+          "line": 1568,
+          "end_line": 1568,
+          "type": "Assign",
+          "condition_or_call": "Jcx = self.Jn * cells.mem_vects_flat[:, 2]"
+        },
+        {
+          "line": 1569,
+          "end_line": 1569,
+          "type": "Assign",
+          "condition_or_call": "Jcy = self.Jn * cells.mem_vects_flat[:, 3]"
+        },
+        {
+          "line": 1572,
+          "end_line": 1572,
+          "type": "Assign",
+          "condition_or_call": "self.J_cell_x = np.dot(cells.M_sum_mems, Jcx * cells.mem_sa) / cells.cell_sa"
+        },
+        {
+          "line": 1573,
+          "end_line": 1573,
+          "type": "Assign",
+          "condition_or_call": "self.J_cell_y = np.dot(cells.M_sum_mems, Jcy * cells.mem_sa) / cells.cell_sa"
+        },
+        {
+          "line": 1576,
+          "end_line": 1576,
+          "type": "Assign",
+          "condition_or_call": "self.E_cell_x = self.J_cell_x / (0.1 * self.sigma_cell)"
+        },
+        {
+          "line": 1577,
+          "end_line": 1577,
+          "type": "Assign",
+          "condition_or_call": "self.E_cell_y = self.J_cell_y / (0.1 * self.sigma_cell)"
+        },
+        {
+          "line": 1584,
+          "end_line": 1584,
+          "type": "Expr",
+          "condition_or_call": "stb.check_v(self.vm_ave)"
+        },
+        {
+          "line": 1588,
+          "end_line": 1631,
+          "type": "If",
+          "condition_or_call": "t in time_steps_sampled"
+        },
+        {
+          "line": 1634,
+          "end_line": 1640,
+          "type": "If",
+          "condition_or_call": "is_time_step_first"
+        }
+      ],
+      "rng_calls": [],
+      "event_guards": [
+        {
+          "line": 1500,
+          "guard": "phase.kind is SimPhaseKind.SIM",
+          "body": "if phase.kind is SimPhaseKind.SIM:\n    phase.dyna.fire_events(phase=phase, t=t)"
+        }
+      ]
+    }
+  },
+  "dynamic_guard": {
+    "lines": [
+      1322,
+      1339
+    ],
+    "source": "if p.dynamic_noise == 1 and p.ions_dict['P'] == 1 and (phase.kind is SimPhaseKind.SIM):\n    self.protein_noise_flux = p.dynamic_noise_level * (np.random.random(self.mdl) - 0.5)\n    self.cc_cells[self.iP], self.cc_at_mem[self.iP], self.cc_env[self.iP] = stb.update_Co(self, self.cc_cells[self.iP], self.cc_at_mem[self.iP], self.cc_env[self.iP], self.protein_noise_flux, cells, p, ignoreECM=False)"
+  },
+  "event_order": {
+    "fire_events": {
+      "lines": [
+        709,
+        724
+      ],
+      "source": "@type_check\ndef fire_events(self, phase: SimPhase, t: float) -> None:\n    \"\"\"\n        Apply all tissue manipulations for the passed time step of the passed\n        simulation phase.\n\n        Parameters\n        ----------\n        phase : SimPhase\n            Current simulation phase.\n        t : float\n            Current time step of this phase being simulated.\n        \"\"\"\n    self._fire_events_global(phase=phase, t=t)\n    self._fire_events_tissue(phase=phase, t=t)\n    self.makeAllChanges(phase.sim)"
+    },
+    "makeAllChanges": {
+      "lines": [
+        1321,
+        1332
+      ],
+      "source": "def makeAllChanges(self, sim) -> None:\n    \"\"\"\n        Add together all effects to finalize changes to cell membrane\n        permeabilities for the current time step.\n        \"\"\"\n    sim.Dm_cells = sim.Dm_scheduled + sim.Dm_base\n    sim.P_cells = sim.P_mod + sim.P_base"
+    }
+  },
+  "source_label_generation": {
+    "lines": [
+      2403,
+      2503
+    ],
+    "formula": "phase_time_len = phase_time_step_count * p.dt; np.linspace(0, phase_time_len, phase_time_step_count)",
+    "consequence": "For N>1 label spacing is N*dt/(N-1); source t labels do not define numerical elapsed dt. First label0 still applies a full p.dt update."
+  },
+  "protein_duration": {
+    "source": "betse/science/sim_toolbox.py",
+    "function": "update_Co",
+    "lines": [
+      1155,
+      1204
+    ],
+    "formula": "uniform membrane flux = level*(U-0.5); concentration amount update multiplies p.dt; no sqrt(dt) factor"
+  },
+  "scope_limits": [
+    "This is a source audit and proposed Cells composition, not full native physiology parity",
+    "Native protein modifies charge/voltage downstream; bridge will not implement that coupling",
+    "No additional RNG sites, event implementations, clipping, geometry, cuts, GPU or long campaigns"
+  ]
+}

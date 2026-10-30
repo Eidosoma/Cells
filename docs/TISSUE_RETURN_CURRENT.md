@@ -2609,6 +2609,106 @@ are recorded only in [Progress](../PROGRESS.md). Offline multi-GPU planning,
 compiled CPU evidence, native-source correspondence and experimental calibration
 are separate claims; this version does not establish whole-tissue BETSE parity.
 
+### Irreversible configured transport with explicit physical work
+
+`resolved_calcium_energy_irreversible_transport@1` is a separate composition
+over the same 56-law calcium/ER and finite-fuel parent. The
+[schema](../src/cells/core/surface_calcium_energy_irreversible_transport_spec.py)
+retains native `null` or string `"None"` standard-energy declarations and uses
+`irreversible_species_transport_explicit_physical_work@1` accounting. Every route
+still preserves its species/coefficient map, binds one physical membrane and
+updates its actual finite exterior and free cytosolic owners.
+
+The [model](../src/cells/models/surface_calcium_energy_irreversible_transport.py)
+uses the frozen native rate branch without its thermodynamic reversal term.
+Its native reaction-energy diagnostic is zero. Physical transfer energy and
+heat are computed separately from the actual concentrations and solved voltage.
+With outward stoichiometry `nu`, inside-minus-outside voltage `Vm`, and explicit
+signed maintained work `W` in J/mol:
+
+- `Gchemical = R*T*sum(nu*log(c_out/c_in))`;
+- `Gelectrical = -F*sum(z*nu)*Vm`;
+- supplied power is `1e-3*cycle_rate*W` in pJ/s;
+- physical heat is `1e-3*cycle_rate*(W-Gchemical-Gelectrical)` in pJ/s.
+
+Here `cycle_rate` is the signed native extent in fmol/s. `W` is an independently
+declared external supply, not inferred from `null` or the zero diagnostic.
+Native signed regulator algebra is preserved: an inhibitor can produce a
+negative extent even in this nominally irreversible branch. Admission checks
+the resulting physical heat and refuses negative dissipation. It never clips
+the rate or silently makes regulation positive. Participating concentrations
+must remain positive even when availability is zero.
+
+The **44 complete fields** retain the original four route ledgers and add
+`network_chemical_work_pJ` and `network_electrical_work_pJ`. Their sum with heat
+must equal supplied work under the declared ledger tolerance. Physical field
+energy, calcium ownership, material/charge balance and the parent fuel histories
+remain checked. These routes do not draw on ATP; the existing ATP-dependent
+pumps retain their own finite-pool demand. ATP-driven routes or chemical
+conversion require additional explicit ownership and stoichiometry.
+
+Public parsing, serialization, model selection, complete checkpoints and ionic
+ensemble admission use this separate identity. The inherited transporter
+scheduler retains route-only boundaries alongside channel, pump and fuel
+controls. Initial gross turnover and parent step limits remain preflight
+checks; actual stages must also satisfy the physical domain. Current execution
+and reference qualifications are recorded in [Progress](../PROGRESS.md).
+The short public restart probe is separate from full coupled convergence,
+native whole-loop comparison and measured biological calibration.
+[Cell removal](#cell-removal-with-irreversible-transport) has a separate adapter
+and qualification. Assembly, phase/bath compositions and GPU execution require
+their own integration and evidence.
+
+### Configured transport powered by finite ATP
+
+`resolved_calcium_energy_atp_transport@1` couples a restricted native
+transporter reaction directly to the membrane owner's finite ATP/ADP/phosphate
+pool. Its [schema](../src/cells/core/surface_calcium_energy_atp_transport_spec.py)
+requires exactly **ATP → ADP + Pi** for each forward cycle. Ionic reactant and
+product coefficient maps otherwise match; ions move across the specified
+membrane without conversion. The drive explicitly names the inside cell's
+energy pool. Fuel species remain neutral transformed chemical owners and cannot
+be transported into the extracellular space through this adapter.
+
+The native numeric, reversible rate law uses actual ionic and fuel concentrations.
+Its configured standard reaction energy must equal that pool's hydrolysis
+standard energy. Fuel uses the existing **1-M** transformed standard state;
+transported ions use the shared **1-mM** zero standard potentials. Ionic terms
+have equal substrate counts on both sides. For this exact ATP stoichiometry,
+the native quotient's remaining `1e-3` factor gives the physical 1-M hydrolysis
+quotient. This correspondence does not generalize to arbitrary conversions or
+substrate powers without another derivation.
+
+The [model](../src/cells/models/surface_calcium_energy_atp_transport.py) uses the
+actual total reaction energy:
+
+`Greaction = Gfuel_hydrolysis + Gionic_chemical + Gelectrical`.
+
+For signed extent `r` in fmol/s, physical heat is `-1e-3*r*Greaction` in pJ/s.
+Released fuel power is `-1e-3*r*Gfuel_hydrolysis`; it transfers energy internally
+from the finite pool, without an additional external-supply term. Reverse
+cycles synthesize ATP from ADP and phosphate using the ionic/electrical drive.
+Negative physical dissipation is refused; the signed source rate is not clipped.
+
+The complete **46-field state** adds eight route histories: signed extent,
+ionic transfer, heat, fuel work, ionic chemical work, electrical work, gross ATP
+hydrolysis and gross ATP synthesis. Separate gross directions prevent opposing
+routes from concealing substrate turnover. Route demand joins the actual Na/K,
+PMCA, ER and regeneration consumers of each pool. Adenylate, phosphorus,
+species, charge and energy balances retain their existing tolerances. Positive
+fuel/substrate domains and initial gross ionic/fuel step limits remain explicit;
+they do not establish stability for arbitrarily long simulations.
+
+Public configuration loading, serialization, model selection, inherited schedules,
+complete checkpoints and ionic ensemble admission use the new identity. Its
+[independent reference](../validation/tissue/calcium_energy_atp_transport_reference.py)
+derives the substrate and energy accounting separately. [Progress](../PROGRESS.md)
+records actual qualification results. The current scope covers the declared
+one-ATP conversion. [Cell removal](#cell-removal-with-finite-atp-transport)
+has a separate adapter and qualification. Other chemical conversions,
+phase/bath/assembly composition, longer physiological recovery and GPU execution
+need their own implementation and evidence.
+
 ### Finite mitochondrial ion and voltage coupling
 
 [`resolved_calcium_energy_mitochondria@1`](../configs/resolved_calcium_energy_mitochondria.json)
@@ -2941,6 +3041,69 @@ checks. The inherited PMCA/ER fuel-anchor range and closed-field solvability lim
 still apply. This adapter does not add ATP-driven or species-converting configured
 routes, assembly remapping, physical wound surfaces or healing. The separate
 mitochondrial and water adapters below retain their additional owners.
+
+### Cell removal with irreversible transport
+
+`resolved_calcium_energy_irreversible_transport_excision@1` extends the same
+explicit removal contract to the native `null`/`"None"` transport composition.
+Its [adapter](../src/cells/core/calcium_energy_irreversible_transport_tissue_excision.py)
+retains every surviving route's membrane owner, substrate configuration,
+regulators, density and signed external work. It uses the irreversible rate and
+physical heat checks throughout source validation, rebuilding and continuation.
+It never converts a route to the reversible branch during removal.
+
+All **44 source fields** are archived by their physical owner. Three gate fields
+survive, and 41 local fields restart at zero against the actual surviving
+chemical/fuel inventories at the original absolute time. The six route histories
+include chemical and electrical work as well as extent, transferred ions, heat
+and supplied work. They record previous transfers already reflected in physical
+inventories; removal does not withdraw those quantities a second time. The cut
+archive contains both retained and removed histories and the complete prior
+definition, including earlier cuts.
+
+The ninth control family retains removed-route event clocks. Altered prior
+controls, missing physical work fields, changed route parameters and mixed model
+identities are refused. No-op removal preserves state and clock exactly; terminal
+removal produces an archive without a zero-cell solver. The existing closed-field
+solvability and finite-fuel constructor bounds remain in force. The independent
+[removal reference](../validation/tissue/calcium_energy_irreversible_transport_excision_reference.py)
+uses the separately derived irreversible law and physical-owner remapping.
+[Progress](../PROGRESS.md) records current test outcomes and pending qualification.
+This adapter adds no lysis release, wound surface, mechanical cutting-energy law,
+long-term recovery or GPU execution claim.
+
+### Cell removal with finite-ATP transport
+
+`resolved_calcium_energy_atp_transport_excision@1` extends removal to configured
+routes that consume or synthesize ATP in their actual membrane owner's finite
+pool. The [adapter](../src/cells/core/calcium_energy_atp_transport_tissue_excision.py)
+preserves every surviving route's membrane, fuel pool, kinetics and regulator
+definitions. Removal retains the ordinary one-ATP reaction and its internal
+fuel-work accounting; it adds no external transport-work supply.
+
+All **46 source fields** and the complete definition/layout are archived. Three
+gate fields survive; 43 local fields restart against the actual retained
+chemical and fuel inventories. All eight route histories, including separate
+gross hydrolysis and synthesis, are partitioned into retained and removed
+owners. Past transfers are already reflected in physical stores and are not
+withdrawn again. Actual retained/removed ATP, ADP, phosphate, adenylate,
+phosphorus, energy and physical charge remain explicit.
+
+The original absolute clock, nominal timestep and removed-route event boundaries
+are preserved. The cut cannot repair a coarse temporal-accuracy failure by
+silently changing its source timestep. No-op, terminal and sequential removal
+retain their existing contracts. Public parsing, model selection, ensemble
+admission, cut archives and checkpoint continuation use the separate identity;
+mixed families and incomplete route histories refuse.
+
+The [independent reference](../validation/tissue/calcium_energy_atp_transport_excision_reference.py)
+reconstructs the physical owners and complete finite-fuel rates separately.
+Manufactured neutral routes exercise both gross fuel directions; they are not
+fitted transporter stoichiometries. [Progress](../PROGRESS.md) records the
+qualified timesteps and intervals, retained failures and public restart checks.
+The existing closed-field solvability and PMCA/ER fuel-anchor bounds still
+apply. Wound release, mechanical cutting energy, physiological recovery and GPU
+execution require separate models or evidence.
 
 ### Cell removal with mitochondrial owners
 

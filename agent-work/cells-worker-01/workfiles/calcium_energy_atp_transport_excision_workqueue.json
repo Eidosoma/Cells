@@ -1,0 +1,142 @@
+{
+  "kind": "cells.worker_atp_transport_excision@1",
+  "model_id": "resolved_calcium_energy_atp_transport_excision@1",
+  "status": "qualified_frozen_chief_public_integration_passed",
+  "owned": [
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py",
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py"
+  ],
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e"
+  },
+  "scope": "Direct six-file owner removal with46-field source/full8-route archives, live neutral fuel and internal ATP work; Root owns shared dispatch/artifact/public hooks",
+  "budgets": {
+    "amount_energy_state_absolute": 3e-12,
+    "state_relative": 3e-10,
+    "charge_absolute_C": 3e-23,
+    "potential_absolute_V": 3e-12,
+    "rate_energy_pJ_s": 1e-10,
+    "endpoint_energy_pJ": 1e-10,
+    "cut_energy_absolute_pJ": 2e-10,
+    "cut_energy_relative": 3e-09,
+    "owner_partition": "8*epsilon*sum(abs(source owner quantities))",
+    "chemical_background": "existing CHARGE_ATOL_C +16*epsilon*absolute charge scale",
+    "pool_anchor_mM": [
+      1e-09,
+      1000.0
+    ]
+  },
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "runs": [
+    {
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-development-20261030-01",
+      "status": "independent_prefix_cut_postcut_passed_and22_direct_checks_passed_one_nominal_temporal_failure",
+      "junit": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-development-20261030-01/direct-cut-tests.xml",
+      "failure": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-development-20261030-01/failure.json",
+      "coarse_accuracy": {
+        "1": 352.7379358082391,
+        "2": 21.2717500032766
+      },
+      "physical_source_changed": false
+    },
+    {
+      "directory": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-refinement-20261030-02",
+      "status": "refined_temporal_check_passed",
+      "source_mode": "captured private source",
+      "new_checks": 1,
+      "reused_checks": 22,
+      "result": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-refinement-20261030-02/result.json",
+      "sha256": "80776def0519a5725c66215c9bb85c78eddb1b59569d4e060b963870631f7d63"
+    }
+  ],
+  "pending": [],
+  "long_job_launched": false,
+  "campaign_polled": false,
+  "worker_physics_complete": true,
+  "owned_source_sha256": {
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38"
+  },
+  "qualification": {
+    "total_checks": 23,
+    "reused_non_temporal_checks": 22,
+    "new_refined_temporal_check": 1,
+    "result": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-refinement-20261030-02/result.json",
+    "sha256": "80776def0519a5725c66215c9bb85c78eddb1b59569d4e060b963870631f7d63",
+    "source_correspondence": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-refinement-20261030-02/source-correspondence.json",
+    "source_correspondence_sha256": "3e49bd3216d4acf4429697449d713aae24189a0e3c53524f7a3b988f42332a3a",
+    "prior_non_temporal_resources": {
+      "phase_elapsed_seconds": 225.09491358604282,
+      "sampled_peak_rss_bytes": 244543488,
+      "minimum_available_host_memory_bytes": 21709209600
+    },
+    "refined_resources": {
+      "status": "completed",
+      "returncode": 0,
+      "elapsed_seconds": 45.22546817897819,
+      "sampled_peak_process_tree_rss_bytes": 240730112,
+      "sampled_peak_charged_memory_bytes": 240730112,
+      "sampled_peak_summed_process_memory_bytes": 240730112,
+      "shared_address_space_samples": 0,
+      "process_tree_memory_metric": "rss",
+      "rss_fallback_samples": 0,
+      "observed_process_high_water_bytes": 240730112,
+      "minimum_available_host_memory_bytes": 21686833152,
+      "samples": 181,
+      "limits": {
+        "process_tree_memory_metric": "rss",
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_individual_process_rss_bytes": 1073741824,
+        "min_available_host_memory_bytes": 8589934592,
+        "max_wall_seconds": 480,
+        "sample_interval_seconds": 0.25,
+        "max_process_tree_rss_bytes": 1073741824
+      },
+      "utc": "2026-10-30T00:46:24.309599+00:00",
+      "automatic_retry": false
+    },
+    "independence": "/mnt/workspaces/Cells/calcium-energy-atp-transport-excision-development-20261030-01/evidence/isolated-reference/result.json",
+    "independence_sha256": "c4eacf1df3b7a370d732cc8062aa59f3360a10c675ade0ad0d65bc440459a0ec",
+    "metrics": {
+      "complete_postcut_rate_comparisons": 13,
+      "max_rate_error_fraction": 0.012985495353651299,
+      "coarse_dt_error_fraction": 352.7379358082391,
+      "coarse_half_dt_error_fraction": 21.2717500032766,
+      "refined_source_dt_s": 1.5625e-07,
+      "refined_dt_error_fraction": 0.08893114159930408,
+      "refined_half_dt_error_fraction": 0.00537537110030125,
+      "refined_oracle_uncertainty_fraction": 2.37295533682127e-06,
+      "prefix_and_cut_time_s": 1.25e-06,
+      "end_time_s": 3.7500000000000005e-06,
+      "route_event_time_s": 2.1875000000000002e-06,
+      "isolated_independent_endpoint_residual_pJ": 7.22433723086835e-15
+    }
+  },
+  "handoff": "agent-work/cells-worker-01/workfiles/CALCIUM_ENERGY_ATP_TRANSPORT_EXCISION_HANDOFF.md",
+  "chief_integration": {
+    "status": "passed_as_reported_by_chief",
+    "checks": 4,
+    "result": "/mnt/workspaces/Cells/atp-transport-excision-public-integration-20261030-02/completion-verification.json"
+  }
+}

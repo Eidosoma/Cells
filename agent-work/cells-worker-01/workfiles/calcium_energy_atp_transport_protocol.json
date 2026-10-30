@@ -1,0 +1,61 @@
+{
+  "kind": "cells.finite_atp_native_transport_protocol@1",
+  "model_id": "resolved_calcium_energy_atp_transport@1",
+  "state_fields": 46,
+  "owned": [
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py",
+    "src/cells/models/surface_calcium_energy_atp_transport.py",
+    "validation/tissue/calcium_energy_atp_transport_reference.py",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py"
+  ],
+  "protected_sha256": {
+    "src/cells/core/surface_calcium_energy_irreversible_transport_spec.py": "ba4f209dde5217bc43fe94846114fa67c8c795485039b1494b843ef3fd7fd59b",
+    "src/cells/models/surface_calcium_energy_irreversible_transport.py": "51c060491c372e04500d87da59df9b674348a330d2799ad8d68e76ad6d56e7a2",
+    "validation/tissue/calcium_energy_irreversible_transport_reference.py": "0cf09a1b4102b11d734949bcf4490e6518791c0268b8317f62d3713ae706888c",
+    "validation/tissue/calcium_energy_irreversible_transport_fixtures.py": "ea77de626d1975c8f838b4bc76f789a8e1727b03b3d1f9ec22b7fc0ca67404aa",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport.py": "c80e6df4b02a39aa7134b9fd4a31a7421ce1b3a8e84dddbd2be3b0cecb63ac51",
+    "tests/unit/test_surface_calcium_energy_irreversible_transport_reference.py": "c6f789bd2c38897a249fae16069d85d2b6b8719d920498ffcbd943aca7b5a2ab"
+  },
+  "scope": {
+    "native": "pinned numeric reversible configured law; exact one ATP->ADP+Pi, preserved ionic coefficient maps",
+    "physical": "live neutral transformed fuel pool of the exact inside membrane owner; no maintained fuel or external work",
+    "standard_states_mM": {
+      "ionic": 1.0,
+      "fuel": 1000.0
+    },
+    "correspondence": "preserved ionic item counts cancel literal 1e-3 factors; fuel adds one factor and gives the physical 1-M hydrolysis quotient",
+    "reverse": "signed native reverse extent synthesizes ATP; heat must be nonnegative without sign clipping",
+    "gross": "separate forward/reverse route integrals and shared owner gross sums with NaK, PMCA, ER and regeneration",
+    "limits": "original 0.05 initial ionic and minimum actual fuel pool turnover per step, at every merged control event"
+  },
+  "budgets": {
+    "state_absolute": 3e-12,
+    "state_relative": 3e-10,
+    "electrode_charge_absolute_C": 3e-23,
+    "potential_absolute_V": 3e-13,
+    "native_physical_affinity_absolute_J_mol": 3e-09,
+    "native_physical_affinity_relative": 3e-12,
+    "rate_energy_absolute_pJ_s": 1e-10,
+    "endpoint_energy_absolute_pJ": 1e-10,
+    "pool_material_absolute_fmol": 2e-12,
+    "oracle_uncertainty_fraction": 0.1
+  },
+  "checks": {
+    "initial_evolved_stages": "all46 fields; seven arms, compact and padded",
+    "short_histories": "active/reverse/mixed, two original1.25us steps, actual0.9375us event, RK4 dt and half-dt vs DOP853 standard/tight",
+    "independence": "fresh actual RHS and integration with Cells/JAX imports denied",
+    "domains": "foreign owners, fuel stoichiometry, standards, None/zero mismatch, exhaustion even blocked, negative heat, corrupt material/work/gross ledgers",
+    "runtime": "one CPU7 JAX eager parity, no GPU/JIT campaign"
+  },
+  "resource_limits": {
+    "cpu": 7,
+    "threads": 1,
+    "max_command_seconds": 180,
+    "max_child_tree_rss_bytes": 1073741824,
+    "min_available_host_bytes": 8589934592
+  },
+  "automatic_retry": false,
+  "automatic_followup": false
+}

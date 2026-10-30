@@ -1,0 +1,12 @@
+{
+  "status": "failed_overbroad_static_scan",
+  "algorithm": "Recursively scan every imported local module and all function bodies",
+  "error": "Production/JAX reference import",
+  "file": "validation/betse/junction_transport/check.py",
+  "file_sha256": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+  "line": 27,
+  "function": "check",
+  "selected_independent_symbol": "decimal_flux",
+  "meaning": "The module also contains a production comparison driver that the reference does not import/call; no scientific equation failure",
+  "numerical_launches": 0
+}

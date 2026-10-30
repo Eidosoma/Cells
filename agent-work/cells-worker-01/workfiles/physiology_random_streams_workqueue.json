@@ -1,0 +1,84 @@
+{
+  "kind": "cells.physiology_random_streams_workqueue@1",
+  "status": "implemented_short_CPU_checks_passed_handed_to_chief",
+  "owned_files": {
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "tests/unit/test_physiology_random_streams.py": "d45d34e29d33841fae5f6bff3b4c2ebc9eef1fa43d03910a09dbf67c2dc506e5"
+  },
+  "receipt": {
+    "path": "/mnt/workspaces/Cells/physiology-random-streams-tests-20261029-01/result.json",
+    "sha256": "76584cc859a113caf84a1f33ffb298d93944a2a64d0aaa8f0a415ff194454675",
+    "checks": 50
+  },
+  "frozen_sampler": {
+    "path": "src/cells/processes/betse_perturbations.py",
+    "sha256": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "changed": false
+  },
+  "public_api": [
+    "new_stream(binding, rng, *, stream_id, world_id, next_tick=0)",
+    "draw(stream, binding, *, site, enabled=True) -> (packet_or_None, next_stream)",
+    "stream_record(stream)",
+    "restore_stream(record, binding)",
+    "rebind_stream(stream, old_binding, new_binding)"
+  ],
+  "stream_class": "PhysiologyRandomStream",
+  "stream_fields": [
+    "stream_id",
+    "world_id",
+    "next_tick",
+    "layout_identity",
+    "rng"
+  ],
+  "record_kind": "cells.physiology_random_stream@1",
+  "record_fields": [
+    "kind",
+    "law_id",
+    "stream_id",
+    "world_id",
+    "next_tick",
+    "layout_identity",
+    "rng",
+    "identity"
+  ],
+  "tick_policy": "one shared uint64 tick per enabled call; inactive returns original stream; enabled at UINT64_MAX refuses before sampling; no hidden effect/phase/clock inference",
+  "rebind_policy": "explicit surviving cell/membrane/environment/ion axes with original membrane-to-cell/environment ownership; keep RNG/cache/world/tick; physical remapping is caller-owned",
+  "scope": "portable host stream ownership/record/rebind over qualified RNG laws; no coupled physiology injection or automatic loop timing",
+  "caveats": [
+    "stream_id is an ownership label, not a new RNG salt",
+    "native world IDs are ownership labels; separately supplied independent native states are caller-owned",
+    "native order/count/boundary weights may change future tape after cuts; no native subset invariance",
+    "stable world/tick/site/owner law is reused unchanged; original version/backend limits remain",
+    "caller decides enabled according to actual site guards; zero-effect enabled calls still draw",
+    "digests detect mutation, not cryptographic authorship or replay authentication"
+  ],
+  "resource_result": {
+    "status": "completed",
+    "returncode": 0,
+    "elapsed_seconds": 4.532199609093368,
+    "sampled_peak_process_tree_rss_bytes": 257376256,
+    "sampled_peak_charged_memory_bytes": 257376256,
+    "sampled_peak_summed_process_memory_bytes": 257376256,
+    "shared_address_space_samples": 0,
+    "process_tree_memory_metric": "rss",
+    "rss_fallback_samples": 0,
+    "observed_process_high_water_bytes": 257376256,
+    "minimum_available_host_memory_bytes": 21759852544,
+    "samples": 19,
+    "limits": {
+      "process_tree_memory_metric": "rss",
+      "max_process_tree_memory_bytes": 1073741824,
+      "max_individual_process_rss_bytes": 1073741824,
+      "min_available_host_memory_bytes": 8589934592,
+      "max_wall_seconds": 180,
+      "sample_interval_seconds": 0.25,
+      "max_process_tree_rss_bytes": 1073741824
+    },
+    "utc": "2026-10-29T22:38:58.239999+00:00",
+    "automatic_retry": false
+  },
+  "shared_or_frozen_files_changed": [],
+  "chief_owned_checkpoint_module": "src/cells/physiology_checkpoint.py",
+  "handoff": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/PHYSIOLOGY_RANDOM_STREAMS_HANDOFF.md",
+  "long_jobs_or_active_job_polls": 0
+}

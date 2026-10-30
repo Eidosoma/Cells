@@ -4078,3 +4078,450 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   preserved failure and corrected result are linked in the existing trajectory
   workqueue through `workfiles/open_calcium_bath_trajectory_receipt_correction.json`.
   No physical equation/budget changed and no trajectory or active-job poll ran.
+
+## B14 physiological random-stream ownership, 2026-10-29
+
+- Chief assigned a new immutable host stream/record/rebind layer while it owns
+  complete-snapshot integration. Added only `core/physiology_random_streams.py`
+  and its unit file; the frozen perturbation sampler remains byte-identical.
+- All50 short CPU checks pass: exact native/cache and stable-coordinate replay,
+  shared uint64 tick accounting, inactive/zero-effect guards, immutable records,
+  survivor ownership and foreign/corrupt/overflow refusals. Receipt/source/API
+  handoff is linked in `workfiles/physiology_random_streams_workqueue.json`.
+  This is portable stream infrastructure, with no physical noise injection,
+  automatic solver timing or native subset-invariance claim. No long numerical
+  launch, active-job poll, shared/frozen source or PROGRESS.md edit occurred.
+
+## B14 atomic perturbation component, 2026-10-29
+
+- Chief assigned two new step/unit files while owning complete-state paired
+  checkpoint integration. Added frozen six-field component state, unconditional
+  initialization/static draw, explicit-loop SIM finalization/protein transition
+  and a nondrawing validator. Rejected trials retain their packet/proposed RNG
+  and raw buffers; accepted caller state stays untouched.
+- All29 short CPU cases pass in3.79s/243MiB, including guard/timing/zero-level,
+  positivity/conservation refusals, immutable buffers and overflow. API/hashes
+  and durable receipt: `workfiles/physiology_perturbation_step_workqueue.json`.
+  The frozen sampler and stream core are unchanged. Bulk refresh/clipping,
+  whole-physiology timing/mapping and RK-stage noise remain outside this
+  component. No shared/frozen/PROGRESS edit, long launch or active-job poll ran.
+
+## B14/B13 perturbation component remap, 2026-10-29
+
+- Chief assigned new remap/unit files. Reused conservative cell-removal owners
+  and explicit stream rebind; all six survivor buffers, clocks/controls and full
+  RNG/cache remain exact. Removed buffers are archived; protein amount counts
+  cell/environment density×volume once and excludes membrane views. Unsupported
+  geometry/volume/precision, owner and empty-domain changes refuse explicitly.
+- All24 short CPU checks pass in7.06s/246MiB, including independent Decimal
+  amount accounting, immutable/no-draw remaps, native/stable continuation and
+  strict refusal cases. API/source/receipt are linked in
+  `workfiles/physiology_perturbation_remap_workqueue.json`. Frozen sampler,
+  stream, step and checkpoint remain untouched. Chief separately sealed the
+  accepted154-case bath source and launched its frozen40-role campaign; this
+  worker neither queried it nor used reserved CPUs3/4.
+
+## B04 explicit irreversible configured transport, 2026-10-29
+
+- Added a separate None-energy, species-preserving transport identity in six
+  new schema/model/reference/fixture/unit files. Native signed rates remain
+  literal; explicit external work, actual chemical/electrical transfer work and
+  physical heat have separate ledgers. Negative actual heat refuses, with no
+  clipping or inferred ATP demand. Reversible/parent/shared files stay fixed.
+- All53 CPU physics cases pass, including28 full44-field stages and active /
+  signed2.5us event-split histories with dt/half-dt and tightened independent
+  oracles. Current hashes, errors, receipts and scope are linked in
+  `workfiles/calcium_energy_irreversible_transport_workqueue.json`.
+- Retained an overbroad static import-audit failure on an unused legacy
+  production-comparison driver, then documented that precise exclusion and
+  passed a fresh actual RHS/DOP853 process with production imports denied.
+  No numerical failure, frozen/shared edit, long run or campaign query occurred.
+  Chief's four public-interface checks/source correspondence are separately
+  linked; it owns the new cut and shared integration.
+
+## B04 configured transport with finite ATP ownership, 2026-10-29
+
+- Chief assigned and approved a new46-field one-ATP native transport identity.
+  Added new schema/model/reference/fixture/unit files with live membrane-owner
+  fuel substrates, explicit1-M vs1-mM standards, internal fuel work and separate
+  hydrolysis/synthesis ledgers. Prior irreversible six sources remain exact.
+- All75 final checks pass, including28 complete46-field stages, three2.5us
+  forward/reverse/mixed dt/half-dt histories and an actual isolated independent
+  RHS/integration. Preserved runner/fixture/calendar failures; fixed no physical
+  equation or acceptance budget. Peak CPU7 RSS613MiB, each phase under45s.
+- Qualified sources, fixed protocol, raw arrays/errors, resource receipts and
+  API handoff are linked in `workfiles/calcium_energy_atp_transport_workqueue.json`.
+  Chief owns shared integration/docs; six worker sources are frozen. No long
+  computation, shared/frozen source edit or active-campaign query ran.
+
+## B14 explicit physiology/tissue owner and unit binding, 2026-10-30
+
+- Chief approved a new two-file host adapter for four exact ordinary model
+  families. Bind actual owner IDs, areas and SI volumes; require positive named
+  thickness and explicit boundary occurrences. Matrix mode refuses every
+  heterogeneous exterior-volume declaration. D/P conversion preserves signed
+  scheduled buffers and complete immutable source/provenance replay.
+- All 75 focused CPU7 cases pass in 4.53 s / 190 MiB, including independent
+  Decimal ownership/unit checks, explicit permutations, signed modifiers,
+  immutable replay and malformed/foreign/padding refusals. Preserved the first
+  new test's below-roundoff assertion and aligned it with the existing 3e-13
+  conservation contract; no binding or physical source changed between runs.
+- Qualified hashes, raw arrays, receipts and API handoff are linked in
+  `workfiles/physiology_tissue_binding_workqueue.json`. Chief owns the optional
+  bound-checkpoint integration. No prior/shared source, RNG law, physical loop
+  timing, protein-charge coupling or active-campaign query changed/ran.
+
+## B04 finite-ATP configured transport owner removal, 2026-10-30
+
+- Chief approved six new schema/model/core/reference/fixture/unit files for
+  `resolved_calcium_energy_atp_transport_excision@1`. Retain all46 source fields
+  and8 route histories, actual retained/removed pools, original absolute clocks
+  and physical anchor policies. Direct family helpers avoid shared hooks while
+  Chief owns public dispatch/archive integration.
+- 22 direct cut/RHS/archive/refusal checks pass; 13 complete46-field stages
+  agree independently. Preserved one nominal/half-step trajectory failure at
+  the fixed budget. The same cut time, postcut horizon/events and budgets pass
+  after declaring a finer source timestep BEFORE evolution/removal. The cut
+  itself retains that source timestep and all absolute clocks/anchors.
+- Captured-source focused check plus AST correspondence reuses the 22 unchanged
+  passed cases; all five scientific sources remain exact. A fresh independent
+  source/cut/postcut integration also passes with Cells/JAX imports denied.
+  Full failures, refinement metrics, hashes/resources/API handoff are linked in
+  `workfiles/calcium_energy_atp_transport_excision_workqueue.json`. Sources are
+  frozen for Chief's public integration. No old/shared source edit, GPU run,
+  long launch or active-campaign query ran.
+
+## B14 explicit physiological passive-permeability RHS view, 2026-10-30
+
+- Chief approved three new model/reference/unit files. View replays exact
+  ordinary source ownership/units and makes a temporary layout changing only
+  passive P, then evaluates the full original equations. Explicit held controls
+  and step admission retain native balances/domains and all-consumer fuel
+  bounds. Old zero-P/nonzero-transfer structural refusals stay explicit.
+- All 43 host cases pass in 11.82 s / 228 MiB, including32 complete initial/
+  evolved RHS comparisons for four families and every-readout unchanged-P
+  equality on evolved states. A fresh process replays all32 actual independent
+  RHS cases with Cells/JAX imports denied. No numerical failures or budget
+  changes occurred. Fixed sources, raw errors/budgets and API/resources are
+  linked in `workfiles/physiology_permeability_view_workqueue.json`.
+- Three sources are frozen for Chief's future driver/checkpoint integration.
+  All original spec/state/layout/component bytes/flags and protected physics
+  remain unchanged; no draw, finalization, clock advance or protein charge.
+
+## B14 one accepted held-permeability tissue RK4 interval, 2026-10-30
+
+- Chief approved three new core/reference/unit files. Host admission requires
+  exact source checkpoint/grid/schedule and unchanged passive route support.
+  Pure array kernel checks raw RK stages without integrated-energy admission;
+  acceptance checks original/runtime endpoint conservation and monotonic
+  histories. Retain rejected trials and return original layout/binding/component.
+- Fixed budgets, captured sources and CPU7 bounds/results are tracked in
+  `workfiles/physiology_tissue_step_workqueue.json`. No frozen view/physics,
+  component clock/RNG, shared checkpoint or public driver changed.
+- Preserved original100us passive trajectory-potential failures on both0..200us
+  intervals at the unchanged gate. Same-state field closure passes; internal
+  half steps resolve the discrepancy but receive no public acceptance credit.
+  Predeclared50us source refinement will cover that same horizon with four
+  accepted steps and chained independent DOP, retaining all source events.
+- Chief's restart check exposed a JAX-layout/NumPy host-guard dispatch mismatch.
+  The minimal temporary host conversion preserves the identical output layout;
+  core hash was sent for its independent public restart checks. Initial new
+  worker restart tests failed in their NumPy-only fingerprint helper, before
+  advance; that test-only issue and all raw evidence remain recorded.
+- Final host run passes29 cases with one strict expected coarse accuracy
+  failure; the earlier unchanged-kernel CPU JAX pass gives30 positive worker
+  checks. Fresh Cells/JAX-denied execution replays20 actual intervals exactly,
+  qualifying14 original intervals and4 finer-source steps while preserving2
+  coarse failures. The50us recipe's continuously carried reference gives max
+  state0.002477 and potential0.142248 budgets over the same200us span.
+- Final receipt/hashes, preserved failures, resources and limits are linked in
+  the workqueue and `workfiles/PHYSIOLOGY_TISSUE_STEP_HANDOFF.md`. All3 sources
+  are frozen. Chief separately reports46 exact public restart checks passing;
+  those add no trajectory accuracy credit. No unrequested audit/regression,
+  long job, GPU action, shared edit or campaign query ran.
+
+## B14 physiological-loop scheduling bridge, 2026-10-30
+
+- Chief assigned a new atomic nominal-loop adapter and owns its paired cursor/
+  checkpoint integration. Audited actual pinned source AST order/guards and
+  verified all10 native source hashes. The source's linspace labels and full-dt
+  updates are distinct; SIM P finalization precedes ion work, protein draw/update
+  follows it. The current uncoupled-protein composition and speculative failure
+  RNG semantics therefore require an explicit limited Cells identity.
+- Proposed one component call at a declared physiological boundary, independent
+  finer tissue/event steps with held P, and whole-loop publication only. Raw
+  proposed component/RNG and completed/failed local trials survive rejection.
+  Audit evidence and the compact API/clock/scope/evidence contract are in
+  `workfiles/physiology_loop_bridge_source_audit.json` and
+  `workfiles/PHYSIOLOGY_LOOP_BRIDGE_CONTRACT.md`. Contract sent to Chief before
+  introducing a new execution identity. No new computation or shared edit ran.
+- Final typed cursor API seals complete source, binding, numeric/component/RNG
+  association and signed component-call origin. All44 cases pass, including8
+  whole initial/evolved reference loops at20 common grid points. Fresh Cells/
+  JAX-denied standard/tight replays match exactly; max state/phi errors are
+  0.002708/0.102023 budgets. No RNG-engine or whole2ms trajectory claim is added.
+- All3 new sources are frozen, with receipt/resources,24 protected hashes,
+  exact tested horizons and scope in `workfiles/physiology_tissue_loop_workqueue.json`
+  and the completed bridge contract. Chief separately reports80 public checks
+  passing. Its v4/cursor container work is separate from accuracy evidence.
+
+## B14 explicit protein amount/charge projection, 2026-10-30
+
+- Chief assigned a new pure owner/unit adapter and later authorized bounded
+  checks for this round. Audited11 pinned native sources, actual protein
+  valence/F and downstream update_V charge ownership, plus Cells fixed anchors
+  and shared ionic/chemical volume ownership. Native and Cells F remain explicit.
+- New core/reference/unit files report physical owner stocks and explicit
+  reference/current concentration-difference deltas. Membrane views are not
+  inventory. Original3e-13 gross checks, separate stock ULP/projection bounds and
+  actual net residuals are visible; no repair or anchor/RNG/field update occurs.
+- Stable contract and larger coupling questions are recorded in
+  `workfiles/PHYSIOLOGY_PROTEIN_PROJECTION_NOTES.md`. Chief owns a separate
+  read-only field response and reports24 integration cases passing. Worker
+  bounded contract/reference checks are tracked in the projection workqueue.
+- All44 unit/contract cases pass in4.28s; actual production-import-denied replay
+  of16 owner cases/32 projection-delta forms passes in0.51s. Max named-owner
+  relative error2.154e-16 is within fixed3e-15. Peak RSS235MB; all3 new sources
+  and32 protected sources are exact. Full frozen hashes/receipts and raw
+  quantities/bounds/rejections are linked in the workqueue and projection notes.
+  Chief's24 same-state field-response checks remain separate; no live protein
+  feedback, full-loop, new field-work or trajectory claim is added.
+
+## B14 optional ideal-protein thermodynamics, 2026-10-30
+
+- Chief assigned a new pure optional Cells chemical/endpoint-work adapter and
+  later authorized bounded checks for this round. Declared T/c0/R and fixed
+  actual owner volumes define the ideal chemical functional, with zero/tiny
+  stocks and stable unrounded differences. No native protein energy law, stock
+  change, anchor rebasing or membrane-view inventory is introduced.
+- Closed work is strictly material-conservative and explicitly conditional on
+  fixed ions and supplied capacitor/clamp inputs. No attainable-minimum,
+  protocol/holding, heat or noise-work inference is made. Larger coupling
+  questions are in `workfiles/PHYSIOLOGY_PROTEIN_THERMODYNAMICS_NOTES.md`.
+- New core/reference/unit files are Ruff-clean; Chief separately reports22
+  same-state work-view comparisons passing. Worker qualification is tracked
+  in the thermodynamics workqueue; original physics sources stay frozen.
+- Final54 checks pass by53 unchanged-case AST/JUnit correspondence plus one
+  fresh corrected fixture. Preserved the invalid tiny fixture's strict refusal;
+  changing density update ordering avoids premature subnormal mol rounding,
+  without changing any core/reference/tolerance. Fresh denied-production replay
+  covers25 named cases/75 chemical and20 conditional-work forms exactly; max
+  error0.063298 budget. Three sources/35 protected files are frozen; final
+  receipt, raw material/energy values and resources are linked in the workqueue.
+
+## B14 explicit pre-ion/post-ion component phases, 2026-10-30
+
+- Chief assigned separate phase staging, then authorized bounded checks for
+  this round. New prepare exposes a latched SIM diffusion proposal with no
+  protein/RNG/clock/count advance or publication. Finish validates the complete
+  source association, calls the unchanged full-dt component transition once,
+  and retains any rejected trial/tape. Original guards/noise scaling remain.
+- Core/reference/unit files and API notes are new only. Complete source/cache/
+  held seals are rebuilt; clones can replay an uncommitted proposal but stale
+  sources refuse before draws. Numeric routing/loop/cursor acceptance stays
+  with Chief. Scope and larger coupling questions are in
+  `workfiles/PHYSIOLOGY_PERTURBATION_PHASES_NOTES.md`.
+- All35 unit/contract cases pass in8.30s; actual Cells/JAX-denied reference
+  execution replays36 calls/72 forms across12 carried sequences exactly in0.52s.
+  Max reference error0.000439693 budget, peak RSS304MB. Core/reference/unit and
+  all40 protected sources are frozen. Receipts, full cached streams/packets,
+  source seals and raw rejected proposals are linked in the phase workqueue.
+  Ion work is only a caller marker here; no numeric/coupled trajectory or native
+  full-loop/failure-prefix claim is added.
+
+## B14 held-protein interval accounting, 2026-10-30
+
+- Chief assigned new host accounting core/reference/unit work while retaining
+  step/cursor/persistence ownership. Explicit fixed protein/P and original
+  numeric anchors define both local and seed-to-current cumulative checks.
+- All original non-overall-energy gates remain, with stable complete-store,
+  plasma/ER capacitor, fuel-pool and external-work interval energies. No RNG,
+  preparation/holding/noise work or trajectory-accuracy claim is introduced.
+- A read-only review caught draft family energy budget reuse; all calcium/fuel
+  total/pool limits now use their original1e-9pJ, including gap-rejection tests.
+  Coding/static checks complete; bounded CPU7 qualification is authorized and
+  tracked in the new interval-accounting workqueue. No shared progress edit.
+- Final40 checks pass in16.33s; fresh Cells/JAX-denied execution replays27
+  interval and6 tiny cases exactly in5.04s. Max reference difference1.523e-6
+  budget; peak RSS237551616B. All45 protected files and three owned source
+  hashes remain exact. Final receipt and resource/raw balances are linked in
+  `workfiles/physiology_protein_interval_accounting_workqueue.json`.
+- Attempt01 (23pass/17 plumbing exceptions) remains intact. Fixed immutable-map
+  evidence serialization, fuel reference topology lookup and a missing exported
+  test constant; no production/tolerance change. Independent absolute-functional
+  arithmetic now keeps200 guard digits beyond twice the stock/increment span
+  (up to1600digits), preserving the predeclared tiny-case budget. Root separately
+  reports25 interval/restart checks and8 carried endpoint comparisons passing;
+  those are not worker accounting/trajectory-accuracy credit.
+
+## B14 array held-protein interval accounting, 2026-10-30
+
+- Chief assigned a separate NumPy/JAX array port and forwarded authorization
+  for bounded CPU7 qualification. Host accounting and48 prior sources remain
+  frozen; Chief owns post-ion transactions, work receipts and full-loop state.
+- New array-only balances keep original budgets and provenance outside the hot
+  path. Compensated stocks/logs, scaled products and explicit conservative
+  precision/underflow/overflow flags preserve raw evidence without widening
+  tolerances. Static family keys support compiled/vmapped worlds.
+- New code/reference/unit files are Ruff-clean; bounded33 NumPy+5 CPU JAX
+  checks and fresh27 interval/10 primitive reference replay are prepared in
+  the new arrays workqueue. GPU, broad regression and checkpoint publication
+  remain outside this worker lane.
+- Final candidate has51 positive checks:47 NumPy, compiled primitive and
+  passive/ionic/calcium compiled two-world accounting from actual associated
+  CPU JAX endpoint records. Fresh denied-import replay covers27 interval and
+  11 scalar forms. Original tolerances remain; frozen48 files stay exact.
+- Added explicit ambiguous-zero refusal and potential/Vm/clamp consistency.
+  The shared-cell two-clamp fixture demonstrates why node charge alone cannot
+  admit altered Vm. No anonymous validity bit or field projection is accepted.
+- Final-source fuel compilation remains unqualified at1GiB (observed process
+  high-water1074728960B; sampled1069043712B). NumPy fuel passes; actual JAX
+  endpoint preparation completed. Chief directed no more fuel retries this turn.
+  Four earlier resource refusals, lint-only05 and older-source06 passes remain
+  distinct. Qualifier-only cache/free-page release never enters production.
+- The08 receipt seals50 unchanged-source checks retained from07 and one fresh
+  calcium check on that snapshot. Queue links receipts, hashes, resources and
+  exact scope. Chief owns completion verification and shared progress; no
+  further interval/fuel/GPU job is active or queued.
+
+## B14 array ideal-protein chemical change, 2026-10-30
+
+- Chief assigned independent new-only SI chemical diagnostics; bounded CPU7
+  checks are authorized, while GPU/fuel interval retries remain excluded.
+  Explicit T/c0/R and aligned fixed m3 volumes define the owner frame.
+- Stable endpoint/pivot algebra preserves actual net material terms; scaled
+  compensated amount sums keep strict3e-13*gross conservation without stock
+  resolution grace. Zero stocks have0 energy and-infinite ideal potential.
+  Empty axes, tiny stocks, conservative precision/domain refusal and raw
+  normalization are prepared. Membrane views are excluded from inventory.
+- New core/reference/unit files pass static checks. Qualification plan is35
+  NumPy plus3 CPU JAX cases, eight frozen-host comparisons and24 independent
+  SI reference forms. Private dependencies avoid mutable Root loop modules.
+  No heat, physical noise/drive law, work minimum or checkpoint claim is added.
+- All38 checks pass:35 NumPy plus3 CPU JAX (compiled/vmapped zero/tiny
+  closed owners and empty/invalid domains). Eight frames compare against frozen
+  host thermodynamics. Fresh Cells/JAX-denied execution replays24 independent
+  forms (21 resolved, three explicit refusals), max0.077563 budget; compiled
+  two-world energy comparison is exact.
+- CPU7 phases took4.53/0.51/22.41s; sampled peak633171968B, observed process
+  high-water636198912B, host reserve>=22.92GB. All51 prior protected sources
+  and three new source hashes remain exact. The chemical-array queue links
+  receipt a46250965d0f7f4f1fbe5d8bad9c3426d6b0f135cbcce074912c875d0e19f4d2.
+- Outputs retain scaled material/energy and real net standard-state terms.
+  Closed use requires closed_valid; actual zeros have-infinite ideal potential,
+  and unresolved/subnormal cases explicitly refuse. No loop/work/heat/noise-law
+  or GPU credit is claimed, and no further job is active or queued. Chief owns
+  verification/shared progress; mutable Root loop files were not pinned.
+
+## B14 array electrical protein endpoints, 2026-10-30
+
+- Chief assigned new numerics/reference/unit work, with bounded CPU7 checks.
+  Supplied frozen endpoint records share complete numeric state/P/controls;
+  direct requested charge remains separate from stored-reference and actual
+  grouped changes. Finite reservoir protein entries are retained.
+- Rechecks original charge, exact KVL/physical clamp/gauge values and actual
+  provider flags. Recomputes passive component-current closure from supplied
+  potentials without a new field solve. Original128eps/field work bounds stay
+  intact; electrode snapshot differences are reconstructed, never repaired.
+- New files are Ruff-clean. Planned26 NumPy+2 CPU JAX tests,28 host-helper and
+  independent full-node comparisons cover initial/evolved fields, unequal
+  clamps, common shifts, zero/neutral/tiny/cancelled charge and refusals. No
+  mutable Root loop/schedule pins, GPU or fuel interval retry is introduced.
+- Final plan added complete-control-domain refusal: all29 checks pass
+  (27 NumPy, two compiled/vmapped CPU JAX cases from actual NumPy endpoint
+  providers). All28 host-helper/independent forms agree within declared
+  budgets. Fresh Cells/JAX-denied replay reproduces28 exact reference answers,
+  largest numerical error0.003944305 budget. Composite host-bound comparison
+  retains the explicitly measured assembly-energy rounding term only.
+- CPU7 phases10.31/2.77/13.09/18.38s; sampled RSS868089856B, process
+  high-water870584320B, host reserve>=21644828672B. All56 protected files
+  and three owned source hashes remain exact. Own workqueue links receipt
+  f3bb2aa2abf7cbc2dd2af9d68db198a0afe662fd4ac20c19397a631c50f20697.
+- Initial approval review timed out before launch; permitted retry completed
+  one qualification without numerical failures. No further run is active or
+  queued. Electrical contribution only; no chemical/work protocol, heat,
+  physical drive/noise, state publication, GPU or fuel-interval compile credit.
+- Chief completion notification delivered; its initial approval-review timeout
+  resolved on the single permitted retry. Sources are frozen for Chief review.
+
+## B15 array conditional protein work, 2026-10-30
+
+- Chief assigned a combined common-input kernel in new work-array/reference/
+  unit files. Complete protein states, SI geometry and actual field records
+  generate/recheck all projections and both energy contributions. Existing
+  chemical/electrical sources stay frozen; no mutable Root integration pins.
+- Require strict material/charge for all three reference/direct projections,
+  actual owner incidence/coverage/volumes, Cells constants and model T.
+  Normalized arithmetic guards preserve diagnostics without stock grace.
+  Lost requested charge response and unresolved conditional cancellation
+  refuse while retaining component energies, reservoir ports and low remainder.
+- Predeclared qualification:37 NumPy+two shared-frame CPU JAX checks and30
+  frozen-host/independent SI forms, including fresh denied-import replay.
+  Scalar reference3e-14pJ+3e-10 relative; chemical/pure-chemical comparisons
+  retain3e-14 relative+4ULP. CPU7 resources remain480s/phase,1GiB RSS and
+  >=8GiB host reserve. No GPU/fuel interval retry or accepted-loop claim.
+- Three new files pass Ruff/format checks. Qualification has not started:
+  initial launch and one retry both failed automatic approval review with
+  "Selected model is at capacity." Neither command executed; no run/failure
+  directory exists. Exact tool outcome and driver/hash are in own workqueue;
+  no further automatic launch retry is planned. No scientific pass is claimed.
+- Direct Chief blocker notification was also not delivered: automatic review
+  returned the same model-capacity failure. Own queue preserves the message
+  outcome. Code remains unqualified; no numerical process has been launched.
+- New continuation authorized one approval retry after two hours. All63
+  protected/owned hashes and the prepared driver were unchanged; no old run
+  existed. Approval succeeded; original private CPU7 qualification is active.
+  NumPy37 checks and30 fresh Cells/JAX-denied reference replays passed.
+- All39 checks pass, including two full combined compiled/vmapped CPU JAX
+  kernels under shared complete frames. A dynamic inconsistent protein world
+  is refused while its valid neighbor remains accepted in each compiled call.
+  Thirty frozen-host/independent SI forms agree:28 resolved, two deliberate
+  precision refusals. Tiny neutral work7.397014623306365e-42pJ remains nonzero;
+  max oracle error0.011442948 budget, max host error6.503766e-7 budget.
+- CPU7 phases17.60/3.03/26.43/28.46s, sampled RSS1036169216B, high-water
+  1039994880B, host reserve>=20841336832B. Original1GiB limit passed with
+  limited margin. All60 protected and three owned source hashes remain exact.
+  Own queue links receipt4d6c6c68231432ee78107e8700b36edf35b071c34f8e33bc255c1242f2df42da.
+  No numerical retry, wider tolerance, GPU/fuel interval compile retry or
+  accepted-loop/work/heat/drive-law claim; no further job is active or queued.
+- Completion notification delivered directly to Chief. All three new sources
+  are frozen for Chief review; prior launch/notification failures remain in
+  queue history. No further numerical job is running or queued.
+
+## B16 array declared-drive energy admission, 2026-10-30
+
+- Chief assigned a new full-input wrapper over frozen conditional work. It
+  recomputes associated endpoints and checks explicit signed external work,
+  nonnegative declared dissipation and unchanged original family energy limits.
+- Five-term error-free expansion preserves tiny residuals under large W/D
+  cancellation; separate numerical bounds never enlarge physical tolerance.
+  A binary-quantum precision guard identifies possible subnormal remainder
+  loss without imposing an energy floor. Raw values remain on refusal.
+- New sources are Ruff-clean. Plan52 NumPy+three resource-separated CPU JAX
+  checks,28 complete SI forms and33 Decimal/frozen-host arithmetic forms.
+  Full-wrapper compile uses reduced shared geometry; separate budget kernels
+  avoid raising the1GiB limit. No mutable Root schedule/loop pin, shared
+  status edit, GPU/fuel retry, heat/drive-law or loop-acceptance claim.
+- First qualification preserves51 passed NumPy checks and one test-only
+  failure: Python3.13 built-in sum compensates floating addition, invalidating
+  the intended naive-zero assertion. Kernel/host/SI comparisons passed; only
+  the demonstration now uses explicit += operations. Failure01 is frozen,
+  kernel/reference/physical/numerical tolerances unchanged; original planned
+  complete qualification will run with corrected fixture in a new capture.
+- All 55 final-source checks pass: 52 NumPy and three separate compiled CPU
+  JAX checks. Fresh denied-import execution replays 61 exact references
+  (28 complete SI, 33 pure Decimal); 48 admitted and 13 deliberate refusals.
+  Frozen five-term host arithmetic matches exactly. Max reference error
+  consumes 0.011228430 budget; full compiled wrapper error <=9.035019e-7.
+- Batched source/domain refusals remain independent of the energy equation.
+  Tiny residuals survive maximum equal declarations; a missing-work case
+  remains rejected despite naive zero and a huge numerical bound. Physical
+  tolerance is unchanged. Run01 failure is preserved; its only fixture fix
+  was explicit naive addition in place of Python3.13 compensated sum.
+- CPU7 phases 18.12/4.54/7.06/7.06/38.57 s; sampled RSS 1002299392 B,
+  high-water 1008283648 B, host reserve >=20943396864 B. All 64 protected
+  files and three new source hashes remain exact. Own queue links final
+  receipt ed012ece3a9cee707a7fed8e18425afad24e9a58ca542473640ba0b239fedd1b.
+  No job remains active or queued; no extra GPU/fuel/loop acceptance credit.
+- Completion delivered directly to Chief. Three new sources are frozen for
+  independent verification; no computation is active or queued.

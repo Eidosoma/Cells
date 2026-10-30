@@ -506,6 +506,42 @@ def get_model(spec):
 
         return surface_calcium_energy_transport_excision
 
+    from cells.core.surface_calcium_energy_irreversible_transport_excision_spec import (
+        SurfaceCalciumEnergyIrreversibleTransportExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyIrreversibleTransportExcisionModel):
+        from cells.models import surface_calcium_energy_irreversible_transport_excision
+
+        return surface_calcium_energy_irreversible_transport_excision
+
+    from cells.core.surface_calcium_energy_irreversible_transport_spec import (
+        SurfaceCalciumEnergyIrreversibleTransportModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyIrreversibleTransportModel):
+        from cells.models import surface_calcium_energy_irreversible_transport
+
+        return surface_calcium_energy_irreversible_transport
+
+    from cells.core.surface_calcium_energy_atp_transport_excision_spec import (
+        SurfaceCalciumEnergyATPTransportExcisionModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyATPTransportExcisionModel):
+        from cells.models import surface_calcium_energy_atp_transport_excision
+
+        return surface_calcium_energy_atp_transport_excision
+
+    from cells.core.surface_calcium_energy_atp_transport_spec import (
+        SurfaceCalciumEnergyATPTransportModel,
+    )
+
+    if isinstance(spec, SurfaceCalciumEnergyATPTransportModel):
+        from cells.models import surface_calcium_energy_atp_transport
+
+        return surface_calcium_energy_atp_transport
+
     if isinstance(spec, SurfaceCalciumEnergyTransportModel):
         from cells.models import surface_calcium_energy_transport
 

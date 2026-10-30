@@ -1,0 +1,50 @@
+{
+  "status": "passed_scoped_static_import_audit",
+  "files": 32,
+  "files_sha256": {
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "tests/reference_er_calcium.py": "8bd836c5f8a0f632df7ab546adbe1c1fe1efb871aaef90598e62ddde64b1f050",
+    "tests/reference_gated_calcium.py": "8ed3fb5760bb07f22cc0676a930448f4e2c97b3895ce4b64c74bcf1656ab880c",
+    "tests/reference_ip3_calcium.py": "ac0ffa44f6c6841fae2958a69edc5a8f40cff064fe9bfa818df9c9f7dcb6b0a4",
+    "tests/reference_plasma_calcium.py": "641103daca04301f01131014559abb36fd9c1c253da59f4c00998dce4d2f8ff1",
+    "tests/reference_spatial_calcium.py": "8900b4798be0879f44fd5749671ca9460c54410d4f7e27482ee7c8473e03b62c",
+    "validation/betse/junction_transport/check.py": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+    "validation/betse/pump_contact/pump_reference.py": "7f5bf4a4d66e0b6a21857b551499243d17e677df808b098b92f37a0ea12e5231",
+    "validation/betse/spatial_cluster/reference.py": "7142fb93f92fb108a44af4faac7544404341d98ca019c8aa22a0239e2b8d8674",
+    "validation/betse/voltage_gate_audit/gate_independent.py": "ae99739ae74c2ee95421cc9451b57a4662a0f86fdaeaa8bbe78006bbd6ab4b1b",
+    "validation/channels/calcium_activated_potassium_reference.py": "ca0852c7424be2d0e497933017161f5a7c5014f12ada5f8f8fd15c61c1c2ca2d",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/leak_channels_reference.py": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+    "validation/chemistry/finite_energy_reference.py": "2feeadbd78d5c0644dc72544495747ca1e7961b26a179d0cccf1ac6ad175b501",
+    "validation/tissue/calcium_energy_irreversible_transport_reference.py": "0cf09a1b4102b11d734949bcf4490e6518791c0268b8317f62d3713ae706888c",
+    "validation/tissue/cav_reference.py": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+    "validation/tissue/hcn_reference.py": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+    "validation/tissue/kir_reference.py": "688bef58c2353fd22c1dcc937935b9bd155c67fcebe63c568f158c12cd4b2965",
+    "validation/tissue/kv1_reference.py": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+    "validation/tissue/reference.py": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+    "validation/tissue/sodium_reference.py": "0c3f30645ac75abbb6f8b9799163425dd201bc35ec8ac9e30e74c6add8383c91",
+    "validation/tissue/surface_calcium_energy_reference.py": "6c32e08c58771b4294d6b48daffbaf6936be8f43d936ba0672e36537ecaa9c2c",
+    "validation/tissue/surface_calcium_reference.py": "5191ab6459b2e9cb7713277bbfb90d08b5896cbfc67309955024e6e948463934",
+    "validation/tissue/surface_dynamics_reference.py": "71242ccb760f5220ce9a61c072165bf27b7ca43b80fbf11b04355dc7f232cea3",
+    "validation/tissue/surface_field_reference.py": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+    "validation/tissue/surface_kinetic_reference.py": "9edcf61080688872757afaa2d8fc0e537266bfc23e6770e0c9f163161ab1bda3",
+    "validation/tissue/surface_reference.py": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+    "validation/transport/betse_network_transport_reference.py": "9c3e467218f80c0d86b602555907906d8efa1264a8de3553eee4c85427fb9ed3"
+  },
+  "excluded_nonreference_driver_bodies": [
+    {
+      "module": "validation/betse/junction_transport/check.py",
+      "function": "check",
+      "reason": "Not imported: reference selects independent decimal_flux; runtime deny-import proof separately exercises equations/integration"
+    }
+  ],
+  "retained_failed_attempt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/calcium_energy_irreversible_transport_reference_audit_attempt01.json",
+    "sha256": "d09206de33a4531b84e0b2c5eab6bef4f74ed260b5bb7e9ba57fd8941f90c5b7"
+  },
+  "numerical_launches": 0
+}
