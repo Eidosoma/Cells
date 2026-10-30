@@ -1,0 +1,109 @@
+{
+  "kind": "cells.betse_mesh_clip_preparation_contract@1",
+  "law_id": "betse_owned_clip_to_curve_preparation_v1_5_0@1",
+  "status": "static_implementation_and_candidate_panel_unrun",
+  "source_map": "validation/betse/betse_mesh_clip_preparation_source_map.json",
+  "input_boundary": "Owned complete finite initial source trial and the exact same owned image prelude; non-SVG multi-cell callers only; upstream accuracy qualification open",
+  "native_source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971"
+  },
+  "expected_checks": 31,
+  "declared_mesh_cases": 12,
+  "manufactured_helper_cases": 7,
+  "raw_helper_failures": 2,
+  "upstream_initial_qualification": {
+    "status": "failed_pending_conditioning_analysis",
+    "checks_passed": 19,
+    "checks_total": 22,
+    "exact_actual_native_captures_reported_by_Chief": 11,
+    "review": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+    "review_sha256": "e8f382d700c6b21afbff4d2a7cd0274bc5a17181a9d831f105f9fd05a02055d5",
+    "numerical_reaudit_performed_here": false
+  },
+  "scope": {
+    "source": "clip_to_curve plus search_point_cloud and helpers, then native masked pre_mesh rebuild",
+    "excluded": [
+      "SVG/single-cell clipping",
+      "refinement/smoothing",
+      "exterior derivative operators",
+      "cell_index and physical surface/volume binding"
+    ],
+    "source_generated_topology": true,
+    "independent_topology_generation": false,
+    "topology_qualified": false,
+    "downstream_geometry_admitted": false,
+    "new_initial_mesh_or_image_qualification_credit": false
+  },
+  "predicates": [
+    "Image scalar result !=0 exactly; no continuous allowance enters selection",
+    "Partial polygon requires some but not all nonzero vertices and nonzero centre",
+    "All-vertices branch does not require nonzero centre",
+    "Point cloud matching preserves every source occurrence and the strict1e-15m distance predicate",
+    "Convex clip helper uses strict left side; on-edge cases and all errors remain unchanged"
+  ],
+  "source_geometry_distinctions": [
+    "Pixel mask may contain holes; convex pixel hull does not",
+    "Source search returns(matched,unmatched): throw_away_pts receives hull matches, keeper_pts receives unmatched new intersections. Source raw ordering/duplicates remain.",
+    "clip_vor_verts are local intermediates. Final polygons come from centroid re-triangulation, not exact clipped polygons"
+  ],
+  "occurrence_lineage": "One derived centroid ID per source-emitting parent cell in source loop order, followed by exact masked-rebuild deletion indices; no nearest-coordinate identity recovery",
+  "cache_ownership": "Reuse immutable typed numeric/object/ragged cache snapshots. Normalize live mask object into owned grid/curve token; do not export native objects",
+  "raw_retention": "Actual State or rejected trial and full native trace saved before expectations; helper unexpected completions retained; cell/edge/search/intersection locals and source errors preserved",
+  "independent_diagnostics": {
+    "mask": "Manual Decimal bilinear values in closed image window only. Outside queries native-only, no extrapolation assumption",
+    "half_planes": "Exact binary-input rational signs; disagreements reported without changing native predicates or asserting universal selection correctness",
+    "convex_intersection": "All line-pair intersection candidates filtered by exact closed half-planes; source polygons/topology are inputs",
+    "geometry": "Decimal100/160 source geometry formulas, nearest distance/rank tables and line/polygon metrics; original source quad quantities remain distinct from general polygon geometry",
+    "initial_primitive_coverage": "Retained as unqualified upstream input; new budget assertions begin after clipping continuation marker",
+    "complete_or_canonical_topology_claim": false,
+    "binary_coefficient_domain": "New clipping reference validates captured exact numeric0/1 float/int coefficients and converts to integers before qualified Decimal helper; reject other values/types without coercion/tolerance. Qualified image reference unchanged."
+  },
+  "proposed_tolerances": {
+    "coordinates_m": "1e-27+6e-12*abs(reference)",
+    "area_m2": "1e-26+6e-12*abs(reference)",
+    "dimensionless_mask": "2e-14+6e-12*abs(reference)",
+    "native": "Exact full typed cache/trace/layout/IDs/RNG",
+    "reference_resolution_fraction": 0.1
+  },
+  "known_conditioning_issue": "Initial square nearzero centroid and hex circumradius/inradius failed fixed budgets. No fixture/tolerance/source failure reclassification or retry; await Chief conditioning analysis.",
+  "resources_proposal": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "qualification_preconditions": [
+    "Chief scope/fixture review, including unqualified upstream accuracy and native-only outside-window mask scope",
+    "Resolve or explicitly bound the upstream conditioning limitation without tolerance widening",
+    "Prepare guarded driver/fresh production-denied replay and freeze; no launch until Chief directs"
+  ],
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "pytest_collection": false,
+  "topology_qualified": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "ECM_lane_touched": false,
+  "Root_shared_sources_changed": false,
+  "keeper_complement_witness": "Explicit manufactured point-cloud witness asserts matched hull points discarded and unmatched intersections kept; required before branch credit.",
+  "reference_coefficient_domain_checks": 4
+}

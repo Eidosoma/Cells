@@ -1,0 +1,48 @@
+{
+  "kind": "cells.betse_environment_field_contract@1",
+  "law_id": "betse_environment_field_source_v1_5_0@1",
+  "purpose": "Close the native instantaneous environment HH/Gaussian/current/field branch with derived geometry, both original inverses and initializer caches; not an advancing normal solver",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    }
+  },
+  "derived": ["source-truncated Cartesian grid", "strict unique nearest maps", "per-site membrane area/count/volume/divergence caches", "cell-environment correction", "native all-value and all-flux Laplacians and pseudoinverses", "configured-temperature original-material scalar conductivity and screening cache"],
+  "supplied": ["original centres, midpoints, membrane/cell measures, owner and normals", "B23 post-material current inputs", "old post-material vm", "R,L,T,B boundary voltages", "ECM concentrations, full fluxes and extra readouts, or explicit B08 2D environment weight"],
+  "reference": "Pure stdlib Decimal 100/160-digit independent finite differences, separable Gaussian kernel, geometry, Gauss-Jordan Dirichlet inverse and Neumann constant-mode complement inverse; both full rounded buffers retained",
+  "tolerances": {
+    "native_host": "Exact values, shapes and dtypes; signed zero is not a physical distinction",
+    "field_current": "3e-13 in named source units + 6e-12*abs(reference)",
+    "voltage": "3e-14 V + 6e-12*abs(reference)",
+    "magnetic": "3e-18 named source units + 6e-12*abs(reference)",
+    "charge_density": "1e-30 named charge units + 6e-12*abs(reference)",
+    "geometry": "64*eps*abs(reference), coordinates 8 ULP, zero exact; integer maps exact",
+    "operator_inverse": "3e-13 named operator units + 6e-12*abs(reference), normalized Penrose/gauge residual <=1e-10",
+    "B23_prefix": "Existing instantaneous 32*eps*(ions+membranes+16)*gross+1e-30; never propagated into environment field budgets",
+    "reference_resolution_fraction": 0.1,
+    "nearest_admission": "Second-minus-first distance >64*eps*max(second distance,delta,tiny); native ties explicitly outside this narrower Cells admission"
+  },
+  "manufactured_domain": {"grid_size": [2, 7], "max_grid_points": 49, "qualification_grid_steps_m": [1, 2], "biological_geometry_claim": false},
+  "source_details": {
+    "HH": "Helmholtz-Hodge uses lapENVinv (Dirichlet), not prepared Neumann lapENV_P_inv; first returned AA is stored as B_field/mu",
+    "boundary_orders": "HH L,R,B,T; separate Phi_b R,L,T,B; literal corners retained",
+    "source_diff": "Negative one-sided derivative edges, positive central interiors; gradient has positive one-sided edges",
+    "gaussian": "sigma1, radius4, ECM constant0; noECM reflect",
+    "noECM": "Duplicate map last-write assignment; vm/2 indexed by cell owner into membrane buffer; gradient(delta*Phi); Phi_b stored separately",
+    "ECM": "Surface denominator mean repeats areas at each membrane map, not occupied sites; screened gradient; native configured-temperature cache held fixed"
+  },
+  "resources": {"cpu": 6, "threads": 1, "gpu": false, "max_command_seconds": 480, "max_process_tree_rss_bytes": 1073741824, "min_available_host_memory_bytes": 8589934592},
+  "limitations": ["Supplied geometry is not Voronoi seeding", "No barrier initialization beyond explicit supplied B08 weight", "Nearest ties are refused with native raw-choice evidence", "No pump/ion/gap/voltage chronology or whole normal solver", "No physical projector, conservation, field energy or propagated-state accuracy claim", "Finite guards are stricter than native and retain actual refused arrays", "No JAX/GPU claim"],
+  "automatic_followup": false,
+  "automatic_polling": false
+}

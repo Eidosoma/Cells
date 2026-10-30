@@ -14,3 +14,7 @@ upstream/
 reports/*.tar.gz
 reports/*tests.xml
 reports/ref-*.xml
+
+# Generated source and native-input snapshots for prepared jobs.
+/agent-work/*/workfiles/*-prepared-*/source/
+/agent-work/*/workfiles/*-prepared-*/native-inputs/

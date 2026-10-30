@@ -1,0 +1,408 @@
+{
+  "kind": "cells.betse_mesh_clip_source_map@1",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971"
+  },
+  "methods": {
+    "search_point_cloud": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "search_point_cloud",
+      "first_line": 2197,
+      "last_line": 2236,
+      "ast_sha256": "774526aac26e7e7b7f4e5ce45cd29fe7e125ad1bf2a9c12b05bc1e884032a099"
+    },
+    "clip_to_curve": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "clip_to_curve",
+      "first_line": 2290,
+      "last_line": 2372,
+      "ast_sha256": "17c4676d1210813418363ec753ce3878e944410905f239da76039aaffe9258c3"
+    }
+  },
+  "helpers": {
+    "clip_counterclockwise": {
+      "source": "betse/util/math/geometry/polygon/geopolyconvex.py",
+      "source_name": "clip_counterclockwise",
+      "first_line": 125,
+      "last_line": 287,
+      "ast_sha256": "0a6b91a1b7a4e1cafc6709064c2b13b405798c8d1c1a9a360ea4505aadd4fe03"
+    },
+    "orient_counterclockwise": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "source_name": "orient_counterclockwise",
+      "first_line": 243,
+      "last_line": 324,
+      "ast_sha256": "1fc9e957615262df8cf223d177d20a3e33f2cfda610f83b92c594c6e89ade7ef"
+    },
+    "die_unless_polygon": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "source_name": "die_unless_polygon",
+      "first_line": 19,
+      "last_line": 46,
+      "ast_sha256": "c9cc932bbcf03bfb2428493ef17d4f2122e55cb9184fe8802747eedd48c8b4fb"
+    },
+    "is_polygon": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "source_name": "is_polygon",
+      "first_line": 50,
+      "last_line": 77,
+      "ast_sha256": "1ebe7a5150ff53ee20db118bcbc336b2b795a2ee5bcd44d1f572c43e907c84c0"
+    },
+    "die_unless_point": {
+      "source": "betse/util/math/geometry/geopoint.py",
+      "source_name": "die_unless_point",
+      "first_line": 18,
+      "last_line": 58,
+      "ast_sha256": "c01fceeea205c50d2c369e8017e55f295e717b5955485d1e7d514422dd696685"
+    },
+    "is_point": {
+      "source": "betse/util/math/geometry/geopoint.py",
+      "source_name": "is_point",
+      "first_line": 62,
+      "last_line": 93,
+      "ast_sha256": "cef63f9e7e31a10001203ef221a174258fddba79571cb0215cf05c1cf678fd2e"
+    },
+    "is_left_of_vector": {
+      "source": "betse/util/math/geometry/geopoint.py",
+      "source_name": "is_left_of_vector",
+      "first_line": 97,
+      "last_line": 278,
+      "ast_sha256": "7ba7eb11add78adeba8a1585e504ad4a83f75a74bca5572be4718b94595a1c65"
+    },
+    "intersect_lines": {
+      "source": "betse/util/math/geometry/geopoint.py",
+      "source_name": "intersect_lines",
+      "first_line": 282,
+      "last_line": 509,
+      "ast_sha256": "5e11999bb378506833932680a3a5bd3c955073d68ca8f8736c1f65f82f5485bf"
+    },
+    "array_from_iterable": {
+      "source": "betse/lib/numpy/nparray.py",
+      "source_name": "from_iterable",
+      "first_line": 95,
+      "last_line": 148,
+      "ast_sha256": "3aed5bb52474d1352a6506a9ff23b7081a7174030a7c410846fac1dc48debb88"
+    },
+    "array_to_iterable": {
+      "source": "betse/lib/numpy/nparray.py",
+      "source_name": "to_iterable",
+      "first_line": 152,
+      "last_line": 189,
+      "ast_sha256": "c41802d6a1eb4577d0270e62fdc6059edd4760f2671a7430d8fa854df239695a"
+    },
+    "iterable_to_iterable": {
+      "source": "betse/util/type/iterable/iterables.py",
+      "source_name": "to_iterable",
+      "first_line": 121,
+      "last_line": 255,
+      "ast_sha256": "8c6c0b78ba6d6f0be4e5f800806421a34bafd43d0f29f656939a1669453fa0de"
+    },
+    "is_sequence": {
+      "source": "betse/util/type/iterable/sequences.py",
+      "source_name": "is_sequence",
+      "first_line": 242,
+      "last_line": 265,
+      "ast_sha256": "284c920dd3b1030b12de65ea12c1524aa4aa3cac79e1dea78c0718f9b1c03b9f"
+    },
+    "is_generator": {
+      "source": "betse/util/type/iterable/generators.py",
+      "source_name": "is_generator",
+      "first_line": 28,
+      "last_line": 34,
+      "ast_sha256": "b1275ac5cd792105f58ecfb04e00da3194a7b424c2a490964e9f349560e4e935"
+    }
+  },
+  "normalization": [
+    {
+      "function": "clip_counterclockwise",
+      "line": 151,
+      "kind": "owned_helper_binding",
+      "original": "geopoly.die_unless_polygon",
+      "replacement": "die_unless_polygon"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 226,
+      "kind": "owned_helper_binding",
+      "original": "geopoint.is_left_of_vector",
+      "replacement": "is_left_of_vector"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 236,
+      "kind": "owned_helper_binding",
+      "original": "geopoint.is_left_of_vector",
+      "replacement": "is_left_of_vector"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 248,
+      "kind": "owned_helper_binding",
+      "original": "geopoint.intersect_lines",
+      "replacement": "intersect_lines"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 195,
+      "kind": "source_half_plane_trace"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 286,
+      "kind": "owned_helper_binding",
+      "original": "iterables.to_iterable",
+      "replacement": "iterable_to_iterable"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "line": 286,
+      "kind": "source_return_locals"
+    },
+    {
+      "function": "clip_counterclockwise",
+      "kind": "partial_failure_snapshot"
+    },
+    {
+      "function": "orient_counterclockwise",
+      "line": 275,
+      "kind": "closed_helper_import_binding",
+      "original": "from betse.lib.numpy import nparray"
+    },
+    {
+      "function": "orient_counterclockwise",
+      "line": 278,
+      "kind": "owned_helper_binding",
+      "original": "die_unless_polygon",
+      "replacement": "die_unless_polygon"
+    },
+    {
+      "function": "orient_counterclockwise",
+      "line": 283,
+      "kind": "owned_helper_binding",
+      "original": "nparray.from_iterable",
+      "replacement": "array_from_iterable"
+    },
+    {
+      "function": "orient_counterclockwise",
+      "line": 324,
+      "kind": "owned_helper_binding",
+      "original": "nparray.to_iterable",
+      "replacement": "array_to_iterable"
+    },
+    {
+      "function": "orient_counterclockwise",
+      "line": 324,
+      "kind": "source_return_locals"
+    },
+    {
+      "function": "die_unless_polygon",
+      "line": 40,
+      "kind": "owned_helper_binding",
+      "original": "is_polygon",
+      "replacement": "is_polygon"
+    },
+    {
+      "function": "die_unless_polygon",
+      "line": 42,
+      "kind": "owned_helper_binding",
+      "original": "is_polygon",
+      "replacement": "is_polygon"
+    },
+    {
+      "function": "is_polygon",
+      "line": 72,
+      "kind": "closed_helper_import_binding",
+      "original": "from betse.util.math.geometry import geopoint"
+    },
+    {
+      "function": "is_polygon",
+      "line": 76,
+      "kind": "owned_helper_binding",
+      "original": "geopoint.is_point",
+      "replacement": "is_point"
+    },
+    {
+      "function": "die_unless_point",
+      "line": 39,
+      "kind": "owned_helper_binding",
+      "original": "is_point",
+      "replacement": "is_point"
+    },
+    {
+      "function": "die_unless_point",
+      "line": 43,
+      "kind": "owned_helper_binding",
+      "original": "is_point",
+      "replacement": "is_point"
+    },
+    {
+      "function": "is_left_of_vector",
+      "line": 267,
+      "kind": "owned_helper_binding",
+      "original": "die_unless_point",
+      "replacement": "die_unless_point"
+    },
+    {
+      "function": "intersect_lines",
+      "line": 446,
+      "kind": "owned_helper_binding",
+      "original": "die_unless_point",
+      "replacement": "die_unless_point"
+    },
+    {
+      "function": "intersect_lines",
+      "line": 502,
+      "kind": "owned_helper_binding",
+      "original": "iterables.to_iterable",
+      "replacement": "iterable_to_iterable"
+    },
+    {
+      "function": "intersect_lines",
+      "line": 506,
+      "kind": "owned_helper_binding",
+      "original": "die_unless_point",
+      "replacement": "die_unless_point"
+    },
+    {
+      "function": "intersect_lines",
+      "line": 509,
+      "kind": "source_return_locals"
+    },
+    {
+      "function": "array_from_iterable",
+      "line": 145,
+      "kind": "owned_helper_binding",
+      "original": "sequences.is_sequence",
+      "replacement": "is_sequence"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 196,
+      "kind": "closed_helper_import_binding",
+      "original": "from betse.lib.numpy import nparray"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 197,
+      "kind": "closed_helper_import_binding",
+      "original": "from betse.util.type.cls import classes"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 198,
+      "kind": "closed_helper_import_binding",
+      "original": "from betse.util.type.iterable import generators"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 199,
+      "kind": "closed_helper_import_binding",
+      "original": "from numpy import ndarray"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 212,
+      "kind": "owned_helper_binding",
+      "original": "generators.is_generator",
+      "replacement": "is_generator"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 236,
+      "kind": "owned_helper_binding",
+      "original": "nparray.to_iterable",
+      "replacement": "array_to_iterable"
+    },
+    {
+      "function": "iterable_to_iterable",
+      "line": 246,
+      "kind": "owned_helper_binding",
+      "original": "nparray.from_iterable",
+      "replacement": "array_from_iterable"
+    },
+    {
+      "function": "search_point_cloud",
+      "line": 2236,
+      "kind": "source_return_locals"
+    },
+    {
+      "function": "search_point_cloud",
+      "kind": "partial_failure_snapshot"
+    },
+    {
+      "function": "clip_to_curve",
+      "line": 2335,
+      "kind": "owned_helper_binding",
+      "original": "clip_counterclockwise",
+      "replacement": "self._cells_tools.clip_counterclockwise"
+    },
+    {
+      "function": "clip_to_curve",
+      "line": 2359,
+      "kind": "owned_helper_binding",
+      "original": "orient_counterclockwise",
+      "replacement": "self._cells_tools.orient_counterclockwise"
+    },
+    {
+      "function": "clip_to_curve",
+      "line": 2305,
+      "kind": "source_cell_occurrence_trace"
+    },
+    {
+      "function": "clip_to_curve",
+      "line": 2369,
+      "kind": "derived_centroid_occurrence_assignment"
+    },
+    {
+      "function": "clip_to_curve",
+      "kind": "partial_failure_snapshot"
+    }
+  ],
+  "production_kernel": "src/cells/processes/betse_mesh_clip_preparation_kernel.py",
+  "private_metadata_normalization": "Drop docstrings/decorators/annotations, add bound-self to helpers, zip strictFalse; source bodies/order/predicates unchanged",
+  "normalized_exception_binding": "Local ValueError subclasses retain native exception names/messages; no native package object exposed",
+  "normalized_classes_binding": "Only type-name formatting for unadmitted item_cls conversion branch; admitted conversions use item_cls=None",
+  "license_sha256": "d8be114cc34a3202c8025347913612d976112d05ac45ef3ad953d554d3894936",
+  "reused_initial_closure": "17 source methods, with independent raw traces; upstream qualification currently has unresolved failures",
+  "current_mesh_files_modified": false,
+  "numerical_execution": false,
+  "topology_qualified": false,
+  "downstream_geometry_admitted": false,
+  "upstream_initial_source_map": "validation/betse/betse_initial_mesh_preparation_source_map.json",
+  "mask_binding": "Owned image prelude grid/curve are explicit inputs. Core constructs the same linear spline; oracle executes pinned interp2d_linear unchanged. Native mask instances are normalized to a typed immutable mask token in caches.",
+  "trace_normalization": "Local helper import nparray excluded from numeric frame snapshots; source arrays/scalars, stale locals, edge/cell order and failed prefixes preserved.",
+  "upstream_qualification": {
+    "status": "failed_pending_conditioning_analysis",
+    "checks_passed": 19,
+    "checks_total": 22,
+    "exact_actual_native_captures_reported_by_Chief": 11,
+    "review": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+    "review_sha256": "e8f382d700c6b21afbff4d2a7cd0274bc5a17181a9d831f105f9fd05a02055d5",
+    "numerical_reaudit_performed_here": false
+  },
+  "oracle_interpolator_site": {
+    "source": "betse/util/math/mathinterp.py",
+    "source_name": "interp2d_linear",
+    "first_line": 27,
+    "last_line": 165,
+    "ast_sha256": "b1a397166da01b9b1bb20de85b817c18afcb3ca4261086a2888968ee2c61e599"
+  }
+}

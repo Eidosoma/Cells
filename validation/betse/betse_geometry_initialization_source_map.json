@@ -1,0 +1,213 @@
+{
+  "kind": "cells.betse_geometry_initialization_source_map@1",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "sites": {
+    "Cells.make_world": {
+      "source": "betse/science/cells.py",
+      "first_line": 414,
+      "last_line": 526,
+      "ast_sha256": "77edd4beb99ea8b788fd8c6fe92bb5316d21a9e4f0f7286934c1010be1b17d03",
+      "random_calls": [],
+      "disposition": "audited only, excluded full-world path"
+    },
+    "Cells._make_cell_lattice": {
+      "source": "betse/science/cells.py",
+      "first_line": 692,
+      "last_line": 842,
+      "ast_sha256": "681709c00231ea0ba2fc9e4abb45d4dbe4ae9ea4350e912e8224447d872da50b",
+      "random_calls": [
+        {
+          "line": 731,
+          "call": "np.random.rand(p.ny, p.nx)"
+        },
+        {
+          "line": 732,
+          "call": "np.random.rand(p.ny, p.nx)"
+        },
+        {
+          "line": 794,
+          "call": "np.random.rand(len(x_2d))"
+        },
+        {
+          "line": 795,
+          "call": "np.random.rand(len(y_2d))"
+        }
+      ],
+      "disposition": "audited only, excluded full-world path"
+    },
+    "Cells.make_voronoi": {
+      "source": "betse/science/cells.py",
+      "first_line": 846,
+      "last_line": 961,
+      "ast_sha256": "afe4ede5bcc08ce8582be735fbfbc5ffaa11b72df4b70fa35fb132d1762b4f0b",
+      "random_calls": [],
+      "disposition": "audited only, excluded full-world path"
+    },
+    "Cells.cell_index": {
+      "source": "betse/science/cells.py",
+      "first_line": 963,
+      "last_line": 976,
+      "ast_sha256": "e8b10040895adc3875baaa9d67817e677290b585ef66866e7b59079491d0f369",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.cellVerts": {
+      "source": "betse/science/cells.py",
+      "first_line": 978,
+      "last_line": 1175,
+      "ast_sha256": "b320e0bccbe0f05bb143eb1fdbd4e1447a9aef36ab59cc6c8f1ae2fd3de1fb51",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.cellMatrices": {
+      "source": "betse/science/cells.py",
+      "first_line": 1276,
+      "last_line": 1333,
+      "ast_sha256": "0a138ebac00024b96fec201b11cb2281b1dcd5452b3239751d25f2e3686aa891",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.cell_vols": {
+      "source": "betse/science/cells.py",
+      "first_line": 1358,
+      "last_line": 1390,
+      "ast_sha256": "3bbe811383e5108d344b3b3b490a10ed5a4c78ae1e55ae24b0469f6328ea5e74",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.mem_processing": {
+      "source": "betse/science/cells.py",
+      "first_line": 1392,
+      "last_line": 1475,
+      "ast_sha256": "f6fd3029cc8a6dd264b2b14152801140b241391b2039be5aa2bdd538c31cef2d",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.near_neigh": {
+      "source": "betse/science/cells.py",
+      "first_line": 1477,
+      "last_line": 1573,
+      "ast_sha256": "25e2317ff91ee3c9ca91e47b5dd51309b16135ec64a6f52bf64ca7a666eca52d",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.makeECM": {
+      "source": "betse/science/cells.py",
+      "first_line": 1576,
+      "last_line": 1718,
+      "ast_sha256": "902c5ad7c17116a497c7d8872051b69bd86f941a8ed1018b81e6d9586154b94f",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "Cells.environment": {
+      "source": "betse/science/cells.py",
+      "first_line": 1720,
+      "last_line": 1842,
+      "ast_sha256": "819c5651ec400b949316adaa3820c58d7453431a182d62511b3d1c5b9bf1de12",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.__init__": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 86,
+      "last_line": 144,
+      "ast_sha256": "7389dc879a9947db7acb46045c706a3f5230652b16dc44ae82c57b59d7c2c0a8",
+      "random_calls": [],
+      "disposition": "new constructor/seed replay"
+    },
+    "DECMesh.init_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 146,
+      "last_line": 154,
+      "ast_sha256": "3cab998ac9a476f2b88131b6d750db2ebab993eae191329aaac011130dbd6a78",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.pre_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 156,
+      "last_line": 164,
+      "ast_sha256": "669fb0d34d67aac95b533c85c4d94be193b7dc99efe3db7dfccf17193f4edb08",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.clip_and_refine": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 189,
+      "last_line": 210,
+      "ast_sha256": "225af14f9752e9db18a008e7374df7e1e4802ab00d651d119d26976d4ff2d150",
+      "random_calls": [],
+      "disposition": "audited only, excluded full-world path"
+    },
+    "DECMesh.make_single_cell_points": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 212,
+      "last_line": 233,
+      "ast_sha256": "2b8feb3141752a676e89f21de0be5a0ebab6d75f10d6a969ad78b96e448bce44",
+      "random_calls": [
+        {
+          "line": 227,
+          "call": "np.random.random(self.single_cell_sides + 1)"
+        },
+        {
+          "line": 228,
+          "call": "np.random.random(self.single_cell_sides + 1)"
+        }
+      ],
+      "disposition": "new constructor/seed replay"
+    },
+    "DECMesh.create_tri_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 235,
+      "last_line": 287,
+      "ast_sha256": "b05c96de3959d9e16b9b3caeaa09c02879962349cebe3d0ae5db8555591b9854",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.create_mappings": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 699,
+      "last_line": 743,
+      "ast_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.define_vorverts": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 746,
+      "last_line": 845,
+      "ast_sha256": "7c7fc289221deb330ff6f49c9b35efd176c36ab6d266c10eb48652bf9faef7f8",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    },
+    "DECMesh.process_voredges": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 848,
+      "last_line": 1007,
+      "ast_sha256": "49b1218cc039c5ed24c5ef7f6fb9b3260b7e62406239def65bae9acaeba2f274",
+      "random_calls": [],
+      "disposition": "reused B09 geometry"
+    }
+  },
+  "draw_order": {
+    "square": "rand(ny,nx) for x then y, even disorder0; ravel C; append four unexpanded extrema corners; expand world by cell_radius",
+    "HEX": "blue then red clouds concatenated, source wsx/wsy placement retained; two rand(N) x then y, even disorder0; append bbox",
+    "ring": "random(sides+1) x then y, even noise0; append centre before positive jitter; direct constructor starts fresh seeded state",
+    "full_world_single": "make_world executes lattice first, then image prelude, then native single branch; this extra draw/IO order is NOT represented by direct B09 constructor recipe"
+  },
+  "topology": {
+    "engine": "SciPy.spatial.Delaunay / bundled Qhull; cKDTree contact/ownership ordering; source alpha/merge/close-point/refinement may change retained owners",
+    "cell_centres": "mesh.vor_cents, not original seed coordinates",
+    "membrane_order": "CCW polygon previous vertex to current vertex, then owner C-flatten order",
+    "volumes": "cell_index temporarily vor_sa*height; cell_vols replaces with radial pie sums of shrunk membrane geometry",
+    "borders": "nearest environment ties remain outside narrower qualified environment admission; no reorientation, deduplication, topology repair or cell identity remap"
+  },
+  "version_dependencies": [
+    "BETSE1.5.0 pinned8 B09 files",
+    "NumPy2.5.3 exact RandomState/ufunc order",
+    "SciPy1.18.1/Qhull topology from fixed B09 receipt",
+    "Source polygon convex clipping helpers",
+    "Full image/SVG/refinement paths require additional image/picker/YAML/enum source provenance and are unsupported"
+  ],
+  "scientific_scope": "Manufactured seed clouds or native generated ring-plus-centre; neither is measured biological geometry; not full make_world/cell/energy parity"
+}

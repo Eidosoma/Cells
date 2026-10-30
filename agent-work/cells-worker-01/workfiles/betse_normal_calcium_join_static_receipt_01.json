@@ -1,0 +1,96 @@
+{
+  "B26_audit_executed": false,
+  "active_numerical_job": null,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "calcium_AST_audit": {
+    "no_negs": {
+      "normalized_numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+      "original_numeric_body_unchanged": true
+    },
+    "pumpCaATP": {
+      "normalized_numeric_AST_sha256": "96c0b22cb03de4a16e480c0173234c93f36a0914631b9ac86422b09de5d49590",
+      "original_numeric_body_unchanged": true
+    },
+    "rectangular_state_validator": {
+      "only_declared_bath_shape_change": true,
+      "original_AST_sha256": "fa3ef0fda9fbcf9efec8f5eb8cd60037115916ecedf91b7659c45321061c6b7b"
+    }
+  },
+  "calcium_scope": {
+    "Ca_dyn": 0,
+    "ER_and_buffer": "separate owned-state dependency map only",
+    "endogenous_fuel_or_energy_qualification": false,
+    "live_bulk_membrane_and_bath": true,
+    "native_masked_raw_flux_cache_before_rho": true,
+    "shared_maintained_ATP_ADP_Pi_deltaG_and_rho_with_NaK": true
+  },
+  "conditional_reference_scope": "Actual immutable pre-handler inputs only; not a full outer-step, upstream, or trajectory accuracy claim.",
+  "container_scope": "Original init_core uses rectangular bath ndarray; update_Co mean assigns by row broadcast. Old scalar refusal is scoped-adapter behaviour, not initialized native BETSE.",
+  "created_utc": "2026-10-30T19:33:20.478322+00:00",
+  "frozen_sha256_verified": true,
+  "frozen_source_files": 2282,
+  "inputs_sha256": "3a1f88bab07c8ad61b3a289683bea83c35759b8d2314714bed780672ae133880",
+  "kind": "cells.betse_normal_calcium_join_static_receipt@1",
+  "native_source_copies": 36,
+  "new_law": "betse_normal_rectangular_bath_calcium_join_v1_5_0@1",
+  "numerical_runs": 0,
+  "owned_source_files": 10,
+  "planned_carried_references": 0,
+  "planned_checks": 24,
+  "planned_conditional_references": 78,
+  "planned_groups": {
+    "active": 7,
+    "dependencies": 3,
+    "edge": 6,
+    "projection": 4,
+    "raw": 4
+  },
+  "planned_native_captures": 17,
+  "planned_pre_handler_checks": 39,
+  "prepared_inputs": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-01/inputs.json",
+  "protected_files": 172,
+  "pytest_collection_runs": 0,
+  "repo_local_draft_retained": {
+    "inputs_sha256": "05a58b9b2a1c7fd4478320b7ef8af110ed45236606006cecbbea29b04754ea8f",
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse-normal-calcium-prepared-20261030-01/inputs.json",
+    "reason": "Static draft predates Chief storage-location rule; canonical future execution tree is under /mnt/workspaces/Cells."
+  },
+  "resource_limits": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_imports": 0,
+  "source_seam_AST_audit": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "unchanged": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "unchanged": true
+    },
+    "ordinary_or_commit_loop_0": {
+      "AST_sha256": "8695ebae39da6fa6c57883db1954e16e8651500168ede76a98af6d7c2c75ea91",
+      "unchanged": true
+    },
+    "ordinary_or_commit_loop_1": {
+      "AST_sha256": "d034e29764718abe9b5dfbfae3dc13f53d7dffa52adfd047e5cb595a4b66abca",
+      "unchanged": true
+    }
+  },
+  "static_checks": {
+    "AST": "passed",
+    "global_name_resolution": "passed",
+    "reference_closure_files": 5,
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed"
+  },
+  "status": "static_frozen_ready_for_Chief_review_not_numerically_qualified"
+}

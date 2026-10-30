@@ -5,6 +5,8 @@ component fixture. This is a closed, channel-free physical response test, not
 a fitted biological preparation or a native BETSE trajectory comparison.
 """
 
+import math
+
 from validation.tissue import surface_cotransport_water_fixtures as base
 
 END_TIME = 0.5
@@ -75,6 +77,49 @@ def definition(arm="supply_on", *, dt=DT, padded=False):
     )
     e.update(end_time=END_TIME, observation_times=[i * DT for i in indices])
     x.update(max_steps=200000, max_trace_bytes=2**30)
+    return raw
+
+
+def refined_recovery_definition(local_times, *, factor=1, stop_time_s=None):
+    """Preserve a declared recovery microgrid while refining the whole trajectory.
+
+    By default the supplied boundaries cover the first original step after
+    restoration. An explicitly declared, nominal-grid-aligned stop can extend
+    that interval into the recovery tail without changing the physical horizon.
+    They are numerical inputs, not states or biological events. Each dyadic
+    refinement splits both this grid and the nominal timestep; no automatic
+    state-dependent grid choice or checkpoint migration occurs here.
+    """
+    if type(factor) is not int or factor not in (1, 2, 4):
+        raise ValueError("The response convergence factors are 1, 2 and 4")
+    points = list(local_times)
+    original_stop = (round(INTERVENTION_TIME / DT) + 1) * DT
+    stop = original_stop if stop_time_s is None else stop_time_s
+    if (
+        type(stop) not in (int, float)
+        or not math.isfinite(stop)
+        or not original_stop <= stop <= END_TIME
+        or stop != round(stop / DT) * DT
+    ):
+        raise ValueError("Recovery stop must be a nominal boundary inside the physical horizon")
+    if (
+        len(points) < 3
+        or any(type(t) not in (int, float) or not math.isfinite(t) for t in points)
+        or points[0] != INTERVENTION_TIME
+        or points[-1] != stop
+        or any(a >= b for a, b in zip(points, points[1:], strict=False))
+    ):
+        raise ValueError("Require exact increasing boundaries of the declared recovery interval")
+    for _ in range(factor.bit_length() - 1):
+        finer = []
+        for left, right in zip(points, points[1:], strict=False):
+            middle = (left + right) / 2
+            if not left < middle < right:
+                raise ValueError("Recovery refinement is below the float clock resolution")
+            finer.extend((left, middle))
+        points = [*finer, points[-1]]
+    raw = definition("supply_recovery", dt=DT / factor)
+    raw["execution"]["refinement_times"] = points[1:-1]
     return raw
 
 

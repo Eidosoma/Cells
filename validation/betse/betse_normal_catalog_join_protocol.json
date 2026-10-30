@@ -1,0 +1,491 @@
+{
+  "acceptance": {
+    "carried_initial_condition": "Recorded actual initialized class cache, declared explicitly; no independent constructor-equation claim",
+    "channel_flux": "Existing B24 128*eps*(ions+membranes+4+32)*local conditioning gross + membrane_flux floor",
+    "channel_gates": "Per-class frozen catalog_budgets; original B28 four classes unchanged",
+    "conditional_local_only": true,
+    "current": "32*eps*(ions+membranes+16)*local gross+1e-30",
+    "gate_opening": "5e-14+2e-13*abs(reference), existing native gate protocol",
+    "independent": "Fresh Decimal90/140 actual incoming parent/cache/gate-memory one-call answers before model outgoing state; explicit binary64 nonce seams",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "material": "128*eps*(ions+membranes+4+32)*local gross + existing named floors",
+    "network_current": "Existing B23 32*eps*(ions+membranes+16)*local gross+1e-30",
+    "no_tolerance_tuning": true,
+    "not_trajectory_error_bounds": true,
+    "primary": "Exact full native sequence arrays/dtypes",
+    "pump_flux": "2e-18 mol/(m2*s)+2e-11*abs(reference), existing pump preflight",
+    "self_resolution_fraction": 0.1,
+    "voltage": "1024*eps*(ions+membranes+gridpoints+16+64)*local gross+1e-30"
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "case_classification": {
+    "distinct_raw_negative_test_id": "tests/unit/test_betse_normal_catalog_join.py::test_raw_nominal_catalog_nonfinite[Cav_G]",
+    "failed_run_retained": "/mnt/workspaces/Cells/betse-normal-catalog-tests-20261030-01",
+    "failure_diagnosis_provenance": "Chief direct reviewer report; no worker job-status polling or numerical rerun",
+    "historical_failed_positive_id_excluded_from_successor_execution_and_check_retention_union": true,
+    "historical_failed_positive_test_id": "tests/unit/test_betse_normal_catalog_join.py::test_native_catalog_actual_parent[Cav_G]",
+    "nominal_class_ids": 55,
+    "nominal_nonfinite_or_refusal_ids": [
+      "Cav_G"
+    ],
+    "nominal_positive_case_ids": 54,
+    "nominal_positive_pass": false,
+    "nominal_refusal_reason": "Literal source initializer 0.055*(-27-V)/(exp((-27-V)/3.8)-1) returns NaN at targeted V=-27mV; no analytic limit or regularization.",
+    "nonsingular_cases": {
+      "Cav_G_nonsingular": {
+        "budgets_unchanged": true,
+        "class_name": "Cav_G",
+        "only_input_change": {
+          "new_V": -0.026,
+          "old_V": -0.027,
+          "path": "initial/voltage_V/2"
+        },
+        "replaces_nominal": false,
+        "source_equations_unchanged": true,
+        "test_id": "tests/unit/test_betse_normal_catalog_join.py::test_native_catalog_nonsingular[Cav_G_nonsingular]"
+      }
+    },
+    "planned_carried_diagnostic_forms": 130,
+    "planned_checks": 73,
+    "planned_conditional_actual_parent_calls": 85,
+    "planned_fresh_conditional_reference_forms": 170,
+    "planned_native_captures": 70,
+    "planned_positive_native_captures": 65,
+    "planned_refusal_captures": 5,
+    "prior_snapshot_inputs": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse-normal-catalog-prepared-20261030-04/inputs.json",
+    "prior_snapshot_inputs_sha256": "278a8cb1ff9f40cd4ddc9957e53421816f8a0352da037099d5bc4c6b1976d3c0",
+    "qualification_claim": "None; successor is statically prepared only. Refusal coverage never counts as positive family qualification."
+  },
+  "catalog_budgets": {
+    "CaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "CatLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "CatLeak2": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "Cav1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav_G": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Cav_L_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_L_ML2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_N_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_T_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "ClLeak": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "HCN1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN2_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCN4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN4_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN4_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCNLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "KLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "K_Fast": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p5": {
+      "absolute": 3e-15,
+      "relative": 3e-14,
+      "source": "validation/tissue/surface_channel_protocol.json",
+      "source_sha256": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497"
+    },
+    "Kv1p5S_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p5_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p6": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv2p1_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv2p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p2": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p4": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv_ML1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "NaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p6": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    }
+  },
+  "diagnostics": {
+    "carried": "Full independent carried Decimal trajectory retained separately with absolute errors; no trajectory-bound acceptance inference",
+    "raw_coefficients_and_rates": "Exact native checks plus independent absolute errors; no invented intermediate tolerance",
+    "reporting": "Per-field/unit absolute errors, budget at worst absolute element, index/model/reference, min/max budgets and local normalized fraction"
+  },
+  "failure_retention": "All earlier prepared and failed snapshots remain immutable. Complete raw constructor/step returns are archived before JSON/reference/comparison, including nonfinite returns; existing exceptions retain complete partial state. Original Cav_G nominal inputs are explicit refusal evidence under a distinct raw-negative ID. Historical actual_parent[Cav_G] stays failed and is excluded from successor execution and check-retention union, never positive coverage. Separately declared Cav_G_nonsingular changes only initial voltage index2 from -0.027V to -0.026V; original equations and all budgets remain unchanged.",
+  "kind": "cells.betse_normal_catalog_join_static_contract@1",
+  "law_id": "betse_normal_late_catalog_join_v1_5_0@1",
+  "limitations": [
+    "STATIC package only; no expanded-family qualification or accuracy claim",
+    "55modern classes; legacy cagPotassium remains separate with no modern runtime callsite",
+    "Ca alpha_Ca0/Ca_dyn0 only; active CaATP, ER and buffers not implemented or qualified",
+    "Live Ca bulk/membrane/bath input required even for zero-weight route; no constant or implicit Ca",
+    "B25 supplied inverse/gauge; no ECM/HH/environment preparation/full native parity",
+    "Raw native quotients/branches/clocks retained; no regularized replacement",
+    "Scalar-bath scoped caller; original full Simulator initializes rectangular [ion,membrane] bath. No native state-initialization/container parity; rectangular CaATP is a separate new law"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "numerical_authorization": "No numerical launch until a subsequent user instruction",
+  "numerical_runs": 0,
+  "purpose": "All55 modern native catalog classes with explicit live ion routes and declared disabled CaATP/ER handler",
+  "reference": "Pure stdlib Decimal maintained-pool pump, active gate, material, current and boundary/voltage equations; explicit binary64 denominator branch and component store seams",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "Deferred until next requested numerical round; each group needs explicit CPU",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_catalog_join_inventory.json",
+  "source_policy": {
+    "aliases": "Actual DynamicValue/Dict getter/setter bodies follow simulator row replacement",
+    "bath_container": "Explicit supplied scalar-per-ion bath scoped adapter; update_Co returns scalar mean. No native whole-state initialization or rectangular native bath-container parity claim",
+    "calcium": "Caller explicit alpha_Ca0,Ca_dyn0; original no-op handler executes between ordinary refresh and network clear; initial rate cache supplied/unchanged; live Ca rows evolve",
+    "carried": "Explicit actual initialized cache is the initial condition; no independent initialization claim; carried output diagnostic only",
+    "channel_flux": "DChan=P*1*maxDm*modulator; electroflux live sim.T, no cluster boundary mask, update_Co(ignoreECM=True), no ordinary storage write",
+    "channel_inputs": "Post-ordinary nonce Vm; live bulk gathered at membrane instead of stale at-mem cache; live scalar bath",
+    "classes": "All55 modern classes;110 literal numeric methods and7 original base/factory/clock contracts",
+    "clock": "Original HH backward Euler / ML rational or algebraic clocks; seven leaks NaLeak,KLeak,CaLeak,ClLeak,CatLeak,CatLeak2,HCNLeak use time_unit1; remaining modern classes time_unit1000; no Q10 scaling",
+    "denominator": "Exact-zero binary64 product guard substitutes1e-15; no concentration repair",
+    "initialization": "Actual Channel.init_channel passes explicit profile targets; class init caches persist, P absent until run, DChanNone until run",
+    "legacy": "cagPotassium legacy Dm assignment/free-Ca sensing outside modern join",
+    "order": "reset -> maintained NaK -> ordinary membrane/GJ/intra -> network clear -> ordered channel run/direct Co -> empty network run/publication -> deferred commit/clipping -> B23/B25 voltage",
+    "packed_state": "Original full class caches: ML has m only; algebraic ML updates independent ofdt; unused native auxiliary HH gates retained",
+    "pools": "Maintained p.cATP/cADP/cPi; met argument unused; no endogenous ATP/fuel/energy claim",
+    "proxy": "rate_NaKATP=-raw Na flux before rho/mask, not signed cycle count; alpha0 zero/negative alpha stale",
+    "publication": "Empty network clears accumulators; actual run_loop publishes separate extra current/zero extra charge by REPLACEMENT only if substances_affect_charge, otherwise incoming retained",
+    "pump_inputs": "Old at-membrane Na/K, scalar bath, pre-electroflux-nonce vm and live self.T",
+    "raw_singularities": "Raw NaV/CaV quotients retain both nonfinite returns and subsequent source exceptions. Actual status is reported separately; strict model refuses nonfinite cache. No analytic limits replace native equations.",
+    "roles": "Explicit original named +1 Na/K roles; stationary role can store flux without bulk commit",
+    "routes": "Class original route order; zero-weight routes execute; each flux consumes nonce; class retains only last route DChan/chan_flux",
+    "runtime": "Record actual loaded module file paths/SHA256 and executable; native executed AST source pins separate",
+    "targets": "Explicit ordered original profile indices; duplicates overwrite P; actual empty profile becomes float64 and initialization refuses without repair",
+    "temperature": "Gap flux and sigma retain configured p.T"
+  },
+  "status": "prepared_not_executed_not_qualified"
+}

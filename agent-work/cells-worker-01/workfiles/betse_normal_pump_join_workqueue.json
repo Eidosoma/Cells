@@ -1,0 +1,1332 @@
+{
+  "AST_test_matrix": {
+    "test_actual_nonfinite_pump_and_partial_join_trials_remain_lossless": 3,
+    "test_exact_zero_denominator_substitution_does_not_floor_concentrations": 1,
+    "test_invalid_source_roles_parameters_or_cache_refuse_without_pump_work": 6,
+    "test_metabolic_argument_is_ignored_but_maintained_pool_changes_rates": 1,
+    "test_named_roles_follow_reordered_ion_axes": 1,
+    "test_native_full_sequence_and_actual_parent_conditional_local_checks": 12,
+    "test_open_boundary_changes_applied_pump_but_not_raw_rate_proxy": 1,
+    "test_parent_preservation_repeatability_and_immutable_pump_controls": 1,
+    "test_pump_flux_is_added_to_cleared_storage_before_passive_membrane_flux": 1,
+    "test_pump_reads_stale_membrane_and_pre_electroflux_nonce_without_committing": 1,
+    "test_pump_uses_live_temperature_while_gap_sigma_keep_configured_temperature": 1,
+    "test_raw_stoichiometry_and_cached_rate_are_distinct_from_applied_flux": 1,
+    "test_reverse_pump_retains_signed_raw_flux_and_negative_proxy": 1,
+    "test_source_alpha_guards_clear_or_retain_diagnostic_after_flux_reset": 2,
+    "test_stationary_pump_role_stores_flux_without_bulk_or_bath_commit": 1
+  },
+  "Chief_acceptance": "pending independent review",
+  "acceptance": {
+    "conditional_local_only": true,
+    "current": "32*eps*(ions+membranes+16)*local gross+1e-30",
+    "gate_opening": "5e-14+2e-13*abs(reference), existing native gate protocol",
+    "independent": "Fresh Decimal90/140 one-call answers from each actual incoming float parent, including gate memory and proxy; input written before outgoing model state",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f"
+    },
+    "material": "128*eps*(ions+membranes+4+32)*local gross + existing named floors",
+    "no_tolerance_tuning": true,
+    "not_trajectory_error_bounds": true,
+    "primary": "Exact full native sequence arrays/dtypes",
+    "pump_flux": "2e-18 mol/(m2*s)+2e-11*abs(reference), existing pump preflight",
+    "self_resolution_fraction": 0.1,
+    "voltage": "1024*eps*(ions+membranes+gridpoints+16+64)*local gross+1e-30"
+  },
+  "active_qualification": null,
+  "b26_audit_preparation": "agent-work/cells-worker-01/workfiles/b26-saved-local-audit-prepared-20261030-01/inputs.json",
+  "contract": "agent-work/cells-worker-01/workfiles/BETSE_NORMAL_PUMP_JOIN_NOTES.md",
+  "coordinated_shared_edit_authority": "Chief explicitly announced these active local numerical-refinement edits; historical frozen evidence untouched",
+  "coordinated_shared_edit_paths": [
+    "src/cells/core/grid.py",
+    "src/cells/core/runner.py",
+    "src/cells/core/specs.py",
+    "src/cells/core/batch.py",
+    "src/cells/ensemble/ionic.py",
+    "src/cells/core/surface_cotransport_water_spec.py",
+    "src/cells/models/surface_energy.py",
+    "src/cells/models/surface_energy_water.py"
+  ],
+  "historical_shared_sha256": {
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/specs.py": "b87ddc9ed6e65168e68f39e08dbb9f18d21ae48a27e139d337c7892b389db505"
+  },
+  "inventory": "validation/betse/betse_normal_pump_join_source_map.json",
+  "kind": "cells.betse_normal_pump_join_preparation@1",
+  "limitations": [
+    "Source-only, conditional local numeric checks; no physical or full-native parity",
+    "B25 supplied inverse/gauge/current-prefix BVP adapter; environment lane belongs to Specialist",
+    "Maintained metabolic pools only; no fuel consumption or energy acceptance",
+    "Strict finite published arithmetic/proxy guard retains actual source nonfinite limits",
+    "No events/pumps beyond NaK/networks/ECM/conditioning/thermal-clock program"
+  ],
+  "numerical_execution": {
+    "active_job_status_reads": 0,
+    "authorization": "Chief approved B27 CPU1 with actual-parent local fixed-budget checks before freeze",
+    "authorized_cpu": 1,
+    "automatic_followup": false,
+    "automatic_polling": false,
+    "pytest_collection_runs": 1,
+    "runs": 1
+  },
+  "owned": [
+    "src/cells/processes/betse_normal_pump_join.py",
+    "validation/betse/betse_normal_pump_join_native.py",
+    "validation/betse/betse_normal_pump_join_reference.py",
+    "validation/betse/betse_normal_pump_join_fixtures.py",
+    "validation/betse/betse_normal_pump_join_protocol.json",
+    "validation/betse/betse_normal_pump_join_source_map.json",
+    "tests/unit/test_betse_normal_pump_join.py"
+  ],
+  "owned_sha256": {
+    "src/cells/processes/betse_normal_pump_join.py": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+    "tests/unit/test_betse_normal_pump_join.py": "44c3ab42d70691b651ff3f4bdf1a1631d68b637d374f227acb6bb6e3beffcdfc",
+    "validation/betse/betse_normal_pump_join_fixtures.py": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+    "validation/betse/betse_normal_pump_join_native.py": "5ee3b1c049ee7e7aa660d34ae4379fb9751a70f38f70deac300da18238cb3bdd",
+    "validation/betse/betse_normal_pump_join_protocol.json": "c94fd0669859b2652ed97ae8ba8f2de611731e6a0c9a854d90d01c0d55714852",
+    "validation/betse/betse_normal_pump_join_reference.py": "5dcdfba6067ac3a264edc2ecddbe0701a710cb6e81ccee33d1c66e06b1c51da5",
+    "validation/betse/betse_normal_pump_join_source_map.json": "8bc58a39073cb41448bbdab174d4a86ea197ce2dd9dccdd6061a6922b6352a67"
+  },
+  "owner": "Cells Key Developer / cells-worker-01",
+  "preparation_receipt": "agent-work/cells-worker-01/workfiles/betse_normal_pump_join_preparation_receipt.json",
+  "prepared_directory": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01",
+  "protected_sha256": {
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "src/cells/core/physiology_block_calendar.py": "a2bf39b2b2ebef19c62303363f183b5a26fa4c893a25a34f7cf1646353e14298",
+    "src/cells/core/physiology_block_control_step.py": "300e48ec55e93a038c88444c3db5bf5438226da6eaef5f5387587c9dd7fa8295",
+    "src/cells/core/physiology_native_calendar.py": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+    "src/cells/core/physiology_permeability_schedule.py": "ab83d5315513a2cbd2bbd347ef844dda6f840c001b8deba921704665b15b5d82",
+    "src/cells/core/physiology_perturbation_phases.py": "3dfaef25629b1e067f4af37b2cd66fda3c07279a015ec39b485ad7ec9663c7f8",
+    "src/cells/core/physiology_perturbation_step.py": "fb33883921eb8e01d3fd4e51a2672aec67134260a5c52c3c460d05fc265d2279",
+    "src/cells/core/physiology_protein_batch_loop.py": "54d6a28802b36bf023371014e3e570cbf23e54ff89eb293386656b3f3077c8ad",
+    "src/cells/core/physiology_protein_block_calendar.py": "cee73ce671c85b3076dcbd311e49a56aa401dc13b568dc60485eef6af877d974",
+    "src/cells/core/physiology_protein_block_calendar_scope.py": "8e1eaa501677643bf9269d83f605439140585b8347eda991e29891783324bf01",
+    "src/cells/core/physiology_protein_charge_interval.py": "099b5b4e12d509d810a99ba982725c7866945812ecb40b2f272aba33de81fc96",
+    "src/cells/core/physiology_protein_charge_step.py": "9b726ccb09152b5849dd3b7678af611d50f410b08cd8c884be4e272cf9f295f8",
+    "src/cells/core/physiology_protein_chemical_arrays.py": "b6613fa16c99c2187a19f99e6ead514156b93dc336c165eda70d1beb90e3f2f4",
+    "src/cells/core/physiology_protein_interval_accounting.py": "db0cef1d952cccb6d2845d104591e7fd7c7a3da8d19f734ff3648da062badb0f",
+    "src/cells/core/physiology_protein_loop.py": "d5ec330bc944a7c2fb7e6d816b9536b1d93bcc53a36c044f58d0a3d9833d254b",
+    "src/cells/core/physiology_protein_packet_provider.py": "70667c321ee4bf3b3742948fbb481bd8758d808c361d94fb8db06e43981b8986",
+    "src/cells/core/physiology_protein_projection.py": "b90eb054ef0d670538c53771b0e185229ebf8f84e65cd41ffd0a918efbc44ba7",
+    "src/cells/core/physiology_protein_thermodynamics.py": "3a240c5dfcf6a93674588325801d99943a8e4a89592d2b525b70dc29ff12f1b3",
+    "src/cells/core/physiology_protein_transition.py": "26a9b6e5dd157761d9becd5be32a09779c3fd89b99f75be3f350818638437e79",
+    "src/cells/core/physiology_protein_transition_commit.py": "08d0e865903efe14ac95479cb793d8af77ef2f03891756d854853e9701093106",
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "src/cells/core/physiology_tissue_loop.py": "c0e61d871f9438f0a3e447b3c394c80d6fb4c93fe5cd63bc8ee715c9c7d8c069",
+    "src/cells/core/physiology_tissue_step.py": "c0d8b139101ef48278ab4c9e6e116c8d3ed3715026fa67ecbcb8ec39f9140b58",
+    "src/cells/core/schedule.py": "889eba6db8fcec06a290bc367eb1ddaaabbccec4a5b591ee35b5bc8a4e6082be",
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/core/surface_calcium_spec.py": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce",
+    "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9",
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "src/cells/models/physiology_protein_charge_rhs.py": "961b7a2efd639debcc7a1795206244d193f94b1235401df61f668e521230f2e9",
+    "src/cells/models/physiology_protein_charge_view.py": "9086230f4a8ee2f3d53d43b32e1018b69291cb25a95be40fe7ca5b233274857d",
+    "src/cells/models/physiology_protein_work_view.py": "153c8179672e31b104d4dd36d9b21af913e4e39acbf70b44d13de162c64c0c37",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/physiology_protein_drive_arrays.py": "253aa6d4c73cbd55d648403c057dbeea1bf2fed375e542f8123a2cd14f793498",
+    "src/cells/numerics/physiology_protein_electrical_arrays.py": "2a19a921c3f2e9c4636cebb4c583a1dd5757c440fa484ef88e7a20ff513bb8f1",
+    "src/cells/numerics/physiology_protein_interval_arrays.py": "95ac84d8b2b873e41ca816980ea329686553c1df83ccc6998713d6d879017253",
+    "src/cells/numerics/physiology_protein_transition_arrays.py": "befd18f3ef3f1897c14ee8c47db5ea8349d8b62b71dbc156852668696abcd1d4",
+    "src/cells/numerics/physiology_protein_transition_commit_arrays.py": "21938e83201ab0e9c9d8881ebbcd18d1496fbd46e3d7494f9524828ab5ed68cd",
+    "src/cells/numerics/physiology_protein_work_arrays.py": "9b15e50fbffad08b68e29a964c379be09c15ee22050e7e28b9cbd8e11207b36d",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/physiology_checkpoint.py": "48f7ece5f831f3d376a869154c8d31c68d461de307391a4cbed420f2ed73ebdf",
+    "src/cells/physiology_protein_batch_loop_io.py": "bb6c630a03e55528d2dc25b70d93783dd9798889e25d06caa9f9251dfb318ee6",
+    "src/cells/physiology_protein_block_calendar_io.py": "6dd06792bd8713bdbb60f003297a6892ebe2f09b140f40376f7820c9e8247feb",
+    "src/cells/physiology_protein_checkpoint.py": "d6a459646e4f07341a83f1517050debf9ab2599f7e1452f69b6d3f375cd70c87",
+    "src/cells/physiology_protein_loop_io.py": "e578074f655c7e33d8acf28a51f8b93127a7f030bc24510c826af10e61ea723a",
+    "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "src/cells/processes/betse_normal_gated_join.py": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+    "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+    "src/cells/processes/betse_normal_voltage.py": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/processes/betse_time_modulation.py": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "tests/integration/test_physiology_modulated_schedule.py": "a832ebd0936375b0a55e9a3c3d8ace16f27013c6caafd0d78abd647e0abfa4bf",
+    "tests/integration/test_physiology_permeability_schedule.py": "6573b5efe2f85bc3602ddb7237e665f7db44d2a1227748918d13b5affd5859be",
+    "tests/integration/test_physiology_protein_batch_loop.py": "322bb5479d269a94029fd498b07ba93485951d2ee5a5e4b281a9a3c06b806cf0",
+    "tests/integration/test_physiology_protein_block_calendar.py": "280d5538c4e865e27ff20f4bf1f42cfbbfce4a5e48ef828d7174028cee82e73f",
+    "tests/integration/test_physiology_protein_checkpoint.py": "a2db61ef4d49a2fabad6a76e1348909dd0505b83d9e82d30ba33ba0bc5b86d46",
+    "tests/integration/test_physiology_protein_loop.py": "ca55452de49ea670cca7fbac1fb488fecc24e72a201b9fb7c362318449383bd8",
+    "tests/integration/test_physiology_protein_transition.py": "18e0067de6225b35316466d74b2bcd4e37e829f38e195ab5ac8d76295314f32f",
+    "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+    "tests/unit/test_betse_normal_current.py": "01c6faaa4cc8b4a809a4ba72854a795db1d657ae7852b83d99e943bed2a98d8b",
+    "tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+    "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+    "tests/unit/test_betse_normal_voltage.py": "fbc819174864ce4cf9f4a7d3cbe49152bad4a01a6c490bd00dbaf2edbb3018cf",
+    "tests/unit/test_physiology_permeability_view.py": "8575cbde3863c26b5fb0d390cb9de7bd8a82c75e383266ec2c121545e1dd9948",
+    "tests/unit/test_physiology_perturbation_phases.py": "44aac991139f130b91137abdaece9cd4561122c07b3acad9d9e732cae67e33a8",
+    "tests/unit/test_physiology_perturbation_step.py": "65c24ef2f4b21aa99e0d7035b460685f933c09491df1fc9286a372951f2bd546",
+    "tests/unit/test_physiology_protein_chemical_arrays.py": "a3732916a2fc97cb09847a1f19762f3678becf494463246658fe10fbb92d4b32",
+    "tests/unit/test_physiology_protein_drive_arrays.py": "082eade4f82a91684d508b81be12a6e2996ce846d8628467bab94b2d11d639f8",
+    "tests/unit/test_physiology_protein_electrical_arrays.py": "091bd5dd5b02c4a8185c83c828a2ed7a680ab5d9ebdc3d77ce3d5e0d7b2e72eb",
+    "tests/unit/test_physiology_protein_interval_accounting.py": "1bca10690b5f8840673bec3d508698d9fdfb2fb8e497df09c91ae5079e3b4435",
+    "tests/unit/test_physiology_protein_interval_arrays.py": "0b49a08f44930aae4afb60179b021ec39869bbcff413a1f5d4f486fee41ba014",
+    "tests/unit/test_physiology_protein_packet_provider.py": "ee0ebef17542fa3ba5cabb21d26511ccc17c1dbcdc8a08d3fbb2760bfc62761a",
+    "tests/unit/test_physiology_protein_projection.py": "c692be4232b28c73e42c7ad85a9c109fc87a3b965a5f30274a1b1cba69ff3e89",
+    "tests/unit/test_physiology_protein_thermodynamics.py": "e24b9425cdf45f81356e230fb6405547876f52760819956f432ea6431dae68c4",
+    "tests/unit/test_physiology_protein_transition_arrays.py": "64a376ba5f0cac8e35b31b12ae40a6e6e9ed9193e7990d31f97dbea8e390e9ca",
+    "tests/unit/test_physiology_protein_transition_commit.py": "80a207496b65140dceb44f334487e156c30d1e587bab154970e7e4412d427b99",
+    "tests/unit/test_physiology_protein_work_arrays.py": "e78d53fad38b5dd8832f8b2f428405bc595bf83371d763636a81381fd5685a7d",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e",
+    "tests/unit/test_physiology_tissue_loop.py": "1ddde275ad3c201f8da7efef7fb05172ec7e7e0438a32ec7b1fba49ea44a452a",
+    "tests/unit/test_physiology_tissue_step.py": "52198656a99237d3b90a42611b0dc554dbc87751781ce450c0e577382f07562c",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+    "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "validation/betse/betse_fast_solver_protocol.json": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+    "validation/betse/betse_fast_solver_reference.py": "652412cf3f3d6f741b601e05b1e237636c6611f1e9567fc6ac4f8b006af8468e",
+    "validation/betse/betse_fast_solver_source_map.json": "ad2ba5a2da0410a3d989845b0c0cd2f2a1ecd1ac7368b77c75e45c4a6e1a1cea",
+    "validation/betse/betse_normal_current_fixtures.py": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+    "validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_gated_join_fixtures.py": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+    "validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+    "validation/betse/betse_normal_gated_join_protocol.json": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+    "validation/betse/betse_normal_gated_join_reference.py": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c",
+    "validation/betse/betse_normal_gated_join_source_map.json": "c8b6942f279dcb625cb3ab16928b18dd94a1c3f3433d645439d5a2f86c2eebed",
+    "validation/betse/betse_normal_ion_join_fixtures.py": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+    "validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+    "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+    "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+    "validation/betse/betse_normal_ion_join_source_map.json": "bfcc1d5f6c3e23bf456dd310a7e67eb4e210c9bc90ee79c8c43a743c696fdc17",
+    "validation/betse/betse_normal_voltage_fixtures.py": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+    "validation/betse/betse_normal_voltage_material_failure.json": "ce0c0b3f10fd3528ff3492e9c5f8785960cc1c2d48bf85173840acd9e2364b27",
+    "validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228",
+    "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+    "validation/betse/betse_normal_voltage_reference.py": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7",
+    "validation/betse/betse_normal_voltage_source_map.json": "b1238964578a3042431479242704ffa2bebbcf247bbda1f39754f2d55249d06f",
+    "validation/perturbations/betse_perturbations_fixtures.py": "749937d8cfe23523a5c4fb649683d5819a87335ea8c060c0cbc3c662596fe554",
+    "validation/perturbations/betse_perturbations_reference.py": "06f0aaa041e84bcdf1e4ac1899ad5c309a6be66700505bc6c5cadf720634d6dc",
+    "validation/perturbations/physiology_perturbation_phases_reference.py": "fe8a59a9e45ea1d544a7b64f07fe7c480ea0d030675976e1649bec6f2acd6900",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/physiology_block_calendar_reference.py": "68202483dc73614c72fe09094d5229313cdb4f036778912a51ecfe9d2e1fcd60",
+    "validation/tissue/physiology_block_control_reference.py": "5dbd34f9be1c2dfc827fa8e9709b5ec3b1976baa1f480979eab7535d71a0442b",
+    "validation/tissue/physiology_permeability_schedule_reference.py": "12179d3253969655d3f12dc34033e771590bcf9b52cb93be6d6cd1e85d67a985",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "validation/tissue/physiology_protein_batch_loop_reference.py": "a345254f9d8648818ab7e9ffaa063f191ad635d3fe91ff628eb72c13cc2857b2",
+    "validation/tissue/physiology_protein_block_calendar_reference.py": "9e487f1ebe780801f89384a414fe8b7a8ade4a08ad5aa518e8bc3d20db68a5c6",
+    "validation/tissue/physiology_protein_charge_interval_reference.py": "96125376578ca7979f8ae82a9ca74ee786f5e2630164918b41cda1eb49bbd959",
+    "validation/tissue/physiology_protein_charge_rhs_reference.py": "cdbcee0939dbe868aca802cf7ede73d14180891fdb377abb4edbb137a2918d50",
+    "validation/tissue/physiology_protein_charge_step_reference.py": "6409b7fe10929842bc7c21fa45be12554da28f999757232b1c95ed7b7eb12a68",
+    "validation/tissue/physiology_protein_chemical_arrays_reference.py": "d3abbf9ca74891ea68c2ab8a479c7c8a743388dcaf9c95b346b6cb03e1b4f6f4",
+    "validation/tissue/physiology_protein_drive_arrays_reference.py": "47d91e7c0f81d1fac0fad12c373171243cde897e4b094f525135be7ef6b3ff8b",
+    "validation/tissue/physiology_protein_electrical_arrays_reference.py": "18b73eca1eb5b394cf78c7f6a2b0d5bcc88ee673a3b261af0b6207ed68c7c819",
+    "validation/tissue/physiology_protein_interval_accounting_reference.py": "22151a58c76b9e06e1695ab624e8e8bbe6a629d4d718cfb69d6608324627e955",
+    "validation/tissue/physiology_protein_interval_arrays_reference.py": "08000d4bdf47d89492d8daffe755424bd10fd7c116717da245a29263d6e78970",
+    "validation/tissue/physiology_protein_loop_reference.py": "a9c39651995df60ab061a1edda0b3fd569a41e332b35c4342256f91d77ac9856",
+    "validation/tissue/physiology_protein_packet_provider_reference.py": "e5f5ce917e3932f39667ccbd04addbe2217e59697b86862e7ba3c8b88376e6db",
+    "validation/tissue/physiology_protein_projection_reference.py": "41a3e916c347af2f8dbeebd1957348ff19fa48661530bff4d6b2849344e7ce22",
+    "validation/tissue/physiology_protein_thermodynamics_reference.py": "c1b2419294db2a2eaf5ce7aaa9b4384d95afb7d3cc50638173a905d4624a6bde",
+    "validation/tissue/physiology_protein_transition_arrays_reference.py": "ddb686a5ea88c2356eb7e2269260379f37fb9badb3e35b046dcd2115b9c1016e",
+    "validation/tissue/physiology_protein_transition_commit_reference.py": "2e256b76970ec23ccd2c34cba9e8ad2c3cc75bb1d4202a62df84ec3c12efc3ac",
+    "validation/tissue/physiology_protein_work_arrays_reference.py": "e006dccd06cd9df556327febcfaecffeddb93e4d2312b69c770f38cb1cd95554",
+    "validation/tissue/physiology_tissue_loop_reference.py": "9c5a92b58a6552a7824ba33fc691c3b7434688729dcbb88ee991bce10ccd2a48",
+    "validation/tissue/physiology_tissue_step_reference.py": "b525533a90403d2c20c3ff3ee3a8805d5314ba8403d3ab292afb4ea816acec80"
+  },
+  "qualification_plan": {
+    "CASE_MOVING_COUNTS": {
+      "alpha_negative": 3,
+      "alpha_zero": 3,
+      "forward": 3,
+      "met_ignored": 3,
+      "na_stationary": 2,
+      "open_boundary": 3,
+      "pump_only": 3,
+      "redistributed": 3,
+      "reordered_roles": 3,
+      "reverse": 3,
+      "temperature_split": 3,
+      "zero_na_membrane": 3
+    },
+    "checks": 34,
+    "fresh_carried_diagnostic_forms": 24,
+    "fresh_conditional_actual_parent_forms": 72,
+    "fresh_independent_answer_forms": 96,
+    "fresh_native_source_captures": 15,
+    "main_carried_calls": 36,
+    "main_gate_invocations": 105,
+    "main_material_states": 738,
+    "reference_precisions": [
+      90,
+      140
+    ]
+  },
+  "result": {
+    "actual_failure_behaviors": {
+      "equilibrium_overflow": {
+        "archive": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-equilibrium_overflow/native",
+        "manifest_sha256": "5ae2c1051a73f5f64104c1a185fa41606143840dce558c536ca2387c5d3a946e",
+        "source_failure": null,
+        "source_status": "source_completed"
+      },
+      "masked_proxy_nonfinite": {
+        "archive": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-masked_proxy_nonfinite/native",
+        "manifest_sha256": "6349f0c94bdc62ed9a26effaee9876fb789beaf21c1e151b1bba89c1e48799d8",
+        "source_failure": null,
+        "source_status": "source_completed"
+      },
+      "singular_saturation": {
+        "archive": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-singular_saturation/native",
+        "manifest_sha256": "c6367382135b1eb32e3c6c59d65ba11d97945b75383bdd18fb572c9d45817f44",
+        "source_failure": {
+          "call_index": 1,
+          "message": "Actual material stage refused before current/voltage",
+          "source_failure": {
+            "message": "Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce rate coefficients.",
+            "step_index": 1,
+            "traceback": "Traceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/source/validation/betse/betse_normal_pump_join_native.py\", line 355, in material_capture\n    source[\"scoped_step\"](sim, cells, parameters, float(index))\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<pinned native pump/active normal source join>\", line 1357, in scoped_step\n  File \"<pinned native no-ECM normal ion join>\", line 2111, in update_all_concs\n  File \"<pinned native no-ECM normal ion join>\", line 499, in no_negs\nvalidation.betse.betse_normal_ion_join_native.NativeUnstable: Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce rate coefficients.\n",
+            "type": "NativeUnstable"
+          },
+          "type": "MaterialDependencyRefused"
+        },
+        "source_status": "source_refused"
+      }
+    },
+    "carried_diagnostic_forms": 24,
+    "carried_diagnostic_not_acceptance": true,
+    "checks": 34,
+    "conditional_actual_parent_calls": 36,
+    "conditional_local_absolute_summary": {
+      "current/average_normal_current_A_m2": {
+        "absolute_max_error": 7.105427357601002e-15,
+        "budget_at_absolute_max": 3.202590263737251e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "maximum_budget": 3.202590263737251e-11,
+        "minimum_budget": 1.7743774865773673e-11,
+        "model_at_absolute_max": -24.669598322656462,
+        "normalized_max_error": 0.00022186501464315793,
+        "reference_at_absolute_max": -24.669598322656455,
+        "unit": "A/m2"
+      },
+      "current/cell_current_xy_A_m2": {
+        "absolute_max_error": 7.105427357601002e-15,
+        "budget_at_absolute_max": 1.8872056499385175e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          1
+        ],
+        "maximum_budget": 3.2343124714766213e-11,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": -16.89679841305556,
+        "normalized_max_error": 0.00037650519739767027,
+        "reference_at_absolute_max": -16.896798413055553,
+        "unit": "A/m2"
+      },
+      "current/charge_density_C_m3": {
+        "absolute_max_error": 1.6397621038777288e-09,
+        "budget_at_absolute_max": 1.868918568400197e-06,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reordered_roles/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 2.1074909896447195e-06,
+        "minimum_budget": 1.6303325718969757e-06,
+        "model_at_absolute_max": 106.67278982233256,
+        "normalized_max_error": 0.000877385527439739,
+        "reference_at_absolute_max": 106.6727898206928,
+        "unit": "C/m3"
+      },
+      "current/inward_membrane_current_A": {
+        "absolute_max_error": 5.169878828456423e-26,
+        "budget_at_absolute_max": 2.5224763479022843e-22,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "maximum_budget": 3.264738937495057e-22,
+        "minimum_budget": 1.101987948210794e-23,
+        "model_at_absolute_max": 1.1211308066212813e-10,
+        "normalized_max_error": 0.00020495251948569288,
+        "reference_at_absolute_max": 1.1211308066212808e-10,
+        "unit": "A"
+      },
+      "current/junction_current_A_m2": {
+        "absolute_max_error": 5.204170427930421e-18,
+        "budget_at_absolute_max": 3.150305669794116e-14,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-temperature_split/local-0/comparison.json",
+        "index_at_absolute_max": [
+          8
+        ],
+        "maximum_budget": 3.5448258698091207e-14,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": 0.00977816684866066,
+        "normalized_max_error": 0.0001651957293487185,
+        "reference_at_absolute_max": 0.009778166848660655,
+        "unit": "A/m2"
+      },
+      "current/membrane_current_A_m2": {
+        "absolute_max_error": 1.4210854715202004e-14,
+        "budget_at_absolute_max": 3.777487548566124e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 3.886264388648984e-11,
+        "minimum_budget": 3.120020747258572e-11,
+        "model_at_absolute_max": -33.83919877851934,
+        "normalized_max_error": 0.00037619858523679913,
+        "reference_at_absolute_max": -33.839198778519325,
+        "unit": "A/m2"
+      },
+      "current/normal_current_A_m2": {
+        "absolute_max_error": 1.4210854715202004e-14,
+        "budget_at_absolute_max": 3.774411299877035e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 3.8681288015609554e-11,
+        "minimum_budget": 3.151045270524426e-11,
+        "model_at_absolute_max": -33.79359682611112,
+        "normalized_max_error": 0.00037650519739767027,
+        "reference_at_absolute_max": -33.793596826111106,
+        "unit": "A/m2"
+      },
+      "current/projected_cell_current_A_m2": {
+        "absolute_max_error": 7.105427357601002e-15,
+        "budget_at_absolute_max": 1.8872056499385175e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 3.2343124714766213e-11,
+        "minimum_budget": 1.700914781711828e-11,
+        "model_at_absolute_max": -16.89679841305556,
+        "normalized_max_error": 0.00037650519739767027,
+        "reference_at_absolute_max": -16.896798413055553,
+        "unit": "A/m2"
+      },
+      "current/raw_normal_current_A_m2": {
+        "absolute_max_error": 1.4210854715202004e-14,
+        "budget_at_absolute_max": 3.777487548566124e-11,
+        "budget_source": "current registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 3.889948550586828e-11,
+        "minimum_budget": 3.1232895368736944e-11,
+        "model_at_absolute_max": -33.83919877851934,
+        "normalized_max_error": 0.00037619858523679913,
+        "reference_at_absolute_max": -33.839198778519325,
+        "unit": "A/m2"
+      },
+      "gate/0/alpha_per_ms": {
+        "absolute_max_error": 1.734723475976807e-18,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-met_ignored/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4
+        ],
+        "model_at_absolute_max": 0.004002539387048063,
+        "reference_at_absolute_max": 0.004002539387048065,
+        "unit": "1/ms"
+      },
+      "gate/0/beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008191754837395731,
+        "reference_at_absolute_max": 0.0008191754837395732,
+        "unit": "1/ms"
+      },
+      "gate/0/opening_before": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 1.6999999999999998e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 1.8600000000000002e-13,
+        "minimum_budget": 1.6999999999999998e-13,
+        "model_at_absolute_max": 0.6,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.6,
+        "unit": "dimensionless source gate"
+      },
+      "gate/0/opening_stored": {
+        "absolute_max_error": 2.220446049250313e-16,
+        "budget_at_absolute_max": 1.8252132275602669e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.8601949606186143e-13,
+        "minimum_budget": 1.7034150103932025e-13,
+        "model_at_absolute_max": 0.6626066137801332,
+        "normalized_max_error": 0.0012165406297314355,
+        "reference_at_absolute_max": 0.6626066137801334,
+        "unit": "dimensionless source gate"
+      },
+      "gate/0/opening_unblocked": {
+        "absolute_max_error": 2.220446049250313e-16,
+        "budget_at_absolute_max": 1.8252132275602669e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.8601949606186143e-13,
+        "minimum_budget": 1.7034150103932025e-13,
+        "model_at_absolute_max": 0.6626066137801332,
+        "normalized_max_error": 0.0012165406297314355,
+        "reference_at_absolute_max": 0.6626066137801334,
+        "unit": "dimensionless source gate"
+      },
+      "gate/0/raw_beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008541608657595737,
+        "reference_at_absolute_max": 0.0008541608657595738,
+        "unit": "1/ms"
+      },
+      "gate/0/voltage_before_nonce_V": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 7.79891706770286e-14,
+        "budget_source": "material junction_voltage local budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 8.077449820120818e-14,
+        "minimum_budget": 5.292122295941226e-14,
+        "model_at_absolute_max": 0.005999999999999998,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.005999999999999998,
+        "unit": "V"
+      },
+      "gate/1/alpha_per_ms": {
+        "absolute_max_error": 1.734723475976807e-18,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-met_ignored/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4
+        ],
+        "model_at_absolute_max": 0.004002539387048063,
+        "reference_at_absolute_max": 0.004002539387048065,
+        "unit": "1/ms"
+      },
+      "gate/1/beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008191754837395731,
+        "reference_at_absolute_max": 0.0008191754837395732,
+        "unit": "1/ms"
+      },
+      "gate/1/opening_before": {
+        "absolute_max_error": 2.220446049250313e-16,
+        "budget_at_absolute_max": 1.8252132275602669e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.8601949606186143e-13,
+        "minimum_budget": 1.7034150103932025e-13,
+        "model_at_absolute_max": 0.6626066137801332,
+        "normalized_max_error": 0.0012165406297314355,
+        "reference_at_absolute_max": 0.6626066137801334,
+        "unit": "dimensionless source gate"
+      },
+      "gate/1/opening_stored": {
+        "absolute_max_error": 4.440892098500626e-16,
+        "budget_at_absolute_max": 1.7498031992942552e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 1.8701017172470811e-13,
+        "minimum_budget": 1.7222938418600616e-13,
+        "model_at_absolute_max": 0.6249015996471271,
+        "normalized_max_error": 0.002537938037998652,
+        "reference_at_absolute_max": 0.6249015996471275,
+        "unit": "dimensionless source gate"
+      },
+      "gate/1/opening_unblocked": {
+        "absolute_max_error": 4.440892098500626e-16,
+        "budget_at_absolute_max": 1.7498031992942552e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 1.8701017172470811e-13,
+        "minimum_budget": 1.7222938418600616e-13,
+        "model_at_absolute_max": 0.6249015996471271,
+        "normalized_max_error": 0.002537938037998652,
+        "reference_at_absolute_max": 0.6249015996471275,
+        "unit": "dimensionless source gate"
+      },
+      "gate/1/raw_beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008541608657595737,
+        "reference_at_absolute_max": 0.0008541608657595738,
+        "unit": "1/ms"
+      },
+      "gate/1/voltage_before_nonce_V": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 7.79891706770286e-14,
+        "budget_source": "material junction_voltage local budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 8.077449820120818e-14,
+        "minimum_budget": 5.292122295941226e-14,
+        "model_at_absolute_max": 0.005999999999999998,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.005999999999999998,
+        "unit": "V"
+      },
+      "gate/2/alpha_per_ms": {
+        "absolute_max_error": 1.734723475976807e-18,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-met_ignored/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4
+        ],
+        "model_at_absolute_max": 0.004002539387048063,
+        "reference_at_absolute_max": 0.004002539387048065,
+        "unit": "1/ms"
+      },
+      "gate/2/beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008191754837395731,
+        "reference_at_absolute_max": 0.0008191754837395732,
+        "unit": "1/ms"
+      },
+      "gate/2/opening_before": {
+        "absolute_max_error": 4.440892098500626e-16,
+        "budget_at_absolute_max": 1.7498031992942552e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 1.8701017172470811e-13,
+        "minimum_budget": 1.7222938418600616e-13,
+        "model_at_absolute_max": 0.6249015996471271,
+        "normalized_max_error": 0.002537938037998652,
+        "reference_at_absolute_max": 0.6249015996471275,
+        "unit": "dimensionless source gate"
+      },
+      "gate/2/opening_stored": {
+        "absolute_max_error": 6.661338147750939e-16,
+        "budget_at_absolute_max": 1.8506225049817034e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.8748018036146492e-13,
+        "minimum_budget": 1.728271952401506e-13,
+        "model_at_absolute_max": 0.6753112524908509,
+        "normalized_max_error": 0.0035995121262273845,
+        "reference_at_absolute_max": 0.6753112524908516,
+        "unit": "dimensionless source gate"
+      },
+      "gate/2/opening_unblocked": {
+        "absolute_max_error": 6.661338147750939e-16,
+        "budget_at_absolute_max": 1.8506225049817034e-13,
+        "budget_source": "junction_gate source_gate_atol/rtol",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.8748018036146492e-13,
+        "minimum_budget": 1.728271952401506e-13,
+        "model_at_absolute_max": 0.6753112524908509,
+        "normalized_max_error": 0.0035995121262273845,
+        "reference_at_absolute_max": 0.6753112524908516,
+        "unit": "dimensionless source gate"
+      },
+      "gate/2/raw_beta_per_ms": {
+        "absolute_max_error": 1.0842021724855044e-19,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "model_at_absolute_max": 0.0008541608657595737,
+        "reference_at_absolute_max": 0.0008541608657595738,
+        "unit": "1/ms"
+      },
+      "gate/2/voltage_before_nonce_V": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 7.79891706770286e-14,
+        "budget_source": "material junction_voltage local budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 8.077449820120818e-14,
+        "minimum_budget": 5.292122295941226e-14,
+        "model_at_absolute_max": 0.005999999999999998,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.005999999999999998,
+        "unit": "V"
+      },
+      "material/bath_mol_m3": {
+        "absolute_max_error": 1.4210854715202004e-14,
+        "budget_at_absolute_max": 1.0305732489067435e-10,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2
+        ],
+        "maximum_budget": 1.2673240235017157e-10,
+        "minimum_budget": 5.57066343287667e-11,
+        "model_at_absolute_max": 74.00000812837663,
+        "normalized_max_error": 0.00013789271873956767,
+        "reference_at_absolute_max": 74.00000812837662,
+        "unit": "mol/m3 (mM)"
+      },
+      "material/cell_mol_m3": {
+        "absolute_max_error": 7.105427357601002e-15,
+        "budget_at_absolute_max": 5.98884564098492e-11,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          2,
+          1
+        ],
+        "maximum_budget": 6.824367120341818e-11,
+        "minimum_budget": 5.570655048359286e-12,
+        "model_at_absolute_max": 42.99982850947934,
+        "normalized_max_error": 0.00011864435625080579,
+        "reference_at_absolute_max": 42.99982850947935,
+        "unit": "mol/m3 (mM)"
+      },
+      "material/gap_open": {
+        "absolute_max_error": 6.661338147750939e-16,
+        "budget_at_absolute_max": 9.506821126928071e-13,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-1/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 9.64726138264329e-13,
+        "minimum_budget": 8.637776748825949e-13,
+        "model_at_absolute_max": 0.6753112524908509,
+        "normalized_max_error": 0.0007006903841792814,
+        "reference_at_absolute_max": 0.6753112524908516,
+        "unit": "dimensionless"
+      },
+      "material/junction_field_V_m": {
+        "absolute_max_error": 7.275957614183426e-12,
+        "budget_at_absolute_max": 1.3915315728441e-07,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4
+        ],
+        "maximum_budget": 2.129613982978511e-07,
+        "minimum_budget": 1.2256966764621618e-07,
+        "model_at_absolute_max": 49909.99147935893,
+        "normalized_max_error": 5.228740587834716e-05,
+        "reference_at_absolute_max": 49909.991479358934,
+        "unit": "V/m"
+      },
+      "material/junction_field_xy_V_m": {
+        "absolute_max_error": 7.275957614183426e-12,
+        "budget_at_absolute_max": 1.3915315728441e-07,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4,
+          0
+        ],
+        "maximum_budget": 2.129613982978511e-07,
+        "minimum_budget": 1e-28,
+        "model_at_absolute_max": 49909.99147935893,
+        "normalized_max_error": 5.228740587834716e-05,
+        "reference_at_absolute_max": 49909.991479358934,
+        "unit": "V/m"
+      },
+      "material/junction_flux_mol_m2_s": {
+        "absolute_max_error": 3.970466940254533e-23,
+        "budget_at_absolute_max": 3.846339675923844e-19,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-zero_na_membrane/local-1/comparison.json",
+        "index_at_absolute_max": [
+          2,
+          8
+        ],
+        "maximum_budget": 4.2637172739109144e-19,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": 3.631197948425908e-08,
+        "normalized_max_error": 0.00010322715295031438,
+        "reference_at_absolute_max": 3.6311979484259116e-08,
+        "unit": "mol/(m2*s)"
+      },
+      "material/junction_voltage_V": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 7.79891706770286e-14,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 8.077449820120818e-14,
+        "minimum_budget": 5.292122295941226e-14,
+        "model_at_absolute_max": 0.005999999999999998,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.005999999999999998,
+        "unit": "V"
+      },
+      "material/membrane_flux_mol_m2_s": {
+        "absolute_max_error": 3.7947076036992655e-19,
+        "budget_at_absolute_max": 4.329203394874393e-15,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          0
+        ],
+        "maximum_budget": 4.329203394874393e-15,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": 0.0003248663479033148,
+        "normalized_max_error": 0.00011739557476415822,
+        "reference_at_absolute_max": 0.00032486634790331444,
+        "unit": "mol/(m2*s)"
+      },
+      "material/membrane_mol_m3": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 1.5320718180954373e-11,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          0
+        ],
+        "maximum_budget": 6.824366759404019e-11,
+        "minimum_budget": 5.570655048359286e-12,
+        "model_at_absolute_max": 11.000365327357013,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 11.000365327357013,
+        "unit": "mol/m3 (mM)"
+      },
+      "material/voltage_V": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 4.3172576624783685e-14,
+        "budget_source": "material registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 4.3172576624783685e-14,
+        "minimum_budget": 2.0889956431346945e-14,
+        "model_at_absolute_max": -0.031,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": -0.031,
+        "unit": "V"
+      },
+      "pump/applied_potassium_flux_mol_m2_s": {
+        "absolute_max_error": 2.439454888092385e-19,
+        "budget_at_absolute_max": 2.6480761219704575e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 2.6480761219704575e-15,
+        "minimum_budget": 2e-18,
+        "model_at_absolute_max": -0.00013230380609852312,
+        "normalized_max_error": 0.0001151215191601001,
+        "reference_at_absolute_max": -0.00013230380609852288,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/applied_sodium_flux_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 2e-18,
+        "model_at_absolute_max": 0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": 0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/rate_proxy_after_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 1.411683980018148e-15,
+        "model_at_absolute_max": -0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": -0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/rate_proxy_before_mol_m2_s": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 2.14e-18,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.26e-18,
+        "minimum_budget": 2.14e-18,
+        "model_at_absolute_max": 7e-09,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 7e-09,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/scaled_potassium_flux_mol_m2_s": {
+        "absolute_max_error": 2.439454888092385e-19,
+        "budget_at_absolute_max": 2.6480761219704575e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 2.6480761219704575e-15,
+        "minimum_budget": 9.417893200120986e-16,
+        "model_at_absolute_max": -0.00013230380609852312,
+        "normalized_max_error": 0.0001151215191601001,
+        "reference_at_absolute_max": -0.00013230380609852288,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/scaled_sodium_flux_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 1.411683980018148e-15,
+        "model_at_absolute_max": 0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": 0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/storage_after_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 2e-18,
+        "model_at_absolute_max": 0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": 0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump/storage_before_mol_m2_s": {
+        "absolute_max_error": 0.0,
+        "budget_at_absolute_max": 2e-18,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          0
+        ],
+        "maximum_budget": 2e-18,
+        "minimum_budget": 2e-18,
+        "model_at_absolute_max": 0.0,
+        "normalized_max_error": 0.0,
+        "reference_at_absolute_max": 0.0,
+        "unit": "mol/(m2*s)"
+      },
+      "pump_arithmetic/equilibrium": {
+        "absolute_max_error": 1.5832483768463135e-08,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-temperature_split/local-1/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 7360569.144924025,
+        "reference_at_absolute_max": 7360569.144924041,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/quotient": {
+        "absolute_max_error": 2.220446049250313e-16,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-zero_na_membrane/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "model_at_absolute_max": 1.2959999999999998,
+        "reference_at_absolute_max": 1.296,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/quotient_denominator_raw": {
+        "absolute_max_error": 9.693522803355793e-27,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-pump_only/local-2/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 2.394308061019628e-11,
+        "reference_at_absolute_max": 2.394308061019627e-11,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/quotient_denominator_used": {
+        "absolute_max_error": 9.693522803355793e-27,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-pump_only/local-2/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 2.394308061019628e-11,
+        "reference_at_absolute_max": 2.394308061019627e-11,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/quotient_numerator": {
+        "absolute_max_error": 9.860761315262648e-31,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-2/comparison.json",
+        "index_at_absolute_max": [
+          3
+        ],
+        "model_at_absolute_max": 1.5682247802188326e-15,
+        "reference_at_absolute_max": 1.5682247802188336e-15,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/raw_potassium_flux_mol_m2_s": {
+        "absolute_max_error": 2.439454888092385e-19,
+        "budget_at_absolute_max": 2.6480761219704575e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 2.6480761219704575e-15,
+        "minimum_budget": 9.417893200120986e-16,
+        "model_at_absolute_max": -0.00013230380609852312,
+        "normalized_max_error": 0.0001151215191601001,
+        "reference_at_absolute_max": -0.00013230380609852288,
+        "unit": "mol/(m2*s)"
+      },
+      "pump_arithmetic/raw_rate_proxy_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 1.411683980018148e-15,
+        "model_at_absolute_max": -0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": -0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump_arithmetic/raw_sodium_flux_mol_m2_s": {
+        "absolute_max_error": 3.5236570605778894e-19,
+        "budget_at_absolute_max": 3.971114182955686e-15,
+        "budget_source": "pump_loop_preflight density/relative",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reverse/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 3.971114182955686e-15,
+        "minimum_budget": 1.411683980018148e-15,
+        "model_at_absolute_max": 0.00019845570914778468,
+        "normalized_max_error": 0.00011520306823254803,
+        "reference_at_absolute_max": 0.00019845570914778433,
+        "unit": "mol/(m2*s)"
+      },
+      "pump_arithmetic/saturation": {
+        "absolute_max_error": 1.1102230246251565e-16,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 0.5548418364449469,
+        "reference_at_absolute_max": 0.5548418364449468,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/saturation_denominator": {
+        "absolute_max_error": 4.656612873077393e-10,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-zero_na_membrane/local-2/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 1248737.3377332028,
+        "reference_at_absolute_max": 1248737.3377332024,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "pump_arithmetic/saturation_numerator": {
+        "absolute_max_error": 2.3283064365386963e-10,
+        "diagnostic_only": true,
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          7
+        ],
+        "model_at_absolute_max": 692809.7656250001,
+        "reference_at_absolute_max": 692809.7656249999,
+        "unit": "dimensionless source activity/coefficient"
+      },
+      "voltage/boundary_potential_V": {
+        "absolute_max_error": 1.3552527156068805e-20,
+        "budget_at_absolute_max": 1.9952905590385375e-15,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 1.9987140831290177e-15,
+        "minimum_budget": 8.620304470241636e-17,
+        "model_at_absolute_max": 8.200827922077922e-05,
+        "normalized_max_error": 6.8036492313406435e-06,
+        "reference_at_absolute_max": 8.200827922077923e-05,
+        "unit": "V"
+      },
+      "voltage/boundary_rhs_V_m2": {
+        "absolute_max_error": 5.960464477539063e-08,
+        "budget_at_absolute_max": 0.009549694368615748,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0,
+          0
+        ],
+        "maximum_budget": 0.009549694368615748,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": 400000000.0,
+        "normalized_max_error": 6.241523809523808e-06,
+        "reference_at_absolute_max": 400000000.00000006,
+        "unit": "V/m2"
+      },
+      "voltage/cell_field_xy_V_m": {
+        "absolute_max_error": 4.547473508864641e-13,
+        "budget_at_absolute_max": 4.185317110304199e-07,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          1,
+          0
+        ],
+        "maximum_budget": 6.635599367748731e-07,
+        "minimum_budget": 1e-30,
+        "model_at_absolute_max": -886.6792942182797,
+        "normalized_max_error": 1.0865302171892347e-06,
+        "reference_at_absolute_max": -886.6792942182801,
+        "unit": "V/m"
+      },
+      "voltage/conductivity_S_m": {
+        "absolute_max_error": 3.469446951953614e-18,
+        "budget_at_absolute_max": 2.06459355351008e-13,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-redistributed/local-0/comparison.json",
+        "index_at_absolute_max": [
+          0
+        ],
+        "maximum_budget": 2.696685895928639e-13,
+        "minimum_budget": 2.06459355351008e-13,
+        "model_at_absolute_max": 0.008647248567403013,
+        "normalized_max_error": 1.6804503462946006e-05,
+        "reference_at_absolute_max": 0.00864724856740301,
+        "unit": "S/m"
+      },
+      "voltage/derivative_V_s": {
+        "absolute_max_error": 9.018705920960102e-12,
+        "budget_at_absolute_max": 1.1909656512682512e-06,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reordered_roles/local-1/comparison.json",
+        "index_at_absolute_max": [
+          6
+        ],
+        "maximum_budget": 1.190965724912453e-06,
+        "minimum_budget": 9.44480561339345e-07,
+        "model_at_absolute_max": 0.02733716507671933,
+        "normalized_max_error": 7.572599521536279e-06,
+        "reference_at_absolute_max": 0.027337165067700623,
+        "unit": "V/s"
+      },
+      "voltage/mean_voltage_V": {
+        "absolute_max_error": 1.8037221022337846e-14,
+        "budget_at_absolute_max": 2.3819052440178706e-09,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reordered_roles/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 2.3819052440178706e-09,
+        "minimum_budget": 1.888939239594244e-09,
+        "model_at_absolute_max": 0.0011450203606647056,
+        "normalized_max_error": 7.572602255122504e-06,
+        "reference_at_absolute_max": 0.0011450203606466684,
+        "unit": "V"
+      },
+      "voltage/normal_cell_field_V_m": {
+        "absolute_max_error": 4.547473508864641e-13,
+        "budget_at_absolute_max": 4.185317110304199e-07,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-open_boundary/local-0/comparison.json",
+        "index_at_absolute_max": [
+          3
+        ],
+        "maximum_budget": 6.635599367748731e-07,
+        "minimum_budget": 3.953063793932305e-07,
+        "model_at_absolute_max": 886.6792942182797,
+        "normalized_max_error": 1.0865302171892347e-06,
+        "reference_at_absolute_max": 886.6792942182801,
+        "unit": "V/m"
+      },
+      "voltage/surface_charge_C_m2": {
+        "absolute_max_error": 1.8037397205190875e-16,
+        "budget_at_absolute_max": 2.3819044926921132e-11,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reordered_roles/local-1/comparison.json",
+        "index_at_absolute_max": [
+          1
+        ],
+        "maximum_budget": 2.3819044926921132e-11,
+        "minimum_budget": 1.8889370488185648e-11,
+        "model_at_absolute_max": 1.1734006880456582e-05,
+        "normalized_max_error": 7.572678610973342e-06,
+        "reference_at_absolute_max": 1.1734006880276208e-05,
+        "unit": "C/m2"
+      },
+      "voltage/voltage_V": {
+        "absolute_max_error": 1.8037437862772343e-14,
+        "budget_at_absolute_max": 2.3819051168911172e-09,
+        "budget_source": "voltage registered single-call component budget",
+        "evidence": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/evidence/normal-pump-join/isolated-reordered_roles/local-1/comparison.json",
+        "index_at_absolute_max": [
+          4
+        ],
+        "maximum_budget": 2.3819066838368014e-09,
+        "minimum_budget": 1.8889392277404966e-09,
+        "model_at_absolute_max": 0.0011498993189980392,
+        "normalized_max_error": 7.572695378863595e-06,
+        "reference_at_absolute_max": 0.0011498993189800017,
+        "unit": "V"
+      }
+    },
+    "conditional_reference_forms": 72,
+    "exact_native_primary": true,
+    "inherited_budgets_unchanged": true,
+    "main_gate_invocations": 105,
+    "main_material_states": 738,
+    "maximum_inherited_local_budget_fraction": 0.0035995121262273845,
+    "native_captures": 15,
+    "path": "/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/result.json",
+    "physical_accuracy_or_full_native_claim": false,
+    "resources": {
+      "automatic_retry": false,
+      "elapsed_seconds": 72.53589538997039,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 19054899200,
+      "observed_process_high_water_bytes": 60628992,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 173375488,
+      "sampled_peak_process_tree_rss_bytes": 173375488,
+      "sampled_peak_summed_process_memory_bytes": 173375488,
+      "samples": 288,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T18:20:08.897440+00:00"
+    },
+    "runtime": {
+      "carried_decimal": "diagnostic only, no propagated-trajectory-bound claim",
+      "coordinated_shared_edit_modules_loaded": [],
+      "exact_native_primary": true,
+      "full_native_or_physical_parity": false,
+      "gpu": false,
+      "independent_acceptance": "actual-parent one-call checks with inherited budgets",
+      "maintained_metabolic_pools": true,
+      "measured_cpu_affinity": [
+        1
+      ],
+      "met_argument_used": false,
+      "numpy": "2.5.3",
+      "python": "3.13.5",
+      "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2"
+    },
+    "sha256": "7e00402828a128450e7e719c55c3f9fc627107a411ff237ef30d0944c6fe7b6e"
+  },
+  "runner": "agent-work/cells-worker-01/workfiles/betse_normal_pump_join_checks.py",
+  "sources_frozen_after_qualification": true,
+  "static_body_audits": {
+    "active_gate": "Qualified active-gate wrapper, name qualification and additional callback argument only",
+    "active_gate_AST_sha256": "95ecbfa03740ebb2afc97a93f34c859d5a74d9aa418f3e00d28870e920484abf",
+    "material": "Qualified body plus pump callback/observation immediately after reset only",
+    "material_AST_sha256": "0f74ff4a4f10b3e19d300162b1649b2bb8276e8d7b4871fbfea15a5f84edccfe"
+  },
+  "status": "34_check_native_and_conditional_local_qualification_passed_pending_Chief_review"
+}

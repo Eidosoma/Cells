@@ -1,0 +1,35 @@
+{
+  "AST_change": "Move existing sim.cdl/sim.edl assignment before er_native.setup only; inverse move reproduces original setup AST exactly",
+  "authority": "Chief independent ER01 initialization-contract review",
+  "failed_log": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-01/run-context/evidence/normal-er-join/isolated-owners_absent/native.stdout.log",
+  "failed_log_sha256": "1f6d7ba287ec292b32ee72104d048cec74743ee14295fa1ba6ff104bf9acd071",
+  "failed_run": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-01",
+  "full_constructor_attribute_contract": {
+    "cells.cell_sa": "material_capture explicit ER cell area assignment before helper.setup",
+    "cells.cell_vol": "material_capture geometry constructor",
+    "p.cm": "material_capture explicit ER capacitance assignment before helper.setup",
+    "sim.cc_cells": "material_capture simulator constructor, initial cell matrix",
+    "sim.cc_er": "produced inside EndoRetic.__init__ before its own subsequent uses",
+    "sim.cdl": "existing sim.cdl/edl assignment now before er_native.setup",
+    "sim.iCa": "Ca_dyn1 policy prelude before er_native.setup",
+    "sim.zs": "material_capture simulator constructor, declared valence axis"
+  },
+  "new_numerical_runs": 0,
+  "new_sha256": "d1b592a61fcefbfcb1f4640c5cc0462c2eb73882530ff0f1ee146f32cbdcd001",
+  "numeric_methods_fixtures_references_budgets_unchanged": true,
+  "old_sha256": "74ae333108e13851e261b7227059defcb2d319217950e64bc1cdadb2d1c9a32b",
+  "path": "validation/betse/betse_normal_er_join_native_helpers.py",
+  "reported_result": "0 passed,6 failed,12 unrun; initialization wrapper only",
+  "source_constructor_produced_then_read": [
+    "sim.cc_er"
+  ],
+  "source_constructor_required_reads": [
+    "cells.cell_sa",
+    "cells.cell_vol",
+    "p.cm",
+    "sim.cc_cells",
+    "sim.cdl",
+    "sim.iCa",
+    "sim.zs"
+  ]
+}

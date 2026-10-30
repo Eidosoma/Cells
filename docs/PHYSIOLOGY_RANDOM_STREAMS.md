@@ -1409,6 +1409,23 @@ The [contract note](../agent-work/cells-specialist/ACTIVE_TEMPERATURE_CONTRACT.m
 details these assumptions; [Progress](../PROGRESS.md) records tested regimes,
 source comparisons and execution limits.
 
+The [array implementation](../src/cells/models/physiology_active_temperature_arrays.py)
+also provides `compiled_world_stages(family)` for separate JAX compilation of
+input projection, complete physics and admission checks. Pass the returned
+stages to `evaluate_batch_staged` and reuse them across homogeneous cohorts;
+keep that orchestration wrapper outside `jax.jit`. Each world retains its own
+temperature, controls and field solve, and all channel laws and physical checks
+remain active. This execution option does not itself establish a memory bound,
+GPU qualification or an accepted temperature-changing trajectory.
+
+`compiled_calcium_world_stages()` is a separate execution option for
+`resolved_calcium@11`: it divides the physics call into the original ionic
+prefix and its calcium/ER completion. Both use the same state, controls and
+layout without advancing time. The linked Progress entry records its two-world
+CPU qualification and narrow memory margin. This does not qualify GPU execution
+or advancing trajectories; finite-fuel and open-bath families are not admitted
+by this factory.
+
 ### Combining temperature, voltage and blocker readouts
 
 [`physiology_global_control_view`](../src/cells/core/physiology_global_control_view.py)

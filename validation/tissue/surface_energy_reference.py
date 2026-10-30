@@ -109,7 +109,7 @@ def initial(c):
     return flatten(c, d)
 
 
-def evaluate(c, state, time):
+def evaluate(c, state, time, *, charge_equivalent_increment_fmol=None):
     d = unpack(c, state)
     if c["raw"]["model"]["id"] == "resolved_energy@2" and not np.isfinite(state).all():
         raise ValueError("The complete finite-energy state must be finite")
@@ -134,7 +134,12 @@ def evaluate(c, state, time):
             )
         )
     current = dict(c["ionic"], raw=stage_raw)
-    slope, phi, proof = ionic.evaluate(current, flatten(current, d), time)
+    slope, phi, proof = ionic.evaluate(
+        current,
+        flatten(current, d),
+        time,
+        charge_equivalent_increment_fmol=charge_equivalent_increment_fmol,
+    )
     result = unpack(current, slope)
     pool_rate = np.zeros_like(amount)
     for j, patch in enumerate(m["membranes"]):

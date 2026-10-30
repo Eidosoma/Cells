@@ -1,0 +1,128 @@
+{
+  "kind": "cells.betse_lattice_seed_generation_contract@1",
+  "law_id": "betse_lattice_seed_generation_v1_5_0@1",
+  "status": "qualification02_authorized_fresh_native_preflight_passed",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089"
+    }
+  },
+  "purpose": "Literal square/HEX seed preparation from native scalar world controls with exact source store/draw/occurrence order, before image or mesh generation",
+  "source_map": "validation/betse/betse_lattice_seed_generation_source_map.json",
+  "input_contract": [
+    "One native world_len_m scalar for both axes; positive radius; SQUARE/HEX branch; disorder0..1",
+    "Drawing gap ac=1e-6, diameter/count/expanded-size are derived; no overrides or true-cell-space substitution",
+    "Explicit complete qualified NativeStream before state, including624words/position/Gaussian flag/value; no implicit reseeding"
+  ],
+  "preserved": [
+    "x then y draws even disorder0",
+    "Square C-order and native inclusive endpoint spacing",
+    "HEX blue block then red block, including empty red matrix(0,2)",
+    "Centroid before four unexpanded bbox seeds; separate expanded bbox/bounds",
+    "Duplicate coordinate occurrences and distinct IDs remain; no dedup or mesh-owner inference",
+    "Fresh/continued RNG including a twist at y and cached Gaussian metadata",
+    "Raw native empty-cloud reduction failures with unchanged zero-count stream",
+    "Retained nonfinite native centroid overflow with raw output and RNG successor, stricter finite admission; no overflow-reference parity claim",
+    "Authenticated native type_check and original source-array layouts; source centroid reduction before frozen C-order storage"
+  ],
+  "reused_coverage": [
+    "B09 geometry/topology remains reviewed external evidence, not re-claimed",
+    "Existing geometry adapter/frozen-array helpers and legacy NativeStream validators",
+    "Independent qualified _mt_uniforms helper; no new RNG-law coverage claim"
+  ],
+  "handoff": "Native lattice seed-stage record only; existing geometry adapter does not admit it as a manufactured cloud or generated topology. Full image/filter/merge/refinement needs a separate implemented/authenticated stage.",
+  "reference": "Independent Decimal100/160 coordinates, exact binary64 parameter/count-store seams, source RNG helper. Explicit empty coordinate-array shape descriptor preserves(0,2) in JSON/NPZ.",
+  "tolerances": {
+    "native_host": "Exact complete values/shapes/dtypes; raw array bytes retained",
+    "uniforms": "Exact",
+    "parameter_counts_and_MT_state": "Exact discrete source stores/shape/order and full RNG state before coordinate budgets",
+    "coordinates": "Existing B09 1e-27m+6e-12*abs(reference), no carried or propagated allowance",
+    "reference_resolution_fraction": 0.1,
+    "scientific_accuracy_failure_retry": false
+  },
+  "limits": {
+    "max_lattice_points": 128,
+    "bbox_occurrences": 4,
+    "max_axis_count": 128,
+    "native_capture_preallocation_axis_bound": 16
+  },
+  "planned_checks": {
+    "total": 37,
+    "complete_cases": 12,
+    "raw_empty_failures": 2,
+    "full_primary_and_refined_buffers_retained": true,
+    "raw_precomparison_before_assertions": true,
+    "fresh_native_reference_import_denials": [
+      "cells",
+      "betse",
+      "jax",
+      "jaxlib"
+    ],
+    "raw_nonfinite_centre_failures": 1
+  },
+  "resources": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "numerical_launch_authorized": true,
+  "next_action": "Execute the one authorized bounded qualification02; retain any failure; no automatic retry",
+  "biological_geometry": false,
+  "topology_generated": false,
+  "ECM_lane_touched": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "authorization": {
+    "authorized_utc": "2026-10-30T19:32:31.814709+00:00",
+    "coordinator": "Chief",
+    "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+    "basis": "New user continuation authorizes repaired lattice37 qualification02",
+    "scope": "One repaired bounded qualification02, fresh native preflight verified first; no retry on failure",
+    "resources_unchanged": true
+  },
+  "static_repairs": {
+    "native_type_check": "Authenticated original types.py function, original loop decorator retained, explicit validated normalized-call boundary",
+    "AST_wrappers": "Parameter-store module, native loop and native decorator AST checked consistently before compile",
+    "centroid": "Original source strides/order retained before K-order copies, source-order reduction in both centroid assertions",
+    "raw_evidence": "Actual accepted/empty/nonfinite trial and complete RNG successor written before native evaluation",
+    "numerical_execution": false,
+    "fixtures_unchanged": true,
+    "coordinate_RNG_arrays_unchanged": true,
+    "tolerances_unchanged": true,
+    "planned_checks_unchanged": 37
+  },
+  "authorization_history": [
+    {
+      "authorized_utc": "2026-10-30T19:19:36.340148+00:00",
+      "coordinator": "Chief",
+      "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+      "basis": "Root authorizes lattice37 qualification under this new user continuation",
+      "scope": "One bounded CPU6 qualification; retain any failure; no automatic retry",
+      "resources_unchanged": true,
+      "consumed_by_failed_round": "betse-lattice-seed-generation-20261030-01"
+    }
+  ],
+  "native_preflight": {
+    "output": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02-preflight",
+    "result_sha256": "f5238619c8577e8edd3d325f217d829fdd3525bd59d1e432cf2d9e80375fc50d",
+    "proof_sha256": "7fe93276886aa05ee34069c5ceaa9f9768d69ef1ee80c8c293250fd82ff34843",
+    "native_type_check_AST_verified": true,
+    "source_strides_and_mean_order_verified": true,
+    "production_imports_denied": true,
+    "cases": [
+      "square_zero",
+      "square_disordered"
+    ]
+  }
+}

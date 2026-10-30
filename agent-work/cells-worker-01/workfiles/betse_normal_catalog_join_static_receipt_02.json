@@ -1,0 +1,318 @@
+{
+  "B26_audit_executed": false,
+  "Ca_route_classes": 23,
+  "GPU_runs": 0,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "carried_diagnostic_only": true,
+  "class_count": 55,
+  "explicit_Ca_scope": {
+    "Ca_dyn": 0,
+    "active_CaATP_ER_buffer_qualification": false,
+    "alpha_Ca": 0.0,
+    "constant_Ca_substitute": false,
+    "live_bulk_membrane_and_bath_required": true
+  },
+  "frozen_sha256_verified": true,
+  "frozen_source_files": 2260,
+  "inputs_sha256": "1f18d99b78087d497c4bffecbf55d401e1d6c1c639b3dc0b9ef27ad7dfa4bfe6",
+  "kind": "cells.betse_normal_catalog_join_static_receipt@1",
+  "legacy_cagPotassium": "separate unimplemented modern-join dependency; no current-runtime class/callsite",
+  "modern_classes_added_beyond_B28": 51,
+  "native_source_copies": 34,
+  "no_Ca_route_classes": 32,
+  "numerical_launch_requires_next_user_instruction": true,
+  "numerical_runs": 0,
+  "old_job_status_reads": 0,
+  "owned_source_files": 11,
+  "planned_actual_parent_checks": 85,
+  "planned_carried_reference_forms": 130,
+  "planned_checks": 72,
+  "planned_conditional_references": 170,
+  "planned_groups": {
+    "Ca": 12,
+    "Cat": 3,
+    "Cl": 2,
+    "Fun": 7,
+    "K": 16,
+    "ML": 15,
+    "Na": 8,
+    "controls": 3,
+    "mixed": 2,
+    "raw": 4
+  },
+  "planned_native_captures": 69,
+  "prepared01_retained": {
+    "inputs_sha256": "01fb3b178166375c172fa09ba31377639a020461bef778f751bee2a2e65587c4",
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse-normal-catalog-prepared-20261030-01/inputs.json",
+    "reason": "Runner-only static correction creates durable process-log directory before reused bounded helper; no scientific source/input/budget changes"
+  },
+  "prepared_inputs": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse-normal-catalog-prepared-20261030-02/inputs.json",
+  "protected_files": 161,
+  "pytest_collection_runs": 0,
+  "scientific_imports": 0,
+  "source_method_audit": {
+    "classes": {
+      "CaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_G": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_N_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_T_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "ClLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCNLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "KLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "K_Fast": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5S_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv_ML1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      }
+    },
+    "clock_methods": 2,
+    "concrete_methods": 110,
+    "inherited_base_methods": 20,
+    "scalar_reference_audit": {
+      "cav": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "5bddc176f1c842fa38aa535ab3a27b1e330b3bd976f243b7ffc164291c8701b9"
+      },
+      "hcn": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "11ebee277d9b04af26e66706ec41b2b7797bfdd9eb50dd37ddf7ce4d32be56b4"
+      },
+      "kv1": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "44e9cabf92d55f091aa84e78c419faca643e778d8410a2450c786676e4bd4d88"
+      }
+    },
+    "unresolved_global_identifiers": []
+  },
+  "source_seam_audit": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "B28_numeric_body_unchanged": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "B28_numeric_body_unchanged": true
+    },
+    "_pumped_material_step": {
+      "AST_sha256": "2f96bea4468cba2feaa074ad481da1ec69d2df21789fb48bc38ae82a98681171",
+      "B28_numeric_body_unchanged": true
+    }
+  },
+  "standard_library_reference_closure_files": 14,
+  "static_checks": {
+    "AST": "passed",
+    "global_name_resolution": "passed",
+    "ruff_check": "passed",
+    "ruff_format": "passed"
+  },
+  "status": "static_prepared_not_executed_not_qualified"
+}

@@ -1,0 +1,51 @@
+{
+  "frozen_scientific_inputs_unchanged": true,
+  "inherited_budgets_unchanged": true,
+  "inputs": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/inputs.json",
+  "inputs_sha256": "5d3cd5611f0fc23318e32227ca915dbdb2777037e4176546257468e255ac7670",
+  "kind": "cells.betse_normal_channel_join_preparation_receipt@1",
+  "native_copies": 26,
+  "numerical_runs_at_preparation": 0,
+  "planned_channel_calls": 118,
+  "planned_checks": 26,
+  "planned_complete_calls": 33,
+  "planned_frames": 861,
+  "planned_gate_calls": 96,
+  "planned_native_captures": 14,
+  "planned_reference_forms": 88,
+  "prior_failure": {
+    "directory": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01",
+    "failed": 21,
+    "inputs_sha256": "3ff20e30423b61e5cbfb4768f70e708d56683bbdc41df01af28d7dc0bc869408",
+    "passed": 5,
+    "receipt": "agent-work/cells-worker-01/workfiles/betse_normal_channel_join_failure_receipt_01.json",
+    "sha256": "425ce5088b9592b108f5906ccc946626d73bb3eec8096a97bc812fa436bd78f4"
+  },
+  "protected": 151,
+  "scientific_equation_reference_unchanged": true,
+  "scientific_imports": 0,
+  "source_diffs": {
+    "src/cells/processes/betse_normal_channel_join.py": {
+      "original_sha256": "2d85f66e84349520a75a18ea8a7063768affcfed535559e0eb939f8b293dfd7b",
+      "working_sha256": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17"
+    },
+    "tests/unit/test_betse_normal_channel_join.py": {
+      "original_sha256": "9b065444815ef0f03ae73489fda9d8e383a521b72a36504cb46b69fd18c60a49",
+      "working_sha256": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf"
+    },
+    "validation/betse/betse_normal_channel_join_native.py": {
+      "original_sha256": "944cc41f6acbf9716a5b1de4e5f6918203b7bbd0efcde41d1a68840ed38c4ef1",
+      "working_sha256": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1"
+    },
+    "validation/betse/betse_normal_channel_join_native_helpers.py": {
+      "original_sha256": "7b61f944384f552ab289d87177f168797dd8468708a0ff0282182d36b05441ea",
+      "working_sha256": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d"
+    },
+    "validation/betse/betse_normal_channel_join_protocol.json": {
+      "original_sha256": "ce55d3da28840e42fbf0560d0cde7d823aae1312a281bc5b2ec2736714853096",
+      "working_sha256": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f"
+    }
+  },
+  "source_files": 2238,
+  "targeted_successor_authorization": "Chief relayed new user lets go and explicitly authorized one guarded CPU1 successor with unchanged scientific inputs/equations/budgets"
+}

@@ -1,0 +1,93 @@
+{
+  "kind": "cells.betse_initial_mesh_preparation_contract@1",
+  "law_id": "betse_initial_constructor_pre_mesh_v1_5_0@1",
+  "status": "guarded_driver_and_fresh_replay_prepared_for_static_preflight_unrun",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+      "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+      "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+      "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+      "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+      "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+      "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+      "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625"
+    }
+  },
+  "source_map": "validation/betse/betse_initial_mesh_preparation_source_map.json",
+  "input_origins": [
+    "owned_image_prelude",
+    "reused_fixed_B09"
+  ],
+  "source_seed_occurrences": "All occurrences/duplicates preserved until exact observed source deletion indices; no coordinate-nearest owner recovery",
+  "constructor_layout": "Rebuild literal upstream lattice vstack-transpose/vstack layout, independently compare native caller keyword expressions",
+  "cache_ownership": "Immutable numeric columns plus typed scalar/object/ragged trees; original strides stored; object pointer bytes/pickle forbidden",
+  "reference": {
+    "analytic": "Decimal100/160 source geometry primitives and nearest distance/rank tables",
+    "quad": "Native cyclic-source formula separately named from general shoelace metrics",
+    "Delaunay": "Exact-rational circle diagnostics on captured simplices; topology is input, no independent generation or topology/geometry qualification",
+    "predicates": "No carried allowance, clipping, tie repair or source threshold rewrite"
+  },
+  "proposed_tolerances": {
+    "coordinates_m": "1e-27+6e-12*abs(reference), reuse B09 coordinate budget",
+    "area_m2": "1e-26+6e-12*abs(reference), reuse B09 area budget",
+    "dimensionless": "2e-14+6e-12*abs(reference)",
+    "native_host": "Exact typed cache contents/shapes/dtypes/source strides and complete source trace/RNG",
+    "reference_resolution_fraction": 0.1
+  },
+  "bounds": {
+    "max_constructor_points": 132,
+    "max_cache_array_elements": 262144
+  },
+  "resources": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "pillow_overlay": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/preparation.json",
+  "pillow_overlay_sha256": "c042d540bd4e26a43f6afdce8908c983222dd8090553d98e3ab0a0e1397533c9",
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "mesh_computation_executed": false,
+  "topology_qualified": false,
+  "geometry_bridge_admitted": false,
+  "operators_created": false,
+  "image_clip_executed": false,
+  "ECM_lane_touched": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "planned_checks": 22,
+  "planned_complete_cases": 10,
+  "planned_raw_source_failures": 2,
+  "reuse": {
+    "B09_cases": 5,
+    "owned_lattice_image_caller_cases": 5,
+    "new_B09_or_MT_coverage": false,
+    "image_review_sha256": "8d9eff1e371f0139c1de7c90c334afb77083a513b0bb9eb2ccd51601961a3d39"
+  },
+  "failure_evidence": "Raw actual typed caches/events/RNG and source failure type/stage/message precede native comparison. Native full failure traceback and caller buffers saved. Independent partial/reference/refined results saved before assertions.",
+  "qualification_preconditions": [
+    "Chief static preflight receipt and explicit acceptance bound to the frozen bundle",
+    "Guarded CPU6 driver and fresh production-denied native/reference replays remain frozen",
+    "New user instruction relayed by Chief explicitly authorizes numerical launch"
+  ],
+  "fresh_replay": {
+    "source": "validation/betse/betse_initial_mesh_preparation_replay.py",
+    "native": "Full typed caches, source layouts, trace, occurrence ledger and complete RNG vs saved actual and original native buffers",
+    "reference": "Fresh Decimal100/160 geometry/nearest checks vs saved buffers; raw cases get retained-prefix diagnostics only",
+    "denied_packages": ["cells", "betse", "jax", "jaxlib"]
+  },
+  "terminal_manifest": "Exclude exactly root output/result.json, include nested result.json receipts"
+}

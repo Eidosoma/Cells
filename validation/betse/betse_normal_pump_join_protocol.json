@@ -1,0 +1,75 @@
+{
+  "acceptance": {
+    "conditional_local_only": true,
+    "current": "32*eps*(ions+membranes+16)*local gross+1e-30",
+    "gate_opening": "5e-14+2e-13*abs(reference), existing native gate protocol",
+    "independent": "Fresh Decimal90/140 one-call answers from each actual incoming float parent, including gate memory and proxy; input written before outgoing model state",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f"
+    },
+    "material": "128*eps*(ions+membranes+4+32)*local gross + existing named floors",
+    "no_tolerance_tuning": true,
+    "not_trajectory_error_bounds": true,
+    "primary": "Exact full native sequence arrays/dtypes",
+    "pump_flux": "2e-18 mol/(m2*s)+2e-11*abs(reference), existing pump preflight",
+    "self_resolution_fraction": 0.1,
+    "voltage": "1024*eps*(ions+membranes+gridpoints+16+64)*local gross+1e-30"
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "diagnostics": {
+    "carried": "Full independent carried Decimal trajectory retained separately with absolute errors; no trajectory-bound acceptance inference",
+    "raw_coefficients_and_rates": "Exact native checks plus independent absolute errors; no invented intermediate tolerance",
+    "reporting": "Per-field/unit absolute errors, budget at worst absolute element, index/model/reference, min/max budgets and local normalized fraction"
+  },
+  "kind": "cells.betse_normal_pump_join_contract@1",
+  "law_id": "betse_normal_maintained_nak_join_v1_5_0@1",
+  "limitations": [
+    "Source-only, conditional local numeric checks; no physical or full-native parity",
+    "B25 supplied inverse/gauge/current-prefix BVP adapter; environment lane belongs to Specialist",
+    "Maintained metabolic pools only; no fuel consumption or energy acceptance",
+    "Strict finite published arithmetic/proxy guard retains actual source nonfinite limits",
+    "No events/pumps beyond NaK/networks/ECM/conditioning/thermal-clock program"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    },
+    "version": "1.5.0"
+  },
+  "purpose": "Native pump accumulation before ordered active ion/gate/material/current/voltage steps",
+  "reference": "Pure stdlib Decimal maintained-pool pump, active gate, material, current and boundary/voltage equations; explicit binary64 denominator branch and component store seams",
+  "resources": {
+    "cpu": 1,
+    "cpu_coordination": "Chief explicitly approved B27 CPU1 and required actual-parent local checks before freeze",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_pump_join_source_map.json",
+  "source_policy": {
+    "denominator": "Exact-zero binary64 product guard substitutes1e-15; no concentration repair",
+    "order": "Flux reset -> alpha==0/alpha>0 pump blocks -> rho/mask/+= -> ordered membrane/gate/junction/refresh -> final commit -> B23/B25 adapter",
+    "pools": "Maintained p.cATP/cADP/cPi; met argument unused; no endogenous ATP/fuel/energy claim",
+    "proxy": "rate_NaKATP=-raw Na flux before rho/mask, not signed cycle count; alpha0 zero/negative alpha stale",
+    "pump_inputs": "Old at-membrane Na/K, scalar bath, pre-electroflux-nonce vm and live self.T",
+    "roles": "Explicit original named +1 Na/K roles; stationary role can store flux without bulk commit",
+    "temperature": "Gap flux and sigma retain configured p.T"
+  }
+}

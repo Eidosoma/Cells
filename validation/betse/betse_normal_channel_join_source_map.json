@@ -1,0 +1,192 @@
+{
+  "active_gate_policy": {
+    "default_weights": "No active-run multiplication after supplied initial sim opening",
+    "gate_elapsed": "N_moving full dt consumptions per single physical outer dt; ordered/cumulative invocation indices retained",
+    "initialization": "Actual class init writes self.gjopen only; supplied sim.gjopen unchanged",
+    "per_ion": "Recompute pre-nonce gap voltage, rates, implicit opening with full outer dt*1000; multiply stored sim opening by block; then gap electroflux nonce and mask",
+    "preparation_layout": "Frozen B24 geometry/constant binding reused; new active binding/callback owns policy; captured runtime p.v_sensitive_gj=True",
+    "temperature": "No rate temperature scaling"
+  },
+  "adapter": {
+    "caller_owned": "Original ravel-grid inverse, gauge provenance, grid maps, radii/diviterm, free diffusion and old voltage",
+    "excluded": [
+      "Environment HH/Gaussian/ECM readouts",
+      "Inverse/gauge preparation",
+      "Native initialization/events/networks/voltage-sensitive callbacks"
+    ],
+    "executed": "Full update_V, actual B23 current prefix, actual seven-statement no-ECM BVP block, source check_v; B24 material source per carried call"
+  },
+  "full_native_solver_correspondence_qualified": false,
+  "kind": "cells.betse_normal_channel_join_source_map@1",
+  "numerical_runs": 0,
+  "pump_met_argument_loads": 0,
+  "pump_policy": {
+    "denominator": "Exact-zero binary64 product guard substitutes1e-15; no concentration repair",
+    "order": "Flux reset -> alpha==0/alpha>0 pump blocks -> rho/mask/+= -> ordered membrane/gate/junction/refresh -> final commit -> B23/B25 adapter",
+    "pools": "Maintained p.cATP/cADP/cPi; met argument unused; no endogenous ATP/fuel/energy claim",
+    "proxy": "rate_NaKATP=-raw Na flux before rho/mask, not signed cycle count; alpha0 zero/negative alpha stale",
+    "pump_inputs": "Old at-membrane Na/K, scalar bath, pre-electroflux-nonce vm and live self.T",
+    "roles": "Explicit original named +1 Na/K roles; stationary role can store flux without bulk commit",
+    "temperature": "Gap flux and sigma retain configured p.T"
+  },
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "scope": "Actual late network channels with four selected native classes, dynamic concentration aliases and empty-reaction publication in no-ECM source order",
+  "source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "source_sites": {
+    "betse/science/channels/channelsabc.py": {
+      "update_mh": {
+        "AST_sha256": "594a9dd7b147c803d77eba2f5d3eb19b5a996c9620aa50923523c58d733d93f3",
+        "first_line": 40,
+        "last_line": 58
+      }
+    },
+    "betse/science/channels/vg_cl.py": {
+      "ClLeak": {
+        "AST_sha256": "0a1c6139ec349b6e10e0c06fcf3c624561116718f644e30becf3d3baa59e32b1",
+        "first_line": 132,
+        "last_line": 171
+      },
+      "VgClABC": {
+        "AST_sha256": "bd26d6339c0b55d1ccacb8bcd43a72cb23d464fc159789262ffd0a74f0ebd264",
+        "first_line": 17,
+        "last_line": 129
+      }
+    },
+    "betse/science/channels/vg_k.py": {
+      "Kv1p5": {
+        "AST_sha256": "277b2b98c828f0f49962a7351ca9a7b69e74e8917899b66c518caa279e6ca470",
+        "first_line": 325,
+        "last_line": 374
+      },
+      "Kv3p2": {
+        "AST_sha256": "0caf8b659b92018d44a0a83267bc0faa3171994bec85dde0b21a4f352b9572e3",
+        "first_line": 521,
+        "last_line": 551
+      },
+      "VgKABC": {
+        "AST_sha256": "5c7d43c97e86640c9caf70def6bd0e09fc1a7b4192c52b28208b53a53cb05310",
+        "first_line": 18,
+        "last_line": 129
+      }
+    },
+    "betse/science/channels/vg_na.py": {
+      "Nav1p6": {
+        "AST_sha256": "7189b97822690a6820fa469b67e9e474f353202ff450f63ad73b2235d3aa8510",
+        "first_line": 415,
+        "last_line": 452
+      },
+      "VgNaABC": {
+        "AST_sha256": "f0b331da1957b2d8034b63201d1de11c4eb0510c3ed1e1aac50c2fe7afa5b1a2",
+        "first_line": 18,
+        "last_line": 128
+      }
+    },
+    "betse/science/chemistry/networks.py": {
+      "clear_run_loop": {
+        "AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+        "first_line": 2790,
+        "last_line": 2801
+      },
+      "energy_charge": {
+        "AST_sha256": "2e5f7c63a8f35d660b97ee59e695b8e85a63f0f67a5d46ad83851afdc418fd21",
+        "first_line": 3996,
+        "last_line": 4012
+      },
+      "init_channel": {
+        "AST_sha256": "6ce636376ebf06fe735d2f1c5b876b49f120d79ed9f9811221adbabcdff98e66",
+        "first_line": 6550,
+        "last_line": 6629
+      },
+      "run_loop": {
+        "AST_sha256": "524cdb279ece7f800a970a60f31f1606365dded7ebca7f9db74a02bf636dbcca",
+        "first_line": 2805,
+        "last_line": 2982
+      },
+      "run_loop_channels": {
+        "AST_sha256": "c30a2d546d602ebe54bf4fb8f5ef759635fcd85e0571f844e9942dde5538f817",
+        "first_line": 3115,
+        "last_line": 3213
+      }
+    },
+    "betse/science/sim.py": {
+      "_run_sim_core_loop": {
+        "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "first_line": 1132,
+        "last_line": 1390
+      },
+      "update_V": {
+        "AST_sha256": "555dffb27f1a0c803c47af3fab58c92c88a52bf893fb0859658d7cba9753e574",
+        "first_line": 2007,
+        "last_line": 2083
+      },
+      "update_all_concs": {
+        "AST_sha256": "4526d87d85b86e4392eb0ba28d09f6a2fb66bebcca5273d3910876c9c8a3052d",
+        "first_line": 2086,
+        "last_line": 2111
+      },
+      "update_gj": {
+        "AST_sha256": "e1d1c7e08977c3212d6334d35bef3881ac765bdbecb86132256e8621aeb3fd26",
+        "first_line": 2162,
+        "last_line": 2206
+      },
+      "update_intra": {
+        "AST_sha256": "0bf90e600b6a169932d0b4730eabec6a84763c7068469399e8d00b361ac7b6d9",
+        "first_line": 2257,
+        "last_line": 2310
+      }
+    },
+    "betse/science/sim_toolbox.py": {
+      "check_v": {
+        "AST_sha256": "10cd76d9870074b9e68af20653b837750515c28def7c16fdf26790c234286380",
+        "first_line": 332,
+        "last_line": 344
+      },
+      "electroflux": {
+        "AST_sha256": "fdea0e87111b95676927b226fdd3dd56db1ca20849dcd55da581c350d2eb4183",
+        "first_line": 18,
+        "last_line": 69
+      },
+      "no_negs": {
+        "AST_sha256": "ca58dc1cd3fc9003db9009190f1b134a4c8a678256ecf3692d12f79a66cdb29c",
+        "first_line": 475,
+        "last_line": 503
+      },
+      "pumpNaKATP": {
+        "AST_sha256": "2fa03554cc960261cd24f486dfa688427d9b52f344551d9eecb78a23ff050105",
+        "first_line": 71,
+        "last_line": 122
+      },
+      "update_Co": {
+        "AST_sha256": "21056d19c4b6ecdb6cc7966cee7b9623e546b555ccbd6bd5d0b73dc61f0a75f6",
+        "first_line": 1155,
+        "last_line": 1207
+      }
+    },
+    "betse/util/type/iterable/mapping/mapcls.py": {
+      "DynamicValue": {
+        "AST_sha256": "0c127fc087d3c8ccecce3ee2083a6e9a343fec59f86a350ba419a1f430092bc5",
+        "first_line": 139,
+        "last_line": 188
+      },
+      "DynamicValueDict": {
+        "AST_sha256": "645bee9c1dfb7b04ae664f5045f9d1a1823c9e3e255692aef006c6e94bc3795f",
+        "first_line": 191,
+        "last_line": 343
+      }
+    }
+  }
+}

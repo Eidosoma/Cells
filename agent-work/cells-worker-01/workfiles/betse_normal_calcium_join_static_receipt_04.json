@@ -1,0 +1,164 @@
+{
+  "B26_audit_executed": false,
+  "active_numerical_job": null,
+  "all_live_owned_and_protected_hashes_verified": true,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "calcium_AST_audit": {
+    "no_negs": {
+      "normalized_numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+      "original_numeric_body_unchanged": true
+    },
+    "pumpCaATP": {
+      "normalized_numeric_AST_sha256": "96c0b22cb03de4a16e480c0173234c93f36a0914631b9ac86422b09de5d49590",
+      "original_numeric_body_unchanged": true
+    },
+    "rectangular_state_validator": {
+      "only_declared_bath_shape_change": true,
+      "original_AST_sha256": "fa3ef0fda9fbcf9efec8f5eb8cd60037115916ecedf91b7659c45321061c6b7b"
+    }
+  },
+  "calcium_scope": {
+    "Ca_dyn": 0,
+    "ER_and_buffer": "separate owned-state dependency map only",
+    "endogenous_fuel_or_energy_qualification": false,
+    "live_bulk_membrane_and_bath": true,
+    "native_masked_raw_flux_cache_before_rho": true,
+    "shared_maintained_ATP_ADP_Pi_deltaG_and_rho_with_NaK": true
+  },
+  "capture_cache_carry_repair": {
+    "all7_saved_failures_verified_by_raw_payload_comparison": true,
+    "authority": "Chief independent reviewer confirmed per-call reset of CaATP observation cache; narrow native caller continuation only",
+    "call0_independent_review": "Chief pending",
+    "new_numerical_runs": 0,
+    "new_sha256": "f84c2bc4317c8dfb58f140f20db8640c442893cf09f4427c97a4958a7e370fde",
+    "old_sha256": "7b8587d6d160127771992686d11da08527fe07b4d0bef8ba02618a5567c4f2a8",
+    "only_evaluate_cache_init_pass_and_carry_AST_changes": true,
+    "path": "validation/betse/betse_normal_calcium_join_native.py",
+    "preserved_failed_run": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01",
+    "saved_proof": "agent-work/cells-worker-01/workfiles/betse_normal_calcium_join_cache_carry_saved_proof_01.json",
+    "saved_proof_sha256": "65c58a644845169bb5ced695044f1143285745e5805e453099210a16a208ffd6",
+    "source_helpers_production_equations_fixtures_references_budgets_unchanged": true,
+    "whole_panel_pass_claim": false
+  },
+  "conditional_reference_scope": "Actual immutable pre-handler inputs only; not a full outer-step, upstream, or trajectory accuracy claim.",
+  "container_scope": "Original init_core uses rectangular bath ndarray; update_Co mean assigns by row broadcast. Old scalar refusal is scoped-adapter behaviour, not initialized native BETSE.",
+  "controlled_dependency_refresh": {
+    "all_imported_equations_original_fixture_AST_and_budgets_unchanged": true,
+    "all_other169_protected_pins_unchanged": true,
+    "authority": "Chief current-live-drift preflight correction",
+    "authorized_catalog_inputs": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+    "authorized_catalog_inputs_sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69",
+    "base_inputs": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-02/inputs.json",
+    "base_inputs_sha256": "774a6d82deacc45c78de64b17ecb5c0879d1d96b37ce5cd6e15d55a618097fad",
+    "before_compute_live_guard": true,
+    "exact_changed_protected_paths": {
+      "tests/unit/test_betse_normal_catalog_join.py": {
+        "new_sha256": "1938d9ff972f963d8ee49258ad4b85e974c363a1a0cdb0530591f7da48ff0569",
+        "old_sha256": "9d206f901cdd3067cd90d11d13a7ddebc6cbb842b73f9b07fd3bd06c07e51682"
+      },
+      "validation/betse/betse_normal_catalog_join_fixtures.py": {
+        "new_sha256": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+        "old_sha256": "30ba874a37813ea81a03cf9f8b263d4584de707ed9e45531adae6fef7d0d3a1e"
+      },
+      "validation/betse/betse_normal_catalog_join_protocol.json": {
+        "new_sha256": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+        "old_sha256": "8b585b42130e3d2ffd183b46497ffdadcc3b1fd4b08d2d6338abff7b09141322"
+      }
+    },
+    "hash_exemptions": [],
+    "numerical_runs": 0,
+    "post_phase_live_guard": true
+  },
+  "created_utc": "2026-10-30T19:50:21.142310+00:00",
+  "driver_sha256": "d32224c8e6a273256b595f6ab78cf050f0463db6fba8f8382e0b948d8aaa547e",
+  "frozen_sha256_verified": true,
+  "frozen_source_files": 2294,
+  "hash_exemptions": [],
+  "inputs_sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42",
+  "kind": "cells.betse_normal_calcium_join_static_receipt@1",
+  "metadata_successor": {
+    "authority": "Chief relay of independent static CaATP preflight",
+    "changed_source_files": [
+      "agent-work/cells-worker-01/workfiles/betse_normal_calcium_join_workqueue.json",
+      "validation/betse/betse_normal_calcium_join_protocol.json"
+    ],
+    "conditional_pre_handler_only": true,
+    "equations_budgets_and_all_protected_source_pins_unchanged": true,
+    "numerical_runs": 0,
+    "prior_inputs": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-01/inputs.json",
+    "prior_inputs_sha256": "3a1f88bab07c8ad61b3a289683bea83c35759b8d2314714bed780672ae133880",
+    "protocol_fields": [
+      "diagnostics/carried",
+      "reference"
+    ],
+    "provenance": "Historical02 carried-prose correction;03 additionally refreshes actual current controlled dependencies as explicitly recorded.",
+    "zero_carried_reference_forms": true
+  },
+  "native_source_copies": 36,
+  "new_law": "betse_normal_rectangular_bath_calcium_join_v1_5_0@1",
+  "new_numerical_runs": 0,
+  "numerical_runs": 0,
+  "owned_source_files": 10,
+  "planned_carried_references": 0,
+  "planned_checks": 24,
+  "planned_conditional_references": 78,
+  "planned_groups": {
+    "active": 7,
+    "dependencies": 3,
+    "edge": 6,
+    "projection": 4,
+    "raw": 4
+  },
+  "planned_native_captures": 17,
+  "planned_pre_handler_checks": 39,
+  "prepared_inputs": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json",
+  "previous_static_receipt02_sha256": "23de192fca6fd8227618750ccf68092c13c31702c23ceb6c7e2dcd8d9fef738f",
+  "previous_static_receipt03_sha256": "c702b0e8208f155aab07bd4b46bcfe3044f60a2ae14dea64639bebc231ff24f2",
+  "previous_static_receipt_sha256": "cfb0e6c2aee23c8960ab793693c3d3a6c91a23105f46e038b1ba83f81bf055f7",
+  "protected_files": 172,
+  "pytest_collection_runs": 0,
+  "repo_local_draft_retained": {
+    "inputs_sha256": "05a58b9b2a1c7fd4478320b7ef8af110ed45236606006cecbbea29b04754ea8f",
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse-normal-calcium-prepared-20261030-01/inputs.json",
+    "reason": "Static draft predates Chief storage-location rule; canonical future execution tree is under /mnt/workspaces/Cells."
+  },
+  "resource_limits": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_imports": 0,
+  "source_seam_AST_audit": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "unchanged": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "unchanged": true
+    },
+    "ordinary_or_commit_loop_0": {
+      "AST_sha256": "8695ebae39da6fa6c57883db1954e16e8651500168ede76a98af6d7c2c75ea91",
+      "unchanged": true
+    },
+    "ordinary_or_commit_loop_1": {
+      "AST_sha256": "d034e29764718abe9b5dfbfae3dc13f53d7dffa52adfd047e5cb595a4b66abca",
+      "unchanged": true
+    }
+  },
+  "static_checks": {
+    "AST": "passed",
+    "global_name_resolution": "passed",
+    "reference_closure_files": 5,
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed"
+  },
+  "status": "static_frozen04_native_caller_cache_carry_repair_prepared_no_retry",
+  "whole_panel_pass_claim": false
+}

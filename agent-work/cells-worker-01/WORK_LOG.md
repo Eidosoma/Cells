@@ -5079,3 +5079,401 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   gate controls. Seven new owned sources are frozen for Chief review. Own
   queue links exact result/resources/inputs/failure statuses. No retry,
   follow-up regression, active-job poll, shared edit or git mutation ran.
+
+## B27 native maintained-pool Na/K pump join, 2026-10-30
+
+- Chief assigned/approved the new no-ECM Na/K section before B26 ordered gate/
+  material and B23/B25 current/voltage, with CPU1 guarded qualification. Source
+  met argument is unused; maintained p.cATP/cADP/cPi drive actual helper. Raw
+  rate_NaKATP=-Na flux is unscaled/unmasked and is not ATP cycle count. Source
+  alpha0/negative-cache behavior, denominator zero substitution, signs,
+  redistribution, masking and += accumulation stay explicit. No endogenous
+  fuel/energy claim or frozen-source/shared API edit.
+- Chief accepted B25 scope (original2mscase remains refused) and B26 native
+  scope, while identifying uninformative carried propagated bounds in B26.
+  B27 therefore adds independent from-actual-parent single-call checks before
+  freeze: full incoming float material/gate/proxy and packet only, answered
+  before outgoing model state. Inherited pump/gate/material/current/voltage
+  budgets are pinned unchanged. Exact native sequence is primary; full carried
+  Decimal is a separate diagnostic, never a trajectory-error bound. Absolute
+  arrays/units/worst-element budgets/indices and min/max budgets are retained.
+  No tolerance tuning from observed errors is authorized.
+- New production/capture/reference/fixture/protocol/map/tests/own runner pass
+  static lint/format/source-body/import audits. Frozen B26 material/active
+  arithmetic changes only through the explicit after-reset pump callback and
+  observation. Planned34 checks:12 three-call histories/36 calls,738 material
+  states/105 gate updates,15 native captures,72 fresh actual-parent reference
+  forms and24 full carried diagnostic forms at Decimal90/140. All144 protected
+  files remain exact; inherited budget source hashes are enforced.
+- Coordinated actual overlap with Specialist: no environment implementation
+  overlap; B25 supplied operator/post-material nonce-updated-vm seam is kept.
+  For Specialist's ECM lane, clarified that pump additive flux is post-rho/
+  mask, pump samples both environment rows before per-ion ECM reset, and
+  pump-before-ion versus later special-handler positions remain distinct.
+- Chief requested a separate B26 saved-data local tightening audit preparation
+  for a later requested round. That audit is not run and B26 remains frozen.
+- B27 frozen inputs
+  `/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/inputs.json`
+  SHA035a4cb6402caeb4d158373ff3736e6f3de0ff5b8b208e1201b43c111a96d170;
+  [Preparation receipt](workfiles/betse_normal_pump_join_preparation_receipt.json)
+  SHA2c2731cecc352b1553fe6f8e206e0ee45c0fcea59bfbf5f383626af96ef8c79e
+  captures2219 files,16 source functions,14 native copies and144 protected files.
+- First guarded CPU1 attempt passes all34 checks in72.536s:15 actual native
+  captures,36 actual-parent local calls/72 fresh local reference forms and24
+  separate carried diagnostic forms,738 complete material-stage states and105
+  gate calls. Every native array/dtype matches exactly. All inherited local
+  budgets pass unchanged; max local fraction0.003599513. Absolute local error
+  / budget at that same worst-error element: bulk7.11e-15/5.99e-11mM;
+  Jn1.42e-14/3.77e-11A/m2; vm1.80e-14/2.38e-9V; gate6.66e-16/1.85e-13;
+  raw Na pump3.52e-19/3.97e-15mol/(m2s). Full per-field/unit error arrays,
+  bounds, indices, actual/reference values and all carried answers remain.
+- Main/native/reference report CPU1; tree RSS<=173375488B, individual
+  HWM<=60628992B, reserve>=19054899200B. All144 protected/frozen sources remain
+  exact and no shared-edit modules load. Terminal result:
+  `/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/result.json`
+  SHA7e00402828a128450e7e719c55c3f9fc627107a411ff237ef30d0944c6fe7b6e.
+  Singular saturation source refusal, masked nonfinite raw proxy despite
+  completed source, and equilibrium overflow despite finite source dynamics
+  retain full actual/model raw arrays. Source rules are not repaired. Seven
+  owned sources are frozen for Chief review; no retries/broader regressions,
+  tolerance tuning, old-job polling, shared edits or git mutations occurred.
+- Prepared the separate B26 saved-data tightening audit with36 actual-parent
+  single-call checks/72 fresh references and per-ion actual-input checkpoints,
+  inherited budgets and fixed original source/evidence hashes. Preparation is
+  stdlib-only; audit execution requires a later explicitly requested/coordinated
+  round. No native or production-model rerun is part of it. [Prepared inputs](workfiles/b26-saved-local-audit-prepared-20261030-01/inputs.json)
+  SHAfd44dd6f763803a43ec9cf644e8234824e6410e8212c1bfbaf2b1118417d3064;
+  [Audit preparation receipt](workfiles/b26_saved_local_audit_preparation_receipt.json)
+  records runner/static checks and zero numerical runs. Original B26 source,
+  cases, failed evidence and qualification are untouched. This preparation is
+  not a tightening-audit pass or a physical-accuracy claim.
+- B28 assigned by Chief after B27 closeout. Source audit found catalog channels
+  execute late, directly update live concentration aliases and publish separate
+  current by conditional replacement. Chief confirmed preserving that order.
+  Implementing the new `betse_normal_channel_join*` lane, with actual-parent
+  inherited budgets and loaded-file runtime hashes. B27 metadata limits disclosed
+  in its own notes; frozen source/evidence unchanged. B26 audit remains prepared
+  and unexecuted. [Scope](workfiles/BETSE_NORMAL_CHANNEL_JOIN_NOTES.md).
+- B28 targeted successor02 completed:26/26 checks passed in95.901s CPU1;
+  14native captures,33 actual-parent local checks (66 fresh references),22 carried
+  diagnostics,861 full material frames,96 gap updates and118 channel calls.
+  Exact native arrays/dtypes/class caches and unchanged inherited local budgets
+  pass. Empty-profile constructor, gate-pole and cold-flux source refusals retain
+  raw native/model evidence. Failed01 (5pass/21fail) remains untouched; targeted
+  software fixes and explicit refusal packaging were separately Chief-authorized.
+  [Terminal receipt](workfiles/betse_normal_channel_join_terminal_receipt_02.json)
+  SHA c1abf68a4963690daaa967d649495f0daf7336d07858885a999518a2427914c1.
+  Actual loaded-file hashes verified across138 runtime inventories;10 new sources
+  now frozen,151 protected files unchanged. Chief review pending. No B26 audit,
+  old-job poll, broader regression, shared edit or git mutation.
+- Chief accepted B28's four-family conditional-local scope; review receipt
+  `/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/root-review-01/completion-verification.json`
+  SHA19462af85ca318d0bab5aabc8508c670a95ac125f585288b1c95bb3d3988f059,
+  as reported directly by Chief. No old-job audit/poll was performed.
+- Prepared the requested static catalog expansion in11 new scientific files:
+  all55 modern classes (51 beyond B28),110 concrete/20 base/2 clock method AST
+  audits,32 no-Ca and23 explicit live-Ca routes. Actual handler-disabled Ca scope
+  is explicit alpha_Ca0/Ca_dyn0; active CaATP/ER/buffers and legacy cagPotassium
+  remain separate unimplemented dependencies. Raw quotients/target semantics,
+  ordered zero-weight routes and last-route caches are preserved. Independent
+  equation closure has14 stdlib-only reference files. [Scope](workfiles/BETSE_NORMAL_CATALOG_JOIN_NOTES.md).
+  [Frozen inputs](workfiles/betse-normal-catalog-prepared-20261030-02/inputs.json)
+  SHA1f18d99b78087d497c4bffecbf55d401e1d6c1c639b3dc0b9ef27ad7dfa4bfe6.
+  [Static receipt](workfiles/betse_normal_catalog_join_static_receipt_02.json)
+  pins ten bounded future groups,72 planned checks/69 native captures/85 local
+  calls/300 reference forms, and unchanged161 protected scientific files.
+  Ruff/AST/hash checks pass. No scientific imports, test collection or numerical
+  runs occurred. Prepared01 remains intact after a runner-only log-directory
+  correction. No B26 audit, shared edit, old-job polling or git mutation. Expanded
+  scope is unqualified; numerical work awaits the next user instruction.
+
+- Catalog static successors03/04 preserve prior frozen trees. Chief-authorized
+  refusal archival now saves inputs before initialization and complete partial
+  state on exceptions; protocol text records all seven leak clocks and the
+  scalar-bath scoped caller. Frozen04 inputs SHA
+  278a8cb1ff9f40cd4ddc9957e53421816f8a0352da037099d5bc4c6b1976d3c0;
+  [Static receipt04](workfiles/betse_normal_catalog_join_static_receipt_04.json)
+  SHA559b07665af2b4f28c842708a9d263fe2b54231a44dc65617816df42d92d991f.
+  Chief launched the catalog separately on CPU1 and owns its completion review.
+  No worker status polling or numerical launch. Chief now reports Cav_G nominal
+  initializer returnsNaN at -27mV; failed nominal remains evidence, with a
+  separate nonsingular case and returned-nonfinite archival successor requested.
+- Prepared the active CaATP static package in10 new scientific files. New
+  rectangular bath law follows original init_core and row-mean broadcast, with
+  the old scalar adapter retained. Native order, live Ca, shared maintained
+  NaK/CaATP pools and density, raw quotient/zero-product rules, alias/boundary
+  masked cache before density, inactive-cache retention and refusal side
+  effects are explicit. ER/buffer owned-state requirements are mapped separately.
+  [Scope](workfiles/BETSE_NORMAL_CALCIUM_JOIN_NOTES.md). Canonical frozen inputs
+  `/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-01/inputs.json`
+  SHA3a1f88bab07c8ad61b3a289683bea83c35759b8d2314714bed780672ae133880.
+  [Static receipt](workfiles/betse_normal_calcium_join_static_receipt_01.json)
+  SHAcfb0e6c2aee23c8960ab793693c3d3a6c91a23105f46e038b1ba83f81bf055f7.
+  Static AST/name/lint/format and all frozen hashes pass:2282 snapshot files,
+  36 native source copies,10 new and172 protected scientific files. Planned
+  24 checks in5 bounded groups,17 native captures,39 actual pre-handler checks
+  and78 fresh references; conditional scope only. Zero scientific imports,
+  test collections or numerical runs. No B26 audit, old-job polling, shared
+  documentation/source edit or git mutation. Repo-local draft retained; all
+  future frozen run trees and numerical outputs use /mnt/workspaces/Cells.
+- Chief-requested catalog successor05 now archives complete constructor and
+  step RETURNS before JSON/reference/comparison, retaining nonfinite bits as
+  well as existing exception partial state. The unchanged Cav_G nominal ID is
+  explicit raw/refusal coverage with no positive credit; separate
+  Cav_G_nonsingular changes only initial Vm[2] to-0.026V. All production/native/
+  reference equations, original fixture functions, acceptance budgets and161
+  protected files remain exact. CaATP frozen tree and10 owned files unchanged.
+  Canonical inputs `/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-05/inputs.json`
+  SHA8425d76763a0d956c5d07dec1dd6ff30f77c8576c2c4a2092ca0313c6ce88f27.
+  [Static receipt05](workfiles/betse_normal_catalog_join_static_receipt_05.json)
+  SHA3f404480c5f546d6e93370173564288c7893ae7fce4f869b636d1276be39d0b8.
+  Planned73 checks/70 native captures (65 positive,5 raw/nominal refusals),
+  85 actual-parent local calls/170 fresh references and130 carried diagnostics.
+  Ruff/compile/AST/hash and archive-order checks pass; zero numerical runs,
+  scientific imports or test collection. Failed nominal evidence and all prior
+  snapshots remain immutable. No retry, B26 audit, old-job polling or git edit.
+- Chief CaATP preflight found no physics blocker and corrected misleading
+  carried-diagnostic prose. Canonical02 derives from immutable01; only two
+  protocol prose fields and the queue protocol hash change. All source equations,
+  budgets and172 protected snapshot pins remain exact. Zero carried references;
+  all78 independent forms condition on actual pre-handler inputs.
+  Inputs `/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-02/inputs.json`
+  SHA774a6d82deacc45c78de64b17ecb5c0879d1d96b37ce5cd6e15d55a618097fad.
+  [Static receipt02](workfiles/betse_normal_calcium_join_static_receipt_02.json)
+  SHA23de192fca6fd8227618750ccf68092c13c31702c23ceb6c7e2dcd8d9fef738f.
+  Zero scientific imports, collection or numerical launch. Both prior drafts
+  remain untouched. Chief received canonical02 pins for independent preflight.
+- Chief requested distinct raw-negative Cav_G ID, excluding historical
+  actual_parent[Cav_G] from successor execution/check-retention union. Frozen06
+  now contains73 unique nodes, with raw_nominal_catalog_nonfinite[Cav_G] and
+  separate nonsingular positive ID. Frozen05 stays immutable.
+  Inputs `/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json`
+  SHAfaf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69.
+  [Static receipt06](workfiles/betse_normal_catalog_join_static_receipt_06.json)
+  SHA799a46b5d11cb217fe93d312567b827c4e33ef9500d3bef35fb1e7c2b38a87f3.
+  Same70 native/85 conditional calls/170 fresh+130 carried forms; source and
+  budgets exact, no numerical launch or retry.
+- Chief identified Ca02 post-compute live-hash guard would reject the three
+  authorized catalog edits. Verified exactly those3 paths drifted;169 other
+  protected pins, all equations/budgets and old fixture AST remain exact.
+  Canonical Ca03 freezes actual current dependencies with explicit old/new
+  hashes and catalog06 provenance; no hash exemption. Added the same live-pin
+  check before computation and retained post-phase checking.
+  Inputs `/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-03/inputs.json`
+  SHA83bfdc30ed948c18d743f778b06fe3b7e3d28e77ff19e91a2257854b4b71ff9f.
+  [Static receipt03](workfiles/betse_normal_calcium_join_static_receipt_03.json)
+  SHAc702b0e8208f155aab07bd4b46bcfe3044f60a2ae14dea64639bebc231ff24f2.
+  All10 owned/172 protected live and snapshot hashes now match; zero numerical
+  runs. Frozen01/02 remain untouched. Chief owns independent preflight/launch.
+- Root calcium01 active group failed7/7 at outer call index1; Chief reviewer
+  localized native wrapper resetting CaATP cache while production correctly
+  carries masked flux. At Chief request, authenticated63 immutable raw archive
+  files for all7 cases with stdlib JSON/ZIP/NPY payload-bit comparisons: model
+  next-before equals previous masked rate, native next-before repeats seed.
+  [Saved proof](workfiles/betse_normal_calcium_join_cache_carry_saved_proof_01.json)
+  SHA65c58a644845169bb5ced695044f1143285745e5805e453099210a16a208ffd6.
+  Narrow fix changes only native evaluate cache initialization/pass/continuation;
+  all other native functions and production/fixture/reference/budget sources
+  unchanged by normalized AST and hashes. Root failed run01 remains immutable.
+  Canonical04 inputs `/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json`
+  SHAe1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42.
+  [Static receipt04](workfiles/betse_normal_calcium_join_static_receipt_04.json)
+  SHAedfce94809d419faea9b48c28e894e047f683cb23368aa54173ec561330e793f.
+  Zero new numerical or reference runs, scientific imports or collection. This
+  was an explicitly assigned saved-evidence diagnosis, not automatic status
+  polling. No whole-panel or pending call0-reference acceptance claim. Same
+  continuation is applied prospectively to the new ER draft capture only.
+- Chief final calcium failure review confirms capture reset; outgoing flux,
+  state/current/voltage match native in both saved calls, with seven first-call
+  conditional comparisons <=0.00113 of budget. This is still0 passed,7 failed,
+  17 unrun. Review `/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/root-review-01/failure-review.json`
+  SHA3f7c6790d63ef2a5ad104e6c6443fd87517b1cea7372098af3916cf4657bd370
+  was reported directly by Chief, without worker status polling. No retry.
+  Catalog06 successor and Root recovery run detached under Chief ownership; no
+  source changes or polling of either run.
+- New owned EndoRetic prefix is statically prepared in10 separate scientific
+  files. Complete all-ion ER concentrations/geometry/capacitance/Q/Ver and
+  permeability caches persist; native initialization occurs once. Shared source
+  pools, source CaATP->ER->late-channel order, IP3 owner precedence, unused
+  arithmetic, Ver nonce and stale plasma buffers are preserved. No buffer or
+  fuel placeholder. [Scope](workfiles/BETSE_NORMAL_ER_JOIN_NOTES.md).
+  [Static receipt](workfiles/betse_normal_er_join_static_receipt_01.json)
+  SHA99d784dd55c58d59387075b3d687e4f51d0b57997358e8df6ee6fe75273ce6a6.
+  Canonical inputs `/mnt/workspaces/Cells/betse-normal-er-prepared-20261030-01/inputs.json`
+  SHA2e59999abcb1f38ef15b41a7941f0836135c385583be30a4ee03962cc8516b6c.
+  2294 snapshot files/36 native copies/10 owned/182 protected hashes
+  verified. Six literal numeric bodies match normalized original AST; five
+  outer helpers unchanged. Compile/name/Ruff checks pass; three reference files
+  have stdlib-only closure. Native observational AST transform matches source
+  without executing any scientific AST. Planned18 checks in4 groups:12
+  three-call histories/36 actual pre-ER conditional checks/72 fresh Decimal
+  forms,3 raw SERCA probes and3 dependency controls;15 native captures,0 carried
+  forms. Full raw/refusal arrays, unit/error/budget arrays and local ER amount
+  conservation retained by the prepared checks. Zero scientific imports, pytest
+  collection, numerical launch, retry or old-job polling. All prior frozen/
+  failed evidence and shared files remain untouched; no git mutation. Chief
+  owns independent review and any subsequent requested numerical round.
+- Chief reports calcium numerical02 has23 passed/1 failed: raw nan_membrane
+  stopped in JSON transport before native execution. At explicit Chief request,
+  prepared an UNAPPLIED two-file79-line patch under
+  `/mnt/workspaces/Cells/betse-calcium-raw-input-repair-prepared-20261030-01/repair.patch`
+  SHAf11311be435a6fe4d1393136ace8da93be4e894b72174a3cd9b88d199114ab24;
+  proposal JSON SHA7ccb0dbe61667a4bb6fb472ad2a2e232a63b7d5c55d3877c8dd7e1c43b15a9bc.
+  Existing typed NPZ/finite-JSON archive codec preserves nonfinite bits; cloned
+  decoder AST is identical except name. All numeric functions and protected
+  Ca/ER/catalog files remain unchanged. Static compile/Ruff checks only; no
+  scientific imports or numerical retry. Root ER qualification and detached
+  jobs remain Chief-owned and unpolled.
+- Root ER01 context group failed0pass/6fail/12unrun before numerical native
+  initialization: sim.cdl was set after EndoRetic construction. Chief requested
+  a narrow repair; moved the existing cdl/edl assignment before ER setup.
+  Complete constructor contract audited (sim cdl/cc_cells/iCa/zs, cells
+  cell_vol/cell_sa, p.cm; cc_er produced inside constructor). Inverse AST move
+  reproduces original setup exactly; all other helper functions remain exact.
+  [Constructor repair receipt](workfiles/betse_normal_er_join_constructor_repair_receipt_01.json)
+  SHA4738216907c8d7e11ba166352d52d82d3044d3df0fcb74e0619901c1250e7127.
+  Source-map metadata now spells out helper digest normalization. No numerical
+  rerun or equation/fixture/budget change. ER02 freeze awaits Chief confirmation
+  of the authorized two-file Ca raw-input patch application, so dependency pins
+  can reflect the current controlled files without exemptions.
+- ER02 frozen with the narrow native cdl/edl prelude move, source-map digest
+  convention prose and exact two-path applied Ca codec dependency refresh.
+  Other8 owned/180 protected files remain exact. Root application receipt
+  SHA f190f50ae2e960ff1a8789377e3ed19da0d7d3c8d91e61128c2b64d451c58a8e.
+  Inputs `/mnt/workspaces/Cells/betse-normal-er-prepared-20261030-02/inputs.json`
+  SHAfdf8646240dd0ea7806f5ea05bacb5150984741292037a04ecc579ad16ccae6e.
+  [Static receipt02](workfiles/betse_normal_er_join_static_receipt_02.json)
+  SHAb31cf3e6e4d4e9605752722d626759dd6764605f4e0457c20e23c00f0e21513e.
+  All10 owned/182 protected live and frozen hashes verified; old failed ER01
+  untouched. No numerical run or retry. Chief owns independent preflight.
+- Prepared the requested separate Ca raw-only subset, binding20 unaffected
+  reviewed test IDs/XML to numerical02 inputs SHAe1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42
+  and Root REVIEW SHA b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e.
+  Four future raw checks include3 rerun IDs and1 unqualified NaN completion;
+  prospective union is24 distinct, not27. Source files have only the authorized
+  codec changes; all other pins remain exact. Inputs
+  `/mnt/workspaces/Cells/betse-calcium-raw-subset-prepared-20261030-01/inputs.json`
+  SHA99e600ec5962295e0e23fdb95625c9d1324713b9343aaf28aa9f4c79e96906ac.
+  [Raw subset static receipt](workfiles/betse_normal_calcium_raw_subset_static_receipt_01.json)
+  SHAd3d8f7b2a8e13a765f7b1d0cb4373ac3d0f8975562f846ff4c7a9e4456a1d694.
+  No new numeric/reference runs or scientific imports. Reading frozen XML and
+  final review here was explicitly assigned retention binding, not job polling.
+- Chief relayed new-user letsgo and explicitly authorized the four-raw subset
+  on CPU3 this round. First attempt passed4/4 in6.309882s, with peak tree RSS
+  133926912B and reserve20795252736B. Result
+  `/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/run-raw/result.json`
+  SHAc2082a5604d98d0e0fe43f7918a1ddd5698cb4ac978b066f757a16b14a4b1f35.
+  Own saved-outcome review authenticates36 archive files,5 actual runtime
+  inventories/1179 module records/382 unique paths, all10 owned/172 protected
+  hashes and typed input/native/model raw payloads. NaN payload bits survive
+  exactly; negative clipping precedes refusal.
+  `/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/worker-review-01/completion-verification.json`
+  SHA dd1d0c1b9a9746e8e16686143a0c89cdaa1610a42094fd54272a1208de1fac8b.
+  Union20 retained+4 fresh is24 distinct IDs (3 raw repeats). Ready for Chief
+  independent review, without changing original failed overall snapshots or
+  claiming full Simulator/biological/trajectory accuracy. No automatic retry,
+  broader regression or other-job polling; source files remain frozen.
+- Chief ER02 review identifies genuine initializer/fixture incompatibility:
+  all-ion cytosol copy plus literal ER Ca0.2 adds uncompensated charge, yielding
+  huge first Ver and later source underflow/nonfinite transfer. No source fix
+  or numerical rerun. [Initial-state source audit](workfiles/betse_normal_er_initial_state_audit_01.json)
+  SHA5f6106a2af545829febb72894e83534fb7c1cf57c340e2d7134376e54fccee7b documents default Ca_dyn=False, absent legacy
+  parameter assignments, native geometry and startup ER reconstruction. Two
+  distinct future proposals require source correspondence before numbers:
+  source-derived native geometry/literal initializer, or caller-supplied
+  complete counterion-balanced ER state with conditional-update scope only.
+  Original observed failures and unrun states remain unchanged/unqualified.
+
+- Network feedback package statically frozen in a separate10-file prefix.
+  Own ion state, ordered endogenous GJ/NaK writes, carried controls/cache and
+  original empty chemistry chronology are explicit; active chemistry is excluded
+  after preserving the audited empty-growth/nonempty-reaction stack blocker.
+  [Scope](workfiles/BETSE_NORMAL_NETWORK_JOIN_NOTES.md);
+  [static receipt](workfiles/betse_normal_network_join_static_receipt_01.json)
+  SHA06d80858ab19ba0f68da81ec5a0f11dd92057a19f9555078c57c12567f5e91db.
+  Inputs `/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-01/inputs.json`
+  SHAff39fb9e0784eb8c2977ff6a8df94ac75b81fe5b1f280e8127d693fd6f5ec8fc.
+  Verified2319 frozen source files,37 native/library copies,10 owned/192
+  protected current and frozen hashes,14 literal network AST bodies and5 unchanged
+  outer helpers. Compile/name/reference-closure/Ruff checks pass. Planned15
+  checks,11 native captures,30 actual pre-network points,60 fresh Decimal forms
+  and0 carried forms;0 positive chemical execution checks. Root physical helper
+  refresh and five concurrent unrelated reference edits are explicitly bound.
+  No network scientific import, test collection or numerical launch. No shared
+  PROGRESS or git mutation; old failures and active jobs remain untouched.
+- Chief network preflight requested runner terminal-failure and acceptance-set
+  safeguards. New separate driver02 wraps every operation after run output
+  creation in durable failure capture, checks exact unique expected pytest IDs
+  and exact core/context report paths with3 complete calls each. All10 network
+  scientific files and192 protected pins are unchanged. Original network01 is
+  preserved. GRN owner case is explicitly a label on the same core, with no
+  native GRN-wrapper selection/initialization or GRN dynamics credit.
+  Inputs `/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json`
+  SHAeaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e.
+  [Static receipt02](workfiles/betse_normal_network_join_static_receipt_02.json)
+  SHAd8ca3e2241de340ef5594365cb1bbf0cbc2f94db8534c99845cfcb9d180bd126.
+  All2322 source/37 native-library snapshot hashes and current202 controlled
+  hashes verified; stdlib AST/compile/Ruff only. No network numerical launch.
+- Chief assigned the distinct prepared-owned ER design (proposal
+  SHA6a81bc966e8a05e13868040bc7dcbede78ea65d472e245e732168bc371cc1ae5).
+  Seven-file constructor/capture/reference/fixture/test/protocol/map prefix
+  is statically frozen; all202 prior protected files remain exact, including
+  literal ER source and every earlier failed/unrun case. Neutral Cl/P are new
+  declared inventories, with literal charge/voltage and primed caches derived
+  from stored floats. Full packet/parent association is reconstructed; signed
+  probes remain ER-only. No later rebalancing or hidden time advancement.
+  [Scope](workfiles/BETSE_PREPARED_ER_JOIN_NOTES.md);
+  [static receipt](workfiles/betse_prepared_er_join_static_receipt_01.json)
+  SHAa158cdaed8581d1aab265619c7e0318666bb4e40c6b8c5f0b9b1580f8411a539.
+  Inputs `/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-01/inputs.json`
+  SHA010e40feb204b78d7e8bbfc47f03e67f66c297f2d74cbf8456c3af64ee150473.
+  Verified2334 source files,36 native+6 bound evidence copies,7 owned/202
+  protected current/frozen hashes,6 reused literal bodies and5 outer helpers.
+  Native capture differs only by first supplied ER state/capture metadata;
+  inverse AST proof passes. Compile/name/Ruff and4-file stdlib reference closure
+  pass. Planned23 checks in5 bounded groups:13 neutral outer histories,2 ER-only
+  signs,2 matched-horizon diagnostics (6 histories,2 repeated coarse histories)
+  and6 preparation refusals.21 native captures/83 conditional points/166 fresh
+  step+42 preparation forms/0 carried forms; no biological/trajectory claim.
+  Full states, amounts, error/budget/unit arrays and raw/refusal captures are
+  planned before assertions. No packet evaluation, scientific import, collection,
+  reference/native/ER numerical execution or launch. Root owns independent review
+  and future requested execution. Root network round is unpolled; shared PROGRESS,
+  git metadata and all frozen/failed evidence remain untouched.
+- Chief directly reports accepted network round:15 checks/60 fresh forms/0
+  carried, maximum model error5.079e-5 of budget, feedback only with no chemistry
+  or GRN-dispatch credit. Root REVIEW
+  `/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json`
+  SHAba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943.
+  No worker polling or new runs. Chief assigned the next separate nonempty
+  molecule chemistry/transport join, static preparation only. ER01 is under
+  independent Root preflight; Root owns detached recovery CPU5 and PROGRESS.
+- Root prepared-ER01 first round has6 preparation-refusal passes,6 context
+  failures on native call1 and11 unrun. Failure is JSON list restoration:
+  only cc_er became ndarray; source channels concatenated Dm lists and SERCA
+  raised F*Ver TypeError. At Chief request, new native boundary restores exactly
+ 9float64 arrays and scalar cm_er for both whole-join and ER-only paths.
+  [Saved type/shape/bit witness](workfiles/betse_prepared_er_array_boundary_saved_witness_01.json)
+  SHAe147d8ad873d354518469def7d46dd894b17b1b23fc93805919ba905a1d16f22
+  authenticates42 old artifact files/60 fields with all producer/JSON/initial
+  payload bits equal. Native inverse AST proof changes only2boundary callsites
+  and adds1decoder; all other functions and five other owned files unchanged.
+  New source-map metadata binds the witness; all202 prior protected files exact.
+  Successor inputs `/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json`
+  SHA25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896.
+  [Static receipt02](workfiles/betse_prepared_er_join_static_receipt_02.json)
+  SHA90cf7918a2eea21a82f6fb8069db1c31cf876a7bf709c6d7b10ff1269aff2b63.
+  Verified2345 source files,36native+7evidence copies and all hashes.
+  Static compile/names/Ruff/closure pass. Original prepared01 and failed run
+  immutable. No new scientific import, packet/decoder/model/native/reference
+  execution, test collection or numeric retry. Future execution waits for a
+  new requested round; resumed separate molecule chemistry preparation.
+- Chief directly reports prepared-ER02 accepted23 checks/83 conditional
+  points, maximum local0.000836 of budget; six refinement histories remain
+  diagnostics and old failed runs remain intact. Root REVIEW
+  `/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json`
+  SHAa946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334.
+  No worker polling or new run. Chemistry source audit also exposes the native
+  no-ECM mean-bath volume defect; Chief agreed both the literal source-effective
+  ledger and physical single-bath defect must remain explicit, separate from
+  directed-GJ imbalance. No physical conservation claim or source repair.

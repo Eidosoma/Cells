@@ -13,6 +13,7 @@ import pytest
 from validation.chemistry import finite_energy_reference as chemistry
 from validation.tissue import surface_cotransport_water_fixtures as fixtures
 from validation.tissue import surface_cotransport_water_reference as ref
+from validation.tissue import surface_cotransport_water_response as response
 from validation.tissue import surface_energy_water_reference as base
 from validation.tissue import water_volume_reference as water
 from validation.tissue.test_energy_water_reference import case as energy_water_case
@@ -301,7 +302,10 @@ def test_independent_worker_does_not_import_production_or_jax():
     assert not any(name == "jax" or name.startswith("jax.") for name in sys.modules)
 
 
-def test_integrator_holds_all_seven_clocks_and_observes_dense_and_event_endpoints(monkeypatch):
+@pytest.mark.parametrize("coordinates", ["global", "local_delta"])
+def test_integrator_holds_all_seven_clocks_and_observes_dense_and_event_endpoints(
+    monkeypatch, coordinates
+):
     """An analytic prescribed RHS isolates scheduling from all physical rate laws."""
     raw = multi_owner_case()
     e = raw["experiment"]
@@ -336,7 +340,7 @@ def test_integrator_holds_all_seven_clocks_and_observes_dense_and_event_endpoint
         return ref.flatten(c, slopes), np.full(len(c["vi"]) + len(c["vo"]), time), {}
 
     monkeypatch.setattr(ref, "evaluate", prescribed)
-    result = ref.integrate(raw, max_step_s=1e-3)
+    result = ref.integrate(raw, max_step_s=1e-3, segment_coordinates=coordinates)
     c = ref.bind(raw)
     states = ref.unpack(c, result["state"])
     start = ref.unpack(c, ref.initial(c))
@@ -364,7 +368,7 @@ def test_integrator_holds_all_seven_clocks_and_observes_dense_and_event_endpoint
     assert result["max_step_s"] == 1e-3
     assert max(s["maximum_accepted_step_s"] for s in result["segments"]) > 1.25e-6
     evidence(
-        "analytic-event-semantics",
+        "analytic-event-semantics-" + coordinates,
         dict(events=events, segments=result["segments"], times=result["times"]),
     )
 
@@ -499,6 +503,15 @@ def test_short_channel_free_history_refines_with_material_volume_and_energy_bala
         {"max_step_s": 1e-3, "refinement": 0},
         {"max_step_s": 1e-3, "refinement": True},
         {"max_step_s": 1e-3, "method": "Radau"},
+        {"max_step_s": 1e-3, "segment_coordinates": "unknown"},
+        {"max_step_s": 1e-3, "tolerance_scale": True},
+        {"max_step_s": 1e-3, "tolerance_scale": 0},
+        {"max_step_s": 1e-3, "tolerance_scale": -1},
+        {"max_step_s": 1e-3, "tolerance_scale": 2},
+        {"max_step_s": 1e-3, "tolerance_scale": float("nan")},
+        {"max_step_s": 1e-3, "tolerance_scale": float("inf")},
+        {"max_step_s": 1e-3, "tolerance_scale": 1e-6},
+        {"max_step_s": 1e-3, "tolerance_scale": 1 / 32, "refinement": 1024},
     ],
 )
 def test_integrator_rejects_unsupported_step_tolerances_or_method(options):
@@ -506,7 +519,134 @@ def test_integrator_rejects_unsupported_step_tolerances_or_method(options):
         ref.integrate(fixtures.definition("coupled", backend="cpu"), **options)
 
 
-def test_failed_rhs_keeps_the_attempted_full_state_without_retry(monkeypatch):
+@pytest.mark.parametrize("coordinates", ["global", "local_delta"])
+def test_explicit_tighter_solver_controls_preserve_clocks_and_refine_an_analytic_solution(
+    monkeypatch, coordinates
+):
+    """Exercise the real adaptive solver against an analytic nonlinear history."""
+    raw = fixtures.definition("coupled", backend="cpu")
+    end = 1e-4
+    raw["experiment"].update(end_time=end, observation_times=[0.0, 0.37 * end, 0.91 * end, end])
+    for kind in ref.CONTROL_KINDS:
+        for group in raw["experiment"][kind + "_controls"]:
+            group["schedule"] = [dict(time=0.0, availability=1.0)]
+    context = ref.bind(raw)
+    original_solver = ref.solve_ivp
+    calls = []
+
+    def analytic(context, state, time):
+        fields = ref.unpack(context, state)
+        slope = {name: np.zeros(shape) for name, shape in context["shapes"].items()}
+        value = fields["cotransport_cycles_fmol"][0]
+        slope["cotransport_cycles_fmol"][0] = 2.5e4 * (1 + value)
+        return ref.flatten(context, slope), np.zeros(len(context["vi"]) + len(context["vo"])), {}
+
+    def record_solver(fun, span, state, **options):
+        calls.append((span, options.copy()))
+        return original_solver(fun, span, state, **options)
+
+    monkeypatch.setattr(ref, "evaluate", analytic)
+    monkeypatch.setattr(ref, "solve_ivp", record_solver)
+    answers = [
+        ref.integrate(raw, max_step_s=end, segment_coordinates=coordinates, tolerance_scale=scale)
+        for scale in (1.0, 1 / 32)
+    ]
+    expected = np.expm1(2.5e4 * np.asarray(raw["experiment"]["observation_times"]))
+    errors = []
+    for answer, (span, options), scale in zip(answers, calls, (1.0, 1 / 32), strict=True):
+        actual = ref.unpack(context, answer["state"])["cotransport_cycles_fmol"][:, 0]
+        errors.append(float(np.max(np.abs(actual - expected))))
+        assert span == (0.0, end) and options["max_step"] == end
+        assert answer["event_times"] == [0.0, end]
+        assert answer["times"] == raw["experiment"]["observation_times"]
+        assert answer["tolerance_scale"] == scale
+        assert options["rtol"] == answer["rtol"] == 2e-11 * scale
+        absolute = ref.unpack(context, options["atol"])
+        for name, value in absolute.items():
+            np.testing.assert_array_equal(value, (1e-29 if name.endswith("_C") else 2e-14) * scale)
+        np.testing.assert_allclose(actual, expected, atol=2e-10, rtol=2e-10)
+    assert errors[1] < max(1e-13, errors[0] / 4)
+    if coordinates == "local_delta":
+        assert calls[0][1]["first_step"] == calls[1][1]["first_step"]
+    evidence(
+        "tightened-analytic-reference-" + coordinates,
+        dict(errors=errors, times=answers[0]["times"], tolerance_scales=[1.0, 1 / 32]),
+    )
+
+
+def test_tightened_reference_covers_the_early_failed_stability_interval():
+    """Original physics through 10 ms; the failing 5-ms observation is interior.
+
+    This is numerical support for the tighter reference settings, not a full
+    recovery qualification. Future controls are removed only beyond this prefix.
+    """
+    original = response.definition("supply_recovery")
+    raw = deepcopy(original)
+    end = 0.01
+    raw["experiment"]["end_time"] = end
+    raw["experiment"]["observation_times"] = [
+        time for time in original["experiment"]["observation_times"] if time <= end
+    ]
+    for kind in ref.CONTROL_KINDS:
+        for group in raw["experiment"][kind + "_controls"]:
+            group["schedule"] = [row for row in group["schedule"] if row["time"] <= end]
+    assert raw["model"] == original["model"]
+    answers = []
+    for factor in (1, 2):
+        name = f"tightened-early-prefix-r{factor}"
+        try:
+            result = ref.integrate(
+                raw,
+                max_step_s=1e-3,
+                refinement=factor,
+                segment_coordinates="local_delta",
+                tolerance_scale=1 / 32,
+            )
+        except ref.ReferenceIntegrationError as error:
+            evidence(name, dict(status="failed", inputs=raw, diagnostics=error.diagnostics))
+            raise
+        evidence(
+            name,
+            dict(status="computed_not_yet_compared", inputs=raw)
+            | {
+                key: value.tolist() if isinstance(value, np.ndarray) else value
+                for key, value in result.items()
+            },
+        )
+        answers.append(result)
+    c = ref.bind(raw)
+    normal, tighter = (answer["state"] for answer in answers)
+    absolute = ref.flatten(
+        c,
+        {
+            name: np.full(shape, 3e-28 if name.endswith("_C") else 3e-14)
+            for name, shape in c["shapes"].items()
+        },
+    )
+    ratio = np.abs(normal - tighter) / (absolute + 3e-11 * np.abs(tighter))
+    maximum = float(np.max(ratio, initial=0))
+    evidence(
+        "tightened-early-prefix-comparison",
+        dict(
+            status="captured_before_assertion",
+            original_physical_inputs=original,
+            prefix_inputs=raw,
+            times=answers[0]["times"],
+            maximum_error_fraction=maximum,
+            per_field_error_fraction={
+                name: float(np.max(value, initial=0))
+                for name, value in ref.unpack(c, ratio).items()
+            },
+            tolerance_scale=1 / 32,
+            comparison_budget=dict(atol=3e-14, charge_atol=3e-28, rtol=3e-11),
+            scope="Ten-ms prefix with interior 5-ms check; full recovery unqualified",
+        ),
+    )
+    assert np.isfinite(ratio).all() and maximum <= 1
+
+
+@pytest.mark.parametrize("coordinates", ["global", "local_delta"])
+def test_failed_rhs_keeps_the_attempted_full_state_without_retry(monkeypatch, coordinates):
     raw = fixtures.definition("coupled", backend="cpu")
     calls = []
 
@@ -516,13 +656,102 @@ def test_failed_rhs_keeps_the_attempted_full_state_without_retry(monkeypatch):
 
     monkeypatch.setattr(ref, "evaluate", rejected)
     with pytest.raises(ref.ReferenceIntegrationError) as caught:
-        ref.integrate(raw, max_step_s=1e-3)
+        ref.integrate(raw, max_step_s=1e-3, segment_coordinates=coordinates)
     details = caught.value.diagnostics
     assert len(calls) == 1
     assert details["phase"] == "rhs" and details["automatic_retry"] is False
     assert details["evaluations"] == 1 and details["held_control_time_s"] == 0
+    assert details["local_time_s"] == (0.0 if coordinates == "local_delta" else None)
     np.testing.assert_array_equal(details["state"], calls[0][0])
     json.dumps(details, allow_nan=False)
     evidence(
-        "deliberately-failed-stage", dict(expected_failure=str(caught.value), diagnostics=details)
+        "deliberately-failed-stage-" + coordinates,
+        dict(expected_failure=str(caught.value), diagnostics=details),
     )
+
+
+@pytest.mark.parametrize("material_coordinates", ["full", "transport_ledgers"])
+def test_local_delta_startup_uses_its_own_depleted_parent_against_analytic_heat(
+    monkeypatch, material_coordinates
+):
+    """An exactly integrable toy isolates startup; it is not a physical case."""
+    raw = fixtures.definition("coupled", backend="cpu")
+    if material_coordinates == "transport_ledgers":
+        raw["model"]["channels"] = []
+        raw["experiment"]["channel_controls"] = []
+        raw["execution"]["channel_capacity"] = 0
+    cut, end = 0.25, 0.25001
+    raw["experiment"].update(end_time=end, observation_times=[0.0, cut, (cut + end) / 2, end])
+    for kind in ref.CONTROL_KINDS:
+        for group in raw["experiment"][kind + "_controls"]:
+            group["schedule"] = [dict(time=0.0, availability=0.0)]
+    raw["experiment"]["regeneration_controls"][0]["schedule"].append(
+        dict(time=cut, availability=1.0)
+    )
+    c = ref.bind(raw)
+    initial_pool = c["water_energy"]["energy_initial"][0, 0]
+    target_pool, recovery_rate = 1e-12, 0.01
+    withdrawal_rate = (target_pool - initial_pool) / cut
+    solver_calls = []
+    original_solver = ref.solve_ivp
+
+    def record_solver(fun, span, state, **kwargs):
+        solver_calls.append((span, state.copy(), kwargs["first_step"]))
+        return original_solver(fun, span, state, **kwargs)
+
+    def prescribed(context, state, held, **kwargs):
+        fields = ref.unpack(context, state)
+        slope = {key: np.zeros(shape) for key, shape in context["shapes"].items()}
+        amount = initial_pool + fields["energy_amount_increment_fmol"][0, 0]
+        assert amount > 0
+        slope["energy_amount_increment_fmol"][0, 0] = (
+            withdrawal_rate if held < cut else recovery_rate
+        )
+        if held >= cut:
+            slope["regeneration_dissipated_energy_pJ"].flat[0] = -np.log(amount)
+        return (
+            ref.flatten(context, slope),
+            np.full(len(context["vi"]) + len(context["vo"]), held),
+            {},
+        )
+
+    monkeypatch.setattr(ref, "solve_ivp", record_solver)
+    monkeypatch.setattr(ref, "evaluate", prescribed)
+    answers = []
+    for factor in (1, 2):
+        result = ref.integrate(
+            raw,
+            max_step_s=0.05,
+            refinement=factor,
+            segment_coordinates="local_delta",
+            material_coordinates=material_coordinates,
+        )
+        values = ref.unpack(c, result["state"])
+        computed_parent = initial_pool + values["energy_amount_increment_fmol"][1, 0, 0]
+        restoration = result["segments"][1]
+        assert restoration["startup_pool_amount_fmol"][0][0] == computed_parent
+        assert restoration["first_step_s"] == computed_parent / recovery_rate / 8 / factor
+        assert 0 < restoration["first_step_s"] < (end - cut) / 1000 / factor
+
+        def primitive(x):
+            return x * (1 - np.log(x))
+
+        for i, time in enumerate(result["times"][1:], 1):
+            amount = computed_parent + recovery_rate * (time - cut)
+            expected = (primitive(amount) - primitive(computed_parent)) / recovery_rate
+            actual = values["regeneration_dissipated_energy_pJ"][i].flat[0]
+            assert abs(actual - expected) < 3e-14
+        np.testing.assert_allclose(
+            values["energy_amount_increment_fmol"][-1, 0, 0],
+            target_pool - initial_pool + recovery_rate * (end - cut),
+            atol=1e-18,
+            rtol=0,
+        )
+        np.testing.assert_array_equal(result["potential_V"][:, 0], result["times"])
+        assert result["relative_tolerance_applies_to"] == "segment_delta"
+        answers.append(result["state"])
+    np.testing.assert_allclose(answers[0], answers[1], atol=3e-14, rtol=3e-11)
+    assert len(solver_calls) == 4
+    for (left, right), state, _ in solver_calls:
+        assert left == 0.0 and right in (cut, end - cut)
+        assert not np.any(state)

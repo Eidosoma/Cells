@@ -1,0 +1,292 @@
+{
+  "kind": "cells.betse_lattice_seed_generation_preparation_plan@1",
+  "status": "qualification02_Chief_independent_review_accepted",
+  "prepared_utc": "2026-10-30T19:25:42.343423+00:00",
+  "scope": "Native Parameters stores and square/HEX lattice seed occurrences before make_voronoi image prelude",
+  "Chief_coordinates_launch": true,
+  "numerical_launch_authorized": false,
+  "next_user_instruction_required_before_numerical_launch": false,
+  "owned_source_sha256": {
+    "src/cells/processes/betse_lattice_seed_generation.py": "d1e20f37d37007460229edde9484513dad7f36642c1ec83a9c80e4640eb52df6",
+    "validation/betse/betse_lattice_seed_generation_native.py": "eefcf887094f95e7df7f93d98c24bca66324cf6fa4423d1faa4a8acfbd86a981",
+    "validation/betse/betse_lattice_seed_generation_reference.py": "08770331953e233d4af93c554880ce6b35cbd24c7b7f3a7a459339ea47e284fe",
+    "validation/betse/betse_lattice_seed_generation_fixtures.py": "50d5fefaf9700c22ee01346a0503b5244b076128a5cb709ac2243e4d2691e99e",
+    "validation/betse/betse_lattice_seed_generation_checks.py": "16f5c5b04bde01d690af9e99eed11daf95e979480747d1a7cb1a8a1b93e15e54",
+    "validation/betse/betse_lattice_seed_generation_replay.py": "774efe99313aedf7d64e628d7b1c0eb19618c3bf87e5216c07133ab684358339",
+    "validation/betse/betse_lattice_seed_generation_source_map.json": "f88e810e6082373778acb3ab01c14e6268c8398bb556373c3a552bd372ce9a98",
+    "validation/betse/betse_lattice_seed_generation_protocol.json": "49d8a021c51a08d9e936d8b779f65f386a3d6eef0640dc62e6e52097e10bbc1d",
+    "tests/unit/test_betse_lattice_seed_generation.py": "4d728ab8a4d394b5a38fbbe9fc22d09f5dfd384c15af25e53bb071807fb905d4"
+  },
+  "reused_helper_source_sha256": {
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/specs.py": "193d7f814d422099c2ea0c661a58d08142fb07c43de6bad3eb59c3b2f132eb09",
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry_initialization.py": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/tissue/physiology_protein_packet_provider_reference.py": "e5f5ce917e3932f39667ccbd04addbe2217e59697b86862e7ba3c8b88376e6db",
+    "validation/tissue/physiology_protein_transition_arrays_reference.py": "ddb686a5ea88c2356eb7e2269260379f37fb9badb3e35b046dcd2115b9c1016e",
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "validation/tissue/open_calcium_bath_trajectory_common.py": "9e12d73aa0fe428c59f4e9e2823c9e4a04a43b8e712523f295e66400976079e0",
+    "validation/tissue/open_calcium_trajectory_common.py": "caa1bba1281fb5463d1b15e6d1971342a821bd69fd07693aeb9eb84b02bcb78f"
+  },
+  "note": "agent-work/cells-specialist/NATIVE_LATTICE_SEED_GENERATION.md",
+  "note_sha256": "901102e3a3d3feda38ea9c2f51e727f0a114a0baeb14924e89325383ab62b0fd",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089"
+    }
+  },
+  "source_AST": "passed_without_module_imports; authenticated wrappers compiled but not executed",
+  "ruff": "passed_seven_owned_python_files_and_next_runner",
+  "static_source_map_verification": {
+    "parameter_stores": 8,
+    "draw_sites": 4,
+    "checkout_and_installed_native_file_pins": 5,
+    "body_AST_digests_verified": true,
+    "authenticated_type_check_AST": true,
+    "parameter_and_loop_wrappers_exact": true,
+    "native_annotations_and_decorator_retained": true,
+    "postponed_wrapper_compilation_without_exec": true
+  },
+  "test_multiplicities_from_AST": {
+    "test_complete_native_lattice_parameters_draws_and_independent_coordinates": 12,
+    "test_zero_disorder_draws_both_axes_and_retains_complete_cache": 2,
+    "test_bbox_occurrences_are_appended_without_deduplication_or_centre_replacement": 1,
+    "test_centre_excludes_appended_bbox_occurrences": 1,
+    "test_generation_preserves_process_global_random_state": 1,
+    "test_hex_order_is_blue_block_then_red_and_empty_red_is_retained": 1,
+    "test_parameter_counts_precede_expansion_and_gap_is_native_drawing_constant": 1,
+    "test_twist_at_y_preserves_cached_gaussian_and_exact_draw_successors": 1,
+    "test_raw_empty_native_failure_is_retained_without_rng_change": 2,
+    "test_raw_native_centre_overflow_retains_trial_and_successor_without_commit": 1,
+    "test_resealed_seed_or_parameter_tampering_is_rejected": 4,
+    "test_state_buffers_and_input_stream_are_immutable_and_handoff_is_seed_only": 1,
+    "test_unapproved_inputs_refuse_before_any_sampling": 8,
+    "test_duplicate_points_do_not_become_a_manufactured_geometry_declaration": 1
+  },
+  "expected_checks": 37,
+  "expected_complete_cases": 12,
+  "expected_raw_empty_failures": 2,
+  "expected_raw_nonfinite_centre_failures": 1,
+  "complete_case_ids": [
+    "square_zero",
+    "square_disordered",
+    "square_one_point",
+    "square_count_below",
+    "square_count_above",
+    "square_twist_cache",
+    "hex_zero",
+    "hex_disordered",
+    "hex_max_disorder",
+    "hex_red_empty",
+    "hex_raw_count_zero",
+    "hex_cached"
+  ],
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-lattice-seed-generation-20261030-02-checks.py",
+  "runner_sha256": "f9a486f75e8be9d7423f583aadb699ad48b989e0396b751d56b594a598554c2c",
+  "prepared_command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/specialist-runners/betse-lattice-seed-generation-20261030-02-checks.py",
+    "--output",
+    "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02"
+  ],
+  "command_executed": true,
+  "planned_qualification_output": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02",
+  "planned_output_exists": true,
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-preparation-20261030-02.json",
+  "resources": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "runtime_estimate": {
+    "expected_under_ten_minutes": true,
+    "measured_for_this_panel": false,
+    "phases": [
+      "checks",
+      "native-replay",
+      "reference-replay"
+    ],
+    "basis": "12 cases, each at most128 lattice points; prior geometry initialization runner completed in under one minute. Chief coordinates actual launch mode."
+  },
+  "tolerances": {
+    "native_host": "Exact complete values/shapes/dtypes; raw array bytes retained",
+    "uniforms": "Exact",
+    "parameter_counts_and_MT_state": "Exact discrete source stores/shape/order and full RNG state before coordinate budgets",
+    "coordinates": "Existing B09 1e-27m+6e-12*abs(reference), no carried or propagated allowance",
+    "reference_resolution_fraction": 0.1,
+    "scientific_accuracy_failure_retry": false
+  },
+  "evidence_prepared": {
+    "raw_precomparison_arrays": true,
+    "full_primary_and_refined_buffers": true,
+    "raw_empty_failures": true,
+    "raw_nonfinite_trial_and_successor": true,
+    "fresh_native_reference_production_denials": true,
+    "actual_before_native_capture": true,
+    "original_source_strides_and_order": true,
+    "original_mean_reduction_assertions": true
+  },
+  "B09_and_MT_coverage_reused": true,
+  "new_B09_or_MT_coverage": false,
+  "topology_generated": false,
+  "biological_geometry": false,
+  "full_make_world": false,
+  "image_filter_merge_refinement_executed": false,
+  "downstream_geometry_admitted": false,
+  "numerical_execution": true,
+  "numerical_checks_run": 37,
+  "qualification_results_exist": true,
+  "scientific_accuracy_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "ECM_lane_touched": false,
+  "other_active_jobs_inspected": false,
+  "Root_shared_sources_changed": false,
+  "next_action": "Chief independently reviews terminal evidence; specialist continues static image-mask prelude only. No follow-up numerical jobs.",
+  "authorization": {
+    "authorized_utc": "2026-10-30T19:32:31.814709+00:00",
+    "coordinator": "Chief",
+    "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+    "basis": "New user continuation authorizes repaired lattice37 qualification02",
+    "scope": "One repaired bounded qualification02, fresh native preflight verified first; no retry on failure",
+    "resources_unchanged": true
+  },
+  "original_static_receipt_sha256": "329d375275db08a14b58a643476ef0e36e8fc28388f096c7ffeb3dc2d3cc228e",
+  "terminal_failure_exists": false,
+  "qualification_launches": 2,
+  "scientific_accuracy_retries": 0,
+  "failed_round_receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-failed-round-20261030-01.json",
+  "failed_round_receipt_sha256": "2b1cb9f9920aad0dd2341492f59966a7a37dc31f00d0445105cd533ff31dd515",
+  "previous_qualification": {
+    "output": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-01",
+    "status": "failed",
+    "checks": {
+      "total": 37,
+      "passed": 20,
+      "failed": 17,
+      "complete_native_independent_cases": 0,
+      "fresh_replay_phases": 0
+    },
+    "receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-failed-round-20261030-01.json",
+    "receipt_sha256": "2b1cb9f9920aad0dd2341492f59966a7a37dc31f00d0445105cd533ff31dd515",
+    "evidence_and_runner_unchanged": true
+  },
+  "static_repairs": {
+    "native_type_check": "Authenticated original types.py function, original loop decorator retained, explicit validated normalized-call boundary",
+    "AST_wrappers": "Parameter-store module, native loop and native decorator AST checked consistently before compile",
+    "centroid": "Original source strides/order retained before K-order copies, source-order reduction in both centroid assertions",
+    "raw_evidence": "Actual accepted/empty/nonfinite trial and complete RNG successor written before native evaluation",
+    "numerical_execution": false,
+    "fixtures_unchanged": true,
+    "coordinate_RNG_arrays_unchanged": true,
+    "tolerances_unchanged": true,
+    "planned_checks_unchanged": 37
+  },
+  "original_static_preparation_receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-preparation-20261030-01.json",
+  "original_static_preparation_receipt_sha256": "329d375275db08a14b58a643476ef0e36e8fc28388f096c7ffeb3dc2d3cc228e",
+  "authorization_history": [
+    {
+      "authorized_utc": "2026-10-30T19:19:36.340148+00:00",
+      "coordinator": "Chief",
+      "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+      "basis": "Root authorizes lattice37 qualification under this new user continuation",
+      "scope": "One bounded CPU6 qualification; retain any failure; no automatic retry",
+      "resources_unchanged": true,
+      "consumed_by_failed_round": "betse-lattice-seed-generation-20261030-01"
+    }
+  ],
+  "native_preflight": {
+    "output": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02-preflight",
+    "result_sha256": "f5238619c8577e8edd3d325f217d829fdd3525bd59d1e432cf2d9e80375fc50d",
+    "proof_sha256": "7fe93276886aa05ee34069c5ceaa9f9768d69ef1ee80c8c293250fd82ff34843",
+    "native_type_check_AST_verified": true,
+    "source_strides_and_mean_order_verified": true,
+    "production_imports_denied": true,
+    "cases": [
+      "square_zero",
+      "square_disordered"
+    ]
+  },
+  "authorization_consumed": true,
+  "completion_verification": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/completion-verification.json",
+  "completion_verification_sha256": "c6464105a058fb057bb8fceae7e3d52d16b4ed2ca389c215a5f4dcce25260ffe",
+  "result_sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+  "measured_results": {
+    "status": "verified",
+    "kind": "cells.betse_lattice_seed_generation_completion_verification@1",
+    "result_sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+    "checks": 37,
+    "complete_cases": 12,
+    "raw_empty_failures": 2,
+    "nonfinite_centre_failures": 1,
+    "verified_artifacts": 2420,
+    "verified_sources": 2270,
+    "verified_native_files": 5,
+    "verified_runtime_files": 1202,
+    "retained_complete_array_columns": 576,
+    "maximum_error_fraction": 5.941852305353639e-05,
+    "maximum_reference_resolution_fraction": 0.0,
+    "resource_summary": {
+      "checks": {
+        "elapsed_seconds": 19.19655584706925,
+        "observed_process_high_water_bytes": 229814272,
+        "minimum_available_host_memory_bytes": 19556478976
+      },
+      "native-replay": {
+        "elapsed_seconds": 5.589071962982416,
+        "observed_process_high_water_bytes": 52318208,
+        "minimum_available_host_memory_bytes": 19465424896
+      },
+      "reference-replay": {
+        "elapsed_seconds": 4.576948491157964,
+        "observed_process_high_water_bytes": 83001344,
+        "minimum_available_host_memory_bytes": 21152878592
+      }
+    },
+    "affinity": [
+      6
+    ],
+    "packages": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1"
+    },
+    "full_primary_and_refined_buffers_retained": true,
+    "raw_before_native_capture_retained": true,
+    "native_and_reference_production_imports_denied": true,
+    "pinned_native_type_check_and_source_layout_verified": true,
+    "failed01_preserved": true,
+    "new_numerical_run_or_reference_rerun": false,
+    "independent_review_pending": true,
+    "scope": "Native scalar square/HEX seed occurrences; exact source draws/MT/duplicates/bounds; B09/MT helper coverage reused, no mesh/biological/full-world claim",
+    "topology_generated": false,
+    "biological_geometry": false,
+    "ECM_lane_touched": false,
+    "automatic_followup": false,
+    "automatic_polling": false
+  },
+  "Chief_independent_review": {
+    "status": "accepted_declared_scope_reported_by_Chief",
+    "receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/root-review-01/completion-verification.json",
+    "sha256": "d301d725621746fd3638d811097010ef298c081ad4af0291b8e8fc9c0308ef0f",
+    "review_not_repeated_by_specialist": true
+  }
+}

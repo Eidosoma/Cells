@@ -1,0 +1,445 @@
+{
+  "kind": "cells.betse_initial_mesh_preparation_source_map@1",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625"
+  },
+  "closure_methods": [
+    "__init__",
+    "pre_mesh",
+    "make_single_cell_points",
+    "create_tri_mesh",
+    "trimesh_core_calcs",
+    "merge_tri_mesh",
+    "process_primary_edges",
+    "create_tri_map",
+    "create_mappings",
+    "define_vorverts",
+    "process_voredges",
+    "sanity_check",
+    "area",
+    "poly_centroid",
+    "circumc",
+    "quad_circumc",
+    "cc_sort_inds"
+  ],
+  "methods": {
+    "__init__": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 86,
+      "last_line": 144,
+      "ast_sha256": "7389dc879a9947db7acb46045c706a3f5230652b16dc44ae82c57b59d7c2c0a8"
+    },
+    "area": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2413,
+      "last_line": 2443,
+      "ast_sha256": "959859cc5f8ac553e942efef63c4100e692da71a2baf0288614b264b56d32cde"
+    },
+    "cc_sort_inds": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2634,
+      "last_line": 2647,
+      "ast_sha256": "3ca9e6f23a15d930dc3a7dd1e9eff7d846731383856aa7a0ca18aaa4236bdeb1"
+    },
+    "circumc": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2482,
+      "last_line": 2532,
+      "ast_sha256": "eb254c8d459a9829bd65901d99205549d4c0297f87df139d4c6e124ef3973d0e"
+    },
+    "create_mappings": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 699,
+      "last_line": 743,
+      "ast_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82"
+    },
+    "create_tri_map": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 677,
+      "last_line": 696,
+      "ast_sha256": "144ef580df8bd92abf80a9544872b5dcc5fcf608c24b810f3d3e75531a30d3b7"
+    },
+    "create_tri_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 235,
+      "last_line": 287,
+      "ast_sha256": "b05c96de3959d9e16b9b3caeaa09c02879962349cebe3d0ae5db8555591b9854"
+    },
+    "define_vorverts": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 746,
+      "last_line": 845,
+      "ast_sha256": "7c7fc289221deb330ff6f49c9b35efd176c36ab6d266c10eb48652bf9faef7f8"
+    },
+    "make_single_cell_points": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 212,
+      "last_line": 233,
+      "ast_sha256": "2b8feb3141752a676e89f21de0be5a0ebab6d75f10d6a969ad78b96e448bce44"
+    },
+    "merge_tri_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 404,
+      "last_line": 578,
+      "ast_sha256": "29997262239109511667e8adec1c1f742e024a6e61949546d7a30c09a24a003b"
+    },
+    "poly_centroid": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2445,
+      "last_line": 2480,
+      "ast_sha256": "f0d79e46ae1693f8dcc48cc5deedd9ef53527d7579e7d87627bd7b3d855d2208"
+    },
+    "pre_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 156,
+      "last_line": 164,
+      "ast_sha256": "669fb0d34d67aac95b533c85c4d94be193b7dc99efe3db7dfccf17193f4edb08"
+    },
+    "process_primary_edges": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 581,
+      "last_line": 674,
+      "ast_sha256": "a368f0be24710d5206118aaeb0e7660e1b09a4a135950f5aa4ce115a105ce637"
+    },
+    "process_voredges": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 848,
+      "last_line": 1007,
+      "ast_sha256": "49b1218cc039c5ed24c5ef7f6fb9b3260b7e62406239def65bae9acaeba2f274"
+    },
+    "quad_circumc": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2534,
+      "last_line": 2558,
+      "ast_sha256": "839e22900a5de3f33d5078c093c61c05ca168f38ceb140919371c48fc1ddd61c"
+    },
+    "sanity_check": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 1010,
+      "last_line": 1041,
+      "ast_sha256": "415dafcd08ab963862ef08e6ea7e3653a16f59db35d00b6fd6fd9d1f5718a8ab"
+    },
+    "trimesh_core_calcs": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 290,
+      "last_line": 385,
+      "ast_sha256": "eb4510e5acbd96b335c391c331a82e86dc5869b5de6806b20b52ca9538be0a9b"
+    }
+  },
+  "helpers": {
+    "is_convex": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 81,
+      "last_line": 180,
+      "ast_sha256": "d6c8654548be19d08120f494e9669d0c74147f28ac89b2f3a69de0a2a5129b47"
+    },
+    "is_cyclic_quad": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 188,
+      "last_line": 238,
+      "ast_sha256": "31ef1eed914b1a4998b1fdc3efd9241fe89ef626f58e15a8f6af6c8418906198"
+    },
+    "det1d": {
+      "source": "betse/util/math/mathoper.py",
+      "first_line": 21,
+      "last_line": 57,
+      "ast_sha256": "4dc88b35e66040907013ccf87fd8a3bf5d193b4bc022cef9127f51785e6e62b9"
+    }
+  },
+  "production_adaptations": [
+    {
+      "method": "__init__",
+      "line": 130,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "make_single_cell_points",
+      "line": 219,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "make_single_cell_points",
+      "line": 227,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "np.random.random",
+      "replacement": "self._cells_rng.random"
+    },
+    {
+      "method": "make_single_cell_points",
+      "line": 228,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "np.random.random",
+      "replacement": "self._cells_rng.random"
+    },
+    {
+      "method": "create_tri_mesh",
+      "line": 241,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "create_tri_mesh",
+      "line": 252,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "trimesh_core_calcs",
+      "line": 300,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "trimesh_core_calcs",
+      "line": 314,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "np.delete",
+      "replacement": "self._cells_delete_seed_rows"
+    },
+    {
+      "method": "trimesh_core_calcs",
+      "line": 318,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "Delaunay",
+      "replacement": "self._cells_delaunay"
+    },
+    {
+      "method": "merge_tri_mesh",
+      "line": 413,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "process_primary_edges",
+      "line": 586,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "create_mappings",
+      "line": 713,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "define_vorverts",
+      "line": 756,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "define_vorverts",
+      "line": 839,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "process_voredges",
+      "line": 850,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "process_voredges",
+      "line": 868,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "process_voredges",
+      "line": 907,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "process_voredges",
+      "line": 957,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "cKDTree",
+      "replacement": "self._cells_tree"
+    },
+    {
+      "method": "sanity_check",
+      "line": 1012,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "sanity_check",
+      "line": 1023,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_info",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "sanity_check",
+      "line": 1030,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "np.delete",
+      "replacement": "self._cells_delete_seed_rows"
+    },
+    {
+      "method": "sanity_check",
+      "line": 1041,
+      "kind": "owned_runtime_hook",
+      "original_call_target": "logs.log_warning",
+      "replacement": "self._cells_log"
+    },
+    {
+      "method": "is_convex",
+      "line": 117,
+      "kind": "closed_normalized_helper_binding",
+      "original": "from betse.util.type.numeric.floats import PI, TWO_PI"
+    },
+    {
+      "method": "is_cyclic_quad",
+      "line": 211,
+      "kind": "closed_normalized_helper_binding",
+      "original": "from betse.lib.numpy import nparray, npscalar"
+    }
+  ],
+  "production_kernel": "src/cells/processes/betse_initial_mesh_preparation_kernel.py",
+  "license_source_sha256": "d8be114cc34a3202c8025347913612d976112d05ac45ef3ad953d554d3894936",
+  "license_notice_retained": true,
+  "static_only": true,
+  "numerical_execution": false,
+  "method_sequence": [
+    "__init__",
+    "pre_mesh -> create_tri_mesh -> trimesh_core_calcs, optional sanity repeat, optional merge, primary edges",
+    "create_mappings -> define_vorverts -> process_voredges"
+  ],
+  "excluded": [
+    "init_mesh and exterior derivative/pseudoinverse operators",
+    "bitmap clip_to_curve",
+    "refinement/smoothing",
+    "cell_index/cellVerts and physical surface/volume binding"
+  ],
+  "warnings": [
+    "Do not sort native sets or repair directed-only edge mapping",
+    "Source quad area/circumcentre formulas differ from true general-quadrilateral metrics",
+    "Full original seed occurrence IDs are removed only by observed source np.delete indices",
+    "Original array layouts must be restored before constructor; frozen C-order is not source reduction order"
+  ],
+  "native_helper_sites": {
+    "type_check": {
+      "source": "betse/util/type/types.py",
+      "first_line": 963,
+      "last_line": 964,
+      "ast_sha256": "3bfbdfbf80d99c105b711c15efe9a0d8caaf9a0857f2a0b3dd5a8e657c06968d"
+    },
+    "die_unless_polygon": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 19,
+      "last_line": 46,
+      "ast_sha256": "c9cc932bbcf03bfb2428493ef17d4f2122e55cb9184fe8802747eedd48c8b4fb"
+    },
+    "is_polygon": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 50,
+      "last_line": 77,
+      "ast_sha256": "1ebe7a5150ff53ee20db118bcbc336b2b795a2ee5bcd44d1f572c43e907c84c0"
+    },
+    "is_convex": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 81,
+      "last_line": 180,
+      "ast_sha256": "d6c8654548be19d08120f494e9669d0c74147f28ac89b2f3a69de0a2a5129b47"
+    },
+    "is_cyclic_quad": {
+      "source": "betse/util/math/geometry/polygon/geopoly.py",
+      "first_line": 188,
+      "last_line": 238,
+      "ast_sha256": "31ef1eed914b1a4998b1fdc3efd9241fe89ef626f58e15a8f6af6c8418906198"
+    },
+    "det1d": {
+      "source": "betse/util/math/mathoper.py",
+      "first_line": 21,
+      "last_line": 57,
+      "ast_sha256": "4dc88b35e66040907013ccf87fd8a3bf5d193b4bc022cef9127f51785e6e62b9"
+    },
+    "is_point": {
+      "source": "betse/util/math/geometry/geopoint.py",
+      "first_line": 62,
+      "last_line": 93,
+      "ast_sha256": "cef63f9e7e31a10001203ef221a174258fddba79571cb0215cf05c1cf678fd2e"
+    },
+    "is_sequence": {
+      "source": "betse/util/type/iterable/sequences.py",
+      "first_line": 242,
+      "last_line": 265,
+      "ast_sha256": "284c920dd3b1030b12de65ea12c1524aa4aa3cac79e1dea78c0718f9b1c03b9f"
+    },
+    "from_iterable": {
+      "source": "betse/lib/numpy/nparray.py",
+      "first_line": 95,
+      "last_line": 148,
+      "ast_sha256": "3aed5bb52474d1352a6506a9ff23b7081a7174030a7c410846fac1dc48debb88"
+    },
+    "to_python": {
+      "source": "betse/lib/numpy/npscalar.py",
+      "first_line": 18,
+      "last_line": 68,
+      "ast_sha256": "b3dd30a0159837868ea5a16b171f720dc4a58a81cf356131abb5be08b16faa31"
+    }
+  },
+  "production_normalization": {
+    "annotations": "Private transcription drops annotation/decorator metadata; oracle retains original AST and actual pinned type_check",
+    "zip": "Explicit strict=False preserves original truncation",
+    "helpers": "Normalized finite ndarray polygon boundary; source helper math preserved; np.asarray/item bind native from_iterable/to_python semantics on the admitted arrays",
+    "hooks": "Local RNG, source seed-row delete, tree/Delaunay and logs only; no source predicate/threshold/quantity rewrite"
+  },
+  "cache_domains": {
+    "tri_verts": "Retained constructor point occurrences; direct source deletion ledger",
+    "tri_cells": "Final triangle/quad vertex-index rows; raw pre-alpha simplices retained separately",
+    "tri_sa": "Native triangle signed shoelace or source cyclic-quad Brahmagupta quantity",
+    "tri_sa_o": "Repeated source face-area reference, selected through nearest duplicate dual vertices; not polygonal control volume",
+    "vor_verts": "Native lexicographic unique dual coordinate axis",
+    "vor_verts_duplicates": "Original per-cell concatenated dual occurrences",
+    "vor_cells": "Retained primal owner to unique dual vertex indices",
+    "vor_edges": "Mapped and oriented to the tri-edge axis",
+    "bflags_vedges": "Native pre-mapping dual-edge set axis; not silently reindexed to final vor_edges",
+    "bflags_tcells": "First face for each boundary edge; repeated face entries remain",
+    "inner_vvert_i": "Nearest unique dual vertex for each final face reference point",
+    "xyaxis": "Final dual extrema multiplied by1.1 about zero; distinct from original image window"
+  },
+  "reuse": {
+    "B09_receipt": "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/result.json",
+    "B09_sha256": "cbc165a2a899d30136ce3c78224ebec3e9acab9ce11ed08de680a7cd81b6a46f",
+    "geometry_adapter": "betse_geometry_initialization_environment_bridge@1",
+    "lattice_result_sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+    "lattice_review_sha256": "d301d725621746fd3638d811097010ef298c081ad4af0291b8e8fc9c0308ef0f",
+    "image_result_sha256": "3200c71226bc30d43e0fc48e8a0417320e38ddb2649541ad07e99fd97be92a2e",
+    "new_B09_or_MT_coverage": false,
+    "image_review_receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/root-review-01/REVIEW.json",
+    "image_review_sha256": "8d9eff1e371f0139c1de7c90c334afb77083a513b0bb9eb2ccd51601961a3d39"
+  }
+}

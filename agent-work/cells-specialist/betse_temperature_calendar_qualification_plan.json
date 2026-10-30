@@ -92,5 +92,8 @@
   "native_and_reference_import_denied_replays": "passed",
   "compiled_JAX": false,
   "accepted_tissue_steps": false,
-  "heat_law_assigned": false
+  "heat_law_assigned": false,
+  "independent_review_receipt": "/mnt/workspaces/Cells/betse-temperature-calendar-20261030-01/independent-review.json",
+  "independent_review_sha256": "649f8b872c305d9f25073299ce7b471d56c75eae1f908382251afc435ab973b8",
+  "secondary_precision_provenance": "125/170-digit equality supported by completed assertions; separate full170-digit buffers were not retained for independent re-evaluation. No rerun requested."
 }

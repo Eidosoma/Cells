@@ -1,0 +1,126 @@
+{
+  "acceptance": {
+    "Q_charge_density": "32*eps*(ions+cells+16)*sum(abs(all-ion ER charge-density terms))+1e-30 C/m3",
+    "SERCA_flux": "Existing pump preflight density2e-18 mol/(m2s)+relative2e-11*abs(reference), unchanged",
+    "Ver": "1024*eps*(ions+cells+gridpoints+16+64)*all-ion charge gross*er_vol/er_sa/cm_er+1e-30 V; no propagated bound",
+    "carried_reference_forms": 0,
+    "conservation": "ER transfer only: per-ion/per-cell amount residual <=128*eps*(ions+cells+4+32)*before+after absolute amount gross + existing B24 concentration floor*(cell_vol+er_vol)",
+    "cytosol_and_ER_concentration": "Existing B24 floors and128*eps*(ions+cells+4+32)*actual local ER gross; counts reflect ER cell axes",
+    "independent": "Fresh Decimal90/140 from actual immutable PRE-ER state before model ER calculation; no upstream CaATP/normal-prefix or trajectory-accuracy claim",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "no_outcome_based_parameters": true,
+    "no_tolerance_tuning": true,
+    "primary": "Exact complete native outer frames, ER state/caches/internal frames and source arrays/dtypes",
+    "self_resolution_fraction": 0.1
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "diagnostics": {
+    "arrays": "Full original/model internalframes, completeownedstate, raw inputs/returns/exceptions, arithmetic, conservation residuals and per-field errors/budgets/units/index/value arrays",
+    "carried": "Zero carried reference forms; conditional actual pre-ER only",
+    "scope": "Exact original-source execution primary; local independent kernel only; no full native lifecycle claim"
+  },
+  "kind": "cells.betse_normal_er_join_static_contract@1",
+  "law_id": "betse_normal_rectangular_bath_endoretic_join_v1_5_0@1",
+  "limitations": [
+    "Static unqualified package only; no numerical checks executed",
+    "No explicit binding-buffer chemistry in these source bodies; Hill modulation and legacy clipping are not buffers",
+    "No finite-fuel, metabolic network integration, physiological SERCA2Ca claim, full upstream numerical accuracy or trajectory bound",
+    "No ECM, environment preparation, ER cutting/remove_ers or write_cache output lifecycle integration",
+    "Fixed immutable geometry and complete current owned arrays only; external molecular owner readouts explicitly supplied"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "numerical_authorization": "No numerical launch; explicit subsequent requested and CPU-coordinated round required",
+  "numerical_runs": 0,
+  "owned_state": {
+    "Q_units": "Native Q is charge density C/m3; total ER amount enters Ver through er_vol/er_sa",
+    "axes": "immutable ion IDs x cell IDs, bound to full joined definition identity",
+    "context": "Each drive explicitly owns molecules/metabo/grn presence, IP3 membership and full cell concentration vector; source lookup precedence preserved. These are supplied readouts, no molecular owner dynamics claimed.",
+    "fields": [
+      "cc_er",
+      "er_vol",
+      "er_sa",
+      "Ver",
+      "Q",
+      "cm_er",
+      "Dm_er",
+      "Dm_er_base",
+      "Dm_channels",
+      "zer"
+    ]
+  },
+  "planned": {
+    "actual_pre_ER_calls": 36,
+    "carried_reference_forms": 0,
+    "checks": 18,
+    "dependency_controls": 3,
+    "fresh_conditional_reference_forms": 72,
+    "native_captures": 15,
+    "positive_three_call_histories": 12,
+    "raw_SERCA_probes": 3
+  },
+  "purpose": "Complete owned all-ion native EndoRetic at original Ca_dyn1 handler slot, with rectangular bath CaATP and late channels",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_er_join_source_map.json",
+  "source_policy": {
+    "ER_channels": "Dm_er_base+Dm_channels for allions; non-Ca channel cache remains1e-18, not implicitly zeroed",
+    "IP3": "No owners means Ca-only Hill modulation; any owner but missingIP3 means zeroIP3factor; molecules thenmetabo thengrn precedence",
+    "initialization": "Literal init once: er_vol=.1*cell_vol,er_sa=cell_sa,Ver/Q0,cm_er=p.cm,cc_er deep copy withCa0.2,allion Dm/base/channels1e-18,zer fromvalence; never per-step Ca clamp",
+    "membrane_buffer": "ER bulk transfers never automatically refresh cc_at_mem before late network; preserved stale buffer",
+    "nonce": "Each ER electroflux mutates ER Ver by1e-25; source z receivesseparate nonce; get_v then replacesVer usingallions, including stationary rows",
+    "order": "ordinary refresh -> plasma CaATP storage/cache -> ER channels -> SERCA using oldVer -> directcytosol/ER Ca transfer -> moving-ion ER electroflux and in-place Ver nonce -> all-ion get_v -> late network channels -> ordinary deferredcommit -> current/voltage",
+    "raw_domain": "No ER clipping or source regularization added. Raw unused backwards pole and equilibriumoverflow returnscaptured evenwithfiniteflux. Finitepublication checksseparatefromrawsourcecompletion; no positive-domain/physicalclaim.",
+    "serca": "Literal numericmM quotient cADP*cPi*cER/(cATP*cCyto), exact-zero binary64product ->1e-16, oldVer exponent -deltaG/(RT)-2FV/(RT), positivefluxcyto->ER, unusedbackward retained. Same maintained pools/Km/deltaG as plasma CaATP; no sourcefuel consumption or two-Ca stoichiometry invented."
+  },
+  "status": "static_prepared_not_executed_not_qualified"
+}

@@ -1,0 +1,832 @@
+{
+  "kind": "cells.betse_initial_mesh_preparation_plan@1",
+  "status": "raw_completion_retention_successor_frozen_pending_Chief_preflight",
+  "prepared_utc": "2026-10-30T20:49:47.799664+00:00",
+  "scope": "Owned native constructor and first pre_mesh, before bitmap clipping, operators, refinement and physical geometry bridge",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_initial_mesh_preparation.py": "ef33e60ea5cd741d3618bccaaba494ac472664b02f4c82d08942b3e2c52c89b0",
+    "src/cells/processes/betse_initial_mesh_preparation_cache.py": "f77c0a5a09d92dbf0746ac7c89ca564ea6bebc726e27ae5b40d3e90f4bffb69a",
+    "src/cells/processes/betse_initial_mesh_preparation_kernel.py": "7102de6bae1f5da0ecb5c99064ffa03b26e20b2b7b8855b72f5066fd20a0089c",
+    "tests/unit/test_betse_initial_mesh_preparation.py": "10955e196391c4faba20d528730222cb9fa101b191d0cd08a84c659c0eb8d646",
+    "validation/betse/betse_initial_mesh_preparation_fixtures.py": "ca239e38d36dc94577d0331d8a8579f52746ac1c4dfe8741206d9a7cb4460a95",
+    "validation/betse/betse_initial_mesh_preparation_native.py": "b2cd20e603829f67750a0f12cfcc979601345e5fb91a5e054eeaa3bb40944def",
+    "validation/betse/betse_initial_mesh_preparation_protocol.json": "2502871aaa6a4aa0182c8df2fead3efcc0392194ef08a7af8c5c70a9eb5cb472",
+    "validation/betse/betse_initial_mesh_preparation_reference.py": "a56492d8ab2d36c7cebe426a1576fbc16b2d27210a437459e27d22b398ea4229",
+    "validation/betse/betse_initial_mesh_preparation_replay.py": "5fc7ccbe6c879fde41ab5fa7a863694c5532e6d476155ee54d5515d85c46f0fb",
+    "validation/betse/betse_initial_mesh_preparation_source_map.json": "7c2e8412d6e68eb5e4bf5155a245519a5963801843e24ee12ae79549badfccda",
+    "validation/betse/betse_initial_mesh_preparation_wire.py": "0f8a39a6c3fec65a9c015de154e920983ef0559e93ce7d6bbabc5f2818126cf9"
+  },
+  "reused_helper_source_sha256": {
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/specs.py": "193d7f814d422099c2ea0c661a58d08142fb07c43de6bad3eb59c3b2f132eb09",
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry_initialization.py": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/tissue/physiology_protein_packet_provider_reference.py": "e5f5ce917e3932f39667ccbd04addbe2217e59697b86862e7ba3c8b88376e6db",
+    "validation/tissue/physiology_protein_transition_arrays_reference.py": "ddb686a5ea88c2356eb7e2269260379f37fb9badb3e35b046dcd2115b9c1016e",
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "validation/tissue/open_calcium_bath_trajectory_common.py": "9e12d73aa0fe428c59f4e9e2823c9e4a04a43b8e712523f295e66400976079e0",
+    "validation/tissue/open_calcium_trajectory_common.py": "caa1bba1281fb5463d1b15e6d1971342a821bd69fd07693aeb9eb84b02bcb78f",
+    "src/cells/processes/betse_lattice_seed_generation.py": "d1e20f37d37007460229edde9484513dad7f36642c1ec83a9c80e4640eb52df6",
+    "validation/betse/betse_lattice_seed_generation_fixtures.py": "50d5fefaf9700c22ee01346a0503b5244b076128a5cb709ac2243e4d2691e99e",
+    "validation/betse/betse_lattice_seed_generation_protocol.json": "49d8a021c51a08d9e936d8b779f65f386a3d6eef0640dc62e6e52097e10bbc1d",
+    "validation/betse/betse_lattice_seed_generation_source_map.json": "f88e810e6082373778acb3ab01c14e6268c8398bb556373c3a552bd372ce9a98",
+    "src/cells/processes/betse_image_mask_prelude.py": "e8e14819df8a80692c2c3990189aaccb2e375a6c984c2cd8dc727ce80e2ce03b",
+    "validation/betse/betse_image_mask_prelude_native.py": "bf645b550438adb1975d913d6230ea388cf1f3f5d3d56d8de4db3d14b65d9063",
+    "validation/betse/betse_image_mask_prelude_reference.py": "5f7fc0ccb641a967f46c3808da1b30859088b421ecf048f664de8a452d9e3c2f",
+    "validation/betse/betse_image_mask_prelude_fixtures.py": "495fd16cf5065d16a182a6923cae2b97f72999cbf5fd7a674a6413d391327242",
+    "validation/betse/betse_image_mask_prelude_replay.py": "45e1926672bc9112b322230100564f841c92249b7d22d3da2ee13dc601ad62b0",
+    "validation/betse/betse_image_mask_prelude_source_map.json": "4d7696250798c403e74df1419f45c458beea74b304697e376bcb3b2fbb4c5792",
+    "validation/betse/betse_image_mask_prelude_protocol.json": "079e083063cb2f3472dc772bdf8fb5ecd3dd7c6d13933e0530a00e658c9ba042",
+    "tests/unit/test_betse_image_mask_prelude.py": "c2d98a251a7879232e2a6b9b0e93f6810c95f2939b0d1e2c9424c4167ddea204",
+    "validation/betse/betse_lattice_seed_generation_native.py": "eefcf887094f95e7df7f93d98c24bca66324cf6fa4423d1faa4a8acfbd86a981",
+    "validation/betse/betse_geometry_initialization_protocol.json": "92c19b00efb538ba86d30f9fef93ef245faa77513795ddf676b71c8e73a8e539",
+    "validation/betse/betse_geometry_initialization_source_map.json": "ece501d857ebecd3506463b49e9a864cc7b4639de1c1f7dd6014658b7180e079"
+  },
+  "note": "agent-work/cells-specialist/NATIVE_INITIAL_MESH_PREPARATION.md",
+  "note_sha256": "fb0fdd4a799a03f009494df4f033a86c13e68f46caed85a09269eb1019bdee31",
+  "static_checker": "/mnt/workspaces/Cells/specialist-runners/betse-initial-mesh-preparation-20261030-02-static.py",
+  "static_checker_sha256": "d55904b6ddbe7018ef9e118e72be97d5229eacbf4d5ec926d185ffcc9825fc2e",
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-03.json",
+  "expected_checks": 22,
+  "expected_complete_cases": 10,
+  "reused_B09_cases": 5,
+  "owned_lattice_image_caller_cases": 5,
+  "expected_raw_source_failures": 2,
+  "exact_source_comparison": "Full native typed scalar/ndarray/object/ragged caches, original array layouts, events, deletion IDs and full MT continuation",
+  "reference_scope": {
+    "analytic": "Decimal100/160 source geometry primitives and nearest distance/rank tables",
+    "quad": "Native cyclic-source formula separately named from general shoelace metrics",
+    "Delaunay": "Exact-rational circle diagnostics on captured simplices; topology is input, no independent generation or topology/geometry qualification",
+    "predicates": "No carried allowance, clipping, tie repair or source threshold rewrite"
+  },
+  "proposed_tolerances": {
+    "coordinates_m": "1e-27+6e-12*abs(reference), reuse B09 coordinate budget",
+    "area_m2": "1e-26+6e-12*abs(reference), reuse B09 area budget",
+    "dimensionless": "2e-14+6e-12*abs(reference)",
+    "native_host": "Exact typed cache contents/shapes/dtypes/source strides and complete source trace/RNG",
+    "reference_resolution_fraction": 0.1
+  },
+  "resource_proposal": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+      "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+      "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+      "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+      "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+      "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+      "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+      "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625"
+    }
+  },
+  "qualification_preconditions": [
+    "Chief static preflight receipt and explicit acceptance bound to the frozen bundle",
+    "Guarded CPU6 driver and fresh production-denied native/reference replays remain frozen",
+    "New user instruction relayed by Chief explicitly authorizes numerical launch"
+  ],
+  "Chief_review_items": [
+    "Declare source-emulation scope distinct from independently certified topology",
+    "Source-derived quad formulas and general polygon diagnostics are separate quantities",
+    "Review exact source layout restoration, duplicate occurrence ledger and typed ragged cache ownership",
+    "Review complete/raw case choices, finite admission and proposed unchanged B09 accuracy budgets"
+  ],
+  "qualification_driver_prepared": true,
+  "fresh_production_denied_replays_prepared": true,
+  "numerical_launch_authorized": true,
+  "numerical_execution": false,
+  "numerical_tests_run": 0,
+  "pytest_collection_executed": false,
+  "scientific_modules_imported": false,
+  "fixture_generation_executed": false,
+  "reference_execution": false,
+  "mesh_generated": false,
+  "topology_qualified": false,
+  "downstream_geometry_admitted": false,
+  "new_B09_or_MT_coverage": false,
+  "ECM_lane_touched": false,
+  "Root_shared_sources_changed": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "next_action": "Chief preflight and Root-owned launch under existing user authorization; Specialist does not launch.",
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-initial-mesh-preparation-20261030-01-checks.py",
+  "runner_sha256": "469324d887a0d92fc7f713366527ffe98d9d0179144579c4ab29341dbb5cc973",
+  "prepared_bundle": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-prepared-20261030-02",
+  "prepared_bundle_manifest_sha256": "173cf219575cda99455601267a15a81d4270b7fb0b18c13ff6f88519eac72b23",
+  "authorized_bundle_manifest_sha256": "173cf219575cda99455601267a15a81d4270b7fb0b18c13ff6f88519eac72b23",
+  "planned_qualification_output": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01",
+  "external_dependency_sha256": {
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/result.json": {
+      "sha256": "cbc165a2a899d30136ce3c78224ebec3e9acab9ce11ed08de680a7cd81b6a46f",
+      "frozen_relative": "dependencies/B09/result.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/source-manifest.json": {
+      "sha256": "f1ff4790e6067a53d7e4c4e0b958131242df0c85072477614af1ff2cd3839022",
+      "frozen_relative": "dependencies/B09/native-source/source-manifest.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/irregular-centroid-aux.json": {
+      "sha256": "ddfe3aedbeb8a425de6b109fb4edd8e576fa3f9b3d935c29f7a6a4ab4b0db01c",
+      "frozen_relative": "dependencies/B09/native-source/irregular-centroid-aux.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/irregular-circumcenter-aux.json": {
+      "sha256": "124c4f31e55b8cdf740b5874a70dc4f0eef2521afb139444afc5dd004a910dcb",
+      "frozen_relative": "dependencies/B09/native-source/irregular-circumcenter-aux.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/native-single-preset-seed17.json": {
+      "sha256": "3f2b7ba2d40d3ece1468b6f97a114b42448f755793c55f46547b0daee717b8ad",
+      "frozen_relative": "dependencies/B09/native-source/native-single-preset-seed17.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/native-single-preset-seed23.json": {
+      "sha256": "cb0b9651bff1395023e43e2a0cbc2000374be9969b5577ba355fd1fa4f2eb33a",
+      "frozen_relative": "dependencies/B09/native-source/native-single-preset-seed23.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/native-source/merged-square-aux.json": {
+      "sha256": "42b04523fb54b2e398a22fd4ca3f9baba00f4ba83d9352309cd505f5941b7f65",
+      "frozen_relative": "dependencies/B09/native-source/merged-square-aux.json"
+    },
+    "/mnt/workspaces/Cells/betse-geometry-initialization-20261030-01/result.json": {
+      "sha256": "61486c5f71b2f8e9d48893bf100d5cb3e44bd880f9827080e35d74e36a0f066d",
+      "frozen_relative": "dependencies/geometry-adapter/result.json"
+    },
+    "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/result.json": {
+      "sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+      "frozen_relative": "dependencies/lattice/result.json"
+    },
+    "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/root-review-01/completion-verification.json": {
+      "sha256": "d301d725621746fd3638d811097010ef298c081ad4af0291b8e8fc9c0308ef0f",
+      "frozen_relative": "dependencies/lattice/review.json"
+    },
+    "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/result.json": {
+      "sha256": "3200c71226bc30d43e0fc48e8a0417320e38ddb2649541ad07e99fd97be92a2e",
+      "frozen_relative": "dependencies/image/result.json"
+    },
+    "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/root-review-01/REVIEW.json": {
+      "sha256": "8d9eff1e371f0139c1de7c90c334afb77083a513b0bb9eb2ccd51601961a3d39",
+      "frozen_relative": "dependencies/image/review.json"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/preparation.json": {
+      "sha256": "c042d540bd4e26a43f6afdce8908c983222dd8090553d98e3ab0a0e1397533c9",
+      "frozen_relative": "dependencies/pillow/preparation.json"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/import-check.json": {
+      "sha256": "106ecf86541d799c5a9b604e7f71a9b40039be6dcdc8461bc8667efd9f69a9fe",
+      "frozen_relative": "dependencies/pillow/import-check.json"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/AvifImagePlugin.py": {
+      "sha256": "2ab961497bdd1519461deccb6581daf6bdc282f6dfba77d3ba72c630b5d8946d",
+      "frozen_relative": "dependencies/pillow/PIL/AvifImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/BdfFontFile.py": {
+      "sha256": "0aa08fa855fc2774eac3ae73f72771132721aa6234a9ffd183290f71100e9c4e",
+      "frozen_relative": "dependencies/pillow/PIL/BdfFontFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/BlpImagePlugin.py": {
+      "sha256": "615058c368c247d06baa095fe99756f39913153eebe2307f2262699cd09f7967",
+      "frozen_relative": "dependencies/pillow/PIL/BlpImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/BmpImagePlugin.py": {
+      "sha256": "e0067eb268d1257de5a1d746652938a39107a06eb5e3fe415d31ee07b7a83b0f",
+      "frozen_relative": "dependencies/pillow/PIL/BmpImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/BufrStubImagePlugin.py": {
+      "sha256": "4032cc32835fb8d0ac6539f755353ca360358371560e31ba36ccb53741bed9e5",
+      "frozen_relative": "dependencies/pillow/PIL/BufrStubImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ContainerIO.py": {
+      "sha256": "c2406a2f618301be5f877c2bb5f4c651faa2a098a90a5fa58361b16e342b4d9c",
+      "frozen_relative": "dependencies/pillow/PIL/ContainerIO.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/CurImagePlugin.py": {
+      "sha256": "6412c04ec22516b5f9aefe8395e135a12b5e394b338ccf5bd5b39c24fe54e3fa",
+      "frozen_relative": "dependencies/pillow/PIL/CurImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/DcxImagePlugin.py": {
+      "sha256": "3a50afeb20c8d0b2d935bb9423bb3af452350ee02b3f21b1a37602cd0d67f078",
+      "frozen_relative": "dependencies/pillow/PIL/DcxImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/DdsImagePlugin.py": {
+      "sha256": "85cf455296d054ac95c971d03cd3a8ea245cba2d1138b495d3533c2333f09050",
+      "frozen_relative": "dependencies/pillow/PIL/DdsImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/EpsImagePlugin.py": {
+      "sha256": "94cb1da75871ec97ac6cb07bff57e5809929810ec9d5140fbed555e815adbc81",
+      "frozen_relative": "dependencies/pillow/PIL/EpsImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ExifTags.py": {
+      "sha256": "61c257add6fffd463aa788e37f998b3920c57fe931db10faf9bd921eef36bdf3",
+      "frozen_relative": "dependencies/pillow/PIL/ExifTags.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/FitsImagePlugin.py": {
+      "sha256": "f9fac59844400abddc273bff8fb7eeba3f5c1fb27bcba27beab662377fa6a820",
+      "frozen_relative": "dependencies/pillow/PIL/FitsImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/FliImagePlugin.py": {
+      "sha256": "e33c47f085c15fd0c68ba74944ce98e4d31d6c0d5df7dc7af7a99c1991f11f32",
+      "frozen_relative": "dependencies/pillow/PIL/FliImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/FontFile.py": {
+      "sha256": "eb86240aaac643c1c79b47d4b5028f21bd124ddffce80f4635df4403db000036",
+      "frozen_relative": "dependencies/pillow/PIL/FontFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/FpxImagePlugin.py": {
+      "sha256": "f7175b4dac1e2d40e9a29b8a64309e1c10c6b196e36e82f36778fe93eb37e125",
+      "frozen_relative": "dependencies/pillow/PIL/FpxImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/FtexImagePlugin.py": {
+      "sha256": "652d16a811ed22d3688b45b9d80e1110e1ab0c87e1e347421832ebb9a5cb4451",
+      "frozen_relative": "dependencies/pillow/PIL/FtexImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GbrImagePlugin.py": {
+      "sha256": "0d8caf85e905075b0e40b1163f061b7f40847c676075ac75722fb70ee49e2204",
+      "frozen_relative": "dependencies/pillow/PIL/GbrImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GdImageFile.py": {
+      "sha256": "f0eadd77d114e0e6d9bbb3cd5d33da33c967ea3a4bc7c41d12f087fcb5e926c0",
+      "frozen_relative": "dependencies/pillow/PIL/GdImageFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GifImagePlugin.py": {
+      "sha256": "fe956c85ac3a65ba9f01daec1acc3fc58b485dabcf25c90fe9b686039acae361",
+      "frozen_relative": "dependencies/pillow/PIL/GifImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GimpGradientFile.py": {
+      "sha256": "cd675b313f95b2c5f1d138340ce9b2b13a14818f9fc825c9bd89854a927578d8",
+      "frozen_relative": "dependencies/pillow/PIL/GimpGradientFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GimpPaletteFile.py": {
+      "sha256": "8481d0f4b279ae2d21cb57bfbd961e0fe9faed459d8440e529ce2f0f181a51d8",
+      "frozen_relative": "dependencies/pillow/PIL/GimpPaletteFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/GribStubImagePlugin.py": {
+      "sha256": "f3233855eb8dcd86c09e87f1729df2ae8643ded95ef0af1d716f8fb981eacfba",
+      "frozen_relative": "dependencies/pillow/PIL/GribStubImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/Hdf5StubImagePlugin.py": {
+      "sha256": "113338c9e49ccbe7908bc522acfe872352ef34e7b4b565bb364f67ca7dd4230a",
+      "frozen_relative": "dependencies/pillow/PIL/Hdf5StubImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/IcnsImagePlugin.py": {
+      "sha256": "42ed4565d672c7eb1b5a8803e623661fb870b92dc1911717b2a20316c1ab8620",
+      "frozen_relative": "dependencies/pillow/PIL/IcnsImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/IcoImagePlugin.py": {
+      "sha256": "506cc80e5434d9907e54912ca3223b616993c76e99881d841c9675aaf076f094",
+      "frozen_relative": "dependencies/pillow/PIL/IcoImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImImagePlugin.py": {
+      "sha256": "f2c04e032ef196a3fbdb6b175a19c99f85680614c1cdb6504ed7d6fd7b1679f5",
+      "frozen_relative": "dependencies/pillow/PIL/ImImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/Image.py": {
+      "sha256": "04af3f2db7ffdd61e829fa7aa8f5481d394a0a4129a8fd8aa5b13908928fcd6d",
+      "frozen_relative": "dependencies/pillow/PIL/Image.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageChops.py": {
+      "sha256": "1848e5ca67280ed03938e788c505485fde810feb3a01785bed39922d89f6b548",
+      "frozen_relative": "dependencies/pillow/PIL/ImageChops.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageCms.py": {
+      "sha256": "dc00c0fe9e2c479ab41f2d3d1adf65e579e67d9786a84328c224b5c6cd6ce883",
+      "frozen_relative": "dependencies/pillow/PIL/ImageCms.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageColor.py": {
+      "sha256": "20603d0b6ba67840ff1334b60af8fa2ac53456eb42f51b2d58860f7bcb83b159",
+      "frozen_relative": "dependencies/pillow/PIL/ImageColor.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageDraw.py": {
+      "sha256": "e83a5fc1f270e69f243e6cbcdd5cc548e997199aab276fa19a67ded591bb3c9a",
+      "frozen_relative": "dependencies/pillow/PIL/ImageDraw.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageDraw2.py": {
+      "sha256": "7b04d8392e62dba3c1069aaecca187b12cda34752e22ff5eda4614a1bb8383cb",
+      "frozen_relative": "dependencies/pillow/PIL/ImageDraw2.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageEnhance.py": {
+      "sha256": "e04961cff972cb12e6c741a4487af038098d2764e4a9540f1de8f31a285950c2",
+      "frozen_relative": "dependencies/pillow/PIL/ImageEnhance.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageFile.py": {
+      "sha256": "983c4f35e0c51046d4c636998ec77000cd2da208870a03b205e104cd0b2df629",
+      "frozen_relative": "dependencies/pillow/PIL/ImageFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageFilter.py": {
+      "sha256": "1b85df7ac6aadc3d9daeeb3c8dc2c6f1682fc0eeb5927f6ca16da113b8277bf8",
+      "frozen_relative": "dependencies/pillow/PIL/ImageFilter.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageFont.py": {
+      "sha256": "24fa5feeb91b4bf63eaad0ebba08a8161e9c889d9fd056a37c928134097b9649",
+      "frozen_relative": "dependencies/pillow/PIL/ImageFont.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageGrab.py": {
+      "sha256": "124cd6534e7fe23f8344277ded5cd71c9a870844e4ac6f701f34dc41013992da",
+      "frozen_relative": "dependencies/pillow/PIL/ImageGrab.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageMath.py": {
+      "sha256": "a820d28d35a6f94c7157b9b07204895288a8716f8bb156ad1244090b0415eab2",
+      "frozen_relative": "dependencies/pillow/PIL/ImageMath.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageMode.py": {
+      "sha256": "69a6551c088211a9ce0362b58cddc3956dcd3ca6bc0e6e672174d712bcf2166b",
+      "frozen_relative": "dependencies/pillow/PIL/ImageMode.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageMorph.py": {
+      "sha256": "a2d7f97fd03e638028b1f9751386161156ad8030489c6a7ac560497c0274351b",
+      "frozen_relative": "dependencies/pillow/PIL/ImageMorph.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageOps.py": {
+      "sha256": "938f56b053a035ed06278d90d7cfb275807ab8ccf5e27db52c23595ccda97fff",
+      "frozen_relative": "dependencies/pillow/PIL/ImageOps.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImagePalette.py": {
+      "sha256": "667e20ff1710d4a0e57f494a72f3cd72320f7ae7d0c7e92d3b91dc777c8a771f",
+      "frozen_relative": "dependencies/pillow/PIL/ImagePalette.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImagePath.py": {
+      "sha256": "e72506e570948a5d4a2934c0ffc3e01a172683e9a7b9ef862b41704c19618f0e",
+      "frozen_relative": "dependencies/pillow/PIL/ImagePath.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageQt.py": {
+      "sha256": "3d3b794cfca78162fe56ebf1fdbc271f5ec43817b7b44ee5e21b959af1903f96",
+      "frozen_relative": "dependencies/pillow/PIL/ImageQt.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageSequence.py": {
+      "sha256": "32986092befdb1c9980609a2f5982e8437d5c07be92d25f9b995470d996b9f42",
+      "frozen_relative": "dependencies/pillow/PIL/ImageSequence.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageShow.py": {
+      "sha256": "ba0a31498cc64937dafc015e578cc35ca4fcf42fbecca75af356a04221c54f90",
+      "frozen_relative": "dependencies/pillow/PIL/ImageShow.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageStat.py": {
+      "sha256": "1554e26161827223d6d500fad5bec361995c0ea474752ea1b0b8eafa070a706e",
+      "frozen_relative": "dependencies/pillow/PIL/ImageStat.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageText.py": {
+      "sha256": "9f77bda821b1a7093f4774eca60288f970db5aa56e4b74da0b071dee7c1346f3",
+      "frozen_relative": "dependencies/pillow/PIL/ImageText.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageTk.py": {
+      "sha256": "6f94a7b5c9065ecd040ac2363267498370925fa02d10bb168743a1c6ee35bbf9",
+      "frozen_relative": "dependencies/pillow/PIL/ImageTk.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageTransform.py": {
+      "sha256": "faa7a4ecfde5ccb75d717b7d716b79c3f2f5d491a9db2637009b4e7e62409037",
+      "frozen_relative": "dependencies/pillow/PIL/ImageTransform.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImageWin.py": {
+      "sha256": "7277958eec1fd6ad9c1b43ac3757a8ecf57f17f51c03de2031ca23c201e2e372",
+      "frozen_relative": "dependencies/pillow/PIL/ImageWin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/ImtImagePlugin.py": {
+      "sha256": "48be48aec1dc6e596dc6d5f8bff1d516162747a85a27400e77634785928c2266",
+      "frozen_relative": "dependencies/pillow/PIL/ImtImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/IptcImagePlugin.py": {
+      "sha256": "e26086c6d5aa7a68de3ff6766eb7704f46095fe8e68c0fce670c14a77a50daaa",
+      "frozen_relative": "dependencies/pillow/PIL/IptcImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/Jpeg2KImagePlugin.py": {
+      "sha256": "c9ddaff5bd5fa20c03903694df5650479b15f41861b81e79f177daa2bb346558",
+      "frozen_relative": "dependencies/pillow/PIL/Jpeg2KImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/JpegImagePlugin.py": {
+      "sha256": "27ebe8f59a7a12e40277f8f84ce4637c300145e181fb5bd05ad894b89c391bb1",
+      "frozen_relative": "dependencies/pillow/PIL/JpegImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/JpegPresets.py": {
+      "sha256": "967a961e8e032c81c8ba571d1e9d0d27b0967b11edf13df0e759082a52df9080",
+      "frozen_relative": "dependencies/pillow/PIL/JpegPresets.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/McIdasImagePlugin.py": {
+      "sha256": "6da388903f822087828011537fc928b3ddbc3ca06e094a9861adfcbb75844bff",
+      "frozen_relative": "dependencies/pillow/PIL/McIdasImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/MicImagePlugin.py": {
+      "sha256": "8fdd548b3bcbfb381766039cabfe285816d25fa2cfab527d90d1e47484ccd50c",
+      "frozen_relative": "dependencies/pillow/PIL/MicImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/MpegImagePlugin.py": {
+      "sha256": "83b05977dde45a9162e35486ff0285a22d3210fb22a08e248f8e5bd85fb756bc",
+      "frozen_relative": "dependencies/pillow/PIL/MpegImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/MpoImagePlugin.py": {
+      "sha256": "094f1478f9f46ec9b4abb10f5cd1772c7288e487b707912eaaebc964e46e4c10",
+      "frozen_relative": "dependencies/pillow/PIL/MpoImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/MspImagePlugin.py": {
+      "sha256": "090ea4bef4ace419526875867ff9ce404b2c654b0dffb5366bf426cce921467e",
+      "frozen_relative": "dependencies/pillow/PIL/MspImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PSDraw.py": {
+      "sha256": "401ecc18cba66fe3ea8d9138cec81adaabd387bb3112d848cfc9db7dfc2379c6",
+      "frozen_relative": "dependencies/pillow/PIL/PSDraw.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PaletteFile.py": {
+      "sha256": "b2e0dd00be953258d7c38a049f5be14ede03438bdba481c6777038a313a013ab",
+      "frozen_relative": "dependencies/pillow/PIL/PaletteFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PalmImagePlugin.py": {
+      "sha256": "9ae33cd1925dd310aaf84b2957103b83035f58742069e69cecb2e5bdde914239",
+      "frozen_relative": "dependencies/pillow/PIL/PalmImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PcdImagePlugin.py": {
+      "sha256": "fa09cc52a407d11f9a963b1dde7652f5e048d63ef98a3583fc765f69d13746c4",
+      "frozen_relative": "dependencies/pillow/PIL/PcdImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PcfFontFile.py": {
+      "sha256": "f8b619c765457ea5e3f2faf780718010081f9033f95a3e4abfb9242aac54968d",
+      "frozen_relative": "dependencies/pillow/PIL/PcfFontFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PcxImagePlugin.py": {
+      "sha256": "fa96552bb1f1d24490b671a2cba50e177aa2e507a331841b70c5a579bb11d71e",
+      "frozen_relative": "dependencies/pillow/PIL/PcxImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PdfImagePlugin.py": {
+      "sha256": "a35d4ee2ac5b9b90389bd92da67dc7add13b95ed9d145df2e81b4c7fc74721a6",
+      "frozen_relative": "dependencies/pillow/PIL/PdfImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PdfParser.py": {
+      "sha256": "7f5dee39ca48e76d2d801bde078fc18b05578fe501c261f9a3277a2de25eb6b9",
+      "frozen_relative": "dependencies/pillow/PIL/PdfParser.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PixarImagePlugin.py": {
+      "sha256": "97fe06c017749804e72176096f09a6383536bcfef07b02eee8146f887081d842",
+      "frozen_relative": "dependencies/pillow/PIL/PixarImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PngImagePlugin.py": {
+      "sha256": "5911ebb3c8e58edf4fccace85ade20c3a062cc41dc55340bfb7b40f0bf1861c5",
+      "frozen_relative": "dependencies/pillow/PIL/PngImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PpmImagePlugin.py": {
+      "sha256": "564cfa67fba33d48550fdba3715c155a20314f568a2b0dba488f60a6317d6d58",
+      "frozen_relative": "dependencies/pillow/PIL/PpmImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/PsdImagePlugin.py": {
+      "sha256": "255df65089c00df5c8e70001790ca279200a8f723b420f3e2d66c8336a3fd594",
+      "frozen_relative": "dependencies/pillow/PIL/PsdImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/QoiImagePlugin.py": {
+      "sha256": "104ea5388aaaaf2ba9b8fd3cd68a8e5624c27ea0f7a9103be7cef99c63fbad95",
+      "frozen_relative": "dependencies/pillow/PIL/QoiImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/SgiImagePlugin.py": {
+      "sha256": "24262e40fb7d61db86fbebf16939a5befcc775cc2a11bdbf9bdaeecfe18872db",
+      "frozen_relative": "dependencies/pillow/PIL/SgiImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/SpiderImagePlugin.py": {
+      "sha256": "c9ba6e8872e8fbd07520bdd1ea6bcc4f0c1b15d9564892317811a537c5ca6f4a",
+      "frozen_relative": "dependencies/pillow/PIL/SpiderImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/SunImagePlugin.py": {
+      "sha256": "1ddc64864d29c69046c5884f25f0832f0b1870ed4a8f18eda6534c15889b22f9",
+      "frozen_relative": "dependencies/pillow/PIL/SunImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/TarIO.py": {
+      "sha256": "06a6140a10816fd17b4a1fae67cea2cf50eda32d83d286cdc069bae73d6b75cd",
+      "frozen_relative": "dependencies/pillow/PIL/TarIO.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/TgaImagePlugin.py": {
+      "sha256": "18c08cff8b345a8c893aa9daab5f311473a868dc2721dee794a142366f033f21",
+      "frozen_relative": "dependencies/pillow/PIL/TgaImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/TiffImagePlugin.py": {
+      "sha256": "440b2a3a80b280d18cda3fc70d9fd206e2fa44e9897c9550f70b51395047b273",
+      "frozen_relative": "dependencies/pillow/PIL/TiffImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/TiffTags.py": {
+      "sha256": "766dea350424b9a2caab3513be794689403c2b7222cd038006f69cff08edb45d",
+      "frozen_relative": "dependencies/pillow/PIL/TiffTags.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/WalImageFile.py": {
+      "sha256": "759db52034124f6a3b63b800f90c51cf0231d9a88e6c63b5528b2075dd84a497",
+      "frozen_relative": "dependencies/pillow/PIL/WalImageFile.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/WebPImagePlugin.py": {
+      "sha256": "634360a326abfcd29ec5e05f6b84c3be6e5a783e7c4dd6ad46bd0eba182dae23",
+      "frozen_relative": "dependencies/pillow/PIL/WebPImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/WmfImagePlugin.py": {
+      "sha256": "cd1e267adcf947e35c3bc14dd5ad390658bcde078e69b4e929dae1793b51a30d",
+      "frozen_relative": "dependencies/pillow/PIL/WmfImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/XVThumbImagePlugin.py": {
+      "sha256": "5e08669d19bc63ff23d0edbc5cf6c746b98aec2ac656e47ce3882fd617c5e6e8",
+      "frozen_relative": "dependencies/pillow/PIL/XVThumbImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/XbmImagePlugin.py": {
+      "sha256": "15de86543128ef79f2148080dd9df0e0b8e4c28656be11c1eab2829b9c95ae1a",
+      "frozen_relative": "dependencies/pillow/PIL/XbmImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/XpmImagePlugin.py": {
+      "sha256": "c1e0ab0e03b71fdea52d0fae5d8f859e8c35649e100110e964062dcc991e7cba",
+      "frozen_relative": "dependencies/pillow/PIL/XpmImagePlugin.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/__init__.py": {
+      "sha256": "7361b6ad3878589affe5956e4a4da24d71398b0891fd3a8c15e9362217b4ca01",
+      "frozen_relative": "dependencies/pillow/PIL/__init__.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/__main__.py": {
+      "sha256": "2e98f8bde7fc988ee3035b1109402855869e78f0ff51cf3df3117973b5cbc750",
+      "frozen_relative": "dependencies/pillow/PIL/__main__.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_avif.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "3155ad10215109cd3361d84882e922be7d6c397e7711229d799d03b66138286f",
+      "frozen_relative": "dependencies/pillow/PIL/_avif.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_avif.pyi": {
+      "sha256": "ddf071712a6926be84384714a23bdf946dc47a083b96fd90a7474d41020bacfe",
+      "frozen_relative": "dependencies/pillow/PIL/_avif.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_binary.py": {
+      "sha256": "a6e0e837223ccab3b0e91c77223c951d3b3fb9d69ac2ce52430ced719baf3975",
+      "frozen_relative": "dependencies/pillow/PIL/_binary.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_deprecate.py": {
+      "sha256": "2a1c8b566418555c30d2b3916d4db84dededf1f3adf46d8b78ce9f24659b974a",
+      "frozen_relative": "dependencies/pillow/PIL/_deprecate.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imaging.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "b22c753cda12721dcecd4e43b329276d9d9a1dbb0a5aaf64cc6d08fdb514525a",
+      "frozen_relative": "dependencies/pillow/PIL/_imaging.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imaging.pyi": {
+      "sha256": "7d3f934c6412d24ca6d60bfbee05d3290b49ac098ed4dca74b92ca06d1b71ba3",
+      "frozen_relative": "dependencies/pillow/PIL/_imaging.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingcms.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "c9a2f67d7f866d7b92dbfeb9a40687359af114b33c8356a52c36fcde89f76335",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingcms.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingcms.pyi": {
+      "sha256": "659f222288ba10758bbe001d7e6d613c3e42426c62ef92e2265e71f321b16285",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingcms.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingft.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "1c7de6ed076e175b6d94b52aec1823f4432c13a91042bfdee8c5757bee8382dd",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingft.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingft.pyi": {
+      "sha256": "718c92cef70a0428873c1b2fb6d3227bd01d7d4704b2a651fb7db9e9842dcf64",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingft.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingmath.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "37ab5a12b94f5f462f0ff2d0b94cf4d9cb2535961da562ea346031efc69032e7",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingmath.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingmath.pyi": {
+      "sha256": "ddf071712a6926be84384714a23bdf946dc47a083b96fd90a7474d41020bacfe",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingmath.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingmorph.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "625b7320d8c2493c20df6448c59ba3cb846b1db34321a2ba1559368a3b56f1f0",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingmorph.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingmorph.pyi": {
+      "sha256": "ddf071712a6926be84384714a23bdf946dc47a083b96fd90a7474d41020bacfe",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingmorph.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingtk.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "29a2887813a753d89ab3f959261dbcd03c33cb7bc1f75e1eb9c7a2cb0c58b7c4",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingtk.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imagingtk.pyi": {
+      "sha256": "ddf071712a6926be84384714a23bdf946dc47a083b96fd90a7474d41020bacfe",
+      "frozen_relative": "dependencies/pillow/PIL/_imagingtk.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_tkinter_finder.py": {
+      "sha256": "188678b2d985854a2c987292addc5c8d2b62a1c0cd7f2267ed10627b6496c54d",
+      "frozen_relative": "dependencies/pillow/PIL/_tkinter_finder.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_typing.py": {
+      "sha256": "db3df7654a7d6909e44aa5f3351dd99fb974e1dd96fa8023d4e899862c8517af",
+      "frozen_relative": "dependencies/pillow/PIL/_typing.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_util.py": {
+      "sha256": "7f185676b2c04727363ec3203779bdfd4d5d637a1429b57b9a4a0771782879e0",
+      "frozen_relative": "dependencies/pillow/PIL/_util.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_version.py": {
+      "sha256": "fe7d75d4019326aca24ae57d4ab190cd62ba1225b175051119cd61cd87e42b1d",
+      "frozen_relative": "dependencies/pillow/PIL/_version.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_webp.cpython-313-x86_64-linux-gnu.so": {
+      "sha256": "53399dd74c1b91b5799bc046fa8d3f4e0c2c20b32bfe0cf4622fcff178b7ee11",
+      "frozen_relative": "dependencies/pillow/PIL/_webp.cpython-313-x86_64-linux-gnu.so"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_webp.pyi": {
+      "sha256": "ddf071712a6926be84384714a23bdf946dc47a083b96fd90a7474d41020bacfe",
+      "frozen_relative": "dependencies/pillow/PIL/_webp.pyi"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/features.py": {
+      "sha256": "14f904863b416914aaa6480735876ec31885b7272ee0d8d92b010c5b1b5e98f5",
+      "frozen_relative": "dependencies/pillow/PIL/features.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/py.typed": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frozen_relative": "dependencies/pillow/PIL/py.typed"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/report.py": {
+      "sha256": "e0963af8853bb07d512ae45b3afcb57d4b74740a22efd157e2d609377a750d3d",
+      "frozen_relative": "dependencies/pillow/PIL/report.py"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/INSTALLER": {
+      "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/INSTALLER"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/METADATA": {
+      "sha256": "8fc07146cab33ef7582361dab6eac596d340b03ec648f18217da7894f73838c8",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/METADATA"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/RECORD": {
+      "sha256": "19f65a3bc32c15ed1c38c0bee614d4abfa75c81d999e0ce91fbe00fe5929cb72",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/RECORD"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/REQUESTED": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/REQUESTED"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/WHEEL": {
+      "sha256": "2c1cfe36b0be1a6642ea21b08567e7c88c24d616b665eefabe06b8f66613efbe",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/WHEEL"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/licenses/LICENSE": {
+      "sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/licenses/LICENSE"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/sboms/auditwheel.cdx.json": {
+      "sha256": "4eeed18c2051290cd3a93da8ff18091d65dbcd5bbfc1f8d067dcb09bc56e77b4",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/sboms/auditwheel.cdx.json"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/sboms/pillow-12.3.0.cdx.json": {
+      "sha256": "40fa909b0f23405a7b97a6d91671a639a40acea7671b04387da22ba3e9fca50a",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/sboms/pillow-12.3.0.cdx.json"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/top_level.txt": {
+      "sha256": "ae266aae4fa1c99aa1e5fd59d19c228b774a7f112c07286ef5c53d20e0c5f8d6",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/top_level.txt"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow-12.3.0.dist-info/zip-safe": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "frozen_relative": "dependencies/pillow/pillow-12.3.0.dist-info/zip-safe"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libXau-154567c4.so.6.0.0": {
+      "sha256": "05484d24bf78cb8ed03169f1cb067204d829cb7af21de8820400d29d115e4320",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libXau-154567c4.so.6.0.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libavif-8a7f9d56.so.16.4.2": {
+      "sha256": "3a8819e60f0fd7c716ef14776085a81c941db354002a9f9a679da38447e5507f",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libavif-8a7f9d56.so.16.4.2"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libbrotlicommon-53534446.so.1.2.0": {
+      "sha256": "d0034d3c0dc0dc698266f9ce61ef1701402960eb0f18c0defadc61b91f793d88",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libbrotlicommon-53534446.so.1.2.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libbrotlidec-7e5462ba.so.1.2.0": {
+      "sha256": "301d8f1b7365c0204485f7bdc89165936fa8212b36c4f78563fe4229df53863c",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libbrotlidec-7e5462ba.so.1.2.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libfreetype-9fc94c80.so.6.20.6": {
+      "sha256": "994d650f4fe686013580524dd868d7001325fa3bbf408800eaa4778138a7e690",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libfreetype-9fc94c80.so.6.20.6"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libharfbuzz-172d1f63.so.0.61421.0": {
+      "sha256": "7ff87422406706600619c8467a2daa42a8122207dcb95337273ae18419f7a220",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libharfbuzz-172d1f63.so.0.61421.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libjpeg-31e2ca52.so.62.4.0": {
+      "sha256": "6d7c754529b30aff22efaaf88ba02061714591702c03f297f00ccb32ee6d9d9a",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libjpeg-31e2ca52.so.62.4.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/liblcms2-dade1fbf.so.2.0.19": {
+      "sha256": "2549d6886e7de9960792e10ac87acfb9895e2afae85b7aac02108080cc7d3a71",
+      "frozen_relative": "dependencies/pillow/pillow.libs/liblcms2-dade1fbf.so.2.0.19"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/liblzma-2be87c3e.so.5.8.3": {
+      "sha256": "535737fa00b49f62d14d6d9bce76482440df700b33d2666d636894f751dd25f1",
+      "frozen_relative": "dependencies/pillow/pillow.libs/liblzma-2be87c3e.so.5.8.3"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libopenjp2-b07f72ad.so.2.5.4": {
+      "sha256": "185cb358047fd8b351c1d05b84a7e906c59d68d7f41222805f7042895ae266d8",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libopenjp2-b07f72ad.so.2.5.4"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libpng16-abb096d5.so.16.58.0": {
+      "sha256": "44f1d1d821c9b57cda2b32d4a278eeaa03bc9930ae9da0ec0f384c3daf165e12",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libpng16-abb096d5.so.16.58.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libsharpyuv-0066295b.so.0.1.2": {
+      "sha256": "c2c5e89368b3bf9276a3cfea7e52ceb624db1c0c986c127169616219d5325807",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libsharpyuv-0066295b.so.0.1.2"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libtiff-fc87e79d.so.6.2.0": {
+      "sha256": "522bafb6812978fc53db6c32e5c57786186b551fc5fd6a7c61b857ca01261d16",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libtiff-fc87e79d.so.6.2.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libwebp-51b0b3f7.so.7.2.0": {
+      "sha256": "7df9ad3680dd09d756511334791c8c896207863816eb2910840e5fc4ae10028a",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libwebp-51b0b3f7.so.7.2.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libwebpdemux-9fe2abcc.so.2.0.17": {
+      "sha256": "a7ccaaf4388d8ec212ca85be17907e8e021b7da113f7f48c47722c1ebe602f8e",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libwebpdemux-9fe2abcc.so.2.0.17"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libwebpmux-8fb1c9f6.so.3.1.2": {
+      "sha256": "48ebf91c4d208901a48f851fb4c851d380fededd2a272104e3ca24c17499deba",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libwebpmux-8fb1c9f6.so.3.1.2"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libxcb-ad31f5a3.so.1.1.0": {
+      "sha256": "633fe8df9f1bfc0ef60de6a3495a599ec56e56216491b90b79604cfecfb88000",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libxcb-ad31f5a3.so.1.1.0"
+    },
+    "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/pillow.libs/libzstd-44be1190.so.1.5.7": {
+      "sha256": "9501ab40e92a57491cadd2d02df46b596f24e74e6c0476b8500793f822fa0072",
+      "frozen_relative": "dependencies/pillow/pillow.libs/libzstd-44be1190.so.1.5.7"
+    }
+  },
+  "Chief_static_preflight_accepted": true,
+  "Chief_static_preflight_receipt": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01-root-review/REVIEW.json",
+  "Chief_static_preflight_sha256": "d8529332dc960b613e0aa8aa894b9ff48f5972a4f861f6781952dbc4f0154233",
+  "authorization": {
+    "coordinator": "Chief",
+    "basis": "Latest user lets go; previously authorized parallel development and scientifically adequate CPU qualifications; no additional user permission required.",
+    "authorized_utc": "2026-10-30T20:53:14.335453+00:00"
+  },
+  "scope_confirmation": {
+    "coordinator": "Chief",
+    "basis": "Scope suitable; prepare guarded CPU6 driver and fresh denied-production replay and freeze, no numerical launch yet",
+    "B09_reused_cases": 5,
+    "owned_caller_cases": 5,
+    "raw_source_failures": 2,
+    "topology_input_and_diagnostics_separate": true
+  },
+  "runtime_estimate": {
+    "measured": false,
+    "expected_under_ten_minutes": true,
+    "basis": "10 bounded complete meshes plus 2 raw failures, <=132 constructor occurrences; each phase capped at480 seconds"
+  },
+  "prepared_command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-prepared-20261030-02/driver.py",
+    "--bundle",
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-prepared-20261030-02",
+    "--output",
+    "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01"
+  ],
+  "previous_static_preparation": {
+    "receipt": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-02.json",
+    "sha256": "853a3ad63a733f1870b5f472d4e5eea539a9fb5c3fa2e490c5416e58a505a035",
+    "frozen_bundle": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-prepared-20261030-01",
+    "manifest_sha256": "2b7b997294b68adb03816deb92200002bffe9f237df673021e8c7162513f1f57",
+    "preserved": true
+  },
+  "retention_repair": {
+    "kind": "cells.initial_mesh_raw_completion_retention_repair@1",
+    "scope": "Only raw-case test control flow changes; retain returned State or rejected trial and native proof before expected refusal",
+    "function": "test_raw_native_mesh_failure_retains_prefix_and_occurrence_ledger",
+    "test_ids_unchanged": true,
+    "raw_cases": 2,
+    "expected_checks": 22,
+    "changed_owned_source": [
+      "tests/unit/test_betse_initial_mesh_preparation.py"
+    ],
+    "science_and_reference_budgets_unchanged": true,
+    "no_equation_RNG_or_occurrence_change": true,
+    "driver_unchanged": true,
+    "original_bundle": "/mnt/workspaces/Cells/betse-initial-mesh-preparation-prepared-20261030-01",
+    "original_manifest_sha256": "2b7b997294b68adb03816deb92200002bffe9f237df673021e8c7162513f1f57",
+    "source_before_sha256": "303ddd9736a25786018c598abd0c8c5068a6a7090b51f55a7c545eb0aa96c45f",
+    "source_after_sha256": "10955e196391c4faba20d528730222cb9fa101b191d0cd08a84c659c0eb8d646",
+    "AST_retention_order_verified": {
+      "retain_actual": 308,
+      "native_proof": 309,
+      "retain_native": 310
+    },
+    "numerical_execution": false,
+    "pytest_collection": false
+  },
+  "Chief_launch_coordination": {
+    "coordinator": "Chief",
+    "latest_user_instruction_authorizes_launch_after_preflight": true,
+    "launch_owner": "Root",
+    "specialist_waits_for_Root_launch": true
+  }
+}

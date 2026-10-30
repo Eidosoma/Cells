@@ -17,7 +17,7 @@
     "test_repeatable_immutable_full_lineage_and_original_parent": 1,
     "test_voltage_derivative_uses_nonce_updated_pre_voltage_state": 1
   },
-  "Chief_acceptance": "pending independent review",
+  "Chief_acceptance": "Chief accepted B25 declared adapter scope; original2ms source case remains refused",
   "active_qualification": null,
   "contract": "agent-work/cells-worker-01/workfiles/BETSE_NORMAL_VOLTAGE_NOTES.md",
   "coordinated_shared_edit_authority": "Chief explicitly announced these active local numerical-refinement edits; historical frozen evidence untouched",
@@ -277,7 +277,7 @@
   },
   "runner": "agent-work/cells-worker-01/workfiles/betse_normal_voltage_checks.py",
   "sources_frozen_after_qualification": true,
-  "status": "40_check_qualification_passed_pending_Chief_review",
+  "status": "declared_scope_Chief_review_accepted",
   "validation_history": [
     {
       "attempt": 1,

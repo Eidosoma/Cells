@@ -35,8 +35,42 @@ preparation layout, not frozen execution hooks. Native capture executes the
 actual pump blocks/helper and active gate source. Independent Decimal full
 carried answers include pump and gate/voltage feedback conditioning.
 
+Chief's B26 review found carried propagated budgets can become uninformative.
+B27's independent acceptance therefore uses fresh from-actual-parent single-
+call answers at Decimal90/140, written before computing the outgoing model
+state. Incoming bulk/membrane/bath/vm/gate cache/rate proxy and source packet
+are the only numerical conditions. Fixed inherited budgets come from the
+pump preflight density/relative tolerance, native gate opening tolerance and
+B23/B24/B25 single-call named component budgets. All inherited failures must
+remain failures; no tuning from observed errors. Exact full-sequence native
+arrays/dtypes remain primary. Full carried Decimal results are diagnostic
+only; their local scales are not trajectory error bounds. Retain per-field
+absolute errors, units, indices, budget at worst absolute error and min/max
+budgets. Raw coefficient/rate diagnostics have no invented physical budget.
+
+Planned34 checks cover12 three-call histories/36 calls,738 complete material
+states and105 gate calls,15 native captures,72 fresh actual-parent reference
+forms and24 full carried reference forms. Cases include alpha0/negative,
+redistribution/masks, pure pump, live/configured temperature split, exact-zero
+denominator guard, ignored met, stationary/reordered roles and reverse flux.
+Adversarial singular saturation, masked nonfinite proxy and equilibrium
+overflow retain actual source/refusal differences and complete partial state.
+
+A B26 saved-data tightening audit is separately requested for preparation
+only. Its later execution requires a new requested round; B26 is not rerun.
+
 Keep explicit physical dt/elapsed and source per-ion full-dt gate clocks;
 new files only. Reuse bounded supervision: one CPU1 thread,480s command cap,
 1GiB tree RSS and8GiB reserve. Detach if expected>=10min. No active-job polling,
 shared status edit or follow-up regression. Own queue/receipts will preserve
 source pins, exact failures and Chief's independent-review handoff.
+### Metadata limits identified during Root review
+
+The frozen B27 nested `material_capture.scope` text was inherited from an
+earlier component and incorrectly says pumps are excluded. The captured source,
+pump observations, protocol and outer capture identify the maintained Na/K pump
+scope correctly. The frozen runtime records report versions and affinity but do
+not inventory hashes of the files actually loaded at runtime. Source snapshots,
+pins and preparation hashes remain available. These are disclosed metadata
+limits; no frozen B27 source/evidence is changed and no rerun is requested.
+

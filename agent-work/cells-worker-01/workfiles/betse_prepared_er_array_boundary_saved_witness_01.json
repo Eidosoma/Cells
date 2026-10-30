@@ -1,0 +1,837 @@
+{
+  "added_function": "restore_supplied_fields",
+  "all_JSON_numbers_equal_producer_and_failed_initial_payloads": true,
+  "all_other_existing_native_functions_AST_unchanged": true,
+  "artifact_sha256": {
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__grn_only/inputs.json": "cb51fe2f9596ca0de836d52e165713e3d56e7e3a48a72ae93e265bb4d62481bf",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__grn_only/native/arrays.npz": "f981927b3854cbfd1689fe242ae6e548bf55f2494f08745639cd5788ed723835",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__grn_only/native/data.json": "c1bd081801978f2bf35d6d4f767c9ae71e43a07f2debe16a527beec4436d17c5",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__grn_only/native/manifest.json": "1d1c446fe5e122387dd0cbdeea391429d07170c62324d885d7efec9c59f1b0be",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__metabo_precedence/inputs.json": "61c7f0899d50c5490aaa7b807ef52e874685791aecd347ca902a97a0c082800b",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__metabo_precedence/native/arrays.npz": "f50ef1946faffcaab141b145cf6cca5146f4a99a1c2c2f18a135f0d11e0d0a19",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__metabo_precedence/native/data.json": "a6f3a6cd0f5866375fa34626acb794270c4289d7d17f71ba02a28e9fe67adebb",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__metabo_precedence/native/manifest.json": "1178da802be375e9d5f387556869ae98fff7fee5e63daba816c20fd42c5487ae",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__molecules_precedence/inputs.json": "07b85fba2609372a4e27724cbbdb0f6e23474563a51ab196ad574ad90ff125b2",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__molecules_precedence/native/arrays.npz": "f3ff59965097d507214044b066e6d7051609c0c74836e009ea954e820df516ce",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__molecules_precedence/native/data.json": "31805bb99dee54f3a8eaba6091cc08a0e66f0fdc591f7f27d9135b25392dd7e0",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__molecules_precedence/native/manifest.json": "eb06cf9426db779f7f8f2c18277f7e80112951bdf904a98fadd13b1cdbc890a5",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owner_present_no_IP3/inputs.json": "919946e38ccf3509d18e51bae3252cba782d56d6416a3c77c5b54e2714497426",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owner_present_no_IP3/native/arrays.npz": "33ff531c043e9f63b9274b0cef3ab27701120a12614d6b6c06613cb45bb38776",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owner_present_no_IP3/native/data.json": "a005c6b314dd1682c670ee943dd18fb02c331b24910ac5ff46915ea6aab72cdc",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owner_present_no_IP3/native/manifest.json": "09620add1a1579094e27892e5c601dac5dab9d964cbb3a53510bafb639ebbde8",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owners_absent/inputs.json": "f96f8faf5f3b8faed7d49c8d7f52ce91600f522d6d747ee3176b79dd8ceb6b47",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owners_absent/native/arrays.npz": "922134a1a9c0a7842d27fe668259b62de154b8df55ad7e7bbccf572f27e642e1",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owners_absent/native/data.json": "646fcdd63ab94d7b9b424df5f9ddfd7f7d953f9db0b69bf8e7e599926d77ed3f",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__owners_absent/native/manifest.json": "4fd3b7bc193d7b6d99d88ca6d05b24445434b81e940de4af521df7f2c50eb26e",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__temperature_split/inputs.json": "5c6a44427fbc25ff541f97825ec26f0d1e108f358fcab7cbcdaf407354f6d98d",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__temperature_split/native/arrays.npz": "31810397953dbc98043e75a4b7bcb06b03ce10ad4e7ed1c84a06d71bbb5fde7b",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__temperature_split/native/data.json": "9ddc4a12a001b1c27cea120889275e2aacc3d8155da4016f679fdd793546854a",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/isolated-prepared_er_cl_neutral__temperature_split/native/manifest.json": "171a7f8993b6bd0855846eba6740f9ac4be93f287c580a08ec2f0336f18213f4",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__grn_only-prepared-return/arrays.npz": "1badffde1255030bc96d3f324abcb45c87d6b6b175a552809e59df82e2a10101",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__grn_only-prepared-return/data.json": "dff40a154bbc2419ea30cbeb683861c779409316fbcb24e6f4b2104ca60cdd1d",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__grn_only-prepared-return/manifest.json": "a9a09c8c4778f9d15c6cb1b9138354721574a3a87b8832cf37795c96d9c48515",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__metabo_precedence-prepared-return/arrays.npz": "49b2f812242e43d92525b5c00b09a5ed6a6400aad8cee6ded72c5a49918b035a",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__metabo_precedence-prepared-return/data.json": "cc5ba8a99e9fc20621adc504b40c256e47fa5e518917b0d0de76786be0ff9da9",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__metabo_precedence-prepared-return/manifest.json": "89431742f6b9def25dabf326ede16c3f4859aae13027ebf580319f8fce87f855",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__molecules_precedence-prepared-return/arrays.npz": "03171066b9bbdb852ec743c9147fdb7fd817bbcda3b9a79ad78b49c6e841288e",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__molecules_precedence-prepared-return/data.json": "c418d0072cfce464e4e65df6ac9981414d50fbd4dec467b530892ff11b9b5b3f",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__molecules_precedence-prepared-return/manifest.json": "7c66168a75c72d64d9427cbcd72e1f24608cf00ad674685dbddd444c47ab44f6",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owner_present_no_IP3-prepared-return/arrays.npz": "fee7cd33898f0ac16ab826b5599ef9ecd15cf3d738575534c750353b1704e577",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owner_present_no_IP3-prepared-return/data.json": "ffc91d952972e529c6bc2c7ab3a52f4417f8936a5c6e6d6fee2755d05c156120",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owner_present_no_IP3-prepared-return/manifest.json": "983e8f69d30cb9508cdb09f8243cb7551ba14feb749d035c5cd9a6b01de567df",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owners_absent-prepared-return/arrays.npz": "697cc3a78e635a8342c115b12425aae0f040a0343f254898853ce700b5844f72",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owners_absent-prepared-return/data.json": "eadcf2326da321fbd18a0cb8c397111103639059ac519f99e4c3de07bb8638cc",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__owners_absent-prepared-return/manifest.json": "b12a4ef44e5358d7afa7c2043f6a42f09775193d59c73ca3d60b25f222b6004b",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__temperature_split-prepared-return/arrays.npz": "9cf1e818ca7e193a3fe27a7b9a3e8d35c31a4e4c5b59b82a44ad67dab32cc086",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__temperature_split-prepared-return/data.json": "a44611e25b8e7552efb2fea9ce79e864d3fcd56af70780f309778c0ee2bf6195",
+    "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/run-context/evidence/prepared-er-join/prepared_er_cl_neutral__temperature_split-prepared-return/manifest.json": "86d70a0acf55ccfba85aa911f45ede15e148ca9700a14277b9860dc403f1b7b3"
+  },
+  "automatic_retry": false,
+  "cases": [
+    {
+      "case": "prepared_er_cl_neutral__grn_only",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "74d05a90c086919a242d5b5c51cb4de4c6e6c716626b408e99c9c1183d7ab7d9",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "930f861bfd71100a71122be7ba51f745b4c36cd49b26f01ce256c6ab0b2057c5",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    },
+    {
+      "case": "prepared_er_cl_neutral__metabo_precedence",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7ae36f2c68df6a63b2113120b087c309d2af09ae7eaca82481efa5aac649d834",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "896429b257dd3b22661df4bb216a5846663ebc47a7df68f641afa37e5e759f2d",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    },
+    {
+      "case": "prepared_er_cl_neutral__molecules_precedence",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2c3449d84ca3617521c9e056069eb36299cd66d7eee39536ae4f9a827dfe6cc7",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2baa8ab48c5939943feb9611ad728adfb8f3d566691a378b424d4c4e8677a2ef",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    },
+    {
+      "case": "prepared_er_cl_neutral__owner_present_no_IP3",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "d1320af4c5c05fc872dee032dd8efdbc2b9828c6ff67376473c361492baf1e42",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "efc59078b9a4f45990598153308b60cd9f85272b2188b6495c03d82bb4ad89e4",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    },
+    {
+      "case": "prepared_er_cl_neutral__owners_absent",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "ef9e18440577be8cc536f6688b61904f52b2c4140ce714fee7db14f935800b63",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9cd5f9ac5304c15b85d9c868bb6474e9684164ee0b0df7cdbba441a60c3b89f6",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    },
+    {
+      "case": "prepared_er_cl_neutral__temperature_split",
+      "classification": "Boundary list restoration error; no observed ER physical instability diagnosis",
+      "expected_Dm_er_shape": [
+        5,
+        3
+      ],
+      "fields": {
+        "Dm_channels": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2c3449d84ca3617521c9e056069eb36299cd66d7eee39536ae4f9a827dfe6cc7",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2baa8ab48c5939943feb9611ad728adfb8f3d566691a378b424d4c4e8677a2ef",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Dm_er_base": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "2d94319ce47c8eddeb8f3d0e51bfdf20dc82b8d94d96af53c542b08b9a2d4968",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "Q": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "Ver": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "cc_er": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "float64 ndarray",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c39e5c5f2a5fe9626aea3b2c546954745accfcb495742da6fb536da44f5e5ad8",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        },
+        "cm_er": {
+          "JSON_type": "float",
+          "failed_native_initial_type": "float",
+          "payload_bits_preserved": true,
+          "payload_sha256": "c738dd99fada954a0be83cb94069e65973256ed5a199cd293841c789ad3b0910",
+          "planned_restored_type": "float64 scalar",
+          "producer_type": "float64 scalar",
+          "shape": []
+        },
+        "er_sa": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "7fdc8d47a6687f11b5f058e5ebca95ca233ed7749f4a5636987157d68c95aad2",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "er_vol": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "5fbea4acbb230e736020478c3f02a1f3885bf55d51347cd2abb69c0d684e3e58",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            3
+          ]
+        },
+        "zer": {
+          "JSON_type": "list",
+          "failed_native_initial_type": "list",
+          "payload_bits_preserved": true,
+          "payload_sha256": "556738687a4f1bc7d73ebff0228368f982dc873dd6d67a042eebaa9116104327",
+          "planned_restored_type": "float64 ndarray",
+          "producer_type": "float64 ndarray",
+          "shape": [
+            5,
+            3
+          ]
+        }
+      },
+      "observed_Ver_type": "list",
+      "observed_after_channels_Dm_er_shape": [
+        10,
+        3
+      ],
+      "observed_failure_type": "TypeError"
+    }
+  ],
+  "equations_helpers_fixtures_tolerances_changed": false,
+  "inverse_AST_only_two_boundary_calls_changed": true,
+  "kind": "cells.prepared_ER_array_boundary_saved_witness@1",
+  "new_native_sha256": "d39b5ee2b3559254a8653c51531999690d3ed03da22d64f241faae2b016b4dcd",
+  "nine_arrays_and_one_scalar": true,
+  "numerical_runs": 0,
+  "old_failed_run_preserved": true,
+  "old_native_sha256": "99c5f41014431a7974359e72029f3c2e7e2342de2aa5092ec3daabaf554913ad",
+  "pytest_collection_runs": 0,
+  "scientific_imports": 0,
+  "scope": "Read existing saved artifacts only; no scientific import or new decoder/native/model/reference execution"
+}

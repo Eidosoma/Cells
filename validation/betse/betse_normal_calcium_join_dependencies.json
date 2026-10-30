@@ -1,0 +1,95 @@
+{
+  "architecture_boundary": "New CaATP prefix enforces Ca_dyn0; active ER/buffer context cannot be filled with constants",
+  "buffer": {
+    "future_requirement": "Identify actual native binding/unbinding/state owner and chronology before integrating any buffer; do not equate Hill release gates or clipping with buffer chemistry",
+    "native_chemistry_in_ca_handler_or_EndoRetic": "No explicit binding-buffer state/equation found in these source bodies"
+  },
+  "kind": "cells.native_calcium_owned_dependency_map@1",
+  "methods": {
+    "__init__": {
+      "AST_sha256": "0b01f3edb00a091e11755842804aa6dc833e9e2e2d3ec31bd5fe958cb945ddc7",
+      "first_line": 49,
+      "last_line": 72
+    },
+    "channels": {
+      "AST_sha256": "3afc49b3f13a65d9e1a4c2797d6abab475e821dab0af8b2e8eb240b7ff1656b7",
+      "first_line": 122,
+      "last_line": 149
+    },
+    "get_v": {
+      "AST_sha256": "8f8647c7ebc51d851cdb4142f02d59bf974cc330f7fc6fb8a7f521002916f00d",
+      "first_line": 75,
+      "last_line": 78
+    },
+    "remove_ers": {
+      "AST_sha256": "9ae884c5fec0cd74e1bdd27decdc9a144358c2f6decc556272225ee2d0345973",
+      "first_line": 155,
+      "last_line": 215
+    },
+    "update": {
+      "AST_sha256": "2e94003b14b4329d25cfcd9538ef3540573726d8e7848cf180bad7a1dac267e2",
+      "first_line": 93,
+      "last_line": 117
+    }
+  },
+  "numerical_runs": 0,
+  "owned_state_required": {
+    "axes": "ion x cell with immutable species/owner IDs",
+    "context": [
+      "molecules/metabo/grn object presence and exact IP3 lookup precedence",
+      "current geometry/cell volumes/areas",
+      "maintained shared ATP/ADP/Pi/deltaG pools"
+    ],
+    "organelle": [
+      "er_vol[N]",
+      "er_sa[N]",
+      "Ver[N]",
+      "Q[N]",
+      "cm_er",
+      "Dm_er[I,N]",
+      "Dm_er_base[I,N]",
+      "Dm_channels[I,N]",
+      "zer[I,N]"
+    ],
+    "parameters": [
+      "serca_max",
+      "KmCa_Ca",
+      "KmCa_ATP",
+      "act_Km_Ca",
+      "act_n_Ca",
+      "inh_Km_Ca",
+      "inh_n_Ca",
+      "act_Km_IP3",
+      "act_n_IP3",
+      "max_er",
+      "tm",
+      "F",
+      "R",
+      "dt"
+    ],
+    "sim": [
+      "all-ion cc_er[I,N]",
+      "live cytosolic cc_cells[I,N]",
+      "movingIons order",
+      "live T",
+      "Ca index"
+    ]
+  },
+  "source": "betse/science/organelles/endo_retic.py",
+  "source_order": [
+    "channels(current cytosolic Ca,optional IP3)",
+    "SERCA using previous Ver",
+    "direct cytosol/ER Ca amount transfer",
+    "ordered all-moving-ion ER electroflux with in-place Ver nonce",
+    "get_v from all-ion ER charge"
+  ],
+  "source_quirks": [
+    "Initializer resets ER Ca row to literal0.2 once, not a per-step clamp",
+    "Initial er_vol=.1*cell_vol,er_sa=cell_sa; all ion ER state remains owned",
+    "Non-Ca Dm_channels initialized1e-18 and added to Dm_er_base",
+    "No automatic cc_at_mem refresh after ER bulk updates before network channels",
+    "No finite-pool ATP consumption or physiological two-Ca SERCA claim"
+  ],
+  "source_sha256": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+  "status": "ER_and_buffer_not_implemented"
+}

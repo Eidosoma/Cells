@@ -1,0 +1,68 @@
+{
+  "charge_identity": {
+    "after_literal_initialization": "Q_ER=F*(sum_i z_i*c_cyt_i + 2*(0.2-c_cyt_Ca)) [C/m3]",
+    "reported_failed_case_values": "Chief reviewer reports first get_v approximately[128.58,115.71,257.18]V, Q~38575C/m3; second source call carries correctly then Keq underflow and nonfinite transfer. These are reported failure evidence, not new calculations here.",
+    "source_Ca_dyn_disabled_by_default": true,
+    "voltage_after_get_v": "Ver=Q_ER*er_vol/(cm_er*er_sa); independent of time step for the initial charge offset"
+  },
+  "defaults": {
+    "Ca_dyn": false,
+    "Ca_dyn_source_line": 771,
+    "legacy_ER_parameter_assignments_absent_from_parameters_class": [
+      "serca_max",
+      "act_Km_Ca",
+      "act_n_Ca",
+      "inh_Km_Ca",
+      "inh_n_Ca",
+      "act_Km_IP3",
+      "act_n_IP3",
+      "max_er"
+    ],
+    "template_cell_height_m": "10e-6 at sim_config.yaml160",
+    "template_cell_radius_m": "5e-6 at sim_config.yaml157",
+    "template_membrane_capacitance_F_m2": "0.05 at sim_config.yaml1038"
+  },
+  "geometry": {
+    "ER": "EndoRetic.__init__: er_vol=.1*cell_vol,er_sa=cell_sa,cm_er=p.cm",
+    "fixture_warning": "Inherited arbitrary current/voltage fixture geometry does not establish native mesh area/volume correspondence.",
+    "native_cells": "Cells: mem_sa=mem_length*cell_height; cell_sa=sum owned membrane areas; mem_vol=.5*R_rads*mem_sa; cell_vol=sum owned mem_vol; alternative mesh volume is vor_sa*height"
+  },
+  "initialization_paths": {
+    "actual_ER_constructor": "Deepcopy all cytosolic ion concentrations, overwrite Ca row to literal0.2mM; do not adjust any counterion; initial Q and Ver zero are cache values, not computed charge equilibrium.",
+    "init_core_legacy": "sim.py666-684 constructs legacy Ca/M ER vectors from p.cCa_er; these are overwritten by EndoRetic.__init__ full cytosol copy when enabled. No counterion-preservation claim.",
+    "normal_start": "run_sim_core1034 invokes init_dynamics; enabled init_dynamics857-858 unconditionally creates a new EndoRetic. Existing ER object/checkpoint is not automatically preserved through this path.",
+    "supplied_owned_update": "Original update/channels/get_v accept complete live ER fields; a caller-supplied complete state can define a separate conditional update seam. This is not native initialization or restart-path parity."
+  },
+  "kind": "cells.native_ER_initial_state_source_audit@1",
+  "new_numerical_runs": 0,
+  "next_numerical_authorization": "No ER rerun this round",
+  "preservation": "All original frozen/failed ER fixtures and source remain unchanged. Observed6 context failures stay failures; unrun cases stay unqualified, not relabeled passes or observed failures.",
+  "proposals": [
+    {
+      "claim_limit": "Source-faithful declared-geometry arithmetic only; not biological or general initializer validity.",
+      "id": "distinct_native_geometry_literal_initializer",
+      "required_before_numbers": [
+        "Authenticate native geometry/preparation correspondence and all ER parameters",
+        "Predeclare finite/positive domain, charge/capacitance consistency and conservation checks",
+        "Report any persistent charge offset; do not claim biological ER voltage or replace failed fixtures silently"
+      ],
+      "scope": "New distinctly named manufactured source-positive cases with explicitly source-derived cell areas/volumes and source template cm, preserving literal constructor and all original failed/unrun IDs."
+    },
+    {
+      "claim_limit": "No native constructor/full restart/lifecycle equivalence; no finite-fuel, buffer or biological validation.",
+      "construction_constraint": "For a -1 counterion such as Cl, choose c_ER_Cl=sum(other z_i*c_ER_i)-Q_target/F. Require strictly positive declared entries; Q_target=cm_er*V_target*er_sa/er_vol. Define all inventories at initialization, with no per-step repair.",
+      "example_constraint": "For neutral cytosol copied except Ca_ER0.2, an ER Cl increment 2*(0.2-Ca_cyt) balances the introduced charge. This is a declared different initial state, not an executed native counterion initializer.",
+      "id": "distinct_supplied_counterion_balanced_owned_ER",
+      "scope": "Separate caller-supplied complete positive all-ion ER state with explicit counterion inventory and Q/Ver consistent with capacitor equation; original EndoRetic.update is evaluated conditionally."
+    }
+  ],
+  "scientific_imports": 0,
+  "source_sha256": {
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+  },
+  "status": "proposal_only_no_numeric_runs_or_ER_source_edits"
+}

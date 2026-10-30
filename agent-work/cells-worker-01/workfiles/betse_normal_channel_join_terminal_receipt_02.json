@@ -1,0 +1,101 @@
+{
+  "actual_parent_calls": 33,
+  "automatic_followup": false,
+  "b26_audit_executed": false,
+  "carried_decimal_diagnostic_only": true,
+  "carried_reference_forms": 22,
+  "channel_calls": 118,
+  "checks": 26,
+  "conditional_reference_forms": 66,
+  "directory": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02",
+  "empty_profile_native_failure": {
+    "call_index": 1,
+    "message": "arrays used as indices must be of integer (or boolean) type",
+    "stage": "channel_initialization",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native_helpers.py\", line 194, in setup\n    namespace[\"init_channel\"](\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^\n        chan, roles[row[\"class_name\"]], row[\"class_name\"], row[\"maxDm_m2_s\"], phase\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"<authenticated BETSE channel classes/aliases/network>\", line 6624, in init_channel\n  File \"<authenticated BETSE channel classes/aliases/network>\", line 68, in init\nIndexError: arrays used as indices must be of integer (or boolean) type\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native.py\", line 458, in evaluate\n    material = material_capture(\n        dict(\n    ...<14 lines>...\n        forcing[\"extra_current_A_m2\"],\n    )\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native.py\", line 355, in material_capture\n    source[\"_late\"], channel_capture = channel_helpers.setup(\n                                       ~~~~~~~~~~~~~~~~~~~~~^\n        sim,\n        ^^^^\n    ...<7 lines>...\n        observe,\n        ^^^^^^^^\n    )\n    ^\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native_helpers.py\", line 198, in setup\n    raise NativeChannelInitializationRefused(\n    ...<17 lines>...\n    ) from error\nvalidation.betse.betse_normal_channel_join_native_helpers.NativeChannelInitializationRefused: arrays used as indices must be of integer (or boolean) type\n",
+    "type": "IndexError"
+  },
+  "empty_profile_native_status": "source_refused",
+  "failures_retained": {
+    "failure-channel_flux_overflow": {
+      "physical_acceptance": false,
+      "raw_model": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/evidence/normal-channel-join/raw-failure-channel_flux_overflow",
+      "repair_applied": false,
+      "source_failure": {
+        "call_index": 1,
+        "message": "Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce pump rate coefficients.",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native.py\", line 559, in evaluate\n    namespace[\"check_v\"](sim.vm)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"<pinned update_V/current-BVP adapter>\", line 342, in check_v\nvalidation.betse.betse_normal_ion_join_native.NativeUnstable: Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce pump rate coefficients.\n",
+        "type": "NativeUnstable"
+      },
+      "source_status": "source_refused",
+      "stage": "material_source",
+      "strict_model_refused": true
+    },
+    "failure-gate_pole": {
+      "physical_acceptance": false,
+      "raw_model": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/evidence/normal-channel-join/raw-failure-gate_pole",
+      "repair_applied": false,
+      "source_failure": {
+        "call_index": 1,
+        "message": "Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce pump rate coefficients.",
+        "traceback": "Traceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/source/validation/betse/betse_normal_channel_join_native.py\", line 559, in evaluate\n    namespace[\"check_v\"](sim.vm)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"<pinned update_V/current-BVP adapter>\", line 342, in check_v\nvalidation.betse.betse_normal_ion_join_native.NativeUnstable: Your simulation has become unstable. Please try a smaller time step,reduce gap junction radius, and/or reduce pump rate coefficients.\n",
+        "type": "NativeUnstable"
+      },
+      "source_status": "source_refused",
+      "stage": "material_source",
+      "strict_model_refused": true
+    }
+  },
+  "gap_calls": 96,
+  "inputs_sha256": "5d3cd5611f0fc23318e32227ca915dbdb2777037e4176546257468e255ac7670",
+  "kind": "cells.betse_normal_channel_join_terminal_receipt@1",
+  "maximum_conditional_local_error_fraction": 0.009002923301327499,
+  "native_captures": 14,
+  "observed_frames": 861,
+  "physical_or_full_native_accuracy_claim": false,
+  "prior_failed_run": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01",
+  "reference_forms": 88,
+  "resources": {
+    "automatic_retry": false,
+    "elapsed_seconds": 95.9013150120154,
+    "limits": {
+      "max_individual_process_rss_bytes": 1073741824,
+      "max_process_tree_memory_bytes": 1073741824,
+      "max_process_tree_rss_bytes": 1073741824,
+      "max_wall_seconds": 480,
+      "min_available_host_memory_bytes": 8589934592,
+      "process_tree_memory_metric": "rss",
+      "sample_interval_seconds": 0.25
+    },
+    "minimum_available_host_memory_bytes": 19178086400,
+    "observed_process_high_water_bytes": 77524992,
+    "process_tree_memory_metric": "rss",
+    "returncode": 0,
+    "rss_fallback_samples": 0,
+    "sampled_peak_charged_memory_bytes": 142721024,
+    "sampled_peak_process_tree_rss_bytes": 142721024,
+    "sampled_peak_summed_process_memory_bytes": 142721024,
+    "samples": 381,
+    "shared_address_space_samples": 0,
+    "status": "completed",
+    "utc": "2026-10-30T18:43:05.171020+00:00"
+  },
+  "result_sha256": "f18183abc499c63fae0b712b947d720e804ab6b5b8d8c4efe2cd28292080af57",
+  "runtime_and_source_verification": {
+    "actual_loaded_file_sha256_verified": true,
+    "frozen_source_files_verified": 2238,
+    "loaded_repository_modules_match_frozen_snapshot": true,
+    "module_file_records": 19107,
+    "native_snapshot_files_verified": 26,
+    "no_scientific_module_imports_or_numerical_reruns_during_closeout": true,
+    "owned_sources_verified": 10,
+    "protected_sources_verified": 151,
+    "runtime_records": 138,
+    "status": "passed",
+    "unique_loaded_artifact_paths": 396,
+    "working_copy_modules_loaded": false
+  },
+  "scientific_inputs_equations_and_budgets_unchanged_from01": true,
+  "sources_frozen": true,
+  "status": "passed_pending_Chief_independent_review"
+}

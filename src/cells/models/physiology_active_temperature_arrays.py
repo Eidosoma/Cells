@@ -104,6 +104,16 @@ class WorldStages(NamedTuple):
     checks: object
 
 
+class CalciumPhysicsStages(NamedTuple):
+    """Separate ionic and calcium/ER calls on the same complete world state."""
+
+    ionic: object
+    completion: object
+
+    def __call__(self, state, layout, control):
+        return self.completion(state, layout, control, self.ionic(state, layout, control))
+
+
 class StagedValues(NamedTuple):
     raw_proposal: Proposal
     raw_runtime_layout: object
@@ -627,3 +637,53 @@ def evaluate_batch_staged(numeric, proposal, *, family, xp=jnp, stages=None):
         )
         rows.append(assemble_staged_values(raw, inputs, physics, checks, xp=xp))
     return jax.tree.map(lambda *values: xp.stack(values), *rows)
+
+
+def compiled_world_stages(family):
+    """Build three reusable JAX executables without fusing complete worlds.
+
+    Compilation is lazy on each stage's first call. Reuse the returned stages
+    across homogeneous cohorts; ``evaluate_batch_staged`` remains the Python
+    orchestrator. Jitting that wrapper would remove these executable boundaries.
+    This changes execution only: every original rate, field and admission check
+    still runs. Memory use and backend qualification require separate evidence.
+    """
+    if family not in IMPLEMENTATIONS:
+        raise ValueError("Compiled stages require an exact reviewed active family")
+    return WorldStages(
+        family,
+        jax.jit(lambda p, c, raw: prepare_numeric_world(p, c, raw, family=family)),
+        jax.jit(lambda s, p, u: compact_physics_world(s, p, u, family=family)),
+        jax.jit(lambda s, p, u, h, v: check_physics_world(s, p, u, h, v, family=family)),
+    )
+
+
+def compact_calcium_completion(state, layout, control, ionic, *, xp=jnp):
+    """Complete maintained-fuel calcium physics after its original ionic stage."""
+    family = IMPLEMENTATIONS["resolved_calcium@11"]
+    if (
+        type(state) is not family.STATE_TYPE
+        or type(layout) is not family.LAYOUT_TYPE
+        or type(ionic) is not calcium.IonicStage
+    ):
+        raise ValueError("Calcium completion requires its exact family and complete ionic stage")
+    result = calcium.complete_ionic_stage(state, control, layout, ionic, xp=xp)
+    zeros = xp.zeros_like(layout.active, dtype=xp.float64)
+    return CompactPhysics(result.field, result.derivative, result.valid, zeros, zeros)
+
+
+def compiled_calcium_world_stages():
+    """Build four separate executables for the maintained-fuel calcium family.
+
+    Use only through the unjitted ``evaluate_batch_staged`` orchestrator, which
+    keeps each original world state/control/layout fixed between these calls.
+    This candidate preserves all laws; its memory bound needs qualification.
+    Finite-fuel and open-bath calcium families require their own composition.
+    """
+    stages = compiled_world_stages("resolved_calcium@11")
+    return stages._replace(
+        physics=CalciumPhysicsStages(
+            jax.jit(lambda s, p, u: calcium.ionic_stage(s, u, p)),
+            jax.jit(lambda s, p, u, ionic: compact_calcium_completion(s, p, u, ionic)),
+        )
+    )

@@ -1,0 +1,152 @@
+{
+  "kind": "cells.betse_geometry_initialization_qualification_plan@1",
+  "status": "qualified_completion_verified_and_Chief_independent_review_accepted",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_geometry_initialization.py": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+    "validation/betse/betse_geometry_initialization_native.py": "a895cc31739e1df7779c2bdbb5077a32d005346cc4380bd71670b4f4211d6b40",
+    "validation/betse/betse_geometry_initialization_reference.py": "8ace7b919df660bb09514092c7172fca8fb7c9df8d6077ee2adcb1e7eee3f496",
+    "validation/betse/betse_geometry_initialization_fixtures.py": "69a280a58bfd9e038ae64afe6058c25156ff4973fcc816604d60a73369d8ca94",
+    "validation/betse/betse_geometry_initialization_replay.py": "87861b0cc810ec6209a4588580dbc3a330cbdeb3b963b43c906f8de9df0d5785",
+    "validation/betse/betse_geometry_initialization_source_map.json": "ece501d857ebecd3506463b49e9a864cc7b4639de1c1f7dd6014658b7180e079",
+    "validation/betse/betse_geometry_initialization_protocol.json": "92c19b00efb538ba86d30f9fef93ef245faa77513795ddf676b71c8e73a8e539",
+    "tests/unit/test_betse_geometry_initialization.py": "e9d306b360aee50ddd70be87f657fd336ffb2ae1726012ddaa2a202531826fa3"
+  },
+  "source_AST": "passed",
+  "ruff": "passed",
+  "Chief_scope_approved": true,
+  "user_lets_go_geometry_qualification_authorized": true,
+  "expected_checks": 29,
+  "expected_seed_cases": 5,
+  "expected_bridge_candidates": 5,
+  "minimum_accepted_classes": [
+    "manufactured_seed_cloud",
+    "native_generated_ring_and_centre"
+  ],
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-geometry-initialization-20261030-01-checks.py",
+  "runner_sha256": "79be94538805bf1c0bd91918d3af56aa86e1260709fd2303602791eb4261c465",
+  "resources": {
+    "cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "tolerances": {
+    "seed_points": "Existing B09 coordinate 1e-27m+6e-12*abs(reference); exact same-runtime native point arrays",
+    "uniforms_and_MT_state": "Exact complete uniform outputs, 624words, position, Gaussian-cache flag/value; no process-global RNG mutation",
+    "geometry": {
+      "relative": 6e-12,
+      "coordinate_atol_m": 1e-27,
+      "area_atol_m2": 1e-26,
+      "volume_atol_m3": 1e-30,
+      "normal_atol": 2e-14,
+      "derivative_atol_per_m": 3e-08,
+      "laplacian_atol_per_m2": 0.003,
+      "inverse_atol_m2": 3e-24,
+      "compatibility_relative": 2e-12,
+      "conservation_relative": 3e-13
+    },
+    "environment": {
+      "native_host": "Exact values, shapes and dtypes; signed zero is not a physical distinction",
+      "field_current": "3e-13 in named source units + 6e-12*abs(reference)",
+      "voltage": "3e-14 V + 6e-12*abs(reference)",
+      "magnetic": "3e-18 named source units + 6e-12*abs(reference)",
+      "charge_density": "1e-30 named charge units + 6e-12*abs(reference)",
+      "geometry": "64*eps*abs(reference), coordinates 8 ULP, zero exact; integer maps exact",
+      "operator_inverse": "3e-13 named operator units + 6e-12*abs(reference), normalized Penrose/gauge residual <=1e-10",
+      "B23_prefix": "Existing instantaneous 32*eps*(ions+membranes+16)*gross+1e-30; never propagated into environment field budgets",
+      "reference_resolution_fraction": 0.1,
+      "nearest_admission": "Second-minus-first distance >64*eps*max(second distance,delta,tiny); native ties explicitly outside this narrower Cells admission"
+    },
+    "reference_resolution_fraction": 0.1,
+    "carried_or_propagated_allowance": false,
+    "accuracy_failure_retry": false
+  },
+  "qualification_output": "/mnt/workspaces/Cells/betse-geometry-initialization-20261030-01",
+  "B09_generation_and_MT19937_coverage_reused": true,
+  "new_B09_generation_coverage": false,
+  "raw_precomparison_arrays_retained": true,
+  "full_refined_buffers_retained": true,
+  "biological_geometry": false,
+  "full_make_world": false,
+  "caller_metric_overrides": false,
+  "scientific_accuracy_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "ECM_lane_paused_and_untouched": true,
+  "Root_owns_ECM02_review": true,
+  "result_sha256": "61486c5f71b2f8e9d48893bf100d5cb3e44bd880f9827080e35d74e36a0f066d",
+  "completion_verification": "/mnt/workspaces/Cells/betse-geometry-initialization-20261030-01/completion-verification.json",
+  "completion_verification_sha256": "f33cb9f1c02e897479e4d752eb82b6414b4f5e6dca39f7c7696bfb92d6e52ae5",
+  "completion_verifier": "/mnt/workspaces/Cells/specialist-runners/betse-geometry-initialization-20261030-01-verify.py",
+  "measured_results": {
+    "status": "verified",
+    "result_sha256": "61486c5f71b2f8e9d48893bf100d5cb3e44bd880f9827080e35d74e36a0f066d",
+    "checks": 29,
+    "seed_cases": 5,
+    "accepted_bridges": 5,
+    "nearest_refusals": 0,
+    "verified_artifacts": 2328,
+    "verified_source_files": 2236,
+    "verified_native_files": 12,
+    "verified_reused_B09_files": 7,
+    "verified_runtime_files": 1204,
+    "retained_complete_array_columns": 1220,
+    "maximum_error_fraction": 0.019335424582852995,
+    "maximum_reference_resolution_fraction": 0.0,
+    "affinity": [
+      6
+    ],
+    "runtime_packages": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1"
+    },
+    "resource_summary": {
+      "checks": {
+        "elapsed_seconds": 13.8707876841072,
+        "observed_process_high_water_bytes": 241844224,
+        "minimum_available_host_memory_bytes": 19701239808
+      },
+      "native-replay": {
+        "elapsed_seconds": 3.5315363879781216,
+        "observed_process_high_water_bytes": 89915392,
+        "minimum_available_host_memory_bytes": 20631465984
+      },
+      "reference-replay": {
+        "elapsed_seconds": 2.7765050888992846,
+        "observed_process_high_water_bytes": 84013056,
+        "minimum_available_host_memory_bytes": 20496470016
+      }
+    },
+    "native_and_reference_production_imports_denied": true,
+    "full_refined_buffers_retained": true,
+    "B09_generation_and_MT_coverage_reused": true,
+    "new_B09_generation_coverage": false,
+    "caller_metric_overrides": false,
+    "biological_geometry": false,
+    "full_make_world": false,
+    "accepted_tissue_steps": false,
+    "compiled_JAX": false,
+    "ECM_lane_touched": false,
+    "scope": "Authenticated fixed B09 generated/manufactured geometry to environment definition; exact seed/draw provenance; generated metric columns; no caller metrics or biological/whole-cell parity.",
+    "other_active_jobs_inspected": false,
+    "new_numerical_run_or_reference_rerun": false
+  },
+  "accepted_case_classes": {
+    "native_generated_ring_and_centre": 2,
+    "manufactured_seed_cloud": 3
+  },
+  "qualification_launches": 1,
+  "scientific_accuracy_retries": 0,
+  "no_followup_jobs_started": true,
+  "Chief_independent_review": {
+    "status": "accepted_declared_scope_reported_by_Chief",
+    "receipt": "/mnt/workspaces/Cells/betse-geometry-initialization-20261030-01/root-review-01/completion-verification.json",
+    "sha256": "4fb8deceee0f224713032d36866b185fa3874b919a7e6e02c8047b97724c99f9",
+    "review_not_repeated_by_specialist": true
+  },
+  "inherited_nearest_tie_new_case_coverage": false
+}

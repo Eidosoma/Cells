@@ -1,0 +1,312 @@
+{
+  "kind": "cells.betse_image_mask_prelude_preparation_plan@1",
+  "status": "qualification02_passed_Chief_independent_review_accepted_declared_scope",
+  "prepared_utc": "2026-10-30T20:14:19.201336+00:00",
+  "scope": "Owned image mask and native make_voronoi argument prelude; stop before native DECMesh constructor",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_image_mask_prelude.py": "e8e14819df8a80692c2c3990189aaccb2e375a6c984c2cd8dc727ce80e2ce03b",
+    "validation/betse/betse_image_mask_prelude_native.py": "bf645b550438adb1975d913d6230ea388cf1f3f5d3d56d8de4db3d14b65d9063",
+    "validation/betse/betse_image_mask_prelude_reference.py": "5f7fc0ccb641a967f46c3808da1b30859088b421ecf048f664de8a452d9e3c2f",
+    "validation/betse/betse_image_mask_prelude_fixtures.py": "495fd16cf5065d16a182a6923cae2b97f72999cbf5fd7a674a6413d391327242",
+    "validation/betse/betse_image_mask_prelude_replay.py": "45e1926672bc9112b322230100564f841c92249b7d22d3da2ee13dc601ad62b0",
+    "validation/betse/betse_image_mask_prelude_source_map.json": "4d7696250798c403e74df1419f45c458beea74b304697e376bcb3b2fbb4c5792",
+    "validation/betse/betse_image_mask_prelude_protocol.json": "079e083063cb2f3472dc772bdf8fb5ecd3dd7c6d13933e0530a00e658c9ba042",
+    "tests/unit/test_betse_image_mask_prelude.py": "c2d98a251a7879232e2a6b9b0e93f6810c95f2939b0d1e2c9424c4167ddea204"
+  },
+  "reused_helper_source_sha256": {
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/core/specs.py": "193d7f814d422099c2ea0c661a58d08142fb07c43de6bad3eb59c3b2f132eb09",
+    "src/cells/core/geometry_tissue_preparation.py": "ad57f458081c65c38191d237d51d7bdf2f6f62ca55f12a2e5df567bf30a6e95e",
+    "src/cells/processes/betse_geometry_initialization.py": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/tissue/physiology_protein_packet_provider_reference.py": "e5f5ce917e3932f39667ccbd04addbe2217e59697b86862e7ba3c8b88376e6db",
+    "validation/tissue/physiology_protein_transition_arrays_reference.py": "ddb686a5ea88c2356eb7e2269260379f37fb9badb3e35b046dcd2115b9c1016e",
+    "validation/assembly/component_process.py": "eef0b5b6d468e8608a8e3b4f48efbf2b4e6db7fedfdf530a928607e6591f63f5",
+    "validation/tissue/open_calcium_bath_trajectory_common.py": "9e12d73aa0fe428c59f4e9e2823c9e4a04a43b8e712523f295e66400976079e0",
+    "validation/tissue/open_calcium_trajectory_common.py": "caa1bba1281fb5463d1b15e6d1971342a821bd69fd07693aeb9eb84b02bcb78f",
+    "src/cells/processes/betse_lattice_seed_generation.py": "d1e20f37d37007460229edde9484513dad7f36642c1ec83a9c80e4640eb52df6",
+    "validation/betse/betse_lattice_seed_generation_fixtures.py": "50d5fefaf9700c22ee01346a0503b5244b076128a5cb709ac2243e4d2691e99e",
+    "validation/betse/betse_lattice_seed_generation_protocol.json": "49d8a021c51a08d9e936d8b779f65f386a3d6eef0640dc62e6e52097e10bbc1d",
+    "validation/betse/betse_lattice_seed_generation_source_map.json": "f88e810e6082373778acb3ab01c14e6268c8398bb556373c3a552bd372ce9a98"
+  },
+  "note": "agent-work/cells-specialist/NATIVE_IMAGE_MASK_PRELUDE.md",
+  "note_sha256": "bb6333493cd012b0f301315f4b0074a059488223d14f90938bc63e7725089b69",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/science/tissue/picker/tispickimage.py": "75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+      "betse/util/path/pathnames.py": "7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b",
+      "betse/util/path/files.py": "5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66",
+      "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+      "betse/lib/pil/pilnumpy.py": "0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4",
+      "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38"
+    }
+  },
+  "upstream_lattice_result": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/result.json",
+  "upstream_lattice_result_sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+  "upstream_lattice_review_status": "accepted_declared_scope_reported_by_Chief",
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-image-mask-prelude-20261030-02-checks.py",
+  "runner_sha256": "027f084294b078a7951f76699bf44df8f9b0a6d7527ba66e82c107a33c9386a3",
+  "prepared_command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "/mnt/workspaces/Cells/specialist-runners/betse-image-mask-prelude-20261030-02-checks.py",
+    "--output",
+    "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02"
+  ],
+  "planned_qualification_output": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02",
+  "planned_output_exists": true,
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-preparation-20261030-03.json",
+  "source_AST": "passed_without_imports",
+  "captured_AST_compilation": "passed_with_future_annotations_without_exec",
+  "ruff": "six image sources and future runner/hook passed",
+  "static_verified_native_files": 11,
+  "captured_AST_sites": 16,
+  "ordering_only_AST_sites": 2,
+  "test_multiplicities_from_AST": {
+    "test_native_mask_and_branch_arguments_with_independent_grid_hull": 16,
+    "test_raw_mask_failure_precedes_single_cell_mesh_branch": 4,
+    "test_owned_image_is_immutable_and_survives_live_filename_change": 1,
+    "test_resealed_mask_or_branch_tampering_is_refused": 4,
+    "test_source_window_and_pixels_do_not_accept_caller_overrides": 2,
+    "test_paired_query_retains_native_zip_truncation": 1
+  },
+  "expected_checks": 28,
+  "expected_complete_cases": 16,
+  "expected_raw_failures": 4,
+  "resources": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "runtime_estimate": {
+    "expected_under_ten_minutes": true,
+    "measured_for_this_panel": false,
+    "phases": [
+      "checks",
+      "native-replay",
+      "reference-replay"
+    ],
+    "basis": "16 bounded4..6pixel masks, <=128 lattice points, small source AST captures"
+  },
+  "reference_scope": {
+    "method": "Independent P5-byte decoding, Decimal100/160 grids, monotone-chain image hull, manual bilinear interpolation",
+    "input_scope": "Declared square P5/255 byte fixtures, paired queries within closed source window",
+    "native_only": "Fast cubic spline construction/knots/coefficients exact original-native comparison; no independent cubic interpolation claim",
+    "predicate": "Compare selected indices exactly; never propagate continuous error allowance into !=0 decision"
+  },
+  "tolerances": {
+    "native_host": "Exact complete values/shapes/dtypes and native hull index order",
+    "coordinates": "Existing B09 1e-27m+6e-12*abs(reference)",
+    "dimensionless_linear": "Reviewed2e-14+6e-12*abs(reference); exact selection predicate checked separately",
+    "reference_resolution_fraction": 0.1,
+    "selected_indices": "Exact, no tolerance or tiny-value clipping"
+  },
+  "Chief_scope_review_items": [
+    "Proposed dimensionless linear budget2e-14+6e-12*abs(reference)",
+    "Fast cubic construction/coefficients native-exact only; no independent fast-query claim",
+    "Independent P5/255 byte fixtures and closed-window linear queries only"
+  ],
+  "raw_source_bytes_and_actual_arrays_before_oracle": true,
+  "full_primary_and_refined_buffers_prepared": true,
+  "original_source_layouts_retained": true,
+  "numerical_launch_authorized": false,
+  "next_user_instruction_required_before_numerical_launch": false,
+  "numerical_execution": true,
+  "numerical_checks_run": 28,
+  "pytest_collection_executed": false,
+  "source_modules_imported": false,
+  "image_fixture_files_written": 0,
+  "image_decode_executed": true,
+  "independent_reference_executed": true,
+  "mesh_constructor_executed": false,
+  "topology_generated": false,
+  "biological_geometry": false,
+  "full_make_world": false,
+  "initial_lattice_image_prefilter": false,
+  "ECM_lane_touched": false,
+  "Root_shared_sources_changed": false,
+  "other_active_jobs_inspected": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "next_action": "Image qualification complete for declared scope. Continue initial_mesh static preparation only; no follow-up numerical launch.",
+  "previous_static_preparations": [
+    {
+      "receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-preparation-20261030-01.json",
+      "sha256": "a5e6c081da870a8e624101d914cbd83a181b405057bd9bde2cad8590b02a588e",
+      "preserved": true
+    },
+    {
+      "receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-preparation-20261030-02.json",
+      "sha256": "cd5fa2ceac8bc2bf58da92ec94594d6e07d9c26a0a8617c5810f03242b3a7244",
+      "preserved": true
+    }
+  ],
+  "static_review_repairs": {
+    "off_diagonal_pairs": "All16 positive cases use (.23,.71),(.71,.23),(.79,.31),(.31,.79) in addition to existing diagonal/endpoints",
+    "asymmetric_fixture": "One existing asymmetric4 pixel changed; flipped[3,1] is active while flipped[1,3] is inactive; independent response difference asserted",
+    "positive_raw_trials": "Catch ImagePreludeRejected from capture/prepare/export; retain typed arrays/opaque bytes before re-raise",
+    "test_IDs_unchanged": true,
+    "numerical_budgets_unchanged": true,
+    "numerical_execution": false
+  },
+  "upstream_lattice_review_receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/root-review-01/completion-verification.json",
+  "upstream_lattice_review_sha256": "d301d725621746fd3638d811097010ef298c081ad4af0291b8e8fc9c0308ef0f",
+  "static_asymmetry_witness": {
+    "file_pixel": [
+      0,
+      1
+    ],
+    "value": 0,
+    "transpose_file_pixel": [
+      2,
+      3
+    ],
+    "transpose_value": 255
+  },
+  "Chief_scope_review": {
+    "receipt": "/mnt/workspaces/Cells/betse-image-preflight-20261030-01/REVIEW.json",
+    "sha256": "1f71422a64cb98f013739cd09ea7dd649a5fc3d9d03a185f31aceecdf2353a6d",
+    "status": "declared_scope_static_review_ready_and_Chief_authorized"
+  },
+  "authorization_consumed": true,
+  "qualification_launches": 2,
+  "command_executed": true,
+  "qualification_results_exist": true,
+  "terminal_failure_exists": false,
+  "failed_round_receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-failed-round-20261030-01.json",
+  "failed_round_receipt_sha256": "ca0bac44006e5e4ff0272576eb8ee227f550b52a7a441e565db5942bade78e57",
+  "primary_failure": "ModuleNotFoundError: No module named PIL in venv-cpu",
+  "shared_environment_changed": false,
+  "authorization_history": [
+    {
+      "authorized_utc": "2026-10-30T19:59:51.761779+00:00",
+      "coordinator": "Chief",
+      "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+      "basis": "Image02 review ready; authorized fresh28-check component qualification now",
+      "scope": "One bounded image/prelude qualification, no mesh computation and no automatic failure retry",
+      "resources_unchanged": true,
+      "budgets_unchanged": true
+    }
+  ],
+  "previous_qualification": {
+    "output": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-01",
+    "status": "collection_failure_missing_PIL",
+    "receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-failed-round-20261030-01.json",
+    "receipt_sha256": "ca0bac44006e5e4ff0272576eb8ee227f550b52a7a441e565db5942bade78e57",
+    "runtime_capture_incomplete": true
+  },
+  "runtime_environment": {
+    "pillow_version": "12.3.0",
+    "overlay": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01",
+    "preparation": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/preparation.json",
+    "preparation_sha256": "c042d540bd4e26a43f6afdce8908c983222dd8090553d98e3ab0a0e1397533c9",
+    "import_check": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/import-check.json",
+    "import_check_sha256": "106ecf86541d799c5a9b604e7f71a9b40039be6dcdc8461bc8667efd9f69a9fe",
+    "verified_copied_files": 142,
+    "source_RECORD_hashed_files": 141,
+    "shared_venv_mutated": false,
+    "Root_import_check_reused_not_repeated": true
+  },
+  "environment_retries_executed": 1,
+  "runtime_capture": "Qualification02 complete package/file inventory and isolated Pillow extension origins verified; failed01 inventory limitation preserved in failed round receipt.",
+  "science_fixtures_and_budgets_unchanged_from_failed01": true,
+  "authorization": {
+    "authorized_utc": "2026-10-30T20:14:54.717242+00:00",
+    "coordinator": "Chief",
+    "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+    "basis": "New user letsgo authorizes image02 qualification once overlay-authenticated runner ready",
+    "scope": "One28-check image02 qualification; no failure retry; science/fixtures/budgets unchanged; CPU6 same resource guards"
+  },
+  "scientific_accuracy_retries": 0,
+  "result_sha256": "3200c71226bc30d43e0fc48e8a0417320e38ddb2649541ad07e99fd97be92a2e",
+  "completion_verification": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/completion-verification.json",
+  "completion_verification_sha256": "6a770067cbce7dc6f8ba111f84ace84016a0efb5052fe0b3877baea4c9b8a683",
+  "measured_results": {
+    "kind": "cells.betse_image_mask_prelude_completion_verification@1",
+    "status": "verified",
+    "result_sha256": "3200c71226bc30d43e0fc48e8a0417320e38ddb2649541ad07e99fd97be92a2e",
+    "checks": 28,
+    "complete_cases": 16,
+    "raw_mask_failures": 4,
+    "verified_artifacts": 2539,
+    "verified_sources": 2289,
+    "verified_native_files": 11,
+    "verified_runtime_files": 1178,
+    "verified_overlay_files": 142,
+    "retained_complete_array_columns": 832,
+    "asymmetric_off_diagonal_cases": 4,
+    "maximum_coordinate_error_fraction": 3.645863835985973e-05,
+    "maximum_dimensionless_error_fraction": 9.53635994352479e-05,
+    "maximum_reference_resolution_fraction": 0.0,
+    "resource_summary": {
+      "checks": {
+        "elapsed_seconds": 10.829644192010164,
+        "observed_process_high_water_bytes": 231784448,
+        "minimum_available_host_memory_bytes": 19025633280
+      },
+      "native-replay": {
+        "elapsed_seconds": 5.2947804348077625,
+        "observed_process_high_water_bytes": 107175936,
+        "minimum_available_host_memory_bytes": 20609576960
+      },
+      "reference-replay": {
+        "elapsed_seconds": 0.7691216461826116,
+        "observed_process_high_water_bytes": 38473728,
+        "minimum_available_host_memory_bytes": 21502889984
+      }
+    },
+    "affinity": [
+      6
+    ],
+    "packages": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1",
+      "pillow": "12.3.0"
+    },
+    "module_origins": {
+      "PIL": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/__init__.py",
+      "PIL.Image": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/Image.py",
+      "PIL._imaging": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/PIL/_imaging.cpython-313-x86_64-linux-gnu.so"
+    },
+    "full_primary_and_refined_buffers_retained": true,
+    "source_file_bytes_and_actual_before_oracle": true,
+    "native_and_reference_production_imports_denied": true,
+    "fast_cubic_independent_claim": false,
+    "mesh_constructor_executed": false,
+    "mesh_topology_generated": false,
+    "biological_geometry": false,
+    "failed01_preserved": true,
+    "shared_venv_mutated": false,
+    "independent_review_pending": false,
+    "new_numerical_run_or_reference_rerun": false,
+    "automatic_followup": false,
+    "automatic_polling": false,
+    "ECM_lane_touched": false
+  },
+  "terminal_independent_review": {
+    "receipt": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/root-review-01/REVIEW.json",
+    "sha256": "8d9eff1e371f0139c1de7c90c334afb77083a513b0bb9eb2ccd51601961a3d39",
+    "status": "verified_for_declared_image_and_mesh_argument_prelude_scope",
+    "saved_evidence_review_reused": true
+  },
+  "failed01_runtime_capture_complete": false,
+  "runtime_capture_complete": true
+}

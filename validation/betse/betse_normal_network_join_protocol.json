@@ -1,0 +1,119 @@
+{
+  "acceptance": {
+    "budget_source_sha256": {
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385"
+    },
+    "carried_reference_forms": 0,
+    "independent": "Fresh Decimal90/140 from actual immutable pre-network conditions before outgoing network computation; controls/writes only, no upstream/trajectory accuracy claim",
+    "inherited_budget_source_sha256": {
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385"
+    },
+    "no_outcome_tuning": true,
+    "primary": "Exact complete native arrays/dtypes, frames, routes/caches, control writes/carry, current and voltage",
+    "self_resolution_fraction": 0.1,
+    "standalone_reuse": "Frozen modulation bind/domain plus separate NumPy evaluate/apply comparisons. Primary stepping keeps original expression arithmetic, not stabilized replacement.",
+    "tolerance_protocol": "validation/regulation/betse_network_modulation_protocol.json",
+    "tolerance_protocol_sha256": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385",
+    "tolerances": {
+      "diffusivity_atol_m2_s": 1e-30,
+      "factor_atol": 3e-14,
+      "relative": 5e-12
+    }
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "geometry": "Network environment sampling shares the exact supplied native cells.map_mem2ecm with voltage membrane_to_grid; it must index the declared rectangular no-ECM bath row. No full Simulator initialization parity.",
+  "input_versus_execution": {
+    "chemistry": "No growth/reaction/transport result is supplied or claimed executed; schema rejects active chemistry until complete molecule transport ownership exists.",
+    "executed": "Original get_influencers/read_modulators expression construction and run_loop_modulators, plus original empty run_loop/clear/energy bodies",
+    "supplied": "Initial complete ion state/controls, live ordinary packets, scheduled control override values and late channel modulator arrays. No native event/function execution is claimed for these supplied outputs."
+  },
+  "kind": "cells.betse_normal_network_feedback_static_contract@1",
+  "law_id": "betse_normal_native_network_feedback_v1_5_0@1",
+  "limitations": [
+    "Static network package only; no new network tests or reference calculations run",
+    "No molecule growth/decay, active/passive molecule movement, transporter chemistry, mito/env chemistry, finite ATP, buffers, full GRN/lifecycle or biological validation",
+    "Only one enabled core; multiple network owner ordering and last publication need separate owned state",
+    "Ca_dyn0; failed ER initialization fixtures remain separate and unchanged",
+    "No full Simulator/native mesh preparation or independent upstream/trajectory accuracy claim",
+    "Direct/special/starred modulators and TJ excluded; supplied scheduled/channel outputs explicitly distinguished from executed native feedback"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "numerical_authorization": "No numerical launch this round for this new prefix; explicit later requested/CPU-coordinated round required",
+  "numerical_runs": 0,
+  "planned": {
+    "actual_pre_network_points": 30,
+    "carried_reference_forms": 0,
+    "checks": 15,
+    "dependency_controls": 3,
+    "distinct_raw_stack_refusal": 1,
+    "empty_feedback_projection": 1,
+    "fresh_reference_forms": 60,
+    "native_captures": 11,
+    "positive_chemical_execution_checks": 0,
+    "positive_three_call_feedback_histories": 10
+  },
+  "purpose": "One late native network core executing endogenous GJ/NaK feedback with owned ion state and explicitly empty chemistry",
+  "raw_source_blocker": {
+    "cause": "With zero Molecule objects gad_rates=np.asarray([]) has shape(0,); native vstack promotes it to(1,0), incompatible with nonempty cell reaction rates(R,N) for N>0.",
+    "name": "empty-growth/nonempty-reaction vstack",
+    "rule": "Preserve source failure. No reshape, fake growth row, callback chemistry result or positive reaction credit.",
+    "status": "source-audited dimensional refusal; numerical probe prepared only"
+  },
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scope": {
+    "configured_molecules": 0,
+    "configured_reactions": 0,
+    "control_domain": "Bounded ordered nonnegative GJ/NaK maxima, ordinary known-ion Hill regulators, explicit membrane/environment sites. TJ/direct/special/voltage-shifted rules are excluded from this first seam.",
+    "enabled_owner": "Exactly one molecules or GRN core; dual-owner chronology/publication is excluded",
+    "executed_chemistry": false,
+    "owned_chemical_state": "All native ion bulk/membrane/rectangular-bath arrays are the joined parent state, not separate unowned concentration samples",
+    "owned_network_state": "Immutable GJ/NaK control vectors and all relevant rate/delta/energy/charge/current caches, with cache presence and source expression strings"
+  },
+  "source_map": "validation/betse/betse_normal_network_join_source_map.json",
+  "source_order": [
+    "owned or explicitly supplied scheduled controls resolve before the ordinary pump/GJ prefix",
+    "ordinary reset/NaK/membrane/GJ/intra",
+    "plasma CaATP; Ca_dyn0 only",
+    "network clear",
+    "late catalog channels with explicitly supplied channel-modulation arrays",
+    "endogenous network modulators sample actual current membrane/bath aliases and overwrite GJ/NaK controls in declared order",
+    "actual native empty-chemistry run_loop performs zero-rate alias writes, energy charge and conditional publication",
+    "deferred ordinary commit/clipping",
+    "current/voltage; resulting control writes persist into the next call"
+  ],
+  "status": "static_unqualified_prepared_no_network_numerical_runs"
+}

@@ -1,0 +1,39 @@
+{
+  "inputs": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/inputs.json",
+  "inputs_sha256": "3ff20e30423b61e5cbfb4768f70e708d56683bbdc41df01af28d7dc0bc869408",
+  "kind": "cells.betse_normal_channel_join_preparation_receipt@1",
+  "native_copies": 26,
+  "numerical_runs_at_preparation": 0,
+  "planned_checks": 26,
+  "planned_fresh_native_captures": 14,
+  "planned_reference_forms": 96,
+  "protected": 151,
+  "resources": {
+    "cpu": 1,
+    "cpu_coordination": "Chief B28 explicitly authorized guarded CPU1 short checks and confirmed actual late native order",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_imports": 0,
+  "source_files": 2237,
+  "source_seam_AST_audit": {
+    "_active_material_step": {
+      "normalized_new_AST_sha256": "95ecbfa03740ebb2afc97a93f34c859d5a74d9aa418f3e00d28870e920484abf",
+      "numerical_body_unchanged": true,
+      "original_AST_sha256": "95ecbfa03740ebb2afc97a93f34c859d5a74d9aa418f3e00d28870e920484abf"
+    },
+    "_pumped_material_step": {
+      "normalized_new_AST_sha256": "0f74ff4a4f10b3e19d300162b1649b2bb8276e8d7b4871fbfea15a5f84edccfe",
+      "numerical_body_unchanged": true,
+      "original_AST_sha256": "0f74ff4a4f10b3e19d300162b1649b2bb8276e8d7b4871fbfea15a5f84edccfe"
+    },
+    "material_step": {
+      "normalized_new_AST_sha256": "a09dcd2dbee4939304cf47b26e8e8987a7ff3c0f898c8bdc7b6b64c6a12c06b9",
+      "numerical_body_unchanged": true,
+      "original_AST_sha256": "a09dcd2dbee4939304cf47b26e8e8987a7ff3c0f898c8bdc7b6b64c6a12c06b9"
+    }
+  }
+}

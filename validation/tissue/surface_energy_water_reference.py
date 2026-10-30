@@ -90,7 +90,7 @@ def initial(c):
     return flatten(c, fields)
 
 
-def evaluate(c, state, time):
+def evaluate(c, state, time, *, charge_equivalent_increment_fmol=None):
     d = unpack(c, state)
     if c["raw"]["model"]["id"] == "resolved_energy_water@2":
         supported = np.asarray(
@@ -124,7 +124,12 @@ def evaluate(c, state, time):
     current = dict(
         c["energy"], vi=volume[:n], vo=volume[n:], energy_volumes=volume[:n], ionic=nested
     )
-    slope, phi, proof = energy.evaluate(current, flatten(c["energy"], d), time)
+    slope, phi, proof = energy.evaluate(
+        current,
+        flatten(c["energy"], d),
+        time,
+        charge_equivalent_increment_fmol=charge_equivalent_increment_fmol,
+    )
     result = unpack(c["energy"], slope)
     pool_amount = c["energy_initial"] + d["energy_amount_increment_fmol"]
     # Pool particles have no exterior inventory. Keep all three species distinct

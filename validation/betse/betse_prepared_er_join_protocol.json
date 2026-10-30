@@ -1,0 +1,294 @@
+{
+  "acceptance": {
+    "full_error_budget_units_arrays": true,
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_er_join.py": "0bbd72c40013ff9fa7064e742da0da115249d8e6c6f8630e72c7d8a8c20998c6",
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_er_join_protocol.json": "67aa682defeef14bf975026300336ba370258799f3201eb87cda90e07b93eb13",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "initial_exact_fields": [
+      "cc_er",
+      "cytosol_mM",
+      "er_vol",
+      "er_sa",
+      "cm_er",
+      "zer",
+      "Dm_er_base",
+      "requested_voltage_V",
+      "target_charge_density_C_m3"
+    ],
+    "initial_reference": "Independent stdlib Decimal90/140 from exact binary64 raw inputs before production preparation; no production/native/NumPy/JAX imports",
+    "initial_roundoff": {
+      "amount": "g(8)*(abs(cytosol_amount)+abs(ER_amount))+1e-40 mol",
+      "boundary": "Preparation only; never a propagated allowance or new ER step tolerance",
+      "caches": "g(128)*(abs(max_er)+abs(base)+abs(channel))+1e-30 m2/s; planned Hill exponents2",
+      "charge": "g(3*ion_count+4)*sum(abs(z*F*c_ER))+1e-30 C/m3",
+      "gamma": "g(n)=n*u/(1-n*u)",
+      "paired_Cl_redistribution": "g(16)*sum(abs(two prepared amounts + neutral baseline amounts))+1e-40 mol",
+      "target_charge": "charge bound + abs(z_counterion*F)*ulp(stored_counterion)/2",
+      "target_voltage": "voltage bound + abs(er_vol/er_sa/cm)*counterion_charge_store_bound",
+      "unit_roundoff": "2^-53",
+      "voltage": "abs(er_vol/er_sa/cm)*charge_bound*(1+g(6)) + g(6)*abs(exact_all_ion_V) +1e-30 V"
+    },
+    "no_outcome_tuning": true,
+    "primary": "Exact complete native outer frames, ER state/caches/internal frames and source arrays/dtypes",
+    "self_resolution_fraction": 0.1,
+    "step_budgets_unchanged": {
+      "Q_charge_density": "32*eps*(ions+cells+16)*sum(abs(all-ion ER charge-density terms))+1e-30 C/m3",
+      "SERCA_flux": "Existing pump preflight density2e-18 mol/(m2s)+relative2e-11*abs(reference), unchanged",
+      "Ver": "1024*eps*(ions+cells+gridpoints+16+64)*all-ion charge gross*er_vol/er_sa/cm_er+1e-30 V; no propagated bound",
+      "carried_reference_forms": 0,
+      "conservation": "ER transfer only: per-ion/per-cell amount residual <=128*eps*(ions+cells+4+32)*before+after absolute amount gross + existing B24 concentration floor*(cell_vol+er_vol)",
+      "cytosol_and_ER_concentration": "Existing B24 floors and128*eps*(ions+cells+4+32)*actual local ER gross; counts reflect ER cell axes",
+      "independent": "Fresh Decimal90/140 from actual immutable PRE-ER state before model ER calculation; no upstream CaATP/normal-prefix or trajectory-accuracy claim",
+      "inherited_budget_source_sha256": {
+        "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+        "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+        "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+        "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+        "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+        "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+        "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+        "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+        "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+        "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+        "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+        "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+        "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+        "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+        "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+        "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+      },
+      "no_outcome_based_parameters": true,
+      "no_tolerance_tuning": true,
+      "primary": "Exact complete native outer frames, ER state/caches/internal frames and source arrays/dtypes",
+      "self_resolution_fraction": 0.1
+    }
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "literal_ER02_failure": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/failure.json",
+      "sha256": "e8dc651a46a8f100a4daccb8db9ba2b824920602b9b58f30d24dbc80c489be8f"
+    },
+    "literal_ER02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/inputs.json",
+      "sha256": "fdf8646240dd0ea7806f5ea05bacb5150984741292037a04ecc579ad16ccae6e"
+    },
+    "literal_ER02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "network02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "source_design": {
+      "path": "/mnt/workspaces/Cells/er-initial-state-design-20261030-01/proposal.json",
+      "sha256": "6a81bc966e8a05e13868040bc7dcbede78ea65d472e245e732168bc371cc1ae5"
+    },
+    "worker_source_audit": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_er_initial_state_audit_01.json",
+      "sha256": "5f6106a2af545829febb72894e83534fb7c1cf57c340e2d7134376e54fccee7b"
+    }
+  },
+  "constructor_mode": "prepared_owned_ER_before_outer_call_channels_primed_v1",
+  "engine_law": "betse_normal_rectangular_bath_endoretic_join_v1_5_0@1",
+  "exact_preparation_contract": {
+    "baseline_other_rows": "Copy original cytosol rows, set ER Ca exactly to native 0.2 mM, and solve only the explicitly chosen counterion row. All concentrations must remain finite and strictly positive.",
+    "cache_phase": "Prime Dm_channels and Dm_er once from the supplied initial cytosol and initial IP3 owner context without advancing time. First source update recomputes channels normally from actual pre-ER cytosol after the ordinary prefix. Old cached values are not a promise that the prefix leaves cytosol unchanged.",
+    "counterion": "Choose explicitly either Cl with z=-1 and its existing moving role, or existing stationary P with z=-1. No new species, buffer or charge sink is introduced.",
+    "general_counterion_equation": "For chosen k: c_ER[k,j] = (rho_target_j/F - sum_{i!=k} z_i*c_ER[i,j]) / z_k. For z_k=-1: c_ER[k,j] = sum_{i!=k} z_i*c_ER[i,j] - rho_target_j/F.",
+    "geometry": "V_ER=fl(0.1*V_cell), A_ER=fl(1.0*A_cell), cm_ER=the same bound native capacitance. Retain source V_cell for cytosol; do not silently subtract ER volume or reinterpret the total physical cell volume.",
+    "initial_target_roundoff_check": "Compare against an independent exact-binary-input charge/capacitance reconstruction and an a priori operation-roundoff bound including counterion rounding. Report absolute C/m3 and V residuals. This bound applies only to preparation, never as a propagated trajectory allowance; existing ER step budgets stay unchanged.",
+    "inventory_boundary": "This is a newly declared initial inventory, not an unlogged transfer from the failed initial state. Seal initial per-ion cytosol+ER amounts. No rebalancing, clamping or target-voltage reset occurs after preparation.",
+    "ion_and_cell_axes": "Use exact declared ion IDs, valences, cell IDs and ordering from the joined parent; never infer row roles from array position.",
+    "no_hidden_alias_or_draw": "Own and freeze full float64 arrays; preserve the joined parent, RNG, clocks, caches and source indices except explicitly declared new initial fields. No random draw, dynamics call, relaxation, parameter search or fitted output is part of preparation.",
+    "proposed_mode": "prepared_owned_ER_before_outer_call_channels_primed_v1",
+    "rounding": "Solve the counterion equation independently at high precision from exact binary64 parent constants, round each prepared concentration once, then derive stored Q and Ver from those stored values in the literal native operation order. Requested target and realized charge/voltage are separate metadata.",
+    "stored_Q": "Q_hat = np.sum(zer * F * stored_cc_er, axis=0), with the same float64 operand order as native get_v.",
+    "stored_Ver": "Ver_hat = (1/cm_ER) * Q_hat * (V_ER/A_ER), preserving native operation order. Do not force ideal target zero over a representable residual.",
+    "target_charge_density": "rho_target_j = cm_ER * A_ER_j * V_target_j / V_ER_j",
+    "units": "Concentrations use native numeric mM = mol/m3. Q is C/m3, V is volts, areas m2, volumes m3, cm F/m2. Total ER charge is Q*er_vol; capacitor charge is cm*er_sa*Ver.",
+    "whole_parent_association": "Seal bound source definition, source state digest, declared recipe, complete prepared state, target and realized values. Reconstruct outer State identity using its real factory. Do not manually replace a frozen dataclass field and retain an old identity."
+  },
+  "failure_retention": {
+    "ER01_constructor_failures": "Immutable failed evidence",
+    "ER02_observed_source_refusals": [
+      "owners_absent",
+      "owner_present_no_IP3",
+      "molecules_precedence",
+      "metabo_precedence",
+      "grn_only",
+      "temperature_split"
+    ],
+    "new_refusals": "Cells preparation contract only, no native refusal claim",
+    "old_IDs_reclassified": false,
+    "on_failure": "Archive raw outputs/partial state and stop; no automatic dt/parameter/counterion search",
+    "original_ER02_unrun_checks": 12,
+    "original_unrun_raw_SERCA": [
+      "zero_denominator",
+      "unused_backward_pole",
+      "equilibrium_overflow"
+    ]
+  },
+  "input_versus_execution": {
+    "excluded": "IP3-production or network dynamics, native ER initialization/restart or full Simulator/mesh preparation",
+    "executed": "Original ER owner lookup/channels/SERCA/electroflux/get_v and unchanged outer stepping",
+    "supplied": "Complete prepared all-ion ER packet, IP3 owner readouts and ordinary/channel forcing outputs"
+  },
+  "kind": "cells.prepared_owned_ER_static_contract@1",
+  "limitations": [
+    "No implementation or positive trajectory has been tested.",
+    "No native constructor/restart/full init_dynamics equivalence.",
+    "No new finite-fuel consumption, buffer chemistry, field-energy balance or biological validation.",
+    "Counterion allocation changes a real declared initial inventory and subsequent dynamics; it is not a harmless numerical regularization.",
+    "Native source-derived geometry and a source-derived dimensionless voltage scale are calibration choices, not measured ER physiology.",
+    "No numerical preparation, reference, native, test collection or update executed in this package",
+    "Native source-derived geometry alternative is deferred; no prior geometry passes count as ER passes",
+    "No simultaneous new network-feedback/ER integration claim"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "numerical_runs": 0,
+  "planned": {
+    "ER_only_single_updates": 2,
+    "actual_pre_ER_points": 83,
+    "additional_diagnostic_histories": 6,
+    "carried_reference_forms": 0,
+    "checks": 23,
+    "fresh_conditional_step_reference_forms": 166,
+    "fresh_preparation_reference_forms": 42,
+    "native_captures": 21,
+    "neutral_original_resolution_histories": 13,
+    "positive_trajectory_qualifications": 0,
+    "preparation_refusals": 6,
+    "repeated_original_resolution_diagnostic_histories": 2,
+    "total_fresh_reference_forms": 208
+  },
+  "preparation": {
+    "association": "Complete binding/source-parent/recipe/context/packet digests; reconstruction rejects resealed changes; attach uses real joined._state factory",
+    "caches": "Prime original channels once without advancing time; first update recomputes from actual pre-ER cytosol",
+    "counterion": "Decimal90 solve from exact binary64 parents, round once; independent Decimal90/140 reconstruction from raw parents",
+    "full_source_parent_and_prepared_packet_archived": true,
+    "immutability": "Own frozen complete arrays and mappings, never writable aliases",
+    "inventory_boundary": "New declared initial inventory; neutral counterion allocation is not a transfer from the failed state",
+    "nonzero_sign_scope": "ER only; signed Cl redistribution seals total inventory and opposite compartment charge, never silently attached to unchanged membrane/outer voltage",
+    "raw_conditions_archived_before_constructor_and_before_preparer": true,
+    "source_constructor_unchanged": true,
+    "voltage": "Literal get_v operand order on actual stored full ion rows; retain target residual rather than force ideal voltage"
+  },
+  "purpose": "Declare complete new positive initial inventories/cache phase for the unchanged conditional ER update; preserve literal initialization and failures",
+  "pytest_collection_runs": 0,
+  "refinement": {
+    "algorithm": "Unchanged sequential source stepping, not RK4; no claimed fourth-order slope",
+    "dt_s": [
+      0.002,
+      0.001,
+      0.0005
+    ],
+    "forcing": "Repeat each original packet for its fixed 2ms interval; do not move control/temperature changes with refined call index",
+    "horizon_s": 0.006,
+    "independent_carried_reference_forms": 0,
+    "output_times_s": [
+      0.002,
+      0.004,
+      0.006
+    ],
+    "physical_accuracy_pass_threshold": null,
+    "report": "Absolute per-field differences and complete states at matched boundaries; no new physical pass threshold",
+    "subdivisions": [
+      1,
+      2,
+      4
+    ]
+  },
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "Later explicit requested round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_imports": 0,
+  "scope": {
+    "ER_only_thermal_sign_probes": 2,
+    "biological_cases": 0,
+    "chemistry": "Maintained native pools and source kinetics; no finite fuel or new buffer",
+    "full_Simulator_or_mesh_initialization": false,
+    "initial_Ca_mM": 0.2,
+    "initial_counterion_choices": [
+      "Cl",
+      "P"
+    ],
+    "matched_horizon_diagnostics": 2,
+    "native_constructor_parity": false,
+    "native_restart_parity": false,
+    "neutral_Cl_declarations": 12,
+    "neutral_outer_declarations": 13,
+    "stationary_P_allocation_controls": 1
+  },
+  "source_map": "validation/betse/betse_prepared_er_join_source_map.json",
+  "source_order": [
+    "Attach the fully supplied prepared ER state before the first outer call",
+    "Ordinary resets, NaK, membrane/GJ/intra and membrane-buffer refresh",
+    "Plasma CaATP followed by original ER channels/SERCA/moving-ion flux/get_v",
+    "Network clear, late channels and explicitly empty network chemistry",
+    "Deferred ordinary commit/clipping, current and voltage",
+    "Carry all owned ER fields, original caches and clocks into the next call"
+  ],
+  "source_policy": {
+    "ER_channels": "Dm_er_base+Dm_channels for allions; non-Ca channel cache remains1e-18, not implicitly zeroed",
+    "IP3": "No owners means Ca-only Hill modulation; any owner but missingIP3 means zeroIP3factor; molecules thenmetabo thengrn precedence",
+    "initialization": "Literal init once: er_vol=.1*cell_vol,er_sa=cell_sa,Ver/Q0,cm_er=p.cm,cc_er deep copy withCa0.2,allion Dm/base/channels1e-18,zer fromvalence; never per-step Ca clamp",
+    "membrane_buffer": "ER bulk transfers never automatically refresh cc_at_mem before late network; preserved stale buffer",
+    "nonce": "Each ER electroflux mutates ER Ver by1e-25; source z receivesseparate nonce; get_v then replacesVer usingallions, including stationary rows",
+    "order": "ordinary refresh -> plasma CaATP storage/cache -> ER channels -> SERCA using oldVer -> directcytosol/ER Ca transfer -> moving-ion ER electroflux and in-place Ver nonce -> all-ion get_v -> late network channels -> ordinary deferredcommit -> current/voltage",
+    "raw_domain": "No ER clipping or source regularization added. Raw unused backwards pole and equilibriumoverflow returnscaptured evenwithfiniteflux. Finitepublication checksseparatefromrawsourcecompletion; no positive-domain/physicalclaim.",
+    "serca": "Literal numericmM quotient cADP*cPi*cER/(cATP*cCyto), exact-zero binary64product ->1e-16, oldVer exponent -deltaG/(RT)-2FV/(RT), positivefluxcyto->ER, unusedbackward retained. Same maintained pools/Km/deltaG as plasma CaATP; no sourcefuel consumption or two-Ca stoichiometry invented."
+  },
+  "status": "static_unqualified_no_numerical_execution"
+}

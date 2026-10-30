@@ -1,0 +1,169 @@
+{
+  "factory_ownership": {
+    "ER_only": "Same full supplied packet; no outer membrane/voltage association claim",
+    "attach": "betse_normal_er_join._state with all original outer fields and clocks",
+    "prepare": "betse_prepared_er_join.prepare",
+    "validate": "Rebuild packet from exact source parent and recipe; reject resealed inconsistencies"
+  },
+  "kind": "cells.prepared_owned_ER_source_map@1",
+  "literal_source_methods_reused_unchanged": {
+    "EndoRetic.__init__": {
+      "first_line": 49,
+      "last_line": 72,
+      "normalized_AST_sha256": "0b01f3edb00a091e11755842804aa6dc833e9e2e2d3ec31bd5fe958cb945ddc7",
+      "numeric_AST_unchanged": true
+    },
+    "EndoRetic.channels": {
+      "first_line": 122,
+      "last_line": 149,
+      "normalized_AST_sha256": "3afc49b3f13a65d9e1a4c2797d6abab475e821dab0af8b2e8eb240b7ff1656b7",
+      "numeric_AST_unchanged": true
+    },
+    "EndoRetic.get_v": {
+      "first_line": 75,
+      "last_line": 78,
+      "normalized_AST_sha256": "8f8647c7ebc51d851cdb4142f02d59bf974cc330f7fc6fb8a7f521002916f00d",
+      "numeric_AST_unchanged": true
+    },
+    "EndoRetic.update": {
+      "first_line": 93,
+      "last_line": 117,
+      "normalized_AST_sha256": "2e94003b14b4329d25cfcd9538ef3540573726d8e7848cf180bad7a1dac267e2",
+      "numeric_AST_unchanged": true
+    },
+    "electroflux": {
+      "first_line": 18,
+      "last_line": 69,
+      "normalized_AST_sha256": "8a222107c56988df167d7b66e87344319ad344fa9dc40ffa38c2c18ba56c37f4",
+      "numeric_AST_unchanged": true
+    },
+    "pumpCaER": {
+      "first_line": 184,
+      "last_line": 225,
+      "normalized_AST_sha256": "c5ad2b2988abdcb432c261c5469bc7a2b3262885de6cb04c0f2d7aae70ba7659",
+      "numeric_AST_unchanged": true
+    }
+  },
+  "native_capture_inverse_AST_proof": {
+    "numeric_steps_changed": false,
+    "original_evaluate_AST_sha256": "0911b2bb796b7f84fd07b317918e94cbdaf685d2a5b714e2ee2e512818c002fb",
+    "original_helper_source_unchanged": true,
+    "unchanged_after_only_function_name_capture_kind_and_first_state_input_reversal": true
+  },
+  "new_semantics": [
+    "Initial counterion inventory solve and explicitly primed caches",
+    "Target and actual stored charge/voltage remain separate",
+    "Exact-binary-input independent preparation reconstruction",
+    "Full first native incoming_state supplied, then normal carry"
+  ],
+  "no_scientific_AST_executed": true,
+  "numerical_runs": 0,
+  "original_source_map_sha256": "983b92143b2a320dc200640dbf1c808324635484100129977e9978a8eef8891f",
+  "outer_helpers_reused_unchanged": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "unchanged_from_CaATP03": true
+    },
+    "_initialize_gate": {
+      "AST_sha256": "d2aeba3bcc7554afb6f47f3cf213f6c2c8bf98015521aeeb686c366daefc3d9e",
+      "unchanged_from_CaATP03": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "unchanged_from_CaATP03": true
+    },
+    "_pumped_material_step": {
+      "AST_sha256": "0267ad0721be564763a42fb15a825ae3a7e7cb6fc50af92506926971e185c2f2",
+      "unchanged_from_CaATP03": true
+    },
+    "vector_state": {
+      "AST_sha256": "63e7e2ff3e7d218f3b6f56f134f1e93f87ea010469fe4c7c1891a0093bdf8aa7",
+      "unchanged_from_CaATP03": true
+    }
+  },
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_to_state_mapping": [
+    {
+      "field": "cc_er",
+      "rule": "Native copy/Ca=0.2 declaration followed by explicit initial counterion construction; this row change is the named conditional preparation.",
+      "shape": "ions x cells",
+      "source": "endo_retic.py:57-58"
+    },
+    {
+      "field": "er_vol",
+      "rule": "Exactly fl(0.1*bound cell_vol), strictly positive.",
+      "shape": "cells",
+      "source": "endo_retic.py:52"
+    },
+    {
+      "field": "er_sa",
+      "rule": "Exactly fl(1.0*bound cell_sa), strictly positive.",
+      "shape": "cells",
+      "source": "endo_retic.py:53"
+    },
+    {
+      "field": "cm_er",
+      "rule": "Exact bound p.cm, strictly positive; no enlarged capacitance chosen after seeing results.",
+      "shape": "scalar",
+      "source": "endo_retic.py:56"
+    },
+    {
+      "field": "zer",
+      "rule": "Exact broadcast of original valences in original ion order, including stationary rows.",
+      "shape": "ions x cells",
+      "source": "endo_retic.py:68-71"
+    },
+    {
+      "field": "Q",
+      "rule": "Compute from all stored ion rows, including stationary counterion; native charge-density expression.",
+      "shape": "cells",
+      "source": "endo_retic.py:77"
+    },
+    {
+      "field": "Ver",
+      "rule": "Compute from stored Q, cm, area and volume; record residual from requested target.",
+      "shape": "cells",
+      "source": "endo_retic.py:78"
+    },
+    {
+      "field": "Dm_er_base",
+      "rule": "All entries retain native 1e-18 m2/s.",
+      "shape": "ions x cells",
+      "source": "endo_retic.py:59-65"
+    },
+    {
+      "field": "Dm_channels",
+      "rule": "Non-Ca rows retain native 1e-18. Ca row is max_er times native Ca Hill factors and exact owner-dependent IP3 factor. No owners means factor one; an owner without any IP3 means factor zero; precedence molecules, metabo, grn.",
+      "shape": "ions x cells",
+      "source": "endo_retic.py:122-147"
+    },
+    {
+      "field": "Dm_er",
+      "rule": "Sum primed Dm_er_base and Dm_channels, including doubled non-Ca baseline. Literal constructor has not yet made this sum; prepared cache phase is explicit.",
+      "shape": "ions x cells",
+      "source": "endo_retic.py:149"
+    },
+    {
+      "field": "remaining joined parent",
+      "rule": "Neutral preparations leave cytosol/bath/membrane arrays, geometry, pump and channel caches, elapsed clocks, controls and existing rate proxies unchanged. ER updates must retain source stale-membrane-buffer, moving-ion order and voltage nonce semantics.",
+      "shape": "unchanged typed parent",
+      "source": "betse_normal_er_join.py:initialize/material_step; native outer carry"
+    }
+  ],
+  "supplied_array_boundary_repair": {
+    "all_other_native_functions_AST_unchanged": true,
+    "call_sites": [
+      "whole_join first incoming ER state",
+      "ER-only incoming ER state"
+    ],
+    "codec": "np.asarray(value,dtype=np.float64).copy(); cm_er float(value)",
+    "equations_helpers_fixtures_tolerances_changed": false,
+    "native_new_sha256": "d39b5ee2b3559254a8653c51531999690d3ed03da22d64f241faae2b016b4dcd",
+    "native_old_sha256": "99c5f41014431a7974359e72029f3c2e7e2342de2aa5092ec3daabaf554913ad",
+    "nine_array_fields": "cc_er,er_vol,er_sa,Ver,Q,Dm_er,Dm_er_base,Dm_channels,zer",
+    "no_numeric_retry": true,
+    "saved_witness": "agent-work/cells-worker-01/workfiles/betse_prepared_er_array_boundary_saved_witness_01.json",
+    "saved_witness_sha256": "e147d8ad873d354518469def7d46dd894b17b1b23fc93805919ba905a1d16f22",
+    "scalar_field": "cm_er"
+  }
+}

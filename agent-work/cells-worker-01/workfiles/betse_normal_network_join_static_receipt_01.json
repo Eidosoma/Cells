@@ -1,0 +1,86 @@
+{
+  "all_frozen_source_and_native_hashes_match": true,
+  "authorized_physical_helper_refactor": {
+    "authority": "Chief finalized unrelated physical readout helper split;44statement AST reconstruction and all other definitions unchanged independently reviewed",
+    "hash_exemptions": [],
+    "independent_review": "/mnt/workspaces/Cells/calcium-physics-split-preparation-20261030-01/independent-static-review.json",
+    "independent_review_sha256": "1eed74bd95dbe8c530e2a64c9fd0027dc29294a6fa0307f76c651c26978bc38f",
+    "new_sha256": "33dfb76a0e2d9422629b78a6809c5d70f2538dfbb041a0dbb6f5ff192a230bbe",
+    "old_sha256": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "path": "src/cells/models/surface_calcium.py",
+    "scope": "Exact controlled dependency refresh only; new feedback does not claim physical JAX compiler qualification"
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "coordinated_unrelated_reference_edits": {
+    "authority": "Chief direct message: Root modifying these independent recovery reference layers, not production",
+    "paths": [
+      "validation/tissue/surface_dynamics_reference.py",
+      "validation/tissue/surface_kinetic_reference.py",
+      "validation/tissue/surface_energy_reference.py",
+      "validation/tissue/surface_energy_water_reference.py",
+      "validation/tissue/surface_cotransport_water_reference.py"
+    ],
+    "scope": "Unrelated copied source only; frozen copies remain hashed. These files are outside the network production, native and independent reference closure; no owned/protected hash exemption."
+  },
+  "driver_sha256": "72fbd6459e9d8238dcb915ae774942b3f73a1bd42ec52e79952271238695f6a9",
+  "frozen_and_live_owned_protected_match": true,
+  "inputs": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-01/inputs.json",
+  "inputs_sha256": "ff39fb9e0784eb8c2977ff6a8df94ac75b81fe5b1f280e8127d693fd6f5ec8fc",
+  "kind": "cells.betse_normal_network_feedback_static_receipt@1",
+  "limitations": [
+    "No numerical network qualification",
+    "No active chemistry, molecule transport, dual owner, ER, finite fuel, buffers or full lifecycle",
+    "Independent checks conditional on actual pre-network state; no upstream or trajectory claim"
+  ],
+  "literal_network_AST_bodies": 14,
+  "native_snapshot_copies": 37,
+  "numerical_runs": 0,
+  "owned_files": 10,
+  "planned_carried_forms": 0,
+  "planned_checks": 15,
+  "planned_fresh_Decimal_forms": 60,
+  "planned_groups": {
+    "context": 5,
+    "core": 5,
+    "dependencies": 3,
+    "projection": 1,
+    "raw": 1
+  },
+  "planned_native_captures": 11,
+  "planned_pre_network_points": 30,
+  "positive_chemical_execution_checks": 0,
+  "protected_files": 192,
+  "pytest_collection_runs": 0,
+  "raw_stack_boundary": "Empty growth/nonempty reaction vstack dimensional failure remains original source; separate planned raw refusal, not positive chemistry",
+  "reference_closure": {
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+  },
+  "resource_limits": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_imports": 0,
+  "scope": "One molecules or GRN owner, endogenous ion-driven ordered GJ/NaK overwrite and persistent controls/cache, explicitly empty chemistry",
+  "source_snapshot_files": 2319,
+  "static_checks": {
+    "compile_without_import": "passed",
+    "global_name_resolution": "passed",
+    "native_constructor_prelude_order": "passed",
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scalar_reference_algebra_AST_unchanged": true,
+    "unresolved": {}
+  },
+  "status": "static_frozen_unqualified_no_network_numerics",
+  "supplied_outputs": "Complete initial state/controls, explicit early scheduled override and late-channel modulation inputs; no native schedule execution claim",
+  "unchanged_outer_helper_AST_bodies": 5
+}

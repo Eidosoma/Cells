@@ -1,0 +1,32 @@
+{
+  "kind": "cells.betse_b09_constructor_input_contract@1",
+  "law_id": "betse_fixed_merged_B09_constructor_input_v1_5_0@1",
+  "status": "static_adapter_and14_checks_prepared_unrun",
+  "case": "merged-square-aux",
+  "exact_point_count": 9,
+  "source_authority": {
+    "receipt": "/mnt/workspaces/Cells/betse-geometry-development-20261029-03/result.json",
+    "sha256": "cbc165a2a899d30136ce3c78224ebec3e9acab9ce11ed08de680a7cd81b6a46f",
+    "case_record_sha256": "42b04523fb54b2e398a22fd4ca3f9baba00f4ba83d9352309cd505f5941b7f65",
+    "source_manifest_sha256": "f1ff4790e6067a53d7e4c4e0b958131242df0c85072477614af1ff2cd3839022"
+  },
+  "boundary": "Authenticate original fixed constructor arguments, occurrence IDs and full before-RNG state only; distinct from physical geometry bridge",
+  "constructor_flags": "Preserve allow_merging=True, mesh_type=quad, make_all_operators=True exactly; adapter executes no constructor/operators",
+  "provenance": "Explicit manufactured coordinates from the fixed reviewed B09 case; no arbitrary caller coordinate or provenance override",
+  "ownership": "MappingProxy constructor metadata, byte-backed immutable coordinate arrays, tuple IDs and immutable complete NativeStream",
+  "exact_comparison": "Source checksums and full typed inputs; no numerical tolerance",
+  "prepared_checks": 14,
+  "guard": "Existing geometry initialization bridge continues to reject merging and quad mode",
+  "source_initial_mesh_campaign": "Merged case remains failed/refused in the original19/22 campaign; adapter prep does not relabel that failure",
+  "expected_output_kind": "cells.fixed_B09_constructor_input@1",
+  "geometry_bridge_admitted": false,
+  "topology_qualified": false,
+  "loader_executed": false,
+  "constructor_executed": false,
+  "numerical_execution": false,
+  "pytest_collection": false,
+  "numerical_launch_authorized": false,
+  "ECM_lane_touched": false,
+  "Root_shared_sources_changed": false,
+  "next_action": "Chief reviews the bounded constructor-input path; integration or execution requires a directed successor, never weakening the physical guard"
+}

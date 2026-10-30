@@ -1,0 +1,269 @@
+{
+  "kind": "cells.betse_mesh_lifecycle_source_map@1",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971"
+  },
+  "methods": {
+    "init_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "init_mesh",
+      "first_line": 146,
+      "last_line": 154,
+      "ast_sha256": "3cab998ac9a476f2b88131b6d750db2ebab993eae191329aaac011130dbd6a78"
+    },
+    "create_core_operators": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "create_core_operators",
+      "first_line": 1166,
+      "last_line": 1187,
+      "ast_sha256": "8efd40922b84fb222db394f6d1d7ac939cd04737d0085e8e420777c0321fd675"
+    },
+    "create_aux_operators": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "create_aux_operators",
+      "first_line": 1190,
+      "last_line": 1258,
+      "ast_sha256": "bbf9e4a5c97d3940617ed00418b323ccf0e98fad3aed48aa0af001551f281c49"
+    },
+    "mesh_quality_calc": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "mesh_quality_calc",
+      "first_line": 2189,
+      "last_line": 2195,
+      "ast_sha256": "b45908b263c9ca0d746acbbfd3b9e9bd138b44a521439f59d3d45ae3e9e731c6"
+    },
+    "refine_mesh": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "refine_mesh",
+      "first_line": 2239,
+      "last_line": 2287,
+      "ast_sha256": "ddb2201217a4205ab8ea1c4f8e59d84d24d9beae358e366b84a51ea1eb5e6933"
+    },
+    "laplacian_smoothing": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "laplacian_smoothing",
+      "first_line": 2374,
+      "last_line": 2401,
+      "ast_sha256": "fbaff2790e5bafa85e2f4a862f625e56f7f7118d1268c59804ad4be5e9ef86b8"
+    },
+    "after_clip_lifecycle": {
+      "source": "betse/science/math/mesh.py",
+      "source_name": "clip_and_refine",
+      "first_line": 195,
+      "last_line": 210,
+      "ast_sha256": "a567cbb8b94f7946cbd5ce15db40a012079519ef96ac5bc176eee7fe89ee8274"
+    }
+  },
+  "lifecycle_suffix": {
+    "original_source_method": "clip_and_refine",
+    "full_original_ast_sha256": "225af14f9752e9db18a008e7374df7e1e4802ab00d651d119d26976d4ff2d150",
+    "omitted_prefix": [
+      "self.pre_mesh()",
+      "self.clip_to_curve(imagemask)"
+    ],
+    "suffix_signature": "after_clip_lifecycle(smoothing=None,refinement=True,max_steps=25,convergence=7.5,fix_bounds=True)",
+    "reason": "Owned continuation starts after exactly the existing clipped/rebuilt source state"
+  },
+  "adaptations": [
+    {
+      "method": "init_mesh",
+      "line": 154,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "create_core_operators",
+      "line": 1175,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "create_core_operators",
+      "line": 1187,
+      "kind": "record_original_numeric_call",
+      "target": "np.linalg.pinv",
+      "label": "self.delta_tri_0_inv"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1196,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1202,
+      "kind": "owned_tree_boundary"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1223,
+      "kind": "record_original_numeric_call",
+      "target": "np.linalg.pinv",
+      "label": "self.delta_tri_1_inv"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1235,
+      "kind": "record_original_numeric_call",
+      "target": "np.linalg.pinv",
+      "label": "self.delta_vor_0_inv"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1242,
+      "kind": "owned_tree_boundary"
+    },
+    {
+      "method": "create_aux_operators",
+      "line": 1258,
+      "kind": "record_original_numeric_call",
+      "target": "np.linalg.pinv",
+      "label": "self.delta_vor_1_inv"
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2244,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2274,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2282,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2284,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2250,
+      "kind": "iteration_trace"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2385,
+      "kind": "owned_log_boundary"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2392,
+      "kind": "record_original_numeric_call",
+      "target": "np.dot",
+      "label": "term1"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2393,
+      "kind": "record_original_numeric_call",
+      "target": "np.dot",
+      "label": "term2"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2395,
+      "kind": "record_original_numeric_call",
+      "target": "np.dot",
+      "label": "LL"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2398,
+      "kind": "record_original_numeric_call",
+      "target": "np.linalg.pinv",
+      "label": "MM_inv"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2400,
+      "kind": "record_original_numeric_call",
+      "target": "np.dot",
+      "label": "self.tri_verts[:, 0]"
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2401,
+      "kind": "record_original_numeric_call",
+      "target": "np.dot",
+      "label": "self.tri_verts[:, 1]"
+    },
+    {
+      "method": "after_clip_lifecycle",
+      "line": 210,
+      "kind": "owned_log_boundary"
+    }
+  ],
+  "dot_call_labels": {
+    "2392": "term1",
+    "2393": "term2",
+    "2395": "LL",
+    "2400": "self.tri_verts[:, 0]",
+    "2401": "self.tri_verts[:, 1]"
+  },
+  "pinv_call_labels": {
+    "1187": "self.delta_tri_0_inv",
+    "1223": "self.delta_tri_1_inv",
+    "1235": "self.delta_vor_0_inv",
+    "1258": "self.delta_vor_1_inv",
+    "2398": "MM_inv"
+  },
+  "coordinate_update_sites": [
+    {
+      "method": "refine_mesh",
+      "line": 2261,
+      "policy": "inner",
+      "axis": null
+    },
+    {
+      "method": "refine_mesh",
+      "line": 2265,
+      "policy": "all",
+      "axis": null
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2400,
+      "policy": "coordinate",
+      "axis": 0
+    },
+    {
+      "method": "laplacian_smoothing",
+      "line": 2401,
+      "policy": "coordinate",
+      "axis": 1
+    }
+  ],
+  "refine_loop_line": 2250,
+  "refine_iteration_first_line": 2252,
+  "refine_break_line": 2287,
+  "production_kernel": "src/cells/processes/betse_mesh_lifecycle_preparation_kernel.py",
+  "license_sha256": "d8be114cc34a3202c8025347913612d976112d05ac45ef3ad953d554d3894936",
+  "source_numeric_calls_delegated_unchanged": true,
+  "existing_native_exact_primitives_changed": false,
+  "upstream_initial_qualification": "19/22 checks passed; open conditioning limitation",
+  "upstream_clipping_qualification": "Root-owned frozen package, not promoted here",
+  "numerical_execution": false,
+  "topology_qualified": false,
+  "physical_geometry_admitted": false
+}

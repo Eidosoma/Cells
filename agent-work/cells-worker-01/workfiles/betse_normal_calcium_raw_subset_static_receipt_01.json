@@ -1,0 +1,102 @@
+{
+  "all_frozen_and_live_owned_protected_hashes_verified": true,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "created_utc": "2026-10-30T20:13:34.047494+00:00",
+  "driver_sha256": "ea60e85e6978a070351b4a91eca58890355ac39777e03845f06c2ebbf8d82663",
+  "fresh_subset": {
+    "fresh_ids_already_passed_in_original_run": [
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[clipped_negative_vector]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[scalar_scoped_adapter]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[unused_equilibrium_overflow]"
+    ],
+    "fresh_test_ids": [
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[scalar_scoped_adapter]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[nan_membrane]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[clipped_negative_vector]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_raw_helper_container_and_domain_behaviour[unused_equilibrium_overflow]"
+    ],
+    "new_numerical_runs": 0,
+    "no_complete_panel_pass_claim": true,
+    "original_overall_failed_snapshot_preserved": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02",
+    "purpose": "Qualify typed raw transport only; retain20 reviewed unaffected main/edge/projection/dependency checks",
+    "retained_XML_bindings": {
+      "active": {
+        "checks": 7,
+        "sha256": "0e6ab9871c178d47158e9c1c06b95ad6e09528c5592982189fe6b3fe2d1353ff",
+        "tests_xml": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/run-active/tests.xml"
+      },
+      "dependencies": {
+        "checks": 3,
+        "sha256": "8747ad67d53838f349d634a60124d02074df2be1f7ba008572b26b6beee160c4",
+        "tests_xml": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/run-dependencies/tests.xml"
+      },
+      "edge": {
+        "checks": 6,
+        "sha256": "d52244e9af9bd8fa181d326d38050ecdd5c9c9f7787a7fe026d89abd37d1f65f",
+        "tests_xml": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/run-edge/tests.xml"
+      },
+      "projection": {
+        "checks": 4,
+        "sha256": "aea815e935c55fa97e015ac4c5d29535f6348972fe0452b63d21b2ea2d7b1b14",
+        "tests_xml": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/run-projection/tests.xml"
+      }
+    },
+    "retained_inputs": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/inputs.json",
+    "retained_inputs_sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42",
+    "retained_test_ids": [
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[active]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[nonuniform_bath]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[closed_mask_rho]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[block_ignored]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[met_ignored]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[temperature_split]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[channel_coupled]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[alpha_zero]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[alpha_negative]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[zero_membrane_Ca]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[negative_stale_Ca]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[stationary_Ca]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_actual_rectangular_native_and_pre_handler_reference[reverse_drive]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_uniform_rectangular_projection_to_frozen_B28[standard]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_uniform_rectangular_projection_to_frozen_B28[duplicate_targets]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_uniform_rectangular_projection_to_frozen_B28[blocked_restore]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_uniform_rectangular_projection_to_frozen_B28[publish_off]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_explicit_dependencies_and_new_container_contract[ER]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_explicit_dependencies_and_new_container_contract[separate_pools]",
+      "tests/unit/test_betse_normal_calcium_join.py::test_explicit_dependencies_and_new_container_contract[scalar_parent]"
+    ],
+    "retention_review": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json",
+    "retention_review_sha256": "b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e",
+    "unique_expected_union_checks": 24
+  },
+  "frozen_source_files": 2300,
+  "inputs_sha256": "99e600ec5962295e0e23fdb95625c9d1324713b9343aaf28aa9f4c79e96906ac",
+  "kind": "cells.calcium_raw_subset_static_receipt@1",
+  "native_source_copies": 36,
+  "new_numerical_runs": 0,
+  "new_reference_forms": 0,
+  "owned_source_files": 10,
+  "planned_fresh_checks": 4,
+  "planned_fresh_native_captures": 4,
+  "prepared_inputs": "/mnt/workspaces/Cells/betse-calcium-raw-subset-prepared-20261030-01/inputs.json",
+  "protected_files": 172,
+  "pytest_collection_runs": 0,
+  "resource_limits": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "retention_scope": "20 reviewed unaffected checks retained;3 prior raw passes deliberately rerun among4fresh. Prospective union24distinct only after fresh raw qualification; original overall failure preserved.",
+  "scientific_imports": 0,
+  "static_checks": {
+    "immutable_XML_and_review_ID_bindings": "passed",
+    "ruff_check": "passed",
+    "stdlib_compile_without_import": "passed"
+  },
+  "status": "prepared_not_executed_no_new_qualification"
+}

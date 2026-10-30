@@ -1,0 +1,138 @@
+{
+  "kind": "cells.betse_image_mask_prelude_contract@1",
+  "law_id": "betse_image_mask_make_voronoi_prelude_v1_5_0@1",
+  "status": "qualification02_authorized_overlay_verified",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/science/tissue/picker/tispickimage.py": "75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac",
+      "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089",
+      "betse/util/path/pathnames.py": "7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b",
+      "betse/util/path/files.py": "5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66",
+      "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+      "betse/lib/pil/pilnumpy.py": "0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4",
+      "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+      "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38"
+    }
+  },
+  "source_map": "validation/betse/betse_image_mask_prelude_source_map.json",
+  "purpose": "Owned image mask and exact make_voronoi argument preparation before any DECMesh execution",
+  "admission": {
+    "max_file_bytes": 1048576,
+    "max_image_side": 32,
+    "max_query_points": 128,
+    "files": "Existing regular files or symlinks to regular files with declared content hash; relative filename requires absolute conf directory",
+    "pixels": "Pillow F conversion, finite decoded grayscale only; stricter finite admission retains failed trial",
+    "seed": "Complete upstream lattice binding/state; qualification remains pending upstream",
+    "branches": [
+      "SQUARE/HEX scalar lattice controls",
+      "single_cell true/false",
+      "svg_override false"
+    ]
+  },
+  "upstream_lattice_failed_round": "/mnt/workspaces/Cells/betse-lattice-seed-generation-failed-round-20261030-01.json",
+  "upstream_lattice_status": "Chief independent review accepted qualification02",
+  "reference": {
+    "method": "Independent P5-byte decoding, Decimal100/160 grids, monotone-chain image hull, manual bilinear interpolation",
+    "input_scope": "Declared square P5/255 byte fixtures, paired queries within closed source window",
+    "native_only": "Fast cubic spline construction/knots/coefficients exact original-native comparison; no independent cubic interpolation claim",
+    "predicate": "Compare selected indices exactly; never propagate continuous error allowance into !=0 decision"
+  },
+  "tolerances": {
+    "native_host": "Exact complete values/shapes/dtypes and native hull index order",
+    "coordinates": "Existing B09 1e-27m+6e-12*abs(reference)",
+    "dimensionless_linear": "Reviewed2e-14+6e-12*abs(reference); exact selection predicate checked separately",
+    "reference_resolution_fraction": 0.1,
+    "selected_indices": "Exact, no tolerance or tiny-value clipping"
+  },
+  "prepared_cases": [
+    "asymmetric4",
+    "near_white5",
+    "centre_hole6",
+    "dense4"
+  ],
+  "raw_failure_cases": [
+    "white4 hull",
+    "collinear4 hull",
+    "small3 fast cubic",
+    "nonsquare dimensions"
+  ],
+  "resources": {
+    "planned_cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "numerical_launch_authorized": true,
+  "tests_executed": false,
+  "independent_reference_executed": false,
+  "mesh_constructor_executed": false,
+  "topology_generated": false,
+  "biological_geometry": false,
+  "full_make_world": false,
+  "ECM_lane_touched": false,
+  "automatic_retry": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "next_action": "Execute one bounded image02 qualification; retain terminal evidence; no automatic retry",
+  "upstream_lattice_result": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/result.json",
+  "upstream_lattice_result_sha256": "00e990822e0120606ebb2e3223542ddc7c1ccc69ed21101d8bdf7c757e45580c",
+  "planned_checks": {
+    "total": 28,
+    "complete_cases": 16,
+    "raw_failures": 4,
+    "full_primary_and_refined_buffers_retained": true,
+    "source_file_bytes_before_actual_trial": true,
+    "actual_trial_before_native_capture": true,
+    "fresh_production_denials": [
+      "cells",
+      "betse",
+      "jax",
+      "jaxlib"
+    ]
+  },
+  "prepared_runner": "/mnt/workspaces/Cells/specialist-runners/betse-image-mask-prelude-20261030-02-checks.py",
+  "planned_output": "/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02",
+  "static_review_repairs": {
+    "off_diagonal_pairs": "All16 positive cases use (.23,.71),(.71,.23),(.79,.31),(.31,.79) in addition to existing diagonal/endpoints",
+    "asymmetric_fixture": "One existing asymmetric4 pixel changed; flipped[3,1] is active while flipped[1,3] is inactive; independent response difference asserted",
+    "positive_raw_trials": "Catch ImagePreludeRejected from capture/prepare/export; retain typed arrays/opaque bytes before re-raise",
+    "test_IDs_unchanged": true,
+    "numerical_budgets_unchanged": true,
+    "numerical_execution": false
+  },
+  "upstream_lattice_review_receipt": "/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/root-review-01/completion-verification.json",
+  "upstream_lattice_review_sha256": "d301d725621746fd3638d811097010ef298c081ad4af0291b8e8fc9c0308ef0f",
+  "authorization": {
+    "authorized_utc": "2026-10-30T20:14:54.717242+00:00",
+    "coordinator": "Chief",
+    "coordinator_thread": "01a0ba89-33fd-7c52-8dd5-ae4a9473b922",
+    "basis": "New user letsgo authorizes image02 qualification once overlay-authenticated runner ready",
+    "scope": "One28-check image02 qualification; no failure retry; science/fixtures/budgets unchanged; CPU6 same resource guards"
+  },
+  "Chief_scope_review": {
+    "receipt": "/mnt/workspaces/Cells/betse-image-preflight-20261030-01/REVIEW.json",
+    "sha256": "1f71422a64cb98f013739cd09ea7dd649a5fc3d9d03a185f31aceecdf2353a6d",
+    "status": "declared_scope_static_review_ready_and_Chief_authorized"
+  },
+  "runtime_environment": {
+    "pillow_version": "12.3.0",
+    "overlay": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01",
+    "preparation": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/preparation.json",
+    "preparation_sha256": "c042d540bd4e26a43f6afdce8908c983222dd8090553d98e3ab0a0e1397533c9",
+    "import_check": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/import-check.json",
+    "import_check_sha256": "106ecf86541d799c5a9b604e7f71a9b40039be6dcdc8461bc8667efd9f69a9fe",
+    "verified_copied_files": 142,
+    "source_RECORD_hashed_files": 141,
+    "shared_venv_mutated": false,
+    "Root_import_check_reused_not_repeated": true
+  },
+  "runtime_inventory_missing_versions": "Persist package_errors/null versions and file inventory even on collection failure; enforce completeness only in successful runner verification"
+}

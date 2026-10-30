@@ -1,0 +1,3771 @@
+{
+  "automatic_launch": false,
+  "calcium_route_classes": 23,
+  "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+  "class_count": 55,
+  "classes": {
+    "CaLeak": {
+      "catalog_reference": "validation/channels/calcium_catalog_extra_reference.py",
+      "catalog_reference_sha256": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": 1,
+        "_mTau": 1,
+        "_mpower": 0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "qt": 1.0,
+        "time_unit": 1.0,
+        "vrev": 30
+      },
+      "source_class_AST_sha256": "b8c1b4aedbc37b3850e49084f23901dd485aa93ba2d605ebecef417aac3419d7",
+      "source_lines": [
+        699,
+        741
+      ],
+      "was_in_B28": false
+    },
+    "Ca_L2": {
+      "catalog_reference": "validation/channels/calcium_catalog_extra_reference.py",
+      "catalog_reference_sha256": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "_hTau": 59.0,
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "_mTau": 10.0,
+        "_mpower": 2,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 131.0
+      },
+      "source_class_AST_sha256": "88109390117c61122f5a3a6e5aba0b445a474f83bbcd32ac939cff046e344933",
+      "source_lines": [
+        522,
+        573
+      ],
+      "was_in_B28": false
+    },
+    "Ca_L3": {
+      "catalog_reference": "validation/channels/calcium_catalog_extra_reference.py",
+      "catalog_reference_sha256": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "_hTau": 59.0,
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "_mTau": 10.0,
+        "_mpower": 2,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 131.0
+      },
+      "source_class_AST_sha256": "52b4db665747430cbc80fe4ae80acd6527707337cc5a493781c9e0bc8aeb9561",
+      "source_lines": [
+        575,
+        635
+      ],
+      "was_in_B28": false
+    },
+    "CatLeak": {
+      "catalog_reference": "validation/channels/leak_channels_reference.py",
+      "catalog_reference_sha256": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Cat",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "_pmCa",
+        "_pmNa",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr"
+      ],
+      "original_base": "CationABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/cation.py",
+      "source_assignments": {
+        "_hInf": 1.0,
+        "_hTau": 1.0,
+        "_hpower": 0,
+        "_mInf": 1.0,
+        "_mTau": 1.0,
+        "_mpower": 0,
+        "_pmCa": 0.0,
+        "_pmNa": 1.0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0,
+        "v_corr": 0
+      },
+      "source_class_AST_sha256": "db6935865eb6f2f7e23fe05c6a4e664b5ada51f2ee2d7c28b506a0ee60562c79",
+      "source_lines": [
+        113,
+        159
+      ],
+      "was_in_B28": false
+    },
+    "CatLeak2": {
+      "catalog_reference": "validation/channels/leak_channels_reference.py",
+      "catalog_reference_sha256": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Cat",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "_pmCa",
+        "_pmNa",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr"
+      ],
+      "original_base": "CationABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/cation.py",
+      "source_assignments": {
+        "_hInf": 1.0,
+        "_hTau": 1.0,
+        "_hpower": 0,
+        "_mInf": 1.0,
+        "_mTau": 1.0,
+        "_mpower": 0,
+        "_pmCa": 1.0,
+        "_pmNa": 1.0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0,
+        "v_corr": 0
+      },
+      "source_class_AST_sha256": "4ba16ac3bc824490c72d00721874669d40f25dd65e1c02f8e2f9d98af393fc75",
+      "source_lines": [
+        162,
+        208
+      ],
+      "was_in_B28": false
+    },
+    "Cav1p2": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "_hTau": {
+          "expression": "20.0 + 50.0 / (1 + np.exp((V - -40.0) / 7))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "_mTau": {
+          "expression": "5.0 + 20.0 / (1 + np.exp((V - -25.0) / 5))"
+        },
+        "_mpower": 2,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "time_unit": 1000.0,
+        "vrev": 131.0
+      },
+      "source_class_AST_sha256": "841aac5ee6a98d7c63bccfc61ec0501c00b6d437e44b29bfb7bd344a4dac0cec",
+      "source_lines": [
+        292,
+        340
+      ],
+      "was_in_B28": false
+    },
+    "Cav1p3": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "_hTau": {
+          "expression": "20.0 + 50.0 / (1 + np.exp((V - -40.0) / 7))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "_mTau": {
+          "expression": "5.0 + 20.0 / (1 + np.exp((V - -25.0) / 5))"
+        },
+        "_mpower": 2,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -80.0) / 6.4))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / -6))"
+        },
+        "time_unit": 1000.0,
+        "vrev": 113.0
+      },
+      "source_class_AST_sha256": "d2e84b7bc77ad08347ff2f166ede3fee47aa7c808bcb630c3ad98fd131fec9c6",
+      "source_lines": [
+        242,
+        290
+      ],
+      "was_in_B28": false
+    },
+    "Cav2p1": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": 1.0,
+        "_hTau": 1.0,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 1,
+        "h": 1.0,
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 135.0
+      },
+      "source_class_AST_sha256": "9c369dd9686f08294929582a5b96a43bfb73edb94b33417766f8ba4806ca452c",
+      "source_lines": [
+        181,
+        240
+      ],
+      "was_in_B28": false
+    },
+    "Cav2p2": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "_hTau": {
+          "expression": "1 / (hAlpha + hBeta)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 2,
+        "h": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 135
+      },
+      "source_class_AST_sha256": "09639ed27bd57bdaebed2ede2d0ca401399c681aff1b8403782d62fea2af71e0",
+      "source_lines": [
+        402,
+        466
+      ],
+      "was_in_B28": false
+    },
+    "Cav2p3": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "_hTau": {
+          "expression": "1 / (hAlpha + hBeta)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 30
+      },
+      "source_class_AST_sha256": "b4918f4c7547f1a7ff2e7a4379cc61c34ab5bbf23901ed9a5fb14f0e1636cbd8",
+      "source_lines": [
+        342,
+        400
+      ],
+      "was_in_B28": false
+    },
+    "Cav3p1": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -72.90742) / 4.575763))"
+        },
+        "_hTau": {
+          "expression": "9.987873 + 0.002883 * np.exp(-V / 5.598574)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -42.921064) / -5.163208))"
+        },
+        "_mTau": {
+          "expression": "-0.855809 + 1.493527 * np.exp(-V / 27.414182)"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -72.90742) / 4.575763))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -42.921064) / -5.163208))"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 30
+      },
+      "source_class_AST_sha256": "5fd317474b0e5014494ca8e77d116dc775d900b417a022557dc43061a21f2373",
+      "source_lines": [
+        468,
+        520
+      ],
+      "was_in_B28": false
+    },
+    "Cav3p3": {
+      "catalog_reference": "validation/tissue/cav_reference.py",
+      "catalog_reference_sha256": "0ce0f63389aedcb8f34594bd7b7bdc9248b7f0374baa521b669f6f40670a8719",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -74.031965) / 8.416382))"
+        },
+        "_hTau": {
+          "expression": "109.701136 + 0.003816 * np.exp(-V / 4.781719)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -45.454426) / -5.073015))"
+        },
+        "_mTau": {
+          "expression": "3.394938 + 54.187616 / (1 + np.exp((V - -40.040397) / 4.110392))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -74.031965) / 8.416382))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -45.454426) / -5.073015))"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 30
+      },
+      "source_class_AST_sha256": "8352ff5fa9260dea0be7a470966bf9815b0c5563e52793c1614a25af826842cc",
+      "source_lines": [
+        132,
+        179
+      ],
+      "was_in_B28": false
+    },
+    "Cav_G": {
+      "catalog_reference": "validation/channels/calcium_catalog_extra_reference.py",
+      "catalog_reference_sha256": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Ca",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "qt",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgCaABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_ca.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "_hTau": {
+          "expression": "1 / (hAlpha + hBeta)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 2,
+        "h": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "qt": 1.0,
+        "time_unit": 1000.0,
+        "vrev": 131.0
+      },
+      "source_class_AST_sha256": "f34c39e00bdcccf47f38d2a6af200123ee7ea01caf9d3b77543d5448a4b27c8b",
+      "source_lines": [
+        637,
+        697
+      ],
+      "was_in_B28": false
+    },
+    "Cav_L_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 20) / 24))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "Ca"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 20.0) / 24.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": 80
+      },
+      "source_class_AST_sha256": "b3ce9866466be1ab431528632c58ff51bfab0f1de749295c6e5fdda61794441c",
+      "source_lines": [
+        346,
+        381
+      ],
+      "was_in_B28": false
+    },
+    "Cav_L_ML2": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 20) / 12))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "Ca"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 20.0) / 12.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": 80
+      },
+      "source_class_AST_sha256": "81d6041f27d9873f8d2241a530f62fc1506130fefdf053092cef2f3787c0404f",
+      "source_lines": [
+        383,
+        418
+      ],
+      "was_in_B28": false
+    },
+    "Cav_N_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 1.0) / 18.0))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "Ca"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 1.0) / 18.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": 80
+      },
+      "source_class_AST_sha256": "2920ecca40daf4e41383479b4fbd2b753319795545445f8436ba8e744ad2ad8c",
+      "source_lines": [
+        420,
+        455
+      ],
+      "was_in_B28": false
+    },
+    "Cav_T_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 43) / 24.0))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "Ca"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 43.0) / 24.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": 80
+      },
+      "source_class_AST_sha256": "3e79c9d01d7855bbc32e001872df3a4721f0de9bf4ee11984a521c52f55ccccb",
+      "source_lines": [
+        457,
+        492
+      ],
+      "was_in_B28": false
+    },
+    "ClLeak": {
+      "catalog_reference": "validation/channels/leak_channels_reference.py",
+      "catalog_reference_sha256": "ac2917d9634f4cb2376030c7b2009539274285747647e7dc7da46d1ffe9273b7",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Cl",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit"
+      ],
+      "original_base": "VgClABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Cl",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_cl.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": 1,
+        "_mTau": 1,
+        "_mpower": 0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0
+      },
+      "source_class_AST_sha256": "0a1c6139ec349b6e10e0c06fcf3c624561116718f644e30becf3d3baa59e32b1",
+      "source_lines": [
+        132,
+        171
+      ],
+      "was_in_B28": true
+    },
+    "HCN1": {
+      "catalog_reference": "validation/tissue/hcn_reference.py",
+      "catalog_reference_sha256": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.2,
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -94) / 8.1))"
+        },
+        "_mTau": 30.0,
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -94) / 8.1))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "4372fcfcaf8922631f965e16b42565f011ba9e1813e56a59c8ee02ec65f066fd",
+      "source_lines": [
+        253,
+        289
+      ],
+      "was_in_B28": false
+    },
+    "HCN2": {
+      "catalog_reference": "validation/tissue/hcn_reference.py",
+      "catalog_reference_sha256": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.2,
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -99) / 6.2))"
+        },
+        "_mTau": 184.0,
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -99) / 6.2))"
+        },
+        "time_unit": 1000.0,
+        "v_corr": 0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "1299e93ef2805aa148660f41f79f0ff9f2cb5ed8e3d4ba9816e5ff4ff093ba91",
+      "source_lines": [
+        134,
+        191
+      ],
+      "was_in_B28": false
+    },
+    "HCN2_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Na",
+          0.2
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 99.0) / 12.4))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "K",
+          "Na"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 99.0) / 12.4))"
+        },
+        "rel_perm": [
+          1,
+          0.2
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "5886090695a2f4ab20d2b6a26ac219cf6aacff1ae9ca67a72099608395166e78",
+      "source_lines": [
+        532,
+        567
+      ],
+      "was_in_B28": false
+    },
+    "HCN2_cAMP": {
+      "catalog_reference": "validation/channels/hcn_extra_reference.py",
+      "catalog_reference_sha256": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.2,
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V + 99) / 6.2))"
+        },
+        "_mTau": 184.0,
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V + 99) / 6.2))"
+        },
+        "time_unit": 1000.0,
+        "v_corr": 0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "ca94dd647ce8c6739083ece8a3e6b3ad0fbff9db890ee571bce4320090559bd2",
+      "source_lines": [
+        346,
+        404
+      ],
+      "was_in_B28": false
+    },
+    "HCN4": {
+      "catalog_reference": "validation/tissue/hcn_reference.py",
+      "catalog_reference_sha256": "4d955f9ed708cd8f62e179fea893bd9ef487c86e2c0788c85591ff217dc2fb9e",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.2,
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -100) / 9.6))"
+        },
+        "_mTau": 461.0,
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -100) / 9.6))"
+        },
+        "time_unit": 1000.0,
+        "v_corr": 0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "9d02d3879ebde38d4977c05a6426a19dd9ad6103b1ad19e3e0c59af217e37c61",
+      "source_lines": [
+        193,
+        251
+      ],
+      "was_in_B28": false
+    },
+    "HCN4_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Na",
+          0.2
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 99.0) / 19.2))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "K",
+          "Na"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 99.0) / 19.2))"
+        },
+        "rel_perm": [
+          1,
+          0.2
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "c6c335930c3df16de115a78dd383e7e2583e498b5b4c6dc65115c24853154139",
+      "source_lines": [
+        569,
+        604
+      ],
+      "was_in_B28": false
+    },
+    "HCN4_cAMP": {
+      "catalog_reference": "validation/channels/hcn_extra_reference.py",
+      "catalog_reference_sha256": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.2,
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V + 100) / 9.6))"
+        },
+        "_mTau": 461.0,
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V + 100) / 9.6))"
+        },
+        "time_unit": 1000.0,
+        "v_corr": 0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "c7f415adb4b53f9e0e1bd7fd502e0ddd37e9c29aed8cf20a83d6d568b6122f8a",
+      "source_lines": [
+        406,
+        465
+      ],
+      "was_in_B28": false
+    },
+    "HCNLeak": {
+      "catalog_reference": "validation/channels/hcn_extra_reference.py",
+      "catalog_reference_sha256": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Fun",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_PmCa",
+        "_PmNa",
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "v_corr",
+        "vrev"
+      ],
+      "original_base": "VgFunABC",
+      "requires_live_calcium": true,
+      "routes": [
+        [
+          "Na",
+          0.33
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_funny.py",
+      "source_assignments": {
+        "_PmCa": 0.05,
+        "_PmNa": 0.33,
+        "_hInf": 1.0,
+        "_hTau": 1.0,
+        "_hpower": 0,
+        "_mInf": 1.0,
+        "_mTau": 1.0,
+        "_mpower": 0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0,
+        "v_corr": 0,
+        "vrev": -45
+      },
+      "source_class_AST_sha256": "b47570744e56409025a3d77b8f3f6d1085b34bb8ef909300b1983e945e50a59f",
+      "source_lines": [
+        291,
+        344
+      ],
+      "was_in_B28": false
+    },
+    "KLeak": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": 1,
+        "_mTau": 1,
+        "_mpower": 0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "fdb05a08faec179145a040498eefcc5cbc050eca4b99798a0bdd034340f90cd0",
+      "source_lines": [
+        684,
+        724
+      ],
+      "was_in_B28": false
+    },
+    "K_Fast": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp(-(V + 56) / -10))"
+        },
+        "_hTau": {
+          "expression": "8 + 49 * np.exp(-((V + 73) / 23) ** 2)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp(-(V + 47) / 29))"
+        },
+        "_mTau": {
+          "expression": "0.34 + 0.92 * np.exp(-((V + 71) / 59) ** 2)"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp(-(V + 56) / -10))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp(-(V + 47) / 29))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "8289b475fb9b0ba377819d741974b1b9792a724ad52c736264a229604439b53d",
+      "source_lines": [
+        641,
+        682
+      ],
+      "was_in_B28": false
+    },
+    "Kir2p1": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -168.28) / -44.13))"
+        },
+        "_hTau": {
+          "expression": "0.85 + 306.3 / (1 + np.exp((V - -118.29) / -27.23))"
+        },
+        "_hpower": 2,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -96.48) / 23.26))"
+        },
+        "_mTau": {
+          "expression": "3.7 + -3.37 / (1 + np.exp((V - -32.9) / 27.93))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -168.28) / -44.13))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -96.48) / 23.26))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -70.6
+      },
+      "source_class_AST_sha256": "1f5ead60e7683976ae62202b9178a1b4f0801dd5535bd8b341a4f9d3e2494a2c",
+      "source_lines": [
+        730,
+        779
+      ],
+      "was_in_B28": false
+    },
+    "Kir_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "1 / np.cosh((V + 135) / 37)"
+        },
+        "_mTau": 1,
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "1 / np.cosh((V + 135) / 37)"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "417d3568873778e6652a6317787f3c84d2f0158b6715c2ea0fa92ac7847a872a",
+      "source_lines": [
+        494,
+        529
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p1": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / 27.3943))"
+        },
+        "_hTau": {
+          "expression": "15000.0 / (1 + np.exp((V - -160.56) / -100.0))"
+        },
+        "_hpower": 2,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -30.5) / -11.3943))"
+        },
+        "_mTau": {
+          "expression": "30.0 / (1 + np.exp((V - -76.56) / 26.1479))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -30.0) / 27.3943))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -30.5) / -11.3943))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "4e88126298301dec069b4bfd7aa2b8201f3a773b309fa4b050a08a7aae6cdd45",
+      "source_lines": [
+        133,
+        178
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p2": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V + 22.0) / 11.3943))"
+        },
+        "_hTau": {
+          "expression": "15000.0 / (1 + np.exp(-(V + 46.56) / 44.1479))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp(-(V + 21.0) / 11.3943))"
+        },
+        "_mTau": {
+          "expression": "150.0 / (1 + np.exp((V + 67.56) / 34.1479))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V + 22.0) / 11.3943))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp(-(V + 21.0) / 11.3943))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "8f0b34100a20915a99a08d4a12f6eae2628b36c0915a69fe1eca586be34546fc",
+      "source_lines": [
+        180,
+        229
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p3": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -33.0) / 3.7))"
+        },
+        "_hTau": {
+          "expression": "-13.76 * V + 1162.4"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -14.1) / -10.3))"
+        },
+        "_mTau": {
+          "expression": "-0.284 * V + 19.16"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -33.0) / 3.7))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -14.1) / -10.3))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "d45803269972cc4a1032d6cf65b2b289e0fc41a6e47d902177e150f39e363a41",
+      "source_lines": [
+        231,
+        278
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p3_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "ML rational update with Phi",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 0.066,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 14) / 20))"
+        },
+        "_mTau": {
+          "expression": "1 / np.cosh((V + 14) / (2 * 20))"
+        },
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": true,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 14.0) / 20.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "5d77df8b2f2d98684b91eb4c1f8f2f8f14c205d483d0bc85cdd1beaeb5a93085",
+      "source_lines": [
+        194,
+        230
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p4": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V + 73.6) / 12.8))"
+        },
+        "_hTau": 119.0,
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V + 21.7) / -16.9))"
+        },
+        "_mTau": 3.0,
+        "_mpower": 1,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V + 73.6) / 12.8))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V + 21.7) / -16.9))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "d0848d143ec468efe17837595289619388314e2611cfffb76e775d273ea75802",
+      "source_lines": [
+        280,
+        323
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p5": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -25.3) / 3.5))"
+        },
+        "_hTau": {
+          "expression": "-15.5 * V + 1620.0"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp((V - -6.0) / -6.4))"
+        },
+        "_mTau": {
+          "expression": "-0.1163 * V + 8.33"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -25.3) / 3.5))"
+        },
+        "m": {
+          "expression": "1.0 / (1 + np.exp((V - -6.0) / -6.4))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "277b2b98c828f0f49962a7351ca9a7b69e74e8917899b66c518caa279e6ca470",
+      "source_lines": [
+        325,
+        374
+      ],
+      "was_in_B28": true
+    },
+    "Kv1p5S_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "ML rational update with Phi",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": {
+          "expression": "0.00066 * 2"
+        },
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 6) / 15))"
+        },
+        "_mTau": {
+          "expression": "1 / np.cosh((V + 6) / (2 * 15))"
+        },
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": true,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 6.0) / 15.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "8ae369232f42f34aad96d09f1b281b55a856d088b17acaa3415c58b00fe83c9f",
+      "source_lines": [
+        270,
+        307
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p5_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "ML rational update with Phi",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 0.066,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 6) / 15))"
+        },
+        "_mTau": {
+          "expression": "1 / np.cosh((V + 6) / (2 * 15))"
+        },
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": true,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 6.0) / 15.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "6fbae81ec8ab07a053dc14a7cdfa1788d1ade29dc56e577fb54812d3c959a273",
+      "source_lines": [
+        232,
+        268
+      ],
+      "was_in_B28": false
+    },
+    "Kv1p6": {
+      "catalog_reference": "validation/tissue/kv1_reference.py",
+      "catalog_reference_sha256": "a6caed3055d81494919eb78b3fabe870fc7f53866cb9c3651f1a3c695bd25dc8",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -22.0) / 11.39))"
+        },
+        "_hTau": {
+          "expression": "5000.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -20.8) / -8.1))"
+        },
+        "_mTau": {
+          "expression": "30.0 / (1 + np.exp((V - -46.56) / 44.14))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -22.0) / 11.39))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -20.8) / -8.1))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "e10a4f881e97d81ac03c4ab0ce7d3e833386092fc6a77615ed212c14cb6ae50c",
+      "source_lines": [
+        376,
+        419
+      ],
+      "was_in_B28": false
+    },
+    "Kv2p1": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -19.0) / 5.0))"
+        },
+        "_hTau": {
+          "expression": "10000.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -9.2) / -6.6))"
+        },
+        "_mTau": {
+          "expression": "100.0 / (1 + np.exp((V - -46.56) / 44.14))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -19.0) / 5.0))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -9.2) / -6.6))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "3e0c568a968b6fd857dd39b566ab0febf096d6025cc68efbdc11278bcdeb1964",
+      "source_lines": [
+        421,
+        454
+      ],
+      "was_in_B28": false
+    },
+    "Kv2p1_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "ML rational update with Phi",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 0.066,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V - 14) / 30))"
+        },
+        "_mTau": {
+          "expression": "1 / np.cosh((V - 14) / (2 * 30))"
+        },
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": true,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V - 14.0) / 30.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "00f348714f6ac6031e0f72142297e605214ab7d8d0443ef9c810360ca8df962a",
+      "source_lines": [
+        156,
+        192
+      ],
+      "was_in_B28": false
+    },
+    "Kv2p2": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -16.3) / 4.8))"
+        },
+        "_hTau": {
+          "expression": "10000.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - 5.0) / -12.0))"
+        },
+        "_mTau": {
+          "expression": "130.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -16.3) / 4.8))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - 5.0) / -12.0))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "6487852ac0e774775c2434650c28088a2910d35c1b3cfc0280422b4f03d54944",
+      "source_lines": [
+        456,
+        487
+      ],
+      "was_in_B28": false
+    },
+    "Kv3p1": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - 18.7) / -9.7))"
+        },
+        "_mTau": {
+          "expression": "20.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_mpower": 1,
+        "h": 1,
+        "m": {
+          "expression": "1 / (1 + np.exp((V - 18.7) / -9.7))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "61dd16b50288955cc669a45fc34c6081f10630207ec1399ef373b6e9d03922a1",
+      "source_lines": [
+        489,
+        519
+      ],
+      "was_in_B28": false
+    },
+    "Kv3p2": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -0.373267) / -8.568187))"
+        },
+        "_mTau": {
+          "expression": "3.241643 + 19.106496 / (1 + np.exp((V - 19.220623) / 4.451533))"
+        },
+        "_mpower": 2,
+        "h": 1,
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -0.373267) / -8.568187))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65
+      },
+      "source_class_AST_sha256": "0caf8b659b92018d44a0a83267bc0faa3171994bec85dde0b21a4f352b9572e3",
+      "source_lines": [
+        521,
+        551
+      ],
+      "was_in_B28": true
+    },
+    "Kv3p3": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "0.25 + 0.75 / (1 + np.exp((V - -28.293856) / 29.385636))"
+        },
+        "_hTau": {
+          "expression": "199.786728 + 2776.119438 * np.exp(-V / 7.309565)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - 35) / -7.3))"
+        },
+        "_mTau": {
+          "expression": "0.676808 + 27.913114 / (1 + np.exp((V - 22.414149) / 9.704638))"
+        },
+        "_mpower": 2,
+        "h": {
+          "expression": "0.25 + 0.75 / (1 + np.exp((V - -28.293856) / 29.385636))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - 35) / -7.3))"
+        },
+        "time_unit": 1000.0,
+        "vrev": 82.0
+      },
+      "source_class_AST_sha256": "92fe390abf6a656b1fc693176b3c95c25af57bc6d3361ca5c969bb994273e9f1",
+      "source_lines": [
+        553,
+        594
+      ],
+      "was_in_B28": false
+    },
+    "Kv3p4": {
+      "catalog_reference": "validation/channels/potassium_catalog_reference.py",
+      "catalog_reference_sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "K",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_k.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -53.32) / 7.4))"
+        },
+        "_hTau": {
+          "expression": "20000.0 / (1 + np.exp((V - -46.56) / -44.14))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "1 / (1 + np.exp((V - -3.4) / -8.4))"
+        },
+        "_mTau": {
+          "expression": "10.0 / (1 + np.exp((V - 4.44) / 38.14))"
+        },
+        "_mpower": 1,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -53.32) / 7.4))"
+        },
+        "m": {
+          "expression": "1 / (1 + np.exp((V - -3.4) / -8.4))"
+        },
+        "time_unit": 1000.0,
+        "vrev": -65.0
+      },
+      "source_class_AST_sha256": "23fe6f653d8e082c503d92d9e5c6091e7822dbe5ae674884f723dcd93b664c4f",
+      "source_lines": [
+        596,
+        639
+      ],
+      "was_in_B28": false
+    },
+    "Kv_ML1": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "ML rational update with Phi",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 0.066,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V - 12) / 17))"
+        },
+        "_mTau": {
+          "expression": "1 / np.cosh((V - 12) / (2 * 17))"
+        },
+        "ions": [
+          "K"
+        ],
+        "kinetic_gate": true,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V - 12.0) / 17.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": -85
+      },
+      "source_class_AST_sha256": "1742d437497d61188ebe46b5115b188e565fd6835c5b97b0b943dd9dadaf4eb2",
+      "source_lines": [
+        119,
+        154
+      ],
+      "was_in_B28": false
+    },
+    "NaLeak": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": 1,
+        "_hTau": 1,
+        "_hpower": 0,
+        "_mInf": 1,
+        "_mTau": 1,
+        "_mpower": 0,
+        "h": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "m": {
+          "expression": "np.ones(self.data_length)"
+        },
+        "time_unit": 1.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "30090d7fea4ff243d365f7952f520684e8bcefe0888f3d79bf7cd5df0d043f6e",
+      "source_lines": [
+        372,
+        413
+      ],
+      "was_in_B28": false
+    },
+    "Nav1p2": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -65.0 - 10.0) / 6.2))"
+        },
+        "_hTau": {
+          "expression": "1 / (0.024 * (V - 10.0 - -50.0) / (1 - np.exp(-(V - 10.0 - -50.0) / 5)) + 0.0091 * (-(V - 10.0) - 75.000123) / (1 - np.exp(-(-(V - 10) - 75.000123) / 5)))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 3,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -65.0 - 10.0) / 6.2))"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "25c6629128e5c3c1ec0038354289c8e4119c68e43c02e9a6cceb2db6147df25e",
+      "source_lines": [
+        131,
+        186
+      ],
+      "was_in_B28": false
+    },
+    "Nav1p3": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1 / (1 + np.exp((V - -65.0) / 8.1))"
+        },
+        "_hTau": {
+          "expression": "0.4 + 0.265 * np.exp(-V / 9.47)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 3,
+        "h": {
+          "expression": "1 / (1 + np.exp((V - -65.0) / 8.1))"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "226a3125f848c4a919e54edd9ea767f23438e4d6db99fb6ccc3034c75d5586c2",
+      "source_lines": [
+        188,
+        240
+      ],
+      "was_in_B28": false
+    },
+    "Nav1p6": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": 1.0,
+        "_hTau": 1.0,
+        "_hpower": 0.0,
+        "_mInf": {
+          "expression": "1.0 / (1 + np.exp(-0.03937 * 4.2 * (V - -17.0)))"
+        },
+        "_mTau": 1,
+        "_mpower": 1.0,
+        "h": 1.0,
+        "m": {
+          "expression": "1.0 / (1 + np.exp(-0.03937 * 4.2 * (V - -17.0)))"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "7189b97822690a6820fa469b67e9e474f353202ff450f63ad73b2235d3aa8510",
+      "source_lines": [
+        415,
+        452
+      ],
+      "was_in_B28": true
+    },
+    "NavRat1": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -65) / 6.2))"
+        },
+        "_hTau": {
+          "expression": "1 / (0.024 * (V - -50) / (1 - np.exp(-(V - -50) / 5)) + 0.0091 * (-V - 75.000123) / (1 - np.exp(-(-V - 75.000123) / 5)))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 3,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -65) / 6.2))"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "7557f4653bb64f93595aada36015eee056cc7dac5b3456982f4d481b4ee156d4",
+      "source_lines": [
+        288,
+        328
+      ],
+      "was_in_B28": false
+    },
+    "NavRat2": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "_hTau": {
+          "expression": "1 / (hAlpha + hBeta)"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 3,
+        "h": {
+          "expression": "hAlpha / (hAlpha + hBeta)"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "d0ed2b453f79b0cbf4ba08dd8bdb046b98a2971c1e0470e5ae94b89bd3f5c473",
+      "source_lines": [
+        242,
+        286
+      ],
+      "was_in_B28": false
+    },
+    "NavRat3": {
+      "catalog_reference": "validation/channels/sodium_catalog_reference.py",
+      "catalog_reference_sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "clock": "HH backward Euler including unused m/h",
+      "family": "Na",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "_hInf",
+        "_hTau",
+        "_hpower",
+        "_mInf",
+        "_mTau",
+        "_mpower",
+        "h",
+        "m",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgNaABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_na.py",
+      "source_assignments": {
+        "_hInf": {
+          "expression": "1.0 / (1 + np.exp((V - -65) / 6.2))"
+        },
+        "_hTau": {
+          "expression": "1 / (0.024 * (V - -50) / (1 - np.exp(-(V - -50) / 5)) + 0.0091 * (-V - 75.000123) / (1 - np.exp(-(-V - 75.000123) / 5)))"
+        },
+        "_hpower": 1,
+        "_mInf": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "_mTau": {
+          "expression": "1 / (mAlpha + mBeta)"
+        },
+        "_mpower": 3,
+        "h": {
+          "expression": "1.0 / (1 + np.exp((V - -65) / 6.2))"
+        },
+        "m": {
+          "expression": "mAlpha / (mAlpha + mBeta)"
+        },
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "f3392e8527e358758bada2d0bb962d8d3ddfb3be2728d771381e5de0b9800027",
+      "source_lines": [
+        330,
+        370
+      ],
+      "was_in_B28": false
+    },
+    "Nav_ML": {
+      "catalog_reference": "validation/channels/morris_lecar_channels_reference.py",
+      "catalog_reference_sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "clock": "algebraic, no consumed clock",
+      "family": "ML",
+      "modern_gate_reads_calcium": false,
+      "modern_gate_temperature_scaling": false,
+      "native_state_fields": [
+        "Phi",
+        "_mInf",
+        "_mTau",
+        "ions",
+        "kinetic_gate",
+        "m",
+        "rel_perm",
+        "time_unit",
+        "vrev"
+      ],
+      "original_base": "VgKABC",
+      "requires_live_calcium": false,
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "scope": "prepared_not_qualified",
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_assignments": {
+        "Phi": 1.0,
+        "_mInf": {
+          "expression": "0.5 * (1 + np.tanh((V + 17) / 18))"
+        },
+        "_mTau": 1,
+        "ions": [
+          "Na"
+        ],
+        "kinetic_gate": false,
+        "m": {
+          "expression": "0.5 * (1 + np.tanh((V + 17.0) / 18.0))"
+        },
+        "rel_perm": [
+          1
+        ],
+        "time_unit": 1000.0,
+        "vrev": 50
+      },
+      "source_class_AST_sha256": "173ada944a78285e37e4573f4af96bea3c76dd9b5d120c81d7d8ad04b513f227",
+      "source_lines": [
+        309,
+        344
+      ],
+      "was_in_B28": false
+    }
+  },
+  "generated_module": "src/cells/processes/betse_channel_catalog_source.py",
+  "generated_sha256": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+  "independent_reference_closure": {
+    "validation/betse/betse_normal_catalog_join_equations.py": "7aa5565b2e7685f420ce60e1b73ee5e0571b7db1b06a26e95ef41eba0dda3ff8",
+    "validation/betse/betse_normal_catalog_join_reference.py": "ef353a2740dce222b022e220914d27298482bf1bc9ea3b23a67f89a32baf7294",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_equations.py": "0abc00edd798db1d69a784a3f05135fa1e349aa531c5b8b14f9ca185ac9141e6",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_gated_join_reference.py": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c",
+    "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+    "validation/betse/betse_normal_voltage_reference.py": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "installed": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages",
+  "kind": "cells.native_channel_catalog_static_inventory@1",
+  "legacy": {
+    "kind": "legacy standalone function, not Channel class",
+    "name": "cagPotassium",
+    "requirements": [
+      "current free cytosolic Ca gathered by membrane owner",
+      "live T",
+      "original whole-row Dm_cag assignment/shape quirks",
+      "explicit separate chronology; no modern network insertion"
+    ],
+    "runtime_callsite_found": false,
+    "source": "betse/science/tissue/channels_o.py",
+    "source_sha256": "ee6f9c538661f42d72e01afc6d01530dcfa1a9cbf1af9945d7227842827e7251"
+  },
+  "literal_numeric_method_AST_sha256": {
+    "CaLeak": {
+      "_calculate_state": "32fd02388ef79e542190edf054a099ea9f508eb787a5c9154afbbed2b55f53b2",
+      "_init_state": "1faa9d5b461ac871c55b84939c9bb15f012af05fef91d1bf031576c91615a249"
+    },
+    "Ca_L2": {
+      "_calculate_state": "eb9295a37960aaaf41ced0a475c0f06c8a2c429a69216235bc701e9916d50f8a",
+      "_init_state": "1bc6e1887c68c02477204c4a95be358cf9cb660042aa37ae5c05a8ecd74777af"
+    },
+    "Ca_L3": {
+      "_calculate_state": "328a7996fa002eaf160ebac2b1363b5c554820db41fdcba8b7f127b017c3adf6",
+      "_init_state": "1d3f222888a6476cb62af484ef560a4cd2887718ebc4bc27e021411190283d19"
+    },
+    "CatLeak": {
+      "_calculate_state": "e224573a8d36f793def51f1c3a9febaae7a23ae81e834fdcb76b751b45727628",
+      "_init_state": "1dd2e7aa7ca1642b103e8f7a866b90ab86b7ef99eb8db70ba186fc7a16eaeb71"
+    },
+    "CatLeak2": {
+      "_calculate_state": "e224573a8d36f793def51f1c3a9febaae7a23ae81e834fdcb76b751b45727628",
+      "_init_state": "91b1aa8d25d53ece2ef9531f07634112897a48706e35b6466c04a96e7d1dc853"
+    },
+    "Cav1p2": {
+      "_calculate_state": "f17fff64f0bda88a5b0121701fa58f0265242efd23e7e7f8c0cd8fd889d0d1ff",
+      "_init_state": "291eed957062726fd3dca9e5bcfb59f90367cf396c2d8d3b64a7aff0495957d3"
+    },
+    "Cav1p3": {
+      "_calculate_state": "46ce2cc29cca98d24cfc09eacb35a6e4fe0f514ffaacdf3859afbd5c34b73361",
+      "_init_state": "281babef7b852f2f5d6495b134ddee24d1828bc2c7c77a51a3aeda9194c02324"
+    },
+    "Cav2p1": {
+      "_calculate_state": "cb55a4f014cde3624611d6f095f95ee9d505394423074cc587c742d82a79bab1",
+      "_init_state": "a720d11ba4821ea54cc93dac9ed627d0ef47cd0e64f5451807037ffdb8b128c5"
+    },
+    "Cav2p2": {
+      "_calculate_state": "d6811dcfd91cdf642b19c25e64896003cbbb85f81ad3462005750a352521f750",
+      "_init_state": "e24c20d4def616ad3cab51bea9fc92541406c4cfebffb082d97c2c177d3ac952"
+    },
+    "Cav2p3": {
+      "_calculate_state": "8254f6e4efd194f95835dbb9b286921abdcd1267d4497e210c49724e452d3ba8",
+      "_init_state": "b23cfa139214d32a6717d9a89a0dd2a696da4ce0e63754489de196e12e64375c"
+    },
+    "Cav3p1": {
+      "_calculate_state": "c8971097af6e2f78b7b809ac6c7630b2a9ff62beadbe2d3c873fbf0d790a454d",
+      "_init_state": "c8ecbdff4f5e886d048fe118445334bcea989a6c0022022ea53bd5cd6f119ff0"
+    },
+    "Cav3p3": {
+      "_calculate_state": "2cecdfc058f5167bf3ffaeaf74d96d6b824624fda4c98ff714b1d5060acdc591",
+      "_init_state": "25bf3cc4ddd8c9251f8c809daa054760a9daf911b69b868facda4a35bbb046aa"
+    },
+    "Cav_G": {
+      "_calculate_state": "4dbc689d35457a3bd9725c731d563cfac99b1927504975a392ea699e7a5e0e86",
+      "_init_state": "51e4872ff74c7ece33ef4d3b6fe7185e1b93932a56f8babca3b6da55fdcdf817"
+    },
+    "Cav_L_ML": {
+      "_calculate_state": "ebcae836f203774a4bbdee200fb05fdf7d373563e4401d5e6473b22e8b90658c",
+      "_init_state": "0570417a4d9a31e14bdfd2f99e36286c90233da062a196c2c8a2add22b9fb3b3"
+    },
+    "Cav_L_ML2": {
+      "_calculate_state": "64b0f7e22cb327a32758ec74a6e48cea66166c358f054537f827cee08fd0e3b5",
+      "_init_state": "06bea2bdd3a23c9f8cf73caf70fe37f9bb954dc1f8537784a2eadf839b772643"
+    },
+    "Cav_N_ML": {
+      "_calculate_state": "c85974b8ed8eef758ca797c16c479f673226917b4fcd9e75994d4ed472c1153f",
+      "_init_state": "cdd8b2b2429eaf71be6e4b4b0898538adbd021f234df2cc19e6eaa25f14c2dfe"
+    },
+    "Cav_T_ML": {
+      "_calculate_state": "c3d92dd777ba589585bcba8c49dc9c6c437c452597df2b6e58b0cd075cf473c7",
+      "_init_state": "0c08dd00d19ffdffb9f10a8a34919b8f013e78151642afd10c7d8faf50c83b7d"
+    },
+    "ClLeak": {
+      "_calculate_state": "32fd02388ef79e542190edf054a099ea9f508eb787a5c9154afbbed2b55f53b2",
+      "_init_state": "0d38e51106c43414df8df6640435ca96a3890fbb1816f301675fe6c5dac56d4e"
+    },
+    "HCN1": {
+      "_calculate_state": "0c94f35a27d064632ca73892ff74ae168652dcca3753c9b604b6ee445b7c0de8",
+      "_init_state": "fa525d0365e82b6602d2a9573cbd7123eb6bb103f26d2f0165e6792d7544124f"
+    },
+    "HCN2": {
+      "_calculate_state": "921efde193994fc151e79ed960c12cd07ba823a62c29d720291f6588ff16595b",
+      "_init_state": "883075bf19348b86f2a36d7384df273f4b6df16e31b843c9e79348f314761b47"
+    },
+    "HCN2_ML": {
+      "_calculate_state": "7565ba7ca8ee6ae0caa694e2b11033ba4d5818c9fbd27df2cb9dc9f8859c1e5e",
+      "_init_state": "c19d1f9f2ee9b9153b0a4e4cb963106164f2f0ab552724be227697e9acd35f57"
+    },
+    "HCN2_cAMP": {
+      "_calculate_state": "c13e3d011a559b999b4d96dbfe93fcd9826e0aa5f98ea05b09112aab18a095a5",
+      "_init_state": "72462bf4c5975425d0871bc280b14f72b53095818a718b7cd16da19f3b0baca2"
+    },
+    "HCN4": {
+      "_calculate_state": "c9e7704d6da587d7426f7a5cda3ad83edeb61f3066c3471114ff4365725fa171",
+      "_init_state": "0660f11c62dde0f01aaacfeab118bb2950a8f5902a8b5e4266cfce0f371eaa9f"
+    },
+    "HCN4_ML": {
+      "_calculate_state": "c693ee9d5c64c1c4458934bbf4be03b6f078c15396c10df4fa16b456282eac06",
+      "_init_state": "7b92ba94f36ee4dbe0e1eac3ef144b466351707a781e96d4b5ec3debf382e0c6"
+    },
+    "HCN4_cAMP": {
+      "_calculate_state": "219fda33a879083c72cb2cbe3443314c84a4dd694abc2691dc1004da922481bd",
+      "_init_state": "1af29e4e6f024e1589f355132e4c4f8a83f4b60301008c304affd84709688e10"
+    },
+    "HCNLeak": {
+      "_calculate_state": "7082a49633bab75b9463644d0c5ea4b5b3ea9cda6df9ad534d23579b88b26cd1",
+      "_init_state": "6981ece9a0ecaccfa4ff07a1af1f26ca5ae3d9f9dd742c34f7b17c9bb1bcf1f5"
+    },
+    "KLeak": {
+      "_calculate_state": "32fd02388ef79e542190edf054a099ea9f508eb787a5c9154afbbed2b55f53b2",
+      "_init_state": "14029fed48999542a6bcf703d20e0d879e4b0b8a2b15c42bcaa2e53254182f8a"
+    },
+    "K_Fast": {
+      "_calculate_state": "03eea429c191fb71632a11436ce256ff02b9c219befe689abdbed5abf98d22b5",
+      "_init_state": "11d615c540d61f29df6b574ac65a8d280cbe79252cd0b1fe20dd92cec73334b0"
+    },
+    "Kir2p1": {
+      "_calculate_state": "43a9b4de3adcc55238730f35e5faa435d82da9c69a5632f9310ff2761032d0f7",
+      "_init_state": "30c99fec79c8002cc3f7f81eb66302091e0f88b6bd4f33ca92efcb63eda38d14"
+    },
+    "Kir_ML": {
+      "_calculate_state": "ffa57c9822d4c12d9a3a5a0aa391c52e03e3195b0a71c6b4b098d8866eb207d6",
+      "_init_state": "1ed0256c4690575210fe03d9f76287fb280c0943724f12f547e9b46faec2c0ae"
+    },
+    "Kv1p1": {
+      "_calculate_state": "e9760ddcf82d12f17c06534d9e237d4334eec44febe6c1b56c193c896da771bb",
+      "_init_state": "36581f9ac987a4d023e1f10f729c4519da381bc0a905c297401e89f591874b3e"
+    },
+    "Kv1p2": {
+      "_calculate_state": "d65f79d0d960a2432c58ad3e7447cc9e2c92cb01e8a3199417c19bc471694bbc",
+      "_init_state": "7084491a11a7616ddaa46d27a507295d83a65a887776f0145943d637134b338e"
+    },
+    "Kv1p3": {
+      "_calculate_state": "e29eaa2ea362f5bc23d1933993b20eb367daed450e89f2f2dbfb89c74ebfbbc2",
+      "_init_state": "6b4a7096f94caf61e9bc8cc4ce3d9038c77c39f086e83ddb00ee6bfb6eb381e0"
+    },
+    "Kv1p3_ML": {
+      "_calculate_state": "ff49ca158b51b0b34af2263bba4f5ff54d1e9795942f9b156b466514c06ce513",
+      "_init_state": "a7ba076c822e291506ad884521b60e22e5829bedc939793a05a2545fd50c0be8"
+    },
+    "Kv1p4": {
+      "_calculate_state": "a4b6bc60e7d08a02de490889f79bbb8f9312527e96be364fed9c0fe9305e7839",
+      "_init_state": "8e1faf07bc1487b56104da5c572f70d5853d0ff8f55d22d79e8997839665cc6a"
+    },
+    "Kv1p5": {
+      "_calculate_state": "68a89ffa46e8cc293c7978d72e34b2856dbd721f464c8fd85e50610ad27b2f8b",
+      "_init_state": "8db3261b483f59802a262a8ad7c3b2250a24f7b8576b15cdee6e63ae132a6fe2"
+    },
+    "Kv1p5S_ML": {
+      "_calculate_state": "c2d5e7143b7329be671c5e5c4eb88dc81562caf93e02e044a8defc464108ed4b",
+      "_init_state": "9ab6321ce76b61b032dc260e729e6a17dd37b2803eb31259169fe0e59661e2ec"
+    },
+    "Kv1p5_ML": {
+      "_calculate_state": "c2d5e7143b7329be671c5e5c4eb88dc81562caf93e02e044a8defc464108ed4b",
+      "_init_state": "dd3f8555e4395777ed80a4875545902b3837f7952ed68ef962d6fc6aebb48b07"
+    },
+    "Kv1p6": {
+      "_calculate_state": "97e1f8d8832429eced546302da8f3b5036d676ba0207c084c5595431d64668d2",
+      "_init_state": "03138d08abde0ab1b1dcc244c00a6e793bca8e1878fc28a6e8a5823068226c94"
+    },
+    "Kv2p1": {
+      "_calculate_state": "3cd3288a322bac2c29be3b3fe2f8c3d35acbd02235ea83d70ff55fdcec94fbc3",
+      "_init_state": "2e5f377158f708915c3e7296338d2d9239391c88c02b593e3414bc220c7a3420"
+    },
+    "Kv2p1_ML": {
+      "_calculate_state": "67c0fce620d687dd8b9b5c748efb90ee29da45de069a7fcbef8809df4afcc365",
+      "_init_state": "0d20126de2b50a808a348c3700e31105c63ec0f69d0da5f35465c67ffd5bf5e1"
+    },
+    "Kv2p2": {
+      "_calculate_state": "721d8ce041fa1d5e030dacad6204ac2a00e763c6c452452a4b4f5fccf3e3f4a9",
+      "_init_state": "1d0e44164aa2a7f30a60c275db88a1081ec4df25bae24b4229536c1adf372cd0"
+    },
+    "Kv3p1": {
+      "_calculate_state": "a1565264b35d365ce6eef0dc62ae03974249ec00aec366c82487891252648180",
+      "_init_state": "f88e41a858c41a506c289c41310e372e368bcd7892ebaa6f2304af5f8f3826be"
+    },
+    "Kv3p2": {
+      "_calculate_state": "d9e9eb24f5a708acb6db18df5ac7f65408239a7768b63ac5c6ae61c7aadf6071",
+      "_init_state": "59bdad1c226bbd6bad04e6092dd363b7822460c730d02fa85a8aef2ba2b9bada"
+    },
+    "Kv3p3": {
+      "_calculate_state": "b3f74a0b7e6cc9fd94ea75fcebdaebb88b3dcf8ba357da9586eb11de87daf541",
+      "_init_state": "e0ac409386a188348dacf8d97aac73e320e09d7959c6288ef6a7672654e8afff"
+    },
+    "Kv3p4": {
+      "_calculate_state": "de3b3e6ed7465389f0aac0410dcac2d1898aa48e67167685e36387eeb090c3a5",
+      "_init_state": "01a8c59d656591f33e1c40698dd0cba7de8e861a870137062d8ff3309923e9ba"
+    },
+    "Kv_ML1": {
+      "_calculate_state": "61ee07248a4d6fa048df2bf2bc94d9c968357bde8e4ed53d27e3adee59aedd93",
+      "_init_state": "822bb7dd4e35ff2cb558340df1caedf3a2460fecce5d03145935d89c88b888e6"
+    },
+    "NaLeak": {
+      "_calculate_state": "32fd02388ef79e542190edf054a099ea9f508eb787a5c9154afbbed2b55f53b2",
+      "_init_state": "e2d82b577617809ce21da76c12479cf5e3b3bce53c20c65ef938ea8c83024657"
+    },
+    "Nav1p2": {
+      "_calculate_state": "30c2b536199c30b8a7941f8e32652f22fbe79c6083b3f6a163bc8d94170051ea",
+      "_init_state": "498fe96f3d7bac7b12eec9a5dd84d7e7a15189c5cbf8acb2bcabc8a735faa311"
+    },
+    "Nav1p3": {
+      "_calculate_state": "881ad587be7b6a1f2fb07bbf70700b43c38eb8696f4d8c194a4bea145ad045e0",
+      "_init_state": "1d728610cc4f9605e8fb0b1da1b48aafc4c0cb0f387fdc3be39acb6bcff86e24"
+    },
+    "Nav1p6": {
+      "_calculate_state": "f9f5bee9b7b3c1f0ec9ec40527db927801accb4c18f84c8fc5c4fcb248085d77",
+      "_init_state": "346e71da9f9ad9146138ba7cbb54fd98935c1330c01e67ad72610ab1ea33686d"
+    },
+    "NavRat1": {
+      "_calculate_state": "903ee9a61d198319dea06564fc172b161057cbb5c8ed1277f2bd634f6450a57e",
+      "_init_state": "102e265faa4047875c2366027fa4337f98ae430ffddaa2fe276d40b6fb03f3de"
+    },
+    "NavRat2": {
+      "_calculate_state": "8299126ccb5c34c26731f70963c81a756ef549e323f3c24be5e27ef010ada1ea",
+      "_init_state": "6ff1ef55a5e2252a90f12cfb58f77710cb2f53558ee757938b496255652cb0e4"
+    },
+    "NavRat3": {
+      "_calculate_state": "903ee9a61d198319dea06564fc172b161057cbb5c8ed1277f2bd634f6450a57e",
+      "_init_state": "102e265faa4047875c2366027fa4337f98ae430ffddaa2fe276d40b6fb03f3de"
+    },
+    "Nav_ML": {
+      "_calculate_state": "68c46c7ec2fe7377e95011359bcb9a4c588f9a51510393d0bd7e3a9e42a7c145",
+      "_init_state": "bcd0c13c3dc63dcc4f4b149e0eba65c3e7cf131b704f8726d1c49fab141e67dc"
+    }
+  },
+  "new_classes_beyond_B28": 51,
+  "no_calcium_route_classes": 32,
+  "numerical_imports": 0,
+  "numerical_runs": 0,
+  "required_calcium_policy": {
+    "deferred": [
+      "alpha_Ca>0 CaATP pump and rate/cache/maintained pools",
+      "Ca_dyn1 ER update and ER/buffer state"
+    ],
+    "live_rows": [
+      "bulk free Ca",
+      "at-membrane Ca",
+      "scalar external Ca"
+    ],
+    "never_hold_Ca_constant": true,
+    "supported_static": {
+      "Ca_dyn": 0,
+      "alpha_Ca": 0.0
+    }
+  },
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "source_sha256": {
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+  },
+  "static_port_audit": {
+    "classes": {
+      "CaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_G": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_N_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_T_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "ClLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCNLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "KLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "K_Fast": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5S_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv_ML1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      }
+    },
+    "clock_methods": 2,
+    "concrete_methods": 110,
+    "inherited_base_methods": 20,
+    "scalar_reference_audit": {
+      "cav": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "5bddc176f1c842fa38aa535ab3a27b1e330b3bd976f243b7ffc164291c8701b9"
+      },
+      "hcn": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "11ebee277d9b04af26e66706ec41b2b7797bfdd9eb50dd37ddf7ce4d32be56b4"
+      },
+      "kv1": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "44e9cabf92d55f091aa84e78c419faca643e778d8410a2450c786676e4bd4d88"
+      }
+    },
+    "unresolved_global_identifiers": []
+  },
+  "status": "prepared_not_executed_not_qualified"
+}

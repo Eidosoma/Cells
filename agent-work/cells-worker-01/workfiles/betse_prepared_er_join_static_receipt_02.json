@@ -1,0 +1,204 @@
+{
+  "ER_update_runs": 0,
+  "all_frozen_source_native_binding_hashes_verified": true,
+  "array_boundary_repair": {
+    "all_other_native_functions_AST_unchanged": true,
+    "call_sites": [
+      "whole_join first incoming ER state",
+      "ER-only incoming ER state"
+    ],
+    "codec": "np.asarray(value,dtype=np.float64).copy(); cm_er float(value)",
+    "equations_helpers_fixtures_tolerances_changed": false,
+    "native_new_sha256": "d39b5ee2b3559254a8653c51531999690d3ed03da22d64f241faae2b016b4dcd",
+    "native_old_sha256": "99c5f41014431a7974359e72029f3c2e7e2342de2aa5092ec3daabaf554913ad",
+    "nine_array_fields": "cc_er,er_vol,er_sa,Ver,Q,Dm_er,Dm_er_base,Dm_channels,zer",
+    "no_numeric_retry": true,
+    "saved_witness": "agent-work/cells-worker-01/workfiles/betse_prepared_er_array_boundary_saved_witness_01.json",
+    "saved_witness_sha256": "e147d8ad873d354518469def7d46dd894b17b1b23fc93805919ba905a1d16f22",
+    "scalar_field": "cm_er"
+  },
+  "authorized_physical_helper_refactor": {
+    "authority": "Chief finalized unrelated physical readout helper split;44statement AST reconstruction and all other definitions unchanged independently reviewed",
+    "hash_exemptions": [],
+    "independent_review": "/mnt/workspaces/Cells/calcium-physics-split-preparation-20261030-01/independent-static-review.json",
+    "independent_review_sha256": "1eed74bd95dbe8c530e2a64c9fd0027dc29294a6fa0307f76c651c26978bc38f",
+    "new_sha256": "33dfb76a0e2d9422629b78a6809c5d70f2538dfbb041a0dbb6f5ff192a230bbe",
+    "old_sha256": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "path": "src/cells/models/surface_calcium.py",
+    "scope": "Exact controlled dependency refresh only; new feedback does not claim physical JAX compiler qualification"
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "array_boundary_saved_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_prepared_er_array_boundary_saved_witness_01.json",
+      "sha256": "e147d8ad873d354518469def7d46dd894b17b1b23fc93805919ba905a1d16f22"
+    },
+    "literal_ER02_failure": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/failure.json",
+      "sha256": "e8dc651a46a8f100a4daccb8db9ba2b824920602b9b58f30d24dbc80c489be8f"
+    },
+    "literal_ER02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/inputs.json",
+      "sha256": "fdf8646240dd0ea7806f5ea05bacb5150984741292037a04ecc579ad16ccae6e"
+    },
+    "literal_ER02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "network02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "source_design": {
+      "path": "/mnt/workspaces/Cells/er-initial-state-design-20261030-01/proposal.json",
+      "sha256": "6a81bc966e8a05e13868040bc7dcbede78ea65d472e245e732168bc371cc1ae5"
+    },
+    "worker_source_audit": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_er_initial_state_audit_01.json",
+      "sha256": "5f6106a2af545829febb72894e83534fb7c1cf57c340e2d7134376e54fccee7b"
+    }
+  },
+  "binding_evidence_copies": 7,
+  "changed_scientific_prefix_paths": [
+    "validation/betse/betse_prepared_er_join_native.py",
+    "validation/betse/betse_prepared_er_join_source_map.json"
+  ],
+  "coordinated_recovery_harness_edits": {
+    "authority": "Chief direct message: Root editing full/capture recovery test harnesses only",
+    "paths": [
+      "tests/unit/test_surface_cotransport_water_response_capture.py",
+      "tests/unit/test_surface_cotransport_water_response_full.py"
+    ],
+    "scope": "Outside all owned/protected dependencies; frozen copies remain hashed"
+  },
+  "coordinated_unrelated_reference_edits": {
+    "authority": "Chief direct message: Root modifying these independent recovery reference layers, not production",
+    "paths": [
+      "validation/tissue/surface_dynamics_reference.py",
+      "validation/tissue/surface_kinetic_reference.py",
+      "validation/tissue/surface_energy_reference.py",
+      "validation/tissue/surface_energy_water_reference.py",
+      "validation/tissue/surface_cotransport_water_reference.py"
+    ],
+    "scope": "Unrelated copied source only; frozen copies remain hashed. These files are outside the network production, native and independent reference closure; no owned/protected hash exemption."
+  },
+  "counterion_choices": [
+    "neutral Cl",
+    "neutral stationary P"
+  ],
+  "driver_sha256": "e3f93049d8841f9c36536942de26d5187055ae4d9f1ecff7767c612230f372c6",
+  "failed_prepared_ER01": {
+    "classification": "JSON array restoration wrapper error; no observed physical-instability conclusion",
+    "failed_context_checks": 6,
+    "passed_preparation_refusal_checks": 6,
+    "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01",
+    "preserved": true,
+    "unrun": 11
+  },
+  "initial_preparation_reference": "Independent stdlib Decimal90/140 from raw exact-binary parents before production preparation, with explicit source geometry binary64 primitive stores",
+  "inputs": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+  "inputs_sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896",
+  "kind": "cells.prepared_owned_ER_static_receipt@1",
+  "literal_ER_files_changed": [],
+  "live_and_frozen_owned_protected_match": true,
+  "native_executions": 0,
+  "native_initialization_flag_scope": "Only the ER constructor is bypassed; original ordinary gate/channel initialization and all subsequent update bodies remain the reused engine",
+  "native_source_copies": 36,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "no_numerical_retry_this_round": true,
+  "nonzero_sign_scope": "Separate ER-only +/-RT/(2F) Cl redistribution; cannot attach to unchanged outer parent",
+  "numerical_runs": 0,
+  "old_prepared01_and_failed_run_preserved": true,
+  "only_executable_change": "New supplied native boundary restores9arrays float64 and1scalar in both incoming-state paths",
+  "original_failure_retention": {
+    "ER01_constructor_failures": "Immutable failed evidence",
+    "ER02_observed_source_refusals": [
+      "owners_absent",
+      "owner_present_no_IP3",
+      "molecules_precedence",
+      "metabo_precedence",
+      "grn_only",
+      "temperature_split"
+    ],
+    "new_refusals": "Cells preparation contract only, no native refusal claim",
+    "old_IDs_reclassified": false,
+    "on_failure": "Archive raw outputs/partial state and stop; no automatic dt/parameter/counterion search",
+    "original_ER02_unrun_checks": 12,
+    "original_unrun_raw_SERCA": [
+      "zero_denominator",
+      "unused_backward_pole",
+      "equilibrium_overflow"
+    ]
+  },
+  "outer_helpers_reused_unchanged": 5,
+  "owned_files": 7,
+  "packet_numeric_evaluations": 0,
+  "planned": {
+    "ER_only_single_updates": 2,
+    "actual_pre_ER_points": 83,
+    "additional_diagnostic_histories": 6,
+    "carried_reference_forms": 0,
+    "checks": 23,
+    "fresh_conditional_step_reference_forms": 166,
+    "fresh_preparation_reference_forms": 42,
+    "native_captures": 21,
+    "neutral_original_resolution_histories": 13,
+    "positive_trajectory_qualifications": 0,
+    "preparation_refusals": 6,
+    "repeated_original_resolution_diagnostic_histories": 2,
+    "total_fresh_reference_forms": 208
+  },
+  "planned_groups": {
+    "ER_only": 2,
+    "context": 6,
+    "core": 7,
+    "dependencies": 6,
+    "refinement": 2
+  },
+  "protected_files": 202,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_er_join_reference.py": "029f31a0f8a85db8974051c08e319653048a4a69bb14ef84438e6d51dfe38e84",
+    "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+    "validation/betse/betse_prepared_er_join_reference.py": "8db90b5ba477b54065d4838c43a41d3df1e7da5a37db7c2acabe135c29cb8754"
+  },
+  "reference_runs": 0,
+  "refinement_scope": "Fixed 0.006s horizon, dt.002/.001/.0005 and forcing changes at2/4ms, absolute matched-boundary diagnostics with no physical error threshold",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "Later explicit requested round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "roundoff_scope": "Initial preparation only; all conditional ER step budgets unchanged",
+  "saved_witness": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/native-inputs/binding-evidence/array_boundary_saved_witness.json",
+  "saved_witness_sha256": "e147d8ad873d354518469def7d46dd894b17b1b23fc93805919ba905a1d16f22",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": "Explicit new initial inventory and primed-cache packet for unchanged conditional ER dynamics; first native incoming_state supplied completely",
+  "source_identity_rule": "Full binding/parent/recipe/context reconstruction with actual joined._state factory",
+  "source_methods_reused_unchanged": 6,
+  "source_snapshot_files": 2345,
+  "static_checks": {
+    "compile_without_import": "passed",
+    "exact_pytest_ID_validator_AST_unchanged": true,
+    "global_names": "passed",
+    "native_capture_inverse_AST": "passed",
+    "planned_schema_and_source_pins": "passed",
+    "post_output_failure_capture_AST": "passed",
+    "reference_closure_stdlib_only": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "unresolved": {}
+  },
+  "status": "static_frozen_unqualified_no_ER_numerics",
+  "unchanged_owned_files": 5,
+  "unchanged_prior_protected_files": 202
+}

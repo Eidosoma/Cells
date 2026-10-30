@@ -1,0 +1,180 @@
+{
+  "actual_scientific_accuracy_conclusion": false,
+  "checks": 26,
+  "diagnosis": [
+    "Typed Values frozen as ordinary tuple before voltage field access",
+    "Standalone publication check reordered dot/sum arithmetic",
+    "Actual native empty profile constructor produces float target indices and raises IndexError before stepping"
+  ],
+  "directory": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01",
+  "evidence_counts": {
+    "carried_references": 22,
+    "completed_local_comparisons": 3,
+    "local_references": 26,
+    "native_archives": 13
+  },
+  "failed": 21,
+  "failed_checks": [
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[standard]",
+      "time": "6.823"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[pop_reversed]",
+      "time": "7.155"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[duplicate_targets]",
+      "time": "7.071"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "subprocess.CalledProcessError: Command '['/mnt/workspaces/Cells/venv-cpu/bin/python', '-B', '-m', 'validation.betse.betse_normal_channel_join_native', '--inputs', '/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/evidence/normal-channel-join/isolated-empty_targets/inputs.json', '--output', '/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/evidence/normal-channel-join/isolated-empty_targets/native']' returned non-zero exit status 1.",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[empty_targets]",
+      "time": "1.401"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[blocked_restore]",
+      "time": "7.741"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[init_skip_restore]",
+      "time": "7.289"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[publish_off]",
+      "time": "5.719"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[signed_modulator]",
+      "time": "4.368"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[temperature_split]",
+      "time": "4.411"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[stationary_na]",
+      "time": "4.332"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_native_full_sequence_and_actual_parent_conditional_local_checks[stale_membrane]",
+      "time": "5.151"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_late_source_order_and_alias_sampling",
+      "time": "0.032"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_channels_ignore_closed_cluster_boundary_mask",
+      "time": "0.027"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_network_publication_replaces_or_retains_incoming_current[publish_off]",
+      "time": "0.026"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_network_publication_replaces_or_retains_incoming_current[standard]",
+      "time": "0.027"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "AssertionError: \nArrays are not equal\n\nMismatched elements: 2 / 9 (22.2%)\nMismatch at indices:\n [2]: -32.245795648008915 (ACTUAL), -32.24579564800891 (DESIRED)\n [3]: -31.971424330279294 (ACTUAL), -31.97142433027929 (DESIRED)\nMax absolute difference among violations: 7.10542736e-15\nMax relative difference among violations: 2.20352056e-16\n ACTUAL: array([-35.358193,   0.      , -32.245796, -31.971424, -30.141954,\n         0.      ,   0.      , -25.249938, -23.011803])\n DESIRED: array([-35.358193,   0.      , -32.245796, -31.971424, -30.141954,\n         0.      ,   0.      , -25.249938, -23.011803])",
+      "name": "test_network_publication_replaces_or_retains_incoming_current[no_channels]",
+      "time": "0.097"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_original_clock_units_and_init_skip_resume_cache",
+      "time": "0.024"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_blocked_channels_keep_running_and_restore",
+      "time": "0.019"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "cells.processes.betse_normal_channel_join.ChannelJoinRejected: Native late-channel join refused at material_source: Native maintained-pool pump join refused at source: Native active gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'",
+      "name": "test_targets_duplicate_overwrite_empty_and_state_immutability",
+      "time": "0.033"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "assert (())\n +  where () = ChannelJoinRejected(\"Native late-channel join refused at material_source: Native maintained-pool pump join refused at ...ive gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'\").channel_phases",
+      "name": "test_raw_source_failures_preserve_native_partial_channel_state[gate_pole]",
+      "time": "2.441"
+    },
+    {
+      "classname": "tests.unit.test_betse_normal_channel_join",
+      "message": "assert (())\n +  where () = ChannelJoinRejected(\"Native late-channel join refused at material_source: Native maintained-pool pump join refused at ...ive gap join refused at source: Native normal ion join refused at source: 'tuple' object has no attribute 'voltage_V'\").channel_phases",
+      "name": "test_raw_source_failures_preserve_native_partial_channel_state[channel_flux_overflow]",
+      "time": "1.670"
+    }
+  ],
+  "failure_sha256": "989ab8ddb79b5bba8139bbd9fefb8ac1cc1010a712c7020f7387bb08c03eee4d",
+  "frozen_snapshot_retained": true,
+  "inputs_sha256": "3ff20e30423b61e5cbfb4768f70e708d56683bbdc41df01af28d7dc0bc869408",
+  "junit_sha256": "4e25c01b6f53ab701c8596e32061ba51da33714215f20b2365568d2e1bd74fab",
+  "kind": "cells.betse_normal_channel_join_failure_receipt@1",
+  "passed": 5,
+  "resources": {
+    "automatic_retry": false,
+    "cleanup_traceback": null,
+    "elapsed_seconds": 86.6501832997892,
+    "limits": {
+      "max_individual_process_rss_bytes": 1073741824,
+      "max_process_tree_memory_bytes": 1073741824,
+      "max_process_tree_rss_bytes": 1073741824,
+      "max_wall_seconds": 480,
+      "min_available_host_memory_bytes": 8589934592,
+      "process_tree_memory_metric": "rss",
+      "sample_interval_seconds": 0.25
+    },
+    "minimum_available_host_memory_bytes": 18909974528,
+    "observed_process_high_water_bytes": 77565952,
+    "process_tree_memory_metric": "rss",
+    "returncode": 1,
+    "rss_fallback_samples": 0,
+    "sampled_peak_charged_memory_bytes": 151519232,
+    "sampled_peak_process_tree_rss_bytes": 151519232,
+    "sampled_peak_summed_process_memory_bytes": 151519232,
+    "samples": 344,
+    "shared_address_space_samples": 0,
+    "status": "failed",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/source/validation/assembly/component_process.py\", line 322, in run_bounded\n    raise subprocess.CalledProcessError(code, command)\nsubprocess.CalledProcessError: Command '['/mnt/workspaces/Cells/venv-cpu/bin/python', '-B', '-m', 'pytest', '--noconftest', '-p', 'no:cacheprovider', '-q', 'tests/unit/test_betse_normal_channel_join.py', '--basetemp', '/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/tmp/qualification', '--junitxml', '/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-01/tests.xml']' returned non-zero exit status 1.\n",
+    "utc": "2026-10-30T18:38:16.503775+00:00"
+  },
+  "revision_launch_authority": "Subsequent Chief message explicitly authorizes one targeted B28 successor round; no automatic accuracy retries",
+  "status": "failed_not_qualified"
+}

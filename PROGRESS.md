@@ -43,21 +43,39 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
   | Owner | Outstanding qualification | Latest reviewed disposition / next action |
   | --- | --- | --- |
-  | Root continuation / Key implementation | Complete charged-loop batch, 79 checks | At the requested 17:24 UTC check, successor was running `round-fuel-native-2` on CPU7, with 38 retained checks and no new completed phase; original failure preserved |
+  | Root continuation / Key implementation | Complete charged-loop batch, 79 checks | Reviewed pass: 79 retained checks and all 62 fresh forms; 60 full-history comparisons plus two failed-provider checks. Earlier timeouts retained; frozen CPU scope only |
   | Key Dev / Root review | Charged blocker calendar, 111 checks | All 111 checks and 38 reference forms verified; final wrapper failed on authorized live-source drift. Metadata-only closeout preserves that failure; no numerical rerun |
   | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Reviewed pass for full NumPy rates/fields and staged admission; compiled CPU/GPU and thermal trajectories remain separate |
-  | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint before a new qualification. The cohort-axis refusal defect is now closed separately |
+  | Root / Specialist implementation | Active-temperature CPU JAX arrays | Ionic and four-stage calcium passed below 1 GiB. Calcium: two complete worlds, maximum error 0.00474 of budget, only 1.63% memory margin. Fresh-reference runtime inventory gap is explicit. Other families, trajectories and GPU unqualified |
   | Root | Explicit numerical refinement | Prior 25 checks/reference retained; one compiled scalar check passed with a bounded 2-GiB cap. Compiled batches/GPU and depleted recovery remain unqualified |
-  | Root | Half-second salt/water/fuel response | Local 32/64-step grids pass conservation but fail the stricter regeneration-heat reference budget; 128/256-step successor prepared, unlaunched. Full recovery remains unqualified |
+  | Root | Half-second salt/water/fuel response | Conservative full-horizon references passed review: all 31 fields, maximum 0.440644 of strict stability budget; membrane transfer 0.012113. Production/refinement/restart successor 03 launched detached on CPU5, ETA 90–150 minutes. Earlier failures remain preserved |
+  | Specialist / Root review | Native environment field reconstruction | Reviewed pass: 46 checks, 22 distinct supplied inputs across 24 labeled sets; advancing ECM transport is next |
+  | Root / Specialist implementation | Native ECM ion/material join | Original failure remains 39/40. Archival-only rerun now retains both references and reproduces exactly the single failing diagnostic field; state/native buffers and all numerical inputs/budgets unchanged |
+  | Key Dev / Root review | Native pump/ion/gate/current/voltage join | Reviewed pass: 34 checks with meaningful fresh conditional per-call budgets; runtime-inventory and nested-label limitations retained |
+  | Key Dev / Root review | Native late channel/normal-solver join | Reviewed pass, 26 checks for Nav1p6/Kv1p5/Kv3p2/ClLeak; exact native state/cache correspondence and unchanged local budgets. Full catalog remains separate; original failures retained |
+  | Root qualification / Key implementation | Full modern channel catalog | Reviewed pass: 73 checks, 55 modern classes, 70 native captures and 170 local reference forms. Scalar-bath component scope; 130 carried forms are diagnostics. Original Cav_G failure retained |
+  | Specialist / Root review | Generated geometry to environment adapter | Reviewed pass, 29 checks: five seed checks, five bridges and 19 guards. Two ring/centre presets and three manufactured clouds; existing B09/MT evidence reused explicitly |
+  | Specialist / Root review | Native square/HEX lattice seeds | Reviewed pass, 37 checks: 12 complete cases, two raw empty failures and one nonfinite refusal. Native strides/RNG and independent coordinates verified; original failed run retained. Seed stage only |
+  | Key implementation / Root qualification | Native rectangular-bath CaATP join | Reviewed pass: 20 retained checks plus four fresh raw probes, 24 distinct IDs and 17 distinct native cases. NaN bits preserved; original cache/serialization failures retained |
+  | Specialist / Root review | Native image-mask prelude | Reviewed pass: 28 checks, 16 complete cases and four raw refusals. Masks/hulls/call arguments only; actual mesh construction remains separate. Missing-Pillow failure retained |
+  | Key implementation / Root qualification | Native ER/calcium join | Reviewed pass: all 23 supplied-state checks, 83 conditional ER points including diagnostics; maximum local error 0.000836 of budget. Original failures retained. Native initialization, independent full-trajectory accuracy and finite fuel remain outside scope |
+  | Key implementation / Root qualification | Native network feedback join | Reviewed pass: 15 checks, ten three-call histories, 30 pre-network points and 60 fresh conditional reference forms. Empty-chemistry feedback only; GRN owner label does not qualify GRN execution |
+  | Specialist / Root qualification | Native constructor/pre-mesh | First attempt remains 19/22. Saved-input diagnosis locates rounded centroid-product and thin-triangle Heron errors; numerical alternatives are candidates only. Constructor-only B09 adapter and clipping packages are static preparations, not geometry qualifications |
   | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
 
-- **Three parallel development owners are active.** Root owns the numerical
-  resolution repair, charged-loop continuation and shared qualification/status;
-  Cells Key Developer owns native normal-solver components and per-ion gap-gate
-  chronology; Cells Specialist Developer owns native thermal-calendar replay.
-  The detached batch continuation uses CPU7, native component comparisons use
-  CPU1, Specialist's short checks use CPU6, and Root coordinates CPU2/CPU5.
-  The older blocker and staged NumPy jobs are terminal.
+- **Three parallel development owners are active.** Root owns numerical
+  resolution, compiled temperature execution and shared qualification/status;
+  Cells Key Developer has prepared ER states and is starting the nonempty
+  native network chemistry/transport join;
+  Cells Specialist Developer has frozen clipping execution and is starting the
+  separate mesh smoothing/refinement source boundary. Earlier detached outcomes
+  are reviewed. The latest requested check found the full recovery references
+  passed; their saved-evidence review is complete. Root has prepared the next
+  production/refinement/restart continuation using those exact references and
+  launched it detached on CPU5; its result awaits the next requested check.
+  The repaired supplied-state ER run passed all 23 checks and evidence review.
+  Key continues nonempty chemistry/transport. Clipping runner/replay preflight
+  has passed; no new clipping numerical run has launched.
   Each process is limited to one thread and bounded memory. Finite-family
   reservoir and active-family temperature restrictions remain explicit.
 
@@ -209,7 +227,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   these derivative limits from endpoint-state limits. Endpoint accounting
   stops at the first failing identity, so later checks are not credited.
   CPU6 production/reference phases took **3.53 / 11.32 s**, with **184.58 MiB**
-  maximum RSS. Local resolution around fuel restoration needs further work.
+  maximum RSS. The finer local comparison below now passes; the full recovery
+  trajectory remains a separate qualification.
 
 - **The first local recovery meshes pass accounting but still fail full-state
   reference accuracy.** [Registered inputs](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-01/inputs.json)
@@ -230,17 +249,566 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   admission correspondence with the original frozen implementation, despite
   intervening channel-catalog additions. No accepted-prefix migration or full
   half-second recovery is credited.
+  The [failure review](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-01/review-verification.json)
+  verifies **2,167 current / 1,281 legacy source hashes**, all raw/runtime
+  evidence and unchanged resource guards. Heat error fell **13.406-fold** on
+  bisection; this supports a finer test without guaranteeing convergence.
 
-  The [128/256-step successor](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-02/preparation.json)
-  is prepared without launching. It bisects the same actual float intervals,
-  keeps all physical sources and tolerances, and binds both failed resolutions.
-  Expected runtime is **3–5 minutes**; the next requested round will test these
-  finer meshes before any full response qualification.
+  The [128/256-step successor](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-02/result.json)
+  now passes with unchanged physical sources, anchors and tolerances.
+  Its [completion review](/mnt/workspaces/Cells/cotransport-recovery-resolution-20261030-02/root-review-01/review-verification.json)
+  verifies **3,504 sealed artifacts**, nine grid checks, **1,536 stages**,
+  **384 endpoints**, both full histories and exact legacy RHS/balance agreement.
+  Regeneration-heat errors fall to **2.61012e-12 / 1.63826e-13 pJ**, or
+  **0.129743 / 0.00814339** of the original budget. The strict independent
+  reference-stability score remains **0.074143**. The inherited parent already
+  uses **71%** of the original energy budget; these results qualify only this
+  conditional **12.5-us interval**, not the missing prefix or the full recovery.
+
+  [Prospective full-run support](/mnt/workspaces/Cells/cotransport-recovery-support-20261030-01/root-review-01/review-verification.json)
+  passed **32 short checks**: 15 grid checks, 15 independent-reference checks
+  and two real eager-history capture checks. The opt-in independent solver uses
+  local segment time and changes relative to its own freshly computed parent;
+  startup derives from its own pool inventories/rates. Solver tolerance numbers
+  remain unchanged, but relative scaling applies to segment changes, which is
+  not uniformly equivalent to global-state error control. An analytic depleted
+  pool/heat case checks this method. Exact observation clocks, numbered window
+  proposals, full histories, restart and retained late rejection are covered.
+  The phases took **5.05 / 2.02 / 220.72 s**, peaked at **498,683,904 bytes RSS**,
+  and retained at least **18,740,375,552 bytes** host reserve. All 2,205 frozen
+  sources and three runtime inventories verify. The subsequent full-response
+  harness adds explicit reference input/time/shape bindings and timing of its
+  full-history recheck; its long scientific qualification is still pending.
+
+  The [fresh full-recovery successor](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-01/launch.json)
+  launched **detached on CPU5 at about 18:43 UTC**, PID **2040337**, with three
+  collected qualification tests. Every
+  production/reference trajectory starts from the original initial state;
+  no conditional diagnostic parent is migrated. It fixes the 128-interval
+  recovery grid before running, bisects it with the nominal timestep for the
+  original factors **1 / 2 / 4**, and retains the exact executed union of times.
+  Bounded **256-step windows** avoid exceeding the unchanged **1-GiB trace
+  limit** on the finer grids. Two fresh production-denied full references,
+  unchanged state/potential/stability/convergence budgets, and a fresh-process
+  restart remain required. CPU5, one thread, the original **4-GiB process/PSS
+  limits**, **8-GiB reserve** and four-hour overall limit are retained. Estimated
+  duration is **90–150 minutes**, including complete-history rechecks, placing
+  estimated completion around **20:15–21:15 UTC**. No further automatic polling
+  is queued; later status checks wait for the next user instruction. This closes only
+  the recovery case if successful, not the outstanding six-arm paired panel.
+  At the requested **18:47 UTC** check, the first full independent reference
+  had completed and the tighter independent reference was active; no terminal
+  qualification artifact was present.
+
+  The requested **19:15 UTC** check found the original
+  [terminal failure](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-01/failure.json).
+  Its `status.json` still says running; the terminal failure takes precedence.
+  The [saved-data review](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-01/root-review-01/water-reference-review.json)
+  verifies 2,210 frozen sources and **40,127 steps / 157 accepted windows**.
+  Only regeneration heat fails the production state budget: at **0.2505 s**,
+  error is **8.39227e-10 pJ**, or **34.938 times** allowance. Other state fields
+  and potentials pass, but the independent references separately fail their
+  strict stability budget by **6.236 times** for potassium amount at **0.005 s**.
+  Saved-state high-precision accounting locates the heat error after the fine
+  interval: pool residual rises from **2.69e-12 pJ** at 0.2500125 s to
+  **7.16e-10 pJ** one ordinary step later. Full energy accounting remains within
+  its original 2e-8 pJ limit; this does not establish trajectory accuracy.
+  Refinement and fresh restart never ran. The next numerical design must extend
+  the fine recovery tail and independently tighten both full reference solves;
+  original inputs, failures and tolerance requirements remain retained.
+
+  Root added per-field comparison reports that save all failed fields, worst
+  indices/times, values and budgets before rejecting accuracy. Shape mismatch
+  cannot broadcast into a pass; nonfinite failures remain JSON-safe.
+  [Five focused checks](/mnt/workspaces/Cells/response-comparison-checks-20261030-02/result.json)
+  passed in **4.55 s**, peaking at **228.5 MB RSS**. These are software checks,
+  with unchanged scientific tolerances and no new trajectory credit. Attempt
+  01 retains a missing-output-directory failure before any tests started.
+
+  The [extended-recovery support](/mnt/workspaces/Cells/recovery-tail-support-20261030-01/result.json)
+  now passes **49 checks**, independently
+  [reviewed](/mnt/workspaces/Cells/recovery-tail-support-20261030-01/root-review-01/static-review.json).
+  An explicit stop extends the numerical interval to **0.2505 s**, with the
+  original 128 microsteps followed by 16 subdivisions of each of 39 ordinary
+  steps. Exact unions with the nominal grid contain **40,712 / 81,435 / 162,871
+  full steps**. The reference's tightening-only `tolerance_scale=1/32` leaves
+  its step cap/startup rule unchanged and refuses unsupported tolerance floors.
+  Two independent **10-ms prefixes**, including the old 5-ms interior failure
+  time, meet the original strict stability budget at **0.7204121 of allowance**.
+  Analytic checks, invalid-grid/tolerance refusals and an explicit failure-order
+  check also pass: full reference instability now stops production before it
+  starts. The four phases took **45.24 s** total, peaking at **238.9 MB RSS**.
+  This establishes support only. Fresh half-second references, production
+  accuracy, three-grid convergence and restart remain required in successor 02.
+  The [fresh full-recovery launch](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-02/launch.json)
+  records PID **2063162**, detached on CPU5 at **19:49 UTC**. It uses fresh
+  original-start references and trajectories, 256-step windows, unchanged
+  4-GiB PSS / 8-GiB reserve limits and the original four-hour total cap.
+  Estimated duration is **90–150 minutes**. Failure now updates terminal status
+  as well as its failure artifact. The requested **19:51 UTC** check observed
+  the first reference still running, with no completed phase. The next requested
+  check found a terminal failure. [Review of successor 02](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-02/root-review-01/REVIEW.json)
+  verifies both fresh references but rejects their strict stability comparison
+  before any production, refinement or restart begins. Only
+  `membrane_transferred` fails: **23 scalar observations**, beginning at **0.1 s**;
+  worst is K at **0.35 s**, with **1.3324e-13 fmol** difference against a
+  **4.0854e-14 fmol** allowance (**3.2614×**). All other 30 fields pass, including
+  the former 5-ms K discrepancy at **0.4628 of budget**. Saved inventory and
+  transfer ledgers have small discrepancies in their implied charge; these
+  motivate a conservative-coordinate reference investigation, not acceptance
+  or a widened tolerance. The accepted 0.25-s endpoint also fails, so dense
+  interpolation alone is not the explanation. The extended production grid
+  remains untested and original 01's production heat failure stays unresolved.
+
+  The conservative reference repair now has a [reviewed 132-check support pass](/mnt/workspaces/Cells/recovery-material-support-20261030-01/root-review-01/completion-verification.json):
+  **57 coordinate checks, ten integration checks and 65 reference-suite checks**
+  (64 existing regressions plus one reduced-coordinate depleted-parent variant).
+  The opt-in `transport_ledgers` representation derives both bulk-ion fields
+  from passive transfer, Na/K pump cycles and neutral KCC/NKCC cycles. Field
+  charge comes from electrogenic transfers and the original charge anchors.
+  Fuel, water, heat and work remain integrated unchanged; inconsistent material
+  derivatives fail with their actual rates, residuals and roundoff bounds saved.
+  The solver now controls **38 coordinates instead of 46**; all **31 returned
+  fields/46 scalars** still face the original acceptance budgets. One **20-us
+  physical prefix** was integrated three ways; this is numerical support, not
+  three independent cases. Maximum state-budget fraction is **0.000200**;
+  the physical-energy rate residual is **5.82e-11 pJ/s** against **3e-8**.
+  The batch took **17.39 s**, with **108.9 MB** peak HWM. Frozen sources,
+  artifacts and fresh denied-import runtime identities verify. The
+  [prepared full-reference comparison](/mnt/workspaces/Cells/recovery-ledger-reference-prepared-20261030-01/preparation.json)
+  keeps the original half-second horizon and both original-start refinements;
+  it passed [static preflight](/mnt/workspaces/Cells/recovery-conservative-coordinates-20261030-01/next-reference-static-review.json)
+  and [launched detached](/mnt/workspaces/Cells/recovery-ledger-reference-20261030-01/launch.json)
+  on **CPU5 at 21:05 UTC**, PID **2090470**, and completed at **21:12 UTC**.
+  The next requested check found a pass. [Completion review](/mnt/workspaces/Cells/recovery-ledger-reference-20261030-01/root-review-01/REVIEW.json)
+  verifies two fresh original-start **0.5-s** solves, **31 fields/46 complete
+  scalars** at **21 observations**, with maximum strict stability fraction
+  **0.440644**. The previously failing membrane-transfer field is at **0.012113**.
+  Material and water identities are exact; fuel-ledger residual is at most
+  **1.61e-17 fmol**. Potential histories differ by **1.23e-14 V**, reported as a
+  diagnostic rather than an additional job gate. Source/runtime/artifact hashes
+  match. The three phases took about **6.3 minutes**, peaking at **91.34 MiB**
+  RSS with at least **17.47 GiB** host reserve. This is reference state stability
+  at declared observations, not an every-stage or production accuracy claim.
+  The earlier full-coordinate failures remain failed.
+
+  Root has prepared the [production continuation](/mnt/workspaces/Cells/cotransport-recovery-production-prepared-20261030-01/inputs.json)
+  from the reviewed admission source. It reuses both exact reference receipts
+  and archives, adding **zero reference solves**, and retains the original
+  half-second trajectory, three RK4 grids and fresh-worker disk restart checks.
+  The fixed grids, budgets, **4-GiB PSS** limit, **8-GiB** reserve and four-hour
+  total cap are unchanged. [Static packaging review](/mnt/workspaces/Cells/cotransport-recovery-production-prepared-20261030-01/root-review-01/REVIEW.json)
+  verifies exact reference reuse and all **2,322 frozen source files**. The
+  [successor launched detached](/mnt/workspaces/Cells/cotransport-recovery-full-20261030-03/launch.json)
+  on **CPU5**, PID **2101585**, with expected runtime **90–150 minutes**.
+  Logs and terminal result/failure artifacts are under
+  `/mnt/workspaces/Cells/cotransport-recovery-full-20261030-03`. No automatic
+  polling or followup is queued. Full production heat, timestep convergence
+  and restart remain unqualified until completion and review.
+
+  The production comparison harness now checks the saved reference's coordinate
+  declaration before using it. [Admission support review](/mnt/workspaces/Cells/recovery-reference-admission-support-20261030-01/root-review-01/completion-verification.json)
+  verifies **18 checks: ten new software checks and eight retained regressions**.
+  Reduced references must retain their original start, declared solver dimension
+  and charge source, and exact agreement between saved bulk amounts and transfer
+  ledgers. Inconsistent records and mixed reference modes stop before production;
+  no data is repaired and the strict stability budgets remain unchanged. Legacy
+  full-coordinate receipts remain readable. This took **182.54 s**, with
+  **501.7 MB** process HWM; **2,374 artifacts, 2,322 frozen sources and 1,393
+  loaded runtime files** verify. These are software admission/capture checks,
+  not new biological cases or full-recovery credit. A future production package
+  must explicitly declare `reference_material_coordinates: transport_ledgers`;
+  the detached reference package remains untouched.
 
   The original full-response test now saves complete proposed history/layout
   before unchanged accounting checks. Its [focused real-step refusal check](/mnt/workspaces/Cells/cotransport-response-capture-20261030-01/result.json)
   passed in **33.99 s**, retaining all 31 fields and the same exception after
   an injected rejection. This software check adds no recovery-trajectory credit.
+
+- **Native environment-field reconstruction passed 46 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-environment-field-20261030-02/root-review-01/completion-verification.json)
+  authenticates 2,205 frozen sources, seven native files, 636 runtime files and
+  14,352 saved array columns. The **24 labeled sets contain 22 distinct supplied
+  inputs**, with 72 instantaneous rows and four preserved refusal cases; these
+  are not biological replications. Native arrays match exactly, and both complete
+  100/160-digit references meet fixed budgets, with maximum fraction **0.01171875**.
+  Maximum voltage discrepancy is **4.16e-17 V**. Three phases took **34.78 s**
+  with **193.17 MiB** peak RSS. The first adapter failure remains preserved.
+  Derived maps, operators and initializer caches retain source-specific corner
+  order, duplicate assignments, Gaussian modes and derivative signs. Ambiguous
+  nearest-point ties are explicitly refused under narrower Cells admission.
+  Geometry and post-flux states are supplied; advancing tissue, physical field
+  energy, biological geometry and GPU execution remain outside this result.
+  The subsequent ECM transport/material comparison reports **39/40 checks**:
+  a large-inventory case has **1.7449e-12** error in a derived membrane/bulk
+  concentration difference, **5.816** times its fixed **3e-13** budget.
+  Specialist reports exact native arrays, but Root has not completed its
+  independent evidence review. Both the earlier instrumentation failure and
+  this accuracy failure remain retained. No tolerance change or automatic
+  further run is authorized in this round. A third attempt launched before
+  Root's stop-further-retries message arrived and was cancelled by Specialist
+  through a coordination misunderstanding; its cancellation/failure receipts
+  and partial evidence are retained, with no pass credit or restart. Root
+  clarified that stopping future launches must leave active computations alone.
+  A lower-inventory scenario may be
+  prepared as separate coverage; it cannot repair or convert the failed case
+  into a pass. Review and the next numerical round wait for the user's next
+  instruction. The [failed-round handoff](/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json)
+  records that the failed case's actual/native arrays were saved, but its complete
+  100/160-digit reference buffers were not written before the assertion failed.
+  The prepared capture now saves those buffers before comparison; this change
+  has not been numerically qualified. The original failing input/assertion is
+  restored; no expected-limitation assertion converts it into a pass.
+  The requested saved-array review identifies bulk concentrations of roughly
+  **15,011–16,694 mol/m3** after the large supplied-pump stress. Their binary64
+  spacing is **1.82e-12–3.64e-12**, exceeding the **3e-13** budget for the later
+  membrane/bulk difference. Rounding small gap updates into these large states
+  loses the relevant digits before the final subtraction. The missing failed
+  reference buffers still prevent independent reproduction of the precise
+  reported discrepancy; this numerical diagnosis does not close the failure.
+  [The completed saved-data review](/mnt/workspaces/Cells/betse-ecm-transport-20261030-02/root-review-01/review-verification.json)
+  confirms all **381 saved native comparison arrays** match exactly and that
+  the checker correctly applies its declared difference budget. Review peak
+  RSS was **43.55 MiB**. The next requested diagnostic should rerun only the
+  original case with unchanged inputs/equations/tolerances and save both complete
+  references before assertions; no such numerical rerun was performed by the
+  review.
+
+  That [archival-only diagnostic](/mnt/workspaces/Cells/betse-ecm-failure-capture-20261030-01/result.json)
+  has now completed. The original test still **fails** its unchanged criterion;
+  a separate worker recomputes both references with production/native imports
+  denied. All **777 actual/native saved columns** match the original case, and
+  all **396 actual-to-reference fields** are now checked without stopping at
+  the first discrepancy. Only `membrane_bulk_difference_mol_m3` fails. Its
+  worst element is **Cl, membrane `mem-3`, owner `cell-1`**: actual
+  **1.7229212971869856e-6**, reference **1.7229230420530395e-6 mol/m3**,
+  error **1.7448660538927198e-12**, or **5.81601976855** of the unchanged
+  **3.00010337538e-13** budget. The tighter reference agrees at this element;
+  maximum reference self-resolution across all fields is **6.67e-85** of budget.
+  Complete stored buffers are binary64 projections of the 100/160-digit
+  calculations, not 100/160-digit storage.
+  [Completion verification](/mnt/workspaces/Cells/betse-ecm-failure-capture-20261030-01/root-review-01/review-verification.json)
+  checks **2,255 sealed artifacts**, **2,216 frozen source files**, native and
+  runtime pins, and exact original source AST after removing the one added
+  archive call. Numerical production/native/reference equations, inputs and
+  checker tolerances are unchanged. The repeated original case took **5.30 s**
+  and the fresh independent worker **2.79 s**, peaking at **209,059,840 bytes
+  RSS**, with at least **18,691,883,008 bytes** reserve. This recovers the missing
+  failure evidence; it adds no passing scientific case and does not qualify the
+  original stress case or full ECM panel.
+
+- **Native pump-to-normal-solver coupling passed 34 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/root-review-01/completion-verification.json)
+  checks 15 native captures, 36 actual-parent calls, 738 material frames and 105
+  gate calls. The 72 fresh conditional reference forms and 24 separate carried
+  diagnostics use the original component tolerances; all **1,806** saved local
+  error/budget fields recompute correctly, with maximum fraction **0.00359951**.
+  This closes the earlier concern about uninformatively growing carried bounds
+  for this new component, without retroactively qualifying the older gated join.
+  Three raw refusals remain preserved. The review verifies 2,219 frozen sources,
+  seven owned files, 144 protected files, 14 native snapshots and 90 archive
+  manifests. The qualification peaked at **173.4 MB** tree RSS; the separate
+  read-only review reached **1.83 GB**, above its intended review ceiling.
+  Loaded runtime-file hashes and a complete top-level artifact inventory are
+  absent, and inherited nested scope text incorrectly excludes pumps; these
+  provenance limitations remain explicit rather than rewriting frozen evidence.
+  Native maintained ATP parameters do not imply fuel consumption or energy
+  closure. Full-solver, physical-conservation and GPU claims remain excluded.
+  Key Dev is now implementing the actual **late** native channel phase: direct
+  concentration updates and extra membrane current after ordinary ion transport,
+  before deferred commit/voltage. It is not a pre-pump permeability substitution.
+  The first channel-join qualification completed **26 checks: five passed and
+  21 failed**. A frozen state was returned as a plain tuple before named-field
+  access; separate publication arithmetic and actual native empty-profile
+  constructor refusal also needed correct packaging. These failures do not
+  establish channel-trajectory accuracy. Key Dev is running one targeted
+  successor for this requested round, retaining the original evidence and
+  unchanged scientific fixture equations/budgets. Any scientific accuracy
+  failure stops further revised-case launches in this round.
+  The [targeted successor](/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/result.json)
+  now reports **26/26 passes** in **95.90 s**, with 33 actual-parent calls,
+  66 conditional reference forms plus 22 carried diagnostics, 861 material
+  frames, 96 gap-gate calls and 118 channel calls. Native constructor/pole/flux
+  refusals remain retained. [Independent completion review](/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/root-review-01/completion-verification.json)
+  accepts the scope for **Nav1p6, Kv1p5, Kv3p2 and ClLeak**. It verifies all
+  native arrays/dtypes/caches and **2,261 local error/budget arrays**, with
+  maximum fraction **0.0090029233**. All **2,238 frozen sources**, ten owned
+  files, 151 protected files, 26 native copy pins, 25 AST sites, 83 raw archive
+  manifests and **138 runtime inventories / 396 distinct loaded files** verify.
+  The review streamed archives under a **900-MiB address-space cap**, with
+  measured peak VmHWM **31,113,216 bytes**. It adds no full-catalog, physical,
+  full-solver or GPU claim. Key Dev is preparing remaining channel-family
+  support statically; no additional numerical qualification is launched.
+
+- **Generated geometry-to-environment ownership passed 29 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-geometry-initialization-20261030-01/root-review-01/completion-verification.json)
+  verifies five seed checks, five accepted field bridges and 19 guards. All
+  **1,220 saved arrays**, **2,236 source files** and **2,328 artifacts** verify,
+  including exact native dtypes/values, complete MT states, draw order, fixed
+  B09 receipt bindings and generated metric ownership without caller overrides.
+  Maximum field error is **0.0193354** of the unchanged budget; the saved
+  100/160-digit reference outputs agree after binary64 conversion. Three
+  phases took **20.18 s**, with **241.8 MB** peak HWM and at least **19.70 GB**
+  available memory. The saved-data review used **50.3 MB** HWM.
+  Scope is two native ring-plus-centre presets and three manufactured clouds;
+  the native single-cell-named preset contains seven generated owners and is
+  not a claim about one biological cell. Existing B09 topology/RNG coverage
+  is reused without new case credit. Full `make_world`, lattice/image/filter/
+  refinement, physical evolution and GPU execution remain excluded. Specialist
+  prepared native square/HEX lattice seeds with exact draw/bbox provenance.
+  The [first lattice qualification](/mnt/workspaces/Cells/betse-lattice-seed-generation-failed-round-20261030-01.json)
+  failed **17 of 37 checks**: sixteen calls could not resolve native
+  `@type_check`, and one centroid assertion recomputed a mean after changing
+  array layout. No complete native/independent case or fresh replay ran.
+  Failed sources/logs remain intact. The
+  [static repair](/mnt/workspaces/Cells/betse-lattice-seed-generation-preparation-20261030-02.json)
+  authenticates the actual native decorator, retains source strides/reduction
+  order and saves actual trials before invoking the oracle. Core equations,
+  references, fixtures and budgets are unchanged; the repair is unexecuted.
+  Specialist continues the image-mask prelude under a separate source prefix.
+  The repaired [lattice qualification](/mnt/workspaces/Cells/betse-lattice-seed-generation-20261030-02/root-review-01/completion-verification.json)
+  passes **37 reviewed checks**: 12 complete cases and three retained raw
+  refusals. All 576 saved columns, exact native layout/RNG state and unchanged
+  coordinate budgets verify; maximum error is **0.00005942 of allowance**.
+  Three phases took **29.36 s**, with **224.8 MB** maximum tree RSS. Core
+  equations, fixtures and reference budgets are unchanged from failed 01.
+  This qualifies seed generation only, with B09/MT coverage explicitly reused.
+  Image prelude preparation added off-diagonal samples and unexpected-refusal
+  capture, then passed [static review](/mnt/workspaces/Cells/betse-image-preflight-20261030-01/REVIEW.json).
+  Its [first numerical run](/mnt/workspaces/Cells/betse-image-mask-prelude-failed-round-20261030-01.json)
+  collected **0/28 checks**: the CPU environment lacked Pillow. No image was
+  decoded and no native/independent comparison ran. All **2,309 artifacts**
+  verify; a secondary missing-package metadata error also prevented the runtime
+  inventory from being written, so that limitation remains explicit.
+  Root added the existing **Pillow 12.3.0** pin to the CPU lock and a
+  `native-geometry` package extra. A [separate dependency overlay](/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01/preparation.json)
+  verifies 141 installed-package hashes and 142 copied files; its Python and
+  compiled-extension imports pass without changing the shared environment.
+  The repaired [image qualification](/mnt/workspaces/Cells/betse-image-mask-prelude-20261030-02/root-review-01/REVIEW.json)
+  passes **28 reviewed checks / 16 complete cases / four raw refusals**.
+  All 832 saved columns verify; 256 actual/native pairs match exactly.
+  Maximum coordinate and linear-interpolation errors are **0.00003646** and
+  **0.00009536** of budget, with zero stored reference-resolution difference.
+  The four asymmetric cases are branch combinations of one image, not four
+  independent images. Three phases took **16.89 s**, peaking at **231.8 MB**;
+  all source/runtime and overlay hashes verify. Scope covers masks, pixel hulls
+  and mesh-call arguments. Fast cubic values have native comparison only;
+  executed mesh construction and physical topology remain unqualified.
+  The next [constructor/pre-mesh qualification failed](/mnt/workspaces/Cells/betse-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json):
+  **19/22 checks passed**, with both later fresh replay phases unrun. The
+  merged-square fixture hits the earlier physical adapter's intentional merging
+  restriction before mesh execution; a separate bounded input path is needed.
+  Two other cases match native caches, typed traces and random states exactly,
+  but fail independent accuracy: one nearly cancelling centroid coordinate
+  (**3.14e-22 m** error against roughly **1e-27 m** budget), and a thin triangle's
+  circumradius/inradius (**7.59 times** their budgets). Saved 100/160-digit
+  references agree at these entries. All **11 actual/native captures**, **2,614
+  artifacts** and **1,181 runtime-file hashes** verify; source correspondence
+  does not override the accuracy failures. The run took **32.48 s**, peaking at
+  **262.8 MB** HWM. The [two-input arithmetic diagnostic](/mnt/workspaces/Cells/mesh-primitive-arithmetic-diagnostic-20261030-01/analysis-01/REPORT.json)
+  now reproduces both native outputs exactly. The centroid error enters rounded
+  products before summation: `fsum` alone cannot recover the lost bits. Exact
+  rational evaluation matches the reference, but the tested translated float64
+  variants still fail. The thin triangle loses accuracy through Heron's area
+  calculation; cross-product area with the same side lengths passes the selected
+  primitive budgets, while improved Heron arithmetic still fails. This **1.02-s,
+  75-MB** diagnostic generates no meshes and changes no production arithmetic.
+  Any stable geometry path needs a distinct method identity and full domain/mesh
+  qualification; the original three failures remain open.
+
+  Specialist has prepared a constructor-only B09 input adapter with **14 unrun
+  checks**, leaving the existing physical adapter guard unchanged. The separate
+  [clipping successor](/mnt/workspaces/Cells/betse-mesh-clip-preparation-20261030-02.json)
+  has **31 unrun checks** after narrow keeper-documentation and binary-mask input
+  fixes. Its [static review](/mnt/workspaces/Cells/betse-mesh-clip-preflight-20261030-01/REVIEW.json)
+  verifies 94 hash bindings; driver/replay preparation continues. Eventual
+  qualification must report actually observed clipping branches; an isolated
+  keeper witness is not a complete partial-clipping case. Physical geometry
+  remains unqualified.
+  The [final execution-package review](/mnt/workspaces/Cells/betse-mesh-clip-preflight-20261030-02/REVIEW.json)
+  verifies **2,535 frozen files**, **31 exact test IDs**, **21 records** for
+  each fresh native/reference replay and four coefficient-domain checks. It
+  preserves actual branch coverage and failures before assertions. Numerical
+  qualification is queued for a later requested round, on CPU6 with a **1-GiB
+  RSS** ceiling and **8-GiB** reserve; the three-phase job must launch detached.
+  Specialist is now preparing the separate native smoothing/refinement boundary.
+
+- **The modern native channel catalog passed 73 reviewed component checks.**
+  Key Dev's
+  [prepared receipt](agent-work/cells-worker-01/workfiles/betse_normal_catalog_join_static_receipt_02.json)
+  covers **55 modern classes**, of which 32 use the existing non-calcium path
+  and 23 route live calcium. The calcium scope explicitly disables the native
+  CaATP/ER handler through caller-declared `alpha_Ca=0`, `Ca_dyn=0`, while
+  preserving its no-op call position and evolving calcium inventories through
+  transport. Zero-weight routes still execute their native calls. Active CaATP,
+  ER/buffer handling and legacy free-calcium sensing remain separate gaps.
+  The **72-check**, ten-group qualification passed
+  [static preflight](/mnt/workspaces/Cells/betse-catalog-preflight-20261030-01/review-04.json).
+  All 55 class identities, 23 calcium routes, 132 source methods and fixed
+  budgets verify. Unexpected constructor/step refusals now retain inputs and
+  partial caches before re-raising. All seven leak clocks and the explicit
+  scalar-bath limitation are recorded. Source AST, hashing and lint do not
+  establish catalog parity. Key Dev is preparing
+  the active calcium-handler component next, starting with its CaATP path.
+  The [catalog qualification launch](/mnt/workspaces/Cells/betse-normal-catalog-tests-20261030-01/launch.json)
+  records **19:28 UTC**, PID **2054975**, CPU1. Its ten prepared groups use one
+  thread, **1-GiB RSS / 8-GiB reserve / 480 seconds per group**, with an estimated
+  **6–12 minutes** total. All outputs are under `/mnt/workspaces/Cells`; the
+  immutable preparation remains retained. No automatic polling is scheduled;
+  a completed worker still requires result review.
+  The requested **19:29 UTC** check found the first calcium-family group had
+  [failed](/mnt/workspaces/Cells/betse-normal-catalog-tests-20261030-01/root-review-01/failure-review.json):
+  **11 passing checks / one failed nominal Cav_G case**. A targeted **-27 mV**
+  input hits BETSE's literal gate equation pole and returns NaN; JSON encoding
+  failed before native Cav_G comparison. Returned nonfinite constructor caches
+  were not archived by the exception-only wrapper. The
+  [reviewed successor preparation](/mnt/workspaces/Cells/betse-catalog-preflight-20261030-01/review-06.json)
+  saves all returns before conversion, retains the original nominal case as a
+  distinct raw-negative test, and adds a separate **-26 mV** positive case.
+  The historical failed positive ID receives no pass credit. **73 checks** are
+  prepared; equations and all budgets remain unchanged.
+  The [73-check successor launch](/mnt/workspaces/Cells/betse-normal-catalog-tests-20261030-02/launch.json)
+  records **19:49 UTC**, PID **2063152**, detached on CPU1. The ten groups retain
+  1-GiB RSS / 8-GiB reserve / 480-second limits; expected total **6–12 minutes**.
+  Prior evidence is preserved, and rechecked cases add no independent case
+  credit. At the requested **19:51 UTC** check, Ca/Cat/Cl groups had completed
+  and the Fun group was active. No terminal result was observed at that check;
+  the following requested check found completion. The
+  [catalog closeout](/mnt/workspaces/Cells/betse-normal-catalog-tests-20261030-02/root-review-01/completion-verification.json)
+  verifies **73 unique passes, 55 modern classes, 70 native captures**
+  (65 positive, five raw), **85 actual-parent calls and 170 fresh conditional
+  references**. Maximum of 4,931 independently recomputed field-budget fractions
+  is **0.00422233**; declared reference-resolution differences are zero.
+  The **130 carried forms remain diagnostics**, without full-trajectory accuracy
+  credit. Worker phases took **377.54 s**, peaking at **181.0 MB RSS**.
+  Twenty nested result receipts omitted by the top-level manifest are separately
+  hashed in the review, with resource records checked against sealed samples.
+  Original failure evidence remains intact. This is scalar-bath component
+  correspondence, not a complete initialized BETSE solver or biological claim.
+  That source audit identified a required representation change: native
+  `Simulator.init_arrays` converts the bath to an **ion-by-membrane ndarray**
+  even without ECM. Assigning `update_Co`'s scalar mean broadcasts into a row.
+  The existing scalar-bath adapters are scoped component representations; their
+  scalar `no_negs` refusal must not be described as failure of initialized BETSE.
+  Key Dev is preparing a separate rectangular-bath CaATP adapter with native
+  row/alias semantics. Older scalar-bath evidence remains unchanged and does
+  not qualify this fuller state representation.
+  The [rectangular-bath CaATP preflight](/mnt/workspaces/Cells/betse-calcium-preflight-20261030-01/REVIEW.json)
+  approved 24 proposed checks, 17 native captures and 78 conditional pre-handler
+  references, with zero independent carried trajectories. Its
+  [first numerical qualification](/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/failure.json)
+  failed all seven active-group tests in **46.45 s** on the second call:
+  the native capture reconstructed `rate_CaATP` from its initial seed instead
+  of carrying the prior masked rate. The other 17 tests did not run. Raw actual,
+  native and reference results remain saved; a narrow native-caller cache repair
+  is being prepared, with no numerical retry this round. Key Dev continues
+  ER/endoretic state and source-order work under a separate prefix.
+  The [CaATP failure review](/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/root-review-01/failure-review.json)
+  confirms that Cells carries the previous cache correctly. Saved outgoing
+  fluxes, physical states, current and voltage match native exactly for both
+  recorded calls; the erroneous native incoming-cache reconstruction causes
+  every failed assertion. Seven first-call conditional comparisons completed
+  with maximum error **0.00113 of budget**. The panel remains **0 passed / 7
+  failed / 17 unrun**, rather than receiving partial qualification credit.
+  The [prepared cache-carry successor](/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json)
+  changes only native-caller cache initialization, passing and continuation.
+  Its [fresh result review](/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json)
+  retains **23 passing checks / one failure**. All **39 pre-handler comparisons
+  and 78 fresh reference forms** pass unchanged local budgets, with maximum
+  fraction **0.001946666**; cache continuation now agrees with native captures.
+  Sixteen native captures completed. The remaining `nan_membrane` helper case
+  failed strict JSON input encoding before native or production execution;
+  its empty input directory and logs are retained without raw-case credit.
+  Total measured phases took **107.25 s**, peaking at **146.4 MB tree RSS**.
+  A [typed-input capture repair](/mnt/workspaces/Cells/betse-calcium-raw-input-repair-prepared-20261030-01/proposal.json)
+  passed [static review](/mnt/workspaces/Cells/betse-calcium-raw-input-repair-prepared-20261030-01/root-review-01/REVIEW.json)
+  and is [applied](/mnt/workspaces/Cells/betse-calcium-raw-input-repair-prepared-20261030-01/root-application.json),
+  then its [four-probe qualification](/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/root-review-01/REVIEW.json)
+  passed with exact input/native/Cells NaN payloads and clipping order retained.
+  **20 unaffected retained IDs plus four fresh raw probes give 24 distinct
+  passing checks**. Three raw IDs are reruns. The native union contains
+  **17 distinct cases** (13 full-call cases and four raw probes), without adding
+  the prior capture count again. The subset took **6.31 s**, peaking at
+  **133.9 MB tree RSS**. Both earlier failed runs remain failed and preserved;
+  the combined declared component is now qualified. Full physical trajectories
+  and complete native parity remain separate.
+
+  The separate [ER component preflight](/mnt/workspaces/Cells/betse-er-preflight-20261030-01/REVIEW.json)
+  approved 18 checks with explicit state ownership and native ordering.
+  Its [first numerical attempt and failure review](/mnt/workspaces/Cells/betse-normal-er-tests-20261030-01/root-review-01/REVIEW.json)
+  failed all **six context checks**, leaving **12 unrun**: the capture wrapper
+  calls the ER constructor before initializing `sim.cdl`, the cell count it
+  needs for ER voltage and charge arrays. Inputs and exception logs are saved;
+  no ER comparison receives pass credit. After the narrow caller-order repair,
+  [successor 02 review](/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json)
+  again failed six context cases, leaving 12 unrun. Its native first call and
+  partial second call are now retained. The literal initializer copies
+  cytosolic ions, then sets ER Ca to 0.2 mM; the inherited fixture's counterions
+  do not balance that change. Native ER voltages reach roughly **116–257 V**,
+  and the following call overflows before the ion update refuses it.
+  All ten ER fields, ordinary state and CaATP caches carry exactly between
+  calls; the review finds no recurrence of the cache-reset defect. Cells
+  advancement and independent comparisons never start in these failed tests.
+  The [initial-state source audit](agent-work/cells-worker-01/workfiles/betse_normal_er_initial_state_audit_01.json)
+  preserves these exact failures and proposes distinct source-derived geometry
+  or explicitly supplied, charge-consistent ER states for conditional update
+  checks. No initialization, restart or full ER qualification follows yet.
+  The [prepared-state design](/mnt/workspaces/Cells/er-initial-state-design-20261030-01/proposal.json)
+  retains native **0.2-mM ER calcium**, adds explicit countercharge and recomputes
+  voltage from the stored concentrations. A stationary-anion allocation control
+  and separate voltage-sign probes prevent one arbitrary counterion choice from
+  receiving broad credit. Key Dev's [supplied-state package](/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-01/inputs.json)
+  passed static preflight, but its [first execution review](/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-01/root-review-01/REVIEW.json)
+  records **six passing refusal checks, six failed context checks and 11 unrun**.
+  JSON retained the numeric values but lost array types: native channel arithmetic
+  concatenated two lists, then voltage multiplication raised `TypeError` on call
+  one. No ER transfer, Cells advance or independent step comparison was reached.
+  The six initial preparation substages passed their saved comparisons
+  (maximum **0.200124 of budget**); they are not six extra test or dynamics passes.
+  Review verifies **2,334 frozen sources, 53 typed archives and 20 runtime
+  inventories**. The [corrected successor](/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json)
+  restores all nine array-valued fields at both new input entry points and keeps
+  capacitance scalar. Equations, initial concentrations, clocks, budgets and old
+  helpers remain unchanged. The next requested round passed independent static
+  preflight and [completed all 23 numerical/software checks](/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/result.json).
+  [Completion review](/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json)
+  accepts the supplied-state scope: **21 native captures**, **83 conditional ER
+  points** including diagnostic histories, **166 step reference forms** and
+  **42 preparation forms**. All ten ER fields and complete inter-call state/cache
+  carry match native execution. Maximum local error is **0.000836 of budget**;
+  ER-transfer conservation residual is at most **5.05e-29 mol**. The six
+  refinement histories cover the same **6 ms** and remain diagnostics, without
+  whole-trajectory accuracy or convergence-order credit. Thirteen neutral
+  declarations include contexts/controls; two ER-only sign probes and numerical
+  refinements are not independent biological cases. Review verifies **2,345
+  frozen files, 4,403 artifacts and 413 typed archives**. Bounded phases took
+  **121.3 s**, with **174 MB** peak tree RSS. Native initialization, full solver
+  trajectories, finite-fuel coupling and GPU remain outside this qualification.
+  Both the input-type failure and distinct literal-initializer failures remain
+  intact.
+
+- **Native network feedback passed 15 reviewed component checks.**
+  The [completion review](/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json)
+  verifies **ten three-call histories**, **11 native captures** including a raw
+  refusal, **30 pre-network comparison points** and **60 fresh conditional
+  Decimal forms**, with zero carried reference trajectories. Saved control,
+  feedback, cache, material, current and voltage arrays match native execution
+  exactly. Maximum model error is **0.00005079 of budget**; the additional
+  standalone comparison reaches **0.00053505**. Reference precisions agree.
+  Review binds **2,990 artifacts**, **2,322 frozen sources**, **107 runtime
+  receipts**, all nested results and the actual native source files. Elapsed
+  time was **91.13 s**, with **263.84 MiB** peak process-tree RSS.
+  This qualifies endogenous control feedback with explicitly empty chemistry.
+  Supplied scheduling/channel inputs are separate controls; `grn_owner` checks
+  an owner-label alias, not native GRN dispatch or dynamics. The native empty
+  molecule/nonempty reaction-stack refusal remains saved. Reaction/growth
+  integration, complete solver parity and biological calibration remain open.
+  The next chemistry/transport package will retain both the physical single-bath
+  inventory defect and the native `M * vol_env` accounting identity. Native
+  no-ECM mixing averages membrane bath updates: that effective identity does not
+  establish physical conservation at the single declared bath volume. Directed
+  gap-junction imbalance is reported separately; equations and volume metadata
+  remain unchanged.
 
 - **Initialization-to-loop handoff passed 19 reviewed CPU checks and five
   separate bundle-containment checks.**
@@ -484,6 +1052,43 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   run, recorded below. No thermal
   evolution, accepted heat law or GPU qualification follows from these stages.
 
+  Root's [separately compiled ionic check](/mnt/workspaces/Cells/physiology-active-temperature-separate-ionic-cpu-20261030-01/root-review-01/REVIEW.json)
+  now passes **one compiled check with two complete worlds**, each retaining
+  all **56 channel laws, 19 derivative fields and 32 physical field columns**.
+  Three reusable executables cover input projection, complete physics and
+  admission checks; the cohort wrapper stays outside JIT. Existing numerical
+  definitions are unchanged. Both complete references were replayed in a
+  production-import-denied process. Maximum rate/potential/field errors are
+  **0.00007153 / 0.00001261 / 0.00108111** of their original budgets.
+  Reordering and partitioning are exact, and invalid temperature remains saved
+  with a rejection while the other world is unchanged. Compilation/execution
+  took **52.77 s**, replay **1.27 s**, with **924.54 MiB peak RSS** under the
+  unchanged **1-GiB** cap. Review verifies frozen sources, runtime and native
+  pins; later unrelated mesh/dependency edits are recorded separately.
+  The original fused failure remains intact. The other four families, complete
+  compiled refusal coverage, accepted stepping and GPU remain unqualified.
+
+  The [separate calcium compilation attempt](/mnt/workspaces/Cells/physiology-active-temperature-separate-calcium-cpu-20261030-01/root-review-01/REVIEW.json)
+  completed input projection, then exceeded the same **1-GiB** cap while
+  compiling complete calcium physics: **1,080,418,304 bytes** after **24.97 s**.
+  No complete compiled case or reference comparison passed. Root has extracted
+  the original ionic prefix and calcium/ER completion into separate calls;
+  all **44 original numerical statements reconstruct exactly**, and other
+  original functions are unchanged. The [four-stage candidate](/mnt/workspaces/Cells/calcium-physics-split-preparation-20261030-02/inputs.json)
+  has [static review](/mnt/workspaces/Cells/calcium-physics-split-preparation-20261030-01/independent-static-review.json)
+  and now a [reviewed numerical pass](/mnt/workspaces/Cells/physiology-active-temperature-split-calcium-cpu-20261030-01/root-review-01/completion-verification.json):
+  **two checks, two distinct complete worlds, four comparison records** across
+  NumPy and compiled execution, with all **56 laws and 32 field columns**.
+  Maximum rate/potential/field budget fractions are
+  **0.003094 / 0.00004881 / 0.004737**. NumPy took **17.52 s**, compilation and
+  execution **119.60 s**, and denied-import replay **3.81 s**. Peak compiled RSS
+  was **1,056,256,000 bytes**, only **1.63% below the unchanged 1-GiB cap**;
+  larger cohorts are not qualified. Candidate, artifacts and pytest runtime
+  inventories are verified. The separate reference process saved its import
+  denial and comparisons but omitted its loaded runtime-file inventory; this
+  provenance limit remains explicit. This closes held-temperature CPU RHS and
+  field evaluation for these worlds, not trajectories, thermal laws or GPU.
+
 - **Combined global control readouts passed 62 reviewed host checks.** The
   [combined view](docs/PHYSIOLOGY_RANDOM_STREAMS.md#combining-temperature-voltage-and-blocker-readouts)
   binds native temperature, voltage, junction and Na/K blockers to the same
@@ -524,9 +1129,26 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   original predicates. Caller-supplied `WorldStages` callbacks are trusted code;
   a family label does not authenticate cached outputs against a world. This
   NumPy qualification cannot establish compiled JAX success, a reduced compiler
-  memory footprint or GPU performance. Native temperature-calendar replay has
-  since completed separately and awaits independent review; this NumPy result
-  adds no accepted thermal evolution or heat law.
+  memory footprint or GPU performance. This NumPy result adds no accepted
+  thermal evolution or heat law.
+
+- **Native temperature-calendar replay passed 82 independently reviewed checks.**
+  The [review receipt](/mnt/workspaces/Cells/betse-temperature-calendar-20261030-01/independent-review.json)
+  verifies **34 complete streams / 192 call rows**, **16 exact restart splits**
+  and three retained refused trials. INIT/SIM event labels remain distinct from
+  physical step duration; live/configured temperature ownership and the frozen
+  fast-solver cache retain their native semantics. Restart reconstructs the
+  original prefix. All **2,405 artifacts**, **2,191 source hashes**, nine native
+  pins, eight live owned files and **714 runtime files** match. The review
+  compares **9,265 saved array pairs**; maximum error is **0.00007613** of budget.
+  Both completed phases assert zero difference between 125- and 170-digit
+  references, but separate full 170-digit buffers were not retained for the
+  independent review to recompute. CPU6 phases took **18.11 s** total, with
+  **202,014,720 bytes** peak HWM. Scope is fixed-material source temperature,
+  clocks, coefficient prefixes and explicit HH/ML recurrence probes. It does
+  not qualify 55 channel trajectories, coupled ionic/thermal evolution or
+  compiled execution. Specialist is now developing the omitted native
+  environment-field/geometry/inverse branch in separate files.
 
 - **Random physical tissue preparation passed 35 verified checks.** The new
   [preparation bridge](docs/PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
@@ -633,6 +1255,37 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The planned comparison covers independent world
   histories, actual packets, full ionic endpoints, cumulative work, isolated
   refusals and durable restart; a passing outcome has not been established.
+
+  The requested **19:15 UTC** check found successor 02 had completed all
+  **79 unique pytest checks** and **12 fresh passive reference forms**, then
+  hit the **480.045-second** ionic replay limit. The
+  [retention review](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-02/root-review-02/REVIEW.json)
+  verifies the full check union, 30 carried histories / 84 endpoints / 108
+  physical intervals and 216 in-process reference integrations. Seven ionic
+  progress rows stay provisional because that worker never completed its
+  final checks. No numerical assertion failed in the timed-out worker.
+  [Continuation 03](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-03/preparation.json)
+  retains all 2,131 scientific files and prior evidence, running only **50
+  unfinished fresh forms** in **24 complete cases at both precisions**, plus
+  two failed-provider forms. Physical histories are not subdivided. CPU7,
+  one thread, 1-GiB RSS and 8-GiB reserve remain fixed; per-case caps are
+  900 seconds for fuel and 480 seconds otherwise. Estimated remaining time
+  is **45–100 minutes**. Both original failures remain preserved.
+  The [continuation launch](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-03/launch.json)
+  records **19:28 UTC**, PID **2054976**, detached on CPU7. Root checked that
+  the independent worker changes only family selection to an exact complete
+  case; equations, comparisons and full histories remain unchanged. Status
+  at **19:51 UTC** found 15 complete fresh units / 30 of the 50 remaining forms,
+  with `fuel-stable-dynamic_off` active. The next requested check found completion
+  at **20:10 UTC**. The [final review](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-03/root-review-01/REVIEW.json)
+  accepts **79 retained checks, zero new pytest checks, and all 62 fresh forms**:
+  60 whole-history comparisons and two failed-provider checks. All 25 new units
+  completed, retaining 2,131 original scientific files. Maximum error fractions
+  are **0.000505** for histories and **0.007302** for failed-provider trials.
+  Continuation took **41.97 minutes**, with **89.7 MB** peak RSS; all original
+  guards held. Source, result and retained-artifact manifests verify. This
+  qualifies the short manufactured CPU histories, tapes and restart behavior;
+  later shared-file changes, broader biological behavior and GPU remain separate.
 
 - **Native blocker calendars passed all 111 scientific checks on frozen
   sources; the final wrapper failure is retained separately.**

@@ -1,0 +1,116 @@
+{
+  "kind": "cells.betse_environment_field_qualification_plan@1",
+  "status": "qualified_and_completion_verified_ready_for_Chief_review",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_environment_field_fixtures.py": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+    "validation/betse/betse_environment_field_checks.py": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+    "validation/betse/betse_environment_field_replay.py": "ffd2461b3b987a6107fffcb55ffe650ad67c38abcc5583929fb7e8e640bdcf2c",
+    "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+    "tests/unit/test_betse_environment_field.py": "9340e2f6958b2fd9c2bb1d6a261d4ab8a18f1a970835a375b1a9c1167fdd6aae"
+  },
+  "source_AST": "passed",
+  "ruff": "passed",
+  "Chief_scope_approved": true,
+  "CPU6_checks_authorized": true,
+  "expected_checks": 46,
+  "expected_complete_cases": 24,
+  "expected_instantaneous_rows": 72,
+  "expected_raw_refusals": 4,
+  "source_native_files": 7,
+  "runner": "/mnt/workspaces/Cells/specialist-runners/betse-environment-field-20261030-02-checks.py",
+  "runner_sha256": "25aefc45f324063384f0b8d9dba9cb25ffee2257efbc3134667b10fe8614e620",
+  "resources": {
+    "cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "tolerances": {
+    "native_host": "Exact values, shapes and dtypes; signed zero is not a physical distinction",
+    "field_current": "3e-13 in named source units + 6e-12*abs(reference)",
+    "voltage": "3e-14 V + 6e-12*abs(reference)",
+    "magnetic": "3e-18 named source units + 6e-12*abs(reference)",
+    "charge_density": "1e-30 named charge units + 6e-12*abs(reference)",
+    "geometry": "64*eps*abs(reference), coordinates 8 ULP, zero exact; integer maps exact",
+    "operator_inverse": "3e-13 named operator units + 6e-12*abs(reference), normalized Penrose/gauge residual <=1e-10",
+    "B23_prefix": "Existing instantaneous 32*eps*(ions+membranes+16)*gross+1e-30; never propagated into environment field budgets",
+    "reference_resolution_fraction": 0.1,
+    "nearest_admission": "Second-minus-first distance >64*eps*max(second distance,delta,tiny); native ties explicitly outside this narrower Cells admission"
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "physical_field_energy_parity": false,
+  "full_refined_buffers_retained": true,
+  "qualification_output": "/mnt/workspaces/Cells/betse-environment-field-20261030-02",
+  "failed_evidence": [
+    {
+      "output": "/mnt/workspaces/Cells/betse-environment-field-20261030-01",
+      "reason": "Test adapter supplied dictionary to B23 evaluate instead of immutable typed inputs; fixed only new environment test adapter"
+    }
+  ],
+  "result_sha256": "834d5b3595ec9337d381e485e14001760f37030058d74fa41e62250c5e29f832",
+  "completion_verification": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+  "completion_verification_sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff",
+  "completion_verifier": "/mnt/workspaces/Cells/specialist-runners/betse-environment-field-20261030-02-verify.py",
+  "measured_results": {
+    "status": "verified",
+    "result_sha256": "834d5b3595ec9337d381e485e14001760f37030058d74fa41e62250c5e29f832",
+    "checks": 46,
+    "complete_cases": 24,
+    "instantaneous_rows": 72,
+    "raw_refusals": 4,
+    "verified_artifacts": 2293,
+    "verified_source_files": 2205,
+    "verified_native_files": 7,
+    "verified_runtime_files": 636,
+    "retained_complete_array_columns": 14352,
+    "retained_field_counts": [
+      136,
+      163
+    ],
+    "maximum_error_fraction": 0.01171875,
+    "maximum_reference_resolution_fraction": 4.0000000000000005e-87,
+    "affinity": [
+      6
+    ],
+    "runtime_packages": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1"
+    },
+    "resource_summary": {
+      "checks": {
+        "elapsed_seconds": 17.878012659959495,
+        "observed_process_high_water_bytes": 202555392,
+        "minimum_available_host_memory_bytes": 21730299904
+      },
+      "native-replay": {
+        "elapsed_seconds": 11.849076430080459,
+        "observed_process_high_water_bytes": 88416256,
+        "minimum_available_host_memory_bytes": 22142590976
+      },
+      "reference-replay": {
+        "elapsed_seconds": 5.056120544904843,
+        "observed_process_high_water_bytes": 42885120,
+        "minimum_available_host_memory_bytes": 20561747968
+      }
+    },
+    "native_and_reference_production_imports_denied": true,
+    "full_refined_buffers_retained": true,
+    "accepted_tissue_steps": false,
+    "physical_field_energy_parity": false,
+    "compiled_JAX": false,
+    "scope": "Instantaneous native environment fields with supplied original geometry/material/old-vm/weight and derived grids/maps/operators/gauges/cache. No evolving solver or physical field-energy claim.",
+    "active_CPU3_4_7_jobs_inspected": false,
+    "new_scientific_experiment_or_reference_rerun": false
+  },
+  "independent_review": "Chief owns independent review and project status; not claimed here",
+  "no_followup_jobs_started": true,
+  "active_jobs_inspected": false
+}

@@ -1,0 +1,190 @@
+{
+  "kind": "cells.betse_image_mask_prelude_source_map@1",
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "captured_sites": {
+    "type_check": {
+      "source": "betse/util/type/types.py",
+      "first_line": 963,
+      "last_line": 964,
+      "ast_sha256": "3bfbdfbf80d99c105b711c15efe9a0d8caaf9a0857f2a0b3dd5a8e657c06968d"
+    },
+    "is_absolute": {
+      "source": "betse/util/path/pathnames.py",
+      "first_line": 289,
+      "last_line": 301,
+      "ast_sha256": "8b979603842e489ef55c39690e213e47cfeeaf5076d6b83c42740b4ee0717e10"
+    },
+    "is_relative": {
+      "source": "betse/util/path/pathnames.py",
+      "first_line": 304,
+      "last_line": 316,
+      "ast_sha256": "041f4fcf534bee52788cef3a4d561b1189e5eddd56de0902993972d856a69cc9"
+    },
+    "die_if_absolute": {
+      "source": "betse/util/path/pathnames.py",
+      "first_line": 32,
+      "last_line": 54,
+      "ast_sha256": "2cb6e423e980cc540664baeb6ab97d4f50e45d42e9f681d885bb608f112e80ab"
+    },
+    "join": {
+      "source": "betse/util/path/pathnames.py",
+      "first_line": 751,
+      "last_line": 793,
+      "ast_sha256": "d1ec45165efed3d02759f53c5f6f009a430355864a380b29553c3cc8ad9a0610"
+    },
+    "get_basename": {
+      "source": "betse/util/path/pathnames.py",
+      "first_line": 453,
+      "last_line": 458,
+      "ast_sha256": "e0e2f646b174066fa77032eaaa872e95c945b25826b67b449b836227c487626f"
+    },
+    "is_file": {
+      "source": "betse/util/path/files.py",
+      "first_line": 131,
+      "last_line": 175,
+      "ast_sha256": "4c15577603de4fa5a43f62f48c70268b3ed6070625eb15da36bab09ea43e65c3"
+    },
+    "die_unless_file": {
+      "source": "betse/util/path/files.py",
+      "first_line": 52,
+      "last_line": 75,
+      "ast_sha256": "591df2732703a193703275d8cb5a3d6c5ab5a19681f7c0803a7d18ca41f3fc96"
+    },
+    "to_signed": {
+      "source": "betse/lib/numpy/nparray.py",
+      "first_line": 193,
+      "last_line": 243,
+      "ast_sha256": "6d63ea6a7f104e2a13b62304e329e56c5ce868a2b2be02f3e8890d2c930ac511"
+    },
+    "load_image": {
+      "source": "betse/lib/pil/pilnumpy.py",
+      "first_line": 111,
+      "last_line": 264,
+      "ast_sha256": "1302713189fba98f63cfb9972d158988553ae3216475375331ae61b5845634d4"
+    },
+    "interp2d_linear": {
+      "source": "betse/util/math/mathinterp.py",
+      "first_line": 27,
+      "last_line": 165,
+      "ast_sha256": "b1a397166da01b9b1bb20de85b817c18afcb3ca4261086a2888968ee2c61e599"
+    },
+    "DTYPE_UNSIGNED_TO_SIGNED": {
+      "source": "betse/lib/numpy/nparray.py",
+      "first_line": 19,
+      "last_line": 23,
+      "ast_sha256": "a7b04f89816efba48d69549c9c72536bc92d33b7e403b16baec0fa8e7307b849"
+    },
+    "ImageModeType": {
+      "source": "betse/lib/pil/pilnumpy.py",
+      "first_line": 53,
+      "last_line": 100,
+      "ast_sha256": "99fe120d51b4926f9776dd5d9db169b00fa4784ae68157f0d532cf47ac9d282c"
+    },
+    "TissuePickerImageMask": {
+      "source": "betse/science/tissue/picker/tispickimage.py",
+      "first_line": 28,
+      "last_line": 224,
+      "ast_sha256": "55af1922d59ff4b10360e3632f7013b3a3d05e6f368854d8311c600ed23ea521"
+    },
+    "TissuePickerImage": {
+      "source": "betse/science/tissue/picker/tispickimage.py",
+      "first_line": 227,
+      "last_line": 314,
+      "ast_sha256": "c0e87c73e62558f1be6fed0e7185ec3819b0260db3dddc897358c02e37f1cbc8"
+    },
+    "make_voronoi": {
+      "source": "betse/science/cells.py",
+      "first_line": 846,
+      "last_line": 961,
+      "ast_sha256": "afe4ede5bcc08ce8582be735fbfbc5ffaa11b72df4b70fa35fb132d1762b4f0b"
+    }
+  },
+  "make_voronoi_calls": [
+    {
+      "line": 895,
+      "call": "DECMesh(cell_radius=phase.p.cell_radius, seed_points=None, use_alpha_shape=False, allow_merging=False, single_cell_noise=0.1, single_cell_sides=6, image_mask=None, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type], center=self.centre)"
+    },
+    {
+      "line": 906,
+      "call": "self.mesh.init_mesh()"
+    },
+    {
+      "line": 913,
+      "call": "DECMesh(cell_radius=None, seed_points=self.clust_xy, alpha_shape=phase.p.alpha_shape, use_centroids=phase.p.use_centroids, use_alpha_shape=True, single_cell_noise=0.5, single_cell_sides=6, image_mask=None, allow_merging=True, merge_thresh=0.2, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type])"
+    },
+    {
+      "line": 926,
+      "call": "self.mesh.init_mesh()"
+    },
+    {
+      "line": 930,
+      "call": "DECMesh(cell_radius=phase.p.cell_radius, seed_points=self.clust_xy, alpha_shape=phase.p.alpha_shape, use_centroids=phase.p.use_centroids, use_alpha_shape=True, single_cell_noise=0.5, single_cell_sides=6, image_mask=None, allow_merging=True, merge_thresh=0.1, close_thresh=0.1, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type])"
+    },
+    {
+      "line": 947,
+      "call": "self.mesh.clip_and_refine(image_mask, smoothing=None, refinement=phase.p.refine_mesh, max_steps=phase.p.maximum_voronoi_steps, convergence=phase.p.voronoi_convergence, fix_bounds=True)"
+    }
+  ],
+  "ordering": [
+    "Native image filename from tissue_default; relative names joined to conf_dirname, absolute names retained",
+    "File bytes decoded through Pillow F conversion and signed-array helper",
+    "Reject non-square decoded image",
+    "bitmap!=255; set mask1; vertical flip",
+    "linspace over lattice extrema already expanded by cell_radius",
+    "Linear RectBivariateSpline(x,y,mask.T,kx1,ky1), lambda result.T",
+    "Fast RectBivariateSpline(x,y,mask) retains distinct orientation and native defaults",
+    "Active flipped pixels become world point cloud; Qhull ConvexHull supplies clipcurve",
+    "Only after complete mask construction choose single_cell/SVG/lattice mesh branch",
+    "All constructors receive image_mask=None; lattice branch later passes same original mask into clip_and_refine",
+    "clip_and_refine performs pre_mesh before clip_to_curve; image must not prefilter initial lattice seeds"
+  ],
+  "ownership": {
+    "file": "Actual file bytes/digest and lexical native filename owned; decoded float32 snapshot immutable; no caller bitmap input",
+    "window": "Only authenticated seed-stage radius-expanded bounds; no caller coordinate-window overrides",
+    "pixels": "Row-major active pixels after flip; IDs map back to original file row m-1-i",
+    "stream": "Prelude forwards complete post-lattice MT stream unchanged; actual single-cell generator draws are beyond boundary",
+    "mask": "Same original image-mask object passed to lattice clip_and_refine; never a bool/threshold substitute"
+  },
+  "normalization": {
+    "type_check": "Authenticated original native type_check AST; future annotations; no arbitrary decorator replacement",
+    "picker_base": "Replace nominal TissuePickerABC with object, preserve exact class body/method AST; class inheritance/import-hook parity excluded",
+    "packages": "Deny native/production imports; supply NumPy/SciPy/Pillow and normalized regular-file path dependencies explicitly",
+    "exceptions": "Named native exception slots bind ValueError in isolated diagnostic",
+    "mesh": "Capture constructor kwargs; return argument-recording stub; stop at init_mesh/clip_and_refine call, no native mesh constructor/method executes",
+    "regular_file_helpers": "Original is_file/die_unless_file AST; nested dirs.is_dir/paths.is_path supplied by os.path.isdir/lexists for one accepted existing regular-file path; no special-file or broken-link claim",
+    "call_boundary": "Explicit normalized path/geometry/control/query validation; native package import-hook validation excluded"
+  },
+  "source_hazards": [
+    "255 is the only inactive grayscale value; docs only-black wording is narrower than code",
+    "No explicit alpha rejection in these bodies; F conversion/decoder determines support",
+    "Linear and fast spline orientations differ; no unverified transpose fix",
+    "Fast default cubic construction can fail for small masks before hull",
+    "Single-cell branch still requires image file/mask/hull first",
+    "Square caller mesh string rect is preserved; it is not relabeled quad",
+    "SVG and subsequent cell-index/polygon/operator work remain outside admitted implementation"
+  ],
+  "ordering_only_sites": {
+    "clip_and_refine": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 189,
+      "last_line": 210,
+      "ast_sha256": "225af14f9752e9db18a008e7374df7e1e4802ab00d651d119d26976d4ff2d150",
+      "executed": false
+    },
+    "clip_to_curve": {
+      "source": "betse/science/math/mesh.py",
+      "first_line": 2290,
+      "last_line": 2372,
+      "ast_sha256": "17c4676d1210813418363ec753ce3878e944410905f239da76039aaffe9258c3",
+      "executed": false
+    }
+  },
+  "independent_query_coverage": {
+    "off_diagonal_pairs": "All16 positive cases use (.23,.71),(.71,.23),(.79,.31),(.31,.79) in addition to existing diagonal/endpoints",
+    "asymmetric_fixture": "One existing asymmetric4 pixel changed; flipped[3,1] is active while flipped[1,3] is inactive; independent response difference asserted",
+    "positive_raw_trials": "Catch ImagePreludeRejected from capture/prepare/export; retain typed arrays/opaque bytes before re-raise",
+    "test_IDs_unchanged": true,
+    "numerical_budgets_unchanged": true,
+    "numerical_execution": false
+  }
+}

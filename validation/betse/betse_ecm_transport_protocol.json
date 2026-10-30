@@ -1,0 +1,108 @@
+{
+  "kind": "cells.betse_ecm_transport_contract@1",
+  "law_id": "betse_ecm_transport_material_source_v1_5_0@1",
+  "purpose": "Actual bounded normal ECM ion/material chronology beyond isolated B08 transport, with explicit pump/gate/field input seams and independent conservative exchange accounting",
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    }
+  },
+  "capture_scope": "Unchanged native reset statements, moving-ion loop, update_gj/update_ecm/update_intra/update_all_concs/electroflux/nernst_planck_flux/update_Co/div_env/no_negs and FD helpers; unchanged derived Cartesian geometry statements; read-only trace copies. Supplied pump/late flux applied separately outside captured source statements.",
+  "source_order": [
+    "reset flux",
+    "supplied post-rho/post-mask pump flux",
+    "per moving ion: membrane flux (pre-boundary environment), fixed gap, ECM boundary clamp/transport, membrane refresh",
+    "supplied late membrane flux after ALL ions",
+    "per moving ion: membrane+ECM exchange, gap bulk-only update, bulk clipping/NaN refusal"
+  ],
+  "supplied": [
+    "Original geometry declaration accepted by separate environment-field binding; no Voronoi generation",
+    "Fixed gap partner/mask/length/weights; no voltage-sensitive gate callback",
+    "Old electric field and flow, runtime T, dt, scalar-per-ion boundary bath, channel multiplier and gap block",
+    "Post-rho/post-boundary-mask pump flux, sampled externally before any per-ion boundary clamp; never rate_NaKATP",
+    "Separate late additive membrane flux; no Ca/network/handler execution or direct material mutations"
+  ],
+  "derived": [
+    "Source field binding geometry/maps/area/divergence cache, axes and constants authenticated from original declaration",
+    "Complete reset/per-ion/deferred material snapshots, raw collocated transport stages and source clipping",
+    "Separate clamp, collocated divergence, smoothing, membrane, gap and clipping amount ledgers",
+    "Independent conservative membrane scatter oracle; slow native exchange conditional balance; fast duplicate-last defect exposed"
+  ],
+  "literal_semantics": [
+    "ECM membrane electroflux samples cc_env before its ion boundary clamp",
+    "electroflux mutates vm by 1e-25 for every moving ion; gap field precedes gap voltage nonce store",
+    "Membrane/ECM use runtime T; gap uses configured p.T",
+    "update_ecm boundary overwrite aliases the existing environment row; grid transport replaces row later",
+    "Native integrator adds N,S,E,W terms sequentially and resets its boundary",
+    "fast_update_ecm assigns duplicate-last flux then multiplies total membrane area per site; slow area-sum scatter",
+    "Membrane refresh precedes deferred commit; membrane buffers precede gap bulk-only update and no_negs clipping",
+    "Only moving ions commit: stationary pump/late stored flux remains uncommitted",
+    "Signed environment/membrane results and clipping matter additions remain visible; source finite guard stricter than native"
+  ],
+  "reference": "Pure stdlib Decimal100/160 independent source chronology, scalar owner/site sums and conservative membrane scatter; both complete rounded buffers retained. Original maps/operators derived independently. Source nonce stores explicitly round to binary64.",
+  "tolerances": {
+    "concentration": "3e-13 mol/m3 + 6e-12*abs(reference)",
+    "flux": "1e-18 mol/(m2*s) + 6e-12*abs(reference)",
+    "voltage": "1e-40 V + 6e-12*abs(reference)",
+    "gap_field": "1e-28 named source units + 6e-12*abs(reference)",
+    "diffusion": "3e-20 m2/s + 6e-12*abs(reference)",
+    "alpha_and_open": "3e-14 named units + 6e-12*abs(reference)",
+    "amount": "3e-14 mol + 6e-12*abs(reference), fixed before runs for bounded manufactured inventory subtraction; no carried propagation",
+    "geometry": "Existing environment field geometry budget; exact map indices",
+    "native_host": "Exact complete values/shapes/dtypes at every observed source stage and environment local",
+    "reference_resolution_fraction": 0.1,
+    "carried_or_propagated_allowance": false,
+    "max_source_calls": 3,
+    "stable_manufactured_grid_steps_m": [
+      1
+    ],
+    "physical_tolerances": "Unchanged; no conservative solver/energy integration"
+  },
+  "resources": {
+    "cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "limitations": [
+    "At most3 bounded source calls with held external seams; no native full solver",
+    "Pump/gate/handler/field feedback/voltage callbacks excluded; no B27/noECM implementation overlap",
+    "B08 conservative face law remains separate/read-only",
+    "No native collocated transport or fast-duplicate conservation inference",
+    "No physical field/material-energy/seed-world/GPU/compiled parity",
+    "Original signed_environment independent-accuracy case remains FAILED in run02 (39/40); separate low_inventory_signed_environment scenario is static preparation only and does not repair/refine/reclassify the original case. No expected-failure conversion to a passing panel."
+  ],
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "known_failed_case": {
+    "case": "signed_environment",
+    "status": "failed_independent_accuracy",
+    "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+    "checks": 40,
+    "passed": 39,
+    "failed": 1,
+    "field": "ledger.membrane_bulk_difference_mol_m3",
+    "maximum_absolute_error": 1.7448660538927198e-12,
+    "error_fraction": 5.816019768552954,
+    "absolute_floor": 3e-13,
+    "relative_budget": 6e-12,
+    "native_exact_comparison_passed_before_failed_assertion": true,
+    "budgets_unchanged": true,
+    "original_case_not_fixed": true,
+    "failed_reference_buffers_retained": false,
+    "failed_actual_native_precomparison_buffers_retained": true
+  },
+  "round_status": "failed; static preparation only; no further numerical launches until next user instruction"
+}

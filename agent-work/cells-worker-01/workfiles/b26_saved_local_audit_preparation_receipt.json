@@ -1,0 +1,38 @@
+{
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "frozen_driver": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/b26-saved-local-audit-prepared-20261030-01/driver.py",
+    "sha256": "b0e6c5fa6b309c53b9a3d03f7ba110b1f72d9e6cf568ba9e2b241dca023f7a1b"
+  },
+  "inputs": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/b26-saved-local-audit-prepared-20261030-01/inputs.json",
+    "sha256": "fd44dd6f763803a43ec9cf644e8234824e6410e8212c1bfbaf2b1118417d3064"
+  },
+  "kind": "cells.b26_saved_local_audit_preparation_receipt@1",
+  "native_reruns": 0,
+  "numerical_imports_during_preparation": 0,
+  "numerical_runs": 0,
+  "original_inputs_sha256": "8e9d7e73c32ae3425b8485de8b2a641e27979d8b2a996052982da2f41fb3fbde",
+  "original_result": {
+    "path": "/mnt/workspaces/Cells/betse-normal-gated-join-tests-20261030-01/result.json",
+    "sha256": "d1f11ecf9293bc33e8dc0bf7c73a1aa2d28c1bfb66d9862b1165ce135b112f5b"
+  },
+  "planned_actual_parent_calls": 36,
+  "planned_fresh_reference_forms": 72,
+  "production_model_reruns": 0,
+  "requires_new_requested_audit_round": true,
+  "saved_files_authenticated": 120,
+  "static_checks": {
+    "AST_parse": "passed",
+    "all_original_source_and_saved_manifest_hashes_verified": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed"
+  },
+  "status": "prepared_for_later_requested_round_not_executed",
+  "working_runner": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/b26_saved_local_audit.py",
+    "sha256": "b0e6c5fa6b309c53b9a3d03f7ba110b1f72d9e6cf568ba9e2b241dca023f7a1b"
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "authority": "Chief independent failure diagnosis and narrow saved-proof repair request",
+  "call0_independent_reference_acceptance": "Chief independent review pending; not evaluated here",
+  "cases": {
+    "active": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "fd6a9fbf814cb6faa947916c7b53f426b72b9191f5827994179cd986becb782d",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "block_ignored": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "fd6a9fbf814cb6faa947916c7b53f426b72b9191f5827994179cd986becb782d",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "channel_coupled": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "fd6a9fbf814cb6faa947916c7b53f426b72b9191f5827994179cd986becb782d",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "closed_mask_rho": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "fd6a9fbf814cb6faa947916c7b53f426b72b9191f5827994179cd986becb782d",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "met_ignored": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "fd6a9fbf814cb6faa947916c7b53f426b72b9191f5827994179cd986becb782d",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "nonuniform_bath": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "c775a68cf323922ed607c4a33fa732619e9d709190d27189e21f6f25608fff5c",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    },
+    "temperature_split": {
+      "model_next_rate_before_carries_previous_rate_exactly": true,
+      "model_previous_masked_rate_matches_native_previous_rate": true,
+      "native_next_rate_before_differs_from_previous_masked_rate": true,
+      "native_next_rate_before_repeats_initial_seed": true,
+      "native_reset_rate_before": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "648e6db8e2d805dc1483867b5065e7a15689151a74b427537b6387463908c3a2",
+        "shape": [
+          9
+        ]
+      },
+      "outer_call_index_zero_based": 1,
+      "previous_masked_rate": {
+        "dtype": "<f8",
+        "raw_payload_sha256": "b8f8a012a743e272b4613b2a6c3c0a762d1d953924366ddb84659e255f2d8334",
+        "shape": [
+          9
+        ]
+      },
+      "scope": "Cache payload bits only; no whole-panel or reference acceptance inference"
+    }
+  },
+  "frozen_prepared_inputs_sha256": "83bfdc30ed948c18d743f778b06fe3b7e3d28e77ff19e91a2257854b4b71ff9f",
+  "kind": "cells.betse_calcium_capture_cache_saved_proof@1",
+  "method": "stdlib JSON/ZIP/NPY-header parsing and exact raw-payload comparisons; no scientific imports, array calculations, simulation or new reference execution",
+  "new_numerical_runs": 0,
+  "old_job_status_polling": false,
+  "scientific_imports": 0,
+  "source_native_before_sha256": "7b8587d6d160127771992686d11da08527fe07b4d0bef8ba02618a5567c4f2a8",
+  "source_run": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01",
+  "source_run_inputs_sha256": "83bfdc30ed948c18d743f778b06fe3b7e3d28e77ff19e91a2257854b4b71ff9f",
+  "verified_archive_files": {
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-0/arrays.npz": "8be8634c23a22600f9af373477e955e5e8872044138ab13eee5382d55dc3b67d",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-0/data.json": "b20e138549aef86080e77be8e90efa60f0f220609ddb8e9db37866f207952978",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-0/manifest.json": "e753da46313b5beff5254734826e455dabadaccd73ec69b24db326f4acf471e6",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-1/arrays.npz": "509abc558ce03e722744bc4f01bf14fb322ae089185535b019852a9e501d5e45",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-1/data.json": "6c5d71e23f8ec25f4263c233bc646efcfbc57ee7100e4c8d9c627906a991d97f",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-active-1/manifest.json": "10e3ad259273357446e886c8365513aecd5eca88153fe9cd66894d799f6ceb7b",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-0/arrays.npz": "b0ff681e65d0f71c064e658cd4ca73a4a7a0609d88b20d64b6c05fdec6c4be7c",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-0/data.json": "065ef843cc324d49c27dac3f6a4f955a31c7463d60f4e9703322646259f8bea6",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-0/manifest.json": "b3188354277cae49865dd168a1cb4c80ad5fcb3a8fc5aec8d6e4c998a7cb638e",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-1/arrays.npz": "3a7a1cb82b4cce3e7d7acc1f93231d85aa3227ffd958571ab9b756332943a762",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-1/data.json": "5b4c090ce422d41c375d82c82bdace00fe4a3e67a5153da9aec8bdbc9ff05cf1",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-block_ignored-1/manifest.json": "b5cf630d0bd639f7b24932369471e4bf414c66d6fc2b6fd617ce612d235c4de9",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-0/arrays.npz": "93f10a02b799c5035022b16e93aaa641d9d1bdd0d1fc1fa4ae6de473024240d3",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-0/data.json": "577d545a5335d66e32a9fdd30637f3782c123b54e99b6a44b182e5a6c293c8f2",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-0/manifest.json": "8c6fa146e1d2ce875ad059eda8b6f27d571ee9be7e568347ec8440629bba4e58",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-1/arrays.npz": "c369e23de7a9dd959df8958f9bc0e7de89601704ab163943e743cefd9a1fe1f3",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-1/data.json": "948862647342ca4a1983116a273e720a1ba2169d8da3b8082b15a861df77fc20",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-channel_coupled-1/manifest.json": "7945ce21b8d779cff6220357cbd8a2a4192162934660b16e9e420f6d867ddccd",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-0/arrays.npz": "ef423eaac1d71c8e2e1906bf498b7a9768e22bd2bde032b799e872ca91f919a6",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-0/data.json": "9abd9892607878e557d67fc88918643300168dc643d72a12db68dccb27e6f25e",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-0/manifest.json": "056ce88efcb0e41990c11bde4e88b115e156e79a7c7155eee6e6932097dcd503",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-1/arrays.npz": "19ebb7cb32941dafcc5839f675eb103183c3f2ff7c3d69ff8a532b71041dabaf",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-1/data.json": "cfda60ad20cf69af967226d3b3333bd2d91528701e8afe2414a6db7765506153",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-closed_mask_rho-1/manifest.json": "d316752f27d28b61d0a69cb49c5a30b1ed309c22bfe8376947366f226ae98e60",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-0/arrays.npz": "4dffd59024c4f6ea259a44604623407c0223ffb59cc9c815b5beb4ad351800d9",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-0/data.json": "69eac805c35cb61f224091ea463fb68c0cf2a80a6dbfc2d4750c9fc7ddef8625",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-0/manifest.json": "083626d8e72b096098762c8fe41d38cab2412e6262a39cc7493581cb2df911f2",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-1/arrays.npz": "ba84d3326413e0b17acd79599a1470e7c11cf6e1d93a84973e48ecd6bfb08ead",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-1/data.json": "42f5c0a4f9bab0553ce309b1024b801a1092840fc943fdfd3bdd2a0ebd425b30",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-met_ignored-1/manifest.json": "1cf5f13380332eea95136223aa3ba0a905b0eb08e6ad2bb1f183828bf1a8b8b3",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-0/arrays.npz": "23a25af024096df23995e9cd98534116cbf274bb31ae0273c7e1069fca911c1f",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-0/data.json": "74152e22c071498503cc030b68828da1ef2789aca3c96fe153bc5b632e2a52fa",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-0/manifest.json": "85889ea4b99363306ad3a17309676b29b5fafbb96b301d469c3424dbdb44f4e1",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-1/arrays.npz": "0bb4d33bed8f8ab25b61b008ff14146ea1b3a099347e89f9adf1b5fff3b76631",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-1/data.json": "a9e04694f95fdb7d55cd4a7758b5ffad1289d05f465f182119ad6f8e202be268",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-nonuniform_bath-1/manifest.json": "6c04aa2ec7d51da9db1a8dd3adca2f496cf0b06c38fd51f4b62f565e427ec451",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-0/arrays.npz": "da6f70c4d3510c1ba6fa35252d4921e62088e27a45827b788596e939cd4cea89",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-0/data.json": "24a76e675029c211554a5d62c522281bebca3de364e376dab84ae6adec0e367e",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-0/manifest.json": "eee6b222b17a335ff14cdd58f33de76d6b5dd888c25b4ce52a220aa91bfa372c",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-1/arrays.npz": "d1b5da5f05dfedb0eaea4c8f9e6467e99997329a4d8e1d44ec9644bba2adf960",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-1/data.json": "47e5d20d8184b3f4b01b2c727d86e2ddf87116b92c48f32466736ba9ac73dd1c",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/actual-temperature_split-1/manifest.json": "d3c1283da34fc4d92b2d0ee29b3176b3aad9b083b6b1e7c753eda559a7171387",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-active/native/arrays.npz": "2d90223d112e375f89fbd03b0f627277c08a26d998437b6dab45b371286b3e48",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-active/native/data.json": "b6255205fba73835507049e40b1e204da15f2c956781b15a8831f121dad91267",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-active/native/manifest.json": "a0b9bf9c719b4106ef3a241b9ee11c71f2f5eec71ceeccf722e1ead87269717b",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-block_ignored/native/arrays.npz": "79f17ea2e12ed720ce06f125bd3bdf07d1e4122bfb4ef436b5c099d58f30860f",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-block_ignored/native/data.json": "17254474ed836a698b3b821225219390c6abb091a3cdefb9b4b3117c906c9b49",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-block_ignored/native/manifest.json": "2e3a94ef806b3b509514ef79107c0f1810850edbb4e5507019c3d9c23d8d680e",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-channel_coupled/native/arrays.npz": "6356a335ac1c142c88b8c7cc4c4c5083f324fdcf49ab1f77804ca597a4f74d8d",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-channel_coupled/native/data.json": "f66c59c7634cb30594e25c62a1526167dd040c8dc52074b1fc84abcc49c16d0a",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-channel_coupled/native/manifest.json": "921b303bd802baa99350c4466fb49010360a36e3932a3f437ae50afbdfbd3b08",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-closed_mask_rho/native/arrays.npz": "f5d6770420538472be64a2f9fbc96768cb77c0561b23c541aa2a1bf9c0b3f25f",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-closed_mask_rho/native/data.json": "e15fc472e121d0354f44ac6c5a757eb0707252df0cb16bac33cb6b5cfa1940f2",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-closed_mask_rho/native/manifest.json": "92cda4538cd5687b123e3e3254a52db648eb05617a4f36f35e5c50205fb812be",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-met_ignored/native/arrays.npz": "6ece726c3ac8b124b3a65ef96a8b66d3e17963616107181acd41d808c88cf27c",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-met_ignored/native/data.json": "63231b6d511cbedd4f7671bcac3b7d08baf8d2d6492b6cfe40d55369020065d2",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-met_ignored/native/manifest.json": "3def8482585b995e43f550e19f7620a536fcdc2db498d2e6acbc5e2b948a2b52",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-nonuniform_bath/native/arrays.npz": "e75141565cc9eb608d8cac430fc864d3d20add611fa44db3c50414008c9d3435",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-nonuniform_bath/native/data.json": "bf4f7690b9d9b007c2bd618990fd747a9646104dcc92b01fe745f83b715b0bb6",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-nonuniform_bath/native/manifest.json": "23de68c38abcd04c41436276c540fab66a919006e9bb81ec90b06896c6a16049",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-temperature_split/native/arrays.npz": "7c9cdff2e8f222d68de563f89c7a276f37692ad5b7882ffb013ff8014245b1af",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-temperature_split/native/data.json": "8935933d1f1af4920ba47ecf30c4c4679809fc2f4b26dd860c86190b5402df93",
+    "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-01/run-active/evidence/normal-calcium-join/isolated-temperature_split/native/manifest.json": "c5d094d68651a430aced927575371ea22f95241a64ea37ad26d946b527081a4e"
+  },
+  "whole_panel_pass_claim": false
+}

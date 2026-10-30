@@ -1,0 +1,160 @@
+{
+  "kind": "cells.betse_ecm_transport_qualification_plan@1",
+  "status": "failed_independent_accuracy_static_preparation_only",
+  "original_panel": {
+    "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+    "checks": 40,
+    "passed": 39,
+    "failed": 1,
+    "accepted": false
+  },
+  "known_failed_case": {
+    "case": "signed_environment",
+    "status": "failed_independent_accuracy",
+    "field": "ledger.membrane_bulk_difference_mol_m3",
+    "maximum_absolute_error": 1.7448660538927198e-12,
+    "fixed_budget_error_fraction": 5.816019768552954,
+    "absolute_floor": 3e-13,
+    "relative_budget": 6e-12,
+    "diagnosis": "Large nearly equal membrane/cell values from supplied pump5e5 lose accuracy when subtracted. Whole concentrations can satisfy relative tolerance while the small derived difference exceeds its fixed absolute floor. Diagnosis recorded from existing failure, no additional numerical audit.",
+    "original_case_and_panel_remain_failed": true,
+    "budgets_unchanged": true,
+    "native_exact_assertion_passed_before_failed_independent_assertion": true,
+    "independent_review_of_saved_evidence": "Pending next user instruction"
+  },
+  "failed_round_receipt": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+  "failed_round_receipt_sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5",
+  "failed_runs": [
+    {
+      "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-01",
+      "status": "failed",
+      "reported_tests": {
+        "total": 40,
+        "failed": 18,
+        "passed": 22,
+        "failed_ids": [
+          "test_complete_native_and_independent_ecm_history[slow]",
+          "test_complete_native_and_independent_ecm_history[fast_duplicate]",
+          "test_complete_native_and_independent_ecm_history[fast_equal_flux]",
+          "test_complete_native_and_independent_ecm_history[open]",
+          "test_complete_native_and_independent_ecm_history[flow]",
+          "test_complete_native_and_independent_ecm_history[smoothed]",
+          "test_complete_native_and_independent_ecm_history[temperature_split]",
+          "test_complete_native_and_independent_ecm_history[moving_reversed]",
+          "test_complete_native_and_independent_ecm_history[stationary_pump_role]",
+          "test_complete_native_and_independent_ecm_history[neutral_nonce]",
+          "test_complete_native_and_independent_ecm_history[zero_transport]",
+          "test_complete_native_and_independent_ecm_history[signed_environment]",
+          "test_complete_native_and_independent_ecm_history[bulk_clipping]",
+          "test_complete_native_and_independent_ecm_history[membrane_lag]",
+          "test_complete_native_and_independent_ecm_history[rectangular]",
+          "test_complete_native_and_independent_ecm_history[permuted]",
+          "test_raw_failed_source_arrays_are_retained_without_parent_commit[electroflux_overflow]",
+          "test_raw_failed_source_arrays_are_retained_without_parent_commit[environment_overflow]"
+        ]
+      }
+    },
+    {
+      "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+      "status": "failed",
+      "reported_tests": {
+        "total": 40,
+        "failed": 1,
+        "passed": 39,
+        "failed_ids": [
+          "test_complete_native_and_independent_ecm_history[signed_environment]"
+        ]
+      }
+    },
+    {
+      "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-03",
+      "status": "cancelled_launch_race",
+      "reported_tests": null
+    }
+  ],
+  "owned_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_replay.py": "882f62542dc6783fff0988567072f4265aca75c41018dd4fdb03d42f2c2163ea",
+    "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+    "tests/unit/test_betse_ecm_transport.py": "aad1bca7e19f81830222eee1315aa07e69f5505ebbc049110aa726935b2a8304"
+  },
+  "failed02_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_ecm_transport_fixtures.py": "94e0b7cdb58b056eb4c3b063cbbf6c718ebe83a44f84254b109bf58d29d4b20b",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_replay.py": "3f69bd430e8ef7b27c79a68cf94a6c4f024cb506d332b2cce7270cbc9705b39c",
+    "validation/betse/betse_ecm_transport_protocol.json": "8561bf87e939b519af899a50b55349e51433b9a1fa62e112ff84a037749293b0",
+    "tests/unit/test_betse_ecm_transport.py": "23fd195d779af9e1b28c40336b12a708885d782f0c22a6bdc466997e50c2a2e4"
+  },
+  "source_AST": "passed",
+  "ruff": "passed",
+  "Chief_assigned_scope": true,
+  "resources": {
+    "cpu": 6,
+    "threads": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592
+  },
+  "tolerances": {
+    "concentration": "3e-13 mol/m3 + 6e-12*abs(reference)",
+    "flux": "1e-18 mol/(m2*s) + 6e-12*abs(reference)",
+    "voltage": "1e-40 V + 6e-12*abs(reference)",
+    "gap_field": "1e-28 named source units + 6e-12*abs(reference)",
+    "diffusion": "3e-20 m2/s + 6e-12*abs(reference)",
+    "alpha_and_open": "3e-14 named units + 6e-12*abs(reference)",
+    "amount": "3e-14 mol + 6e-12*abs(reference), fixed before runs for bounded manufactured inventory subtraction; no carried propagation",
+    "geometry": "Existing environment field geometry budget; exact map indices",
+    "native_host": "Exact complete values/shapes/dtypes at every observed source stage and environment local",
+    "reference_resolution_fraction": 0.1,
+    "carried_or_propagated_allowance": false,
+    "max_source_calls": 3,
+    "stable_manufactured_grid_steps_m": [
+      1
+    ],
+    "physical_tolerances": "Unchanged; no conservative solver/energy integration"
+  },
+  "prepared_additional_case": {
+    "case": "low_inventory_signed_environment",
+    "initial_and_boundary_mol_m3": 0.0001,
+    "supplied_pump_flux_mol_m2_s": 10.0,
+    "status": "static_preparation_only_no_completed_run",
+    "separate_coverage": true,
+    "repairs_or_refines_original_case": false,
+    "expected_failure_green_path_removed": true
+  },
+  "prepared_panel": {
+    "checks": 41,
+    "cases": 18,
+    "source_calls": 48,
+    "complete_snapshots": 1248,
+    "environment_records": 132,
+    "raw_refusals": 2,
+    "status": "unexecuted; original unresolved accuracy failure remains a failing assertion"
+  },
+  "prepared_reference_capture": {
+    "full100_and160_buffers_saved_before_assertions": true,
+    "status": "static_only"
+  },
+  "failed02_complete_reference_buffers_retained": false,
+  "last_launched_runner": "/mnt/workspaces/Cells/specialist-runners/betse-ecm-transport-20261030-03-checks.py",
+  "runner": null,
+  "runner_launch_authorized": false,
+  "further_numerical_launches_require_next_user_instruction": true,
+  "saved02_review": "Root will review on next requested round; no further numerical audit this round",
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "carried_error_allowance": false,
+  "accepted_qualification": false,
+  "physical_material_or_energy_parity": false,
+  "other_jobs_inspected": false,
+  "raw_failed_states_preserved": true,
+  "original_case_not_converted_to_expected_pass": true
+}

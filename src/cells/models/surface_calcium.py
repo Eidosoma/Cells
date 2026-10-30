@@ -352,11 +352,29 @@ class Values(NamedTuple):
     valid: object
 
 
-def readouts(state, control, p, *, xp=jnp):
+class IonicStage(NamedTuple):
+    """Complete ionic prefix and its calcium-aware layout, with no time advance."""
+
+    layout: object
+    readouts: object
+
+
+def ionic_stage(state, control, p, *, xp=jnp):
+    """Evaluate the original ionic prefix separately from calcium/ER completion."""
     from cells.core.schedule import SurfaceKineticControl
 
     view = ionic_layout(state, p, xp=xp)
     prior = kinetic.readouts(ionic_state(state), SurfaceKineticControl(*control[:4]), view, xp=xp)
+    return IonicStage(view, prior)
+
+
+def complete_ionic_stage(state, control, p, ionic, *, xp=jnp):
+    """Finish the same state's calcium/ER readout using its complete ionic prefix.
+
+    The caller must retain the original state, control and layout across these
+    stages. This is an execution boundary, not a physical update or checkpoint.
+    """
+    view, prior = ionic
     v, r = prior.field, prior.field.rates
     ci = xp.where(p.active, view.cytosol_amount / p.volume, 1.0)
     co = xp.where(
@@ -506,6 +524,12 @@ def readouts(state, control, p, *, xp=jnp):
     )
     return Values(
         v, result, ip3_c, fraction, xp.stack(er_v), targets, tau, xp.stack((gp, gx)), valid
+    )
+
+
+def readouts(state, control, p, *, xp=jnp):
+    return complete_ionic_stage(
+        state, control, p, ionic_stage(state, control, p, xp=xp), xp=xp
     )
 
 

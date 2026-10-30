@@ -9,18 +9,23 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from time import perf_counter
+from types import SimpleNamespace
 
 import jax
 import numpy as np
 import pytest
 
 from cells.core import runner
+from cells.core.grid import EventGrid
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
+from cells.core.windows import WindowPolicy, iter_windows, merge_diagnostics
 from cells.io import load_snapshot, write_snapshot
 from cells.models import surface_cotransport_water as model
 from cells.numerics.fixed_step import rk4_checked_step
+from validation.tissue import cotransport_material_coordinates as material
 from validation.tissue import surface_cotransport_water_reference as reference
 from validation.tissue import surface_cotransport_water_response as panel
 
@@ -54,7 +59,7 @@ def worker_identity():
     return dict(pid=os.getpid(), process_start_ticks=int(fields[19]))
 
 
-def run_captured(spec, name, monkeypatch, *, checkpoint=None):
+def run_captured(spec, name, monkeypatch, *, checkpoint=None, window_steps=None):
     """Save the complete proposed history before the unchanged acceptance checks.
 
     The ordinary runner remains authoritative. This test-local observation hook
@@ -62,10 +67,14 @@ def run_captured(spec, name, monkeypatch, *, checkpoint=None):
     Domain rejection before history analysis retains its original exception.
     """
     original = runner._analyse_segment
+    window_index = 0
 
     def capture(spec, parent, times, arrays, final_state, layout, requested):
+        nonlocal window_index
+        label = name if window_steps is None else f"{name}-window-{window_index:06d}"
+        window_index += 1
         write(
-            name + "-proposed-history",
+            label + "-proposed-history",
             dict(
                 status="proposed_not_yet_accepted",
                 inputs=spec.to_dict(),
@@ -84,24 +93,81 @@ def run_captured(spec, name, monkeypatch, *, checkpoint=None):
             ),
         )
         try:
-            return original(spec, parent, times, arrays, final_state, layout, requested)
+            value = original(spec, parent, times, arrays, final_state, layout, requested)
         except Exception as error:
             write(
-                name + "-rejection",
+                label + "-rejection",
                 dict(
                     status="rejected",
                     error_type=type(error).__name__,
                     error=str(error),
-                    proposed_history=name + "-proposed-history.npz",
+                    proposed_history=label + "-proposed-history.npz",
                     accepted_result_returned=False,
                     automatic_retry=False,
                 ),
             )
             raise
+        if window_steps is not None:
+            write(
+                label + "-acceptance",
+                dict(
+                    status="accepted_by_original_checks",
+                    start_time_s=float(times[0]),
+                    end_time_s=float(times[-1]),
+                    diagnostics=value[-1],
+                    proposed_history=label + "-proposed-history.npz",
+                ),
+            )
+        return value
 
     with monkeypatch.context() as patch:
         patch.setattr(runner, "_analyse_segment", capture)
-        return run(spec, checkpoint=checkpoint)
+        if window_steps is None:
+            return run(spec, checkpoint=checkpoint)
+        # Bound the extra host history/assembly separately from the ordinary
+        # window working storage. The process guard still covers total memory.
+        state, _ = model.initial_values(spec)
+        rows = len(EventGrid(spec))
+        host_estimate = 3 * rows * (8 + sum(np.asarray(v).nbytes for v in state))
+        if host_estimate > spec.execution.max_trace_bytes:
+            raise ValueError("Complete host history exceeds the response capture budget")
+        parts = list(iter_windows(spec, WindowPolicy(window_steps, "full"), checkpoint))
+    merge_started = perf_counter()
+    times = np.concatenate([p.times[int(i > 0) :] for i, p in enumerate(parts)])
+    history = model.STATE_TYPE(
+        *(
+            np.concatenate([getattr(p.history, field)[int(i > 0) :] for i, p in enumerate(parts)])
+            for field in model.STATE_TYPE._fields
+        )
+    )
+    observations = SimpleNamespace(
+        **{
+            field: np.concatenate([getattr(p.observations, field) for p in parts])
+            for field in vars(parts[0].observations)
+        }
+    )
+    requested = np.asarray(spec.experiment.observation_times)
+    np.testing.assert_array_equal(observations.times, requested[requested >= times[0]])
+    diagnostics, timings = {}, {}
+    for part in parts:
+        merge_diagnostics(diagnostics, part.diagnostics)
+        for key, value in part.timings.items():
+            timings[key] = timings.get(key, 0.0) + value
+    # This also covers monotonic ledgers across all concatenated windows.
+    merge_diagnostics(diagnostics, model.check_values(history, spec))
+    timings["capture_merge_and_full_check_seconds"] = perf_counter() - merge_started
+    for value in (times, *history, *vars(observations).values()):
+        value.setflags(write=False)
+    return runner.RunResult(
+        spec,
+        parts[-1].final,
+        parts[0].start_step,
+        times,
+        history,
+        observations,
+        timings,
+        diagnostics,
+    )
 
 
 def field_errors(c, actual, expected):
@@ -111,7 +177,24 @@ def field_errors(c, actual, expected):
     }
 
 
-def score(c, actual, expected, *, atol=2e-11, charge_atol=3e-25, rtol=3e-9):
+def state_comparison(c, actual, expected, *, times=None, atol=2e-11, charge_atol=3e-25, rtol=3e-9):
+    """Describe every field before enforcing the original fixed error budgets.
+
+    A completed comparison can still fail qualification. Empty physical fields
+    are recorded explicitly; mismatched shapes never receive broadcasting credit.
+    """
+    actual, expected = np.asarray(actual), np.asarray(expected)
+    width = sum(int(np.prod(shape)) for shape in c["shapes"].values())
+    if actual.shape != expected.shape or actual.ndim not in (1, 2) or actual.shape[-1] != width:
+        raise ValueError("Require matching complete flat states or observation histories")
+    if times is not None:
+        times = np.asarray(times)
+        if actual.ndim != 2 or times.shape != actual.shape[:1] or not np.isfinite(times).all():
+            raise ValueError("Comparison times must match the complete observation axis")
+    if not (
+        np.isfinite([atol, charge_atol, rtol]).all() and min(atol, charge_atol) > 0 and rtol >= 0
+    ):
+        raise ValueError("Require finite positive absolute budgets and nonnegative relative budget")
     absolute = reference.flatten(
         c,
         {
@@ -119,9 +202,61 @@ def score(c, actual, expected, *, atol=2e-11, charge_atol=3e-25, rtol=3e-9):
             for k, shape in c["shapes"].items()
         },
     )
-    ratios = np.abs(actual - expected) / (absolute + rtol * np.abs(expected))
-    assert np.isfinite(ratios).all()
-    result = float(np.max(ratios, initial=0))
+    with np.errstate(over="ignore", invalid="ignore"):
+        errors = np.abs(actual - expected)
+        budgets = absolute + rtol * np.abs(expected)
+        ratios = errors / budgets
+    fields = {}
+    arrays = [reference.unpack(c, value) for value in (actual, expected, errors, budgets, ratios)]
+    for name in c["shapes"]:
+        a, e, error, budget, ratio = (value[name] for value in arrays)
+        finite = bool(all(np.isfinite(value).all() for value in (a, e, error, budget, ratio)))
+        field = dict(
+            shape=list(a.shape),
+            compared_values=int(a.size),
+            finite=finite,
+            max_error_over_budget=float(np.max(ratio, initial=0)) if finite else None,
+            violating_values=int(np.count_nonzero((ratio > 1) | ~np.isfinite(ratio))),
+            worst=None,
+        )
+        if a.size and finite:
+            index = tuple(int(i) for i in np.unravel_index(np.argmax(ratio), ratio.shape))
+            field["worst"] = dict(
+                index=list(index),
+                time_s=None if times is None else float(times[index[0]]),
+                actual=float(a[index]),
+                expected=float(e[index]),
+                absolute_error=float(error[index]),
+                budget=float(budget[index]),
+                error_over_budget=float(ratio[index]),
+            )
+        fields[name] = field
+    finite = all(field["finite"] for field in fields.values())
+    maximum = float(np.max(ratios, initial=0)) if finite else None
+    failed = [
+        name for name, field in fields.items() if not field["finite"] or field["violating_values"]
+    ]
+    return dict(
+        status="passed" if not failed else "failed",
+        finite=finite,
+        max_error_over_budget=maximum,
+        failed_fields=failed,
+        budgets=dict(atol=atol, charge_atol=charge_atol, rtol=rtol),
+        fields=fields,
+        scope="Fixed-budget state comparison only; no complete trajectory qualification",
+    )
+
+
+def score(
+    c, actual, expected, *, times=None, evidence_name=None, atol=2e-11, charge_atol=3e-25, rtol=3e-9
+):
+    comparison = state_comparison(
+        c, actual, expected, times=times, atol=atol, charge_atol=charge_atol, rtol=rtol
+    )
+    if evidence_name is not None:
+        write(evidence_name, comparison)
+    assert comparison["finite"], comparison["failed_fields"]
+    result = comparison["max_error_over_budget"]
     assert result <= 1, result
     return result
 
@@ -217,15 +352,28 @@ def test_compiled_empty_channel_step_and_strict_rejection():
     )
 
 
-@pytest.mark.parametrize("arm", panel.ARMS)
-def test_complete_response_against_independent_reference(arm, monkeypatch):
+def qualify_complete_response(
+    arm,
+    raw,
+    monkeypatch,
+    *,
+    window_steps=None,
+    expected=None,
+    reference_coordinates="global",
+    reference_material_coordinates="full",
+    local_stop_time_s=None,
+):
     assert jax.default_backend() == "cpu" and jax.config.x64_enabled
-    raw = panel.definition(arm)
+    assert reference_coordinates == "global" or expected is not None
+    assert reference_material_coordinates in ("full", "transport_ledgers")
+    assert reference_material_coordinates == "full" or expected is not None
     write(
         "response-trajectory-" + arm,
         dict(status="running", inputs=raw, duration=panel.duration_inputs(raw)),
     )
-    value = run_captured(parse_spec(raw), "response-trajectory-" + arm, monkeypatch)
+    value = run_captured(
+        parse_spec(raw), "response-trajectory-" + arm, monkeypatch, window_steps=window_steps
+    )
     observations = vars(value.observations)
     c = reference.bind(raw)
     actual = reference.flatten(c, observations)
@@ -239,6 +387,10 @@ def test_complete_response_against_independent_reference(arm, monkeypatch):
         complete_fields=list(model.STATE_TYPE._fields),
         accepted_steps=len(value.times) - 1,
         worker=worker_identity(),
+        window_steps=window_steps,
+        reference_coordinates=reference_coordinates,
+        reference_material_coordinates=reference_material_coordinates,
+        local_refinement_stop_time_s=local_stop_time_s,
         scope="Closed manufactured response; no source trajectory or biological fit",
     )
     write(
@@ -257,9 +409,17 @@ def test_complete_response_against_independent_reference(arm, monkeypatch):
     if arm == "supply_recovery":
         checkpoint = value.checkpoint_at(panel.INTERVENTION_TIME)
         write_snapshot(root() / "response-restart", value.spec, checkpoint)
-    expected = independent(arm, raw)
+    if expected is None:
+        expected = independent(arm, raw)
     try:
-        report["max_error_over_budget"] = score(c, actual, expected["state"])
+        report["state_comparison"] = "response-state-comparison-" + arm + ".json"
+        report["max_error_over_budget"] = score(
+            c,
+            actual,
+            expected["state"],
+            times=observations["times"],
+            evidence_name="response-state-comparison-" + arm,
+        )
         np.testing.assert_allclose(phi, expected["potential_V"], atol=2e-8, rtol=3e-9)
         assert value.diagnostics["max_energy_balance_error_pJ"] <= 2e-8
         assert value.diagnostics["max_pool_internal_transfer_error_pJ"] <= 2e-8
@@ -279,23 +439,57 @@ def test_complete_response_against_independent_reference(arm, monkeypatch):
     write("response-trajectory-" + arm, report | dict(status="passed"))
 
 
-def test_recovery_refinement_and_reference_stability(monkeypatch):
+@pytest.mark.parametrize("arm", panel.ARMS)
+def test_complete_response_against_independent_reference(arm, monkeypatch):
+    qualify_complete_response(arm, panel.definition(arm), monkeypatch)
+
+
+def qualify_recovery_refinement(monkeypatch, *, tighter=None, local_stop_time_s=None):
     arm = "supply_recovery"
     first, arrays = saved("response-trajectory-" + arm)
     assert first["status"] == "passed"
     raw, coarse = first["inputs"], arrays["state"]
+    stored_stop = first.get("local_refinement_stop_time_s")
+    if stored_stop is not None:
+        assert local_stop_time_s is None or local_stop_time_s == stored_stop
+        local_stop_time_s = stored_stop
     c = reference.bind(raw)
     _, reference1 = saved("response-reference-" + arm + "-r1")
-    tighter = independent(arm, raw, refinement=2)
+    if tighter is None:
+        assert first.get("reference_coordinates", "global") == "global"
+        tighter = independent(arm, raw, refinement=2)
     stability = score(
-        c, reference1["state"], tighter["state"], atol=3e-14, charge_atol=3e-28, rtol=3e-11
+        c,
+        reference1["state"],
+        tighter["state"],
+        times=raw["experiment"]["observation_times"],
+        evidence_name="response-reference-stability",
+        atol=3e-14,
+        charge_atol=3e-28,
+        rtol=3e-11,
     )
     errors = [field_errors(c, coarse, tighter["state"])]
     scores = [score(c, coarse, tighter["state"])]
     for factor in (2, 4):
-        refined_raw = panel.definition(arm, dt=panel.DT / factor)
-        value = run_captured(parse_spec(refined_raw), f"response-refined-r{factor}", monkeypatch)
+        local = raw["execution"].get("refinement_times", [])
+        stop = 20001 * panel.DT if local_stop_time_s is None else local_stop_time_s
+        refined_raw = (
+            panel.refined_recovery_definition(
+                [panel.INTERVENTION_TIME, *local, stop], factor=factor, stop_time_s=stop
+            )
+            if local
+            else panel.definition(arm, dt=panel.DT / factor)
+        )
+        value = run_captured(
+            parse_spec(refined_raw),
+            f"response-refined-r{factor}",
+            monkeypatch,
+            window_steps=first.get("window_steps"),
+        )
         actual = reference.flatten(c, vars(value.observations))
+        phi = np.c_[
+            value.observations.cell_potential_V, value.observations.extracellular_potential_V
+        ]
         write(
             f"response-refined-r{factor}",
             dict(
@@ -304,10 +498,24 @@ def test_recovery_refinement_and_reference_stability(monkeypatch):
                 diagnostics=value.diagnostics,
                 timings=value.timings,
             ),
-            dict(state=actual, signed_error=actual - tighter["state"]),
+            dict(state=actual, potential_V=phi, signed_error=actual - tighter["state"]),
+        )
+        write(
+            f"response-refined-history-r{factor}",
+            dict(status="captured", complete_fields=31, inputs=refined_raw),
+            dict(accepted_times=value.times, **value.history._asdict()),
         )
         errors.append(field_errors(c, actual, tighter["state"]))
-        scores.append(score(c, actual, tighter["state"]))
+        scores.append(
+            score(
+                c,
+                actual,
+                tighter["state"],
+                times=value.observations.times,
+                evidence_name=f"response-refined-r{factor}-state-comparison",
+            )
+        )
+        np.testing.assert_allclose(phi, tighter["potential_V"], atol=2e-8, rtol=3e-9)
     report = dict(
         status="captured",
         steps_s=[panel.DT / f for f in (1, 2, 4)],
@@ -328,6 +536,117 @@ def test_recovery_refinement_and_reference_stability(monkeypatch):
             errors,
         )
     write("response-refinement", report | dict(status="passed"))
+
+
+def test_recovery_refinement_and_reference_stability(monkeypatch):
+    qualify_recovery_refinement(monkeypatch)
+
+
+def admit_reference_material_coordinates(context, report, arrays, declared):
+    """Check saved coordinate identity without altering or accepting a trajectory.
+
+    Legacy full-coordinate receipts remain readable. A reduced reference must
+    explicitly declare its solver dimension and charge source and retain its
+    original start. All complete states must exactly decode from their saved
+    ledgers. Accuracy, physical domain and refinement gates remain separate.
+    """
+    if declared not in ("full", "transport_ledgers"):
+        raise ValueError("Unknown declared reference material coordinates")
+    if report.get("material_coordinates", "full") != declared:
+        raise ValueError("Saved reference material coordinates differ from the declaration")
+    initial = reference.initial(context)
+    codec = material.bind(context) if declared == "transport_ledgers" else None
+    expected = dict(
+        integrated_scalar_count=initial.size if codec is None else codec.size,
+        complete_scalar_count=initial.size,
+        derived_fields=[] if codec is None else list(material.BULK_FIELDS),
+        field_charge_source="bulk_increments"
+        if codec is None
+        else "electrogenic_transport_ledgers",
+    )
+    for name, value in expected.items():
+        if (codec is not None or name in report) and report.get(name) != value:
+            raise ValueError("Invalid reference material metadata: " + name)
+    if codec is not None:
+        if report.get("fresh_original_start") is not True:
+            raise ValueError("Transport-ledger references require a fresh original start")
+        np.testing.assert_array_equal(arrays["initial_state"], initial)
+        np.testing.assert_array_equal(arrays["state"][0], initial)
+        np.testing.assert_array_equal(arrays["final_state"], arrays["state"][-1])
+        for state in (arrays["initial_state"], arrays["final_state"], *arrays["state"]):
+            codec.pack(state)  # Refuse an inconsistent state; never repair it.
+
+
+def declared_recovery_reference(refinement):
+    declaration = json.loads(Path(os.environ["CELLS_RECOVERY_GRID_INPUTS"]).read_text())
+    raw = panel.refined_recovery_definition(
+        declaration["local_times_s"], stop_time_s=declaration.get("local_stop_time_s")
+    )
+    report, arrays = saved(f"response-reference-supply_recovery-r{refinement}")
+    assert report["status"] == "passed" and report["inputs"] == raw
+    assert report["segment_coordinates"] == "local_delta"
+    assert report["production_imports_denied"] is True
+    assert report["refinement"] == refinement
+    scale = declaration.get("reference_tolerance_scale", 1.0)
+    assert report.get("tolerance_scale", 1.0) == scale
+    assert report["rtol"] == (2e-11 / refinement) * scale
+    assert report["amount_volume_energy_atol"] == (2e-14 / refinement) * scale
+    assert report["electrode_charge_atol_C"] == (1e-29 / refinement) * scale
+    np.testing.assert_array_equal(report["times"], raw["experiment"]["observation_times"])
+    count = len(raw["experiment"]["observation_times"])
+    context = reference.bind(raw)
+    assert arrays["state"].shape == (count, reference.initial(context).size)
+    assert arrays["potential_V"].shape == (count, len(context["vi"]) + len(context["vo"]))
+    assert np.isfinite(arrays["state"]).all() and np.isfinite(arrays["potential_V"]).all()
+    admit_reference_material_coordinates(
+        context, report, arrays, declaration.get("reference_material_coordinates", "full")
+    )
+    return raw, arrays
+
+
+def test_full_recovery_with_declared_local_resolution(monkeypatch):
+    """A fresh full trajectory; the local diagnostic parent is never loaded."""
+    raw, expected = declared_recovery_reference(1)
+    tighter_raw, tighter = declared_recovery_reference(2)
+    assert raw == tighter_raw
+    # Reference completion alone does not establish accuracy. Check the same
+    # strict stability budget before spending time on a production trajectory.
+    score(
+        reference.bind(raw),
+        expected["state"],
+        tighter["state"],
+        times=raw["experiment"]["observation_times"],
+        evidence_name="response-reference-stability-before-trajectory",
+        atol=3e-14,
+        charge_atol=3e-28,
+        rtol=3e-11,
+    )
+    declaration = json.loads(Path(os.environ["CELLS_RECOVERY_GRID_INPUTS"]).read_text())
+    qualify_complete_response(
+        "supply_recovery",
+        raw,
+        monkeypatch,
+        window_steps=256,
+        expected=expected,
+        reference_coordinates="local_delta",
+        reference_material_coordinates=declaration.get("reference_material_coordinates", "full"),
+        local_stop_time_s=declaration.get("local_stop_time_s"),
+    )
+
+
+def test_declared_recovery_refinement_against_fresh_references(monkeypatch):
+    raw, _ = declared_recovery_reference(1)
+    refined_raw, tighter = declared_recovery_reference(2)
+    baseline, _ = saved("response-trajectory-supply_recovery")
+    assert raw == refined_raw == baseline["inputs"]
+    assert baseline["reference_coordinates"] == "local_delta" and baseline["window_steps"] == 256
+    declaration = json.loads(Path(os.environ["CELLS_RECOVERY_GRID_INPUTS"]).read_text())
+    assert baseline.get("reference_material_coordinates", "full") == declaration.get(
+        "reference_material_coordinates", "full"
+    )
+    qualify_recovery_refinement(
+        monkeypatch, tighter=tighter, local_stop_time_s=declaration.get("local_stop_time_s")
+    )
 
 
 def test_paired_response_controls_and_physical_effects():
@@ -389,7 +708,13 @@ def test_complete_disk_restart_in_fresh_worker(monkeypatch):
     consumer = worker_identity()
     assert producer["worker"] != consumer
     loaded = load_snapshot(root() / "response-restart")
-    value = run_captured(loaded.spec, "response-restart", monkeypatch, checkpoint=loaded.checkpoint)
+    value = run_captured(
+        loaded.spec,
+        "response-restart",
+        monkeypatch,
+        checkpoint=loaded.checkpoint,
+        window_steps=producer.get("window_steps"),
+    )
     expected = load_snapshot(root() / "response-final-supply_recovery")
     write(
         "response-restart-result",
@@ -412,6 +737,10 @@ def test_complete_disk_restart_in_fresh_worker(monkeypatch):
     np.testing.assert_array_equal(full["accepted_times"][index:], value.times)
     for name, field in value.history._asdict().items():
         np.testing.assert_array_equal(full[name][index:], field)
+    _, full_observations = saved("response-trajectory-supply_recovery")
+    keep = full_observations["observed_times"] >= loaded.checkpoint.time
+    for name, field in vars(value.observations).items():
+        np.testing.assert_array_equal(full_observations["observed_" + name][keep], field)
     clock = (value.final.time, value.final.step_index, value.final.event_index)
     assert clock == (
         expected.checkpoint.time,

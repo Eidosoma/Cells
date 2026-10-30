@@ -112,7 +112,7 @@ def flatten(c, fields):
     return np.concatenate(result, axis=-1)
 
 
-def stage(c, state, time):
+def stage(c, state, time, *, charge_equivalent_increment_fmol=None):
     d, m, p = unpack(c, state), c["raw"]["model"], c["layout"]
     raw = dict(
         layout=p,
@@ -128,6 +128,20 @@ def stage(c, state, time):
         gauge_mask=[v["id"] == m["closure"]["gauge_reference"] for v in m["extracellular"]],
         seed_potential_V=np.zeros(len(c["qi"]) + len(c["qo"])),
     )
+    if charge_equivalent_increment_fmol is not None:
+        # A conservative reference coordinate map may supply charge directly
+        # from signed transport. Keep the original physical charge anchors;
+        # summing large, neutral bulk increments would reintroduce cancellation.
+        charge = np.asarray(charge_equivalent_increment_fmol)
+        if (
+            charge.shape != (len(c["qi"]) + len(c["qo"]),)
+            or charge.dtype.kind not in "fi"
+            or not np.isfinite(charge).all()
+        ):
+            raise ValueError("Charge increments require one finite real value per node")
+        split = len(c["qi"])
+        raw["cell_charge_C"] = c["qi"] + 1e-15 * F * charge[:split]
+        raw["outside_charge_C"] = c["qo"] + 1e-15 * F * charge[split:]
     for kind in ("membrane", "junction"):
         controls = {
             g[kind + "_id"]: g["schedule"] for g in c["raw"]["experiment"][kind + "_controls"]

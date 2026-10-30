@@ -17,7 +17,7 @@
     "test_voltage_feedback_changes_next_gate_rates_and_keeps_other_caches_stale": 1,
     "test_zero_block_is_stored_and_restoration_starts_from_zero": 1
   },
-  "Chief_acceptance": "pending independent review",
+  "Chief_acceptance": "Chief accepted scoped native review; carried propagated bounds uninformative; saved-data local tightening audit requested for preparation only",
   "active_qualification": null,
   "contract": "agent-work/cells-worker-01/workfiles/BETSE_NORMAL_GATED_JOIN_NOTES.md",
   "coordinated_shared_edit_authority": "Chief explicitly announced these active local numerical-refinement edits; historical frozen evidence untouched",
@@ -329,5 +329,5 @@
     "expected_and_actual_AST_sha256": "77e8c3f1c023dc854b139f957f458151de593463dc246bdb250f6904e9babefc",
     "result": "matches qualified body with name qualification and only fixed-opening-to-gate-callback substitution"
   },
-  "status": "34_check_qualification_passed_pending_Chief_review"
+  "status": "native_scope_Chief_review_accepted_saved_local_audit_pending"
 }

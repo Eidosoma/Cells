@@ -1,0 +1,77 @@
+{
+  "block_Name_load_count": 0,
+  "functions": {
+    "no_negs": {
+      "AST_sha256": "ca58dc1cd3fc9003db9009190f1b134a4c8a678256ecf3692d12f79a66cdb29c",
+      "first_line": 475,
+      "last_line": 503
+    },
+    "pumpCaATP": {
+      "AST_sha256": "1340c4348cbb59fb21588e68a63af0d6ccc7737f044615a2b74743c535285a74",
+      "first_line": 124,
+      "last_line": 182
+    },
+    "pumpCaER": {
+      "AST_sha256": "69624723efd5744ccb64755cfadc60fff43d2edd155d720cf38e08cd22284dfb",
+      "first_line": 184,
+      "last_line": 225
+    },
+    "sim.ca_handler": {
+      "AST_sha256": "7418c2be3f9b6db82f3831749fd649d7178cff4616be372958389a0de2579dbf",
+      "first_line": 2126,
+      "last_line": 2159
+    },
+    "sim.init_core": {
+      "AST_sha256": "d89a7bb6f6ded195a58bca38917597b57d34fc2b8e7f21362354344d9bcecf5e",
+      "first_line": 452,
+      "last_line": 754
+    },
+    "sim.update_all_concs": {
+      "AST_sha256": "4526d87d85b86e4392eb0ba28d09f6a2fb66bebcca5273d3910876c9c8a3052d",
+      "first_line": 2086,
+      "last_line": 2111
+    },
+    "update_Co": {
+      "AST_sha256": "21056d19c4b6ecdb6cc7966cee7b9623e546b555ccbd6bd5d0b73dc61f0a75f6",
+      "first_line": 1155,
+      "last_line": 1207
+    }
+  },
+  "kind": "cells.native_calcium_atp_static_source_map@1",
+  "met_Name_load_count": 0,
+  "numerical_runs": 0,
+  "original_container": {
+    "cc_env": "np.asarray(list of per-ion np.zeros(edl))",
+    "initializer_method": "init_core",
+    "no_ecm_edl": "mdl",
+    "source_lines": [
+      485,
+      617,
+      647,
+      690,
+      691
+    ],
+    "update_Co": "returns scalar mean; rectangular row assignment broadcasts it",
+    "write_semantics": "self.cc_env np.ndarray[I,M]; tuple assignment of scalar update_Co result to indexed row broadcasts in place"
+  },
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "scalar_container_refusal": {
+    "inference": "Scalar-scoped caller fails no_negs; original rectangular native bath avoids0d by row broadcasting",
+    "installed_source_sha256": "301adc5258511108eb3d9ea47d14c3aa41b9e6644a0eb3e4f5f6397fd2d4424c",
+    "installed_version": "2.5.3",
+    "numerically_executed": false,
+    "source": "numpy/_core/tests/test_numeric.py",
+    "source_lines": [
+      1651,
+      1657
+    ]
+  },
+  "scientific_imports": 0,
+  "source_sha256": {
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  },
+  "status": "static_preparation_not_qualified",
+  "strict_scope": "New rectangular native-caller law. Frozen scalar adapters unchanged; scalar probe is not initialized native behavior"
+}

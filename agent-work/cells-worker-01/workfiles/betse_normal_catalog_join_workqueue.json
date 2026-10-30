@@ -1,0 +1,557 @@
+{
+  "accepted_B28_review": {
+    "path": "/mnt/workspaces/Cells/betse-normal-channel-join-tests-20261030-02/root-review-01/completion-verification.json",
+    "provenance": "Chief direct completion-review message; no old-job polling",
+    "sha256": "19462af85ca318d0bab5aabc8508c670a95ac125f585288b1c95bb3d3988f059"
+  },
+  "active_numerical_job": null,
+  "authorized_metadata_repair": {
+    "authority": "Chief relay of independent catalog static review",
+    "changes": [
+      "All seven leak source clocks1s",
+      "Explicit scalar-bath scoped caller, no full native state-initialization parity"
+    ],
+    "new_sha256": "8b585b42130e3d2ffd183b46497ffdadcc3b1fd4b08d2d6338abff7b09141322",
+    "numerical_runs": 0,
+    "old_sha256": "3b9527f8f85e3875cd1859b6fcd902c309e8de18ea40b6eb83676869f3c3f393",
+    "path": "validation/betse/betse_normal_catalog_join_protocol.json"
+  },
+  "authorized_nonfinite_return_repair": {
+    "authority": "Chief direct reviewer diagnosis and successor-only request",
+    "changes": {
+      "tests/unit/test_betse_normal_catalog_join.py": {
+        "new_sha256": "1938d9ff972f963d8ee49258ad4b85e974c363a1a0cdb0530591f7da48ff0569",
+        "old_sha256": "9d206f901cdd3067cd90d11d13a7ddebc6cbb842b73f9b07fd3bd06c07e51682"
+      },
+      "validation/betse/betse_normal_catalog_join_fixtures.py": {
+        "new_sha256": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+        "old_sha256": "30ba874a37813ea81a03cf9f8b263d4584de707ed9e45531adae6fef7d0d3a1e"
+      },
+      "validation/betse/betse_normal_catalog_join_protocol.json": {
+        "new_sha256": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+        "old_sha256": "8b585b42130e3d2ffd183b46497ffdadcc3b1fd4b08d2d6338abff7b09141322"
+      }
+    },
+    "complete_return_archive_precedes_JSON_and_comparison": true,
+    "distinct_raw_negative_test_id": "tests/unit/test_betse_normal_catalog_join.py::test_raw_nominal_catalog_nonfinite[Cav_G]",
+    "failed_nominal_ID_retained_no_positive_credit": true,
+    "frozen_calcium_tree_untouched": true,
+    "historical_failed_positive_ID_excluded_from_successor_union": true,
+    "historical_failed_positive_test_id": "tests/unit/test_betse_normal_catalog_join.py::test_native_catalog_actual_parent[Cav_G]",
+    "numerical_runs": 0,
+    "old_prepared_trees_untouched": true,
+    "original_fixture_functions_AST_unchanged": true,
+    "production_native_and_reference_files_unchanged": true,
+    "separate_nonsingular_case": "Cav_G_nonsingular",
+    "separate_positive_test_id": "tests/unit/test_betse_normal_catalog_join.py::test_native_catalog_nonsingular[Cav_G_nonsingular]",
+    "source_and_acceptance_budgets_unchanged": true
+  },
+  "authorized_refusal_archival_repair": {
+    "authority": "Chief direct instruction during rectangular CaATP static package",
+    "new_sha256": "9d206f901cdd3067cd90d11d13a7ddebc6cbb842b73f9b07fd3bd06c07e51682",
+    "numerical_runs": 0,
+    "old_sha256": "f8febbd05370aaab8c29f3805ad3aec8d038761d2a59057fcc91b06abf38c839",
+    "path": "tests/unit/test_betse_normal_catalog_join.py",
+    "scope": "Persist raw inputs before constructor; archive full structured exception on unexpected constructor/advance refusal; original fixtures/equations/budgets unchanged"
+  },
+  "automatic_launch": false,
+  "coordinated_shared_edit_paths": [
+    "src/cells/core/grid.py",
+    "src/cells/core/runner.py",
+    "src/cells/core/specs.py",
+    "src/cells/core/batch.py",
+    "src/cells/ensemble/ionic.py",
+    "src/cells/core/surface_cotransport_water_spec.py",
+    "src/cells/models/surface_energy.py",
+    "src/cells/models/surface_energy_water.py"
+  ],
+  "historical_shared_sha256": {
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/specs.py": "b87ddc9ed6e65168e68f39e08dbb9f18d21ae48a27e139d337c7892b389db505"
+  },
+  "inputs_sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69",
+  "kind": "cells.betse_normal_catalog_join_static_workqueue@1",
+  "notes": "agent-work/cells-worker-01/workfiles/BETSE_NORMAL_CATALOG_JOIN_NOTES.md",
+  "numerical_runs": 0,
+  "owned": [
+    "src/cells/processes/betse_channel_catalog_source.py",
+    "src/cells/processes/betse_normal_catalog_join.py",
+    "tests/unit/test_betse_normal_catalog_join.py",
+    "validation/betse/betse_normal_catalog_join_equations.py",
+    "validation/betse/betse_normal_catalog_join_fixtures.py",
+    "validation/betse/betse_normal_catalog_join_inventory.json",
+    "validation/betse/betse_normal_catalog_join_native.py",
+    "validation/betse/betse_normal_catalog_join_native_helpers.py",
+    "validation/betse/betse_normal_catalog_join_protocol.json",
+    "validation/betse/betse_normal_catalog_join_reference.py",
+    "validation/betse/betse_normal_catalog_join_scalar.py"
+  ],
+  "owned_sha256": {
+    "src/cells/processes/betse_channel_catalog_source.py": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+    "src/cells/processes/betse_normal_catalog_join.py": "6ef2409c4da89077ec3acbb29bad1bc681cf577d27c364acb12cacc73756f3cf",
+    "tests/unit/test_betse_normal_catalog_join.py": "1938d9ff972f963d8ee49258ad4b85e974c363a1a0cdb0530591f7da48ff0569",
+    "validation/betse/betse_normal_catalog_join_equations.py": "7aa5565b2e7685f420ce60e1b73ee5e0571b7db1b06a26e95ef41eba0dda3ff8",
+    "validation/betse/betse_normal_catalog_join_fixtures.py": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+    "validation/betse/betse_normal_catalog_join_inventory.json": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+    "validation/betse/betse_normal_catalog_join_native.py": "e3543aadbb760d7b937574a007061e34bd125f929543fb5ff2981cd2e9859e2a",
+    "validation/betse/betse_normal_catalog_join_native_helpers.py": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+    "validation/betse/betse_normal_catalog_join_protocol.json": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+    "validation/betse/betse_normal_catalog_join_reference.py": "ef353a2740dce222b022e220914d27298482bf1bc9ea3b23a67f89a32baf7294",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49"
+  },
+  "planned_checks": 73,
+  "planned_native_captures": 70,
+  "planned_positive_native_captures": 65,
+  "planned_refusal_captures": 5,
+  "port_AST_audit": {
+    "classes": {
+      "CaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Ca_L3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "CatLeak2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav2p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_G": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_L_ML2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_N_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Cav_T_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "ClLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN2_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCN4_cAMP": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "HCNLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "KLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "K_Fast": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kir_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p3_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5S_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p5_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p1_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv2p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv3p4": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Kv_ML1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NaLeak": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav1p6": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat1": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat2": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "NavRat3": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      },
+      "Nav_ML": {
+        "methods": 2,
+        "numeric_AST_unchanged": true
+      }
+    },
+    "clock_methods": 2,
+    "concrete_methods": 110,
+    "inherited_base_methods": 20,
+    "scalar_reference_audit": {
+      "cav": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "5bddc176f1c842fa38aa535ab3a27b1e330b3bd976f243b7ffc164291c8701b9"
+      },
+      "hcn": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "11ebee277d9b04af26e66706ec41b2b7797bfdd9eb50dd37ddf7ce4d32be56b4"
+      },
+      "kv1": {
+        "equation_AST_unchanged_except_context_parameter": true,
+        "original_AST_sha256": "44e9cabf92d55f091aa84e78c419faca643e778d8410a2450c786676e4bd4d88"
+      }
+    },
+    "unresolved_global_identifiers": []
+  },
+  "prepared_inputs": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+  "prior_static_successor05": {
+    "inputs_sha256": "8425d76763a0d956c5d07dec1dd6ff30f77c8576c2c4a2092ca0313c6ce88f27",
+    "prepared_inputs": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-05/inputs.json",
+    "reason": "Chief requires distinct raw-negative ID; historical failed positive ID excluded from successor union; frozen05 retained.",
+    "static_receipt": "agent-work/cells-worker-01/workfiles/betse_normal_catalog_join_static_receipt_05.json",
+    "static_receipt_sha256": "3f404480c5f546d6e93370173564288c7893ae7fce4f869b636d1276be39d0b8"
+  },
+  "protected_sha256": {
+    "src/cells/core/calcium_energy_atp_transport_tissue_excision.py": "24e25248fc30b00030d91182ab28721525531b42ac719dfa26e17fa3d3ec511e",
+    "src/cells/core/physiology_block_calendar.py": "a2bf39b2b2ebef19c62303363f183b5a26fa4c893a25a34f7cf1646353e14298",
+    "src/cells/core/physiology_block_control_step.py": "300e48ec55e93a038c88444c3db5bf5438226da6eaef5f5387587c9dd7fa8295",
+    "src/cells/core/physiology_native_calendar.py": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+    "src/cells/core/physiology_permeability_schedule.py": "ab83d5315513a2cbd2bbd347ef844dda6f840c001b8deba921704665b15b5d82",
+    "src/cells/core/physiology_perturbation_phases.py": "3dfaef25629b1e067f4af37b2cd66fda3c07279a015ec39b485ad7ec9663c7f8",
+    "src/cells/core/physiology_perturbation_step.py": "fb33883921eb8e01d3fd4e51a2672aec67134260a5c52c3c460d05fc265d2279",
+    "src/cells/core/physiology_protein_batch_loop.py": "54d6a28802b36bf023371014e3e570cbf23e54ff89eb293386656b3f3077c8ad",
+    "src/cells/core/physiology_protein_block_calendar.py": "cee73ce671c85b3076dcbd311e49a56aa401dc13b568dc60485eef6af877d974",
+    "src/cells/core/physiology_protein_block_calendar_scope.py": "8e1eaa501677643bf9269d83f605439140585b8347eda991e29891783324bf01",
+    "src/cells/core/physiology_protein_charge_interval.py": "099b5b4e12d509d810a99ba982725c7866945812ecb40b2f272aba33de81fc96",
+    "src/cells/core/physiology_protein_charge_step.py": "9b726ccb09152b5849dd3b7678af611d50f410b08cd8c884be4e272cf9f295f8",
+    "src/cells/core/physiology_protein_chemical_arrays.py": "b6613fa16c99c2187a19f99e6ead514156b93dc336c165eda70d1beb90e3f2f4",
+    "src/cells/core/physiology_protein_interval_accounting.py": "db0cef1d952cccb6d2845d104591e7fd7c7a3da8d19f734ff3648da062badb0f",
+    "src/cells/core/physiology_protein_loop.py": "d5ec330bc944a7c2fb7e6d816b9536b1d93bcc53a36c044f58d0a3d9833d254b",
+    "src/cells/core/physiology_protein_packet_provider.py": "70667c321ee4bf3b3742948fbb481bd8758d808c361d94fb8db06e43981b8986",
+    "src/cells/core/physiology_protein_projection.py": "b90eb054ef0d670538c53771b0e185229ebf8f84e65cd41ffd0a918efbc44ba7",
+    "src/cells/core/physiology_protein_thermodynamics.py": "3a240c5dfcf6a93674588325801d99943a8e4a89592d2b525b70dc29ff12f1b3",
+    "src/cells/core/physiology_protein_transition.py": "26a9b6e5dd157761d9becd5be32a09779c3fd89b99f75be3f350818638437e79",
+    "src/cells/core/physiology_protein_transition_commit.py": "08d0e865903efe14ac95479cb793d8af77ef2f03891756d854853e9701093106",
+    "src/cells/core/physiology_random_streams.py": "7ffa8e706dd4ea80b68f64dcd3a81a2b7d5a547081a39f5cfad347ea2b7953d1",
+    "src/cells/core/physiology_tissue_binding.py": "cb12e7f8d6b2aba651fe2d5644addda1a820db0490eea805a66bdf7dcca8ca5c",
+    "src/cells/core/physiology_tissue_loop.py": "c0e61d871f9438f0a3e447b3c394c80d6fb4c93fe5cd63bc8ee715c9c7d8c069",
+    "src/cells/core/physiology_tissue_step.py": "c0d8b139101ef48278ab4c9e6e116c8d3ed3715026fa67ecbcb8ec39f9140b58",
+    "src/cells/core/schedule.py": "889eba6db8fcec06a290bc367eb1ddaaabbccec4a5b591ee35b5bc8a4e6082be",
+    "src/cells/core/surface_calcium_energy_atp_transport_excision_spec.py": "b408768c3eccbf1847dbfabf38b18aee4cc829b72ac7c85ac51faecb0ca3ffd1",
+    "src/cells/core/surface_calcium_energy_atp_transport_spec.py": "50aa3bfbde03da1d8d90ad027ba2ddf82a28056662d1e9be7f53cc40270b346d",
+    "src/cells/core/surface_calcium_spec.py": "b9180686a6d422892a6ada9ec8800da8c74fd2f2a0af6029deebe029e6b2e0ce",
+    "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9",
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "src/cells/models/physiology_protein_charge_rhs.py": "961b7a2efd639debcc7a1795206244d193f94b1235401df61f668e521230f2e9",
+    "src/cells/models/physiology_protein_charge_view.py": "9086230f4a8ee2f3d53d43b32e1018b69291cb25a95be40fe7ca5b233274857d",
+    "src/cells/models/physiology_protein_work_view.py": "153c8179672e31b104d4dd36d9b21af913e4e39acbf70b44d13de162c64c0c37",
+    "src/cells/models/surface_calcium.py": "c52634dffc7b2f11793608b3536d352491bc1835974e65cf27d73c24af36a037",
+    "src/cells/models/surface_calcium_energy_atp_transport.py": "75ee86075e849db370b5b8ebb12587f43fe548f5fc539f197267e30bc8fae22c",
+    "src/cells/models/surface_calcium_energy_atp_transport_excision.py": "cfc49f68e9d52aa511ccbc56bf1ddd70b3db2359aa687b66423425d884112410",
+    "src/cells/models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "src/cells/numerics/physiology_protein_drive_arrays.py": "253aa6d4c73cbd55d648403c057dbeea1bf2fed375e542f8123a2cd14f793498",
+    "src/cells/numerics/physiology_protein_electrical_arrays.py": "2a19a921c3f2e9c4636cebb4c583a1dd5757c440fa484ef88e7a20ff513bb8f1",
+    "src/cells/numerics/physiology_protein_interval_arrays.py": "95ac84d8b2b873e41ca816980ea329686553c1df83ccc6998713d6d879017253",
+    "src/cells/numerics/physiology_protein_transition_arrays.py": "befd18f3ef3f1897c14ee8c47db5ea8349d8b62b71dbc156852668696abcd1d4",
+    "src/cells/numerics/physiology_protein_transition_commit_arrays.py": "21938e83201ab0e9c9d8881ebbcd18d1496fbd46e3d7494f9524828ab5ed68cd",
+    "src/cells/numerics/physiology_protein_work_arrays.py": "9b15e50fbffad08b68e29a964c379be09c15ee22050e7e28b9cbd8e11207b36d",
+    "src/cells/numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "src/cells/physiology_checkpoint.py": "48f7ece5f831f3d376a869154c8d31c68d461de307391a4cbed420f2ed73ebdf",
+    "src/cells/physiology_protein_batch_loop_io.py": "bb6c630a03e55528d2dc25b70d93783dd9798889e25d06caa9f9251dfb318ee6",
+    "src/cells/physiology_protein_block_calendar_io.py": "6dd06792bd8713bdbb60f003297a6892ebe2f09b140f40376f7820c9e8247feb",
+    "src/cells/physiology_protein_checkpoint.py": "d6a459646e4f07341a83f1517050debf9ab2599f7e1452f69b6d3f375cd70c87",
+    "src/cells/physiology_protein_loop_io.py": "e578074f655c7e33d8acf28a51f8b93127a7f030bc24510c826af10e61ea723a",
+    "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+    "src/cells/processes/betse_normal_channel_join.py": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "src/cells/processes/betse_normal_gated_join.py": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+    "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+    "src/cells/processes/betse_normal_pump_join.py": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+    "src/cells/processes/betse_normal_voltage.py": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+    "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+    "src/cells/processes/betse_time_modulation.py": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "tests/integration/test_physiology_modulated_schedule.py": "a832ebd0936375b0a55e9a3c3d8ace16f27013c6caafd0d78abd647e0abfa4bf",
+    "tests/integration/test_physiology_permeability_schedule.py": "6573b5efe2f85bc3602ddb7237e665f7db44d2a1227748918d13b5affd5859be",
+    "tests/integration/test_physiology_protein_batch_loop.py": "322bb5479d269a94029fd498b07ba93485951d2ee5a5e4b281a9a3c06b806cf0",
+    "tests/integration/test_physiology_protein_block_calendar.py": "280d5538c4e865e27ff20f4bf1f42cfbbfce4a5e48ef828d7174028cee82e73f",
+    "tests/integration/test_physiology_protein_checkpoint.py": "a2db61ef4d49a2fabad6a76e1348909dd0505b83d9e82d30ba33ba0bc5b86d46",
+    "tests/integration/test_physiology_protein_loop.py": "ca55452de49ea670cca7fbac1fb488fecc24e72a201b9fb7c362318449383bd8",
+    "tests/integration/test_physiology_protein_transition.py": "18e0067de6225b35316466d74b2bcd4e37e829f38e195ab5ac8d76295314f32f",
+    "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+    "tests/unit/test_betse_normal_channel_join.py": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+    "tests/unit/test_betse_normal_current.py": "01c6faaa4cc8b4a809a4ba72854a795db1d657ae7852b83d99e943bed2a98d8b",
+    "tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+    "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+    "tests/unit/test_betse_normal_pump_join.py": "44c3ab42d70691b651ff3f4bdf1a1631d68b637d374f227acb6bb6e3beffcdfc",
+    "tests/unit/test_betse_normal_voltage.py": "fbc819174864ce4cf9f4a7d3cbe49152bad4a01a6c490bd00dbaf2edbb3018cf",
+    "tests/unit/test_physiology_permeability_view.py": "8575cbde3863c26b5fb0d390cb9de7bd8a82c75e383266ec2c121545e1dd9948",
+    "tests/unit/test_physiology_perturbation_phases.py": "44aac991139f130b91137abdaece9cd4561122c07b3acad9d9e732cae67e33a8",
+    "tests/unit/test_physiology_perturbation_step.py": "65c24ef2f4b21aa99e0d7035b460685f933c09491df1fc9286a372951f2bd546",
+    "tests/unit/test_physiology_protein_chemical_arrays.py": "a3732916a2fc97cb09847a1f19762f3678becf494463246658fe10fbb92d4b32",
+    "tests/unit/test_physiology_protein_drive_arrays.py": "082eade4f82a91684d508b81be12a6e2996ce846d8628467bab94b2d11d639f8",
+    "tests/unit/test_physiology_protein_electrical_arrays.py": "091bd5dd5b02c4a8185c83c828a2ed7a680ab5d9ebdc3d77ce3d5e0d7b2e72eb",
+    "tests/unit/test_physiology_protein_interval_accounting.py": "1bca10690b5f8840673bec3d508698d9fdfb2fb8e497df09c91ae5079e3b4435",
+    "tests/unit/test_physiology_protein_interval_arrays.py": "0b49a08f44930aae4afb60179b021ec39869bbcff413a1f5d4f486fee41ba014",
+    "tests/unit/test_physiology_protein_packet_provider.py": "ee0ebef17542fa3ba5cabb21d26511ccc17c1dbcdc8a08d3fbb2760bfc62761a",
+    "tests/unit/test_physiology_protein_projection.py": "c692be4232b28c73e42c7ad85a9c109fc87a3b965a5f30274a1b1cba69ff3e89",
+    "tests/unit/test_physiology_protein_thermodynamics.py": "e24b9425cdf45f81356e230fb6405547876f52760819956f432ea6431dae68c4",
+    "tests/unit/test_physiology_protein_transition_arrays.py": "64a376ba5f0cac8e35b31b12ae40a6e6e9ed9193e7990d31f97dbea8e390e9ca",
+    "tests/unit/test_physiology_protein_transition_commit.py": "80a207496b65140dceb44f334487e156c30d1e587bab154970e7e4412d427b99",
+    "tests/unit/test_physiology_protein_work_arrays.py": "e78d53fad38b5dd8832f8b2f428405bc595bf83371d763636a81381fd5685a7d",
+    "tests/unit/test_physiology_tissue_binding.py": "6353ca6750a9d3137db76d787977ac1810c76eb77f2caaae488c8b0653a7d41e",
+    "tests/unit/test_physiology_tissue_loop.py": "1ddde275ad3c201f8da7efef7fb05172ec7e7e0438a32ec7b1fba49ea44a452a",
+    "tests/unit/test_physiology_tissue_step.py": "52198656a99237d3b90a42611b0dc554dbc87751781ce450c0e577382f07562c",
+    "tests/unit/test_surface_calcium_energy_atp_transport.py": "1c60870b773ba616d8ca347af0170bfb6354b5bdb51f8391c25b96f5fcd89bd0",
+    "tests/unit/test_surface_calcium_energy_atp_transport_excision.py": "b55bedcc0b06398cfa026bbff7795776b7dba25923008be6a686222884caed38",
+    "tests/unit/test_surface_calcium_energy_atp_transport_reference.py": "96d1e2ae1aa556038a7f2eeb904df1f794a79f11ff9822611fd7abd36b1bf600",
+    "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+    "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "validation/betse/betse_fast_solver_protocol.json": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+    "validation/betse/betse_fast_solver_reference.py": "652412cf3f3d6f741b601e05b1e237636c6611f1e9567fc6ac4f8b006af8468e",
+    "validation/betse/betse_fast_solver_source_map.json": "ad2ba5a2da0410a3d989845b0c0cd2f2a1ecd1ac7368b77c75e45c4a6e1a1cea",
+    "validation/betse/betse_normal_channel_join_equations.py": "0abc00edd798db1d69a784a3f05135fa1e349aa531c5b8b14f9ca185ac9141e6",
+    "validation/betse/betse_normal_channel_join_fixtures.py": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+    "validation/betse/betse_normal_channel_join_native.py": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+    "validation/betse/betse_normal_channel_join_native_helpers.py": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+    "validation/betse/betse_normal_channel_join_protocol.json": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f",
+    "validation/betse/betse_normal_channel_join_reference.py": "3d886e09e8fb7ddadad1767abdbbba494a6ce9d542f0733f8226f869fa5dcaa7",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_channel_join_source_map.json": "249878838dd4df02ced398967491c889a2a9130eed2e7db9f85d9c42c6f37ea6",
+    "validation/betse/betse_normal_current_fixtures.py": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+    "validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_gated_join_fixtures.py": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+    "validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+    "validation/betse/betse_normal_gated_join_protocol.json": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+    "validation/betse/betse_normal_gated_join_reference.py": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c",
+    "validation/betse/betse_normal_gated_join_source_map.json": "c8b6942f279dcb625cb3ab16928b18dd94a1c3f3433d645439d5a2f86c2eebed",
+    "validation/betse/betse_normal_ion_join_fixtures.py": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+    "validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+    "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+    "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+    "validation/betse/betse_normal_ion_join_source_map.json": "bfcc1d5f6c3e23bf456dd310a7e67eb4e210c9bc90ee79c8c43a743c696fdc17",
+    "validation/betse/betse_normal_pump_join_fixtures.py": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+    "validation/betse/betse_normal_pump_join_native.py": "5ee3b1c049ee7e7aa660d34ae4379fb9751a70f38f70deac300da18238cb3bdd",
+    "validation/betse/betse_normal_pump_join_protocol.json": "c94fd0669859b2652ed97ae8ba8f2de611731e6a0c9a854d90d01c0d55714852",
+    "validation/betse/betse_normal_pump_join_reference.py": "5dcdfba6067ac3a264edc2ecddbe0701a710cb6e81ccee33d1c66e06b1c51da5",
+    "validation/betse/betse_normal_pump_join_source_map.json": "8bc58a39073cb41448bbdab174d4a86ea197ce2dd9dccdd6061a6922b6352a67",
+    "validation/betse/betse_normal_voltage_fixtures.py": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+    "validation/betse/betse_normal_voltage_material_failure.json": "ce0c0b3f10fd3528ff3492e9c5f8785960cc1c2d48bf85173840acd9e2364b27",
+    "validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228",
+    "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+    "validation/betse/betse_normal_voltage_reference.py": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7",
+    "validation/betse/betse_normal_voltage_source_map.json": "b1238964578a3042431479242704ffa2bebbcf247bbda1f39754f2d55249d06f",
+    "validation/perturbations/betse_perturbations_fixtures.py": "749937d8cfe23523a5c4fb649683d5819a87335ea8c060c0cbc3c662596fe554",
+    "validation/perturbations/betse_perturbations_reference.py": "06f0aaa041e84bcdf1e4ac1899ad5c309a6be66700505bc6c5cadf720634d6dc",
+    "validation/perturbations/physiology_perturbation_phases_reference.py": "fe8a59a9e45ea1d544a7b64f07fe7c480ea0d030675976e1649bec6f2acd6900",
+    "validation/tissue/calcium_energy_atp_transport_excision_fixtures.py": "fe0c400e88c2e8823d2499695de079ed846844fd72b2cdb364d7d21ef6cb2542",
+    "validation/tissue/calcium_energy_atp_transport_excision_reference.py": "68c19f6f49196a98d9b4f7837530581537e4a0eeacad2a569450a12ecb974e3e",
+    "validation/tissue/calcium_energy_atp_transport_fixtures.py": "a9eadd7377afddee6d874e7d28de14b4c2a84fd6b9328fdf4440b3c29fdd3e29",
+    "validation/tissue/calcium_energy_atp_transport_reference.py": "f5141c01a2289d0d0f45485d2c6900bfe6ffb21d3bc94867d7d8914db96d570c",
+    "validation/tissue/physiology_block_calendar_reference.py": "68202483dc73614c72fe09094d5229313cdb4f036778912a51ecfe9d2e1fcd60",
+    "validation/tissue/physiology_block_control_reference.py": "5dbd34f9be1c2dfc827fa8e9709b5ec3b1976baa1f480979eab7535d71a0442b",
+    "validation/tissue/physiology_permeability_schedule_reference.py": "12179d3253969655d3f12dc34033e771590bcf9b52cb93be6d6cd1e85d67a985",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "validation/tissue/physiology_protein_batch_loop_reference.py": "a345254f9d8648818ab7e9ffaa063f191ad635d3fe91ff628eb72c13cc2857b2",
+    "validation/tissue/physiology_protein_block_calendar_reference.py": "9e487f1ebe780801f89384a414fe8b7a8ade4a08ad5aa518e8bc3d20db68a5c6",
+    "validation/tissue/physiology_protein_charge_interval_reference.py": "96125376578ca7979f8ae82a9ca74ee786f5e2630164918b41cda1eb49bbd959",
+    "validation/tissue/physiology_protein_charge_rhs_reference.py": "cdbcee0939dbe868aca802cf7ede73d14180891fdb377abb4edbb137a2918d50",
+    "validation/tissue/physiology_protein_charge_step_reference.py": "6409b7fe10929842bc7c21fa45be12554da28f999757232b1c95ed7b7eb12a68",
+    "validation/tissue/physiology_protein_chemical_arrays_reference.py": "d3abbf9ca74891ea68c2ab8a479c7c8a743388dcaf9c95b346b6cb03e1b4f6f4",
+    "validation/tissue/physiology_protein_drive_arrays_reference.py": "47d91e7c0f81d1fac0fad12c373171243cde897e4b094f525135be7ef6b3ff8b",
+    "validation/tissue/physiology_protein_electrical_arrays_reference.py": "18b73eca1eb5b394cf78c7f6a2b0d5bcc88ee673a3b261af0b6207ed68c7c819",
+    "validation/tissue/physiology_protein_interval_accounting_reference.py": "22151a58c76b9e06e1695ab624e8e8bbe6a629d4d718cfb69d6608324627e955",
+    "validation/tissue/physiology_protein_interval_arrays_reference.py": "08000d4bdf47d89492d8daffe755424bd10fd7c116717da245a29263d6e78970",
+    "validation/tissue/physiology_protein_loop_reference.py": "a9c39651995df60ab061a1edda0b3fd569a41e332b35c4342256f91d77ac9856",
+    "validation/tissue/physiology_protein_packet_provider_reference.py": "e5f5ce917e3932f39667ccbd04addbe2217e59697b86862e7ba3c8b88376e6db",
+    "validation/tissue/physiology_protein_projection_reference.py": "41a3e916c347af2f8dbeebd1957348ff19fa48661530bff4d6b2849344e7ce22",
+    "validation/tissue/physiology_protein_thermodynamics_reference.py": "c1b2419294db2a2eaf5ce7aaa9b4384d95afb7d3cc50638173a905d4624a6bde",
+    "validation/tissue/physiology_protein_transition_arrays_reference.py": "ddb686a5ea88c2356eb7e2269260379f37fb9badb3e35b046dcd2115b9c1016e",
+    "validation/tissue/physiology_protein_transition_commit_reference.py": "2e256b76970ec23ccd2c34cba9e8ad2c3cc75bb1d4202a62df84ec3c12efc3ac",
+    "validation/tissue/physiology_protein_work_arrays_reference.py": "e006dccd06cd9df556327febcfaecffeddb93e4d2312b69c770f38cb1cd95554",
+    "validation/tissue/physiology_tissue_loop_reference.py": "9c5a92b58a6552a7824ba33fc691c3b7434688729dcbb88ee991bce10ccd2a48",
+    "validation/tissue/physiology_tissue_step_reference.py": "b525533a90403d2c20c3ff3ee3a8805d5314ba8403d3ab292afb4ea816acec80"
+  },
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_normal_catalog_join_equations.py": "7aa5565b2e7685f420ce60e1b73ee5e0571b7db1b06a26e95ef41eba0dda3ff8",
+    "validation/betse/betse_normal_catalog_join_reference.py": "ef353a2740dce222b022e220914d27298482bf1bc9ea3b23a67f89a32baf7294",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_equations.py": "0abc00edd798db1d69a784a3f05135fa1e349aa531c5b8b14f9ca185ac9141e6",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_gated_join_reference.py": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c",
+    "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+    "validation/betse/betse_normal_voltage_reference.py": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "requires_new_requested_numerical_round": true,
+  "runner": "agent-work/cells-worker-01/workfiles/betse_normal_catalog_join_checks.py",
+  "scientific_imports": 0,
+  "source_frozen_for_future_requested_round": true,
+  "source_seam_AST_audit": {
+    "_active_material_step": {
+      "AST_sha256": "bd62fb0e6995883ec77e16cd85d02c42c047ec1adb6094f1ef6a74eb6df78ecd",
+      "B28_numeric_body_unchanged": true
+    },
+    "_pump_material_step": {
+      "AST_sha256": "dad944aca895bb8e1fcece297445a0e63b3e9303c740dcfe9d9b3ff24a3685d5",
+      "B28_numeric_body_unchanged": true
+    },
+    "_pumped_material_step": {
+      "AST_sha256": "2f96bea4468cba2feaa074ad481da1ec69d2df21789fb48bc38ae82a98681171",
+      "B28_numeric_body_unchanged": true
+    }
+  },
+  "static_receipt": "agent-work/cells-worker-01/workfiles/betse_normal_catalog_join_static_receipt_06.json",
+  "static_receipt_sha256": "799a46b5d11cb217fe93d312567b827c4e33ef9500d3bef35fb1e7c2b38a87f3",
+  "status": "static_distinct_raw_negative_ID_successor06_frozen_no_launch"
+}

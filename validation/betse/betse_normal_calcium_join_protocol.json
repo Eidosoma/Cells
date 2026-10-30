@@ -1,0 +1,456 @@
+{
+  "acceptance": {
+    "calcium_flux": "Existing pump_loop_preflight density2e-18+relative2e-11; source exact arrays/dtypes primary",
+    "carried_initial_condition": "No full carried Decimal trajectory claimed in this handler-scoped package",
+    "channel_flux": "Existing B24 128*eps*(ions+membranes+4+32)*local conditioning gross + membrane_flux floor",
+    "channel_gates": "Exact native channel cache only in this package; catalog independent qualification separate",
+    "conditional_local_only": true,
+    "current": "32*eps*(ions+membranes+16)*local gross+1e-30",
+    "gate_opening": "5e-14+2e-13*abs(reference), existing native gate protocol",
+    "independent": "Fresh Decimal90/140 from immutable actual pre-handler snapshot BEFORE model Ca calculation; conditional kernel or kernel+postcommit/current/voltage only",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "material": "Existing B24 pointwise local budget applied to explicit rectangular rows, same units/floors",
+    "network_current": "Existing B23 32*eps*(ions+membranes+16)*local gross+1e-30",
+    "no_tolerance_tuning": true,
+    "not_trajectory_error_bounds": true,
+    "primary": "Exact full native sequence arrays/dtypes",
+    "pump_flux": "2e-18 mol/(m2*s)+2e-11*abs(reference), existing pump preflight",
+    "reference_initialization": "No independent upstream prefix/gate initialization or trajectory claim; full call checked by original native frames/cache",
+    "self_resolution_fraction": 0.1,
+    "voltage": "1024*eps*(ions+membranes+gridpoints+16+64)*local gross+1e-30"
+  },
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "catalog_budgets": {
+    "CaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "CatLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "CatLeak2": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "Cav1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav_G": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Cav_L_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_L_ML2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_N_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_T_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "ClLeak": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "HCN1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN2_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCN4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN4_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN4_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCNLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "KLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "K_Fast": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p5": {
+      "absolute": 3e-15,
+      "relative": 3e-14,
+      "source": "validation/tissue/surface_channel_protocol.json",
+      "source_sha256": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497"
+    },
+    "Kv1p5S_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p5_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p6": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv2p1_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv2p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p2": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p4": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv_ML1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "NaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p6": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    }
+  },
+  "dependency_map": "validation/betse/betse_normal_calcium_join_dependencies.json",
+  "diagnostics": {
+    "carried": "Zero carried reference forms. Only Decimal90/140 answers conditional on actual immutable pre-handler inputs are prepared; no full carried trajectory or upstream numerical-accuracy claim.",
+    "raw_coefficients_and_rates": "Exact native checks plus independent absolute errors; no invented intermediate tolerance",
+    "reporting": "Per-field/unit absolute errors, budget at worst absolute element, index/model/reference, min/max budgets and local normalized fraction"
+  },
+  "failure_retention": "Original01 software/harness failure snapshot retained; successor preserves all scientific inputs/equations/budgets and explicitly compares actual empty-profile initialization refusal",
+  "kind": "cells.betse_normal_calcium_join_static_contract@1",
+  "law_id": "betse_normal_rectangular_bath_calcium_join_v1_5_0@1",
+  "limitations": [
+    "Static only: no rectangular CaATP numerical qualification",
+    "Ca_dyn0 only; ER/buffer state and dynamics remain unimplemented dependencies",
+    "Maintained source metabolic pools shared with NaK; no finite-fuel/ATP-cycle or energy acceptance",
+    "Prepared independent checks condition on actual PRE-HANDLER inputs, not outer-parent upstream numerical accuracy or trajectory bounds",
+    "Kernel+postcommit/current/voltage checks cover no late channels; channel-coupled case has kernel check plus exact native full frames/cache",
+    "Scalar refusal probe is scoped-helper container behavior, not initialized BETSE behavior",
+    "B28 uniform projection is planned future seam, not proven result; old adapters unchanged",
+    "No ECM, environment inverse preparation, full simulator lifecycle or biological parity"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "numerical_authorization": "No numerical launch until a subsequent user instruction",
+  "numerical_runs": 0,
+  "planned": {
+    "checks": 24,
+    "complete_outer_calls": 39,
+    "conditional_pre_handler_calls": 39,
+    "conditional_reference_forms": 78,
+    "kernel_only_coupled_calls": 3,
+    "native_captures": 17,
+    "postcommit_conditional_calls": 36,
+    "raw_helper_probes": 4,
+    "uniform_B28_projection_controls": 4
+  },
+  "purpose": "Source-faithful rectangular no-ECM bath and coherent maintained CaATP before channels/deferred material/current/voltage",
+  "reference": "Pure stdlib Decimal90/140 CaATP kernel from actual immutable pre-handler inputs; no-channel cases also independently evaluate deferred material/current/voltage. Zero carried reference forms; no upstream gate or outer-prefix accuracy claim.",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch this round; future explicit coordination only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_calcium_join_source_map.json",
+  "source_policy": {
+    "ER": "Explicit Ca_dyn0; no constant ER/free/bound Ca placeholders",
+    "bath": "Original initializer edl=mdl, per-ion env arrays ->np.asarray[I,M]; scalar Co return broadcasts into row; explicit new state validator rejects scalar input",
+    "cache": "rate_CaATP aliases helper raw fCa; closed-boundary mask mutates it before rho; no-ECM storage +=rho*masked fCa once; alpha<=0 retains prior cache",
+    "commit": "CaATP adds pending membrane flux only; bulk and bath commit later for moving Ca; stationary Ca can retain uncommitted stored current",
+    "helper": "no_negs on live membrane and bath vector rows; exact-zero ATP*Cai product->1e-16; literal numeric mM quotient; live T and post-ordinary Vm; no Vm nonce in CaATP",
+    "ignored": "CaATP block unused by pinned helper; retain caller controls/provenance without multiplying it into flux",
+    "order": "reset -> NaK -> ordinary membrane/GJ/intra -> original ca_handler -> networks -> deferred Co/GJ/clip -> B23/B25",
+    "pools": "Actual p.cATP/cADP/cPi/deltaG shared by NaK and CaATP; met argument unused",
+    "projection": "Future uniform-row physical-state projection to original B28 inputs; no extra Ca ion invented in projection controls",
+    "scalar_probe": "Explicit bare-helper scalar probe only; no initialized-native-failure claim"
+  },
+  "status": "static_prepared_not_executed_not_qualified"
+}

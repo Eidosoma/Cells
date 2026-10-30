@@ -13,6 +13,7 @@ dependencies = ["jax==0.11.1", "jaxlib==0.11.1", "numpy==2.5.3"]
 [project.optional-dependencies]
 gpu = ["jax[cuda13]==0.11.1"]
 dev = ["pytest==9.1.1", "ruff==0.16.6"]
+native-geometry = ["pillow==12.3.0", "scipy==1.18.1"]
 
 [project.scripts]
 cells = "cells.__main__:main"

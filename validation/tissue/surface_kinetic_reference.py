@@ -275,8 +275,19 @@ def availability(c, kind, name, time):
     return next(v["availability"] for v in reversed(group["schedule"]) if v["time"] <= time)
 
 
-def evaluate(c, state, time, *, inside_amount=None, channel_levels=None):
-    raw, d, m, p = base.stage(c, state, time), unpack(c, state), c["raw"]["model"], c["layout"]
+def evaluate(
+    c,
+    state,
+    time,
+    *,
+    inside_amount=None,
+    channel_levels=None,
+    charge_equivalent_increment_fmol=None,
+):
+    raw = base.stage(
+        c, state, time, charge_equivalent_increment_fmol=charge_equivalent_increment_fmol
+    )
+    d, m, p = unpack(c, state), c["raw"]["model"], c["layout"]
     if inside_amount is not None:
         raw["ci"] = np.asarray(inside_amount) / c["vi"]
     if m["id"] in CATALOG_MODELS:

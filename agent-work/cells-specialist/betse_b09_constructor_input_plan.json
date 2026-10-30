@@ -1,0 +1,30 @@
+{
+  "kind": "cells.betse_b09_constructor_input_static_plan@1",
+  "status": "bounded_adapter_and14_checks_prepared_unrun",
+  "prepared_utc": "2026-10-30T21:13:11.937889+00:00",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_b09_constructor_input.py": "b98ad7de89e50d12919a1d2d928796ffdaf291eb77cabb35c0d8535ef0ee641b",
+    "tests/unit/test_betse_b09_constructor_input.py": "a13f189e79deb500c220f2f6338341e4a2b0160c9c113763531f181c208033bf",
+    "validation/betse/betse_b09_constructor_input_protocol.json": "9efd617de466d66a9d8312ab73b0c142157f4098f8517a1b64f43292471a8ff1"
+  },
+  "note": "agent-work/cells-specialist/NATIVE_B09_CONSTRUCTOR_INPUT.md",
+  "note_sha256": "61ed1782e68fe7485360e5513fb41008902ebe8891457ff74150009bef0f1906",
+  "static_checker": "/mnt/workspaces/Cells/specialist-runners/betse-b09-constructor-input-20261030-01-static.py",
+  "static_checker_sha256": "acf5712d5fd2275b0b4562148166f45c9b871cdbb55c57d08e811a1282ffb8cd",
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-b09-constructor-input-preparation-20261030-01.json",
+  "expected_checks": 14,
+  "source_case": "merged-square-aux",
+  "point_occurrences": 9,
+  "original_physical_guard_sha256": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+  "original_physical_guard_unchanged": true,
+  "constructor_flags_preserved": true,
+  "initial_mesh_files_modified": false,
+  "loader_executed": false,
+  "constructor_executed": false,
+  "numerical_execution": false,
+  "pytest_collection": false,
+  "geometry_bridge_admitted": false,
+  "topology_qualified": false,
+  "numerical_launch_authorized": false,
+  "next_action": "Chief reviews fixed constructor-only adapter before directed integration; original merged campaign failure stays preserved."
+}
