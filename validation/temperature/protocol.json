@@ -1,0 +1,146 @@
+{
+  "kind": "cells.native_active_temperature_probes@1",
+  "temperatures_K": [
+    273.15,
+    288.15,
+    298.15,
+    310.15,
+    323.15
+  ],
+  "configured_reference_temperature_K": 298.15,
+  "voltage_V": [
+    -0.0917,
+    -0.0533,
+    -0.033719,
+    0.0117
+  ],
+  "native_step_s": 0.0002,
+  "initial_update_gates": [
+    0.23,
+    0.68
+  ],
+  "channel_classes": {
+    "channels/vg_k.py": [
+      "Kv1p1",
+      "Kv1p2",
+      "Kv1p3",
+      "Kv1p4",
+      "Kv1p5",
+      "Kv1p6",
+      "Kv2p1",
+      "Kv2p2",
+      "Kv3p1",
+      "Kv3p2",
+      "Kv3p3",
+      "Kv3p4",
+      "K_Fast",
+      "KLeak",
+      "Kir2p1"
+    ],
+    "channels/vg_na.py": [
+      "Nav1p2",
+      "Nav1p3",
+      "NavRat2",
+      "NavRat1",
+      "NavRat3",
+      "NaLeak",
+      "Nav1p6"
+    ],
+    "channels/vg_ca.py": [
+      "Cav3p3",
+      "Cav2p1",
+      "Cav1p3",
+      "Cav1p2",
+      "Cav2p3",
+      "Cav2p2",
+      "Cav3p1",
+      "Ca_L2",
+      "Ca_L3",
+      "Cav_G",
+      "CaLeak"
+    ],
+    "channels/vg_funny.py": [
+      "HCN2",
+      "HCN4",
+      "HCN1",
+      "HCNLeak",
+      "HCN2_cAMP",
+      "HCN4_cAMP"
+    ],
+    "channels/vg_cl.py": [
+      "ClLeak"
+    ],
+    "channels/cation.py": [
+      "CatLeak",
+      "CatLeak2"
+    ],
+    "channels/vg_morrislecar.py": [
+      "Kv_ML1",
+      "Kv2p1_ML",
+      "Kv1p3_ML",
+      "Kv1p5_ML",
+      "Kv1p5S_ML",
+      "Nav_ML",
+      "Cav_L_ML",
+      "Cav_L_ML2",
+      "Cav_N_ML",
+      "Cav_T_ML",
+      "Kir_ML",
+      "HCN2_ML",
+      "HCN4_ML"
+    ]
+  },
+  "legacy_law": "cagPotassium",
+  "catalog_laws": 56,
+  "native_scopes": [
+    "unmodified isolated class/function AST bodies",
+    "actual update_gj caller temperature argument",
+    "actual reaction expression generators"
+  ],
+  "constant_profiles": [
+    "literal_native",
+    "matched_SI"
+  ],
+  "resources": {
+    "cpu_affinity": [
+      4
+    ],
+    "threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_seconds_per_phase": 480
+  },
+  "tolerances": {
+    "gate_atol": 1e-12,
+    "gate_rtol": 5e-11,
+    "tau_atol_s": 4e-12,
+    "flux_density_atol_mol_m2_s": 2e-18,
+    "flux_rtol": 2e-11,
+    "scalar_atol": 3e-14,
+    "scalar_rtol": 2e-11
+  },
+  "whole_native_simulation": false,
+  "new_active_physics": false,
+  "guard_relaxation": false,
+  "thermal_transition": false,
+  "biological_calibration": false,
+  "automatic_followup": false,
+  "supported_catalog_class_bodies": 55,
+  "singular_probes": [
+    {
+      "class_name": "Cav2p2",
+      "module": "channels/vg_ca.py",
+      "voltage_V": 0.02
+    },
+    {
+      "class_name": "Cav_G",
+      "module": "channels/vg_ca.py",
+      "voltage_V": -0.027
+    },
+    {
+      "class_name": "Nav1p2",
+      "module": "channels/vg_na.py",
+      "voltage_V": -0.025
+    }
+  ]
+}

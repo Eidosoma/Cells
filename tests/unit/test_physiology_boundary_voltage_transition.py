@@ -375,6 +375,10 @@ def test_complete_durable_restart_reproduces_next_transition_and_all_owner_histo
     source = storage.write_transition_checkpoint(tmp_path / "saved", spec, point)
     loaded = storage.load_transition_checkpoint(source)
     assert ramps.record(loaded.checkpoint) == original
+    # Ordinary snapshot IO produces JAX buffers; the host-only transition must
+    # restore immutable host buffers without changing any recorded numeric bit.
+    for values in (loaded.checkpoint.numeric.state, loaded.checkpoint.numeric.layout):
+        assert all(type(value) is np.ndarray and not value.flags.writeable for value in values)
     expected = ramps.advance(spec, point, sequence[3])
     actual = storage.advance_transition_checkpoint(source, tmp_path / "next", sequence[3])
     assert ramps.record(actual.checkpoint) == ramps.record(expected.checkpoint)
@@ -393,6 +397,7 @@ def test_complete_durable_restart_reproduces_next_transition_and_all_owner_histo
             next_identity=actual.checkpoint.identity,
             complete_next_transition_exact=True,
             ordinary_time_unchanged=True,
+            immutable_host_numeric_buffers=True,
         ),
     )
 

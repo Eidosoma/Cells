@@ -1,0 +1,270 @@
+{
+  "kind": "cells.complete_charged_batch_loop_preflight_receipt@1",
+  "status": "passed",
+  "completed_checks": 12,
+  "new_checks": 9,
+  "reused_exact_complete_round_checks": [
+    {
+      "phase": "round-passive-native-0",
+      "receipt": "/mnt/workspaces/Cells/physiology-protein-batch-loop-preflight-20261030-01/round-passive-native-0/result.json",
+      "sha256": "630a0f2d67d8fe52d0e5aa26d48bb46790dd2e284dc72c42e2cf41bcdd85fc67"
+    },
+    {
+      "phase": "round-passive-native-1",
+      "receipt": "/mnt/workspaces/Cells/physiology-protein-batch-loop-preflight-20261030-01/round-passive-native-1/result.json",
+      "sha256": "dc0ab9df93a3b9e7d94168fe0e602e9353cf65bb7925dbc144b575be9e5b5471"
+    },
+    {
+      "phase": "round-passive-native-2",
+      "receipt": "/mnt/workspaces/Cells/physiology-protein-batch-loop-preflight-20261030-01/round-passive-native-2/result.json",
+      "sha256": "95d34d2b7e35640404c2d14d0febc3e7897e2b229d93b0f176a01f33b3bae08b"
+    }
+  ],
+  "actual_full_world_loops": 9,
+  "independent_reference_forms": 3,
+  "maximum_independent_error_fraction": 0.005121116556492226,
+  "captured_sources_unchanged": true,
+  "current_owned_and_98_protected_sources_unchanged": true,
+  "resource_results": {
+    "history-passive-native-normal": {
+      "automatic_retry": false,
+      "elapsed_seconds": 48.77291312883608,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 21278044160,
+      "observed_process_high_water_bytes": 272453632,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 272453632,
+      "sampled_peak_process_tree_rss_bytes": 272453632,
+      "sampled_peak_summed_process_memory_bytes": 272453632,
+      "samples": 195,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:50:25.370767+00:00"
+    },
+    "failure-native": {
+      "automatic_retry": false,
+      "elapsed_seconds": 58.32485848409124,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 20954517504,
+      "observed_process_high_water_bytes": 275632128,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 275632128,
+      "sampled_peak_process_tree_rss_bytes": 275632128,
+      "sampled_peak_summed_process_memory_bytes": 275632128,
+      "samples": 233,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:51:23.697897+00:00"
+    },
+    "ownership-and-raw": {
+      "automatic_retry": false,
+      "elapsed_seconds": 10.818107340019196,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 22861713408,
+      "observed_process_high_water_bytes": 243040256,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 243040256,
+      "sampled_peak_process_tree_rss_bytes": 243040256,
+      "sampled_peak_summed_process_memory_bytes": 243040256,
+      "samples": 44,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:51:34.518695+00:00"
+    },
+    "isolated-reference-present": {
+      "automatic_retry": false,
+      "elapsed_seconds": 4.782128616934642,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 23258583040,
+      "observed_process_high_water_bytes": 88281088,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 86151168,
+      "sampled_peak_process_tree_rss_bytes": 86151168,
+      "sampled_peak_summed_process_memory_bytes": 86151168,
+      "samples": 20,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:51:39.305364+00:00"
+    },
+    "round-passive-native-0": {
+      "automatic_retry": false,
+      "elapsed_seconds": 44.74043917399831,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 21253185536,
+      "observed_process_high_water_bytes": 266592256,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 263688192,
+      "sampled_peak_process_tree_rss_bytes": 263688192,
+      "sampled_peak_summed_process_memory_bytes": 263688192,
+      "samples": 179,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:43:14.326770+00:00"
+    },
+    "round-passive-native-1": {
+      "automatic_retry": false,
+      "elapsed_seconds": 55.79308980493806,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 21247123456,
+      "observed_process_high_water_bytes": 272957440,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 272957440,
+      "sampled_peak_process_tree_rss_bytes": 272957440,
+      "sampled_peak_summed_process_memory_bytes": 272957440,
+      "samples": 223,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:44:10.123462+00:00"
+    },
+    "round-passive-native-2": {
+      "automatic_retry": false,
+      "elapsed_seconds": 71.88493179902434,
+      "limits": {
+        "max_individual_process_rss_bytes": 1073741824,
+        "max_process_tree_memory_bytes": 1073741824,
+        "max_process_tree_rss_bytes": 1073741824,
+        "max_wall_seconds": 480,
+        "min_available_host_memory_bytes": 8589934592,
+        "process_tree_memory_metric": "rss",
+        "sample_interval_seconds": 0.25
+      },
+      "minimum_available_host_memory_bytes": 21230739456,
+      "observed_process_high_water_bytes": 281325568,
+      "process_tree_memory_metric": "rss",
+      "returncode": 0,
+      "rss_fallback_samples": 0,
+      "sampled_peak_charged_memory_bytes": 281325568,
+      "sampled_peak_process_tree_rss_bytes": 281325568,
+      "sampled_peak_summed_process_memory_bytes": 281325568,
+      "samples": 287,
+      "shared_address_space_samples": 0,
+      "status": "completed",
+      "utc": "2026-10-30T14:45:22.011348+00:00"
+    }
+  },
+  "measured_child_runtime": {
+    "history-passive-native-normal": {
+      "pid": 1958603,
+      "measured_child_cpu_affinity": [
+        7
+      ],
+      "python_version": "3.13.5",
+      "python_full_version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+      "numpy_version": "2.5.3",
+      "jax_version": "0.11.1",
+      "jaxlib_version": "0.11.1",
+      "backend": "cpu",
+      "x64_enabled": true,
+      "threefry_partitionable": true,
+      "physical_solver": "frozen complete charged loop; NumPy CPU"
+    },
+    "failure-native": {
+      "pid": 1958812,
+      "measured_child_cpu_affinity": [
+        7
+      ],
+      "python_version": "3.13.5",
+      "python_full_version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+      "numpy_version": "2.5.3",
+      "jax_version": "0.11.1",
+      "jaxlib_version": "0.11.1",
+      "backend": "cpu",
+      "x64_enabled": true,
+      "threefry_partitionable": true,
+      "physical_solver": "frozen complete charged loop; NumPy CPU"
+    },
+    "ownership-and-raw": {
+      "pid": 1959230,
+      "measured_child_cpu_affinity": [
+        7
+      ],
+      "python_version": "3.13.5",
+      "python_full_version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+      "numpy_version": "2.5.3",
+      "jax_version": "0.11.1",
+      "jaxlib_version": "0.11.1",
+      "backend": "cpu",
+      "x64_enabled": true,
+      "threefry_partitionable": true,
+      "physical_solver": "frozen complete charged loop; NumPy CPU"
+    },
+    "isolated-reference-present": {
+      "pid": 1959287,
+      "measured_child_cpu_affinity": [
+        7
+      ],
+      "python_version": "3.13.5",
+      "python_full_version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+      "numpy_version": "2.5.3",
+      "installed_jax_version": "0.11.1",
+      "installed_jaxlib_version": "0.11.1",
+      "production_runtime_loaded": false
+    }
+  },
+  "source_run": "/mnt/workspaces/Cells/physiology-protein-batch-loop-preflight-20261030-02",
+  "source_inputs_sha256": "6ecc7b8c9a45334b243eba2d994e3d5b991bd060984e851ac6fb8380898df145",
+  "preserved_collector_failure_sha256": "879b7f14b681d54ac48af7808ca08a7705b26c735464f2f6944072361c1cbfa8",
+  "collector_fix": "Select explicit independent result groups; exclude progress JSON lists",
+  "no_scientific_source_or_tolerance_change": true,
+  "full_qualification": false
+}

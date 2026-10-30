@@ -112,16 +112,28 @@ execution remains separate. The
 retains separate NumPy/Python tapes and the native selection order, including
 the discarded GJ shuffle. Its
 [initial physical preparation bridge](PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
-produces reproducible complete definitions using the static coefficient laws;
-qualification is tracked in Progress. Coupling those setup tapes into a shared physical
-checkpoint, broader component ordering, and the thermal/electrode work required
-for changing temperature or voltage remain open.
+produces reproducible complete definitions using the static coefficient laws.
+The [initial physiology handoff](PHYSIOLOGY_RANDOM_STREAMS.md#initializing-physiology-after-random-preparation)
+connects that NumPy successor to static-potassium initialization and retains a
+complete initial tissue/component bundle; qualification is tracked in Progress.
+Broader component ordering and the thermal/electrode work required for dynamic
+temperature or voltage interventions remain distinct tasks.
 
 The [held boundary-voltage view](PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)
 maps native side controls onto actual reservoir owners in passive/ionic and the
 explicit open-calcium/open-fuel models. It preserves finite-family reservoir
 refusals and reports conditional capacitor-work diagnostics separately from any
 accepted voltage transition or cumulative work ledger.
+
+The [held-temperature view](PHYSIOLOGY_RANDOM_STREAMS.md#applying-held-temperature-to-complete-tissue-rates)
+evaluates complete passive transport and field rates under a prescribed Kelvin
+parameter while preserving original history. Active identities retain 298.15 K;
+the separately declared
+[active-temperature rate contract](PHYSIOLOGY_RANDOM_STREAMS.md#explicit-active-temperature-rate-contract)
+provides complete held readouts with fixed empirical kinetics, explicit chemical
+standard states and coherent temperature coefficients. Original schemas and
+guards remain intact. Accepted temperature evolution and thermal transitions
+require their own physical and numerical evidence.
 
 The [real protein packet provider](PHYSIOLOGY_RANDOM_STREAMS.md#real-protein-packets-for-array-transitions)
 connects the qualified owned samplers to the deterministic transition arrays.

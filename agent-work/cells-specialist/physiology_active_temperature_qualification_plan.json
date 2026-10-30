@@ -1,0 +1,27 @@
+{
+  "kind": "cells.physiology_active_temperature_qualification@1",
+  "policy": "active_uniform_isothermal_fixed_empirical_kinetics@1",
+  "owned_source_sha256": {
+    "src/cells/core/physiology_active_temperature.py": "c58632a96080f944b3ee175c348d9e3255cfe143eecb7fff88a20cd41f264897",
+    "src/cells/models/physiology_active_temperature_view.py": "af6d5befd5c39a41470c9c57e1505030559febc0356022b28443ed713eca5046",
+    "validation/tissue/physiology_active_temperature_reference.py": "e2c660e4986725ceeb1b17b83b546d5467fd7b43dc17f56480c1548efdf9872c",
+    "tests/unit/test_physiology_active_temperature.py": "9972ea21646077148d16ae041a2ca1c77df7acc668d6798482674f831a69c0ca"
+  },
+  "expected_checks": 50,
+  "expected_independent_records": 50,
+  "temperatures_K": [
+    273.15,
+    298.15,
+    310.15
+  ],
+  "full_catalog_laws": 56,
+  "cpu_affinity": [
+    4
+  ],
+  "threads": 1,
+  "max_wall_seconds_per_phase": 480,
+  "max_process_tree_rss_bytes": 1073741824,
+  "min_available_host_memory_bytes": 8589934592,
+  "automatic_followup": false,
+  "complete_physical_field_columns": true
+}

@@ -49,3 +49,11 @@ at the existing two integration tolerances. Preserve Python/JAX/jaxlib/NumPy
 versions and measured child affinity. CPU7, one thread,480s/phase,1GiB tree RSS,
 >=8GiB reserve. Expected >=10min full qualification launches detached with
 durable logs/result/failure and returns control; no automatic status polling.
+
+Detailed bounded plan is in `physiology_protein_batch_loop_workqueue.json`:
+79 checks,30 named world histories,84 complete charged-loop endpoints, exact
+serial comparisons and60 independent answers at two tolerances plus two failed
+provider replays. Heavy cases continue through complete round-boundary restart
+in separate processes. Full raw proposal/attempt/serial archives precede test
+assertions. Host Controls use the frozen checkpoint codec's scalar value
+representation; typed numeric states, actual tapes and cache bits remain exact.

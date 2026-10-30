@@ -39,10 +39,22 @@ def raw(value):
             )
         )
     if is_dataclass(value):
+        attributes = {field.name: getattr(value, field.name) for field in fields(value)}
+        if type(value) is perturb.Controls:
+            # The frozen host checkpoint codec records NumPy scalar controls
+            # as their exact Python scalar values. Use that same canonical
+            # representation so restart replay does not invent a difference
+            # between np.float64 and float. Typed array buffers stay raw.
+            attributes = {
+                name: item.item()
+                if isinstance(item, np.generic) and type(item.item()) in (bool, int, float)
+                else item
+                for name, item in attributes.items()
+            }
         return MappingProxyType(
             dict(
                 type=type(value).__module__ + "." + type(value).__qualname__,
-                fields=raw({field.name: getattr(value, field.name) for field in fields(value)}),
+                fields=raw(attributes),
             )
         )
     if hasattr(value, "_asdict"):
@@ -481,6 +493,7 @@ def accept_batch(worlds, proposals, budgets):
             )
             target = replace(target, identity=world_record(target)["identity"])
         except Exception as error:
+            target = parent
             failure = error
             payload = attempt_payload(parent, proposal, receipt, bridge, budget, failure, stage)
         attempts.append(

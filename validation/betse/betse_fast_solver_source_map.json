@@ -1,0 +1,216 @@
+{
+  "classification": [
+    "gjopen does not enter voltage/current arithmetic",
+    "GHK uses valence sign, not multivalent constant-field formula",
+    "source uses old gap voltage in post-Euler readouts",
+    "conductances stay fixed under live Dm/T changes unless explicitly reinitialized",
+    "fast loop does not evolve built-in ionic concentrations/pumps/protein noise",
+    "no extracellular voltage boundary enforcement",
+    "current readout omits leak current",
+    "field readouts are diagnostic source arrays; no physical field/charge/energy parity"
+  ],
+  "fast_loop_call_names": [
+    "anim_cells.plot_frame",
+    "cells.single_cell_div_free",
+    "ddc.tolist",
+    "len",
+    "np.copy",
+    "np.dot",
+    "np.ones",
+    "phase.callbacks.progressed_next",
+    "phase.dyna.fire_events",
+    "self.I_cell_x_time.append",
+    "self.I_cell_y_time.append",
+    "self._log_solver_time_estimate",
+    "self.dd_time.append",
+    "self.efield_gj_x_time.append",
+    "self.efield_gj_y_time.append",
+    "self.fluxes_gj.fill",
+    "self.fluxes_mem.fill",
+    "self.gj_funk.run",
+    "self.gjopen_time.append",
+    "self.grn.core.clear_run_loop",
+    "self.grn.core.report",
+    "self.grn.core.run_fast_loop_channels",
+    "self.grn.core.run_loop",
+    "self.grn.core.run_loop_modulators",
+    "self.grn.core.run_loop_transporters",
+    "self.grn.core.write_data",
+    "self.molecules.core.clear_run_loop",
+    "self.molecules.core.report",
+    "self.molecules.core.run_fast_loop_channels",
+    "self.molecules.core.run_loop",
+    "self.molecules.core.run_loop_modulators",
+    "self.molecules.core.run_loop_transporters",
+    "self.molecules.core.write_data",
+    "self.sigma_cell.mean",
+    "self.time.append",
+    "self.vm_ave_time.append",
+    "self.vm_time.append",
+    "stb.check_v",
+    "time.time"
+  ],
+  "initialization_order_calls": {
+    "init_dynamics": [
+      {
+        "callee": "self.fast_sim_init",
+        "line": 1012
+      }
+    ],
+    "run_sim_core": [
+      {
+        "callee": "self.init_dynamics",
+        "line": 1034
+      },
+      {
+        "callee": "self.clear_storage",
+        "line": 1037
+      },
+      {
+        "callee": "self.update_V",
+        "line": 1041
+      },
+      {
+        "callee": "self._plot_loop",
+        "line": 1049
+      }
+    ]
+  },
+  "kind": "cells.betse_fast_solver_source_map@1",
+  "numerical_runs": 0,
+  "original_duration_count_sites": [
+    {
+      "expression": "self.init_tsteps = int(self.init_time_total / self.init_time_step)",
+      "line": 525
+    },
+    {
+      "expression": "self.sim_tsteps = int(self.sim_time_total / self.sim_time_step)",
+      "line": 526
+    }
+  ],
+  "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "sigma_assignments": {
+    "init_dynamics": [
+      {
+        "expression": "np.asarray([z ** 2 * p.q * p.F * cc * D * 0.1 / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum(axis=0)",
+        "line": 991
+      }
+    ],
+    "update_V": [
+      {
+        "expression": "np.asarray([z ** 2 * p.F ** 2 * cc * D * 0.1 / (p.R * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).mean(axis=0)",
+        "line": 2016
+      }
+    ]
+  },
+  "sites": {
+    "betse/science/cells.py": {
+      "cellMatrices": {
+        "AST_sha256": "0a138ebac00024b96fec201b11cb2281b1dcd5452b3239751d25f2e3686aa891",
+        "first_line": 1276,
+        "last_line": 1333
+      },
+      "div": {
+        "AST_sha256": "05893e62ecbe003f146c8bb7204e2e17158b66701972e9e70a426961fb847f62",
+        "first_line": 2386,
+        "last_line": 2398
+      },
+      "near_neigh": {
+        "AST_sha256": "25e2317ff91ee3c9ca91e47b5dd51309b16135ec64a6f52bf64ca7a666eca52d",
+        "first_line": 1477,
+        "last_line": 1573
+      },
+      "single_cell_div_free": {
+        "AST_sha256": "1281bf77fc9609265d3fe42024814e20d020cfbd12984ddf70daa676e83d6719",
+        "first_line": 2614,
+        "last_line": 2623
+      }
+    },
+    "betse/science/chemistry/networks.py": {
+      "clear_run_loop": {
+        "AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+        "first_line": 2790,
+        "last_line": 2801
+      },
+      "run_fast_loop_channels": {
+        "AST_sha256": "7711ea01a93a429362067e1057a52ad1ccbaf31f369b59d630bdd3abd0b038fa",
+        "first_line": 3217,
+        "last_line": 3280
+      },
+      "run_loop": {
+        "AST_sha256": "524cdb279ece7f800a970a60f31f1606365dded7ebca7f9db74a02bf636dbcca",
+        "first_line": 2805,
+        "last_line": 2982
+      }
+    },
+    "betse/science/sim.py": {
+      "_plot_loop": {
+        "AST_sha256": "4d065b9d5d554bca00b712d6f09f3c8df51f311ad1e5beaf4d7629e8e975735f",
+        "first_line": 2403,
+        "last_line": 2503
+      },
+      "_run_fast_sim_core_loop": {
+        "AST_sha256": "2ef819f5611699d8d757592ff55a609e9a30396cec375d8525cabc4d297fac51",
+        "first_line": 1454,
+        "last_line": 1640
+      },
+      "_run_sim_core_loop": {
+        "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+        "first_line": 1132,
+        "last_line": 1390
+      },
+      "fast_sim_init": {
+        "AST_sha256": "7756982adacb87b0ded9506ff14583a67562d34cc71d25d0918c756a40651cbd",
+        "first_line": 1393,
+        "last_line": 1450
+      },
+      "get_ion": {
+        "AST_sha256": "03ccf695f87380038e746ca9f581d33b46b226f2aafe1acc847aad766cb78585",
+        "first_line": 2313,
+        "last_line": 2344
+      },
+      "init_dynamics": {
+        "AST_sha256": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+        "first_line": 758,
+        "last_line": 1012
+      },
+      "run_sim_core": {
+        "AST_sha256": "86d7910fa4e55eaba60afa058765aba37a0ac228288462118311237b3784cfb2",
+        "first_line": 1016,
+        "last_line": 1128
+      },
+      "update_V": {
+        "AST_sha256": "555dffb27f1a0c803c47af3fab58c92c88a52bf893fb0859658d7cba9753e574",
+        "first_line": 2007,
+        "last_line": 2083
+      }
+    },
+    "betse/science/sim_toolbox.py": {
+      "check_v": {
+        "AST_sha256": "10cd76d9870074b9e68af20653b837750515c28def7c16fdf26790c234286380",
+        "first_line": 332,
+        "last_line": 344
+      },
+      "get_conductivity": {
+        "AST_sha256": "3bfc95dfe22a231c525e59d8a5bc7098c19fa35befa364e678b15f8599a2c596",
+        "first_line": 1363,
+        "last_line": 1372
+      },
+      "ghk_calculator": {
+        "AST_sha256": "a305d7d1715927f546935248fe36793bdcbe89c499b3d77633002a02b304b55c",
+        "first_line": 526,
+        "last_line": 656
+      }
+    }
+  },
+  "source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  }
+}

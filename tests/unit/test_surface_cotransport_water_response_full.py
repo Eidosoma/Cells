@@ -14,6 +14,7 @@ import jax
 import numpy as np
 import pytest
 
+from cells.core import runner
 from cells.core.runner import run
 from cells.core.schedule import control_values
 from cells.core.specs import parse_spec
@@ -51,6 +52,56 @@ def saved(name):
 def worker_identity():
     fields = Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()
     return dict(pid=os.getpid(), process_start_ticks=int(fields[19]))
+
+
+def run_captured(spec, name, monkeypatch, *, checkpoint=None):
+    """Save the complete proposed history before the unchanged acceptance checks.
+
+    The ordinary runner remains authoritative. This test-local observation hook
+    never returns a rejected trajectory or converts a failure into acceptance.
+    Domain rejection before history analysis retains its original exception.
+    """
+    original = runner._analyse_segment
+
+    def capture(spec, parent, times, arrays, final_state, layout, requested):
+        write(
+            name + "-proposed-history",
+            dict(
+                status="proposed_not_yet_accepted",
+                inputs=spec.to_dict(),
+                parent_clock=dict(
+                    time=parent.time,
+                    step_index=parent.step_index,
+                    event_index=parent.event_index,
+                ),
+                complete_fields=list(model.STATE_TYPE._fields),
+                acceptance_checks_unchanged=True,
+            ),
+            dict(
+                proposed_times=times,
+                **dict(zip(model.STATE_TYPE._fields, arrays, strict=True)),
+                **{"layout__" + k: np.asarray(v) for k, v in layout._asdict().items()},
+            ),
+        )
+        try:
+            return original(spec, parent, times, arrays, final_state, layout, requested)
+        except Exception as error:
+            write(
+                name + "-rejection",
+                dict(
+                    status="rejected",
+                    error_type=type(error).__name__,
+                    error=str(error),
+                    proposed_history=name + "-proposed-history.npz",
+                    accepted_result_returned=False,
+                    automatic_retry=False,
+                ),
+            )
+            raise
+
+    with monkeypatch.context() as patch:
+        patch.setattr(runner, "_analyse_segment", capture)
+        return run(spec, checkpoint=checkpoint)
 
 
 def field_errors(c, actual, expected):
@@ -167,14 +218,14 @@ def test_compiled_empty_channel_step_and_strict_rejection():
 
 
 @pytest.mark.parametrize("arm", panel.ARMS)
-def test_complete_response_against_independent_reference(arm):
+def test_complete_response_against_independent_reference(arm, monkeypatch):
     assert jax.default_backend() == "cpu" and jax.config.x64_enabled
     raw = panel.definition(arm)
     write(
         "response-trajectory-" + arm,
         dict(status="running", inputs=raw, duration=panel.duration_inputs(raw)),
     )
-    value = run(parse_spec(raw))
+    value = run_captured(parse_spec(raw), "response-trajectory-" + arm, monkeypatch)
     observations = vars(value.observations)
     c = reference.bind(raw)
     actual = reference.flatten(c, observations)
@@ -228,7 +279,7 @@ def test_complete_response_against_independent_reference(arm):
     write("response-trajectory-" + arm, report | dict(status="passed"))
 
 
-def test_recovery_refinement_and_reference_stability():
+def test_recovery_refinement_and_reference_stability(monkeypatch):
     arm = "supply_recovery"
     first, arrays = saved("response-trajectory-" + arm)
     assert first["status"] == "passed"
@@ -243,7 +294,7 @@ def test_recovery_refinement_and_reference_stability():
     scores = [score(c, coarse, tighter["state"])]
     for factor in (2, 4):
         refined_raw = panel.definition(arm, dt=panel.DT / factor)
-        value = run(parse_spec(refined_raw))
+        value = run_captured(parse_spec(refined_raw), f"response-refined-r{factor}", monkeypatch)
         actual = reference.flatten(c, vars(value.observations))
         write(
             f"response-refined-r{factor}",
@@ -333,12 +384,12 @@ def test_paired_response_controls_and_physical_effects():
     )
 
 
-def test_complete_disk_restart_in_fresh_worker():
+def test_complete_disk_restart_in_fresh_worker(monkeypatch):
     producer, _ = saved("response-trajectory-supply_recovery")
     consumer = worker_identity()
     assert producer["worker"] != consumer
     loaded = load_snapshot(root() / "response-restart")
-    value = run(loaded.spec, checkpoint=loaded.checkpoint)
+    value = run_captured(loaded.spec, "response-restart", monkeypatch, checkpoint=loaded.checkpoint)
     expected = load_snapshot(root() / "response-final-supply_recovery")
     write(
         "response-restart-result",

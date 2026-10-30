@@ -196,6 +196,19 @@ def _seal(point):
     return replace(point, identity=record(point)["identity"])
 
 
+def _host_numeric(numeric):
+    if type(numeric) is not Checkpoint:
+        raise ValueError("Require the complete original numerical checkpoint")
+    # Snapshot IO restores device arrays. This intervention evaluates NumPy
+    # fields and capacitor algebra, so keep every numeric leaf on the host as
+    # initialization does. Copy exact bytes; retain all original anchors/clocks.
+    return replace(
+        numeric,
+        state=held.ordinary._immutable_tree(numeric.state),
+        layout=held.ordinary._immutable_tree(numeric.layout),
+    )
+
+
 def _view(spec, point, memory):
     return held.evaluate(
         spec,
@@ -304,13 +317,7 @@ def validate(spec, point):
 def initialise(spec, numeric, binding, *, capacity=64, provenance):
     validate_checkpoint(spec, numeric)
     boundary.restore(boundary.record(binding), spec)
-    frozen = Checkpoint(
-        held.ordinary._immutable_tree(numeric.state),
-        held.ordinary._immutable_tree(numeric.layout),
-        numeric.time,
-        numeric.step_index,
-        numeric.event_index,
-    )
+    frozen = _host_numeric(numeric)
     table = control_values(spec, [numeric.time])
     control = held.ordinary._immutable_tree(type(table)(*(value[0] for value in table)))
     memory = boundary.initial_state(spec, binding)
@@ -339,7 +346,7 @@ def restore(
     if type(saved) is not dict or saved.get("kind") != KIND:
         raise ValueError("Require the complete saved ideal-transition association")
     point = TransitionCheckpoint(
-        numeric,
+        _host_numeric(numeric),
         binding,
         control,
         origin_boundary_state,
@@ -393,6 +400,7 @@ def advance(spec, point, declaration):
             )
         )
         stage = "accepted_association"
+        trial["checkpoint"] = proposed
         validate(spec, proposed)
         admission = MappingProxyType(
             dict(

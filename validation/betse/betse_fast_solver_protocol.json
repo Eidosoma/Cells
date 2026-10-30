@@ -1,0 +1,87 @@
+{
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "capture_scope": "Full fast_sim_init, fast-loop, GHK, voltage NaN gate and cell projection bodies; original owner matrix, calendar/count and two sigma assignment sites; normalized phase/logging/storage/exception interfaces",
+  "kind": "cells.betse_fast_solver_contract@1",
+  "law_id": "betse_fast_equivalent_circuit_v1_5_0@1",
+  "literal_limits": [
+    "gjopen does not enter voltage/current arithmetic",
+    "GHK uses valence sign, not multivalent constant-field formula",
+    "source uses old gap voltage in post-Euler readouts",
+    "conductances stay fixed under live Dm/T changes unless explicitly reinitialized",
+    "fast loop does not evolve built-in ionic concentrations/pumps/protein noise",
+    "no extracellular voltage boundary enforcement",
+    "current readout omits leak current",
+    "field readouts are diagnostic source arrays; no physical field/charge/energy parity"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    },
+    "version": "1.5.0"
+  },
+  "purpose": "Literal small equivalent circuit with authenticated isolated source and independent Decimal equations; no conservative tissue or full native parity claim",
+  "reference": "Independent stdlib Decimal owner loops, coefficients and carried Euler/readout equations at precision90 and140; rational native calendar labels",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination_required_before_numerical_runs": true,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_order": [
+    "init_dynamics sum conductivity",
+    "fast_sim_init fixed coefficients",
+    "update_V overwrites conductivity with ion mean",
+    "caller initial voltage",
+    "SIM events or INIT carried packet",
+    "old junction voltages",
+    "Euler voltage",
+    "old-voltage current/field readouts",
+    "source NaN-only voltage gate",
+    "sampling"
+  ],
+  "stricter_component_guard": "Complete finite float64 states and positive readout conductivity; actual refused coefficient/trial arrays retained; source only rejects NaN voltage",
+  "supplied_not_captured": [
+    "electrostatic initial voltage",
+    "full update_V/get_current initializer",
+    "network current/channel/gene state",
+    "voltage-sensitive junction callback",
+    "SIM control packets"
+  ],
+  "tolerances": {
+    "conductance_absolute_S_m2": 3e-13,
+    "conductivity_absolute_S_m": 3e-13,
+    "current_absolute_A_m2": 3e-13,
+    "field_absolute_V_m": 3e-13,
+    "parent_arrays_and_rng": "exact",
+    "projection_divergence_absolute_V_m2": 1e-09,
+    "reference_self_resolution_fraction": 0.1,
+    "relative": 6e-12,
+    "voltage_absolute_V": 3e-14
+  },
+  "units": {
+    "capacitance": "F/m2",
+    "concentration": "mol/m3 (numerically mM)",
+    "conductance": "S/m2",
+    "current_density": "A/m2",
+    "cytosol_conductivity": "S/m",
+    "diffusion": "m2/s",
+    "divergence_readout": "V/m2",
+    "field_readout": "V/m",
+    "time": "s",
+    "voltage": "V"
+  }
+}

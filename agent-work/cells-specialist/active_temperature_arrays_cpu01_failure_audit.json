@@ -1,0 +1,95 @@
+{
+  "kind": "cells.active_temperature_arrays_cpu_failure_audit@1",
+  "status": "resource_guard_failure_confirmed",
+  "source_capture": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-cpu-20261030-01",
+  "support_sha256": {
+    "inputs.json": "e32d3e17a86777a46911511ef23bc97fdee0e294a30b3e0fd0e2621ab93751c4",
+    "failure.json": "1be2bb1194f71c7e239cff963e112917dcf5dfcaaf3e578de4f689dd42669bfe",
+    "cpu-jax-ionic/resource-stop.json": "4c6186a6455f236a7f34a0ddb73c0bba7a644437b2f8ddcec0b37bb865179a12",
+    "cpu-jax-ionic/failure.json": "e1670bbf045637b3a4ec47391378ec425c63de54bc86754926dd25d6a502765a",
+    "cpu-jax-ionic/host-resources.jsonl": "5c6d408fb1a29aae79916fb11029cdaeb331c0cb9a86caac8d4557c97b0fa08d",
+    "evidence/runtime-start.json": "c5c0b63137614f27243c522d559e3c83b9a6bb6964824e6fde0deb14fbb1bd47",
+    "evidence/active-temperature-arrays/jax-projection-complete-ionic.json": "de7a650fa8e19ecc0e4bc8fe2f82c1b443762b07f59f36cf7831c97a8f87d74d",
+    "evidence/active-temperature-arrays/jax-projection-complete-ionic.npz": "287476e90409cd1164f38595c606082f249d107d421da9d190d47ff3f917f401",
+    "evidence/active-temperature-arrays/jax-projection-start-ionic.json": "2d02e7e9d8f6f66439487bb31324174923242a23ac6afe2e446a7129a051146b",
+    "evidence/active-temperature-arrays/jax-lowered-ionic.json": "fd8d24f01f0d28f126a81f66082fd3fca230796181e4b4b0f98705634f22730b",
+    "evidence/active-temperature-arrays/jax-shaped-ionic.json": "66a6ece93334afe2a022bdba7ceccae01ad63fe551922d5d576d35c722cfdf3b",
+    "evidence/active-temperature-arrays/jax-prepared-ionic.json": "a1cb2f8384e6b2bc732074d6c0e5c7eb67701c3a43a7f7c28400311f1c9a568c"
+  },
+  "frozen_source_hashes_verified": 2137,
+  "runtime_start_hashes_verified": 685,
+  "runtime": {
+    "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+    "affinity": [
+      4
+    ],
+    "backend": "cpu",
+    "packages": {
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "jax": "0.11.1",
+      "jaxlib": "0.11.1"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    }
+  },
+  "failed_phase": "cpu-jax-ionic",
+  "completed_phases": [],
+  "observed_peak_tree_rss_bytes": 1082802176,
+  "observed_peak_process_hwm_bytes": 1082802176,
+  "observed_peak_MiB": 1032.640625,
+  "guard_bytes": 1073741824,
+  "guard_overshoot_bytes": 9060352,
+  "phase_elapsed_s": 19.777811559848487,
+  "stop_sample_elapsed_s": 19.653873163973913,
+  "minimum_host_reserve_bytes": 20601839616,
+  "returncode": -9,
+  "last_durable_stage": "complete_RHS_lowered_compilation_started",
+  "completed_compiled_RHS": false,
+  "compiled_physical_reference_records": 0,
+  "stages": [
+    {
+      "stage": "host_prepared",
+      "file": "jax-prepared-ionic.json",
+      "inferred_elapsed_s": 4.2235565185546875,
+      "nearest_sample_elapsed_s": 4.278095979942009,
+      "rss_bytes": 263110656
+    },
+    {
+      "stage": "complete_shape_traced",
+      "file": "jax-shaped-ionic.json",
+      "inferred_elapsed_s": 7.359842300415039,
+      "nearest_sample_elapsed_s": 7.299751040060073,
+      "rss_bytes": 288215040
+    },
+    {
+      "stage": "projection_compilation_started",
+      "file": "jax-projection-start-ionic.json",
+      "inferred_elapsed_s": 7.363842725753784,
+      "nearest_sample_elapsed_s": 7.299751040060073,
+      "rss_bytes": 288215040
+    },
+    {
+      "stage": "projection_compiled_executed",
+      "file": "jax-projection-complete-ionic.json",
+      "inferred_elapsed_s": 7.431849002838135,
+      "nearest_sample_elapsed_s": 7.550607888959348,
+      "rss_bytes": 314040320
+    },
+    {
+      "stage": "complete_RHS_lowered_compilation_started",
+      "file": "jax-lowered-ionic.json",
+      "inferred_elapsed_s": 8.179917097091675,
+      "nearest_sample_elapsed_s": 8.054132660850883,
+      "rss_bytes": 327368704
+    }
+  ],
+  "stage_time_basis": "Approximate attribution from durable stage file mtimes and nearest 0.25-second RSS sample; not compiler instrumentation",
+  "scientific_domain_failure_observed": false,
+  "new_run_started": false,
+  "guard_increased": false,
+  "failed_evidence_modified": false
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "cells.physiology_active_temperature_arrays_qualification@1",
+  "owned_source_sha256": {
+    "src/cells/core/physiology_active_temperature_arrays.py": "778c60286b7fce646659237a4692e986e574366656e8d76238e9ddecb51ea56f",
+    "src/cells/models/physiology_active_temperature_arrays.py": "fd8481755fb892e370f3801733ec18ba457e14af5fd097278a5f044beb6c0dd2",
+    "validation/tissue/physiology_active_temperature_arrays_reference.py": "8eae27450d1ceb1df1c638153bce448a46147dedca0b15042dc1f9641090c3cf",
+    "tests/unit/test_physiology_active_temperature_arrays.py": "daa026ee21999b07e45ac061a7cf12b571f4a1ff32adcd1a5ca6da4fcdf86255"
+  },
+  "expected_numpy_checks": 36,
+  "expected_cpu_jax_checks": 5,
+  "expected_numpy_reference_records": 25,
+  "expected_compiled_reference_records": 10,
+  "expected_raw_invalid_records": 30,
+  "resources": {
+    "cpu": [
+      4
+    ],
+    "threads": 1,
+    "rss_bytes": 1073741824,
+    "host_reserve_bytes": 8589934592,
+    "seconds_per_phase": 480
+  },
+  "automatic_followup": false,
+  "gpu_qualified": false,
+  "accepted_stepping": false,
+  "restored_snapshot_families": 5,
+  "selected_shape_checks": 5,
+  "completed_numpy_base_capture": "/mnt/workspaces/Cells/physiology-active-temperature-arrays-numpy-20261030-04",
+  "base_checks": 21,
+  "base_independent_records": 20,
+  "planned_full_test_count": 41,
+  "planned_batch_axis_tests": 10,
+  "planned_batch_axis_refusals": 120,
+  "new_batch_axis_tests_run": false,
+  "cpu01_status": "failed_process_tree_rss_guard_during_full_RHS_compilation",
+  "cpu01_completed_phases": 0,
+  "compile_memory_guard_increase": false,
+  "automatic_retry": false,
+  "memory_refactor_status": "proposal_only_not_implemented"
+}

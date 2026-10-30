@@ -1,0 +1,531 @@
+{
+  "active_CPU7_job_status_reads": 0,
+  "actual_production_source_sha256": {
+    "src/cells/core/physiology_protein_block_calendar.py": "cee73ce671c85b3076dcbd311e49a56aa401dc13b568dc60485eef6af877d974",
+    "src/cells/core/physiology_protein_block_calendar_scope.py": "8e1eaa501677643bf9269d83f605439140585b8347eda991e29891783324bf01",
+    "src/cells/physiology_protein_block_calendar_io.py": "6dd06792bd8713bdbb60f003297a6892ebe2f09b140f40376f7820c9e8247feb"
+  },
+  "automatic_followup": false,
+  "checks": 12,
+  "corrections": "Resource-log setup, explicit CPU runtime assertion, and disabled-draw spy only; no production model or physical tolerance changes",
+  "cpu": 3,
+  "fresh_independent_reference_forms": 4,
+  "frozen_jobs_or_evidence_modified": false,
+  "full_qualification": false,
+  "full_qualification_authorized": false,
+  "independent": [
+    {
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/evidence/independence-passive-native-SIM.json",
+      "result": {
+        "actual_reference_forms": 2,
+        "case": "passive-native-SIM",
+        "cases": [
+          {
+            "case": "passive-native-SIM",
+            "complete_ionic_blocker_and_tape_history": true,
+            "exact_reference_replay": true,
+            "maximum_error_fraction": 0.0,
+            "refinement": 1
+          },
+          {
+            "case": "passive-native-SIM",
+            "complete_ionic_blocker_and_tape_history": true,
+            "exact_reference_replay": true,
+            "maximum_error_fraction": 0.009868535928180365,
+            "refinement": 2
+          }
+        ],
+        "maximum_error_fraction": 0.009868535928180365,
+        "production_imports_denied": true,
+        "production_imports_loaded": []
+      },
+      "sha256": "258dd225b0beeeca2fc9d0e8f387eed8fdb32f99be02a29e666e791c63664b15"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/evidence/independence-failed.json",
+      "result": {
+        "actual_reference_forms": 2,
+        "case": "failed",
+        "cases": [
+          {
+            "actual_full_failed_trial_checked": true,
+            "case": "protein-block-calendar-failed-provider-native.json",
+            "exact_reference_replay": true,
+            "maximum_error_fraction": 0.0
+          },
+          {
+            "actual_full_failed_trial_checked": true,
+            "case": "protein-block-calendar-failed-provider-stable.json",
+            "exact_reference_replay": true,
+            "maximum_error_fraction": 0.007180961149772545
+          }
+        ],
+        "maximum_error_fraction": 0.007180961149772545,
+        "production_imports_denied": true,
+        "production_imports_loaded": []
+      },
+      "sha256": "835d88ee1b4372cb3335f34a9a62e95745d745ae3dca9ecd749edaebc6951a6e"
+    }
+  ],
+  "kind": "cells.complete_charged_block_calendar_preflight_receipt@1",
+  "maximum_independent_error_fraction": 0.009868535928180365,
+  "maximum_phase_seconds": 136.41225754702464,
+  "maximum_process_hwm_bytes": 312856576,
+  "maximum_process_tree_rss_bytes": 312856576,
+  "minimum_host_reserve_bytes": 20485169152,
+  "passing_complete_call_restart_cases": 8,
+  "passing_failed_real_protein_cases": 2,
+  "passing_full_history_comparisons": 1,
+  "passing_nonfinite_ionic_refusal_cases": 1,
+  "preserved_failures": [
+    {
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-01/passive-native-round0/failure.json",
+      "sha256": "9c84a95d820d6ce17edb8174144dd5c56c58fb7f53c8987d0ef268a8e69990af"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-stable-INIT-round0/failure.json",
+      "sha256": "7bdd9b162743cf33ec352d03e1e4438a00dc0cef8f40b7b5f1082779fb4b5c2d"
+    }
+  ],
+  "production_sources_identical_across_captures": true,
+  "protected_files_unchanged": 106,
+  "reference_source_sha256": "9e487f1ebe780801f89384a414fe8b7a8ade4a08ad5aa518e8bc3d20db68a5c6",
+  "resources": [
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/calcium-native-round0/result.json",
+      "phase": "calcium-native-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 69.21941834501922,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20620296192,
+        "observed_process_high_water_bytes": 259375104,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 257835008,
+        "sampled_peak_process_tree_rss_bytes": 257835008,
+        "sampled_peak_summed_process_memory_bytes": 257835008,
+        "samples": 276,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:37:00.455922+00:00"
+      },
+      "sha256": "6b2f23827e145b8ff718887b42eaf91c7ca9d35b5f14db9e4ce27dc2111162cf"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/fuel-native-round0/result.json",
+      "phase": "fuel-native-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 136.41225754702464,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20925612032,
+        "observed_process_high_water_bytes": 260583424,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 260583424,
+        "sampled_peak_process_tree_rss_bytes": 260583424,
+        "sampled_peak_summed_process_memory_bytes": 260583424,
+        "samples": 543,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:39:46.323781+00:00"
+      },
+      "sha256": "59bfb08b844e2dc569de3ff31f016bc338408ff12d974f1194f946d8c4a43356"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/ionic-native-round0/result.json",
+      "phase": "ionic-native-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 45.548206706065685,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20661690368,
+        "observed_process_high_water_bytes": 253100032,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 251981824,
+        "sampled_peak_process_tree_rss_bytes": 251981824,
+        "sampled_peak_summed_process_memory_bytes": 251981824,
+        "samples": 182,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:35:44.437856+00:00"
+      },
+      "sha256": "f16ebc86f3d1b5a4dacd9f24b2e8ff1be9564974152c6c933070754b66e6b3c8"
+    },
+    {
+      "checks": 0,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-native-isolated/result.json",
+      "phase": "passive-native-isolated",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 11.075171288102865,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 23139770368,
+        "observed_process_high_water_bytes": 85626880,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 85626880,
+        "sampled_peak_process_tree_rss_bytes": 85626880,
+        "sampled_peak_summed_process_memory_bytes": 85626880,
+        "samples": 45,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:34:40.495070+00:00"
+      },
+      "sha256": "6007bdeea170887720e1dd35cb420df4b3b0597bb41626aa48bed0b9459d37cd"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-native-reference/result.json",
+      "phase": "passive-native-reference",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 32.96602950314991,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20620623872,
+        "observed_process_high_water_bytes": 256901120,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 256901120,
+        "sampled_peak_process_tree_rss_bytes": 256901120,
+        "sampled_peak_summed_process_memory_bytes": 256901120,
+        "samples": 132,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:34:20.179522+00:00"
+      },
+      "sha256": "79d53a1dbab14651eeb6bc2e7cf76f364f9b82a1490dbbcc266e2f32a588db95"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-native-round0/result.json",
+      "phase": "passive-native-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 29.705209471052513,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20485169152,
+        "observed_process_high_water_bytes": 252948480,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 252030976,
+        "sampled_peak_process_tree_rss_bytes": 252030976,
+        "sampled_peak_summed_process_memory_bytes": 252030976,
+        "samples": 119,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:32:18.959453+00:00"
+      },
+      "sha256": "315082d3ef8199ccdf78779644ac41e9e0f327fe878adf38c5e13e6980d79390"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-native-round1/result.json",
+      "phase": "passive-native-round1",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 24.673715750919655,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20626608128,
+        "observed_process_high_water_bytes": 251293696,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 249524224,
+        "sampled_peak_process_tree_rss_bytes": 249524224,
+        "sampled_peak_summed_process_memory_bytes": 249524224,
+        "samples": 99,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:33:09.966387+00:00"
+      },
+      "sha256": "aa31a40db4bbfd5f993de05fd3750d3455fb68268c583b5c35e24a6c054e0214"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-native-round2/result.json",
+      "phase": "passive-native-round2",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 24.918328799074516,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 22255919104,
+        "observed_process_high_water_bytes": 253030400,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 251219968,
+        "sampled_peak_process_tree_rss_bytes": 251219968,
+        "sampled_peak_summed_process_memory_bytes": 251219968,
+        "samples": 100,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:33:40.333449+00:00"
+      },
+      "sha256": "f5df66604b3963818e2127d00b707112a9f9fc2a84a22426be7ad6bef25260ab"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-02/passive-stable-round0/result.json",
+      "phase": "passive-stable-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 24.42766192299314,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20608458752,
+        "observed_process_high_water_bytes": 312856576,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 312856576,
+        "sampled_peak_process_tree_rss_bytes": 312856576,
+        "sampled_peak_summed_process_memory_bytes": 312856576,
+        "samples": 98,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:40:19.568293+00:00"
+      },
+      "sha256": "2e6e5135fb243e6c9106115f79baad6231c031e6cdbdb662ba59cf6e1248210f"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/actual-nonfinite-ionic/result.json",
+      "phase": "actual-nonfinite-ionic",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 14.361312136985362,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 23263690752,
+        "observed_process_high_water_bytes": 245714944,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 243961856,
+        "sampled_peak_process_tree_rss_bytes": 243961856,
+        "sampled_peak_summed_process_memory_bytes": 243961856,
+        "samples": 58,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:42:37.925322+00:00"
+      },
+      "sha256": "bba97cc07bad4ce811a69c5b037a693703f1756605e18298db09071219f1736d"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/failed-protein-native/result.json",
+      "phase": "failed-protein-native",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 15.86711623496376,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20670717952,
+        "observed_process_high_water_bytes": 246226944,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 246226944,
+        "sampled_peak_process_tree_rss_bytes": 246226944,
+        "sampled_peak_summed_process_memory_bytes": 246226944,
+        "samples": 64,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:43:00.304124+00:00"
+      },
+      "sha256": "1bdaeb7920b9b2ced44e642fe6a316a55955f607716b5a0650883cb9020993f8"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/failed-protein-stable/result.json",
+      "phase": "failed-protein-stable",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 15.116447206120938,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 23214194688,
+        "observed_process_high_water_bytes": 308711424,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 308711424,
+        "sampled_peak_process_tree_rss_bytes": 308711424,
+        "sampled_peak_summed_process_memory_bytes": 308711424,
+        "samples": 61,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:43:49.095615+00:00"
+      },
+      "sha256": "66804ebb1e692bf6018c4dfabb8d29dd50f9199257fb017a9c46526504ef7e25"
+    },
+    {
+      "checks": 0,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/failed-provider-isolated/result.json",
+      "phase": "failed-provider-isolated",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 1.7771547550801188,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 22519271424,
+        "observed_process_high_water_bytes": 90566656,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 90566656,
+        "sampled_peak_process_tree_rss_bytes": 90566656,
+        "sampled_peak_summed_process_memory_bytes": 90566656,
+        "samples": 8,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:44:16.381252+00:00"
+      },
+      "sha256": "434a1b71adb265a4c61ef625c71a5d8a8ad9d61e28271bec601bf81e27a9a88b"
+    },
+    {
+      "checks": 1,
+      "path": "/mnt/workspaces/Cells/physiology-protein-block-calendar-preflight-20261030-03/passive-stable-INIT-round0/result.json",
+      "phase": "passive-stable-INIT-round0",
+      "resources": {
+        "automatic_retry": false,
+        "elapsed_seconds": 24.169803141150624,
+        "limits": {
+          "max_individual_process_rss_bytes": 1073741824,
+          "max_process_tree_memory_bytes": 1073741824,
+          "max_process_tree_rss_bytes": 1073741824,
+          "max_wall_seconds": 480,
+          "min_available_host_memory_bytes": 8589934592,
+          "process_tree_memory_metric": "rss",
+          "sample_interval_seconds": 0.25
+        },
+        "minimum_available_host_memory_bytes": 20608708608,
+        "observed_process_high_water_bytes": 249937920,
+        "process_tree_memory_metric": "rss",
+        "returncode": 0,
+        "rss_fallback_samples": 0,
+        "sampled_peak_charged_memory_bytes": 249327616,
+        "sampled_peak_process_tree_rss_bytes": 249327616,
+        "sampled_peak_summed_process_memory_bytes": 249327616,
+        "samples": 97,
+        "shared_address_space_samples": 0,
+        "status": "completed",
+        "utc": "2026-10-30T15:42:14.385482+00:00"
+      },
+      "sha256": "0e08df83f4a266cb6fbc0a36aac633c7e1aaf9259b9295e84e253d2242f4774c"
+    }
+  ],
+  "status": "short_preflights_passed_full_qualification_pending",
+  "threads": 1
+}

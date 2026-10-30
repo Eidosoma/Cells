@@ -132,6 +132,105 @@ a new request with its matching geometry and owners. Shared evolved checkpoints,
 post-cut reselection and device execution remain separate. Qualification and its
 limits are recorded in [Progress](../PROGRESS.md).
 
+### Initializing physiology after random preparation
+
+[`physiology_initial_preparation`](../src/cells/core/physiology_initial_preparation.py)
+continues the exact selected NumPy tape into the qualified static-potassium
+initializer. It creates a full initial numeric checkpoint, physical owner
+binding and component state for the same four ordinary families. Component axes
+come from the unchanged geometry, not the picker's carried logical cell order.
+Callers explicitly declare ion order, boundary-cell occurrences, protein
+concentrations by owner in mol/m3, component controls, stream ID and starting tick.
+The native world ID is retained without deriving a seed from it.
+
+The component base is computed from the prepared physical permeability times
+declared membrane thickness. This retains the qualified binary64 conversion;
+it does not promise exact recovery of an earlier D before D-to-P conversion.
+One static draw occurs even in INIT/fast mode, with disabled dynamic guards or
+zero static amplitude. Current D receives the noise, base D stays unchanged and
+scheduled D is zero. Numeric/component elapsed time and loop counts stay zero.
+The noisy permeability must pass the complete initial rate view and original
+timestep/turnover limits before the pair is returned. First SIM finalization
+still uses base + scheduled according to the existing component law.
+Initial admission does not certify time-integration accuracy: fast extracellular
+electrical relaxation can require a finer declared grid even when instantaneous
+rates and membrane turnover pass. Trajectory qualification retains the original
+physical horizon and checks both full state and voltage against independently
+integrated references; no timestep retry or tolerance relaxation is implicit.
+
+After initialization, the component owns the NumPy successor. The full selection
+source/successor and Python successor remain history; the earlier selection
+snapshot must not be treated as the current NumPy tape for another setup call.
+Selection calls, component ticks and elapsed physical time remain separate.
+This initial bundle does not project protein charge or initialize a complete
+charged loop. Failed static/physical admission retains the selection prefix and
+any proposed component buffers/tape; no source is partially committed.
+
+The [public bundle interface](../src/cells/physiology_initial_preparation_io.py)
+wraps the existing complete bound physiology checkpoint:
+
+```sh
+python -m cells.physiology_initial_preparation_io prepare request.json --output initialized
+python -m cells.physiology_initial_preparation_io validate initialized
+python -m cells.physiology_initial_preparation_io replay initialized/initialization.json --output replayed
+```
+
+The request uses `schema_version: 1`, kind
+`cells.physiology_initial_preparation_request@1`, the complete random-profile
+request under `preparation`, and explicit component inputs under `component`.
+Source/runtime identities and nested manifests are bound before the outer
+manifest commits. Publication privately recomputes the recipe for admission;
+it publishes the same single committed successor. Loading restores the saved
+pair without initialization or RNG sampling, checks every initial numeric
+state/layout array, and validates its history associations. Deterministic static
+coefficient reconstruction is allowed; its percentage permutations are already
+recorded. Hash-consistent records are integrity checks, not proof of historical
+RNG execution; explicit replay supplies that stronger comparison. Actual
+qualification status and scope are recorded in [Progress](../PROGRESS.md).
+
+### Starting complete loops from reproducible initialization
+
+[`physiology_initial_loop_io`](../src/cells/physiology_initial_loop_io.py)
+retains the full initial bundle under `origin/` and a corresponding managed
+checkpoint under `loop/`. The handoff adds an explicit zero-loop cursor while
+preserving both random histories, all numeric state/layout bytes, component
+buffers and clocks. Preparing or loading this association draws nothing.
+Publication uses the existing private origin-replay audit; it commits the same
+single static successor. Source/runtime identities and nested payload hashes
+are checked before the final outer manifest is published.
+
+```sh
+python -m cells.physiology_initial_loop_io prepare initialized --output loop-start
+python -m cells.physiology_initial_loop_io validate loop-start
+```
+
+Advance its managed child through the existing complete-loop operation:
+
+```python
+from cells.physiology_initial_loop_io import load_handoff
+from cells.physiology_checkpoint import advance_loop_checkpoint
+
+start = load_handoff("loop-start")
+binding = start.initialization.binding.component
+first = advance_loop_checkpoint("loop-start/loop", "loop-01", binding)
+second = advance_loop_checkpoint("loop-01", "loop-02", binding)
+```
+
+Keep `loop-start` with the resulting paired checkpoints: it retains the earlier
+selection recipe and parked Python history, while the paired checkpoints own
+the evolving numeric state, component and current NumPy stream. Restore rejects
+a different valid managed child even if its outer byte hash is resealed.
+Saved bundles must contain their own child directories and payloads; symbolic
+links inside the bundle are refused, including hash-valid links to external files.
+
+The ordinary loop contract remains unchanged. INIT retains initialized noisy
+permeability and suppresses dynamic protein draws; SIM finalizes base plus
+scheduled permeability and follows the original protein draw guard once per
+complete physiological call. Tissue refinement does not add component draws.
+This bridge covers the four ordinary families without charged-protein feedback
+or native calendar labels. [Progress](../PROGRESS.md) records the physical
+durations, numerical comparisons and qualification status.
+
 ## Explicit component updates
 
 `initialise(binding, controls, protein, diffusion_m2_s, stream)` constructs an
@@ -1235,6 +1334,80 @@ ledger and publishes no ordinary checkpoint with changed anchors. Temperature
 changes, accepted voltage trajectories and GPU execution remain separate.
 Actual source, independent-field and software evidence is recorded in
 [Progress](../PROGRESS.md).
+
+### Applying held temperature to complete tissue rates
+
+[`physiology_temperature`](../src/cells/core/physiology_temperature.py) binds
+native temperature setters to the actual cell, environment, membrane, junction,
+face, channel, store and fuel-pool owners. `bind` requires a temperature-only
+program and complete ordered owners; `record`/`restore` preserve that association.
+`prepare` retains the event clock separately from physical time and applies the
+source multiplier to the original temperature in kelvin. Invalid native proposals
+remain available on a refused trial.
+
+The [complete temperature view](../src/cells/models/physiology_temperature_view.py)
+checks the source state under its original definition, then evaluates the full
+passive field, transport rates and reservoir powers at held temperature. It keeps
+the original anchors, inventories, controls, histories and clocks; neither a new
+accepted checkpoint nor elapsed changed-temperature evolution is produced.
+Original domain, turnover, field and stage-energy bounds remain in force.
+
+Changed temperature is supported for passive `resolved_tissue@1`. The five
+reviewed active ionic/calcium/fuel identities retain their declared 298.15 K
+restriction, including empty or blocked channel populations. Their identity
+checks are separate from changed-temperature passive coverage. The
+[`inventory` function](../src/cells/core/physiology_temperature.py) lists parameter
+roles and missing thermal assumptions; it does not invent a common Q10 or
+activation-energy law for the channel, pump, ER and fuel systems.
+
+At fixed inventories, the passive view reports the algebraic change in the
+ideal isothermal mixing Gibbs functional for actual cells and finite exterior
+owners; ideal-reservoir reference inventories are excluded. This diagnostic is
+not heat, caloric internal energy or an accepted thermal transition. Physical
+thermal evolution needs separately declared thermodynamics. Numerical/source
+comparisons and qualification limits are recorded in [Progress](../PROGRESS.md).
+
+The [native active-temperature investigation](../agent-work/cells-specialist/ACTIVE_TEMPERATURE_POLICY.md)
+and [executable source probes](../validation/temperature/protocol.json) distinguish
+runtime temperature from configured constants. In the pinned source, isolated
+channel class curves retain fixed empirical coefficients; legacy calcium-K
+opening explicitly uses temperature. The actual gap-junction caller uses
+configured `p.T` even when the global setter changes runtime `sim.T`. Reaction
+equilibrium and the Na/K versus calcium-pump standard-state conventions also
+need explicit treatment. These component probes do not establish uniform
+temperature behavior of a complete native simulation.
+
+### Explicit active-temperature rate contract
+
+[`physiology_active_temperature`](../src/cells/core/physiology_active_temperature.py)
+requires the explicit policy `active_uniform_isothermal_fixed_empirical_kinetics@1`
+and complete ordered physical owners. Its
+[rate view](../src/cells/models/physiology_active_temperature_view.py) accepts
+source states belonging to the five reviewed active identities at their original
+298.15 K. It checks the original history and layout first, then evaluates a
+private coefficient projection under the held temperature. It returns complete
+ionic, gate, ER, finite-pool and reservoir rates and physical field quantities;
+the projection is never returned as a parsed ordinary specification or accepted
+changed-temperature checkpoint.
+
+The policy uses coherent SI constants and a uniform held temperature while
+keeping empirical curves, rate coefficients, pump capacities and geometric
+parameters fixed. Legacy calcium-K still reads temperature. ER reference
+standard coefficients remain fixed in J/mol, so their dimensionless values
+scale as `298.15/T`; reaction differences follow their declared stoichiometry.
+Finite shared fuel applies the live `-R*T*ln(1000)` conversion to its calcium
+pumps. Maintained pumps retain their distinct declared 1 M or numeric-mM
+standards. Cached drives are recomputed consistently; original anchors and
+accumulated histories remain unchanged.
+
+This is an explicit computational convention, distinct from the native
+configured/runtime temperature split. The existing 200–400 K process domain
+and all physical, gate, loss, gross-turnover and stage-energy checks still
+apply; that domain is not a claim of biological calibration or exhaustive
+qualification. No Q10, reaction enthalpy, heat capacity or heat law is inferred.
+The [contract note](../agent-work/cells-specialist/ACTIVE_TEMPERATURE_CONTRACT.md)
+details these assumptions; [Progress](../PROGRESS.md) records tested regimes,
+source comparisons and execution limits.
 
 ### Applying blockers to ordinary tissue rates
 

@@ -1,0 +1,118 @@
+{
+  "kind": "cells.physiology_global_control_view_preparation@1",
+  "status": "source_prepared_numerics_not_launched",
+  "policy": "active_uniform_isothermal_fixed_empirical_kinetics@1",
+  "owned_source_sha256": {
+    "src/cells/core/physiology_global_control_view.py": "82d1f3f146bddc08c5605699009c20fd83d85b386a07e1496c8e34f7925f6d57",
+    "src/cells/models/physiology_global_control_view.py": "d23644a1fa683c0b4e280eb9186df3d433b8ba4f56ffb8c702d97d345888b4bb",
+    "validation/tissue/physiology_global_control_view_reference.py": "d470dd66e9f6ccc33797c83cc7306f401afb790f6c9dd082e4829331b6758ebb",
+    "tests/unit/test_physiology_global_control_view.py": "1e4e374fe853e6bf0a9a07daca62f0b01d841abcf137133ae88a850e88bff510"
+  },
+  "source_AST_checked": true,
+  "static_lint": "passed",
+  "numerical_checks_run": false,
+  "planned_tests": 62,
+  "planned_independent_records": 81,
+  "planned_main_records": 48,
+  "planned_single_control_records": 21,
+  "planned_disabled_identity_records": 6,
+  "planned_restored_snapshot_records": 6,
+  "source_order": [
+    "temperature",
+    "junction_block",
+    "pump_block",
+    "voltage"
+  ],
+  "active_channel_catalog_laws": 56,
+  "physical_field_columns": 32,
+  "physical_clock": "original accepted Checkpoint time/step_index/event_index",
+  "event_labels_s": [
+    0.4,
+    0.8
+  ],
+  "physical_stages": [
+    "original initial",
+    "one original scheduled RK4 step"
+  ],
+  "future_resources": {
+    "cpu_affinity": [
+      4
+    ],
+    "threads": 1,
+    "rss_bytes": 1073741824,
+    "min_host_memory_reserve_bytes": 8589934592,
+    "seconds_per_phase": 480
+  },
+  "future_replay_import_denials": [
+    "cells",
+    "jax",
+    "jaxlib",
+    "betse"
+  ],
+  "tolerances": {
+    "rate_atol": 3e-12,
+    "charge_rate_atol_C_s": 3e-23,
+    "rate_rtol": 3e-10,
+    "potential_atol_V": 3e-13,
+    "potential_rtol": 3e-10,
+    "stage_energy_pJ_s": 1e-10,
+    "passive_turnover": 0.05,
+    "fuel_turnover": 0.05
+  },
+  "cpu4_reserved": false,
+  "detached_array_job_polled": false,
+  "automatic_job_launch": false,
+  "accepted_stepping": false,
+  "heat_law": false,
+  "old_guards_changed": false,
+  "gpu_claim": false,
+  "dependency_source_sha256": {
+    "src/cells/core/physiology_active_temperature.py": "c58632a96080f944b3ee175c348d9e3255cfe143eecb7fff88a20cd41f264897",
+    "src/cells/core/physiology_boundary_voltage.py": "49eae46d8e52d9766e28807cabbe0a9a36c6536178d5c2a1cab81e69249ebf6c",
+    "src/cells/core/physiology_temperature.py": "68c8340005fa56d3cd6f5abcedb64826b3187824fdcead63422838ef820c8c51",
+    "src/cells/core/runner.py": "4ee04d332e414c5925348b75329bdf79ac15072afe32b5787874bdff6ed5bebf",
+    "src/cells/core/grid.py": "cb0396b960152d03e619e3d4ad5e9e7a46176c6201e5e1d7a2c9f2701d8a381f",
+    "src/cells/core/schedule.py": "889eba6db8fcec06a290bc367eb1ddaaabbccec4a5b591ee35b5bc8a4e6082be",
+    "src/cells/models/physiology_active_temperature_view.py": "af6d5befd5c39a41470c9c57e1505030559febc0356022b28443ed713eca5046",
+    "src/cells/models/physiology_boundary_voltage_view.py": "44e919a105d441719969413cbc4740861b4f3214ad833d85313467dffe887954",
+    "src/cells/models/physiology_temperature_view.py": "501c531ff7c27d6de5254074f66de5e72b2e49b3367405caa84572a0b2fbd05b",
+    "src/cells/models/physiology_permeability_view.py": "a696c2cc795020d2069347c0034094cf7569c2923e8c32302a06f2b6f6decc18",
+    "src/cells/models/physiology_block_control_view.py": "80075a270d188f72f92babbcb9e8368b7377b2e6309efcb541a228a9d0c7c2ca",
+    "src/cells/models/surface_hcn_extra.py": "259008c68cab604c6349ba1737b1ca1c91b343e981d8bb2775f2bbf9b7229417",
+    "src/cells/models/surface_calcium_hcn_extra.py": "7e59656cd2cf6020c47221882a2e1572ddee9bea5e7ba99a6f1a28d9cd771f7d",
+    "src/cells/models/surface_calcium_energy_hcn_extra.py": "0763650e924204821101b03f6c6bf632b92925f0c47b2d57eea8a2556851b588",
+    "src/cells/models/surface_open_calcium.py": "e6fef48a8a98884ec5a142dab3412d6b0ba100d9f626ea9f2ad954b4336a6277",
+    "src/cells/models/surface_open_calcium_energy.py": "59ffcec863ecd146c3f8819e525f4e0308b717a9f7b23f3f0bef3065351c47b4",
+    "src/cells/processes/betse_global_controls.py": "6328139fcc9f5ae1a669059fddc396822fdd6c349ab310d506f01ec4fa7b394e",
+    "validation/tissue/physiology_active_temperature_reference.py": "e2c660e4986725ceeb1b17b83b546d5467fd7b43dc17f56480c1548efdf9872c",
+    "validation/tissue/physiology_temperature_reference.py": "06bd4d1d5911ad2c566aa5f6bbc4373e709b1457760edef1da76f104a2593782",
+    "validation/tissue/physiology_permeability_view_reference.py": "11dbb6234401346959869e0b3b1d8104b315bf0f70659fe9044b065aab8eaea1",
+    "validation/perturbations/global_controls_reference.py": "6f540c21f5a355825491a6fd511f9fa3cddc9de678ecd01b0e05adcafaee9e45",
+    "validation/perturbations/global_controls_native.py": "65a0e385fcea0fc9a4499e9c6c4d290cac1350c26faf94380321729512c0c13b"
+  },
+  "source_family_ids": [
+    "resolved_tissue@1",
+    "resolved_tissue@12",
+    "resolved_calcium@11",
+    "resolved_calcium_energy@5",
+    "resolved_open_calcium@1",
+    "resolved_open_calcium_energy@1"
+  ],
+  "prepared_runner": "/tmp/cells_global_control_view_checks.py",
+  "prepared_runner_sha256": "874892ceadf4e7b4fc62fafa9c269b55dcb467143791d8feaf4195548ceabf09",
+  "runner_launch_status": "held_for_Chief_coordination_after_failure_and_source_review",
+  "resource_estimate": {
+    "basis": "Earlier full held-T and array NumPy captures, not a measurement of this new suite",
+    "total_wall_minutes_range": [
+      4,
+      8
+    ],
+    "peak_process_MiB_range": [
+      250,
+      400
+    ],
+    "rss_guard_bytes": 1073741824,
+    "host_reserve_bytes": 8589934592,
+    "phase_wall_cap_s": 480
+  }
+}

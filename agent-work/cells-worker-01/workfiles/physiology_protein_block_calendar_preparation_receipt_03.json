@@ -1,0 +1,57 @@
+{
+  "AST_test_matrix": {
+    "test_asymmetric_contact_refuses_before_any_ionic_evolution_or_packet": 1,
+    "test_complete_round_preserves_clocks_tapes_fields_ledgers_and_restart": 52,
+    "test_existing_destination_refuses_before_loading_or_advancing": 1,
+    "test_explicit_full_call_replay_preserves_exact_control_and_receipt_association": 1,
+    "test_failed_ionic_trial_keeps_nonfinite_numeric_evidence_and_does_not_draw": 1,
+    "test_independent_carried_block_ionic_protein_and_ledger_history": 18,
+    "test_local_errors_cannot_accumulate_a_larger_global_limit": 2,
+    "test_original_random_guards_preserve_complete_ionic_evolution": 8,
+    "test_private_scopes_reuse_frozen_code_without_mutating_shared_globals": 1,
+    "test_real_failed_protein_packet_successor_and_all_ionic_trials_are_retained": 2,
+    "test_resealed_checkpoint_context_changes_refuse": 7,
+    "test_resealed_proposals_refuse_without_advancing_any_parent": 6,
+    "test_restart_requires_entire_original_block_context": 5,
+    "test_terminal_calendar_refuses_and_keeps_original_full_phase": 1,
+    "test_unblocked_composition_matches_original_complete_charged_loop": 2,
+    "test_unsupported_setters_and_absent_pump_owners_refuse": 3
+  },
+  "CPU7_status_reads": 0,
+  "all_frozen_sources_and_helpers_unchanged": true,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "declared_cpu": 3,
+  "format_check": {
+    "files": 9,
+    "returncode": 0,
+    "stdout": "9 files already formatted\n"
+  },
+  "frozen_source_files": 2154,
+  "full_execution_requires_Chief_cpu_coordination": true,
+  "full_numerical_execution": false,
+  "inputs": "/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/inputs.json",
+  "inputs_sha256": "37a30351a16ff9e145a8e0139d7d799ffd133743848a76702c8077ec8bc66c93",
+  "kind": "cells.complete_charged_block_calendar_preparation_receipt@2",
+  "lint": {
+    "files": 9,
+    "returncode": 0,
+    "stdout": "All checks passed!\n"
+  },
+  "owned_source_sha256": {
+    "src/cells/core/physiology_protein_block_calendar.py": "cee73ce671c85b3076dcbd311e49a56aa401dc13b568dc60485eef6af877d974",
+    "src/cells/core/physiology_protein_block_calendar_scope.py": "8e1eaa501677643bf9269d83f605439140585b8347eda991e29891783324bf01",
+    "src/cells/physiology_protein_block_calendar_io.py": "6dd06792bd8713bdbb60f003297a6892ebe2f09b140f40376f7820c9e8247feb",
+    "tests/integration/test_physiology_protein_block_calendar.py": "280d5538c4e865e27ff20f4bf1f42cfbbfce4a5e48ef828d7174028cee82e73f",
+    "validation/tissue/physiology_protein_block_calendar_reference.py": "9e487f1ebe780801f89384a414fe8b7a8ade4a08ad5aa518e8bc3d20db68a5c6"
+  },
+  "planned_checks": 111,
+  "planned_independent_answer_forms": 38,
+  "planned_phases": 111,
+  "prior_bounded_preflight_receipt": "agent-work/cells-worker-01/workfiles/physiology_protein_block_calendar_preflight_receipt.json",
+  "prior_bounded_preflight_receipt_sha256": "06965d7d3f221efc7e2beca126dddc00f91d9180bef8ffc9e068b3df18788e03",
+  "protected_files": 106,
+  "static_checks": "/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/static-checks.json",
+  "static_checks_sha256": "0520af3722d9b668dac59eca5d2aeba29ff3fff33ab6d37531e7b3b6f4ba63ac",
+  "status": "prepared_not_executed"
+}

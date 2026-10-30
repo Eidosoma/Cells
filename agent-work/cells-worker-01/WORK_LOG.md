@@ -4651,3 +4651,144 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   (d5ec330b/e578074f); older35-check loop receipt predates those qualified
   schedule extensions. New qualification will capture exact current sources.
   Full repeated-family qualification is expected >=10min and will be detached.
+- Development01 passes its first actual complete-loop/provider/commit join and
+  full numeric restart. Strict extra history replay detects host-control scalar
+  representation drift: frozen checkpoint IO restores np.float64 controls as
+  equal Python floats. A bounded independent diagnosis confirms source,
+  proposal, receipt and target identities all match; only journal scalar type
+  tags differ. Preserve both captures and full expected/actual raw replay.
+  Canonicalize only host Controls scalar representations using the existing
+  codec's exact scalar values; physical buffers, tapes and array dtype/bits
+  remain exact. No frozen dependency, solve or tolerance changed.
+- Chief verified B19 and requested prospective actual raw failure copies,
+  beyond retention flags. This batch journal stores full packets/successors,
+  ionic/component speculative arrays and admissions in hashed NPZ archives,
+  including nonfinite values. Existing B19 evidence remains untouched.
+- Development02 passes complete native/stable passive loops, raw history
+  roundtrip, restart without drawing and explicit full replay (33.46s,
+  320339968B RSS/HWM). Its ionic fixture then reveals omitted resolved configs
+  in the private capture, before numerical work. Preserve that failure;
+  Development03 adds required configs and runs the remaining three families.
+  No scientific source, physical recipe, stochastic law or tolerance changed.
+- Development03 completes native/stable ionic/calcium/fuel complete-loop join,
+  raw source/attempt archives, restart without a draw and explicit full replay:
+  phases46.29/70.90/148.86s. Receipt
+  fa0f70313c7cabb94950b59d15a9e70b8e7c045da978ec0f6f674ee6e110070b.
+  Together with Development02 passive, all four families have this limited
+  development evidence; full repeated batch qualification remains pending.
+- Prepared79 focused checks using complete round-boundary process restarts,
+  30 independent full histories /84 endpoints and exact serial counterparts.
+  New pure reference independently samples MT/Threefry, carries every ionic
+  field at both tolerances and checks cumulative physical energy/decimal
+  ledgers without a loop-count increase in the original global limit.
+- Preflight01 completes three atomic passive-native batch rounds /nine full
+  world loops with durable restart:44.74/55.79/71.88s, RSS<=281325568B.
+  The history comparison stops on a test-reader KeyError: actual saved
+  ProteinChargeRates stores readouts; field is a computed property. Fixed
+  only the reader. Full raw snapshots/tapes are preserved and reusable because
+  the production source/runtime is unchanged; corrected preflight reuses those
+  exact hashed round boundaries and continues serial/reference/failure checks.
+- Corrected preflight passes all nine remaining checks and three fresh
+  Cells/JAX-denied source/full-history replays, retaining complete actual
+  failed ionic/component arrays, packets, successors and admissions. Three
+  unchanged producer checks are reused explicitly:12 checks total. Maximum
+  reference error fraction0.005121117; RSS/HWM<=281325568B, reserve>=20954517504B.
+  Required preflight receipt044465b8dd75289ed87ca0794156dc3c0f3919bbd8e289c30f8f79825c3e99cd.
+- Preserve Preflight02's final collector TypeError: its broad JSON glob also
+  read a progress list. All scientific/resource/JUnit checks had already
+  passed. The driver now selects explicit independent result groups; the
+  derived preflight receipt links original failures and unchanged artifacts.
+  No scientific source or tolerance changed, and no computation was repeated
+  to repair that bookkeeping. Full79-check qualification is ready to launch.
+- Full79-check qualification launched detached at2026-10-30T14:57:10.678901Z,
+  supervisor PID/process-group1961511. Directory:
+  `/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01`.
+  Inputs SHA63891e0503c1634d5a0c06d36bc8f1977b55f886c27061171c78547cbe4d3161.
+  `launch.json` links durable supervisor logs, private source, per-phase
+  resources and result/failure artifacts. Four owned sources are frozen for
+  the active qualification. No watcher or automatic polling; result remains
+  pending until a new status instruction. Chief completion has not been sent.
+
+## B21 native blocker calendars with complete charged loops, 2026-10-30
+
+- Chief assigned new physiology_protein_block_calendar code/tests and own note
+  while B20's detached qualification owns CPU7. Implement/prepare only: no
+  numerical runs, job polling, overlapping computation or active-source edits.
+- Read qualified blocker-calendar, physical contact/NaK owner mapping and full
+  charged-loop contracts. Wrote explicit ordering/control-context/restart contract
+  before implementation. Frozen charged loop uses a fixed module control lookup;
+  private function namespaces will supply actual blocked controls without shared
+  global mutation, changed source definitions or weakened physical checks.
+- Distinct restart semantics preserve blocker memory/calendar with the full
+  ionic/component/decimal-ledger state. Raw failed numerical evidence remains
+  mandatory. Validation will be frozen and remain unexecuted until CPU7 release.
+- Implemented five owned scope/driver/restart/reference/test files. The private
+  namespaces retain frozen physical/admission code objects and source baselines;
+  accepted-source, newly staged ionic/post-ion and original-anchor controls have
+  explicit roles. Full blocker/charged publication is atomic, and nested failures
+  expose actual raw trials, packets, successors, intervals and available ledgers.
+- Static lint/format checks pass for all eight source/preparation files. AST
+  inspection counts111 planned checks and50 reference modules;106 protected
+  source hashes remain exact. No numerical run, pytest collection or active-job
+  status read occurred. Existing B20 qualification/sources remain untouched.
+- First static capture stopped because the AST import walker included an unused
+  legacy comparison function's deferred Cells import. Its reused decimal_flux
+  function is pure. Recorded the dormant branch explicitly; future fresh
+  execution still denies every attempted Cells/JAX import. Preserved capture01
+  and its failure artifact cd85b6d0a4364ed02a92fc35dda6b9f7f8161725a8b939104d257faa71a51b47.
+- Frozen preparation02 contains111 sequential bounded phases:52 complete call
+  boundaries across18 histories,18 two-tolerance physical comparisons and41
+  context/guard/refusal/restart/correspondence checks;38 fresh independent answer
+  forms are planned. Inputs:
+  `/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-02/inputs.json`
+  SHAbc2d3e5c3c878c1c617e71ba552c1c39428bc404174e5537002003ac7386adc3.
+  [Preparation receipt](workfiles/physiology_protein_block_calendar_preparation_receipt.json)
+  links exact source/helper pins, lint/AST evidence and the preserved failure;
+  [own queue](workfiles/physiology_protein_block_calendar_workqueue.json) retains
+  the CPU7 reservation and deferred execution contract. No launch exists;
+  numerical qualification remains unexecuted until explicit CPU7 release.
+- Chief subsequently allocated CPU3 for short bounded preflights, one at a time;
+  CPU2/5/7 and shared docs remain owned by the other work. Full qualification
+  still requires coordinated CPU allocation. No detached-job status was read.
+- Preflight01 preserves a supervision setup error before pytest: the process
+  log directory was missing. Fixed only that helper and created capture02.
+  All four families pass an actual complete charged call/restart there; passive
+  native passes three carried calls, a full two-tolerance reference history and
+  fresh production-denied replay. Stable SIM also passes.
+- INIT reaches an admitted restart with an unchanged RNG, then capture02's
+  spy assertion counts the disabled draw-function invocation as entropy. Fixed
+  only the observation to distinguish packet production from the original
+  guard. Preserved the failed assertion/raw accepted state and used capture03
+  for a fresh passing INIT rerun. Production sources and tolerances are exact.
+- Completed12 passing CPU3 checks /eight complete-call restart cases, one
+  three-call two-tolerance history and three actual refusal cases. Both failed
+  real-provider tapes and full numeric trials independently replay in a fresh
+  Cells/JAX-denied process; four fresh reference answer forms total. Maximum
+  independent error fraction0.009868536. Actual NaN ionic evidence roundtrips,
+  refusals preserve parents and speculative packets/successors remain intact.
+  [Preflight receipt](workfiles/physiology_protein_block_calendar_preflight_receipt.json)
+  SHA06965d7d3f221efc7e2beca126dddc00f91d9180bef8ffc9e068b3df18788e03
+  links every original result, runtime/resource record, raw archive and failure.
+  Maximum phase136.413s; RSS/HWM<=312856576B; reserve>=20485169152B.
+- Refreshed the111-check /38-answer-form full package with explicit CPU3 runtime
+  declaration and corrected guard observation. Lint/format pass all nine owned
+  source/preparation files;106 protected sources remain exact. Full inputs
+  `/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/inputs.json`
+  SHA37a30351a16ff9e145a8e0139d7d799ffd133743848a76702c8077ec8bc66c93.
+  [Current preparation receipt](workfiles/physiology_protein_block_calendar_preparation_receipt_03.json)
+  pins2154 captured files and verifies the complete static phase/test matrix.
+  The long job is not launched; no short job remains active. CPU7 jobs, all
+  earlier captures, physical source bodies and original tolerances are untouched.
+- Chief coordinated CPU3 for the full111-check qualification. Launched detached
+  at2026-10-30T15:51:16.215464Z, PID/process-group1979666 from frozen capture03.
+  `launch.json` links durable supervisor stdout/stderr and result/failure paths.
+  No automatic watcher/polling/follow-up. All five B21 sources are now frozen;
+  the result remains pending until an explicitly requested status check.
+
+## B22 pinned BETSE fast/equivalent-circuit path, 2026-10-30
+
+- Chief assigned source mapping, isolated executable native capture, independent
+  equations and a separate betse_fast_solver component for well-defined source
+  behavior. New files/own note only; no graft into conservative tissue solves,
+  full physical parity claim, initialization/shared-doc edits or numerical runs
+  without a coordinated free CPU. CPU3/7 active qualifications stay untouched.

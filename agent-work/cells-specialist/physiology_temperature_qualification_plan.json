@@ -1,0 +1,98 @@
+{
+  "kind": "cells.physiology_temperature_qualification_plan@1",
+  "owned": [
+    "src/cells/core/physiology_temperature.py",
+    "src/cells/models/physiology_temperature_view.py",
+    "validation/tissue/physiology_temperature_reference.py",
+    "tests/unit/test_physiology_temperature.py"
+  ],
+  "owned_source_sha256": {
+    "src/cells/core/physiology_temperature.py": "68c8340005fa56d3cd6f5abcedb64826b3187824fdcead63422838ef820c8c51",
+    "src/cells/models/physiology_temperature_view.py": "501c531ff7c27d6de5254074f66de5e72b2e49b3367405caa84572a0b2fbd05b",
+    "validation/tissue/physiology_temperature_reference.py": "06bd4d1d5911ad2c566aa5f6bbc4373e709b1457760edef1da76f104a2593782",
+    "tests/unit/test_physiology_temperature.py": "48af6fc7cbc3a4de53d56943dd27d5740c3b9f46107508f9b72a029648e372d7"
+  },
+  "inventory": "agent-work/cells-specialist/TEMPERATURE_INVENTORY.md",
+  "declared_checks": 38,
+  "check_groups": [
+    {
+      "function": "test_complete_passive_initial_and_evolved_fields_rates_native_T_and_functional",
+      "declared_cases": 8
+    },
+    {
+      "function": "test_disabled_empty_and_enabled_zero_amplitude_keep_exact_complete_original_readouts",
+      "declared_cases": 6
+    },
+    {
+      "function": "test_changed_active_T_refuses_with_full_native_proposal_without_reinterpreting_catalog",
+      "declared_cases": 15
+    },
+    {
+      "function": "test_resealed_owner_source_unit_and_program_corruption_refuses",
+      "declared_cases": 5
+    },
+    {
+      "function": "test_nonpositive_native_T_retains_raw_invalid_trial",
+      "declared_cases": 2
+    },
+    {
+      "function": "test_inventory_retains_matching_store_and_pool_owners_and_original_T_restriction",
+      "declared_cases": 1
+    },
+    {
+      "function": "test_forged_active_source_temperature_cannot_become_a_new_held_domain",
+      "declared_cases": 1
+    }
+  ],
+  "planned_independent_records": 22,
+  "planned_native_setter_comparisons": 18,
+  "launch_condition": "Chief explicitly assigned CPU4; transition02 stays alone on CPU5 and is not polled",
+  "runner": "validation.assembly.component_process.run_bounded",
+  "resource_limits": {
+    "cpu_affinity": [
+      4
+    ],
+    "blas_threads": 1,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "max_seconds_per_phase": 480
+  },
+  "freeze_at_launch": [
+    "source files",
+    "raw inputs",
+    "runtime file hashes and versions",
+    "actual affinity and thread environment",
+    "pinned BETSE setter sources"
+  ],
+  "fresh_replay_denied_imports": [
+    "cells",
+    "jax",
+    "jaxlib"
+  ],
+  "scope": {
+    "changed_temperature_models": [
+      "resolved_tissue@1"
+    ],
+    "exact_temperature_identity_and_changed_temperature_refusal": [
+      "resolved_tissue@12",
+      "resolved_calcium@11",
+      "resolved_calcium_energy@5",
+      "resolved_open_calcium@1",
+      "resolved_open_calcium_energy@1"
+    ],
+    "accepted_thermal_step": false,
+    "accepted_heat_law": false,
+    "anchor_reset": false
+  },
+  "tolerances": {
+    "rate_atol": 3e-12,
+    "charge_rate_atol_C": 3e-23,
+    "rate_rtol": 3e-10,
+    "potential_atol_V": 3e-13,
+    "potential_rtol": 3e-10,
+    "functional_atol_pJ": 3e-14,
+    "functional_rtol": 3e-10,
+    "stage_energy_residual_limit_pJ_s": 1e-10,
+    "passive_and_fuel_fraction_limit": 0.05
+  }
+}

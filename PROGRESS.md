@@ -26,14 +26,273 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   launch detached with durable logs and result/failure artifacts, then return
   control. Status checks wait for the user's request. GPU runs stay deferred.
 
-- **Three parallel development owners are active.** Root owns random tissue
-  preparation and shared qualification/status; Cells Key Developer owns real
-  protein packets, component commits and complete batched charged loops; Cells Specialist
-  Developer owns boundary-voltage interventions and electrode-work constraints.
-  They use separate new scientific files and CPU3/7/5 respectively, one thread
-  each, with bounded memory. Specialist retained the finite-calcium/fuel
-  reservoir refusal and is investigating the existing explicit open variants;
-  this does not relax the finite-family model contract.
+- **Results review is required for all three developers.** A launch is pending,
+  not a pass. Root reconciles outstanding jobs on requested status checks, then
+  checks terminal results, unique test counts, independent comparisons,
+  source/runtime identity and retained failures before accepting the stated
+  scope. Failed jobs retain an owner and next action; no automatic retry follows.
+  The [30 October completion audit](/mnt/workspaces/Cells/qualification-completion-audit-20261030-01/historical-disposition.json)
+  locates terminal evidence for **96 historical launch receipts**, one currently
+  running job and one previously documented host OOM without a worker receipt.
+  This is an accounting check, not renewed scientific qualification. It found
+  two older failure outcomes still described as pending below; those entries
+  are corrected and remain unqualified.
+  The [current review receipts and assigned actions](/mnt/workspaces/Cells/qualification-completion-audit-20261030-01/current-review.json)
+  bind the observed outcomes across all three owners. Older paragraphs retain
+  intermediate status checks; the latest linked closeout determines acceptance.
+
+  | Owner | Outstanding qualification | Latest reviewed disposition / next action |
+  | --- | --- | --- |
+  | Key Dev / Root review | Complete charged-loop batch, 79 checks | Running on CPU7 at the requested check; review terminal evidence when available |
+  | Key Dev / Root review | Charged blocker calendar, 111 checks | Running on CPU3 at the requested check; review terminal evidence when available |
+  | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint and fix the reviewed cohort-axis refusal gap before a new qualification |
+  | Root | Half-second salt/water/fuel response | Failed energy accounting during supply recovery; diagnose saved evidence before a new comparison |
+  | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
+
+- **Three parallel development owners are active.** Root owns reproducible
+  initialization, the older energy-failure diagnosis and shared qualification/status;
+  Cells Key Developer owns charged-loop qualifications and the native fast-solver
+  component; Cells Specialist Developer owns temperature arrays and combined
+  global control readouts. Key's detached jobs use CPU7 and CPU3. Root's short
+  handoff checks use CPU2; voltage CPU5 and temperature CPU4 jobs have ended.
+  Each process is limited to one thread and bounded memory. Finite-family
+  reservoir and active-family temperature restrictions remain explicit.
+
+- **Initialization-to-loop handoff passed 19 reviewed CPU checks and five
+  separate bundle-containment checks.**
+  Root's [new interface](docs/PHYSIOLOGY_RANDOM_STREAMS.md#starting-complete-loops-from-reproducible-initialization)
+  retains the complete initialization origin and declares a zero-loop cursor
+  using the existing paired checkpoint format, without another draw or step.
+  Loading checks that both independently valid children describe exactly the
+  same initial numeric state, component, binding and cursor.
+
+  [Frozen inputs](/mnt/workspaces/Cells/physiology-initial-loop-20261030-01/inputs.json)
+  retain **1,890 sources**, three owned files and the existing three native
+  source pins. The [reviewed panel](/mnt/workspaces/Cells/physiology-initial-loop-20261030-01/completion-verification.json)
+  covers eight INIT/SIM histories across four ordinary families,
+  **16 complete calls**, **32 physical intervals**, exact
+  independent MT continuation and **64 independent integrations** in two
+  continuously carried reference paths. Each history spans **97.65625 ns** for
+  passive tissue or **78.125 ns** for the three active families; this qualifies
+  initial loop composition, not settling or long physiological behavior.
+  Maximum state/potential errors are **0.005032 / 0.045868** of budget;
+  maximum reference uncertainty is **0.00000626** of budget. Checks and fresh
+  production-import-denied replay took **304.17 / 90.43 seconds**, peaking at
+  **429.37 MiB** tree RSS with **19.17 GiB** host reserve on CPU2.
+  Restore, publication, counter and cross-child association refusals are
+  separate software checks. The substituted child differs in its counter,
+  not its MT engine state. Loop reloads are in-process; fresh CLI processes
+  cover handoff preparation/validation only.
+
+  Review found that hash-valid symbolic links could escape the saved bundle.
+  The [reviewed five-case check](/mnt/workspaces/Cells/physiology-initial-loop-containment-20261030-01/completion-verification.json)
+  qualifies the new loader refusal for linked children, nested snapshots and
+  payload files, while verifying external files stay unchanged. It took
+  **21.87 seconds**, with **241.29 MiB** peak RSS. Its source capture overlays
+  only the loader/test changes on the original frozen dependencies; the
+  scientific reference is unchanged and the five guards add no trajectory
+  credit. All checks keep one thread, 480 seconds per phase, 1 GiB tree RSS
+  and 8 GiB host reserve.
+  This does not add charged-protein feedback, native calendar semantics or
+  complete native initialization/evolution correspondence.
+
+- **Shared-tape physiology initialization passed 38 independently verified
+  checks and fresh reference replay.** The initializer connects random physical preparation
+  to one static-potassium draw on its exact NumPy successor. The Python successor
+  is parked as history. It retains the full initial tissue/component pair and
+  admits the noisy permeability against complete physical rates and the original
+  step/turnover limits. Restore consumes no random draw; explicit recipe replay
+  and publication admission use private original tapes.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-initialization-20261030-06/inputs.json)
+  freeze **1,886 sources**, four owned files and three native source files for
+  12 full initial readout comparisons and four held INIT intervals at two
+  independent reference resolutions, plus restore/refusal/publication checks.
+  The [verified qualification](/mnt/workspaces/Cells/physiology-initialization-20261030-06/completion-verification.json)
+  compares **12 complete initial rates** and **four physical horizons**. Maximum
+  initial rate/potential errors are **0.00001495 / 0.00000796** of budget;
+  trajectory state/potential errors are **0.010535 / 0.162569** of budget.
+  Independent state/potential uncertainty is **0.000726 / 0.011198** of budget.
+  Checks/replay took **190.09 / 18.88 seconds**, peaking at **430.11 MiB tree RSS**
+  with **19.30 GiB** minimum host reserve on measured CPU3.
+  All **2,017 artifacts**, **453 captured runtime files**, frozen sources and
+  four owned files verify. Three fresh CLI processes exercise public
+  prepare/load/replay; restored complete checkpoint arrays and both native tape
+  histories match. Runtime versions and actual affinity are captured.
+  The [first capture](/mnt/workspaces/Cells/physiology-initialization-20261030-01/not-launched.json)
+  was superseded before any run: review identified missing historical-source
+  associations, which were fixed with three additional tests. Physical axes stay
+  in geometry order; component base D is explicitly prepared P times thickness,
+  including its binary64 conversion rounding. The
+  [collection failure](/mnt/workspaces/Cells/physiology-initialization-20261030-02/failure.json)
+  came from an omitted reference dependency; the next snapshot added the existing
+  qualified files without changing physics or tolerances. Its
+  [37/38 result](/mnt/workspaces/Cells/physiology-initialization-20261030-03/failure.json)
+  retains a failed passive endpoint energy check at 6.25 microseconds; the other
+  three held intervals passed. A
+  [fixed-horizon diagnostic](/mnt/workspaces/Cells/physiology-initialization-energy-diagnostic-20261030-02/diagnostic.json)
+  finds state errors of **50.0 / 2.99 / 0.1824** of the unchanged budget at
+  32 / 64 / 128 substeps over that same duration, identifying an under-resolved
+  extracellular capacitive mode. The first diagnostic retains its raw arrays
+  and [JSON-serialization failure](/mnt/workspaces/Cells/physiology-initialization-energy-diagnostic-20261030-01/failure.json).
+  Run04 retained a separate
+  [reference source-association failure](/mnt/workspaces/Cells/physiology-initialization-20261030-04/failure.json)
+  after all 128 production endpoints passed conservation. Run05 explicitly binds
+  the coarse reference definition, checks identical physical owners, and saves
+  the accepted production prefix before reference work. Its
+  [voltage-comparison failure](/mnt/workspaces/Cells/physiology-initialization-20261030-05/failure.json)
+  retains a **2.81447-budget** endpoint error at 128 steps despite passing state
+  and conservation checks. Run06 declares **256 passive substeps** over the same
+  duration: **259 physical intervals across four horizons**, with eight
+  independent integrations. Full comparison evidence now precedes accuracy
+  assertions as well as retaining the accepted production prefix.
+  Production/reference physics and all conservation/comparison limits are
+  unchanged. All 259 endpoints and both reference comparisons now pass.
+  This is not full native
+  initialization, a synchronized component loop or charged-protein projection.
+
+- **Ideal capacitive voltage-transition restart repair passed the full 59-check
+  qualification and completion review.**
+  Specialist implemented an explicitly named fixed-inventory linear-ramp law,
+  retaining per-electrode displacement charge/work and complete segment history,
+  separate from the original ionic state, clocks and anchors. The
+  [first attempt](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-01/failure.json)
+  reached its 480-second phase cap after 15 history cases. The same 59 checks,
+  20 reference records and 100 segments are partitioned into bounded phases.
+  [Launch receipt](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-02-launch/launch.json)
+  records **14:16 UTC**, PID **1947398**, CPU5 and the durable result/failure paths.
+  The requested status check found a
+  [durable-restart failure](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-02/failure.json):
+  four initial/evolved calcium/fuel restores passed JAX-backed original layouts
+  to NumPy-only ER readouts. All seven preceding physics phases completed;
+  55 checks passed overall, and fresh independent replay had not run.
+  The saved parent archives and failure traces remain intact; loading failed
+  before a new numerical transition trial existed.
+
+  Root's [frozen repair inputs](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-03-input/inputs.json)
+  normalize complete state and layout to immutable host arrays at restoration,
+  matching initialization. Only the transition adapter and restart assertions
+  change; model equations, protected readouts, capacitor algebra, reference and
+  tolerances stay fixed. The
+  [four-case CPU5 preflight](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-03-input/preflight/result.json)
+  passed exact complete-record and next-transition comparisons for initial and
+  evolved calcium/fuel, including immutable host-buffer assertions. It took
+  **253.71 seconds**, with **234.62 MiB** peak tree RSS, **240.95 MiB** HWM and
+  **19.05 GiB** minimum host reserve; **1,408 runtime files** were captured.
+  The [corrected launch receipt](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-03-launch/launch.json)
+  records **15:30 UTC**, PID **1973274**, CPU5, frozen inputs and durable logs.
+  The job covers **59 checks**, **20 independent records** and **100 path
+  segments**. The [completion review](/mnt/workspaces/Cells/physiology-boundary-voltage-transition-20261030-03/completion-verification.json)
+  verifies all **59 unique checks**, including **eight complete durable
+  restarts**, **2,377 artifacts**, **2,104 sources**, **1,427 runtime files**
+  and four native source pins. Sixteen six-segment histories plus four tiny
+  increments give the 20 independent reference cases and 100 segments;
+  these are numerical cases, not independent biological observations.
+  Maximum rate error is **0.005670** of budget. Nine phases took **867.37 s**,
+  with **242.33 MiB** peak RSS and **19.08 GiB** minimum host reserve. Runtime
+  and affinity are measured for the eight pytest phases; the separate reference
+  phase inherits affinity without its own runtime capture. Both earlier
+  failures remain intact. No automatic follow-up is queued.
+  No ionic-time evolution, heat law or native BETSE voltage-transition
+  correspondence is claimed.
+
+- **Held-temperature support passed 38 independently reviewed checks.** The
+  [temperature view](docs/PHYSIOLOGY_RANDOM_STREAMS.md#applying-held-temperature-to-complete-tissue-rates)
+  applies native temperature setters to complete passive rates while preserving
+  original state, clocks, controls and history. Active models retain their
+  **298.15 K-only** contract, including blocked and empty channel declarations.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-temperature-20261030-01/inputs.json)
+  and [review receipt](/mnt/workspaces/Cells/physiology-temperature-20261030-01/review-verification.json)
+  retain **16 changed-temperature passive stages**, six identity records
+  (**five active, one passive**), **22 independent full-rate comparisons** and
+  **18 native setter comparisons**. Fifteen active changed-temperature refusals
+  passed. Independent replay denied Cells/JAX imports; native setters, numerical
+  variants and software guards do not count as independent biological cases.
+  All **2,199 artifacts**, **2,115 source files** and **1,422 runtime files**
+  verify. Checks/replay took **29.15 / 1.52 seconds**, with **237.84 MiB** maximum
+  HWM and **19.81 GiB** minimum host reserve on measured CPU4. Maximum RHS error
+  was **0.00381** of budget; stage energy residual was **2.45e-14 pJ/s**.
+
+  The reported finite-owner mixing-functional shift is not heat, caloric
+  internal energy or an accepted thermal transition. Existing active physics
+  and restrictions remain unchanged.
+
+- **Native active-temperature correspondence passed 122 reviewed checks.**
+  [Inputs](/mnt/workspaces/Cells/native-active-temperature-20261030-02/inputs.json)
+  and [independent review](/mnt/workspaces/Cells/native-active-temperature-20261030-02/review-verification.json)
+  retain **115 correspondence records**, **1,170 batches** and **3,300 scalar
+  gate points**, with seven diagnostics kept separate. Fresh saved-data replay
+  denies Cells/JAX/BETSE imports. All **2,451 artifacts**, **2,122 frozen sources**,
+  **130 native files**, 369 host-runtime and 201 replay-runtime hashes verify.
+  Checks/replay took **18.60 / 3.02 seconds** on measured CPU4, with **106.59 MiB**
+  maximum HWM and **19.51 GiB** minimum host reserve. The
+  [first failure](/mnt/workspaces/Cells/native-active-temperature-20261030-01/failure.json)
+  retains a bookkeeping count assertion; scientific sources and limits were
+  preserved.
+
+  At fixed voltage, all 55 isolated channel class bodies retain their empirical
+  curves; legacy calcium-K explicitly uses temperature. Native global updates
+  change runtime `sim.T`, but the actual junction caller uses configured `p.T`.
+  Pump/reaction temperature factors, literal-versus-SI constants and calcium
+  standard-state conversion remain separately labelled. Review also records
+  that native `get_conductivity`'s `1/d` gives **S/m²** with declared SI inputs,
+  despite its S/m docstring. These probes do not establish complete native
+  thermal behavior or experimentally calibrated temperature responses.
+
+  The [explicit policy proposal](agent-work/cells-specialist/ACTIVE_TEMPERATURE_POLICY.md)
+  defines `active_uniform_isothermal_fixed_empirical_kinetics@1`. Specialist has
+  implemented its new held-active-rate contract, recorded below. Existing model
+  identities and temperature guards remain intact.
+
+- **Explicit held active-temperature rates passed 50 reviewed checks.**
+  [Inputs](/mnt/workspaces/Cells/physiology-active-temperature-20261030-02/inputs.json)
+  and [independent review](/mnt/workspaces/Cells/physiology-active-temperature-20261030-02/review-verification.json)
+  retain 40 changed-temperature stages across five active families, five
+  reference-temperature identities and five native-setter records. These are
+  numerical variants rather than independent biological cases. Fresh replay
+  denies production imports and reconstructs complete derivatives plus **32
+  physical field columns**; all **56 channel laws** appear in each full record.
+  Maximum RHS/field errors are **0.00806 / 0.01851** of budget; maximum stage
+  energy residual is **3.38e-14 pJ/s**.
+
+  The [contract](agent-work/cells-specialist/ACTIVE_TEMPERATURE_CONTRACT.md)
+  preserves original state acceptance, clocks and anchors, then evaluates an
+  explicit held-temperature coefficient projection. ER standard coefficients
+  are fixed in J/mol; finite shared fuel applies the current-temperature
+  calcium-pump conversion, while maintained pumps retain their declared
+  standard-state conventions. Existing ordinary schemas and 298.15 K guards
+  stay unchanged. All **2,251 artifacts**, **2,128 sources** and **1,425 runtime
+  hashes** verify. Checks/replay took **97.73 / 6.29 seconds**, with **239.33 MiB**
+  maximum HWM and **19.39 GiB** minimum host reserve on CPU4.
+
+  This qualifies held rates at the tested temperatures, not temperature changes
+  during integration, accepted thermal jumps or calibrated thermal physiology.
+  Specialist's array execution and CPU JAX work are recorded separately below.
+  Frozen evidence remains intact; GPU qualification and a heat law remain separate.
+
+- **Held active-temperature arrays passed 21 NumPy checks and five separate
+  per-world shape checks; CPU JAX qualification failed its memory guard.**
+  The [NumPy review](/mnt/workspaces/Cells/physiology-active-temperature-arrays-numpy-20261030-04/review-verification.json)
+  retains 20 independent full-rate records, all 56 channel laws and 32 physical
+  field columns, exact world reorder/partition, five restored layouts and
+  30 raw invalid proposals. The [shape review](/mnt/workspaces/Cells/physiology-active-temperature-arrays-shapes-20261030-02/review-verification.json)
+  adds five records for per-world control-axis refusals. These matched-cohort
+  comparisons remain valid, but review found an untested leading-axis mismatch:
+  the NumPy batch could silently omit worlds when given fewer proposals.
+  Specialist owns the explicit cohort-size refusal and its focused validation.
+
+  The [CPU JAX launch](/mnt/workspaces/Cells/physiology-active-temperature-arrays-cpu-20261030-01-launch/launch.json)
+  at **15:36 UTC** ended in a [resource failure](/mnt/workspaces/Cells/physiology-active-temperature-arrays-cpu-20261030-01/failure.json)
+  during the first two-world ionic RHS compilation. The phase lasted **19.78 s**,
+  reaching **1,032.64 MiB RSS**, above the **1,024 MiB** guard; host reserve
+  stayed above **19.19 GiB**. No full compiled phase or reference record passed.
+  The [failure audit](agent-work/cells-specialist/active_temperature_arrays_cpu01_failure_audit.json)
+  retains the successful shape/projection prefix separately. Memory reduction
+  is development work; the guard and scientific tolerances remain unchanged.
+  Combined temperature/voltage/blocker readouts are prepared in separate files
+  with **62 checks / 81 reference records planned but unrun**. No thermal
+  evolution, accepted heat law or GPU qualification follows from these stages.
 
 - **Random physical tissue preparation passed 35 verified checks.** The new
   [preparation bridge](docs/PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
@@ -114,6 +373,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   measured child affinity **CPU7** are captured. Key Dev's next assigned
   deliverable is a complete batched charged-loop
   driver, preserving full ionic state, history and decimal work ledgers.
+
+- **The complete charged-loop batch driver is implemented; its 79-check
+  qualification is detached and pending.** Key Dev completed a 12-check
+  preflight with three fresh independent replays, then launched at **14:57 UTC**,
+  supervisor PID **1961511**. The
+  [launch receipt](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01/launch.json)
+  links frozen inputs, logs and result/failure destinations. At the requested
+  status check, the supervisor remained active, with **36 completed phases**
+  covering passive, ionic and calcium rounds/histories in both RNG modes.
+  No final result or failure existed; no repeated polling is scheduled.
+  The planned comparison covers independent world
+  histories, actual packets, full ionic endpoints, cumulative work, isolated
+  refusals and durable restart; a passing outcome has not been established.
+
+- **Native blocker calendars with complete charged loops passed their 12-check
+  preflight; the full 111-check qualification is detached and pending.**
+  The [preflight receipt](agent-work/cells-worker-01/workfiles/physiology_protein_block_calendar_preflight_receipt.json)
+  covers four families, both RNG modes, INIT, exact restart and retained failed
+  proposals, with four fresh independent answer forms. Its maximum error is
+  **0.009869** of budget. The [refreshed inputs](/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/inputs.json)
+  declare **18 histories / 52 calls** and **38 fresh reference forms** for the
+  full run. The [launch receipt](/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/launch.json)
+  records **15:51 UTC**, PID **1979666**, CPU3, one thread and the same
+  **480-second / 1-GiB / 8-GiB reserve** guards. At the requested check,
+  twelve passive phases had completed and the supervisor remained active;
+  no final result/failure existed. Key Dev is developing a separately named
+  native fast/equivalent-circuit component while these jobs run.
 
 - **Held boundary-voltage rates passed 71 verified checks.** The
   [boundary adapter](docs/PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)
@@ -5047,7 +5333,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   expansion. Existing pump laws and tolerances stayed unchanged. The shared
   tissue integration and four additional calcium components are recorded above.
 
-- **Longer coupled CPU response panel launched:** six matched, channel-free
+- **Longer coupled CPU response panel failed energy accounting during supply
+  recovery; full qualification remains open.** Six matched, channel-free
   salt/water/fuel cases run for **0.5 s**, with supply recovery or cotransport
   release at **0.25 s**, under the
   [response protocol](validation/tissue/surface_cotransport_water_response_protocol.json).
@@ -5067,11 +5354,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [detached launch](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/qualification-01/launch.json)
   registered **nine sequential CPU groups**, controller **1115433**, CPU **6**,
   **1,280 frozen source files**, a **4-GiB** charged-memory/individual-RSS ceiling,
-  **8-GiB** host reserve and **four-hour** total limit. Initial ETA is roughly
-  **one to two hours**, pending measured long-trajectory cost. Full trajectories,
-  per-field refinement and fresh-worker replay remain pending. Durable
-  status/result/failure artifacts stay in that directory; no automatic polling
-  or follow-up run is queued. New GPU qualifications remain deferred.
+  **8-GiB** host reserve and **four-hour** total limit. The
+  [terminal failure](/mnt/workspaces/Cells/cotransport-water-response-20261028-01/qualification-01/failure.json)
+  was reconciled during the 30 October completion audit: after two completed
+  supply-on/off groups, `trajectory-supply_recovery` raised
+  `Cotransport/water accounting failed: energy`. The supervisor ended after
+  **28m 40s**. This is a numerical conservation failure, not a resource stop;
+  its cause is not yet established. Root owns diagnosis of the original
+  half-second history and control boundary before a new run. The six-arm
+  comparison, refinement and fresh-worker replay remain unqualified. Saved
+  evidence stays intact; no retry or GPU follow-up has been launched.
 
 - **Salt/water/finite-energy composition implemented on CPU:**
   [`resolved_cotransport_water@1`](docs/TISSUE_RETURN_CURRENT.md#cotransport-with-finite-energy-and-water)
@@ -5191,7 +5483,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   confirms complete, disjoint test selection. The
   [launch receipt](/mnt/workspaces/Cells/resolved-finite-energy-20261028-01/launch.json)
   and [registration](/mnt/workspaces/Cells/resolved-finite-energy-20261028-01/registration.json)
-  bind the frozen source and job. Completion is pending. No automatic polling,
+  bind the frozen source and job. The [terminal failure](/mnt/workspaces/Cells/resolved-finite-energy-20261028-01/failure.json)
+  records **15:53:39 UTC on 28 October**, after **1h 49m 58s**: the GPU
+  independent-world partition/reorder/restart subprocess exceeded its
+  **900-second** test deadline. This outcome was reconciled during the
+  30 October completion audit. Full CPU/L4 qualification is not credited;
+  the timeout and saved prefix remain intact. Root retains the fresh-worker
+  timing diagnosis for the deferred GPU qualification batch. No automatic
   retry or follow-up is queued.
 
   The [initial worker failures](/mnt/workspaces/Cells/finite-energy-tissue-development-20261028-01/failure.json)
