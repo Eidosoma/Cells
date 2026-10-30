@@ -13,7 +13,7 @@ import numpy as np
 
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError as NumericalError
-from cells.core.grid import checked_grid
+from cells.core.grid import EventGrid, checked_grid, require_refinement_model
 from cells.core.resources import trace_bytes
 from cells.core.schedule import control_values
 from cells.core.schedule import event_index as event_index
@@ -30,19 +30,11 @@ def _trace_budget(spec: SimulationSpec, steps: int) -> None:
 
 
 def timeline(spec: SimulationSpec) -> np.ndarray:
-    """Fixed mesh anchored at zero, split exactly at inputs and the final time."""
-    end, dt = spec.experiment.end_time, spec.execution.dt
-    count = end / dt
-    if not math.isfinite(count) or count > spec.execution.max_steps:
-        raise ConfigError("Nominal integration grid exceeds max_steps")
-    nominal_count = math.ceil(count)
-    _trace_budget(spec, nominal_count)
-    points = {0.0, end, *(change.time for change in spec.experiment.changes)}
-    points.update(i * dt for i in range(1, nominal_count) if i * dt < end)
-    times = np.array(sorted(points), dtype=np.float64)
-    if len(times) - 1 > spec.execution.max_steps:
-        raise ConfigError("Event-split integration grid exceeds max_steps")
-    _trace_budget(spec, len(times) - 1)
+    """The shared exact grid, with storage admission before allocating a trace."""
+    require_refinement_model(spec)
+    grid = EventGrid(spec)
+    _trace_budget(spec, len(grid) - 1)
+    times = np.fromiter(grid, dtype=np.float64, count=len(grid))
     get_model(spec.model).check_steps(spec, np.diff(times), control_values(spec, times[:-1]))
     return times
 

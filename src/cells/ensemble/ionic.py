@@ -16,6 +16,7 @@ from cells.assembly.io import digest, write_json
 from cells.batch_io import load_batch_snapshot, write_batch_snapshot
 from cells.core.batch import BatchSpec, WorldSpec
 from cells.core.batch_windows import plan_batch_windows, run_batch_windowed
+from cells.core.grid import refinement_times
 from cells.core.resources import trace_bytes
 from cells.core.specs import digest as definition_digest
 from cells.core.specs import parse_spec as parse_ionic
@@ -70,6 +71,7 @@ class IonicSpec:
         bound = self.worlds * (
             math.ceil(self.end_time_s / self.simulation.execution.dt)
             + len(self.simulation.experiment.changes)
+            + len(refinement_times(self.simulation))
             + 1
         )
         return BatchSpec(worlds, self.worlds, bound, self.max_working_bytes)

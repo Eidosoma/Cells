@@ -8,7 +8,7 @@ from typing import NamedTuple
 from cells.core import surface_cotransport_spec as cotransport
 from cells.core import surface_energy_spec as energy
 from cells.core import surface_energy_water_spec as water
-from cells.core.specs import ConfigError, _fields
+from cells.core.specs import ConfigError, _fields, _number
 
 MODEL_ID = "resolved_cotransport_water@1"
 
@@ -16,6 +16,13 @@ MODEL_ID = "resolved_cotransport_water@1"
 @dataclass(frozen=True)
 class SurfaceCotransportWaterModel(water.SurfaceEnergyWaterModel):
     cotransporters: tuple[cotransport.Cotransporter, ...]
+
+
+@dataclass(frozen=True)
+class Execution(cotransport.Execution):
+    """Declared numerical boundaries; these do not add physiological events."""
+
+    refinement_times: tuple[float, ...] = ()
 
 
 Control = NamedTuple(
@@ -94,6 +101,12 @@ def to_dict(spec):
         dict(membrane_id=p.id, schedule=[asdict(c) for c in group])
         for p, group in zip(spec.model.membranes, spec.experiment.water, strict=True)
     ]
+    from cells.core.grid import refinement_times
+
+    points = refinement_times(spec)
+    if points:
+        # Empty schedules retain the exact legacy serialized definition/hash.
+        raw["execution"]["refinement_times"] = list(points)
     return raw
 
 
@@ -102,6 +115,12 @@ def parse(data):
     raw = deepcopy(data)
     if type(raw["model"]) is not dict or raw["model"].get("id") != MODEL_ID:
         raise ConfigError("Require resolved_cotransport_water@1")
+    if type(raw["execution"]) is not dict:
+        raise ConfigError("execution must be an object")
+    refinements = raw["execution"].pop("refinement_times", [])
+    if type(refinements) is not list:
+        raise ConfigError("execution.refinement_times must be a list")
+    refinements = tuple(_number(t, "refinement time") for t in refinements)
     try:
         coupling = raw["model"].pop("energy_osmotic_coupling")
         compartments = raw["model"].pop("water_compartments")
@@ -122,6 +141,7 @@ def parse(data):
     validated = water.parse(projected)
     spec = replace(
         original,
+        execution=Execution(**vars(original.execution), refinement_times=refinements),
         model=SurfaceCotransportWaterModel(
             **vars(validated.model), cotransporters=original.model.cotransporters
         ),
@@ -129,6 +149,9 @@ def parse(data):
             **vars(validated.experiment), cotransports=original.experiment.cotransports
         ),
     )
+    from cells.core.grid import refinement_times
+
+    refinement_times(spec)
     from cells.models import surface_cotransport_water
 
     try:

@@ -56,8 +56,9 @@ execution and the ordinary full-trace path retain their existing behavior.
 The working-array estimate already reserves that maximum window width. Compiler
 memory and total process RSS still need their separate guards.
 
-The grid is a lazy indexed union of nominal times and declared events, including
-the exact end time. It never materializes a horizon-length array. Checkpoints
+The grid is a lazy indexed union of nominal times, declared events and any
+supported explicit numerical refinement, including the exact end time. It never
+materializes a horizon-length array. Checkpoints
 retain global accepted-step indices. Off-grid observations do not become steps,
 and requested checkpoints must already be exact accepted boundaries.
 
@@ -74,6 +75,33 @@ An observation on a shared window boundary is emitted once, by the preceding
 window (except the run's initial boundary). Its state is the exact endpoint;
 derived controls remain right-continuous. All configured observations are
 evaluated and validated even when their output is not retained.
+
+## Explicit local numerical refinement
+
+`resolved_cotransport_water@1` additionally accepts an optional list under
+`execution`, for example:
+
+```json
+"refinement_times": [6.25e-7, 1.875e-6]
+```
+
+Times must be finite, strictly increasing and strictly inside the simulation
+horizon. They add exact accepted boundaries to the nominal/event grid. A point
+already on that grid is included once; adjacent representable floats remain
+distinct. The complete RK4 state advances through each interval, using the same
+physical controls, equations, domain checks and conservation tolerances.
+Resolution is declared in advance; this is not an adaptive error controller.
+
+Refinement changes the numerical step index but does not change biological event
+indices, component-call calendars or random streams. It is stored with the
+resolved definition and cannot be changed by checkpoint branching. An omitted
+or empty list preserves the previous serialized definition and fingerprint;
+source-pinned snapshots still obey their existing installation checks.
+Step, trace-storage and padded batch-work limits include the extra boundaries.
+Other model definitions, including native BETSE discrete clocks, refuse this
+option. See [current qualification and limitations](../PROGRESS.md) before using
+it to support a scientific claim; CPU execution tests do not establish GPU
+support or resolve the separate depleted-fuel recovery failure.
 
 ## Recording policies
 

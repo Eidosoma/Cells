@@ -43,22 +43,50 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
   | Owner | Outstanding qualification | Latest reviewed disposition / next action |
   | --- | --- | --- |
-  | Key Dev / Root review | Complete charged-loop batch, 79 checks | Running on CPU7 at the requested check; review terminal evidence when available |
-  | Key Dev / Root review | Charged blocker calendar, 111 checks | Running on CPU3 at the requested check; review terminal evidence when available |
-  | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Launched detached on CPU4 at 16:44 UTC; awaiting the next requested status check |
+  | Root continuation / Key implementation | Complete charged-loop batch, 79 checks | Failed the 480-second fuel-round limit after 38 passed checks; preparing a fresh continuation with 900-second fuel phases, unchanged science and retained failures |
+  | Key Dev / Root review | Charged blocker calendar, 111 checks | Running on CPU3 with 59 completed phases at the requested check; review terminal evidence when available |
+  | Specialist / Root review | Staged temperature-array NumPy path, 56 checks | Running on CPU4 with three completed host phases at the requested check; terminal evidence remains pending |
   | Specialist | Active-temperature CPU JAX arrays | Failed its 1-GiB compiler-memory guard; reduce compilation footprint before a new qualification. The cohort-axis refusal defect is now closed separately |
   | Root | Half-second salt/water/fuel response | First-interval diagnosis reproduces unresolved fuel-recovery energy quadrature; qualify suitable local time resolution before another full comparison |
   | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
 
-- **Three parallel development owners are active.** Root owns reproducible
-  initialization, the older energy-failure diagnosis and shared qualification/status;
-  Cells Key Developer owns charged-loop qualifications and the native fast-solver
-  component; Cells Specialist Developer owns temperature arrays and combined
-  global control readouts. Key's detached jobs use CPU7 and CPU3. Root's short
-  handoff checks used CPU2; voltage CPU5 and the earlier temperature CPU4 job
-  have ended. The new staged NumPy qualification uses CPU4.
+- **Three parallel development owners are active.** Root owns the numerical
+  resolution repair, charged-loop continuation and shared qualification/status;
+  Cells Key Developer owns native normal-solver components, with current
+  construction and ion/material ordering now under completion review;
+  Cells Specialist Developer owns temperature arrays and native thermal clocks.
+  The older blocker job uses CPU3, staged NumPy uses CPU4, native component
+  comparisons use CPU1, and Root's short refinement qualification uses CPU2.
   Each process is limited to one thread and bounded memory. Finite-family
   reservoir and active-family temperature restrictions remain explicit.
+
+- **Explicit local numerical refinement is implemented and under CPU
+  qualification.** Optional `execution.refinement_times` currently belongs only
+  to `resolved_cotransport_water@1`. Empty settings preserve the legacy serialized
+  fingerprint. The scalar and windowed clocks use one exact grid; numerical
+  boundaries do not add biological events or random draws. Batch work/storage
+  admission counts the extra boundaries before timeline allocation.
+  [Frozen inputs](/mnt/workspaces/Cells/numerical-refinement-20261030-02/inputs.json)
+  define **24 software checks**, eager restart/window/mixed-grid batch checks,
+  compiled scalar comparison and two fresh independent reference integrations
+  of a **2.5-us** history with all **31 state fields**. This validates execution
+  support, not the depleted half-second recovery. Compiled batches and GPU
+  execution remain separate. The first attempt retained **23 passing software
+  checks and one refusal-path failure**: a generic model lacked `MODEL_ID`.
+  [That failure](/mnt/workspaces/Cells/numerical-refinement-20261030-01/failure.json)
+  remains intact; the successor corrects the exception without changing physics.
+
+- **Native normal-current construction passed 26 reviewed checks.**
+  [Completion verification](/mnt/workspaces/Cells/betse-normal-current-tests-20261030-01/completion-verification.json)
+  verifies **10 native captures**, **16 independent Decimal forms**, **24 supplied
+  snapshots** and **216 output arrays** matching native values and dtypes exactly.
+  Maximum independent error is **0.0010357** of budget; zero-sharpness failure
+  and unsanitized overflow evidence remain saved. All **2,172 frozen sources**
+  verify; two of the 118 protected live files subsequently changed for Root's
+  declared refinement work, outside this stateless kernel. This is the
+  post-flux current path through `sim.Jc`, without trajectory or full field-solver
+  credit. Key Dev has also completed the separate ion/material join; its retained
+  failure and corrected ledger assertion are under independent review.
 
 - **The separate native fast equivalent-circuit component passed 45 reviewed
   checks.** Key Dev's [source map](agent-work/cells-worker-01/workfiles/BETSE_FAST_SOLVER_NOTES.md)
@@ -74,7 +102,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and stale coefficients after live controls remain explicit. This approximate
   circuit neither replaces conservative tissue equations nor establishes full
   native initialization, ionic evolution or physical energy closure. Key Dev's
-  next separate component concerns normal-solver current aggregation/smoothing.
+  subsequent normal-solver components have separate source and failure evidence.
 
 - **The salt/water recovery failure now has a focused numerical diagnosis.**
   [Frozen inputs](/mnt/workspaces/Cells/cotransport-recovery-diagnostic-20261030-01/inputs.json)
@@ -468,15 +496,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   deliverable is a complete batched charged-loop
   driver, preserving full ionic state, history and decimal work ledgers.
 
-- **The complete charged-loop batch driver is implemented; its 79-check
-  qualification is detached and pending.** Key Dev completed a 12-check
+- **The complete charged-loop batch driver is implemented; its first 79-check
+  qualification stopped at the fuel-phase wall limit.** Key Dev completed a 12-check
   preflight with three fresh independent replays, then launched at **14:57 UTC**,
   supervisor PID **1961511**. The
   [launch receipt](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01/launch.json)
-  links frozen inputs, logs and result/failure destinations. At the requested
-  status check, the supervisor remained active, with **36 completed phases**
-  covering passive, ionic and calcium rounds/histories in both RNG modes.
-  No final result or failure existed; no repeated polling is scheduled.
+  links frozen inputs, logs and result/failure destinations. The requested
+  check found [failure](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01/failure.json)
+  at `round-fuel-native-2`, after **38 passing phases/checks**. The
+  [retention review](/mnt/workspaces/Cells/physiology-protein-batch-loop-tests-20261030-01/root-retention-review-01.json)
+  verifies all **2,131 frozen files**, **20 qualified round snapshots** and
+  **18 histories**. The failed round's published snapshot and proposals remain
+  uncredited because its restore assertions never finished. Root is preparing
+  **41 remaining checks / 30 phases**, plus six fresh independent replay phases,
+  in a new tree. Fuel round/history phases receive **900 seconds**; all other
+  phase caps, one-thread/1-GiB/8-GiB resource guards, durations and numerical
+  tolerances stay unchanged. Expected remaining runtime is **90–120 minutes**.
   The planned comparison covers independent world
   histories, actual packets, full ionic endpoints, cumulative work, isolated
   refusals and durable restart; a passing outcome has not been established.
@@ -491,9 +526,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   full run. The [launch receipt](/mnt/workspaces/Cells/physiology-protein-block-calendar-tests-20261030-03/launch.json)
   records **15:51 UTC**, PID **1979666**, CPU3, one thread and the same
   **480-second / 1-GiB / 8-GiB reserve** guards. At the requested check,
-  twelve passive phases had completed and the supervisor remained active;
-  no final result/failure existed. Key Dev is developing a separately named
-  native fast/equivalent-circuit component while these jobs run.
+  **59 phases** had completed and the supervisor remained active;
+  no final result/failure existed. Key Dev is developing separate native
+  normal-solver components while this job runs.
 
 - **Held boundary-voltage rates passed 71 verified checks.** The
   [boundary adapter](docs/PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)

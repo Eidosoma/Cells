@@ -13,12 +13,39 @@ from cells.core.specs import ConfigError, _integer
 from cells.models.registry import get_model
 
 
+def refinement_times(spec):
+    """Validate immutable optional numerical boundaries independently of events."""
+    points = getattr(spec.execution, "refinement_times", ())
+    if type(points) is not tuple or len(points) > spec.execution.max_steps:
+        raise ConfigError("refinement_times must be an immutable sequence within max_steps")
+    previous = 0.0
+    for time in points:
+        if (
+            type(time) not in (int, float)
+            or not math.isfinite(time)
+            or not previous < time < spec.experiment.end_time
+        ):
+            raise ConfigError("refinement_times must strictly increase inside the horizon")
+        previous = time
+    return points
+
+
+def require_refinement_model(spec):
+    """Public execution must not silently refine discrete/native clock models."""
+    if refinement_times(spec) and getattr(get_model(spec.model), "MODEL_ID", None) != (
+        "resolved_cotransport_water@1"
+    ):
+        raise ConfigError("refinement_times currently require resolved_cotransport_water@1")
+
+
 @dataclass(frozen=True, init=False)
 class EventGrid(Sequence):
-    """Exact union used by timeline(): float i*dt, declared events, zero and end.
+    """Exact union of float i*dt, events, numerical refinement, zero and end.
 
-    Only off-nominal events and their global indices are stored. Binary searches
+    Only off-nominal boundaries and their global indices are stored. Binary searches
     compare actual products rather than rounding a time/dt quotient.
+    Internal model projections may use this clock during inherited validation;
+    public execution additionally calls require_refinement_model().
     """
 
     dt: float
@@ -36,8 +63,8 @@ class EventGrid(Sequence):
         while last > 0 and last * dt >= end:
             last -= 1
         extras, indices = [], []
-        for change in spec.experiment.changes:
-            t = change.time
+        points = sorted({*(c.time for c in spec.experiment.changes), *refinement_times(spec)})
+        for t in points:
             if t == 0 or t == end:
                 continue
             lo, hi = 0, last + 1
@@ -103,6 +130,7 @@ def checked_grid(spec, *, window_steps=1024):
     Used for portable checkpoint validation, not a promise about execution RSS.
     Execution policies make their own (larger) working-array reservation.
     """
+    require_refinement_model(spec)
     grid = EventGrid(spec)
     base = trace_bytes(spec, 0, 0)
     per_step = trace_bytes(spec, 1, 0) - base

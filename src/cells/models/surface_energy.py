@@ -348,7 +348,7 @@ def check_definition(spec):
 
 def check_steps(spec, steps, controls):
     # Keep the complete regeneration-clock grid and every existing ionic ceiling.
-    ionic = replace(initial_ionic_spec(spec), experiment=spec.experiment)
+    ionic = replace(initial_ionic_spec(spec), experiment=spec.experiment, execution=spec.execution)
     prior.check_steps(ionic, steps, controls)
     state, p = initial_values(spec)
     amount = np.where(p.active, energy_amounts(state, p), 1.0)

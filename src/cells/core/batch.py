@@ -18,6 +18,7 @@ import numpy as np
 
 from cells.core.devices import execution_device
 from cells.core.errors import NumericalError
+from cells.core.grid import refinement_times
 from cells.core.resources import trace_bytes
 from cells.core.runner import (
     RunResult,
@@ -142,7 +143,7 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
             raise ConfigError(f"World {world.world_id}: nominal grid exceeds max_steps")
         # Before any timeline/control/capacity allocation. Events include zero,
         # so this intentionally overestimates instead of guessing overlap.
-        upper.append(math.ceil(nominal) + len(s.experiment.changes))
+        upper.append(math.ceil(nominal) + len(s.experiment.changes) + len(refinement_times(s)))
     steps = max(upper)
     padded = steps * len(spec.worlds)
     if padded > spec.max_padded_steps:
@@ -179,7 +180,9 @@ def checkpoint_batch_limits(spec):
         nominal = s.experiment.end_time / s.execution.dt
         if not math.isfinite(nominal) or nominal > s.execution.max_steps:
             raise ConfigError(f"World {world.world_id}: nominal grid exceeds max_steps")
-        upper.append(max(1, math.ceil(nominal)) + len(s.experiment.changes))
+        upper.append(
+            max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
+        )
     bound = len(spec.worlds) * max(upper)
     if bound > spec.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")

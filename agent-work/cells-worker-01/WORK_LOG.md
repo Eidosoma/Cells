@@ -4843,3 +4843,108 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   files. Scope will be sent before any shared API work. Root retains shared
   initialization and salt/water energy failure; Specialist retains combined
   global-control readouts. Other qualifications remain untouched.
+- Sent Chief the intracellular current-prefix scope before implementation.
+  [Inventory](workfiles/native_normal_solver_inventory.json) authenticates14
+  functions in seven native source files,20 lexical loop stages and nine
+  component coverage mappings. [Notes](workfiles/NATIVE_NORMAL_CORRESPONDENCE_NOTES.md)
+  identify remaining old/new concentration, per-ion gate, boundary, field and
+  initialization joins. This is a source inventory, not a full-loop runtime
+  equivalence result.
+- Added the separate normal-current component, literal authenticated native
+  prefix capture, independent Decimal90/140 reference, deterministic explicit
+  snapshots and26 planned checks in new files. Readouts retain charge/current
+  signs, inverse sharpness, nonconvex finite weights and surface-area mismatch
+  residuals. Actual source failures and nonfinite trials have lossless raw
+  evidence paths; source parents and physical tolerances remain unchanged.
+- Static preparation passes lint/format for six Python files, syntax and
+  source/import/test-matrix audits. All118 protected files remain exact. Frozen
+  inputs capture2172 source files and16 authenticated checkout/installed native
+  copies; planned qualification is ten native captures,16 independent answer
+  forms and24 ordinary post-flux snapshots. Package:
+  `/mnt/workspaces/Cells/betse-normal-current-tests-20261030-01/inputs.json`
+  SHAc715f1d263d27e46c2a6ba1bd840dfd72402ef26da1ec83455fa2b52e388c4c3.
+  [Preparation receipt](workfiles/betse_normal_current_preparation_receipt.json)
+  SHA2be03382f3ee88660b86f7bb2abf78c91341af58d9ada0e1f9f765fc5b6346f4
+  links the exact files and limits. No scientific imports, numerical runs or
+  pytest collection occurred; numerical qualification awaits Chief's CPU
+  coordination. No active computation/status was touched, and no follow-up
+  audit/regression ran. Chief owns the shared PROGRESS.md update and review.
+- Chief subsequently coordinated CPU1. The frozen bounded phase passes26
+  checks in5.793s, including ten authenticated native captures,16 independent
+  reference answers and24 ordinary snapshots. All published arrays/dtypes
+  match actual host-native source exactly; maximum independent error fraction
+  0.001035665. Main and child runtimes report CPU1. Sampled process-tree
+  RSS<=100323328B, individual HWM<=53583872B, reserve>=23461457920B.
+  Complete native zero-sharpness failure/nonfinite states and component
+  refusals remain in raw evidence. All118 protected files are unchanged.
+  Terminal result:
+  `/mnt/workspaces/Cells/betse-normal-current-tests-20261030-01/result.json`
+  SHAe20ede9c2b5d2f841be643bf41e31ed755d9ff66e186315432248d49962b71ab.
+  Chief review remains pending; no follow-up regression or active-job polling.
+
+## B24 native normal ion/material join, 2026-10-30
+
+- Chief requested the next substantial normal-source join, explicitly covering
+  membrane/bulk refresh and per-ion ordering with full state provenance, in
+  new scoped files. Root owns depleted-fuel refinement and batch continuation;
+  Specialist owns temperature clocks/staging. B23 sources are now frozen.
+- Sent the concrete no-ECM ion/material scope, including source nonce voltage
+  mutation, before coding. Chief approved that scope and separately assigned
+  CPU1 for adequate guarded validation. Added only new component, native
+  capture, independent Decimal reference, fixture, protocol/source-map, test
+  and own preparation files. No shared APIs or physics tolerances changed.
+- Prepared42 checks,12 four-call histories/48 calls/888 complete intermediate
+  states,15 native captures and24 independent answer forms. Native capture
+  authenticates eight original source functions; reference equations use
+  Decimal90/140. Every stage retains all original numeric state, actual
+  clipping, signed bath/membrane buffers, unweighted mixing, source temperature
+  split and nonce mutation. Strict component finite refusals have full raw
+  native/partial-trial evidence paths, including native infinity acceptance.
+- Lint/format/syntax/source/import/matrix checks pass six Python files; frozen
+  inputs capture2179 source files and eight authenticated native source copies:
+  `/mnt/workspaces/Cells/betse-normal-ion-join-tests-20261030-01/inputs.json`
+  SHA2e57237c6e48a253b65bda7e43c3b2dea7995e5630e0200574f51608ad9862a1.
+  [Preparation receipt](workfiles/betse_normal_ion_join_preparation_receipt.json)
+  links exact files and CPU/resource bounds. Chief explicitly announced eight
+  shared-file edits; grid.py/specs.py are the two historical protection entries
+  affected. Their old hashes remain recorded, with122 other files protected.
+  B23/frozen historical evidence is untouched, and scientific tests assert
+  those shared modules are not imported. No numerical or active-status read
+  occurred during preparation. Qualification is next on coordinated CPU1.
+- First frozen42-check attempt completes41 passes/one diagnostic assertion
+  failure. All12 carried comparisons/48 calls/888 states,15 native captures
+  and24 reference forms complete; native arrays/dtypes are exact, independent
+  maximum error fraction0.000275786. The mixed-bath residual test omitted the
+  gross inventory scale when subtracting initial/final bath inventories:
+  residuals3.14e-29..1.76e-28mol reflect subtraction of about1e-12mol inventories,
+  not only the1e-19mol transfers used in the old test budget. Failure01 remains
+  intact at the original evidence directory, failure artifact
+  SHAaf1ffbca552bdda91d956850c0248beacfe321b0950a805257a80cdbd394f3eb.
+  Corrected only the test's gross roundoff budget and its protocol entry;
+  component/native/reference equations, comparison budgets and physical
+  tolerances are unchanged. Same42 checks will qualify a fresh capture02;
+  the own queue links original failure, stdout, XML and preparation receipt.
+- Fresh capture02 preserves all seven component/support file identities except
+  the explicitly corrected test/protocol. Static preparation again verifies
+  six Python files, eight source functions/native copies and122 protected
+  files. Inputs
+  `/mnt/workspaces/Cells/betse-normal-ion-join-tests-20261030-02/inputs.json`
+  SHA5cd9e79ca4dca69078483d23ed45c18781ec332e1928da6c44e51d79e17f0d0b;
+  [Preparation receipt02](workfiles/betse_normal_ion_join_preparation_receipt_02.json)
+  SHA587ffebed52b7939988005ebd61b82bb450996c1f199489c4b89728cabcfd691.
+  The same42-check bounded qualification is running on coordinated CPU1.
+- Capture02 terminal qualification passes all42 checks in15.095s:15 actual
+  native captures,24 independent answers,48 carried calls and888 complete
+  observed states. All native arrays/dtypes match exactly; maximum independent
+  fraction0.000275786. Main/native/reference report CPU1. Process-tree
+  RSS<=105086976B, individual HWM<=58454016B, reserve>=23611064320B. Scientific
+  tests load none of Chief's eight shared-edit modules. All122 other protected
+  sources and the full frozen snapshot remain exact. Terminal result:
+  `/mnt/workspaces/Cells/betse-normal-ion-join-tests-20261030-02/result.json`
+  SHAc84299e31a89b83f0c8f54dc6832323b97deaeac5cd63a2217fd0b094291440d.
+  Own queue retains both attempts and verifies that only test/protocol changed
+  between them. The component/native/reference bodies and physical tolerances
+  did not change. Actual source NaN refusals, overflow and accepted infinity,
+  plus all component partial trials, survive as raw archives. Seven owned
+  sources are frozen for Chief's independent review. No broader follow-up run,
+  detached-job poll, shared-doc edit, git stage or commit was performed.

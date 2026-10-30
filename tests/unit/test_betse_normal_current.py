@@ -146,11 +146,17 @@ def test_native_prefix_exact_and_independent_snapshot_equations(tmp_path, case):
         parent = digest(source)
         report = current.evaluate(binding, source)
         reports.append(report)
+        archive(
+            tmp_path,
+            "snapshot-" + case + "-" + str(len(reports) - 1),
+            dict(inputs=snapshot, binding=binding, report=report),
+        )
         assert report.source is source and digest(source) == parent
         native_actual = native_values(frame)
         row = {}
         unit_budgets = {}
         for key, value in report.values._asdict().items():
+            assert value.dtype == native_actual[key].dtype, key
             np.testing.assert_array_equal(value, native_actual[key], err_msg=key)
             wanted = np.asarray(target["values"][key])
             gross = np.asarray(target["gross"][key])

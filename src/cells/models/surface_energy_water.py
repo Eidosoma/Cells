@@ -268,7 +268,7 @@ def maximum_osmolyte_amount_fmol(state, p):
 
 def check_steps(spec, steps, controls):
     # Catalog projection must not remove water-only accepted boundaries.
-    finite = replace(energy_spec(spec), experiment=spec.experiment)
+    finite = replace(energy_spec(spec), experiment=spec.experiment, execution=spec.execution)
     prior.check_steps(finite, steps, controls)
     state, p = initial_values(spec)
     rate = water.relaxation_rate_bound(maximum_osmolyte_amount_fmol(state, p), water_parameters(p))

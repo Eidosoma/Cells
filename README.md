@@ -10,6 +10,11 @@ The simulation stack is **Python and JAX**, with independent CPU references and
 local NVIDIA GPU execution. See [Progress](PROGRESS.md) for current verification
 status and [Scientific basis](docs/SCIENTIFIC_BASIS.md) for the research background.
 
+![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
+
+This schematic maps cell biology to selected Cells model capabilities;
+whole-cell integration is ongoing.
+
 ## Why we are building Cells
 
 One of Cells' central goals is to test the ideas in our

@@ -772,6 +772,10 @@ class SimulationSpec:
 
     def to_dict(self) -> dict:
         m, e, x = self.model, self.experiment, self.execution
+        if getattr(x, "refinement_times", ()):
+            from cells.core.grid import require_refinement_model
+
+            require_refinement_model(self)
         from cells.core import surface_open_calcium_bath_epoch_spec as calcium_bath_epoch
         from cells.core import surface_open_calcium_energy_bath_epoch_spec as energy_bath_epoch
 

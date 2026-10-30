@@ -1,0 +1,60 @@
+{
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "capture_scope": "Actual flux reset statements, unchanged moving-ion source loop and final update_all_concs call; complete electroflux/update_gj/update_intra/update_Co/update_all_concs/no_negs bodies; read-only state observations",
+  "float_budgets": {
+    "independent": "128*eps*(ions+membranes+4*step_index+32)*propagated_gross + per-unit floor; concentrations1e-25, flux1e-30, voltage1e-40, field1e-28, opening1e-30",
+    "mixed_bath_ledger": "32*eps*(bath_volume*(abs(initial_bath)+abs(final_bath))+abs(membrane_transfer)/membrane_count)+1e-30 mol; includes gross inventory subtraction scale",
+    "native_host": "exact complete array values and dtypes at every observed stage",
+    "physical_tolerances": "unchanged; no conservative model integration",
+    "reference_self_resolution_fraction": 0.1
+  },
+  "kind": "cells.betse_normal_ion_join_contract@1",
+  "law_id": "betse_normal_no_ecm_ion_join_v1_5_0@1",
+  "limitations": [
+    "No ECM/pumps/events/networks/flow/geometry mutation",
+    "No voltage-sensitive gate callback; explicit fixed weights and per-call block",
+    "No field/voltage feedback solve or initialization claim",
+    "Finite signed membrane/bath values and clipping/mixing residuals retained without repair",
+    "No physical material/charge/energy conservation inference or whole-native/GPU parity"
+  ],
+  "literal_semantics": [
+    "electroflux mutates voltage and valence arguments by 1e-25; sim.vm mutation retained per ion",
+    "gap field computed before gap voltage nonce mutation",
+    "membrane source uses runtime temperature; gap source uses configured temperature",
+    "gap masks boundaries even for cluster_open",
+    "update_Co refreshes membrane after membrane exchange, before gap bulk-only update/clipping",
+    "no_negs clips negative bulk and refuses NaN, source may retain signed membrane/bath or infinity",
+    "no-ECM bath is unweighted mean across membrane increments, not conservative shared-bath law"
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    },
+    "version": "1.5.0"
+  },
+  "purpose": "Close the explicit no-ECM normal per-ion flux, membrane refresh and material commit join with carried full state provenance",
+  "raw_evidence_codec": "Qualified common lossless typed data.json/arrays.npz codec from betse_normal_current_native",
+  "reference": "Independent stdlib Decimal owner sums, flux equations and carried states at precisions90/140; only source nonce stores explicitly round to binary64",
+  "resources": {
+    "cpu": 1,
+    "cpu_coordination": "Chief explicitly assigned CPU1 for B24 guarded qualification",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "source_map": "validation/betse/betse_normal_ion_join_source_map.json",
+  "source_order": [
+    "reset_flux",
+    "per ion: membrane_flux, junction_flux, refresh_at_mem",
+    "per ion: membrane_commit, junction_commit, clip_bulk"
+  ]
+}

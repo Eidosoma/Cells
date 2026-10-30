@@ -455,6 +455,7 @@
       "global-control program readouts",
       "conservative solver integration"
     ],
+    "implementation": "src/cells/processes/betse_normal_current.py",
     "inputs": [
       "bulk concentrations",
       "complete membrane and gap fluxes",
@@ -463,7 +464,12 @@
       "source F and sharpness"
     ],
     "name": "betse_normal_current",
-    "native_file": "betse/science/physics/ion_current.py"
+    "native_file": "betse/science/physics/ion_current.py",
+    "planned_checks": 26,
+    "planned_fresh_independent_answer_forms": 16,
+    "planned_fresh_native_captures": 10,
+    "planned_main_snapshots": 24,
+    "qualification_status": "implemented_static_preparation_only"
   },
   "source_sha256": {
     "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",

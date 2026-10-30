@@ -71,11 +71,21 @@ that diagnostic without silently clipping. Total surface current is preserved
 by this smoothing only when the supplied cell area equals its membrane-area
 sum. The actual ratio and residual must be retained, not repaired.
 
-The new component will keep all original axes/IDs and full float64 inputs,
-refuse ambiguous shapes/nonfinite published outputs, retain raw refused
-numeric trials, and compute independent equations at two Decimal precisions.
-Validation must include exact host source correspondence, independent gross-
+The new component keeps all original axes/IDs and full float64 inputs,
+refuses ambiguous shapes/nonfinite published outputs, and retains raw refused
+numeric trials. A separate reference implements the equations at two Decimal
+precisions. The prepared validation includes exact host source correspondence, independent gross-
 scale cancellation budgets, unequal owner counts/areas, neutral/multivalent
 species, extra charge/current, sharpness conversion, negative weights,
 overflow/nonfinite trials, permutation, unchanged parents and actual CPU/source
 pins. It adds one missing readout primitive, not full native solver parity.
+
+The static package contains26 planned checks, ten isolated native captures and
+16 fresh reference forms across24 ordinary post-flux snapshots. Zero-sharpness
+and actual nonfinite current trials have separate raw failure-evidence paths.
+Native and reference children must deny production imports and report the
+coordinated CPU affinity. The runner reuses the established bounded process
+supervisor with one thread,480s maximum,1GiB process-tree RSS and8GiB reserve.
+Preparation performs only syntax, source/hash, import and test-matrix checks;
+numerical qualification remains pending. The own workqueue and preparation
+receipt link the frozen source package without implying a scientific pass.
