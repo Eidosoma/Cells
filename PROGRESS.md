@@ -26,40 +26,279 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   launch detached with durable logs and result/failure artifacts, then return
   control. Status checks wait for the user's request. GPU runs stay deferred.
 
-- **Accepted blocker intervals and restart are implemented; 21 preflight checks
-  passed, and the coupled comparison launched detached.** The
-  [new step and checkpoint path](docs/PHYSIOLOGY_RANDOM_STREAMS.md#accepted-intervals-with-held-blockers)
-  samples the blocker program at each original physical interval's left label,
-  holds its factors through RK stages and the right endpoint, and retains the
-  next event for the next interval. Complete ordinary material, energy, field,
-  turnover and history checks remain unchanged. Source buffers, component clocks
-  and RNG are held; temperature/voltage and charged-protein loops remain separate.
+- **Three parallel development owners are active.** Root owns random tissue
+  preparation and shared qualification/status; Cells Key Developer owns real
+  protein packets, component commits and complete batched charged loops; Cells Specialist
+  Developer owns boundary-voltage interventions and electrode-work constraints.
+  They use separate new scientific files and CPU3/7/5 respectively, one thread
+  each, with bounded memory. Specialist retained the finite-calcium/fuel
+  reservoir refusal and is investigating the existing explicit open variants;
+  this does not relax the finite-family model contract.
 
-  [Registered inputs](/mnt/workspaces/Cells/physiology-block-step-20261030-02/inputs.json)
-  specify **eight configurations / three intervals each / 48 independent
-  integrations at two tolerances**, with exact carried-factor source replay,
-  half-step comparisons and complete restart. These coupled results are pending.
-  The [verified preflight](/mnt/workspaces/Cells/physiology-block-step-20261030-02/preflight-verification.json)
-  checks disabled-event equivalence in all four families, preserved parents and
-  source-valid failed trials at a late asymmetric event, stale associations,
-  corrupted restart records, existing destinations and source changes before
-  publication. It took **11.07 seconds**, peaking at **233.49 MiB RSS** with
-  **20.20 GiB** minimum host reserve on CPU4. All **1,739 captured files**, four
-  owned files and four native sources verify. Read-only review found no additional
-  defect; it adds no numerical evidence.
+- **Random physical tissue preparation passed 35 verified checks.** The new
+  [preparation bridge](docs/PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
+  retains both source/successor random tapes and full profile provenance while
+  updating only qualified physical coefficients. Public prepare/replay/validate
+  commands publish a complete hashed bundle. Existing numeric state and control
+  histories remain intact; this creates a new initial definition.
+
+  [Inputs](/mnt/workspaces/Cells/random-tissue-preparation-20261030-02/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/random-tissue-preparation-20261030-02/completion-verification.json)
+  retain **1,876 sources** and **35 checks**, including eight three-preparation
+  sequences across four ordinary families, full initial RHS/potential checks,
+  separate guard/refusal cases and fresh-process public replay. Fresh Cells/JAX-
+  denied replay checks **24 complete initial RHS/potential comparisons** and
+  **30 native preparations**, counting five guards and a retained physical
+  refusal separately. Three fresh public CLI processes produce two byte-identical
+  bundles. Maximum RHS/potential errors are **0.00001116 / 0.00002119** of their
+  budgets; maximum stage energy residual is **7.11e-14 pJ/s**.
+
+  All **1,954 artifacts**, **451 captured runtime files**, four owned files and
+  the source inventory verify. Host checks/replay took **39.46 / 1.77 seconds**,
+  peaking at **416.98 MiB tree RSS**, with **19.91 GiB** minimum host reserve.
+  The [failed first run](/mnt/workspaces/Cells/random-tissue-preparation-20261030-01/failure.json)
+  retains a test assertion comparing a JSON list with an in-memory tuple. Only
+  two test comparisons were normalized; production/reference code and numerical
+  tolerances stayed identical. Native selection, independent owner/physics
+  equations and software safeguards are distinct checks. No time trajectory,
+  evolved checkpoint continuation, independent RNG-engine or GPU claim follows.
+
+- **Real protein packets passed 53 verified checks.** The
+  [packet provider](docs/PHYSIOLOGY_RANDOM_STREAMS.md#real-protein-packets-for-array-transitions)
+  connects owned native/stable samplers to the existing deterministic transition
+  arrays. It preserves the complete source and successor, original enable guards,
+  zero-amplitude draws and failed proposals. Native MT19937 stays on the host;
+  stable Threefry follows the existing owner-keyed law and runtime setting.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-protein-packet-provider-tests-20261030-01/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-protein-packet-provider-tests-20261030-01/completion-verification.json)
+  retain **51 host and two CPU JAX checks**, **56 exact packet/successor**
+  comparisons and **eight SI-drive** comparisons. Fresh Cells/JAX-denied replay
+  uses independent integer-arithmetic samplers; two expected failed draws remain
+  available. Maximum difference is **0.005443** of the allowed budget. Compiled
+  stable packets cover seven guard profiles and feed a separate passive drive
+  gate through a hashed **167-array** record. This is not a fused full-family
+  kernel or a committed charged loop.
+
+  All **2,063 frozen sources**, three owned files, **70 protected files** and
+  **2,164 artifacts** verify. Four phases took **56.90 seconds**, peaking at
+  **871.60 MiB RSS**, with **19.81 GiB** minimum host reserve. The saved driver
+  pins CPU7 and one thread; this run lacks independent affinity telemetry and a
+  saved Python/JAX version manifest. Those provenance gaps are recorded and will
+  be addressed in the next qualification, without rewriting this evidence.
+  Key Dev's component commit work is recorded separately. No GPU run
+  or physical noise-driving/heat law is claimed.
+
+- **Atomic protein-component commits passed 97 verified checks.** The
+  [commit adapter](docs/PHYSIOLOGY_RANDOM_STREAMS.md#atomic-component-commits-across-independent-worlds)
+  admits real packets and complete physical endpoint inputs before committing
+  each world's component state. Refused worlds retain every parent bit and the
+  complete proposed diagnostics; ionic states and cumulative decimal work ledgers
+  stay caller-owned. This does not yet establish complete batched tissue loops.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-protein-transition-commit-tests-20261030-02/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-protein-transition-commit-tests-20261030-02/completion-verification.json)
+  record **95 host and two staged CPU JAX checks**, **50 independently admitted
+  component cases**, four SI refusals and two failed providers, with 54 frozen
+  host-law comparisons. Failed-provider trial retention is software-tested;
+  its JSON records contain retention flags, not separate raw actual-trial copies.
+  The next qualification will preserve those copies explicitly.
+  Maximum difference is **0.000557** of budget. The
+  [first failure](/mnt/workspaces/Cells/physiology-protein-transition-commit-tests-20261030-01/failure.json)
+  retains a one-ULP diagnostic fixture mismatch; the corrected comparison uses
+  its existing numerical budget without changing production or admission limits.
+  All **2,069 frozen sources**, four owned files, **73 protected files** and
+  **2,166 artifacts** verify. Four phases took **85.55 seconds**, with peak tree
+  RSS **882.84 MiB**, process HWM **885.73 MiB** and **19.86 GiB** minimum host
+  reserve. Actual Python **3.13.5**, NumPy **2.5.3**, JAX/jaxlib **0.11.1** and
+  measured child affinity **CPU7** are captured. Key Dev's next assigned
+  deliverable is a complete batched charged-loop
+  driver, preserving full ionic state, history and decimal work ledgers.
+
+- **Held boundary-voltage rates passed 71 verified checks.** The
+  [boundary adapter](docs/PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)
+  maps native side setters onto explicitly declared reservoirs and refuses
+  conflicting corners or attempts to turn a gauge into an electrode. Changed
+  clamps cover passive/ionic tissue and the explicit open-calcium/open-fuel
+  identities. Finite calcium/fuel cases retain their reservoir prohibition.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-boundary-voltage-20261030-02/inputs.json)
+  and [independent completion review](/mnt/workspaces/Cells/physiology-boundary-voltage-20261030-02/review-verification.json)
+  record **32 exact native setter comparisons** and **16 independent full-rate/
+  field records** with fresh Cells/JAX-denied replay. The
+  [first failed run](/mnt/workspaces/Cells/physiology-boundary-voltage-20261030-01/failure.json)
+  preserves 12 finite-family fixture failures rather than relaxing that domain.
+  All **2,093 frozen sources**, **1,419 runtime files**, four owned files and
+  **2,179 artifacts** verify. Maximum RHS error is **0.00381** of budget;
+  maximum stage energy residual is **1.29e-14 pJ/s**. Checks/replay took
+  **47.26 / 2.52 seconds** on CPU5, peaking at **241.71 MiB RSS**, with
+  **20.23 GiB** minimum host reserve.
+  Capacitor/electrode changes and conditional ideal-ramp work are endpoint
+  diagnostics only. Specialist Developer now owns a separately declared physical
+  voltage-transition contract and implementation; no accepted voltage trajectory,
+  dynamic heat law or GPU result is claimed here.
+
+- **Native tissue-target selection passed 44 verified checks.** The
+  [selection owner](docs/PHYSIOLOGY_RANDOM_STREAMS.md#native-tissue-target-selection)
+  retains complete, separate NumPy and Python random tapes, carried logical cell
+  order and explicit layout/stream/world identities. PERCENT selections consume
+  NumPy shuffles; global GJ setup consumes a Python shuffle even though BETSE
+  selects the original membrane prefix. Repeated setup preserves native ALL
+  aliases and pick-time membrane/environment order without moving geometry.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-target-selection-20261030-02/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-target-selection-20261030-02/completion-verification.json)
+  retain **20 manufactured three-preparation sequences**: ten setup variants
+  with two declared seed pairs each. Fresh replay with Cells/JAX imports denied
+  verifies **62 native preparation comparisons**, including two cache-bit cases,
+  **60 independent owner expansions**, **168 operation boundaries** and 60 exact
+  saved RNG-record restarts. Complete successor states and future Gaussian
+  probes match. The independent reference checks target ordering and owner
+  expansion from captured permutations; it is not an independent RNG engine.
+
+  Host checks and replay took **6.29 / 1.02 seconds**, peaking at **174.16 MiB RSS**
+  with **19.93 GiB** minimum host reserve on CPU3. All **1,743 captured sources**,
+  **449 captured runtime files**, four owned files, two native sources and
+  **1,847 artifacts** verify; interpreter, Python random-module and NumPy sampler
+  binaries are recorded. Review fixed an unused ECM lookup for disabled profiles.
+  Counter refusals retain speculative selections and both proposed tapes while
+  preserving the parent. The
+  [first launch failure](/mnt/workspaces/Cells/physiology-target-selection-20261030-01/failure.json)
+  occurred before tests: this interpreter embeds its random extension, so the
+  corrected runner records the interpreter binary instead of assuming an
+  extension file. Scientific sources and tolerances were unchanged between runs.
+  Shared physical checkpoint, post-cut reselection and GPU integration remain
+  separate. Real protein-packet coverage is recorded above.
+
+- **Native-calendar blocker calls passed 33 verified checks.** The
+  [calendar controller](docs/PHYSIOLOGY_RANDOM_STREAMS.md#native-calendar-blocker-calls)
+  applies global blockers once at the original BETSE event label, then advances
+  elapsed physical time through the existing checked intervals. INIT carries
+  its existing factors without firing events. Restart retains the complete
+  original phase, both clocks and the accepted call cursor. A failed call keeps
+  the saved parent, raw failed trial and any completed speculative intervals.
+
+  [Registered inputs](/mnt/workspaces/Cells/physiology-block-calendar-20261030-01/inputs.json)
+  retain **eight manufactured configurations**, covering four ordinary tissue
+  families in INIT/SIM, **24 native calls / 52 physical subintervals / 104
+  independent integrations at two tolerances**. Each reference trajectory
+  carries its own full state and blocker buffer from the original initial
+  condition across all three calls. Exact captured source calendar/setter
+  comparisons and complete saved restart are separate checks. All eight coupled
+  cases passed. Physical horizons are **37.5 microseconds** for passive tissue
+  and **117.1875 nanoseconds** for the ionic, calcium and fuel cases; these do
+  not establish biological-duration or native whole-solver parity.
+
+  [Verified preflight](/mnt/workspaces/Cells/physiology-block-calendar-20261030-01/preflight-verification.json)
+  covers clocks, ownership, late asymmetric-event refusal, an injected mid-call
+  failure, terminal/empty phases, corrupted records and source changes before
+  publication. Review caught a future-boundary validity issue: the accepted
+  endpoint now remains loadable when its next requested call would be off-grid.
+  [Verified completion](/mnt/workspaces/Cells/physiology-block-calendar-20261030-01/completion-verification.json)
+  binds **1,743 captured sources**, **450 captured runtime files**, four owned
+  files, six native sources and **2,319 artifacts**. All 24 native buffer
+  comparisons and complete saved restarts match; fresh replay with Cells/JAX
+  denied reproduces both carried reference trajectories. Maximum error is
+  **0.00005262** of its numerical budget; maximum stage energy residual is
+  **6.75e-14 pJ/s**, below the unchanged **1e-10 pJ/s** limit. Five phases took
+  **1,030.81 seconds**, peaking at **336.07 MiB RSS**, with **19.75 GiB** minimum
+  host reserve on CPU4. The detached run finished at **13:15 UTC** and was checked
+  on the next requested continuation. No follow-up is queued. Component/RNG evolution,
+  thermal/voltage driving laws and GPU execution remain separate.
+
+- **Deterministic protein-transition arrays passed 66 verified checks.** The
+  [supplied-packet transition](docs/PHYSIOLOGY_RANDOM_STREAMS.md#supplied-packet-protein-transitions-in-arrays)
+  combines the complete component proposal with the existing conditional work
+  and declared-energy admission. It preserves native/stable stream ownership,
+  all source guards, enabled-zero semantics, full call duration and unchanged
+  material/energy limits. Native cache comparisons preserve raw bits, including
+  signed zero and subnormal values.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-protein-transition-arrays-tests-20261030-01/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-protein-transition-arrays-tests-20261030-01/completion-verification.json)
+  retain **63 NumPy and three staged CPU JAX checks**. Fresh production-denied
+  replay covers **53 independent reference records: 50 admitted and three
+  intentionally refused**, with 51 frozen host component-law comparisons.
+  Maximum error is **0.007543** of its allowed budget. Compiled proposal and
+  reduced passive admission run in separate processes, joined by a hashed
+  **162-array** input record. This does not qualify a fused full-family kernel.
+
+  Five phases took **68.72 seconds**, peaking at **879.46 MiB RSS**, with
+  **20.09 GiB** minimum host reserve on CPU7. All **2,058 captured sources**,
+  **442 captured runtime files**, three owned files, **67 protected dependencies**
+  and **2,156 artifacts** verify. These checks use supplied random packets;
+  they do not establish sampler parity, a physical driving law, committed loops
+  or GPU execution. Actual owned-packet coverage is recorded above, retaining
+  the qualified native and stable laws.
+
+- **Batched physical blocker mapping passed 36 verified checks.** The
+  [array kernel](docs/PHYSIOLOGY_RANDOM_STREAMS.md#blocker-controls-in-arrays)
+  maps source junction/NaK factors onto complete ordinary control packets with
+  explicit physical owners. It preserves every unrelated control, original
+  baselines and per-world failure diagnostics. Host compilation checks the
+  actual binding; compiled execution supports either a shared map or separate
+  maps for worlds of the same model type and array shapes.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-block-arrays-20261030-02/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-block-arrays-20261030-02/completion-verification.json)
+  retain **32 NumPy and four compiled CPU JAX checks**. Dynamic-map batches cover
+  **128 worlds: 96 valid and 32 intentionally refused**, plus **96 shared-map
+  executions**. Invalid worlds remain isolated. Fresh production-denied replay
+  reproduces **121 independent control comparisons / 10,530 scalar values**;
+  maximum error is **0.010490** of the declared 64-epsilon comparison budget.
+  All 121 cases also compare with captured BETSE setters, with **25 exact NumPy
+  buffer matches** and the compiled cases within tolerance. These are numerical
+  control cases, not independent biological cases or accepted physical steps.
+
+  NumPy/JAX/reference-source replay took **5.04 / 13.85 / 1.01 seconds** on CPU3,
+  peaking at **367.19 MiB RSS** with **19.91 GiB** minimum host reserve. All
+  **1,737 captured sources**, **447 captured runtime files**, two owned files,
+  four native sources and **1,803 artifacts** verify. Ten raw invalid trials
+  are retained. Review prompted explicit backend conversion for closed-over
+  host maps and matching compile-time physical contact checks. The
+  [first attempt](/mnt/workspaces/Cells/physiology-block-arrays-20261030-01/failure.json)
+  preserves a test-only incorrect assumption about self-junctions: the complete
+  source model already rejects them, and array compilation now does so explicitly.
+  Empty contact sets remain supported. This kernel is not yet wired into accepted
+  stepping; device field solves and GPU execution remain open. The separate
+  host calendar controller has its own verified comparison above.
+
+- **Accepted blocker intervals and restart passed 29 verified checks.** The
+  [step and checkpoint path](docs/PHYSIOLOGY_RANDOM_STREAMS.md#accepted-intervals-with-held-blockers)
+  samples each original physical interval's left label and holds blocker factors
+  through RK stages and the right endpoint. All material, energy, field,
+  turnover and history checks remain unchanged; component clocks and RNG stay held.
+
+  [Inputs](/mnt/workspaces/Cells/physiology-block-step-20261030-02/inputs.json)
+  and [verified completion](/mnt/workspaces/Cells/physiology-block-step-20261030-02/completion-verification.json)
+  retain **21 preflight and eight coupled checks**, **24 accepted intervals /
+  48 independent integrations at two tolerances**, 24 exact source buffers,
+  half-step comparisons and complete restart. Fresh replay with Cells/JAX
+  imports denied reproduces both reference tolerances. Each reference interval
+  starts from that interval's accepted production state; this panel establishes
+  local accuracy, not an independently carried trajectory. Horizons are
+  **12.5–18.75 microseconds passive** and **39.06–58.59 nanoseconds** for the
+  ionic/calcium/fuel cases. Maximum error is **0.00003702** of its allowed budget;
+  maximum stage-energy residual is **7.284e-14 pJ/s**, below **1e-10**.
+
+  Preflight covers disabled-event equivalence in all four families, a preserved
+  parent and source-valid raw trial after a late asymmetric event, stale
+  associations, corrupt records, existing destinations and source changes before
+  publication. Preflight/coupled/replay took **11.07 / 348.80 / 184.83 seconds**, with
+  **330.57 MiB** peak RSS and **19.94 GiB** minimum host reserve on CPU4. All
+  **1,739 captured files**, **448 current captured runtime files**, four owned
+  files, four native sources and **2,188 artifacts** verify. All 12/19/34/38 state
+  fields and 40/62/128/134 layout fields are covered, including padding and
+  original accounting anchors. Restart comparisons are in-process; independent
+  equation/source replay runs separately.
 
   The [first preflight failure](/mnt/workspaces/Cells/physiology-block-step-20261030-01/failure.json)
-  is preserved: the test fixture refined its timestep without increasing its
-  declared grid capacity. The revised capacity retains the original physical
-  horizon and every tolerance. The
-  [detached launch](/mnt/workspaces/Cells/physiology-block-step-20261030-02/launch.json)
-  started **12:15 UTC**, with **10–15 minutes** expected runtime and
-  [durable logs](/mnt/workspaces/Cells/physiology-block-step-20261030-02.remaining.log).
-  Result/failure artifacts will be written in that run directory. No automatic
-  polling, retry or follow-up is queued. Native calendar coupling, physical
-  blocker-actuator costs, long biological trajectories and GPU qualification
-  are outside this numerical panel. Key Dev continues the separate deterministic
-  protein-transition array module.
+  is preserved: the fixture refined its timestep without increasing declared
+  grid capacity. Correcting that capacity retained the original physical horizon
+  and every tolerance. The detached phases finished at **12:24 UTC** and were
+  verified on this requested continuation. Native calendar coupling is the
+  separate qualification above. Physical blocker-actuator costs, long biological
+  trajectories and GPU qualification remain outside this panel.
 
 - **Global junction and Na/K pump blockers now reach complete ordinary tissue
   rates; 37 checks passed and were verified.** The
@@ -88,7 +327,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Tests and fresh replay took **7.54 / 1.77 seconds** on CPU4, peaking at
   **228.23 MiB RSS** with **22.60 GiB** minimum host reserve. Clock/phase
   integration, actuator work and GPU execution remain open. The subsequent
-  accepted-interval and restart implementation is under qualification above.
+  accepted-interval and restart implementation is qualified above.
 
 - **Declared protein energy-budget arrays passed 55 verified checks.** The
   [array admission](docs/PHYSIOLOGY_RANDOM_STREAMS.md#declared-protein-energy-budgets-in-arrays)
@@ -114,9 +353,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [first attempt's test-only failure](/mnt/workspaces/Cells/physiology-protein-drive-arrays-tests-20261030-01/failure.json)
   is preserved: Python's compensated built-in sum invalidated a naive-addition
   demonstration; only that demonstration changed. No heat/drive law, accepted
-  loop, GPU qualification or biological case is inferred. Key Dev is now building
-  deterministic post-ion protein transitions from supplied random packets,
-  connected to this energy check.
+  loop, GPU qualification or biological case is inferred. The deterministic
+  post-ion transition qualification above now connects this energy check to
+  supplied random packets; an actual packet provider is the next assigned work.
 
 - **Global temperature, junction/pump blocking and directed-voltage control
   components passed 54 verified checks.** The

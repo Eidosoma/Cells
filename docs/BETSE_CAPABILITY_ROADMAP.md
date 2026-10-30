@@ -100,8 +100,35 @@ maps explicit symmetric contact pairs and actual Na/K pump owners to complete
 physical rates while retaining all other controls. The separate
 [accepted interval/restart path](PHYSIOLOGY_RANDOM_STREAMS.md#accepted-intervals-with-held-blockers)
 holds each sampled blocker through an original physical interval; its coupled
-qualification is tracked in Progress. Broader clock/target-selection RNG ownership
-and the thermal/electrode work required for changing temperature or voltage remain open.
+qualification is tracked in Progress. The
+[native-calendar controller](PHYSIOLOGY_RANDOM_STREAMS.md#native-calendar-blocker-calls)
+also associates complete original phase labels with physical subintervals,
+INIT/SIM dispatch, atomic calls and durable restart. It holds the component/RNG;
+it does not compose their post-ion transitions. A separate
+[array mapping](PHYSIOLOGY_RANDOM_STREAMS.md#blocker-controls-in-arrays)
+supports shared or per-world owner maps with compiled CPU checks; accepted GPU
+execution remains separate. The
+[target-selection owner](PHYSIOLOGY_RANDOM_STREAMS.md#native-tissue-target-selection)
+retains separate NumPy/Python tapes and the native selection order, including
+the discarded GJ shuffle. Its
+[initial physical preparation bridge](PHYSIOLOGY_RANDOM_STREAMS.md#preparing-physical-tissue-profiles)
+produces reproducible complete definitions using the static coefficient laws;
+qualification is tracked in Progress. Coupling those setup tapes into a shared physical
+checkpoint, broader component ordering, and the thermal/electrode work required
+for changing temperature or voltage remain open.
+
+The [held boundary-voltage view](PHYSIOLOGY_RANDOM_STREAMS.md#applying-boundary-voltage-to-complete-tissue-rates)
+maps native side controls onto actual reservoir owners in passive/ionic and the
+explicit open-calcium/open-fuel models. It preserves finite-family reservoir
+refusals and reports conditional capacitor-work diagnostics separately from any
+accepted voltage transition or cumulative work ledger.
+
+The [real protein packet provider](PHYSIOLOGY_RANDOM_STREAMS.md#real-protein-packets-for-array-transitions)
+connects the qualified owned samplers to the deterministic transition arrays.
+Native MT19937 remains host-side; stable owner-keyed sampling supports compiled
+array preparation. Complete source/successor association, failed draws and
+conditional work admission remain separate from committed physical loops and
+GPU qualification. Progress records the actual comparison scope.
 
 ## Concrete source gaps identified on 28 October
 
@@ -143,9 +170,11 @@ The [regulated adapter](TISSUE_RETURN_CURRENT.md#cell-removal-with-live-network-
 also retains live rule ownership and complete source history; assembly cut
 composition remains separate. The
 [tissue-profile/intervention component](../agent-work/cells-worker-01/workfiles/BETSE_TISSUE_PROFILES_HANDOFF.md)
-preserves native target order, overlapping selections and ownership semantics;
-binding it to persistent random streams and the shared solver remains separate
-work. The [native geometry component](../agent-work/cells-worker-01/workfiles/BETSE_GEOMETRY_HANDOFF.md)
+preserves native target order, overlapping selections and ownership semantics.
+The [selection-stream wrapper](PHYSIOLOGY_RANDOM_STREAMS.md#native-tissue-target-selection)
+adds complete native RNG records and carried ordering across repeated preparation;
+shared solver/checkpoint and post-cut reselection integration remain separate.
+The [native geometry component](../agent-work/cells-worker-01/workfiles/BETSE_GEOMETRY_HANDOFF.md)
 supplies explicit seed/contact/measure/operator bindings with source defects
 retained; physical state remapping and coupled simulation remain separate. The
 [reaction/growth component](../agent-work/cells-worker-01/workfiles/BETSE_NETWORK_REACTIONS_HANDOFF.md)

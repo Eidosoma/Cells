@@ -115,12 +115,20 @@ def _equal(a, b, *, xp):
     return xp.all(
         xp.stack(
             [
-                xp.all((x == y) & (xp.signbit(x) == xp.signbit(y)))
-                if x.dtype.kind == "f"
+                xp.all(_float_bits(x, xp=xp) == _float_bits(y, xp=xp))
+                if x.dtype == xp.float64
                 else xp.all(x == y)
                 for x, y in zip(aa, bb, strict=True)
             ]
         )
+    )
+
+
+def _float_bits(value, *, xp):
+    return (
+        value.view(xp.uint64)
+        if xp is perturb.np
+        else jax.lax.bitcast_convert_type(value, xp.uint64)
     )
 
 
@@ -356,10 +364,8 @@ def propose(source, packet, geometry, *, rng_law, native_numpy_version, environm
         initial, final = first.rng, last.rng
         end = initial.position + xp.uint32(2 * nm)
         position = (end - xp.uint32(1)) % xp.uint32(624) + xp.uint32(1)
-        cache_same = (
-            (initial.has_gauss == final.has_gauss)
-            & (initial.cached_gaussian == final.cached_gaussian)
-            & (xp.signbit(initial.cached_gaussian) == xp.signbit(final.cached_gaussian))
+        cache_same = (initial.has_gauss == final.has_gauss) & (
+            _float_bits(initial.cached_gaussian, xp=xp) == _float_bits(final.cached_gaussian, xp=xp)
         )
         no_twist_words = (end > 624) | xp.all(initial.words == final.words)
         native_update = cache_same & (final.position == position) & no_twist_words

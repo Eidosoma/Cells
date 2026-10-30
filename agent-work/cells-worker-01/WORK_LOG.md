@@ -4525,3 +4525,129 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   No job remains active or queued; no extra GPU/fuel/loop acceptance credit.
 - Completion delivered directly to Chief. Three new sources are frozen for
   independent verification; no computation is active or queued.
+
+## B17 deterministic supplied-packet protein transition arrays, 2026-10-30
+
+- Chief assigned a new complete-state deterministic component/packet wrapper
+  followed by the frozen drive gate. Source phase/solver/boolean guards, full
+  dt clocks, zero-level packet semantics, matrix geometry and held D/P mapping
+  remain explicit. Source/successor complete RNG records are supplied, with
+  raw Gaussian-cache bit preservation; no sampler is invoked or authenticated.
+- Requested and represented changes remain distinct; strict material/projection/
+  charge/work gates and conservative tiny-product/stock precision refusals
+  propagate without clipping. Captured NumPy source/packet/geometry snapshots
+  prevent stale in-place edits across guarded internal compile stages.
+- New sources are Ruff-clean. Plan 63 NumPy+three CPU JAX checks, 53 fresh
+  independent SI replays and 51 frozen host component-law comparisons. Separate
+  proposal and finish compiles retain a hashed binary provider boundary under
+  the existing 1GiB limit. No new RNG/heat law, loop acceptance, GPU/fuel retry,
+  Root mutable pin or shared-status edit is introduced.
+- All 66 final-source checks pass: 63 NumPy and three separated CPU JAX
+  checks. Fresh Cells/JAX-denied execution exactly replays 53 independent
+  answers (50 admitted, three deliberate precision refusals), maximum error
+  0.007542077 budget. Frozen host _component_law validates 51 component cases.
+  Tiny neutral work3.0499138454595127e-30pJ remains nonzero.
+- Compiled native/stable proposals match NumPy buffers and complete RNG records
+  exactly, including subnormal Gaussian-cache preservation and invalid-world
+  refusal. The reduced guarded pipeline consumes retained compiled provider
+  records and matches NumPy energy/host arithmetic exactly; a stale packet
+  world refuses while its valid neighbor remains accepted. Provider boundary
+  2326948c84d727642cf410068aaea5edc6171d46c0e8a58e0750586785a22970.
+- CPU7 phases20.12/5.04/7.81/9.32/26.44s; sampled RSS918847488B,
+  high-water922181632B, host reserve>=21568864256B. All 67 protected files
+  and three owned source hashes remain exact. Own queue links receipt
+  75cc4a5309f66b553dae25c906ff7b25fb57e44dc968794d7936e58f7410434c.
+  No retry, sampler/fusion/loop/performance credit or queued computation.
+- Completion delivered directly to Chief; three new sources are frozen.
+  No job remains. Chief queued real owned-stream packet provision as the next
+  independent task; native host and stable existing-key laws stay separate.
+
+## B18 real owned protein packet provider, 2026-10-30
+
+- Chief assigned new provider/reference/unit files connecting real frozen
+  samplers to deterministic transitions. Complete host-source encoding performs
+  original preflight without sampling; enabled provide calls exactly one frozen
+  sampler and retains full cache/version/words/coordinates and proposed successor.
+  No native seed comes from world labels, and no parent/loop state is committed.
+- Failure records retain actual packets/parents/successors/proposals. Stable
+  arrays stage the existing owner-keyed law with mixed guards and original tick
+  semantics. Record active Threefry bit-layout config; no global config mutation.
+- Independent stdlib MT19937 and Threefry source replay checks real engine bits
+  and complete digests. Plan51 host+two separated CPU JAX checks,56 packet and
+  eight SI drive replays, with a hashed real compiled-provider boundary. All
+  prior sources remain frozen; no Root shared status/calendar/loop edits.
+- All 53 final-source checks pass: 51 host and two separated CPU JAX checks.
+  Fresh Cells/JAX-denied execution exactly replays 56 source/packet/successor
+  cases plus eight SI drive cases, 62 admitted and two deliberate retained
+  proposal failures. Maximum independent error consumes 0.005442600 budget.
+- Compiled stable packets exactly match real host packets across seven guard/
+  level profiles. Active tick overflow refuses without a logical packet and
+  leaves valid neighbors admitted. Actual compiled provider boundary
+  6cb424b46e2f2a3103394691aaa4699dab400f02f7c2660d4fda6dac72bb1d1f
+  feeds the separately compiled passive drive gate; energy/host arithmetic
+  match exactly and stale packet admission is [false,true]. Native stays host.
+- CPU7 phases 12.34/2.27/15.11/27.19s; sampled RSS and high-water 913940480B,
+  host reserve >=21275492352B. All 70 protected and three owned source hashes
+  remain exact. Own queue links receipt
+  117fa53819540f71c811fefd0f299e4ac7e984ff9c2b2629ff78d7bdf83d35b3.
+  No retry, GPU/fuel/fused/accepted-loop credit or queued computation.
+- Completion delivered directly to Chief; three new sources are frozen for
+  independent verification. No job remains active or queued.
+
+## B19 atomic per-world protein component commit, 2026-10-30
+
+- Chief assigned a new complete admission/selection adapter and strict host
+  decoder over actual provider records. Success publishes the full component;
+  failure preserves the exact parent and full trial/packet/successor evidence.
+  Ionic checkpoints and decimal work ledgers remain caller-owned. Homogeneous
+  engines and unique stream/world owners prevent ambiguous batch publication.
+- Optional compiled selections face fresh complete NumPy admission and exact
+  dtype/shape/bit checks before host publication; no commit-time draw or retry.
+  Plan 95 host+two staged passive CPU JAX checks and 56 independent forms,
+  with 54 frozen host phase/transition comparisons. Original limits remain.
+- Chief verified B18 independently and requested prospective Python/JAX/jaxlib/
+  NumPy versions plus measured child CPU affinity in this run. Existing B18
+  evidence stays frozen; no provider rerun is needed for that provenance.
+- First qualification: all 95 host checks and 56 fresh independent replays pass;
+  compiled provider then exposes a one-ULP requested-amount diagnostic mismatch
+  in an overly strict whole-record fixture assertion. Run01 failure and source
+  are retained. Compare unpublished amount diagnostics with the existing
+  3e-13 gross+4ULP budget; packet/state/cache and decoder equality stay exact.
+  No production source, physical/material tolerance or probability law changed.
+  Retain actual compiled output before assertions in the corrected qualification.
+- All 97 final-source checks pass: 95 host and two separated CPU JAX checks.
+  Fresh Cells/JAX-denied replay validates 54 complete real-source/component/SI
+  commit forms and two retained failed-provider forms: 50 admitted and six
+  deliberate refusals. Max independent error consumes 0.000556505 budget.
+  All 54 frozen host phase-finish and original transition-law comparisons pass.
+- Compiled provider packets and full trial/published states match exactly;
+  unpublished amount diagnostics consume <=8.972832e-5 of the original budget.
+  Retained actual provider cfebb8cc34c1efbc699443a5765be6743aed57bd738b7f8471b898762bacabd4
+  feeds complete passive admission/selection. Strict host decode accepts
+  [true,true,true,false]; stale packet or overflow gives [false,true,true,false],
+  with exact original parent bits and full trials on each refusal.
+- Python3.13.5, NumPy2.5.3, JAX/jaxlib0.11.1 and actual child affinity[7]
+  are persisted for all phases (production imports denied in fresh reference).
+  CPU7 phases39.49/4.78/9.57/31.71s; sampled RSS925724672B,
+  high-water928759808B, host reserve>=21319475200B. All 73 protected and four
+  owned sources remain exact. Queue links final receipt
+  55741782da32684f2415adf6ada52fad4195a53d6dac73818b96882c363bdcbd
+  and preserved Run01 failure6227fd9a1f7d1303730f861b8251cb8d4c07e6e94e22bce4978ea89cebf218cd.
+  No extra audit, GPU/fuel/fusion/charged-loop credit or queued computation.
+- Completion delivered directly to Chief; four new sources are frozen for
+  independent verification. No job remains active or queued.
+
+## B20 complete charged physiological batch loops, 2026-10-30
+
+- Chief assigned full-loop batch ownership, beyond component-only publication.
+  Wrote the concise join contract before implementation in own batch-loop
+  notes: frozen charged ionic evolution/acceptance plus actual-packet bridge
+  and strict component decoder must agree before entire-world publication.
+- Preserve per-world original bindings/calendars, physical intervals, complete
+  ionic state and RNG, cumulative decimal work/electrode ledgers and lineage.
+  Rejected worlds retain identical parents and all speculative evidence; no
+  implicit retry or fused/device/full-native-loop parity claim is introduced.
+- Current frozen loop/IO hashes match the verified modulated-schedule runtime
+  (d5ec330b/e578074f); older35-check loop receipt predates those qualified
+  schedule extensions. New qualification will capture exact current sources.
+  Full repeated-family qualification is expected >=10min and will be detached.

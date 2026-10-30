@@ -45,6 +45,93 @@ owner counts/order or categorical boundary weights can change future native
 draws; the stream API does not assert native subset invariance. Old packets
 remain bound to their original layout and cannot be reused as new-layout draws.
 
+## Native tissue-target selection
+
+[`physiology_target_selection`](../src/cells/core/physiology_target_selection.py)
+owns the two separate random tapes used by native target preparation. PERCENT
+pickers shuffle the current logical cell order with NumPy's legacy MT19937;
+global gap-junction setup shuffles a copied membrane array with Python's random
+generator. BETSE discards that second permutation and selects the original
+membrane prefix. Cells retains both the source selection and the consumed
+Python state, including when the selected prefix is empty.
+
+`new_stream` binds complete NumPy and Python states to explicit layout, stream
+and world IDs. Both Gaussian caches and runtime versions survive serialization;
+world labels do not reseed native tapes. `resolve` runs declared percentage
+pickers in order and then optional global GJ setup. Every active shuffle advances
+one logical call counter, including 0%/100% selections and empty/singleton axes.
+Disabled profiles consume no NumPy draws. Global GJ setup has its own enable
+flag, independent of profile and ion flags or INIT/SIM phase.
+
+Repeated setup retains the preceding logical cell order. The authoritative
+geometry stays fixed. Native ALL cell targets follow the final shuffled order,
+while their membrane/environment targets retain pick-time order; earlier
+percentage selections remain fixed. The returned binding reuses the existing
+profile masks and physical owner mappings with these ordered selections.
+Declaration preflight is stricter than partial invalid native setup: malformed
+inputs refuse before sampling. A later counter refusal retains completed
+speculative selections and both proposed tapes without changing the parent.
+
+`stream_record` and `restore_stream` save and restore both tapes, original layout
+identity, carried order and uint64 counter against explicitly requested stream
+and world owners. Restore draws nothing. When subsequent component initialization
+shares the native NumPy tape, its caller passes the returned NumPy state forward;
+the selection and component streams are not implicitly joined. Tissue checkpoint
+and post-cut reselection integration remain separate. Returned source targets
+also require downstream physical admission, including reciprocal junction checks.
+
+The [native capture](../validation/perturbations/target_selection_native.py)
+executes pinned ALL/PERCENT/INDICES and global-finalizer bodies with private
+instances of the actual samplers. The
+[independent reference](../validation/perturbations/target_selection_reference.py)
+checks owner expansion and target order from captured permutations; it is not
+an independent RNG implementation. [Progress](../PROGRESS.md) records exact
+source/restart evidence separately from tissue evolution or GPU qualification.
+
+### Preparing physical tissue profiles
+
+[`random_tissue_profile_preparation`](../src/cells/core/random_tissue_profile_preparation.py)
+connects these native selections to the existing static physical preparation.
+Its exact admitted models are `resolved_tissue@1`, `resolved_tissue@12`,
+`resolved_calcium@11` and `resolved_calcium_energy@5`. It creates a new initial
+definition with selected membrane permeability and insular junction coefficients;
+full inventories, gates, owners and control histories are retained. It does not
+reinterpret an evolved checkpoint or rescale stored charge/energy anchors.
+
+A request uses the existing static preparation fields (`definition`, complete
+SI `geometry`, `default`, ordered `profiles`, `ion_enabled`, `enabled`, `is_ecm`)
+with `schema_version: 1`, kind
+`cells.random_tissue_profile_preparation_request@1`, complete `selection_stream`,
+explicit `stream_id`/`world_id` and `global_gj_percent`. Percentage selectors have
+no pre-resolved permutation. The owned sampler supplies those permutations to
+the qualified static bridge and verifies the complete numerical binding. Native
+ALL occurrence order and the static coefficient recipe are both retained; their
+membership agrees even when re-entry starts from a carried logical cell order.
+
+`global_gj_percent: null` disables global selection. A numeric value prepares its
+targets and consumes the native Python shuffle only; it fires no blocker and
+changes no physical coefficient by itself. Disabled profiles consume no NumPy
+draws, independently of whether global GJ selection is enabled. A physical
+admission failure retains the original tapes, completed selection and proposed
+successor for diagnosis. The caller replaces its source only after success.
+
+The public module provides a complete durable bundle:
+
+```sh
+python -m cells.random_tissue_profiles prepare request.json --output prepared
+python -m cells.random_tissue_profiles replay prepared/provenance.json --output replayed
+python -m cells.random_tissue_profiles validate replayed
+```
+
+The manifest binds the definition, complete recipe, successor stream and exact
+source/runtime identities. It is written last; existing destinations are refused
+and incomplete publication remains failed. Replay starts from the saved source
+tapes to reproduce the same definition and successor. It is not continuation
+from the successor. For another preparation, explicitly pass that successor in
+a new request with its matching geometry and owners. Shared evolved checkpoints,
+post-cut reselection and device execution remain separate. Qualification and its
+limits are recorded in [Progress](../PROGRESS.md).
+
 ## Explicit component updates
 
 `initialise(binding, controls, protein, diffusion_m2_s, stream)` constructs an
@@ -626,6 +713,84 @@ no randomness, solves no new field, publishes no state and accepts no loop.
 budget arithmetic and reduced passive full-wrapper check from future complete
 transition and GPU qualifications.
 
+### Supplied-packet protein transitions in arrays
+
+[`physiology_protein_transition_arrays`](../src/cells/numerics/physiology_protein_transition_arrays.py)
+proposes a complete post-ion component update from an explicitly supplied random
+packet. Numeric records retain all protein/diffusion buffers, controls,
+component time/call count and source/successor streams. Native records include
+all 624 MT19937 words, position and Gaussian cache bits; stable records preserve
+their original seed and owner coordinates. Supplied values and successor words
+remain the packet provider's responsibility: association checks do not regenerate
+or authenticate an RNG draw.
+
+SIM performs the original permeability finalisation and guarded protein update.
+INIT, fast mode and disabled dynamics/protein preserve their source semantics;
+enabled zero-level calls still require a packet and advance its logical tick.
+Every proposed call retains its full declared duration. Unresolved stock changes,
+underflow or non-advancing clocks refuse without clipping or redistribution.
+
+The public `evaluate` recomputes the proposal and full associated work/drive
+admission, checking actual held permeability, geometry and field endpoints.
+Raw proposals and failed diagnostics remain available. Trusted internal staging
+can separate proposal and admission to bound compilation memory, while checking
+the complete supplied source records at that boundary. This introduces no
+sampler, field solve, accepted loop, physical driving law or publication path.
+[Progress](../PROGRESS.md) distinguishes full NumPy evidence from the staged,
+reduced-geometry compiled CPU qualification and future GPU work.
+
+### Real protein packets for array transitions
+
+[`physiology_protein_packet_provider`](../src/cells/core/physiology_protein_packet_provider.py)
+connects actual owned random streams to the supplied-packet array contract.
+`encode_source` checks complete host ownership and the original phase/clock
+preflight without drawing. `provide` uses the qualified sampler and returns the
+original source, real packet, full successor stream, encoded packet and proposed
+component transition. Publication or a committed tissue loop remains the caller's
+responsibility. A refusal retains every proposed object available at the failing
+stage and leaves the source unchanged.
+
+Native MT19937 sampling remains on the host, retaining all words, the Gaussian
+cache and NumPy-version association. Stable sampling retains the existing
+Threefry seed/world/tick/site/owner law. `stable_packet_arrays` supports compiled
+array preparation without replacing that law or changing global JAX settings.
+The installed runtime and Threefry partitionable setting remain part of the
+reproducibility context; a cross-version bitwise promise is not added.
+
+The original SIM/normal/dynamic/protein guard decides whether a packet exists.
+Enabled zero amplitude consumes a draw; disabled paths retain their streams.
+Batch masking may evaluate stateless counter arithmetic in disabled lanes, but
+does not create logical packets or advance their coordinates. Counter and clock
+failures retain their exact phase of refusal. Independent integer-arithmetic
+sampler replay, CPU compilation and physical endpoint admission are separate
+checks recorded in [Progress](../PROGRESS.md). Successful packet preparation
+does not establish a committed charged loop, physical noise-driving law or GPU
+qualification.
+
+### Atomic component commits across independent worlds
+
+[`physiology_protein_transition_commit`](../src/cells/core/physiology_protein_transition_commit.py)
+checks actual provider packets, complete host bindings, field endpoints and the
+original transition/declared-work admission before selecting each world's next
+component state. Its
+[array kernel](../src/cells/numerics/physiology_protein_transition_commit_arrays.py)
+selects the complete accepted protein/diffusion/control/stream/time/call record.
+A refused world retains every parent bit, including Gaussian cache bits, and
+keeps its speculative packet, trial and diagnostics separately. No arithmetic
+blend of accepted and refused buffers is used.
+
+`commit_batch` requires homogeneous engine/version contracts and unique explicit
+stream/world owners. It detects stale source, foreign binding, changed field,
+packet or geometry associations. Native packets remain host-provided. Optional
+compiled selections are decoded against complete host admission and the actual
+provider/component law; disagreement refuses the affected world. A valid final
+counter can be committed without trying its next, overflowing advance.
+
+Ionic state, physical interval acceptance and cumulative decimal work/electrode
+ledgers remain caller-owned. This operation commits component records only;
+it is not a complete charged-tissue loop. Independent/source, CPU compilation
+and failure-isolation results are recorded in [Progress](../PROGRESS.md).
+
 ## Post-ion protein updates with a declared energy budget
 
 [`physiology_protein_transition`](../src/cells/core/physiology_protein_transition.py)
@@ -1042,6 +1207,35 @@ do not establish tissue evolution: coupling temperature or boundary voltage
 changes requires explicit thermal/electrode work and updated physical owners.
 [Progress](../PROGRESS.md) records source, independent and execution evidence.
 
+### Applying boundary voltage to complete tissue rates
+
+[`physiology_boundary_voltage`](../src/cells/core/physiology_boundary_voltage.py)
+binds the native top/bottom/left/right sides to explicitly named physical
+reservoirs. A side may have several owners; a corner shared by different sides
+must receive consistent voltages. Empty sides cannot be driven. Unmapped
+reservoirs retain their original potential, and a finite exterior compartment
+or gauge is never silently converted into an electrode. The source's ordered
+positive/negative writes on the same side remain distinct from corner conflicts.
+
+The [complete rate view](../src/cells/models/physiology_boundary_voltage_view.py)
+checks the original source history, then changes only the temporary clamp
+voltage array. It retains full ionic/calcium/fuel rates, physical field closure,
+controls, charge/capacitance anchors and unchanged numerical/turnover limits.
+Changed clamps are admitted for `resolved_tissue@1`, `resolved_tissue@12`,
+`resolved_open_calcium@1` and `resolved_open_calcium_energy@1`. The finite-only
+`resolved_calcium@11` and `resolved_calcium_energy@5` retain their existing
+reservoir prohibition and gauge semantics; their no-event/refusal checks do not
+count as changed-clamp coverage.
+
+Frozen-inventory endpoint diagnostics report capacitor energy and electrode
+charge changes, plus conditional work for an ideal linear capacitive ramp.
+That path is an explicit physical assumption, not a voltage transition supplied
+by BETSE. The adapter accepts no voltage jump, advances no clock, updates no
+ledger and publishes no ordinary checkpoint with changed anchors. Temperature
+changes, accepted voltage trajectories and GPU execution remain separate.
+Actual source, independent-field and software evidence is recorded in
+[Progress](../PROGRESS.md).
+
 ### Applying blockers to ordinary tissue rates
 
 [`physiology_block_control_view`](../src/cells/models/physiology_block_control_view.py)
@@ -1069,6 +1263,37 @@ No component state, RNG or clock advances. Temperature/voltage programs refuse
 pending their thermal/electrode accounting. [Progress](../PROGRESS.md) records
 initial and evolved numerical readout comparisons separately from the accepted
 interval qualification below and future actuator-work accounting.
+
+### Blocker controls in arrays
+
+[`physiology_block_control_arrays`](../src/cells/numerics/physiology_block_control_arrays.py)
+maps the same complete blocker state onto ordinary control packets using NumPy
+or JAX arrays. `compile_kernel(spec, tissue_binding, binding)` checks actual
+contact owners and produces immutable numeric maps. Recompile from the saved
+host binding after restore; numeric arrays do not authenticate a rewritten graph.
+
+`apply(state, base_control, kernel, time_s, events_enabled)` returns the proposed
+complete control packet, raw source-setter results and per-world diagnostics.
+It checks original and effective control domains, explicit owner indices,
+exclusive paired membranes, matching junction factors and actual Na/K owners.
+The original model forbids contacts joining a cell to itself; host compilation
+and the array checks both retain that rule. Empty junction sets and padded
+control slots remain representable. Calcium pumps, ER controls, channel controls
+and fuel regeneration pass through unchanged.
+
+Use `jax.vmap` for independent worlds with matching model types and array shapes.
+The map can be shared as a host-compiled constant or passed separately for each
+world. Baseline controls, event times and enable flags may vary across the batch.
+Safe speculative gathers return invalid diagnostics for bad indices without
+changing the input map or contaminating another world. Contact exclusivity uses
+counts over the membrane axis rather than a quadratic matrix of contact pairs.
+
+Supply the original held baseline on every call and require `result.valid`
+before considering a proposal. Physical field, material/energy, step acceptance,
+RNG ownership and clock selection remain separate checks. This array kernel is
+not yet wired into the accepted-step path below. [Progress](../PROGRESS.md)
+records NumPy and compiled CPU JAX evidence separately from future GPU runs and
+end-to-end performance measurements.
 
 ### Accepted intervals with held blockers
 
@@ -1101,9 +1326,49 @@ checkpoint does not fire a future event that may refuse.
 
 Protein, diffusion, component elapsed time and random draw counters remain held.
 The caller supplies the expected tissue binding when loading or advancing a
-saved checkpoint. This host path does not implement charged-protein loops,
-native clock integration or GPU execution. [Progress](../PROGRESS.md) records
+saved checkpoint. This interval primitive does not implement charged-protein
+loops or GPU execution. The controller below owns native clock integration.
+[Progress](../PROGRESS.md) records
 the current qualification and its numerical scope.
+
+### Native-calendar blocker calls
+
+[`physiology_block_calendar`](../src/cells/core/physiology_block_calendar.py)
+associates the blocker checkpoint with a complete original
+[`NativePhaseCalendar`](../src/cells/core/physiology_native_calendar.py).
+For `N` calls, BETSE's event labels span `0` through `N * dt` in `N` samples;
+the physical call still advances from `k * dt` to `(k + 1) * dt`. The controller
+never substitutes the difference between event labels for elapsed duration.
+Its receipt records the source label, declared duration and actual physical
+endpoints separately. A one-call phase has label zero. Empty phases are calendar
+inputs but cannot initialise physical blocker execution.
+
+Only the outer controller enables global setters: once per SIM call, at its
+native label. INIT preserves the carried blocker factors. Internal interval
+calls disable setters, holding those factors while original physical controls
+change at their own grid boundaries. Every original interval retains the
+existing RK, field, domain, turnover, material and energy checks. The requested
+call must end exactly on the original grid before any event fires. An accepted
+endpoint remains valid if a later, unrequested call would be off-grid or its
+event would fail.
+
+[`physiology_block_calendar_io`](../src/cells/physiology_block_calendar_io.py)
+saves the original calendar and accepted call cursor around the complete bound
+blocker snapshot. It preserves the original phase length on restart; replacing
+it with the remaining call count would change event labels. Publication writes
+the outer manifest last, retains source/runtime pins and refuses existing
+destinations. Failure retains the original parent, the raw failed setter or
+interval and any completed speculative intervals. None of those partial results
+is published as a completed call.
+
+The component's declared phase and duration must agree with the calendar;
+protein, diffusion, component elapsed time and RNG remain held. This is a
+blocker controller for ordinary Cells integration, not a native ionic solver,
+post-ion component loop, observation scheduler or GPU execution path. The
+[independent reference](../validation/tissue/physiology_block_calendar_reference.py)
+uses rational labels, independent scalar setters and complete DOP853 states
+carried from the initial condition. [Progress](../PROGRESS.md) records numerical
+qualification separately from biological-duration or source whole-loop claims.
 
 ## Cell removal and surviving owners
 
