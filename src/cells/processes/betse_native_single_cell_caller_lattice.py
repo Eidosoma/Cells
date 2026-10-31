@@ -38,6 +38,7 @@ DEPENDENCIES = {
     "betse_image_mask_prelude": "e8e14819df8a80692c2c3990189aaccb2e375a6c984c2cd8dc727ce80e2ce03b",
 }
 _ISSUED = WeakKeyDictionary()
+_CONSUMED = WeakKeyDictionary()
 _ACTIVE = WeakKeyDictionary()
 
 
@@ -470,7 +471,16 @@ def _authority(owner):
 
 def _validate_owner(owner):
     value = _authority(owner)
+    if _epoch_consumed(owner) or value.get("continuation_consumed", False):
+        raise CallerRejected(
+            "Caller epoch was consumed by an attempted continuation",
+            stage="caller_epoch_consumed",
+            request=value["request"],
+            trial=value["trial"],
+            partial=dict(caller=value["caller"], rng=value["tape"].rng, continuation_consumed=True),
+        )
     try:
+        _validate_parameter_source(value)
         if value["invalid"] or _verify_sources() != value["producers"]:
             raise ValueError("Changed source authority")
         if _digest(request_record(value["request"])) != value["request"].identity:
@@ -518,6 +528,28 @@ def _validate_owner(owner):
     return value
 
 
+def _retirement_token(owner):
+    return _CONSUMED.get(owner) if type(owner) is CallerOwner else None
+
+
+def _epoch_consumed(owner):
+    return _retirement_token(owner) is not None
+
+
+def _consume_epoch(owner, *, expected, transition):
+    """Publish one irreversible claim shared by caller and dependent image owners."""
+    value = _validate_owner(owner)
+    if value is not expected or transition is None:
+        raise CallerRejected(
+            "Caller epoch identity changed before retirement", stage="caller_epoch_identity"
+        )
+    # One publication retires the entire caller/RNG epoch. Image guards consult
+    # this same claim, including if subsequent bookkeeping raises.
+    _CONSUMED[owner] = transition
+    value["continuation_consumed"] = True
+    return value
+
+
 def _bindings(caller):
     methods = (
         _Runtime.__init__,
@@ -533,19 +565,38 @@ def _bindings(caller):
     )
 
 
-def prepare(request):
+def _validate_parameter_source(value):
+    owner = value.get("parameter_owner")
+    if owner is not None:
+        from cells.processes import betse_native_single_cell_parameters as parameters
+
+        parameters._validate_binding(owner, value["request"], value["parameters"])
+
+
+def prepare(request, *, _parameter_owner=None):
     if type(request) is not Request:
         raise CallerRejected(
             "Typed caller lattice request required", stage="request_owner", request=request
         )
     producers = _verify_sources()
+    p = None
+    if _parameter_owner is not None:
+        from cells.processes import betse_native_single_cell_parameters as parameters
+
+        # This is the already-constructed actual instance, claimed once before
+        # authentication/caller work. It is never initialized or patched here.
+        recipe = request.core_request.initial_request.upstream[0].definition
+        p = parameters._claim_for_caller(_parameter_owner, request, recipe)
     binding, seed = _validate_request(request)
-    caller = p = rng = tape = None
+    if _parameter_owner is not None:
+        parameters._validate_binding(_parameter_owner, request, p)
+    caller = rng = tape = None
     captured = {}
     error, stage, audit = None, "parameter_stores", None
     try:
-        p = object.__new__(_Parameters)
-        p.__init__(binding.definition)
+        if _parameter_owner is None:
+            p = object.__new__(_Parameters)
+            p.__init__(binding.definition)
         captured["parameters"] = core.caches.snapshot(_parameters(p))
         saved = core.initial.streams.native_stream_manifest(seed.stream_before)["state"]
         stage = "RNG_constructor"
@@ -571,6 +622,8 @@ def prepare(request):
                 _ACTIVE.pop(caller, None)
         stage = "exact_seed_evidence"
         audit = _audit(caller, p, tape, seed, binding)
+        if _parameter_owner is not None:
+            parameters._validate_binding(_parameter_owner, request, p)
     except Exception as failure:
         error = failure
     partial = dict(
@@ -623,12 +676,15 @@ def prepare(request):
     try:
         if _verify_sources() != producers:
             raise ValueError("Producer drift during caller execution")
+        if _parameter_owner is not None:
+            parameters._validate_binding(_parameter_owner, request, p)
         graph, edges = _graph(caller, p, tape)
         owner = object.__new__(CallerOwner)
         _ISSUED[owner] = dict(
             request=request,
             caller=caller,
             parameters=p,
+            parameter_owner=_parameter_owner,
             tape=tape,
             trial=trial,
             producers=producers,

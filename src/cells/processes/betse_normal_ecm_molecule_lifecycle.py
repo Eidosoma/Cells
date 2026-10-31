@@ -16,6 +16,7 @@ from cells.processes import betse_ecm_grn_join as network
 from cells.processes import betse_ecm_transport as material
 from cells.processes import betse_normal_ecm_catalog_join_source as catalog
 from cells.processes import betse_normal_ecm_field_join as fields
+from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as init
 from cells.processes import betse_normal_ecm_molecule_lifecycle_setup as setup
@@ -225,7 +226,8 @@ def check_owners(binding, completed):
     # The binder's JSON encoding intentionally erases ndarray/scalar dtypes.
     # Keep an additional comparison of the two original declarations so that
     # this representation bridge cannot erase an array/sequence distinction.
-    # Only mapping insertion order is irrelevant here; no value is converted.
+    # Mapping order is ignored; existing freeze/data list/tuple equivalence is
+    # retained. Arrays/scalars keep their category, dtype, shape and value checks.
     def same_raw(left, right):
         if isinstance(left, Mapping) or isinstance(right, Mapping):
             return (
@@ -339,6 +341,7 @@ class Binding:
     expected_init_identity: str
     declaration: object
     identity: str
+    event_owner_inputs: object = None
 
 
 @dataclass(frozen=True)
@@ -356,10 +359,11 @@ class SimPhase:
 
 
 def binding_record(value):
-    return (LAW_ID, value.inputs, value.expected_init_identity, value.declaration.identity)
+    original = (LAW_ID, value.inputs, value.expected_init_identity, value.declaration.identity)
+    return original if value.event_owner_inputs is None else (*original, value.event_owner_inputs)
 
 
-def bind(inputs):
+def bind(inputs, *, event_owner_inputs=None):
     original = ions.data(inputs)
     if (
         set(original)
@@ -378,6 +382,10 @@ def bind(inputs):
     for key in ("case_id", "provenance", "expected_init_binding_identity"):
         if not isinstance(original[key], str) or not original[key].strip():
             raise ValueError("Require explicit lifecycle association " + key)
+    if event_owner_inputs is not None:
+        event_owner_bridge.check_inputs(
+            event_owner_inputs, expected_INIT=original["expected_init_binding_identity"]
+        )
     declaration = init.bind(original["sim_phase"])
     if declaration.calendar.phase != "SIM" or declaration.calendar.step_count != 3:
         raise ValueError(
@@ -390,7 +398,11 @@ def bind(inputs):
             "The first lifecycle binding keeps the supplied no-static-noise material seam"
         )
     value = Binding(
-        ions.freeze(original), original["expected_init_binding_identity"], declaration, ""
+        ions.freeze(original),
+        original["expected_init_binding_identity"],
+        declaration,
+        "",
+        event_owner_inputs,
     )
     return replace(value, identity=ions.digest(binding_record(value)))
 
@@ -398,6 +410,10 @@ def bind(inputs):
 def validate_binding(binding):
     if type(binding) is not Binding or binding.identity != ions.digest(binding_record(binding)):
         raise ValueError("Changed complete dual-owner lifecycle declaration")
+    if binding.event_owner_inputs is not None:
+        event_owner_bridge.check_inputs(
+            binding.event_owner_inputs, expected_INIT=binding.expected_init_identity
+        )
 
 
 def check_stable_owner_scope(binding, completed):
@@ -470,7 +486,15 @@ def transition(binding, completed, *, observer=None, before_field=None):
         raw = ions.data(binding.inputs)
         stage = "actual_retained_dual_owner_SIM_setup"
         ctx, template, mechanical, reached = setup.prepare(
-            completed.binding, completed.parent, raw, observer
+            completed.binding,
+            completed.parent,
+            raw,
+            observer,
+            **(
+                dict(source_binding=binding, completed=completed)
+                if binding.event_owner_inputs is not None
+                else {}
+            ),
         )
         stage = "actual_SIM_phase_declaration"
         declaration = init.bind(template["_phase_input"])
@@ -498,6 +522,8 @@ def transition(binding, completed, *, observer=None, before_field=None):
             physical_initializer_executed=False,
             native_load_or_pickle=False,
         )
+        if binding.event_owner_inputs is not None:
+            receipt["event_finalization"]["owner_publication"] = reached["event_owner_published"]
         current = init.Binding(
             declaration,
             base.material_binding,
@@ -579,6 +605,8 @@ def verify(binding, parent):
     ):
         raise ValueError("Foreign INIT parent or inferred phase profile")
     init.verify(parent.phase_binding, parent.active)
+    if binding.event_owner_inputs is not None:
+        event_owner_bridge.resolve(binding, parent)
     if not catalog.equal_tree(
         parent.receipt["old_INIT_clock"], ions.data(parent.source_init.parent.clock)
     ):

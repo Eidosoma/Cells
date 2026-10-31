@@ -52,11 +52,13 @@ def child(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--cpu", type=int, default=6)
     parser.add_argument("--_child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     output = args.output.resolve()
-    if not output.is_relative_to(prepare.BASE) or os.sched_getaffinity(0) != {6}:
-        parser.error("Require CPU6 and a fresh /mnt/workspaces/Cells output")
+    prepare.require_cpu(args.cpu)
+    if not output.is_relative_to(prepare.BASE):
+        parser.error("Require a fresh /mnt/workspaces/Cells output")
     if args._child:
         return child(output)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
@@ -82,6 +84,7 @@ def main():
             checkout_snapshot_sha256=prepare.sha(frozen / "SNAPSHOT.json"),
             execution_source_root=str(frozen),
             numerical_execution_authorized=False,
+            cpu=args.cpu,
         ),
     )
     environment = dict(os.environ)
@@ -104,6 +107,8 @@ def main():
             "validation.betse.init_phase_qualification.software",
             "--output",
             str(output),
+            "--cpu",
+            str(args.cpu),
             "--_child",
         ],
         directory=output / "process",
@@ -119,7 +124,7 @@ def main():
     if changed:
         raise RuntimeError("Tested source drift: " + repr(changed))
     prepare.source_snapshot.verify(frozen)
-    result.update(scientific_execution=0, scientific_imports=0, source_sha256=sources)
+    result.update(scientific_execution=0, scientific_imports=0, source_sha256=sources, cpu=args.cpu)
     prepare.write(output / "result.json", result)
     print(json.dumps(dict(output=str(output), status=result["status"])))
     return int(result["returncode"])

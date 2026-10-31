@@ -11,12 +11,14 @@ import builtins
 import hashlib
 import json
 import os
+import struct
 import sys
 import warnings
 from dataclasses import dataclass, replace
 from pathlib import Path
-from types import ModuleType
-from weakref import WeakKeyDictionary
+from threading import RLock
+from types import CellType, ModuleType
+from weakref import WeakKeyDictionary, WeakSet
 
 import numpy as np
 from PIL import Image
@@ -33,13 +35,15 @@ INVALIDATED_OWNERS = core.INVALIDATED_OWNERS
 HELD_UNQUALIFIED_SOURCE_STAGE = True
 CALLER_PINS = {
     "betse_native_single_cell_caller_lattice": (
-        "e5b3b09adf69b8daf42e89d511f6a17995d17eab3ec94a76cefb1df521cf5f6c"
+        "da9b3104796c1fee36c29a4ef13149b26792ea9ad0b0ba9519567296776ee644"
     ),
     "betse_native_single_cell_caller_lattice_source": (
         "026586341ef51a4d1f7cd6095e087cb07db8129a555afd505fa40aa7acdb1e30"
     ),
 }
 _ISSUED = WeakKeyDictionary()
+_RETIRING = WeakSet()
+_RETIREMENT_LOCK = RLock()
 
 
 @dataclass(frozen=True, slots=True)
@@ -399,51 +403,88 @@ def trial_record(trial):
 
 
 def _graph(tape):
-    objects, seen = [], set()
+    """Actual objects plus every root/reference edge, including repeated aliases.
 
-    def visit(value):
-        if (
-            value is None
-            or isinstance(value, (str, int, float, bool, np.generic))
-            or id(value) in seen
-        ):
-            return
-        if len(objects) > core.caches.MAX_TREE_NODES:
+    Callable code and closure cells, spline storage, hull attributes and array
+    bases remain distinct relationships. Equal logical values and an unchanged
+    first-visit object list cannot certify those relationships on their own.
+    """
+    objects, nodes, seen = [], [], {}
+    visits = 0
+
+    def visit(value, depth=0):
+        nonlocal visits
+        visits += 1
+        if depth > 48 or visits > core.caches.MAX_TREE_NODES:
             raise ValueError("Image source graph exceeds its declared bound")
-        seen.add(id(value))
+        if value is None or type(value) in (str, int, bool):
+            return (type(value).__name__, value)
+        if type(value) is float:
+            return ("float", struct.pack(">d", value).hex())
+        if isinstance(value, np.generic):
+            return ("numpy_scalar", value.dtype.str, value.tobytes().hex())
+        if id(value) in seen:
+            return ("ref", seen[id(value)])
+        token = len(objects)
+        seen[id(value)] = token
         objects.append(value)
-        if isinstance(value, np.ndarray):
-            visit(value.base)
-        elif isinstance(value, dict):
-            for key, item in value.items():
-                visit(key)
-                visit(item)
-        elif isinstance(value, (tuple, list)):
-            for item in value:
-                visit(item)
-        elif callable(value) and hasattr(value, "__code__"):
-            visit(value.__code__)
-            visit(value.__closure__)
-            for cell in value.__closure__ or ():
-                visit(cell.cell_contents)
-        elif hasattr(value, "tck"):
-            visit(value.tck)
+        node = dict(token=token, type=type(value).__module__ + "." + type(value).__qualname__)
+        nodes.append(node)
 
-    for value in (
-        tape,
-        tape.mask,
-        tape.picker,
-        vars(tape.mask),
-        vars(tape.picker),
-        tape.splines,
-        tape.hull,
-        tape.locals,
-        tape.events,
-    ):
-        visit(value)
-    if hasattr(tape.hull, "__dict__"):
-        visit(vars(tape.hull))
-    return tuple(objects)
+        def edge(label, item):
+            return (*label, visit(item, depth + 1))
+
+        if isinstance(value, np.ndarray):
+            if value.size > core.caches.MAX_ARRAY_ELEMENTS:
+                raise ValueError("Image source array exceeds its declared bound")
+            node["layout"] = core.caches.layout(value)
+            edges = [edge(("base",), value.base)]
+            if value.dtype.hasobject:
+                edges.extend(edge(("item", index), item) for index, item in enumerate(value.flat))
+        elif isinstance(value, dict):
+            edges = []
+            for index, (key, item) in enumerate(value.items()):
+                edges.append(edge(("key", index), key))
+                edges.append(edge(("value", index), item))
+        elif isinstance(value, (tuple, list)):
+            edges = [edge(("item", index), item) for index, item in enumerate(value)]
+        elif callable(value) and hasattr(value, "__code__"):
+            edges = [edge(("code",), value.__code__), edge(("closure",), value.__closure__)]
+        elif isinstance(value, CellType):
+            try:
+                contents = value.cell_contents
+            except ValueError:
+                edges = [("empty_cell",)]
+            else:
+                edges = [edge(("cell_contents",), contents)]
+        elif hasattr(value, "tck"):
+            edges = [edge(("tck",), value.tck)]
+            if hasattr(value, "__dict__"):
+                edges.append(edge(("attributes",), vars(value)))
+        elif (value is tape.mask or value is tape.picker or value is tape.hull) and hasattr(
+            value, "__dict__"
+        ):
+            edges = [edge(("attributes",), vars(value))]
+        else:
+            edges = []
+        node["edges"] = edges
+        return ("ref", token)
+
+    roots = tuple(
+        (name, visit(value))
+        for name, value in (
+            ("tape", tape),
+            ("mask", tape.mask),
+            ("picker", tape.picker),
+            ("mask_attributes", vars(tape.mask)),
+            ("picker_attributes", vars(tape.picker)),
+            ("splines", tape.splines),
+            ("hull", tape.hull),
+            ("locals", tape.locals),
+            ("events", tape.events),
+        )
+    )
+    return tuple(objects), dict(roots=roots, nodes=nodes)
 
 
 class ImageOwner:
@@ -474,6 +515,21 @@ def _authority(owner):
 
 def _validate_owner(owner):
     value = _authority(owner)
+    if callers._epoch_consumed(value["request"].caller) or value.get(
+        "continuation_consumed", False
+    ):
+        raise ImageOwnerRejected(
+            "Image/caller epoch was consumed by an attempted continuation",
+            stage="image_epoch_consumed",
+            request=value["request"],
+            trial=value["trial"],
+            partial=dict(
+                tape=value["tape"],
+                caller=value["caller"],
+                rng=value["rng"],
+                continuation_consumed=True,
+            ),
+        )
     try:
         context, prelude = _context(value["request"].caller)
         if value["invalid"] or _verify_sources() != value["producers"]:
@@ -491,9 +547,11 @@ def _validate_owner(owner):
         _file_bytes(prelude.image)
         if _audit(value["tape"], prelude).identity != value["trial"].audit.identity:
             raise ValueError("Changed actual mask/spline evidence")
-        graph = _graph(value["tape"])
-        if len(graph) != len(value["graph"]) or any(
-            a is not b for a, b in zip(graph, value["graph"], strict=True)
+        graph, edges = _graph(value["tape"])
+        if (
+            edges != value["graph_edges"]
+            or len(graph) != len(value["graph"])
+            or any(a is not b for a, b in zip(graph, value["graph"], strict=True))
         ):
             raise ValueError("Original image object/alias relationships changed")
         if tuple(
@@ -510,6 +568,47 @@ def _validate_owner(owner):
             source_error=error,
         ) from error
     return value
+
+
+def _consume_epoch(owner, *, expected_image, expected_caller, transition, before_claim):
+    """Preflight both actual owners, then publish one shared retirement claim.
+
+    The lock/busy guard covers validation too. A reentrant continuation cannot
+    acquire an epoch while the outer preflight is still in progress. Failure
+    after publication never rolls back the shared claim or any invalidation.
+    """
+    with _RETIREMENT_LOCK:
+        value = _authority(owner)
+        parent = value["request"].caller
+        if parent in _RETIRING:
+            raise ImageOwnerRejected("Parent retirement is reentrant", stage="retirement_reentrant")
+        _RETIRING.add(parent)
+        try:
+            checked = _validate_owner(owner)
+            context = callers._validate_owner(parent)
+            if (
+                checked is not expected_image
+                or context is not expected_caller
+                or value["caller"] is not context["caller"]
+                or value["rng"] is not context["tape"].rng
+            ):
+                raise ImageOwnerRejected(
+                    "Changed actual caller/image/RNG pair", stage="retirement_identity"
+                )
+            before_claim()
+            # Preflight bookkeeping must not establish a new baseline for an
+            # owner changed since its original issuance. Recheck the actual
+            # source graphs immediately before the irreversible publication.
+            if _validate_owner(owner) is not value or callers._authority(parent) is not context:
+                raise ImageOwnerRejected(
+                    "Parent issuance changed during retirement preflight",
+                    stage="retirement_identity",
+                )
+            callers._consume_epoch(parent, expected=context, transition=transition)
+            value["continuation_consumed"] = True
+            return value, context
+        finally:
+            _RETIRING.discard(parent)
 
 
 def prepare(request):
@@ -592,7 +691,7 @@ def prepare(request):
     try:
         if _verify_sources() != producers:
             raise ValueError("Source producer changed during construction")
-        graph = _graph(tape)
+        graph, edges = _graph(tape)
         owner = object.__new__(ImageOwner)
         _ISSUED[owner] = dict(
             request=request,
@@ -602,6 +701,7 @@ def prepare(request):
             rng=rng,
             rng_epoch=epoch,
             graph=graph,
+            graph_edges=edges,
             producers=producers,
             invalid=False,
         )

@@ -488,7 +488,8 @@ def entry_receipt(binding, entry, *, provenance, previous_phase=None):
         verify_completed_INIT(previous_phase)
         if (
             composition.kind(binding.composition) != "SIM"
-            or entry.source_init.identity != previous_phase.complete_init.identity
+            or composition.source_init(binding.composition, entry).identity
+            != previous_phase.complete_init.identity
         ):
             raise ValueError(
                 "SIM source INIT is foreign to the supplied completed headless INIT run"

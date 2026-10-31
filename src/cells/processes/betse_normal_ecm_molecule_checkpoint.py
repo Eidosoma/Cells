@@ -121,6 +121,12 @@ def producer_identity():
         "cells.io",
         "cells.physiology_checkpoint",
         "cells.core.specs",
+        # The event producer imports these helpers only when a call executes.
+        # Pin their bytes even at a checkpoint taken before the first event.
+        "cells.processes.betse_normal_ecm_molecule_events_step",
+        "cells.processes.betse_normal_ecm_molecule_events_material",
+        "cells.processes.betse_normal_ecm_molecule_events_pump",
+        "cells.processes.betse_normal_ecm_molecule_events_source",
     ):
         scientific[name] = importlib.import_module(name)
     root = Path(cells.__file__).resolve().parent
@@ -222,11 +228,7 @@ def _expect(binding, phase, parent_identity):
 
 def _scope(binding, parent):
     actual = run.composition.phase_state(parent.active)
-    phase_binding = (
-        binding.composition
-        if run.composition.kind(binding.composition) == "INIT"
-        else parent.active.phase_binding
-    )
+    phase_binding = run.composition.phase_binding(binding.composition, parent.active)
     flags = phase_binding.inputs_raw["flags"]
     for name in (
         "fluid_flow",

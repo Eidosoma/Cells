@@ -272,3 +272,123 @@ def test_repeated_archive_ast_keeps_function_occurrence(tmp_path):
     updated = prepare.call_sites(rows, after, baseline=before)
     assert [n["line"] for n in updated] == [4, 5]
     assert [n["AST_sha256"] for n in updated] == [n["AST_sha256"] for n in rows]
+
+
+@pytest.fixture
+def failure_writer(tmp_path, monkeypatch):
+    path = tmp_path / prepare.TEST
+    path.parent.mkdir(parents=True)
+    baseline = "def test_init_raw_refusal():\n    archive(parent)\n"
+    path.write_text(baseline)
+    parent_sha = prepare.sha(path)
+    monkeypatch.setattr(prepare, "NORMALIZED_TEST_SHA256", parent_sha)
+    node = next(n for n in ast.walk(ast.parse(baseline)) if isinstance(n, ast.Call))
+    original = dict(
+        module=prepare.TEST,
+        callee="archive",
+        line=node.lineno,
+        AST_sha256=hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest(),
+    )
+    path.write_text(baseline + "    archive(returned)\n")
+    calls = [n for n in ast.walk(ast.parse(path.read_text())) if isinstance(n, ast.Call)]
+    added = dict(
+        module=prepare.TEST,
+        callee="archive",
+        line=calls[-1].lineno,
+        AST_sha256=hashlib.sha256(
+            ast.dump(calls[-1], include_attributes=False).encode()
+        ).hexdigest(),
+        containing_function="test_init_raw_refusal",
+        source_sha256=prepare.sha(path),
+        role="unexpected_success_failure_only",
+    )
+    review = dict(
+        normalized_test_parent_sha256=parent_sha,
+        changed_files={prepare.TEST: dict(checkout_sha256=prepare.sha(path))},
+        additional_failure_archive_sites=[added],
+    )
+    return SimpleNamespace(
+        root=tmp_path, path=path, original=original, added=added, review=review, baseline=baseline
+    )
+
+
+def test_reviewed_failure_capture_preserves_original_writer(failure_writer):
+    case = failure_writer
+    additions = prepare.reviewed_writer_additions(case.review, case.root)
+    originals = prepare.call_sites([case.original], case.root)
+    assert originals == [case.original] and additions == [case.added]
+    prepare.verify_test_writer_roster(originals + additions, case.root)
+
+
+def test_legacy_comparator_source_needs_no_added_writer(failure_writer):
+    case = failure_writer
+    case.path.write_text(case.baseline)
+    assert prepare.reviewed_writer_additions({}, case.root) == []
+    prepare.verify_test_writer_roster([case.original], case.root)
+
+
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("module", "other.py"),
+        ("callee", "other_archive"),
+        ("containing_function", "test_positive"),
+        ("source_sha256", "unreviewed"),
+        ("role", "accepted_positive_evidence"),
+        ("AST_sha256", "unreviewed"),
+        ("line", 99),
+    ],
+)
+def test_failure_capture_rejects_changed_authority(key, value, failure_writer):
+    case = failure_writer
+    case.added[key] = value
+    with pytest.raises(ValueError):
+        prepare.reviewed_writer_additions(case.review, case.root)
+
+
+def test_new_capture_cannot_use_old_review_or_unknown_test_bytes(failure_writer):
+    case = failure_writer
+    with pytest.raises(ValueError, match="requires a reviewed failure writer"):
+        prepare.reviewed_writer_additions({}, case.root)
+    case.path.write_text(case.path.read_text() + "unreviewed = True\n")
+    with pytest.raises(ValueError, match="exact reviewed INIT failure writer successor"):
+        prepare.reviewed_writer_additions(case.review, case.root)
+
+
+@pytest.mark.parametrize("change", ["extra", "missing", "duplicate"])
+def test_writer_roster_refuses_unaccounted_capture(change, failure_writer):
+    case = failure_writer
+    rows = [case.original, case.added]
+    if change == "extra":
+        case.path.write_text(case.path.read_text() + "    archive(unreviewed)\n")
+    elif change == "missing":
+        rows.pop(0)
+    else:
+        rows.append(case.original)
+    with pytest.raises(ValueError, match="Exact INIT capture writer roster"):
+        prepare.verify_test_writer_roster(rows, case.root)
+
+
+def test_metadata_cpu_is_explicit_and_single(monkeypatch):
+    monkeypatch.setattr(prepare.os, "sched_getaffinity", lambda pid: {3})
+    assert prepare.require_cpu(3) == 3
+    for invalid in (6, True, -1, "3"):
+        with pytest.raises(ValueError, match="explicitly selected single CPU"):
+            prepare.require_cpu(invalid)
+    monkeypatch.setattr(prepare.os, "sched_getaffinity", lambda pid: {3, 6})
+    with pytest.raises(ValueError, match="explicitly selected single CPU"):
+        prepare.require_cpu(3)
+
+
+def test_completion_review_records_bind_exact_files_without_duplicates(tmp_path):
+    paths = [tmp_path / name for name in ("failed.json", "repair.json")]
+    for path in paths:
+        path.write_text('{"scientific_acceptance": false}\n')
+    rows = [dict(path=str(path), sha256=prepare.sha(path)) for path in paths]
+    assert prepare.completion_review_pins(rows) == {r["path"]: r["sha256"] for r in rows}
+    assert prepare.completion_review_pins([]) == {}
+    with pytest.raises(ValueError, match="Duplicated or changed"):
+        prepare.completion_review_pins(rows + [rows[0]])
+    paths[0].write_text('{"scientific_acceptance": true}\n')
+    with pytest.raises(ValueError, match="Duplicated or changed"):
+        prepare.completion_review_pins(rows)

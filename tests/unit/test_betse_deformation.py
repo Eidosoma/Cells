@@ -156,6 +156,49 @@ def result_dict(result):
     return result._asdict()
 
 
+@pytest.mark.parametrize("young_modulus, expected_finite", [(1000.0, True), (1e-320, False)])
+def test_zero_pressure_retains_native_reciprocal_overflow(young_modulus, expected_finite):
+    """Native reciprocal-first elasticity gives NaN for overflow times zero.
+
+    This reproduces the arithmetic boundary exposed by the saved INIT failure;
+    it is a kernel regression, not an independent tissue or native replay.
+    """
+    raw = base()
+    raw["young_modulus_Pa"] = young_modulus
+    raw["pressure_Pa"] = np.zeros_like(raw["pressure_Pa"])
+    raw["PP_native"] = np.zeros_like(raw["PP_native"])
+    raw["electric_field_V_m"] = np.zeros_like(raw["electric_field_V_m"])
+    _, forcing, _, operators, parameters = prepare(raw)
+    assert np.isfinite(parameters.shear_modulus_Pa) and parameters.shear_modulus_Pa > 0
+    with np.errstate(over="ignore", invalid="ignore"):
+        result = mechanics.steady(forcing, operators, parameters, xp=np)
+    evidence(
+        "reciprocal-overflow-" + ("finite" if expected_finite else "nonfinite"),
+        dict(
+            young_modulus_Pa=young_modulus,
+            shear_modulus_Pa=parameters.shear_modulus_Pa,
+            forcing={name: value.tolist() for name, value in forcing._asdict().items()},
+            operators={name: value.tolist() for name, value in operators._asdict().items()},
+            parameters=parameters._asdict(),
+            result={
+                name: dict(shape=value.shape, float64_le_bytes=value.astype("<f8").tobytes().hex())
+                for name, value in result._asdict().items()
+            },
+            pressure_gradient=result.pressure_gradient_Pa_m.tolist(),
+            displacement_finite=np.isfinite(result.displacement_m).tolist(),
+            displacement_nan=np.isnan(result.displacement_m).tolist(),
+            native_replay=False,
+            scientific_acceptance=False,
+        ),
+    )
+    np.testing.assert_array_equal(result.pressure_gradient_Pa_m, 0.0)
+    for value in (result.unprojected_elastic_m, result.displacement_m):
+        if expected_finite:
+            np.testing.assert_array_equal(value, 0.0)
+        else:
+            assert np.isnan(value).all()
+
+
 @pytest.mark.parametrize("raw", CASES, ids=lambda r: r["name"])
 def test_native_and_independent_operator_forcing_correspondence(raw):
     raw, f, history, op, p = prepare(raw)

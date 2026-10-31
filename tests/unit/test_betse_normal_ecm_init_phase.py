@@ -471,7 +471,7 @@ def test_init_raw_refusal(tmp_path, case):
                 after_cold=before("cold"),
                 before_field=before("bootstrap"),
             )
-            joined.advance(
+            returned = joined.advance(
                 binding,
                 parent,
                 before_nak=before("nak"),
@@ -479,6 +479,11 @@ def test_init_raw_refusal(tmp_path, case):
                 before_calcium=before("calcium"),
                 before_network=before("network"),
                 before_mechanics=before("mechanics"),
+            )
+            archive(
+                tmp_path,
+                case + "-raw-return-before-assertions",
+                dict(parent=parent, observed=observed, returned=returned, native=captured),
             )
         except Exception as error:
             archive(
@@ -550,8 +555,10 @@ def test_init_raw_refusal(tmp_path, case):
             for actual, raw, expected in zip(
                 trial.frames, material["frames"], first["frames"], strict=True
             ):
-                assert (actual.stage, actual.ion_id) == raw[:2] == (
-                    expected["stage"], expected["ion_id"]
+                assert (
+                    (actual.stage, actual.ion_id)
+                    == raw[:2]
+                    == (expected["stage"], expected["ion_id"])
                 )
                 assert len(actual.values) == 12 and set(actual.values._fields) == set(
                     expected["values"]

@@ -164,11 +164,34 @@ def prepare_INIT(directory, case, attempts, *, call_limit=None):
     return outer, parent
 
 
-def prepare_SIM(directory, init_binding, init_parent, attempts, *, case="zero_INIT_calls"):
+def prepare_SIM(
+    directory,
+    init_binding,
+    init_parent,
+    attempts,
+    *,
+    case="zero_INIT_calls",
+    event_owner_inputs=None,
+):
     """Use the existing complete-INIT admission and actual warm transition."""
     directory = Path(directory)
     directory.mkdir(exist_ok=False)
     retain = _retainer(directory, attempts)
+    supplied = None
+    if event_owner_inputs is not None:
+        from cells.processes import betse_normal_ecm_molecule_event_owner as owner_bridge
+
+        def check_supplied():
+            actual = init_binding.composition
+            value = owner_bridge.check_inputs(event_owner_inputs, expected_INIT=actual.identity)
+            checkpoint.codec.require(
+                value.source_geometry_binding_identity
+                == actual.material_binding.geometry_binding.identity,
+                "Foreign supplied geometry authority before SIM preparation",
+            )
+            return value
+
+        supplied = retain("typed-event-owner-inputs", check_supplied, supplied=event_owner_inputs)
     complete = retain(
         "actual-complete-INIT",
         lambda: run.complete_INIT(init_binding, init_parent),
@@ -180,7 +203,13 @@ def prepare_SIM(directory, init_binding, init_parent, attempts, *, case="zero_IN
         lambda: fixtures.sim_inputs(case, complete.complete_init),
         complete=complete,
     )
-    component = retain("SIM-component-binding", lambda: leaf.bind(raw), raw=raw)
+    component = retain(
+        "SIM-component-binding",
+        lambda: leaf.bind(
+            raw, **(dict(event_owner_inputs=supplied) if supplied is not None else {})
+        ),
+        raw=raw,
+    )
     declared = retain("SIM-run-inputs", lambda: fixtures.declaration(case, component))
     return retain(
         "actual-INIT-to-SIM",

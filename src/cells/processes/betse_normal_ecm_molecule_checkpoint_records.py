@@ -22,6 +22,8 @@ RECORDS = {
         "FailedInitPrefix",
         "SimPhase",
     ),
+    "cells.processes.betse_normal_ecm_molecule_events": ("Binding", "State"),
+    "cells.processes.betse_normal_ecm_molecule_event_owner": ("Inputs", "Publication"),
     "cells.processes.betse_normal_ecm_molecule_lifecycle_phase": (
         "Declaration",
         "Binding",

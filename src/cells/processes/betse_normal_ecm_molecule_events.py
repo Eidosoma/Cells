@@ -11,6 +11,7 @@ from cells.processes import betse_ecm_transport as material
 from cells.processes import betse_normal_ecm_event_join as event42
 from cells.processes import betse_normal_ecm_event_join_source as events
 from cells.processes import betse_normal_ecm_field_join as full
+from cells.processes import betse_normal_ecm_molecule_event_owner as owner_bridge
 from cells.processes import betse_normal_ecm_molecule_lifecycle as leaf
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as phase
 from cells.processes import betse_normal_ion_join as ions
@@ -177,7 +178,11 @@ def verify_binding(binding):
     ):
         raise ValueError("Foreign actual source INIT/SIM association")
     event42.validate_owner(binding, ions.data(binding.raw["event_owner"]))
-    original_owner = binding.base.setup_receipt["event_finalization"]["source_fields"]["owner"]
+    original_owner = (
+        owner_bridge.resolve(binding.source_binding, binding.source_entry).owner
+        if binding.source_binding.event_owner_inputs is not None
+        else binding.base.setup_receipt["event_finalization"]["source_fields"]["owner"]
+    )
     for key in (
         "configured_environment",
         "tissue_default",

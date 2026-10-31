@@ -388,6 +388,207 @@ def test_software_stale_image_authority_refuses(change, monkeypatch, tmp_path, e
     save(evidence, "drift", dict(error=caught.value, calls=h.calls))
 
 
+@pytest.mark.parametrize("retarget", [False, True])
+def test_software_existing_equal_image_alias_edge_is_guarded(
+    retarget, monkeypatch, tmp_path, evidence
+):
+    h = harness(monkeypatch, tmp_path)
+    original_graph = masks._graph
+    probe = {}
+
+    def graph(tape):
+        if not probe:
+            left, right = tape.splines[0].tck[:2]
+            assert left is not right and left.tobytes() == right.tobytes()
+            probe.update(left=left, right=right, alias=left)
+            # Diagnostic only: the original fixture and all numeric/audit
+            # records remain untouched; both equal targets are retained first.
+            tape.locals["synthetic_alias_probe"] = probe
+        return original_graph(tape)
+
+    monkeypatch.setattr(masks, "_graph", graph)
+    owner = execute(h, evidence)
+    value = masks._authority(owner)
+    tape = value["tape"]
+    mask = owner.mask
+
+    def values():
+        _, prelude = masks._context(h.request.caller)
+        return (
+            masks._audit(tape, prelude).identity,
+            masks.core.records._digest(masks.request_record(h.request)),
+            masks.core.records._digest(masks.trial_record(owner.trial)),
+            tuple(masks.core.caches.snapshot(masks._event_record(e)).identity for e in tape.events),
+            masks.core.caches.snapshot(probe).identity,
+            masks.core.initial._rng_stream(value["rng"]).identity,
+        )
+
+    before_values = values()
+    before_objects, before_edges = original_graph(tape)
+    assert probe["alias"] is probe["left"] and owner.mask is mask
+    if retarget:
+        probe["alias"] = probe["right"]
+    after_objects, after_edges = original_graph(tape)
+    assert values() == before_values
+    assert len(before_objects) == len(after_objects)
+    assert all(a is b for a, b in zip(before_objects, after_objects, strict=True))
+    if retarget:
+        assert before_edges != after_edges
+        with pytest.raises(masks.ImageOwnerRejected) as caught:
+            _ = owner.mask
+        assert caught.value.stage == "image_authority_drift"
+        assert str(caught.value.source_error) == "Original image object/alias relationships changed"
+    else:
+        assert before_edges == after_edges
+        assert owner.mask is mask and probe["alias"] is probe["left"]
+    assert h.calls["construct"] == 1 and h.calls["native"] == []
+    save(
+        evidence,
+        "alias-edges",
+        dict(
+            retarget=retarget,
+            before=before_edges,
+            after=after_edges,
+            all_value_and_audit_checks_unchanged=True,
+            ordered_retained_objects_unchanged=True,
+            calls=h.calls,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "dict-key",
+        "sequence",
+        "object-array",
+        "closure-cell",
+        "callable-code",
+        "spline-tck",
+        "hull-dict",
+    ],
+)
+def test_software_rich_image_reference_edges_reject_equal_retargets(kind, evidence):
+    left = np.asarray([0.125, -0.0])
+    right = left.copy()
+    left_view, right_view = left.view(), right.view()
+    key_left, key_right = tuple(["same-key"]), tuple(["same-key"])
+
+    def make_function(value):
+        def function():
+            return value
+
+        return function
+
+    function = make_function(left_view)
+    code_left, code_right = function.__code__, function.__code__.replace()
+    assert code_left is not code_right and code_left.co_code == code_right.co_code
+    tck_left, tck_right = (left_view, left_view, left_view), (right_view, right_view, right_view)
+    spline = SimpleNamespace(tck=tck_left)
+    mask = SimpleNamespace(
+        left=left,
+        right=right,
+        left_view=left_view,
+        right_view=right_view,
+        key_left=key_left,
+        key_right=key_right,
+        code_left=code_left,
+        code_right=code_right,
+        tck_left=tck_left,
+        tck_right=tck_right,
+        function=function,
+        spline=spline,
+    )
+    hull = SimpleNamespace(left=left_view, right=right_view, alias=left_view)
+    tape = SimpleNamespace(
+        mask=mask,
+        picker=SimpleNamespace(filename="source"),
+        splines=[spline],
+        hull=hull,
+        locals={},
+        events=[],
+    )
+    if kind == "dict-key":
+        probe = {key_left: left_view}
+    elif kind == "object-array":
+        probe = np.empty(3, dtype=object)
+        probe[0], probe[1], probe[2] = left_view, right_view, left_view
+    else:
+        probe = [left_view, right_view, left_view]
+    tape.locals["probe"] = probe
+
+    def logical_values():
+        return masks.core.caches.snapshot(
+            dict(
+                mask=masks._event_record(vars(mask)),
+                hull=masks._event_record(vars(hull)),
+                locals=masks._event_record(tape.locals),
+                tck=spline.tck,
+                closure=function.__closure__[0].cell_contents,
+                code_bytes=function.__code__.co_code.hex(),
+            )
+        ).identity
+
+    before_values = logical_values()
+    before_objects, before_edges = masks._graph(tape)
+
+    def token(value):
+        return ("ref", next(i for i, item in enumerate(before_objects) if item is value))
+
+    nodes = before_edges["nodes"]
+    assert nodes[token(left_view)[1]]["edges"] == [("base", token(left))]
+    assert nodes[token(right_view)[1]]["edges"] == [("base", token(right))]
+    assert nodes[token(function)[1]]["edges"] == [
+        ("code", token(code_left)),
+        ("closure", token(function.__closure__)),
+    ]
+    cell = function.__closure__[0]
+    assert nodes[token(function.__closure__)[1]]["edges"] == [("item", 0, token(cell))]
+    assert nodes[token(cell)[1]]["edges"] == [("cell_contents", token(left_view))]
+    assert ("tck", token(tck_left)) in nodes[token(spline)[1]]["edges"]
+    assert nodes[token(hull)[1]]["edges"] == [("attributes", token(vars(hull)))]
+    assert {
+        "tape",
+        "mask",
+        "picker",
+        "mask_attributes",
+        "picker_attributes",
+        "splines",
+        "hull",
+        "locals",
+        "events",
+    } == set(dict(before_edges["roots"]))
+    if kind == "dict-key":
+        probe.clear()
+        probe[key_right] = left_view
+    elif kind in {"sequence", "object-array"}:
+        probe[2] = right_view
+    elif kind == "closure-cell":
+        cell.cell_contents = right_view
+    elif kind == "callable-code":
+        function.__code__ = code_right
+    elif kind == "spline-tck":
+        spline.tck = tck_right
+    else:
+        hull.alias = right_view
+    after_objects, after_edges = masks._graph(tape)
+    assert logical_values() == before_values
+    assert len(before_objects) == len(after_objects)
+    assert all(a is b for a, b in zip(before_objects, after_objects, strict=True))
+    assert before_edges != after_edges
+    save(
+        evidence,
+        "rich-reference-edges",
+        dict(
+            kind=kind,
+            before=before_edges,
+            after=after_edges,
+            values_unchanged=True,
+            ordered_retained_objects_unchanged=True,
+        ),
+    )
+
+
 def test_software_raw_failure_keeps_original_cause_and_partial_mask(
     monkeypatch, tmp_path, evidence
 ):

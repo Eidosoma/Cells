@@ -192,9 +192,11 @@ def steady(forcing, operators, parameters, *, xp=jnp):
     """Reachable native quasi-static branch, independent of prior displacement."""
     p, f = _parameters(parameters, xp=xp), _forcing(forcing, operators, xp=xp)
     gradient = _gradient(f.pressure_Pa, operators, xp=xp)
-    raw = _vector_mat(
-        operators.laplacian_inverse, -gradient / p.shear_modulus_Pa[..., None, :], xp=xp
-    )
+    # Native getDeformation evaluates (1 / lame_mu) * gP before the
+    # Laplacian product. Dividing gP directly hides reciprocal overflow at
+    # zero pressure gradient and would admit a trial that is nonfinite natively.
+    force = (1 / p.shear_modulus_Pa[..., None, :]) * gradient
+    raw = _vector_mat(operators.laplacian_inverse, -force, xp=xp)
     potential, rotated = rotation_only(raw, operators, xp=xp)
     osmotic = xp.where(
         p.include_osmotic[..., None, :], _gradient(f.osmotic_PP_native, operators, xp=xp), 0.0

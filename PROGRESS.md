@@ -65,8 +65,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   215.5 MiB peak**. Earlier lint, import and synthetic fixture failures remain
   preserved. These checks used synthetic ownership gates and executed no actual
   setup, native model, owner verifier or timestep. A later identical snapshot
-  adds no test credit. Key Dev is fixing the retained-owner INIT-to-SIM
-  handoff. The [saved comparison](/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/owner-comparison.json)
+  adds no test credit. Key Dev implemented the retained-owner INIT-to-SIM
+  guard repair. The [saved comparison](/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/owner-comparison.json)
   identifies dictionary insertion order as the difference in three geometry/world
   declarations; values, list order and floating-point bits match, and ions
   match exactly. The fix keeps all four ownership checks and requires exact
@@ -76,9 +76,86 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   array/scalar type, dtype, shape and value checks that JSON encoding alone
   cannot provide. The existing numerical-value contract remains; arbitrary
   byte-layout identity is not claimed. Earlier 21-check evidence and the failed
-  snapshot preparation remain separate. Key's next assignment is a reusable,
-  held CPU qualification runner for the actual handoff and checkpoint-continuity
-  checks. Actual setup, transition and advancing simulation remain unrun here.
+  snapshot preparation remain separate. Key delivered the held CPU runner for
+  three actual handoff/checkpoint-continuity targets. Its
+  [final source/software review](/mnt/workspaces/Cells/molecule-retained-continuity-preparation-20261031-01/containment-repair/root-review.json)
+  verifies **53 synthetic passes in 4.79 seconds, 54.7 MiB peak RSS**. Output paths
+  inside the frozen packet now refuse before any mutation, including symlink
+  routes. Of 455 snapshot files, only the runner and its tests changed. The
+  earlier 45-check result and four preparation refusals remain separate. All
+  three actual targets are unrun and unreleased, with resource choices awaiting
+  Root's plan. Key delivered eventful checkpoint continuation using the existing
+  temperature pulse and zero-event control. Its [source/software review](/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/root-review.json)
+  verifies **41 synthetic passes in 6.06 seconds, 233.6 MiB sampled peak RSS**,
+  with zero model/native/RNG entry attempts. Typed event states now pass through
+  the run/checkpoint layer with their original INIT association and event history.
+  Six conditional continuation branches are written but unrun; onset/release
+  timing variants are controls, not independent biological cases. This review
+  binds the original frozen delivery only. The [typed-owner successor review](/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/root-final-review.json)
+  verifies **46 fresh software passes in 6.56 seconds, 233.7 MiB sampled peak
+  RSS**: the original 41 controls and five added rejection controls. Phase/INIT
+  selection now rejects foreign record types explicitly. Its snapshot also
+  records Root's separate mechanics repair; this gives no coupled numerical
+  acceptance. A separate [failure-accounting supplement](/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/failure-accounting-controls/root-review.json)
+  passed four new software controls in **4.30 seconds, 229.2 MiB sampled peak
+  RSS**, with zero model/native/RNG entry attempts. Original errors and partial
+  state survive deliberately failed archive, profiler and journal handling;
+  the intentional logging gaps are recorded. The prior 46 checks were not
+  rerun in that supplement. Key has now extended this integration to existing
+  deterministic extracellular salt pulses, gap-junction blocking and NaK pump
+  blocking. The [global-event source/software review](/mnt/workspaces/Cells/molecule-global-event-checkpoint-development-20261031-01/root-review.json)
+  verifies **94 distinct software passes in 8.33 seconds, 233.8 MiB sampled peak
+  RSS**, with zero model/native/RNG entries. This includes 50 checkpoint/failure
+  controls and 44 global-event controls; the intermediate 92-pass version remains
+  separately bound. All five preparation/software/binding processes have saved
+  completion reviews. Literal event order, actual pulse observation, complete
+  restart-state comparisons and separate global/post-owner control states were
+  reviewed. **All 26 prospective simulation conditions remain unrun and held**;
+  timing variants are controls, not independent biological cases. The checkpoint
+  codec and existing event equations are unchanged. Key has implemented the
+  [targeted membrane callback source prerequisite](/mnt/workspaces/Cells/molecule-membrane-event-checkpoint-development-20261031-01/root-review.json):
+  **196 software checks passed in 8.07 seconds, 235.1 MiB sampled peak RSS**,
+  comprising 94 repeated IDs and 102 new controls. The earlier **188-pass,
+  six-failure** synthetic attempt and its diagnostic limits remain recorded.
+  A separate [restart-contract supplement](/mnt/workspaces/Cells/molecule-membrane-checkpoint-restart-boundary-20261031-01/root-review.json)
+  passed **12 fresh structural checks in 4.04 seconds, 231.7 MiB sampled peak
+  RSS**; the prior 196 were not rerun. Its production/validator changes are
+  documentation only. Restart carries closed callback provenance and recreates
+  the declared constant; it does not preserve a live Python function instance.
+  All ten saved process outcomes have reviewed dispositions. **All 22 targeted
+  simulation conditions remain held**, alongside the frozen 26 global conditions.
+  Key delivered the later event-owner publication while preserving the earlier
+  finalization record. The [source and saved-result review](/mnt/workspaces/Cells/molecule-event-owner-publication-development-20261031-01/root-review.json)
+  verifies **255 synthetic passes in 10.82 seconds, 236.7 MiB sampled peak RSS**:
+  208 repeated controls and 47 new publication controls. All nine process
+  outcomes are reviewed, including the initial **251-pass/one-failure** attempt
+  and intermediate 254-pass source. The failed archive-injection control retains
+  its traceback and journal but no raw failure archive; that limitation remains
+  explicit. Root verified 469 snapshot files, 68 producer bindings and the
+  2,300-file runtime map. Missing reservoir, boundary and default-profile inputs
+  require explicit conditional authority; plain checkpoint records do not supply
+  native derivation. That review identified two resolver gaps: rechecking the
+  original configuration/early epoch and independently verifying the second
+  saved publication record. No actual setup, callback or numerical execution
+  occurred.
+  A separate [provenance/decoding supplement](/mnt/workspaces/Cells/molecule-event-owner-conditional-provenance-20261031-01/root-review.json)
+  passed **49 focused checks in 3.78 seconds, 231.4 MiB sampled peak RSS**:
+  47 publication controls repeated and two new controls. Its five process
+  outcomes are reviewed, including a preserved lint-only failure before pytest.
+  Conditional provenance is now explicit; the new decoding control verifies a
+  metadata graph with setup/validation/callback calls forbidden and an empty
+  numeric archive. It grants no numerical-array restoration credit. The prior
+  255-check suite was not rerun.
+  The [resolver repair review](/mnt/workspaces/Cells/molecule-event-owner-resolve-repair-20261031-01/root-review.json)
+  now closes both source findings. **66 focused checks passed in 4.53 seconds,
+  232.0 MiB sampled peak RSS**, with 49 repeated IDs and 17 new controls.
+  All seven saved process outcomes are reviewed. The pre-fix comparison
+  retained 15 missing-refusal failures, one separate NumPy construction failure
+  and one valid-copy pass; the first repair's 65-pass/one-failure attempt also
+  remains preserved. The NumPy digest refusal receives no resolver credit.
+  Key's next work adds an explicit global-event preparation path using the later
+  publication and genuine supplied inputs, preserving the legacy path and
+  frozen global packet. Actual conditions remain held.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
@@ -94,12 +171,43 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [independent runner review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/runner-review.json)
   found no release blocker. Source, reusable runners and tests stay in Git;
   immutable execution copies and results stay under `/mnt/workspaces/Cells`.
-  **Root launched the fresh 62-check INIT qualification at 14:51:42 UTC on
-  CPU4**, detached, with [durable launch evidence](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/launch-record.json).
-  Results remain pending review. The estimate is **30–90 minutes**, unmeasured
-  for this complete round. No prior passes are carried forward; the original
-  35-pass/one-failure/26-unrun attempt remains failed. Status checks wait for
-  the user's request; no automatic retry or follow-up is queued.
+  **The fresh 62-check INIT qualification failed at 15:00:21 UTC**, after its
+  14:51:42 launch on CPU4. The [completed saved-result review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/completion-01/review.json)
+  confirms **37 passing controls, one failure and 24 unrun checks**: 33 dependency
+  controls and four raw-refusal controls passed; both observer checks and all
+  22 positive histories remain unrun. No positive INIT history or independent
+  reference-form credit is awarded. All resource guards held; maximum sampled
+  process-tree RSS was **389.4 MiB**. The failure is `mechanics_nonfinite`, where
+  Cells did not raise the expected complete-output rejection. Saved native
+  output has zero pressure gradients and NaN displacements at an extremely small
+  shear modulus. BETSE multiplies by the reciprocal modulus first; Cells divides
+  the gradient directly, changing floating-point overflow behaviour. Root owns
+  this arithmetic-order repair and preserving unexpected successful test returns.
+  The [checkout repair and focused checks](/mnt/workspaces/Cells/init-mechanics-operation-order-repair-20261031-01/review.json)
+  now pass **four kernel controls in 6.30 seconds, 265.7 MiB sampled peak RSS**:
+  two new zero-pressure finite/overflow cases, the existing boundary/electric
+  control and the existing CPU-JAX batch/isolation control. The INIT test now
+  archives unexpected successful returns before asserting rejection; that test
+  change had only static verification in that batch. The
+  [new closure review](/mnt/workspaces/Cells/init-mechanics-operation-order-repair-20261031-01/closure-review.json)
+  and [packet review](/mnt/workspaces/Cells/init-mechanics-operation-order-repair-20261031-01/prepared-02/root-packet-review.json)
+  verify the two source changes, 176 runtime/reference/resource files, all 213
+  original archive-writer ASTs and one added failure-only writer. The accepted
+  1,298 archive paths, 62 checks, fixtures, tolerances and resource limits are
+  unchanged. The [corrected preparation runner](/mnt/workspaces/Cells/init-mechanics-operation-order-repair-20261031-01/runner-software-02/runner-review.json)
+  passed **57 software controls in 4.80 seconds, 78.1 MiB sampled peak RSS**,
+  with no scientific imports. Its earlier 56-pass version and a metadata-only
+  preparation failure are preserved separately; the latter was a review-list
+  parsing mismatch, corrected before any snapshot or science ran.
+  **The fresh full INIT62 qualification launched detached at 17:30:50 UTC on
+  CPU4**: [launch record](/mnt/workspaces/Cells/init-mechanics-operation-order-repair-20261031-01/prepared-02/launch-01/launch.json).
+  The immutable snapshot contains 198 checkout files and records Git revision
+  `558e6b31` plus selected dirty/untracked bytes. This is a new complete round;
+  the original 35/1/26 and 37/1/24 failures retain zero positive INIT credit.
+  Estimated runtime is **30–90 minutes, unmeasured**. Root owns completion
+  review on the next requested status check; there is no automatic polling,
+  retry or follow-up run. Key continues the complete SIM event-owner handoff and
+  Specialist the single-cell parameter/caller continuation on their separate CPUs.
   A later [prepared-04 candidate](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/specialist-preparation-result-04.json)
   remains unreleased; it does not replace the launched prepared-03 run.
   The [INIT closure review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/closure-review.json)
@@ -129,20 +237,88 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   registered handles strongly and compares their exact identities. Additional
   production guards and six controls in the final version are also accounted for.
   Specialist implemented the earlier live caller/lattice prerequisite in
-  four new owned Git files. [Its source and saved-result review](/mnt/workspaces/Cells/native-single-cell-caller-lattice-20261031-01/root-review.json)
-  verifies **27 synthetic passes in 10.33 seconds, 218.7 MiB sampled peak RSS**,
-  with zero native entries. Earlier 23-check evidence remains separate.
-  The ownership guard needs one narrow repair: a list of retained objects can
-  miss an alias retargeted between equal objects already in that list. A
-  nonnumerical graph diagnostic reproduced this limitation; Specialist is
-  adding explicit reference edges and a regression control. Source ownership
-  acceptance remains pending that correction. `Cells.__init__` has a pass body;
+  four new owned Git files. [The completed alias repair](/mnt/workspaces/Cells/native-single-cell-caller-lattice-20261031-01/alias-edge-repair-01/root-review.json)
+  passed **34 synthetic checks in 15.87 seconds, 220.2 MiB sampled peak RSS**,
+  with zero native entries: 27 existing controls and seven new controls. Earlier
+  23- and 27-check evidence remains separate. The guard now records explicit
+  reference edges as well as retained objects, detecting aliases retargeted
+  between equal objects. `Cells.__init__` has a pass body;
   `_make_cell_lattice` creates the caller bounds, centre and arrays. Existing
   frozen seed/image records do not retain those live owners. The new boundary
   uses declared scalar parameter stores and does not claim full
-  Parameters/YAML/SimPhase or package type-checking authority. Live image-mask
-  ownership is the next prerequisite; the later Voronoi assignments and
-  `cell_index` remain held until it exists.
+  Parameters/YAML/SimPhase or package type-checking authority.
+  Specialist also delivered the live image-mask source in four new Git files.
+  [The completed dependency/alias repair](/mnt/workspaces/Cells/native-single-cell-image-mask-20261031-01/alias-edge-repair-01/root-review.json)
+  passed **38 synthetic checks in 18.62 seconds, 222.1 MiB sampled peak RSS**:
+  29 existing controls and nine new controls. The earlier 29-check evidence
+  remains separately bound. The source now binds the accepted caller and checks
+  reference edges through arrays, callable closures, splines and hull objects.
+  Literal source and failure retention are unchanged. Actual decoding,
+  interpolation and native construction remain unrun. Specialist delivered
+  mesh assignment/initialization on this same caller. The [source and saved-result review](/mnt/workspaces/Cells/native-single-cell-in-caller-mesh-20261031-01/root-review.json)
+  verifies **52 synthetic passes in 12.33 seconds, 221.9 MiB sampled peak RSS**,
+  with zero native entries; the earlier 21-pass/26-fail and 47-pass attempts
+  remain separately bound. Constructor → assignment → literal initialization
+  order is correct. The [successor source/software review](/mnt/workspaces/Cells/native-single-cell-in-caller-mesh-20261031-01/root-review-02.json)
+  now closes all three source findings: one irreversible shared parent claim,
+  exact parent/RNG/alias checks after isolated authentication, and guards on
+  all 26 callable native/helper methods before observer or RNG work. Final
+  **155 synthetic checks passed in 30.47 seconds, 229.7 MiB sampled peak RSS**,
+  with zero original native entries. This includes the prior 76 control IDs
+  plus 79 additional IDs on the final source. The 72-pass/one-failure attempt
+  and intermediate 73- and 76-pass versions remain separately reviewed; the
+  failed case retained its JUnit traceback but lacked a per-case failure payload.
+  Root verified 378 frozen files, 56 runtime bindings and 419 evidence files.
+  Specialist implemented the fresh nine-store parameter owner, including
+  `cell_height` before lattice construction, then the four Voronoi tail
+  assignments and `cell_index` on the same caller. Older mesh handles without
+  that provenance refuse completion. The [completion source/result review](/mnt/workspaces/Cells/native-single-cell-caller-completion-20261031-01/root-review.json)
+  verifies **49 software passes in 8.56 seconds, 222.8 MiB sampled peak RSS**,
+  with zero native entries; earlier 39- and 48-check versions remain separate.
+  Parameter ordering and fresh-instance ownership are sound at source level.
+  The [completion repair review](/mnt/workspaces/Cells/native-single-cell-caller-completion-20261031-01/root-review-02.json)
+  closes all three findings: inherited mesh/caller method identities survive
+  retirement, original observer/RNG-wrapper links remain checked, and the
+  prefix work log includes literal operators and their wrappers. **80 synthetic
+  checks passed in 11.33 seconds, 224.5 MiB sampled peak RSS**, including all
+  49 prior IDs and 31 new controls, with zero native entry attempts. Root
+  verified the two-file repair, 381 frozen files, 59 selected runtime bindings
+  and 174 evidence files. Work-log entries record attempts, not successful
+  methods or independent cases; overlapping child logs are not additive.
+  Earlier 39/48/49 evidence and the accepted 155-check stage remain separate.
+  Specialist implemented the next initial geometry block from `cellVerts`
+  through `near_neigh`, stopping before `makeECM`. Its [source/result review](/mnt/workspaces/Cells/native-single-cell-initial-geometry-20261031-01/root-review.json)
+  verifies **27 synthetic passes in 9.80 seconds, 229.2 MiB sampled peak RSS**,
+  384 frozen files, 62 selected runtime bindings and 54 evidence files. The
+  earlier 26-pass/one-failure capture-classification attempt remains failed;
+  it retained its traceback but no completed per-case failure payload.
+  The five numerical bodies and fresh 12-store parameter order match native
+  source. The [compatibility successor review](/mnt/workspaces/Cells/native-single-cell-initial-geometry-20261031-01/root-review-02.json)
+  verifies **38 synthetic passes in 11.56 seconds, 230.6 MiB sampled peak RSS**:
+  the prior 27 IDs plus 11 new controls, with zero native entries. It binds the
+  original parameter mode/store proof, retires the caller before namespace
+  setup and retains the original parent trial. Request/trial hashes change;
+  earlier records are not claimed byte-compatible. The saved run and lint
+  outcome are reviewed; earlier failures remain separate. The
+  [observer repair review](/mnt/workspaces/Cells/native-single-cell-initial-geometry-20261031-01/root-review-03.json)
+  closes the local/log observation-error finding: **45 synthetic passes in
+  13.07 seconds, 233.0 MiB sampled peak RSS**, including all 38 prior IDs and
+  seven new controls. Capture failures preserve the original source error and
+  prior profiler, stop later stages and issue no child. The saved run and lint
+  outcome are reviewed, with zero native entries. The
+  [consolidated repair review](/mnt/workspaces/Cells/native-single-cell-initial-geometry-20261031-01/root-review-04.json)
+  closes all three findings at source/software level: **85 synthetic passes in
+  27.39 seconds, 245.0 MiB sampled peak RSS**, including all 45 prior IDs and
+  40 new controls. Both new guarded attempts and lint are reviewed. The earlier
+  84-pass/one-failure attempt remains failed, with its missing per-case refusal
+  payload disclosed; the final correction changed only the synthetic flatten
+  stand-in and evidence-save order. Production bytes were unchanged.
+  The accepted normalized caller/geometry source now reaches `near_neigh` and
+  stops before `makeECM`; actual native execution remains unqualified.
+  Specialist next implements extracellular geometry and grid construction,
+  including genuine `grid_size` descriptor ownership, stopping before
+  `environment`. Phase/callback and full
+  Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,
   all 11 invalidated owners and all 12 post-cut scientific cases remain
   unqualified. No physical or checkpoint admission follows from this transport.

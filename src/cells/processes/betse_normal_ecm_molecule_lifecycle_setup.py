@@ -8,7 +8,8 @@ process RNG streams are supplied explicitly; pickle does not own those streams.
 
 import hashlib
 import json
-from types import SimpleNamespace
+from pathlib import Path
+from types import CodeType, FunctionType, SimpleNamespace
 
 import numpy as np
 
@@ -18,12 +19,14 @@ from cells.processes import betse_normal_ecm_calcium_join as calcium
 from cells.processes import betse_normal_ecm_catalog_join_source as catalog
 from cells.processes import betse_normal_ecm_event_join_source as events
 from cells.processes import betse_normal_ecm_init_phase_setup as init_setup
+from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
 from cells.processes import betse_normal_ion_join as ions
 from cells.processes import betse_perturbations as perturbations
 
 ROLES = ("Na", "K", "Cl", "Ca", "M", "P")
+CONSTANT_SUFFIXES = ("Namem", "Kmem", "Clmem", "Camem", "P")
 
 
 class SetupRejected(RuntimeError):
@@ -85,6 +88,66 @@ def mechanical_entry(init_parent, definition):
     return values
 
 
+def constant_callback_code(suffix):
+    """Identify the literal finalizer lambda without evaluating a callback."""
+    codes = [
+        value
+        for value in source._finalize_events_tissue.__code__.co_consts
+        if type(value) is CodeType
+    ]
+    if len(codes) != len(CONSTANT_SUFFIXES) or suffix not in CONSTANT_SUFFIXES:
+        raise ValueError("Unrecognized literal constant callback finalizer")
+    code = codes[CONSTANT_SUFFIXES.index(suffix)]
+    if (
+        code.co_name != "<lambda>"
+        or code.co_argcount != 1
+        or code.co_varnames != ("t",)
+        or code.co_freevars
+        or code.co_consts != (None, 1)
+    ):
+        raise ValueError("Changed literal scalar-one constant callback contract")
+    return code
+
+
+def constant_callback_record(suffix, actual=None):
+    """Retain source-code authority; missing/foreign callables are never hydrated.
+
+    ``actual=None`` computes only the expected source identity for a retained
+    receipt comparison. It does not create a callable or an admission receipt.
+    Only the closed provenance record is retained on the typed setup owner.
+    The inspected function, code, globals and closure objects stay in memory.
+    Normal event execution recreates a declared constant through install_owner
+    and prepared_callback; Python callable instance identity is not persisted.
+    """
+    code = constant_callback_code(suffix)
+    if actual is not None:
+        callback = getattr(actual, "dyna_" + suffix, None)
+        scalar = getattr(actual, "scalar_" + suffix, None)
+        if (
+            type(callback) is not FunctionType
+            or callback.__code__ is not code
+            or callback.__globals__ is not vars(source)
+            or callback.__closure__ is not None
+            or callback.__defaults__ is not None
+            or callback.__kwdefaults__ is not None
+            or type(scalar) is not int
+            or scalar != 1
+        ):
+            raise ValueError("Require the actual finalized scalar-one constant callback: " + suffix)
+    return dict(
+        kind="cells.actual_finalized_constant_event_callback@1",
+        suffix=suffix,
+        source_module=source.__name__,
+        source_sha256=hashlib.sha256(Path(source.__file__).read_bytes()).hexdigest(),
+        source_line=code.co_firstlineno,
+        bytecode_sha256=hashlib.sha256(code.co_code).hexdigest(),
+        source_function="None",
+        source_scalar=1,
+        dynamic=dict(kind="constant"),
+        evaluated=False,
+    )
+
+
 def finalized_owner(template, actual, p):
     owner = ions.data(template)
     owner.update(
@@ -122,6 +185,8 @@ def finalized_owner(template, actual, p):
             raise ValueError(
                 "Transition source setup admits only constant or real SIM f_sweep callbacks"
             )
+        if function == "None":
+            constant_callback_record(suffix, actual)
         dynamic = (
             dict(kind="constant")
             if function == "None"
@@ -142,7 +207,7 @@ def finalized_owner(template, actual, p):
     return owner
 
 
-def prepare(init_binding, init_parent, raw, observer=None):
+def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=None, completed=None):
     """Execute real reinitialize/setup bodies; never call a fresh cold initializer."""
     raw = legacy_setup_inputs(raw)
     cfg = ions.data(raw["source_setup"])
@@ -262,6 +327,11 @@ def prepare(init_binding, init_parent, raw, observer=None):
         source._finalize_events_global(owner, ctx.phase, shuffle=python_rng.shuffle)
         source._finalize_events_tissue(owner, ctx.phase)
         event_owner = finalized_owner(packet["event_owner"], owner, p)
+        callback_authority = {
+            suffix: constant_callback_record(suffix, owner)
+            for suffix, callback in event_owner["callbacks"].items()
+            if callback["source_function"] == "None"
+        }
         observe(
             "event_finalized",
             dict(
@@ -271,6 +341,11 @@ def prepare(init_binding, init_parent, raw, observer=None):
                 source_phase="SIM",
                 legacy_run_sim=True,
                 event_fire_calls=0,
+                **(
+                    dict(constant_callback_authority=callback_authority)
+                    if callback_authority
+                    else {}
+                ),
             ),
         )
         stage = "source_screening_conductivity"
@@ -345,6 +420,18 @@ def prepare(init_binding, init_parent, raw, observer=None):
         )
         template["mechanics_initial"] = material.plain(initial_mechanics)
         template["_phase_input"] = phase_input_after_setup(ctx, template, raw, initial_mechanics)
+        if source_binding is not None:
+            stage = "post_setup_event_owner_publication"
+            publication = event_owner_bridge.publish(
+                source_binding,
+                completed,
+                reached["event_finalized"],
+                template["_phase_input"],
+                mechanical_binding,
+                owner,
+            )
+            packet["event_owner"] = ions.data(publication.owner)
+            observe("event_owner_published", publication)
         observe(
             "entry_declaration",
             dict(

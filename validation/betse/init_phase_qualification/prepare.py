@@ -107,6 +107,22 @@ def reviewed_versions(old, current, changes):
     return sorted(actual_changed), sorted(baseline)
 
 
+def require_cpu(cpu):
+    if type(cpu) is not int or cpu < 0 or os.sched_getaffinity(0) != {cpu}:
+        raise ValueError("Require the explicitly selected single CPU")
+    return cpu
+
+
+def completion_review_pins(rows):
+    pins = {}
+    for row in rows:
+        name, digest = row["path"], row["sha256"]
+        if name in pins or sha(name) != digest:
+            raise ValueError("Duplicated or changed prior completion review: " + name)
+        pins[name] = digest
+    return pins
+
+
 def closure(repository, previous_contract, previous_plan, review_path):
     utility = load("_init_source_resources_only", repository / RESOURCES)
     found = utility.audit(repository, "betse_normal_ecm_init_phase")
@@ -167,8 +183,8 @@ def closure(repository, previous_contract, previous_plan, review_path):
     for row in review["additional_reference_closure"]:
         if row["path"] not in ADDED_REFERENCES or pins[row["path"]] != row["sha256"]:
             raise ValueError("Reviewed unconditional reference import changed")
-    if sha(repository / TEST) != NORMALIZED_TEST_SHA256:
-        raise ValueError("Require the reviewed test-only calcium comparator normalization")
+    writer_additions = reviewed_writer_additions(review, repository)
+    prior_reviews = completion_review_pins(review.get("prior_completion_reviews", []))
     return dict(
         runtime=runtime,
         references=references,
@@ -180,6 +196,8 @@ def closure(repository, previous_contract, previous_plan, review_path):
         review_sha256=sha(review_path),
         changed_source_paths=actual_changed,
         reviewed_successor_paths_currently_at_retained_baseline=baseline,
+        additional_failure_archive_sites=writer_additions,
+        prior_completion_reviews=prior_reviews,
     )
 
 
@@ -268,6 +286,61 @@ def call_sites(rows, source, *, baseline=None):
     return result
 
 
+def reviewed_writer_additions(review, source):
+    """Allow only the explicitly reviewed raw-refusal failure capture addition."""
+    additions = review.get("additional_failure_archive_sites", [])
+    digest = sha(source / TEST)
+    if not additions:
+        if digest != NORMALIZED_TEST_SHA256:
+            raise ValueError("Changed INIT test requires a reviewed failure writer")
+        return []
+    if (
+        len(additions) != 1
+        or review.get("normalized_test_parent_sha256") != NORMALIZED_TEST_SHA256
+        or digest != review["changed_files"][TEST]["checkout_sha256"]
+    ):
+        raise ValueError("Require the exact reviewed INIT failure writer successor")
+    row = additions[0]
+    if (
+        row["module"] != TEST
+        or row["callee"] != "archive"
+        or row["containing_function"] != "test_init_raw_refusal"
+        or row["source_sha256"] != digest
+        or row["role"] != "unexpected_success_failure_only"
+    ):
+        raise ValueError("Failure writer authority or role differs from review")
+    bound = call_sites(additions, source)
+    if bound != additions:
+        raise ValueError("Reviewed failure writer source location changed")
+    tree = ast.parse((source / TEST).read_bytes())
+    owners = [
+        n
+        for n in tree.body
+        if isinstance(n, ast.FunctionDef) and n.lineno <= row["line"] <= n.end_lineno
+    ]
+    if len(owners) != 1 or owners[0].name != row["containing_function"]:
+        raise ValueError("Reviewed failure writer function changed")
+    return bound
+
+
+def verify_test_writer_roster(rows, source):
+    """No extra/missing INIT capture sites may hide behind refreshed source pins."""
+    tree = ast.parse((source / TEST).read_bytes())
+    observed = [
+        (
+            n.lineno,
+            ast.unparse(n.func),
+            hashlib.sha256(ast.dump(n, include_attributes=False).encode()).hexdigest(),
+        )
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Call)
+        and ast.unparse(n.func) in {"archive", "native.archives.write_archive"}
+    ]
+    declared = [(r["line"], r["callee"], r["AST_sha256"]) for r in rows if r["module"] == TEST]
+    if sorted(observed) != sorted(declared):
+        raise ValueError("Exact INIT capture writer roster differs from review")
+
+
 def canonical_producer(name):
     if name.startswith("source/"):
         relative = name.removeprefix("source/")
@@ -345,7 +418,8 @@ def metadata_preflight(packet, runner, plan):
                 sys.modules[name] = module
 
 
-def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
+def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW, cpu=6):
+    require_cpu(cpu)
     repository = Path(repository).resolve()
     destination = Path(destination).absolute()
     if not destination.resolve().is_relative_to(BASE) or destination.resolve().is_relative_to(
@@ -423,8 +497,8 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
         accounting["source_sha256"] = refresh_pins(accounting["source_sha256"], packet / "source")
         previous_sites = accounting["INIT_archive_call_sites"]
         accounting["INIT_archive_call_sites"] = call_sites(previous_sites, packet / "source")
-        if sum(row["module"] == TEST for row in previous_sites) != 20:
-            raise ValueError("Exact original20 INIT archive calls required")
+        if len(previous_sites) != 213 or sum(row["module"] == TEST for row in previous_sites) != 20:
+            raise ValueError("Exact original 213 archive calls including 20 INIT sites required")
         moved_sites = sum(
             before["line"] != after["line"]
             for before, after in zip(
@@ -432,7 +506,15 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
             )
         )
         active = profile["profiles"]["ordinary_ecm_init_phase_01"]
+        if active["archive_call_sites"] != previous_sites:
+            raise ValueError("Original profile and accounting writer inventories differ")
         active["archive_call_sites"] = call_sites(active["archive_call_sites"], packet / "source")
+        additions = graph["additional_failure_archive_sites"]
+        accounting["INIT_archive_call_sites"].extend(additions)
+        active["archive_call_sites"].extend(additions)
+        verify_test_writer_roster(accounting["INIT_archive_call_sites"], packet / "source")
+        accounting["reviewed_failure_writer_additions"] = additions
+        accounting["source_closure_review_sha256"] = graph["review_sha256"]
         active["writer_source_sha256"] = refresh_pins(
             active["writer_source_sha256"], packet / "source"
         )
@@ -443,7 +525,7 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
         write(packet / "tools/inputs.json", profile)
         inputs = copy.deepcopy(prior_inputs)
         inputs.update(
-            status="held_checkout_comparator_correction",
+            status="held_checkout_reviewed_corrections",
             execution_hold=True,
             source_sha256={
                 name: sha(packet / "source" / name) for name in sorted(selected_sources)
@@ -457,6 +539,7 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
             source_closure_review=graph["review_path"],
             source_closure_review_sha256=graph["review_sha256"],
             previous_failed_run_review=str(FAILURE_REVIEW),
+            additional_previous_completion_reviews=graph["prior_completion_reviews"],
             previous_failure_reclassified=False,
         )
         metadata = contracts(repository)
@@ -503,6 +586,7 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
         plan["pins"].update(
             {str(review_path): sha(review_path), str(FAILURE_REVIEW): sha(FAILURE_REVIEW)}
         )
+        plan["pins"].update(graph["prior_completion_reviews"])
         write(runner / "plan.json", plan)
         write(
             runner / "release-template.json",
@@ -538,12 +622,13 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
             runtime_files=124,
             reference_files=27,
             resources=28,
-            metadata_cpu=6,
+            metadata_cpu=cpu,
             scientific_cpu=4,
             numerical_execution=0,
             scientific_imports=0,
             release_authorized=False,
             original_failure=dict(passed_prerequisite_raw=35, failed=1, unrun=26),
+            additional_previous_completion_reviews=graph["prior_completion_reviews"],
             fresh_full62_required=True,
             no_positive_INIT_credit_retained=True,
             launch_command=[
@@ -558,8 +643,10 @@ def prepare(destination, *, repository=ROOT, review_path=CLOSURE_REVIEW):
             input_hold_preserved=True,
             metadata_preflight=checked,
             original_INIT_writer_AST_sites=20,
-            all_capture_writer_AST_sites=len(previous_sites),
-            archive_AST_hashes_unchanged=True,
+            original_capture_writer_AST_sites=len(previous_sites),
+            all_capture_writer_AST_sites=len(accounting["INIT_archive_call_sites"]),
+            original_archive_AST_hashes_unchanged=True,
+            additional_failure_archive_sites=additions,
             rebound_source_line_locations=moved_sites,
         )
         write(destination / "preparation.json", result)
@@ -584,11 +671,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--closure-review", type=Path, default=CLOSURE_REVIEW)
+    parser.add_argument("--cpu", type=int, default=6)
     args = parser.parse_args()
-    if os.sched_getaffinity(0) != {6}:
-        parser.error("Metadata preparation requires CPU6")
+    require_cpu(args.cpu)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 512 * 2**20))
-    result = prepare(args.output, review_path=args.closure_review)
+    result = prepare(args.output, review_path=args.closure_review, cpu=args.cpu)
     print(json.dumps(result, sort_keys=True))
 
 

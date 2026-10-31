@@ -7682,3 +7682,329 @@ source snapshot SHA256 `284d08198a76a436361d0377f3d26b957ca6763df8b2c9cc2c0d1c35
 `launch.json` records the immutable worker invocation and remaining Root release
 prerequisites. Actual continuity, native/source equivalence and biological
 acceptance remain held; no source snapshot was overlaid from historical bytes.
+
+## 2026-10-31 — continuity worker output containment repair
+
+Moved resolved packet/output containment ahead of `mkdir` and the failure-writing
+region; the unreleased gate remains first. Only `worker` and its unit controls
+changed. The other 453 snapshot files, plugin, exact three targets, resource
+schema, domain code, fixtures, tolerances and original failed-parent bindings
+match packet-04. Packet-04 and its 45-check evidence remain untouched.
+
+Fresh packet-05: **53 software checks passed**, including direct/packet-self,
+symlink-parent/leaf/packet aliases, safe-sibling primary/cause retention with and
+without secondary logging failure, and missing-packet refusal before creation.
+Seven dedicated containment receipts preserve unchanged packet bytes/trees.
+CPU0/one thread, 1 GiB/480 s/8 GiB reserve: software batch 4.79 s, peak RSS
+57,376,768 bytes. Both preparation/software processes are terminal; metadata
+bindings clear and no actual science/native/RNG/timestep or INIT query occurred.
+
+Final evidence: `/mnt/workspaces/Cells/molecule-retained-continuity-preparation-20261031-01/containment-repair/results.json`
+SHA256 `05e21e27df1b15bd1c4ebf62e9c8ff9c9f4d5c6b90e6cfcc0e5f3e731610670f`.
+Packet inputs SHA256 `3d4b042d67fac31899f9ed9273a551093f5148895a33b2936c6bed5cb3ce2baa`;
+snapshot SHA256 `9f46b7f806099ef131271ed0013e0276373ebda32f15028a5b248371f4858063`.
+All three scientific targets remain held for Root's source acceptance, resources
+and release; the updated immutable worker invocation is in `containment-repair/launch.json`.
+
+## 2026-10-31 — owned temperature-event checkpoint continuation
+
+Inspection found existing events57 state already retains event stores/traces,
+clock/sampling, runtime material binding/definition and both owner caches.
+The run component rejected its types, the checkpoint record vocabulary omitted
+its Binding/State, and phase lookup assumed an ordinary SimPhase. Added narrow
+delegation to existing event APIs/verifiers, preserved typed event state and
+INIT association, selected the retained phase for scope/RNG checks, added the
+two frozen records and pinned four lazy event producers. New admission allows
+only the existing T_change mechanism or zero configured events; pressure/flow,
+other interventions/callbacks, topology, live noise and native storage stay closed.
+
+Four production files and two new validation/test files are changed, as bound
+in the result inventory. Event equations, original fixtures/tolerances, packet05
+and its three target tests/source snapshot are unchanged. Validation stages the
+original temperature pulse, zero-event control and an explicit timing control
+placing onset/release on source labels, with cuts1/2. It compares full original
+and restored graphs/journals/samples/RNG plus once-per-call event traces, owner
+epochs and actual dispatch counts. The existing invocation profiler and nested
+checkpoint records count real work; branches/controls have zero biological credit.
+
+**41 model/native/RNG-blocked software controls passed**; compile/Ruff passed.
+Software batch CPU0/one thread: 6.06 s, peak RSS244,912,128 bytes under
+1 GiB/480 s/8 GiB reserve. Three attached preparation/software/binding processes
+are complete. Immutable source has463 files; producer metadata pins67 Cells
+files and2,300 runtime files under an actual-entry trap. No actual INIT/SIM,
+event/RNG/reference run, detached/GPU launch or INIT/CPU4 query occurred.
+
+Evidence: `/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/results.json`
+SHA256 `3a551718c5b5eda7bc8076abb518c2eab197cb96da5c6c048b656b4ccf7bdf65`.
+Snapshot SHA256 `69e2251e2c51a2a206741639ad29cd79af2b10312770a095f50539267b587450`.
+`held-plan.json` contains six conditional commands and remaining prerequisites.
+Actual positive persistence/ownership/continuity and resource sufficiency remain
+unqualified behind both existing Root release gates and the upstream retained
+INIT-to-SIM prerequisite. No native equivalence or new tolerance is claimed.
+
+Final typed-authority clarification: new phase/INIT selection helpers explicitly
+require the existing typed owners and reject dictionaries, namespaces, binding
+subclasses and foreign event-state identities. Ordinary typed INIT/SIM selection
+is retained. **46 fresh model/native/RNG-blocked controls passed** on `source-02`;
+the original41 result/source remains frozen. CPU0/one thread,6.56s software batch,
+peak245,043,200B under the unchanged1GiB/480s/8GiB-reserve guard. All three new
+preparation/software/binding processes completed; no actual execution occurred.
+
+The final comparison refused an assumed two-file-only source delta: the current
+Git snapshot also contains a concurrent, unowned `betse_deformation.py` change
+(`87bc2618...` to `3c490210...`). I did not edit it. Its exact old/tested hashes
+and Root-review prerequisite are explicit in final results; no historical
+overlay/restoration or scientific adoption occurred. The comparison refusal
+is retained in `final-binding-refusal.json`.
+
+Final results: `/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/results-final.json`
+SHA256 `525578b72782f1d26f26182e8c6b48fd2ecbd26d023744922886417593f339b3`.
+Snapshot SHA256 `4b686808f40dd7e72aef51ec89b420de881238fda9186177d1a7e54cd459fef1`;
+producer SHA256 `08a3db425f9334a159f15c606b6c1fafb98a732557e07ce4d8a1df8e7a5903a5`.
+The final held plan binds these463 source files/67 producer files/2300 runtime
+files; packet05 and all six actual event-continuation conditions stay held.
+
+Restart continuation: added four focused, fully stubbed prerequisite-failure
+controls in the owned test module. They preserve the primary exception/cause,
+partial evidence and refused attempt when normal logging, failure-archive I/O,
+profiler shutdown or attempt-journal I/O fails. No success receipt appears and
+the observer is restored. **4 new controls passed**; the prior46 were not rerun.
+No production/validator bytes changed, no new shared source delta, and no real
+setup/event/RNG/reference/INIT work occurred. Both new processes are terminal.
+Evidence: `/mnt/workspaces/Cells/molecule-event-checkpoint-development-20261031-01/failure-accounting-controls/results.json`
+SHA256 `4f41db27d745c8fb29e1dd5859cfadcc586c8fc0610baeb832e6c2bcf240ccc3`;
+snapshot SHA256 `a67e48495282966e2e0593b1902268ccf53f43ff0c0cb5441820823f4a8535f0`.
+This is a software supplement; the existing held scientific plan stays bound
+to its prior source and requires Root review/resources/releases.
+
+## 2026-10-31 — deterministic global-event checkpoint extension
+
+Extended only the run-component global-option scope and the owned validation/
+test paths; added `betse_normal_ecm_molecule_global_event_checkpoint.py` under
+validation/tests. The existing typed events57 producer, record vocabulary,
+codec, original event laws/fixtures/tolerances and packet05 are unchanged.
+All six deterministic global keys are admitted; scheduled membrane/ecmJ,
+pressure/flow/cutting, callbacks/voltage, live noise and native storage stay closed.
+
+Explicit controls cover individual/coupled Na/K/Cl, reversed declaration order,
+signed salt reversal, GJ/NaK blocking, combined globals and onset/release labels.
+The literal K/Cl/Na/T/GJ/NaK source order is AST-bound and observed from actual
+source frames only when released. Pulse parameters/returns and nonzero release
+tails are retained. Global/event and post-owner epochs remain separate; full
+material, rate/NaK-rate, field, runtime binding/definition, owner/store graphs
+remain in exact continuation comparisons. NaK vector entry/scalar setter and
+GJ membrane-axis semantics have explicit controls; pulse logs close on failures.
+
+**94 final-source model/native/RNG-blocked software checks passed**, compile/Ruff
+passed; initial92-source evidence remains. CPU0/one thread,8.33s software batch,
+peak245,133,312B under1GiB/480s/8GiB reserve. Five attached process records are
+terminal. Snapshot465 files; producer67 files/runtime2300 pins; no new shared
+source delta or actual setup/event/RNG/reference/INIT query/launch occurred.
+
+Evidence: `/mnt/workspaces/Cells/molecule-global-event-checkpoint-development-20261031-01/results.json`
+SHA256 `cc6ef600fdb427f9df21637fd26eda1976d0a3c047a66c7d3714f90ceadd8b27`.
+Snapshot SHA256 `6a3a91ffd0b9a4c99ff61043fdb972152d2129f63a5a39322e9219ba0c09c7d9`.
+`held-plan.json` binds26 conditional branches (13 declarations x cuts1/2),
+zero independent biological credit. Actual qualification/resources/release
+remain Root-owned behind both existing gates; no prior failed evidence is altered.
+
+Root's `a06d0a3b...` source/software review applies only to the original eventful
+41-control snapshot `69e2251e...`, not later eventful/global candidates. Recorded
+that boundary and all six manifest deltas in global `review-context.json`
+(SHA256 `dd1c2ed7cddb558997e8a05d9c900d0bdc2f93fcaa387a0d525f567d66a61b28`).
+The global candidate pins Root's reported deformation module `3c490210...`;
+matching the pin grants no acceptance. Root's INIT capture update was not
+queried, reviewed or adopted here. No duplicate tests/review/job query or new
+qualification occurred; current94-control candidate/26 held branches unchanged.
+
+## 2026-10-31 — constant targeted membrane-event checkpoint prerequisite
+
+Root accepted the global source/software packet in `root-review.json`
+SHA256 `f1319dfe2903bedb85423c4e5cc45448bff6ac57e9410bea12e90cb37c1db863`;
+that frozen packet and its26 actual branches remain held and unchanged.
+
+Owned edits: molecule lifecycle setup and run component; generalized event
+checkpoint validator; new membrane event checkpoint validator/test; two prior
+test refusal patterns. The SIM finalizer now inspects the actual literal
+constant callable/code/globals and int-one scalar without evaluating it, then
+retains that authority. The run boundary requires the exact returned callback,
+configuration, ordered/duplicate targets and typed authority. Missing or foreign
+authority refuses; original laws, fixtures, tolerances and codec are unchanged.
+
+Prepared six declared conditions (four individual ions, combined membrane and
+mixed globals) plus five separate configuration/boundary controls, each at
+cuts1/2. Observations bind literal Na/K/Cl/Ca order, optional Cl/Ca guards,
+actual runtime constant code, pulse returns/tails, permeability axes and all
+source/post-owner epochs, untargeted values and downstream full graph transport.
+Both existing release gates remain. Pressure/ecmJ/voltage/cutting/noise, general
+callback hydration/storage, new channels/CaLeak and native pickle stay closed.
+
+Source inspection found an additional prerequisite: the legacy SIM seam's
+frozen `event_finalized` observation contains only a partial event owner. Eight
+complete-owner fields, including configured environment/default/world owners,
+are absent; its geometry digest is assigned after that frozen observation.
+The new continuation explicitly refuses this return rather than supplying
+fixture authority. `source-prerequisite.json` binds the exact source finding.
+Positive actual continuation is not claimed; completing that owner transport
+and Root review/resources/releases remain necessary.
+
+**196 distinct final-source model/native/RNG-blocked software checks passed**
+(94 preserved prior IDs +102 new), with compile/Ruff passing. The first snapshot's
+188 passes and six failures remain: manufactured writable views and a competing
+test profiler. Corrected only those synthetic fixtures/profile guards; production
+alias/accounting refusals were preserved. Four new failure controls retain the
+primary cause/partial/failed parent through archive, profiler or journal refusal.
+Available declarations/loaded and branch parents plus late result/accounting
+errors now use the existing failure retainer.
+
+CPU0/one thread: final software8.07s, peak246,558,720B under1GiB/480s/8GiB reserve.
+All seven attached preparation/software/metadata process records are terminal.
+Snapshot467 files,67 producer files and2300 runtime pins; no shared source delta
+relative to the global parent. No actual setup/event/callback/RNG/reference,
+detached/GPU/scientific launch, INIT/CPU4 query, shared-status edit, staging or
+commit occurred. Original failed parents/INIT04 and packet05 are explicitly bound.
+
+Results: `/mnt/workspaces/Cells/molecule-membrane-event-checkpoint-development-20261031-01/results.json`
+SHA256 `04a092c9e2ec70e888d337e368fac9d8d093974de1453d48771e4288d13056d9`.
+Snapshot SHA256 `705753d33ea0de7eb04c7a68f6599ec28600b2348583f2afac45079ec3f9854b`;
+producer SHA256 `eb2b06e45003bb24ccb4e95913175c209ab620fe0f96fb4f772fe37f7ac8fb0a`.
+`held-plan.json` binds22 new branches with zero independent biological credit;
+original26 global branches and all historical receipts remain separately frozen.
+
+Restart-boundary clarification: expanded only the setup helper/validator
+documentation and added three test functions (12 parametrized controls). The
+saved authority is a closed provenance record on the retained typed setup owner;
+function/code/globals/closure objects are inspected without callback invocation.
+Existing install_owner/prepared_callback creates a declared constant during
+execution; Python callable instance identity and native live objects are not
+checkpoint state. Actual later recreation/replay remains counted work.
+
+**12 new model/native/RNG-blocked controls passed**,102 deselected; compile/Ruff
+passed. Tests preserve typed owner/record alias association and refuse raw
+function/code/globals/module/closure-cell objects and serialized execution tags.
+The source/validator operational AST and all prior test bodies match the196-case
+snapshot; the run boundary/codec/event laws are byte-identical. The196 saved
+passes remain bound to that earlier source and were not rerun or relabeled.
+
+CPU0/one thread,4.04s software batch, peak242,970,624B under1GiB/480s/8GiB reserve.
+All three new preparation/software/binding processes are terminal. New snapshot
+467 files,67 producer files/2300 runtime pins, zero shared source deltas. All22
+targeted branches and26 frozen global branches remain held, with the same missing
+complete actual SIM event-owner prerequisite. No actual execution, INIT query,
+shared edit, staging, commit or change to any prior frozen receipt occurred.
+
+Supplement: `/mnt/workspaces/Cells/molecule-membrane-checkpoint-restart-boundary-20261031-01/results.json`
+SHA256 `6a6ef3d0983c5e95119695cb07fbbe68f5959e94df37304befb8d07bd9295ca8`.
+Snapshot SHA256 `7e7c2312ebb07691d756aa993d52685e2eff56a65049c6868731cd717b9a7ab9`;
+producer SHA256 `42cdd417ca66877d83df7b4ae8f0bcdc33756915d4f260252c1ed25ce878cb56`.
+
+## 2026-10-31 — complete later SIM event-owner publication bridge
+
+Added the owned molecule_event_owner production module with closed frozen Inputs
+and Publication records. The required typed seam supplies genuinely absent
+configured reservoirs, default-profile selection, ordered boundary occurrences,
+explicit closed voltage/cut declarations and source INIT/geometry identities.
+Existing typed current/ECM/mechanics authorities supply every physical ID/map;
+the explicitly selected actual finalized profile supplies all default tissue
+fields. No IDs, defaults, callbacks or authorities are generated from fixtures.
+
+Lifecycle setup keeps the original seven-field event_finalized observation and
+epoch untouched. After actual post-setup phase inputs are ready, it publishes a
+separate complete owner, field-source correspondence and callback/config/INIT/SIM
+association. Lifecycle/events/run selection resolves that later typed record;
+the closed checkpoint vocabulary transports both epochs and their typed-input
+aliases. The legacy binding record is unchanged when the optional seam is absent.
+Original four owner comparisons and stream/profile guards remain unchanged;
+clarified their mapping/list/tuple/numerical-equality comment while editing.
+
+Updated only the named six production paths, two validators, membrane tests and
+new publication test module. Actual targeted validation requires the typed seam
+before any setup and retains its input/refusal. Supplied authority cannot be
+silently ignored on another route. Original equations, fixtures, tolerances,
+observers, codec arithmetic/bounds and ordinary lifecycle implementation remain
+unchanged. No live callable/code is persisted; normal recreation/replay is work.
+
+255 distinct final-source model/native/RNG-blocked software controls passed
+(47 publication-module cases), compile/Ruff passed. The initial251/1 evidence is
+preserved: an archive-injection test hit the new successful input-retention step;
+its injection now targets only the failure archive, with a separate earlier-I/O
+primary-error control. Intermediate254 source/results are preserved separately.
+The final guard also refuses a typed authority that its route would not consume.
+
+Final software CPU0/one thread:10.82s, peak248,176,640B under1GiB/480s/8GiB reserve.
+All nine attached preparation/software/binding/metadata terminal outcomes are
+accounted for. Snapshot469 files,68 producer files/2300 runtime pins, zero shared
+source deltas. No scientific/setup/event/RNG/native/reference run, detached/GPU
+launch, INIT/CPU4 query, shared edit, staging or commit occurred.
+
+Results: /mnt/workspaces/Cells/molecule-event-owner-publication-development-20261031-01/results.json
+SHA256 5cd195eed25b97f955cda7a03528db6d2e7a4ef006017f55c38301911f8d74a7.
+All10 changed source pins, exact snapshot/producer, complete failure/index and
+parent bindings are in that result. required-inputs.json and held-plan.json make
+the real typed caller authorities/API prerequisite explicit; bare CLI selectors
+refuse missing authority. All22 targeted and26 frozen global conditions remain
+held for Root source/runtime/resource/release review. Original failed parents,
+INIT04, initial188/6, final196, global94 and the separate12-control clarification
+remain untouched; this bridge grants no biological/native admission or
+retroactive source credit.
+
+Conditional-provenance clarification: supplied seam fields now explicitly
+retain conditional/supplied labels stating that a typed record alone establishes
+neither original native derivation nor biological qualification. This changes
+the persisted field-source metadata and producer pin. Record schemas and all
+other production method ASTs are unchanged; physical/config/profile/parent,
+disabled cut/voltage, early/later epoch and legacy-no-seam checks remain intact.
+
+49 focused publication-module software cases passed (47 existing IDs +2 new),
+compile/Ruff passed. The new decode control forbids owner publication/resolution,
+input/axis validation, setup and callback methods and verifies zero invocations
+while the plain immutable records and epoch/input aliases decode. The other new
+control requires the conditional qualifiers and refuses a resealed false native
+derivation label. The prior255 remain bound separately and were not rerun.
+
+CPU0/one thread,3.78s software batch, peak242,663,424B within1GiB/480s/8GiB reserve.
+All five new terminal outcomes, including one initial lint-only refusal before
+test collection, are retained. Snapshot469/producer68/runtime2300 pins; no shared
+source delta or actual model/setup/event/replay/RNG/native/reference execution.
+All22 targeted and26 global cases remain held; no INIT query or shared edit.
+
+Results: /mnt/workspaces/Cells/molecule-event-owner-conditional-provenance-20261031-01/results.json
+SHA256 5f181eeb4ef84e001d37069b8d8e190e15a5144327447d2ec97c993bd3a0e8c7.
+Snapshot SHA256 09df870744d904694e95f3cae947eefa3dc06a3782bdb6fe453b9f6698561a02.
+
+## 2026-10-31 — bounded publication resolver R1/R2 repairs
+
+Applied Root source review0c36c999 in only molecule_event_owner.py and its unit
+test module. Resolve now repeats both original source-setup option comparisons,
+the early SIM phase/strict legacy flag and exact int-zero event-fire check.
+The secondary later observation must match its own recomputed digest/EPOCH and
+the authoritative publication's complete record/container/scalar typed data.
+Equal typed copies remain valid; valid early/later aliases survive codec transport.
+No other production methods, record schemas, literal laws, fixtures, tolerances,
+gates or integration paths changed.
+
+The static pre-fix baseline is retained:15 manipulated metadata records were
+accepted locally, one valid control passed and one NumPy counter could not be
+JSON-sealed. This is not a public numerical-verifier bypass. The first repaired
+batch passed65 with that same synthetic construction failure. Split it into a
+dedicated existing-digest refusal control; no scalar/0D or digest relaxation.
+Original source binding/config remains unchanged in synchronized-copy tests;
+all publication/outer resealing is explicitly manufactured metadata.
+
+66 final-source focused controls passed (49 prior publication IDs +17 new),
+compile/Ruff passed. New controls cover8 synchronized early drifts,7 secondary
+records retaining stale identity, a valid typed copy and the NumPy digest refusal.
+CPU0/one thread,4.53s final software batch, peak243,232,768B under the unchanged
+1GiB/480s/8GiB-reserve guard. All seven preparation/software/binding outcomes,
+including both failed attempts, are terminal and retained. Snapshot469 files,
+68 producer files/2300 runtime pins;467 other sources byte-identical.
+
+Results: /mnt/workspaces/Cells/molecule-event-owner-resolve-repair-20261031-01/results.json
+SHA256 924d9d9e1dbd7f3e06ba1b601f7e9f924a757cb229f0506f0a56bdd943ebec96.
+Snapshot SHA256 24fed26ba55974b5fed48b0e77a700c772e561f449e35ace911f29e1ec31783f.
+Production SHA256 9d920ad21ec4bc230a16b0619f31cdb812f4b67175335c1f199212d57568f48c;
+test SHA256 550f673c0e00ede7ee624c2e3b421685f480238f629b3f03822a2747b61cfd43.
+All original/intermediate evidence and prior255/49 remain frozen. All22 targeted
+and26 global actual conditions remain held; no actual setup/publication/finalizer,
+event/RNG/reference/science, INIT/job query, shared edit, stage or commit occurred.
+
