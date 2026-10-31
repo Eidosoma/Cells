@@ -540,7 +540,7 @@ def test_two_owner_dependency(tmp_path, case):
         readers=dict(inputs=lambda: raw),
         retain=lambda value: archive(tmp_path, case + "-baseline-outcome", value),
     )
-    owners = ions.data(parent.owners)
+    owners = copy.deepcopy(ions.data(parent.owners))
     field = parent.field
     rate = parent.rate_cache
     if case == "foreign_general_cache_role":

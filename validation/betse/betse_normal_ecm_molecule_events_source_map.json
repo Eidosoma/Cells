@@ -1,0 +1,148 @@
+{
+  "boundaries": {
+    "_fire_events_global": {
+      "lines": [
+        728,
+        790
+      ],
+      "method": "TissueHandler._fire_events_global",
+      "native": "betse/science/tissue/tishandler.py",
+      "native_sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "source_module": "src/cells/processes/betse_normal_ecm_event_join_source.py"
+    },
+    "_fire_events_tissue": {
+      "lines": [
+        794,
+        917
+      ],
+      "method": "TissueHandler._fire_events_tissue",
+      "native": "betse/science/tissue/tishandler.py",
+      "native_sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "source_module": "src/cells/processes/betse_normal_ecm_event_join_source.py"
+    },
+    "entry_controls": {
+      "lines": [
+        [
+          842,
+          845
+        ],
+        [
+          848,
+          851
+        ]
+      ],
+      "method": "Simulator.init_dynamics",
+      "native": "betse/science/sim.py",
+      "native_sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "only_effects": [
+        "gj_block",
+        "NaKATP_block"
+      ],
+      "source_module": "src/cells/processes/betse_normal_ecm_molecule_events_source.py"
+    },
+    "fire_events": {
+      "lines": [
+        709,
+        724
+      ],
+      "method": "TissueHandler.fire_events",
+      "native": "betse/science/tissue/tishandler.py",
+      "native_sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "source_module": "src/cells/processes/betse_normal_ecm_event_join_source.py"
+    },
+    "makeAllChanges": {
+      "lines": [
+        1321,
+        1332
+      ],
+      "method": "TissueHandler.makeAllChanges",
+      "native": "betse/science/tissue/tishandler.py",
+      "native_sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "source_module": "src/cells/processes/betse_normal_ecm_event_join_source.py"
+    },
+    "ordinary_SIM_order": {
+      "method": "Simulator._run_sim_core_loop",
+      "native": "betse/science/sim.py",
+      "native_sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "positions": {
+        "GRN_owner": {
+          "lines": [
+            1306,
+            1319
+          ],
+          "position": 10
+        },
+        "NaK": {
+          "lines": [
+            1196,
+            1234
+          ],
+          "position": 6
+        },
+        "calcium": {
+          "lines": [
+            1282,
+            1283
+          ],
+          "position": 8
+        },
+        "events": {
+          "lines": [
+            1187,
+            1188
+          ],
+          "position": 4
+        },
+        "general_owner": {
+          "lines": [
+            1290,
+            1303
+          ],
+          "position": 9
+        },
+        "primary_movers": {
+          "lines": [
+            1253,
+            1279
+          ],
+          "position": 7
+        }
+      },
+      "post_GRN": "Source-disabled mechanics/noise; original deferred material commit and full fields/check_v remain from molecule54",
+      "source_labels": "Original N3 linspace labels separate from elapsed configured dt"
+    }
+  },
+  "dependencies": {
+    "INIT05_adopted": false,
+    "event42": {
+      "exact_reused_bodies_in_molecule54": {
+        "src/cells/processes/betse_normal_ecm_event_join.py": "fd829dadf0f41faa3edbe2285d117345a20d8c31fe2159fd7edf90ea36dc7033",
+        "src/cells/processes/betse_normal_ecm_event_join_material.py": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895",
+        "src/cells/processes/betse_normal_ecm_event_join_source.py": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071",
+        "validation/betse/betse_normal_ecm_event_join_fixtures.py": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414",
+        "validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea"
+      },
+      "inputs_sha256": "604eca1502addb301452f3cb8c5889853895c42334392f617b5a5d6f290460c6",
+      "no_packet_manifest_exists": true,
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-03"
+    },
+    "kind": "cells.explicit_molecule_events_dependencies@1",
+    "molecule54": {
+      "inputs_sha256": "759e7086daea07005921cee61c7f84baf62ff3617087dfeeda876d5a0e99996e",
+      "manifest_sha256": "1373771db1c6195f650b1bbd1962e28cdbaf1c28df56aa0a88a927cfbe9561f5",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-lifecycle-prepared-20261031-01"
+    },
+    "reference_resolution": {
+      "historical_event42_reference_sha256": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+      "molecule54_event_reference_sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf",
+      "use": "Exact molecule54 event reference with its explicit INIT04 pins; do not overlay historical event42 reference"
+    },
+    "run59_changed": false,
+    "scientific_evaluations": 0,
+    "scientific_imports": 0
+  },
+  "kind": "cells.molecule_SIM_events_compact_source_map@1",
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0
+}

@@ -1,4 +1,37 @@
 {
+  "CaLeak_constant_reference_admission": {
+    "all_voltage_dependent_dispatches_and_budgets_unchanged": true,
+    "biological_voltage_validity_claim": false,
+    "class": "CaLeak",
+    "constant_reference_checks": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-caleak-reference-repair-20261031-01/result02.json",
+      "sha256": "24e54c4fe707526cca41c96db2ef23c7dac02b1c0db8fee5077bb4eb41d68883"
+    },
+    "domain": "Finite real numbers admitted by unchanged calcium _d; native gates do not read voltage. Standalone calcium domain remains [-0.120,+0.060]V.",
+    "full_catalog_qualification_pending": true,
+    "gate_powers": [
+      0,
+      0
+    ],
+    "native_source": {
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/channels/vg_ca.py",
+      "sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "original_failed_history_reclassified": false,
+    "scope": "ECM catalog constant gate targets/time constants only",
+    "source_review": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog06-failure-review-20261031-01/REVIEW.json",
+      "sha256": "d2253310cf1def509fab3ba492a091e83812a997bf07905b0019fa92d45645c0"
+    },
+    "targets": [
+      1,
+      1
+    ],
+    "time_constants_s": [
+      1,
+      1
+    ]
+  },
   "acceptance": {
     "amount": "Factor times independent absolute old/new amounts, signed source mechanisms and native-true-volume gross, plus3e-13 concentration floors times input volume sums",
     "calcium_arithmetic": "2e-14 named-unit floor +2e-11*abs(reference); zero-product branch uses original stored binary64 product and literal1e-16 replacement. Before/after material buffers use unchanged typed ECM budgets",

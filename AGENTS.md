@@ -1,3 +1,15 @@
+# Source code and outputs
+
+Keep production source, reusable validation tools and tests in this Git checkout
+under `src/`, `validation/`, `scripts/` and `tests/` as appropriate. Use
+`/mnt/workspaces/Cells` for run outputs, logs, frozen evidence and execution
+snapshots; it must not be the only location of an active implementation.
+Preserve frozen snapshots when integrating their source into the repository.
+Code awaiting qualification belongs in the checkout with its existing guards
+and validation status intact; integration alone grants no scientific acceptance.
+Coordinate file ownership in this shared checkout and do not overwrite another
+developer's changes.
+
 # Running jobs
 
 For runs expected to finish in under 10 minutes, an attached watcher may monitor

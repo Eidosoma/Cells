@@ -9,6 +9,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Source integration into Git (31 October):** production modules, reusable
+  validators and tests belong in this checkout. `/mnt/workspaces/Cells` holds
+  outputs and frozen execution evidence, not the sole active implementation.
+  Recent source packets had not yet been integrated; Root is importing post-cut
+  mesh/contact code, Key Dev owns chemistry/events/lifecycle integration, and
+  Specialist owns the remaining tissue code and single-cell core repair.
+  Earlier packets are being checked for missing modules and version differences.
+  [Post-cut repository checks passed](/mnt/workspaces/Cells/repository-source-integration-20261031-01/post-cut-import.json):
+  seven software cases, with all 12 scientific cases explicitly skipped; **1.77
+  seconds, 76.3 MiB peak**. Production imports resolve to this checkout, native
+  equations are unchanged, and frozen evidence is preserved. Code integration
+  does not grant scientific qualification or ordinary continuation.
+
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
   now places **BETSE scientific compatibility before the Jupiter move**;
@@ -40,15 +53,113 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The [current review receipts and assigned actions](/mnt/workspaces/Cells/qualification-completion-audit-20261030-01/current-review.json)
   bind the observed outcomes across all three owners. Older paragraphs retain
   intermediate status checks; the latest linked closeout determines acceptance.
-  The requested [11:00:14 UTC observation](/mnt/workspaces/Cells/root-runners/status-observation-20261031-110014.json) after the account restart
-  found the catalog failed in its first context case: the saved audit
-  records 83 passed, one failed and ten unrun. Its reference-domain
-  correction remains held. The earlier
-  flow failure and held successor are recorded below. Three fresh
-  molecule/first-advance qualifications have now launched; completion
-  reviews await the next requested check. The external developer connector
-  is unavailable after the restart; internal reviewers are covering the
-  ready work. No repeated polling or automatic retry is queued.
+  The requested [11:18:07 UTC observation](/mnt/workspaces/Cells/root-runners/status-observation-20261031-111807.json) found both molecule02 qualifications
+  and the first-advance comparison failed. All three now have independent
+  saved-result reviews and isolated fixes: dispatch **6/1/37**, transport
+  **4/1/55**, first advance **2/1/12** (passed/failed/unrun). None is an
+  accepted numerical qualification. Root launched the corrected **62-check
+  INIT qualification at 11:33:07 UTC**. Key Dev's later inventory check found
+  it failed at `raw-CaATP_nonfinite`. [Completion review is now finished](/mnt/workspaces/Cells/ecm-init06-failure-review-20261031-01/REVIEW.json):
+  **35 passed / one failed / 26 unrun**, comprising 33 prerequisite checks,
+  two expected-refusal passes and no positive INIT credit. The failed test
+  passed a `Trial` dataclass to a comparator expecting a dictionary; the
+  saved 24 helper arrays and all 47 material frames match exactly. Source,
+  archive and runtime evidence verify, with no resource breach. A one-line
+  test-only normalization is prepared in isolation; original failure and
+  eight broader declaration/control representation differences are retained.
+  Nothing was promoted or rerun.
+  The [full recorded-launch reconciliation is complete](/mnt/workspaces/Cells/qualification-completion-audit-20261031-1118-01/REVIEW.json): 109 launch aliases
+  resolve to **81 terminal executions**, each with a completed review or
+  diagnostic disposition; **no unexplained orphan** was found. Historical
+  terminal pins and 662 ledger bindings verify. The earlier documented host
+  OOM still has no worker terminal and receives no pass credit. The later INIT62
+  failure is now reviewed. [Both owner reconciliations have been received](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/owner-inventory-reconciliations-received.json):
+  [Specialist's verified coverage receipt](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/specialist-coverage-receipt-accepted.json)
+  binds 27 outputs and 36 older plans, with no additional unaccounted terminal.
+  Its historical INIT06 exception is closed by the later failure review above.
+  Key Dev reports 20 terminal executions, of which **11 older review links still need reconciliation**
+  (five reported-pass receipts and six failures). Root owns those exceptions;
+  terminal status alone grants no scientific acceptance. No repeated polling
+  or automatic retry is queued.
+
+  [Older Specialist plans remain explicitly reconciled](/mnt/workspaces/Cells/specialist-review-coverage-20261031-01/OLDER_WORK_RECONCILED.json):
+  bridge02's ten source trees and environment02's eight source trees remain
+  unrun; mechanics, membrane layout/init05, trajectory and flow preparations
+  remain held. [Root reviewed the separate B09 constructor-input source](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/b09-source-disposition.json):
+  its 14 checks remain unrun. Later clipping does not establish a replacement
+  or qualify this adapter, so it stays a held candidate. Original initial19/22,
+  stable0/9, ECM39/40 and fused-JAX failures retain their original limits.
+
+  **Domain ownership:** Key Dev owns ordinary initialization, chemistry,
+  transporters, events and run/restart; Specialist owns geometry, cutting,
+  contacts and pressure/flow/mechanics. Root continues reference and
+  integration coding, qualifications and shared status. [Assignments and
+  handoffs were sent to their existing threads](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/delivery.json) using supported `codex queue`,
+  because the old MCP endpoint is stale. Both developers have acknowledged
+  ownership; temporary internal implementation is handed back at saved,
+  isolated boundaries. Specialist adopted the backend55 evidence repair and
+  delivered the post-cut DEC mesh/contact boundary beyond the accepted cut25
+  prefix. Its bounded repairs are now reviewed; native DEC-parent provenance
+  is the Specialist's next assignment.
+  Scalar43 remains held. The [agreed scope](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/specialist-bounded-cut-scope.json)
+  covers exact DEC cutting/map/core rebuild and the original cell/contact
+  calls through `calc_gj_vects`, stopping before `environment`. Native defects
+  and failures stay explicit; survivor/contact lineage and prerequisite
+  refusals get original-source capture and an independent stdlib graph/owner
+  check. Full qualification and physical-mesh/ordinary-resume admission remain
+  held. Key Dev has delivered the
+  [lifecycle54/run59 reader](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/key-lifecycle-delivery-and-next-task.json),
+  pending independent review. The [molecule44/60 source03 and runner04 successors](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/key-molecule03-delivery-next-events-runner.json)
+  are also delivered and held; Key Dev's next assignment is held execution
+  and semantic-reader support for the existing molecule-events57 packet.
+  The [held events57 reader handoff is received](/mnt/workspaces/Cells/betse_normal_ecm_molecule_events_execution-20261031-01/HANDOFF.json).
+  Key Dev delivered an [evidence-only successor](/mnt/workspaces/Cells/betse_normal_ecm_molecule_events_execution-20261031-01/evidence-successor-02/HANDOFF.json)
+  for the archive-name collision between handler/channel inputs and comparison
+  metrics, retaining both records and the frozen parent. Its reported 100
+  synthetic controls and 40 static checks await independent review. Repository
+  integration is assigned; Root source/reader/runtime review and scientific
+  release remain pending.
+
+  [Specialist's saved development evidence has been checked](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/specialist-development-receipt-review.json):
+  backend55 adoption preserves 421 parent payloads, all 426 successor pins
+  verify, and the 55-test/90-reference roster is unchanged. The
+  [post-cut repair review is complete](/mnt/workspaces/Cells/post-cut-chief-review-20261031-01/repair-01-review/REVIEW.json):
+  all 101 original payloads remain unchanged and all 60 successor payloads
+  verify. R1–R3 are resolved at source level: exact distance records accompany
+  raw precision diagnostics, failed-state lineage separates requested from
+  observed removals, and the existing three mesh cases assert stable owners,
+  endpoints and hanging vertices independently. Native equations, fixtures,
+  the 17-ID roster and numerical tolerances remain unchanged.
+  The five existing software IDs passed again in **2.53 seconds, 76.8 MiB peak**,
+  including new synthetic comparator and failed-lineage controls. These results
+  remain separate from the original five-check run; actual mesh-lineage and
+  reference calculations are still unrun. M1 remains closed, with the original
+  tested preimage preserved. Original adoption image memory is unavailable;
+  the retained `ru_maxrss` value establishes neither that peak nor a cap violation.
+  All **12 scientific cases**, 12 native captures and ten precision forms over
+  five supplied inputs remain held, as do all 11 invalidated native owners.
+  Scalar43 and backend55 remain never launched.
+  [The single-cell core prerequisite has been reviewed](/mnt/workspaces/Cells/native-dec-single-cell-core-root-review-20261031-01/REVIEW.json).
+  It implements the missing owned `pre_mesh` → `create_core_operators`
+  continuation; the existing clipping/lifecycle adapter covers a different
+  caller branch. All **555 payloads**, 520 unchanged upstream files and 45
+  recorded Cells/PIL runtime pins verify. The native core numerical body
+  matches, and **ten software refusal checks passed in 5.30 seconds, 220.1 MiB
+  peak**. Positive construction/core execution remains unrun.
+  [The event-history comparison repair is reviewed at source level](/mnt/workspaces/Cells/native-dec-single-cell-core-root-review-20261031-01/event-replay-accounting-review.json):
+  the continuing replay now checks its own events and warnings before core
+  entry. That revised path is untested; the ten earlier refusal passes remain
+  bound to the original source. Specialist is integrating it into the checkout
+  and repairing final-capture retention so a snapshot/sealing error cannot erase
+  the primary error and partial evidence. Executable-parent and
+  physical/checkpoint admission remain held; future qualification must count
+  every nested replay as execution. Frozen sources and results stay intact.
+  The separate
+  [Cells fixed-polygon removal/rebuild source handoff](/mnt/workspaces/Cells/fixed-polygon-removal-prepared-20261031-01/HANDOFF.json)
+  is received and deferred: all 21 payload pins and five copied dependency
+  files verify. Source-semantic review, 31 checks (29 scientific, two software)
+  and ten planned reference-worker executions remain pending. This preparation
+  does not resolve native parent admission or any of the 11 invalidated owners.
 
   | Owner | Outstanding qualification | Latest reviewed disposition / next action |
   | --- | --- | --- |
@@ -253,11 +364,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Cells rejects call 0 before field/acceptance, while native completes it
   and fails in call 1. Root promoted stronger shared-state/distinct-stop
   assertions; equations, guards and tolerances are unchanged. The explicit
-  source06/runner06 successor is held. Root also [repaired its raw reader
+  source06/runner06 successor [passed Root integration review](/mnt/workspaces/Cells/ecm-init06-root-release-20261031-01/REVIEW.json). Root also [repaired its raw reader
   contract](/mnt/workspaces/Cells/ecm-init-raw-reader-contract-repair-20261031-01/REVIEW.json): the actual refusal stage/cause and both extra
   network/mechanics archives are required. Nine saved-evidence/software
-  checks passed; all 62 scientific checks still need a fresh run. No
-  positive INIT history or reference form is accepted from this failure.
+  checks passed. The [fresh 62-check qualification](/mnt/workspaces/Cells/ecm-init06-root-release-20261031-01/launch-record.json) launched detached on
+  CPU4 at **11:33:07 UTC**, estimated **30–90 minutes** (unmeasured).
+  Completion review is pending; no post-launch query. No positive INIT
+  history or reference form is accepted from the prior failed campaign.
   Active KLeak/CaLeak still inherit a bounded reference
   domain, and inactive Nav coverage does not qualify active Nav beyond that
   domain. Key Dev's separate [INIT-to-SIM source package](agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_sim_transition_handoff_01.json)
@@ -320,9 +433,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Reader logic, equations and tolerances are unchanged. Original failures
   remain saved. The fresh [44-check dispatch](/mnt/workspaces/Cells/root-runners/molecule-runtime-round-20261031-01/dispatch/launch.json) and
   [60-check transporter](/mnt/workspaces/Cells/root-runners/molecule-runtime-round-20261031-01/transport/launch.json) qualifications launched detached on
-  CPU1/CPU7 at **11:05:45 / 11:05:46 UTC**. All checks run fresh;
-  estimated 30–90 minutes each, unmeasured. Completion review is pending,
-  with no post-launch query.
+  CPU1/CPU7 at **11:05:45 / 11:05:46 UTC**. [Saved-result review](/mnt/workspaces/Cells/ecm-molecule02-development-fixes-20261031-01/HANDOFF.json) confirms
+  dispatch **6 passed / one failed / 37 unrun**, transport **4 passed /
+  one failed / 55 unrun**, with no native/reference comparison credit.
+  One test tried to mutate an immutable array; the other built a different
+  configuration key order before its intended challenge. Three isolated
+  test/fixture fixes passed five focused guard checks, preserving parents,
+  production and tolerances. Key Dev owns successor preparation; the two
+  campaigns remain failed and no full rerun is queued.
   Their [54-check molecule lifecycle passed source review](/mnt/workspaces/Cells/betse-normal-ecm-molecule-lifecycle-preflight-20261031-01/REVIEW.json);
   all 3,006 conditional forms remain unrun. Key Dev has now
   [sealed the molecule-aware headless run lifecycle](/mnt/workspaces/Cells/betse_normal_ecm_molecule_run_lifecycle-20261031-01/packet-02/SOURCE_STATIC_REVIEW.json):
@@ -333,7 +451,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   producer rebinding. Duplicate window calls earn no extra accuracy credit. The [combined lifecycle/run execution capsule](/mnt/workspaces/Cells/betse_normal_ecm_molecule_combined_execution-20261031-01/capsule-03/SOURCE_STATIC_REVIEW.json)
   is author-complete and hard held, with separate outcomes and explicit
   prerequisites; its semantic reader is still pending. Key Dev is now
-  building the separate molecule/intervention-event composition.
+  building the reviewed run59 successor and this reader. Their separate
+  [molecule/event source packet](/mnt/workspaces/Cells/betse_normal_ecm_molecule_events-20261031-01/HANDOFF.json) is delivered and held: 57 prospective
+  checks, 72 positive SIM calls, 1,758 conditional forms and 173 native
+  captures, all unrun. Duplicate window calls add no accuracy credit.
   The Specialist has
   [frozen standalone GRN flow/advection](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-preparation-20261031-01.json):
   **ten planned trees / ten children / 96 forms**, preserving the actual
@@ -371,7 +492,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   reasoning does not waive numerical domain guards.
   The separate [CPU/JAX batch adapter source](/mnt/workspaces/Cells/betse-charged-surface-work-backend-20261031-01/metadata/HELD_RECEIPT.json) is now held for independent
   review: 55 prospective cases and 90 Decimal children, all unrun. The
-  scalar qualification runner is being prepared. Both remain behind those qualification
+  [test-only failure-capture successor](/mnt/workspaces/Cells/charged-surface-backend-evidence-repair-20261031-01/DELIVERY.json) passed 19 synthetic checks; Specialist
+  owns adoption. The [scalar qualification runner](/mnt/workspaces/Cells/charged-surface-scalar-qualification-preparation-20261031-01/HANDOFF.json) is sealed and held,
+  preserving 43 tests, 16 nested Decimal children and the four-second
+  32/64/128-arm comparisons. Both remain behind those qualification
   gates; no ordinary BETSE activation or GPU acceptance is implied.
   Their [multi-step trajectory and restart draft](/mnt/workspaces/Cells/stable-seed-partition-trajectory-draft-20261031-01/receipt.json)
   remains unfrozen: 38 proposed test trees, all unrun. It adds fresh full-horizon
@@ -529,9 +653,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   12 comparison arms and four nested DOP853 children at the original
   **one-microsecond endpoint**. Forty-nine metadata controls are software
   evidence only. The [fresh qualification](/mnt/workspaces/Cells/stable-seed-partition-advance-refinement-root-release-20261031-01/launch-record.json) launched
-  detached on CPU2 at **11:05:49 UTC**; expected over ten
-  minutes, with actual runtime unmeasured. Original unit/aggregate resource
-  limits remain enforced. Completion review is pending; no post-launch query.
+  detached on CPU2 at **11:05:49 UTC**. [Saved-result review](/mnt/workspaces/Cells/stable-first-advance-failure-review-20261031-01/REVIEW.json) records
+  **two software/gate passes / one failure / 12 unrun**, with no reference
+  children or completed scientific comparison. The test passed a frozen
+  mapping into a parser requiring ordinary dictionaries. The proposed
+  fix uses the existing recursive conversion at that test boundary;
+  schema, solver and tolerances stay unchanged. Complete saved candidate
+  histories for the first case remain unqualified. Root owns the next step.
   Initial records are reused explicitly; no extra geometry or reference
   replay, reference-uncertainty or fourth-order accuracy claim is made.
   The
@@ -684,10 +812,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   belong to passing histories and 14 to the failed case's completed
   prefix; its partial next reference is uncredited. The `cat_zero_Ca`
   reference rejected call 1 at the CaLeak helper voltage gate. Native
-  CaLeak is constant; a narrow source-supported dispatch correction is
-  [isolated and unapplied](/mnt/workspaces/Cells/ecm-catalog06-failure-review-20261031-01/saved-failure-diagnosis.json). Review sealing and successor qualification
-  remain pending. The proposed ECM adapter admission change would be
-  explicit; all voltage-dependent guards and accuracy budgets stay fixed.
+  CaLeak is constant. [Independent review](/mnt/workspaces/Cells/ecm-catalog06-failure-review-20261031-01/REVIEW.json) is sealed; Root [implemented the
+  CaLeak-only reference correction](/mnt/workspaces/Cells/ecm-catalog-caleak-reference-repair-20261031-01/promotion.json). Forty focused checks pass, including
+  exact pinned native source-constant evidence, finite/type refusals and
+  unchanged neighbouring channel limits. These include no new native
+  executions or full histories. The adapter admission change is explicit
+  in the protocol; all voltage-dependent guards and accuracy budgets stay
+  fixed. The full catalog still requires a fresh qualified successor.
   The original 82/1/11 campaign stays failed. This computational range confers no biological
   validity at high voltage. Original 79/1/14 evidence, inputs,
   guard thresholds and all failed runners remain unchanged.

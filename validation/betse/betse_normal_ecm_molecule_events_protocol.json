@@ -1,0 +1,114 @@
+{
+  "accounting": "Source INIT/transition preparation receives zero new accuracy credit. 72 extra duplicate-window SIM calls have zero extra accuracy credit. Raw/observer/dependency setup/control calls are uncredited. All forms/captures/checks are unrun.",
+  "active_job_queries": 0,
+  "admitted_entry": "An actual fresh completed-INIT-to-SIM molecule54 entry and its binding are supplied unchanged. No native physical initializer, cold owner constructor, reinitialize replay or invented source INIT replacement.",
+  "capture_limits": {
+    "JSON_bytes": 67108864,
+    "NPY_header_bytes": 16384,
+    "all_captures_fit_claim": false,
+    "archive_bytes": 67108864,
+    "expanded_bytes": 67108864,
+    "format_member_limit": 310689,
+    "measured_case_maximum_claim": false
+  },
+  "capture_profile": "ordinary_ecm_molecule_events_01",
+  "clock": "Original independently supplied SIM N3 linspace labels and immutable calendar; accumulated material dt is separate. Full accepted event/owner/field journals, exact sample eligibility and pause/resume windows. Event steps are not governed by sample stride.",
+  "dependencies": {
+    "INIT05_adopted": false,
+    "event42": {
+      "exact_reused_bodies_in_molecule54": {
+        "src/cells/processes/betse_normal_ecm_event_join.py": "fd829dadf0f41faa3edbe2285d117345a20d8c31fe2159fd7edf90ea36dc7033",
+        "src/cells/processes/betse_normal_ecm_event_join_material.py": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895",
+        "src/cells/processes/betse_normal_ecm_event_join_source.py": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071",
+        "validation/betse/betse_normal_ecm_event_join_fixtures.py": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414",
+        "validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea"
+      },
+      "inputs_sha256": "604eca1502addb301452f3cb8c5889853895c42334392f617b5a5d6f290460c6",
+      "no_packet_manifest_exists": true,
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-03"
+    },
+    "kind": "cells.explicit_molecule_events_dependencies@1",
+    "molecule54": {
+      "inputs_sha256": "759e7086daea07005921cee61c7f84baf62ff3617087dfeeda876d5a0e99996e",
+      "manifest_sha256": "1373771db1c6195f650b1bbd1962e28cdbaf1c28df56aa0a88a927cfbe9561f5",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-lifecycle-prepared-20261031-01"
+    },
+    "reference_resolution": {
+      "historical_event42_reference_sha256": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+      "molecule54_event_reference_sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf",
+      "use": "Exact molecule54 event reference with its explicit INIT04 pins; do not overlay historical event42 reference"
+    },
+    "run59_changed": false,
+    "scientific_evaluations": 0,
+    "scientific_imports": 0
+  },
+  "driver_metadata_only": true,
+  "entry_control_boundary": "The two exact native Simulator.init_dynamics GJ/NaKATP scalar-vs-vector branches are owned at an explicit supplied entry seam before any event call. A complete before/after/owner receipt is retained. The warm owner cache may change only those two shared controls. This seam occurs after the supplied molecule54 warm return; no whole native initializer/phase setup equivalence or proof of commuting arbitrary initialization is claimed.",
+  "event_semantics": "Persistent base/scheduled/live diffusion, bath salt order, T, controls, pressure and edge voltage are retained. Duplicate targets and same-edge positive-then-negative assignments retain source last writes. makeAllChanges runs even with no scheduled event. Event writes are reapplied after restoring prior owner caches before general/GRN work.",
+  "exclusions": [
+    "geometry cutting/remeshing",
+    "fluid flow/electroosmosis",
+    "active/osmotic/deforming mechanics",
+    "dynamic noise/RNG trajectory",
+    "dynamic gate expansion",
+    "native physical/cold initializer or load/pickle",
+    "native storage/display",
+    "whole native SIM phase setup/loop equivalence",
+    "silent INIT05 or newer dispatch/transport source adoption"
+  ],
+  "execution_hold": true,
+  "failed_prefix": "Each error retains the caller, actual last accepted failed prefix, complete source event stages/stores, actual typed owner/material partials and original cause chain. Before-call/event/general-return failures do not promote incomplete outer state. After-call observer failure keeps the accepted candidate. No retry, rollback, implicit restart or rebased clock.",
+  "finalized_event_owner": "Supplied post-finalization fields are fully validated by the exact event42 owner validator already frozen in molecule54. Actual geometry/tissue/default/configured-environment owners must match the retained SIM entry. Configured schedule/callback fields are explicit; no picker, callback initialization, finalizer-shuffle or full RNG-history claim.",
+  "fixture_model_reference_evaluations": 0,
+  "kind": "cells.held_molecule_ordinary_ECM_SIM_events_protocol@1",
+  "law_id": "betse_supplied_ECM_molecule_SIM_events_v1_5_0@1",
+  "material_adapter": "Whole molecule54 material step preserved except the three reset statements already executed before events. Pump evidence resets only its copied incoming snapshot. Legitimate material.bind from actual live Dm_cells/D_env retains exact original geometry identity; no old binding identity is forged.",
+  "native_order": [
+    "restore actual previous source buffers",
+    "one original flux reset",
+    "SIM-only fire_events",
+    "global events in original K/Cl/Na/T/GJ/NaK order",
+    "tissue Na/K/Cl/Ca/pressure/ECMJ/voltage",
+    "makeAllChanges",
+    "NaK producer",
+    "ordinary primary movers",
+    "CaATP",
+    "general transporters/channels/modulators/chemistry",
+    "GRN channels/modulators/chemistry",
+    "source-disabled mechanics/noise seam",
+    "original deferred primary commit",
+    "full field reconstruction and source voltage check"
+  ],
+  "native_scope": "Local independent actual native AST event/control branches plus original molecule54 dual-owner dispatch boundaries, in fresh guarded children. No native whole trajectory or source complete initializer oracle. Source map records exact code correspondence; native AST code is never executed during preparation.",
+  "numerical_runs": 0,
+  "owner_semantics": "General then GRN, independently enabled flags, configured general transporters in original order, null/empty flags, source flux presence/epochs and late cache absence are unchanged molecule54 laws. Stable configured chemistry/publication and original leak gates or absent/empty channel sets only; no new dynamic gate history or GRN-transporter support.",
+  "planned": {
+    "biological_cases": 0,
+    "checks": 57,
+    "dependency_controls": 22,
+    "duplicate_window_calls": 72,
+    "independent_reference_forms": 1758,
+    "independently_carried_trajectories": 0,
+    "inherited_scientific_passes": 0,
+    "native_captures": 173,
+    "observer_controls": 8,
+    "positive_SIM_calls": 72,
+    "positive_cases": 24,
+    "raw_cases": 3,
+    "source_entry_control_calls": 24
+  },
+  "prerequisites": [
+    "Chief independent source/event-entry review",
+    "separate reviewed capture/runtime/semantic reader and explicit round request",
+    "no inherited accuracy credit"
+  ],
+  "purpose": "Bridge actual pre-pump SIM intervention firing/makeAllChanges to molecule54 general/GRN owners while retaining exact source clocks, cache epochs and complete accepted/failed prefixes.",
+  "pytest_collections": 0,
+  "reference_scope": "Fresh Decimal100/160 conditionals per actual incoming point. Event equations and all material/pump/chemistry/field equations use exact frozen molecule54 dependencies with its explicit INIT04 reference versions. A new trivial exact entry-control oracle describes scalar/vector ones. Event reference retained values are inherited serialized results; no new raw-Decimal checkpoint claim. No independently carried reference trajectory.",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_bug_preservation": "Original current-before-material transport writes, internal stoichiometry omissions, fast ECM last-write projection and effective vs true-volume ledgers remain separate. No global physical conservation, ATP/heat/energy closure, biological calibration or domain tuning.",
+  "source_map": "validation/betse/betse_normal_ecm_molecule_events_source_map.json",
+  "status": "source_static_only_unrun",
+  "tolerances": "All inherited event, molecular, transporter, material and field tolerances unchanged. Original normalized error <=1 and paired self-resolution <=0.1; no new looser budgets."
+}

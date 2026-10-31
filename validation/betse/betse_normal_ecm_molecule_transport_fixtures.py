@@ -128,7 +128,11 @@ def fixture(case):
     if case == "empty_transporters":
         rows = []
     data["handlers"]["molecules"]["network"]["configuration"]["transporters"] = copy.deepcopy(rows)
-    data["configuration"]["general network"]["transporters"] = copy.deepcopy(rows)
+    data["configuration"]["general network"] = dict(
+        copy.deepcopy(data["handlers"]["molecules"]["network"]["configuration"]),
+        channels=copy.deepcopy(data["handlers"]["molecules"]["catalog"]["populations"]),
+        **{"implement network": data["configuration"]["general network"]["implement network"]},
+    )
     external = data["field"]["definition"]["environment_geometry_definition"]
     cg = external["current_definition"]["geometry"]
     mids, centres = (external["geometry"][k] for k in ("membrane_midpoints_m", "cell_centres_m"))

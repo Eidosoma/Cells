@@ -173,6 +173,11 @@ def kinetics(name, voltage, refinement):
         # standalone sodium oracle keeps its own bounded-voltage contract.
         sodium._d(voltage, "voltage")
         return ([Decimal(1), Decimal(1)], [Decimal(1), Decimal(1)])
+    if name == "CaLeak":
+        # Native CaLeak gates are constant; retain finite/type admission while
+        # the standalone calcium oracle keeps its bounded-voltage contract.
+        calcium_gates._d(voltage, "voltage")
+        return ([Decimal(1), Decimal(1)], [Decimal(1), Decimal(1)])
     if family == "Na":
         return ecm_sodium.kinetics(voltage, name, precision=precision)
     if family == "K":
