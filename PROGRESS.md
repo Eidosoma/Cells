@@ -12,15 +12,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **Source integration into Git (31 October):** production modules, reusable
   validators and tests belong in this checkout. `/mnt/workspaces/Cells` holds
   outputs and frozen execution evidence, not the sole active implementation.
-  Recent source packets had not yet been integrated; Root is importing post-cut
-  mesh/contact code, Key Dev owns chemistry/events/lifecycle integration, and
-  Specialist owns the remaining tissue code and single-cell core repair.
-  Earlier packets are being checked for missing modules and version differences.
+  Recent source packets had not yet been integrated. Root imported post-cut
+  mesh/contact and charged-surface code; Key Dev integrated 50 owned files,
+  including molecule events, run/restart and reusable validation; Specialist
+  is finishing tissue integration and the single-cell core repair.
+  The [earlier-source inventory](/mnt/workspaces/Cells/repository-source-integration-20261031-01/earlier-source-inventory.json)
+  mapped 449,438 snapshot copies to 614 canonical paths. It found nine substantive
+  workspace-only modules, all present in the checkout by the final existence
+  check. Two synthetic test sentinels and an obsolete network-source filename
+  are intentionally excluded. Named active source versions were compared;
+  historical snapshots were not exhaustively content-hashed or automatically
+  substituted for current code.
   [Post-cut repository checks passed](/mnt/workspaces/Cells/repository-source-integration-20261031-01/post-cut-import.json):
   seven software cases, with all 12 scientific cases explicitly skipped; **1.77
   seconds, 76.3 MiB peak**. Production imports resolve to this checkout, native
   equations are unchanged, and frozen evidence is preserved. Code integration
   does not grant scientific qualification or ordinary continuation.
+  [Charged-surface integration checks](/mnt/workspaces/Cells/repository-source-integration-20261031-01/charged-surface-import.json)
+  passed three metadata/import/refusal controls in **3.06 seconds, 64.1 MiB
+  peak**, with scientific imports blocked. Its 43 scalar and 55 backend checks
+  remain held. [Key Dev's repository integration](/mnt/workspaces/Cells/repository-source-integration-20261031-01/key-and-charged-source-integration.json)
+  passed 13 software checks in **6.81 seconds, 210.9 MiB peak**; full numerical
+  qualification remains separate.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
@@ -116,9 +129,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Key Dev delivered an [evidence-only successor](/mnt/workspaces/Cells/betse_normal_ecm_molecule_events_execution-20261031-01/evidence-successor-02/HANDOFF.json)
   for the archive-name collision between handler/channel inputs and comparison
   metrics, retaining both records and the frozen parent. Its reported 100
-  synthetic controls and 40 static checks await independent review. Repository
-  integration is assigned; Root source/reader/runtime review and scientific
-  release remain pending.
+  synthetic controls and 40 static checks have now received a
+  [scoped independent saved-evidence review](/mnt/workspaces/Cells/repository-source-integration-20261031-01/events-evidence-repair-review.json).
+  The exclusive archive repair is clear, including nonempty channel owners;
+  source and reusable readers are integrated into the repository. Full
+  source/reader/runtime qualification and scientific release remain pending.
 
   [Specialist's saved development evidence has been checked](/mnt/workspaces/Cells/root-runners/thread-domain-assignment-20261031-01/specialist-development-receipt-review.json):
   backend55 adoption preserves 421 parent payloads, all 426 successor pins

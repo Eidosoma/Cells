@@ -25,7 +25,7 @@ DEPENDENCY_PINS = (
     ),
     (
         "betse_normal_ecm_initialization",
-        "780ffb431383b1ba5b8f2e05d98d1159755cd5b5b6c2504aaf0f205838e896af",
+        "894c6e89f3438955fc4d130559d09c3bf6d120ff640f4f41c981a94242b42a19",
     ),
     ("betse_normal_ion_join", "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d"),
     (
@@ -34,7 +34,7 @@ DEPENDENCY_PINS = (
     ),
     (
         "betse_normal_ecm_calcium_join",
-        "80ccf03ce5b758274930e94c89f3411531aed5eeef924f6b2334b3ab8e6ea184",
+        "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
     ),
     ("betse_ecm_grn_source", "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25"),
     ("betse_ecm_grn_join", "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274"),

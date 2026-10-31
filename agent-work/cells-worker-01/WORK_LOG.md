@@ -7445,3 +7445,41 @@ remain unrun. Zero scientific imports/evaluations, pytest collections or
 scientific launches; zero existing-job queries, shared PROGRESS/frozen edits,
 git staging/commits or subagents. The sealed held runner receipt is ready for
 Chief's independent review before any separately authorized release.
+
+### 2026-10-31 — Production and reusable validation source integrated into Git
+
+Integrated in `/home/robert/Cells`, without a worktree. Inventory: **47 added and
+3 updated source/validation/test files**. The 34 other owned dispatch/transport/
+lifecycle files and 32 chemistry files checked already matched their candidates.
+Full paths and source origins: [integration inventory](/mnt/workspaces/Cells/cells-worker-01-git-integration-20261031-01/final-inventory.json).
+
+| Repository area | Imported files |
+| --- | --- |
+| `src/cells/processes/` | Five `betse_normal_ecm_molecule_events{,_material,_pump,_source,_step}.py` modules; two `betse_normal_ecm_molecule_run_lifecycle{,_component}.py` modules |
+| `tests/unit/` | Events and molecule run-lifecycle test/capture/comparison modules (six files); latest dispatch/transport private-copy fixes (two updates); `test_betse_normal_ecm_execution_software.py` |
+| `validation/betse/` family support | Events fixtures/native/reference plus existing protocol/source-map JSON (five files); molecule run-lifecycle fixtures/native/reference plus existing protocol JSON (four files); transport fixture mapping-order fix (one update) |
+| `validation/betse/` reusable execution | Five `betse_normal_ecm_molecule_qualification_*`, seven `betse_normal_ecm_molecule_phase_execution_*`, nine `betse_normal_ecm_molecule_events_execution_*` modules; `archive_binding.py`, `capture_binding.py`, `betse_normal_ecm_molecule_guard_probe.py` |
+
+Production candidates came from dispatch03/transport03, lifecycle54, run59's
+explicit repair successor, and events57 handoff `b1c9e184…`. The events input and
+comparison-metric records retain distinct paths, exclusive creation and complete
+payloads. Reusable validation modules add package/flat-snapshot imports only;
+their normalized whole-module ASTs match the frozen implementations. The
+existing `validation/geometry/qualification_typed_evidence.py` decoder was reused
+unchanged. One synchronous run-test callback now explicitly binds its loop
+arguments; an assertion was wrapped for lint. No new protocol was designed.
+
+Validation: **13 passed** (eight metadata/evidence cases and five exact
+admission-only guards), with 1 GiB RSS/480 s/8 GiB reserve on CPU0, one thread.
+The probe forbids timestep advances and native/reference children; all five
+intended refusal messages and unchanged admitted parents were checked.
+All 47 changed/imported Python files compile and pass Ruff; imported JSON parses.
+Logs: `/mnt/workspaces/Cells/cells-worker-01-git-integration-20261031-01/`.
+
+**Merge blockers: none.** Scientific qualification and Root review/adoption
+remain pending where previously pending. Repository presence does not release
+a roster, rebind a historical input, repair a past failure or grant scientific
+credit. Frozen packets, holds and historical INIT04 bindings remain unchanged.
+No shared status/ledger, Root CaLeak/reference/catalog or specialist files were
+edited. No full regression/qualification, detached run or scientific-job query
+was started. I did not stage or commit changes.

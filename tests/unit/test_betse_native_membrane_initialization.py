@@ -98,6 +98,10 @@ def construct(root, state, *, before_prepare=None):
     spec = fixtures.specimen(
         state["case"], refusal=state["refusal"], observer=observer(root, "fixture")
     )
+    # Freeze a typed, byte-exact view directly from the caller before capture.
+    # This baseline is independent of both objects returned by the handoff.
+    state["pre_capture_network_cache"] = archive.snapshot(spec["network_cache"])
+    persist(root, "original-pre-capture-network-cache", state["pre_capture_network_cache"])
     state["inputs"] = dict(
         raw=spec["raw"],
         binding=spec["binding"],
@@ -205,7 +209,7 @@ def independent(root, state, payload):
 def test_explicit_six_column_component_entry(case, tmp_path, monkeypatch):
     state = begin(tmp_path, case, "conditional supplied component bridge; no native-chain credit")
     try:
-        _, pair, prepared = construct(tmp_path, state)
+        spec, pair, prepared = construct(tmp_path, state)
         original = entry.digest(pair)
         calls = guards(monkeypatch)
         candidate = bootstrap(tmp_path, state, prepared)
@@ -216,6 +220,16 @@ def test_explicit_six_column_component_entry(case, tmp_path, monkeypatch):
         assert ions.digest(candidate.component_handoff.parent.network.network_cache) == ions.digest(
             pair.boundary.network_cache["value"]
         )
+        cache_retention = dict(
+            original_pre_capture=state["pre_capture_network_cache"],
+            boundary=archive.snapshot(pair.boundary.network_cache["value"]),
+            component=archive.snapshot(candidate.component_handoff.parent.network.network_cache),
+            original_after=archive.snapshot(spec["network_cache"]),
+        )
+        persist(tmp_path, "original-cache-through-component-retention", cache_retention)
+        assert cache_retention["boundary"] == cache_retention["original_pre_capture"]
+        assert cache_retention["component"] == cache_retention["original_pre_capture"]
+        assert cache_retention["original_after"] == cache_retention["original_pre_capture"]
         assert independent(tmp_path, state, dict(original=pair, request=prepared, entry=candidate))[
             "passed"
         ]
