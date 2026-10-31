@@ -12,6 +12,8 @@ import re
 import struct
 
 STAGES = ("before", "cellVerts", "cellMatrices", "cell_vols", "mem_processing", "near_neigh")
+ENVIRONMENT_STAGES = ("environment", "assign_grid_len", "make_maskM")
+TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
 RNG_ID = "numpy_mt19937_legacy_state_with_gaussian_cache@1"
 MAX_ELEMENTS = 262144
 MAX_NODES = 262144
@@ -470,6 +472,304 @@ def compare(owned_trial: dict, native: dict) -> dict:
             _stream(owned_trial[name], "owned." + name),
             _stream(native[name], "native." + name),
             name,
+            differences,
+        )
+        result["streams_compared"] += 1
+    result["exact_match"] = not differences
+    return result
+
+
+def compare_ecm(owned_geometry: dict, owned_ecm: dict, native: dict) -> dict:
+    """Compare one continuous geometry/ECM execution using saved bytes only.
+
+    Geometry retains its original six-stage comparison. ECM adds two cache
+    boundaries and two MT records, including exact handoff checks on each side.
+    These repeated observations are not additional independent cases or live
+    owner/checkpoint authority.
+    """
+    return _compare_ecm(owned_geometry, owned_ecm, native, stop_after="makeECM")
+
+
+def _compare_ecm(owned_geometry, owned_ecm, native, *, stop_after):
+    result = compare(owned_geometry, native)
+    result.update(
+        kind="cells.single_cell_saved_ecm_exact_comparison@1",
+        stop_after=stop_after,
+        ecm_cache_pairs_compared=0,
+        handoff_checks=0,
+        lineage_checks=0,
+    )
+    differences = result["mismatches"]
+    _required(native, ("stop_after",), "native")
+    if native["stop_after"] != stop_after:
+        _bad("native.stop_after", "require the explicit " + stop_after + " endpoint")
+    if not result["exact_match"]:
+        return result
+    _required(
+        owned_ecm,
+        ("source_completed", "failure_stage", "failure_type", "failure_message"),
+        "owned.ecm",
+    )
+    if type(owned_ecm["source_completed"]) is not bool:
+        _bad("owned.ecm.source_completed", "require an exact boolean completion")
+    for key, expected in (
+        ("source_completed", True),
+        ("failure_stage", None),
+        ("failure_type", None),
+        ("failure_message", None),
+    ):
+        if owned_ecm[key] != expected:
+            differences.append(
+                dict(
+                    path="owned.ecm." + key,
+                    reason="source_not_completed",
+                    expected=expected,
+                    observed=owned_ecm[key],
+                )
+            )
+    if differences:
+        result["exact_match"] = False
+        return result
+    _required(owned_geometry, ("identity",), "owned.geometry")
+    _required(owned_ecm, ("parent_identity",), "owned.ecm")
+    _digest(owned_geometry["identity"], "owned.geometry.identity")
+    _digest(owned_ecm["parent_identity"], "owned.ecm.parent_identity")
+    _difference(
+        owned_geometry["identity"],
+        owned_ecm["parent_identity"],
+        "owned.ecm.parent_identity",
+        differences,
+    )
+    result["lineage_checks"] = 1
+    _required(native, ("ecm",), "native")
+    caches = {}
+    for side, value, owned in (("owned", owned_ecm, True), ("native", native["ecm"], False)):
+        _required(value, ("before", "cache", "stream_before", "stream_after"), side + ".ecm")
+        for name in ("before", "cache"):
+            parsed = _Cache(value[name], side + ".ecm." + name, owned)
+            tree = parsed.tree
+            if tree["type"] != "dict" or [k for k, _ in tree["items"]] != [
+                dict(type="str", value=key) for key in ("caller", "mesh", "parameters", "grid")
+            ]:
+                _bad(side + ".ecm." + name, "require the complete ordered ECM cache roots")
+            grid = tree["items"][-1][1]
+            if name == "cache" and (grid["type"] != "dict" or not grid["items"]):
+                _bad(side + ".ecm.cache.grid", "require a nonempty completed grid cache")
+            caches[side, name] = parsed
+        geometry = _Cache(
+            (owned_geometry if owned else native)["cache"], side + ".geometry.cache", owned
+        ).tree
+        if geometry["type"] != "dict":
+            _bad(side + ".geometry.cache", "require a geometry cache mapping")
+        expected = dict(
+            type="dict",
+            items=[
+                *geometry["items"],
+                [dict(type="str", value="grid"), dict(type="NoneType", value=None)],
+            ],
+        )
+        _difference(
+            expected, caches[side, "before"].tree, side + ".ecm.geometry_handoff", differences
+        )
+        _difference(
+            _stream((owned_geometry if owned else native)["stream_after"], side + ".geometry_rng"),
+            _stream(value["stream_before"], side + ".ecm.stream_before"),
+            side + ".ecm.rng_handoff",
+            differences,
+        )
+        result["handoff_checks"] += 2
+    for name in ("before", "cache"):
+        left, right = caches["owned", name], caches["native", name]
+        _difference(left.tree, right.tree, "ecm." + name, differences)
+        result["cache_pairs_compared"] += 1
+        result["ecm_cache_pairs_compared"] += 1
+        result["arrays_compared"] += left.arrays
+    for name in ("stream_before", "stream_after"):
+        _difference(
+            _stream(owned_ecm[name], "owned.ecm." + name),
+            _stream(native["ecm"][name], "native.ecm." + name),
+            "ecm." + name,
+            differences,
+        )
+        result["streams_compared"] += 1
+    result["exact_match"] = not differences
+    return result
+
+
+def _fields(tree, path, names=None):
+    if tree["type"] != "dict" or any(k["type"] != "str" for k, _ in tree["items"]):
+        _bad(path, "require a string-keyed cache mapping")
+    keys = [k["value"] for k, _ in tree["items"]]
+    if len(keys) != len(set(keys)) or (names is not None and keys != list(names)):
+        _bad(path, "missing, duplicate or reordered cache fields")
+    return {k["value"]: value for k, value in tree["items"]}
+
+
+def _environment_cache(value, path, owned, stage):
+    cache = _Cache(value, path, owned)
+    fields = _fields(cache.tree, path, ("caller", "grid", "mesh", "parameters", "trees"))
+    if not _fields(fields["grid"], path + ".grid"):
+        _bad(path + ".grid", "require the completed ECM grid")
+    parameters = _fields(fields["parameters"], path + ".parameters")
+    if parameters.get("plot_grid_size") != dict(type="int", value=50):
+        _bad(path + ".parameters.plot_grid_size", "require the exact native plot-grid store")
+    trees = fields["trees"]
+    count = {"before": 0, "environment": 1, "assign_grid_len": 1, "make_maskM": 3, "final": 3}[
+        stage
+    ]
+    if trees["type"] != "list" or len(trees["items"]) != count:
+        _bad(path + ".trees", "require the source-ordered tree roster for " + stage)
+    for i, tree in enumerate(trees["items"]):
+        _fields(tree, f"{path}.trees[{i}]", TREE_FIELDS)
+    caller = _fields(fields["caller"], path + ".caller")
+    if stage in ("assign_grid_len", "make_maskM", "final"):
+        points = caller.get("xypts")
+        if (
+            not points
+            or points["type"] != "array"
+            or len(points["layout"]["shape"]) != 2
+            or caller.get("grid_len") != dict(type="int", value=points["layout"]["shape"][0])
+        ):
+            _bad(path + ".caller.grid_len", "require the literal grid_len = len(xypts) result")
+    if stage in ("make_maskM", "final"):
+        for name in ("maskM", "maskECM"):
+            mask = caller.get(name)
+            if (
+                not mask
+                or mask["type"] != "array"
+                or len(mask["layout"]["shape"]) != 2
+                or not all(mask["layout"]["shape"])
+            ):
+                _bad(path + ".caller." + name, "require the completed mask array")
+    return cache, fields
+
+
+def compare_environment(owned_geometry, owned_ecm, owned_environment, native):
+    """Compare saved environment maps/masks and their ECM handoff, without hydration."""
+    result = _compare_ecm(owned_geometry, owned_ecm, native, stop_after="make_maskM")
+    result.update(
+        kind="cells.single_cell_saved_environment_exact_comparison@1",
+        environment_cache_pairs_compared=0,
+        environment_stages_compared=0,
+        tree_prefix_checks=0,
+    )
+    if not result["exact_match"]:
+        return result
+    differences = result["mismatches"]
+    _required(
+        owned_environment,
+        ("source_completed", "failure_stage", "failure_type", "failure_message", "parent_identity"),
+        "owned.environment",
+    )
+    if type(owned_environment["source_completed"]) is not bool:
+        _bad("owned.environment.source_completed", "require an exact boolean completion")
+    for key, expected in (
+        ("source_completed", True),
+        ("failure_stage", None),
+        ("failure_type", None),
+        ("failure_message", None),
+    ):
+        if owned_environment[key] != expected:
+            differences.append(
+                dict(
+                    path="owned.environment." + key,
+                    reason="source_not_completed",
+                    observed=owned_environment[key],
+                )
+            )
+    if differences:
+        result["exact_match"] = False
+        return result
+    _required(owned_ecm, ("identity",), "owned.ecm")
+    _digest(owned_ecm["identity"], "owned.ecm.identity")
+    _digest(owned_environment["parent_identity"], "owned.environment.parent_identity")
+    _difference(
+        owned_ecm["identity"],
+        owned_environment["parent_identity"],
+        "owned.environment.parent_identity",
+        differences,
+    )
+    result["lineage_checks"] += 1
+    _required(native, ("environment",), "native")
+    caches = {}
+    for side, value, owned in (
+        ("owned", owned_environment, True),
+        ("native", native["environment"], False),
+    ):
+        _required(
+            value,
+            ("before", "stages", "cache", "stream_before", "stream_after"),
+            side + ".environment",
+        )
+        if type(value["stages"]) is not list or len(value["stages"]) != len(ENVIRONMENT_STAGES):
+            _bad(side + ".environment.stages", "require all three ordered environment stages")
+        for expected, row in zip(ENVIRONMENT_STAGES, value["stages"], strict=True):
+            if type(row) is not list or len(row) != 2 or row[0] != expected:
+                _bad(side + ".environment.stages", "missing, duplicate or reordered stage")
+        previous_trees = []
+        for name, saved in [
+            ("before", value["before"]),
+            *value["stages"],
+            ("final", value["cache"]),
+        ]:
+            parsed, fields = _environment_cache(saved, side + ".environment." + name, owned, name)
+            caches[side, name] = parsed
+            trees = fields["trees"]["items"]
+            if previous_trees:
+                _difference(
+                    previous_trees,
+                    trees[: len(previous_trees)],
+                    side + ".environment." + name + ".retained_trees",
+                    differences,
+                )
+                result["tree_prefix_checks"] += 1
+            previous_trees = trees
+            if name == "before":
+                earlier = _Cache(
+                    (owned_ecm if owned else native["ecm"])["cache"], side + ".ecm.cache", owned
+                )
+                previous = _fields(
+                    earlier.tree, side + ".ecm.cache", ("caller", "mesh", "parameters", "grid")
+                )
+                expected = dict(
+                    type="dict",
+                    items=[
+                        [dict(type="str", value=k), previous[k]]
+                        for k in ("caller", "grid", "mesh", "parameters")
+                    ]
+                    + [[dict(type="str", value="trees"), dict(type="list", items=[])]],
+                )
+                _difference(expected, parsed.tree, side + ".environment.ecm_handoff", differences)
+                result["handoff_checks"] += 1
+            if name == "final":
+                _difference(
+                    caches[side, "make_maskM"].tree,
+                    parsed.tree,
+                    side + ".environment.final_vs_make_maskM",
+                    differences,
+                )
+        _difference(
+            _stream(
+                (owned_ecm if owned else native["ecm"])["stream_after"], side + ".ecm.stream_after"
+            ),
+            _stream(value["stream_before"], side + ".environment.stream_before"),
+            side + ".environment.rng_handoff",
+            differences,
+        )
+        result["handoff_checks"] += 1
+    for name in ("before", *ENVIRONMENT_STAGES, "final"):
+        left, right = caches["owned", name], caches["native", name]
+        _difference(left.tree, right.tree, "environment." + name, differences)
+        result["cache_pairs_compared"] += 1
+        result["environment_cache_pairs_compared"] += 1
+        result["arrays_compared"] += left.arrays
+        if name in ENVIRONMENT_STAGES:
+            result["environment_stages_compared"] += 1
+    for name in ("stream_before", "stream_after"):
+        _difference(
+            _stream(owned_environment[name], "owned.environment." + name),
+            _stream(native["environment"][name], "native.environment." + name),
+            "environment." + name,
             differences,
         )
         result["streams_compared"] += 1

@@ -8,10 +8,12 @@ patched or replaced, and the existing augment creates the actual phase.
 
 import ast
 import copy
+import dis
 import hashlib
 import math
+import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import CodeType, FunctionType, SimpleNamespace
 
 import numpy as np
 
@@ -24,6 +26,7 @@ ORIGINAL_AST = "866a35777f8eeba17d8d69d9af36591837053449136598109c98f754c1d301d7
 
 
 def check_original():
+    check_live_bindings()
     if network.make_context is not ORIGINAL or ORIGINAL.__code__ is not ORIGINAL_CODE:
         raise ValueError("Changed original ECM context factory")
     node = next(
@@ -153,3 +156,151 @@ def construct_context(binding, values, definition, packet=None, *, parameter_con
 
 CONSTRUCT = construct_context
 CONSTRUCT_CODE = CONSTRUCT.__code__
+PARAMETER_NAMESPACE = SimpleNamespace
+
+# Live import-time references stay here, never in a checkpoint. The copied
+# function has its own globals dictionary; its eight resolved global names
+# must still point to the same original objects. No factory is invoked here.
+_NETWORK = network
+_GLOBAL_BINDINGS = (
+    ("np", np),
+    ("math", math),
+    ("source", source),
+    ("Values", Values),
+    ("SimpleNamespace", SimpleNamespace),
+    ("len", len),
+    ("list", list),
+    ("setattr", setattr),
+)
+_FACTORY_NAMESPACES = ((ORIGINAL, vars(network)), (CONSTRUCT, globals()))
+_ATTRIBUTE_BINDINGS = (
+    ("np.asarray", np, "asarray", np.asarray),
+    ("np.arange", np, "arange", np.arange),
+    ("np.ones", np, "ones", np.ones),
+    ("np.zeros", np, "zeros", np.zeros),
+    ("np.float64", np, "float64", np.float64),
+    ("math.prod", math, "prod", math.prod),
+    ("source.augment", source, "augment", source.augment),
+    ("source.MATERIAL_PAIRS", source, "MATERIAL_PAIRS", source.MATERIAL_PAIRS),
+    ("Values._fields", Values, "_fields", Values._fields),
+)
+_PYTHON_BINDINGS = tuple(
+    (
+        label,
+        value,
+        value.__code__,
+        value.__globals__,
+        value.__defaults__,
+        value.__kwdefaults__,
+        None if value.__kwdefaults__ is None else tuple(value.__kwdefaults__.items()),
+        value.__closure__,
+    )
+    for label, value in (
+        ("original", ORIGINAL),
+        ("selected", CONSTRUCT),
+        ("source.augment", source.augment),
+        ("np.ones", np.ones),
+    )
+)
+_MODULE_BINDINGS = (
+    ("original", network),
+    ("selected", __file__),
+    ("source", source),
+    ("numpy", np),
+    ("math", math),
+)
+
+
+def _loaded_globals(code):
+    names = {entry.argval for entry in dis.get_instructions(code) if entry.opname == "LOAD_GLOBAL"}
+    for value in code.co_consts:
+        if type(value) is CodeType:
+            names.update(_loaded_globals(value))
+    return names
+
+
+def check_live_bindings():
+    """Refuse changed factory lookups/callables before their first invocation.
+
+    This pins the direct factory lookup surface and its augment boundary, not
+    every transitive NumPy/source operation. Full producer/runtime pins and the
+    separate actual qualification still apply. External Python defaults and
+    globals/code/closure identities are inspected without evaluating them.
+    """
+    if network is not _NETWORK:
+        raise ValueError("Changed context module binding: original factory owner")
+    for function, namespace in _FACTORY_NAMESPACES:
+        if function.__globals__ is not namespace:
+            raise ValueError("Changed context factory globals dictionary binding")
+        for name, expected in _GLOBAL_BINDINGS:
+            actual = namespace.get(name, function.__builtins__.get(name))
+            if actual is not expected:
+                raise ValueError("Changed context factory global binding: " + name)
+        if _loaded_globals(function.__code__) != {name for name, _ in _GLOBAL_BINDINGS}:
+            raise ValueError("Changed context factory global lookup surface")
+    for label, owner, name, expected in _ATTRIBUTE_BINDINGS:
+        if getattr(owner, name, None) is not expected:
+            raise ValueError("Changed context attribute binding: " + label)
+    for label, function, code, namespace, defaults, keyword, items, closure in _PYTHON_BINDINGS:
+        if (
+            type(function) is not FunctionType
+            or function.__code__ is not code
+            or function.__globals__ is not namespace
+            or function.__defaults__ is not defaults
+            or function.__kwdefaults__ is not keyword
+            or function.__closure__ is not closure
+        ):
+            raise ValueError("Changed context Python callable binding: " + label)
+        if items is not None and (
+            set(keyword) != {key for key, _ in items}
+            or any(keyword[key] is not expected for key, expected in items)
+        ):
+            raise ValueError("Changed context callable keyword default binding: " + label)
+
+
+def binding_record():
+    """Closed descriptions of checked bindings; no executable objects or IDs."""
+    check_original()
+    return dict(
+        kind="cells.original_and_selected_ECM_context_runtime_bindings@1",
+        globals=tuple(name for name, _ in _GLOBAL_BINDINGS),
+        attributes=tuple(label for label, _, _, _ in _ATTRIBUTE_BINDINGS),
+        modules={label: _module_record(label, module) for label, module in _MODULE_BINDINGS},
+        python_callables={
+            label: dict(
+                module=function.__module__,
+                qualname=function.__qualname__,
+                bytecode_sha256=hashlib.sha256(code.co_code).hexdigest(),
+                globals_module=namespace["__name__"],
+                defaults_and_closure_identity_checked=True,
+            )
+            for label, function, code, namespace, _, _, _, _ in _PYTHON_BINDINGS
+        },
+        material_pairs=source.MATERIAL_PAIRS,
+        value_fields=Values._fields,
+        actual_factory_calls=0,
+        scope="direct factory globals/attributes and augment callable boundary; "
+        "not transitive native/numerical admission",
+    )
+
+
+def _module_record(label, module):
+    if not any(label == name and module is expected for name, expected in _MODULE_BINDINGS):
+        raise ValueError("Unbound context module cannot supply provenance")
+    path = module if label == "selected" else getattr(module, "__file__", None)
+    name = __name__ if label == "selected" else module.__name__
+    if path is not None:
+        return dict(
+            name=name,
+            kind="module_file",
+            sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+        )
+    spec = getattr(module, "__spec__", None)
+    if name not in sys.builtin_module_names or getattr(spec, "origin", None) != "built-in":
+        raise ValueError("Missing source file for a non-builtin context module: " + name)
+    return dict(
+        name=name,
+        kind="interpreter_builtin_module",
+        origin="built-in",
+        executable_sha256=hashlib.sha256(Path(sys.executable).resolve().read_bytes()).hexdigest(),
+    )

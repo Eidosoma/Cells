@@ -159,7 +159,7 @@ def source_order(path):
     callbacks = [n for n in ast.walk(branch) if isinstance(n, ast.Lambda)]
     require(
         len(callbacks) == 1
-        and ast.unparse(callbacks[0]) == "lambda t: time_laws.evaluate(program, t, xp=np).value",
+        and ast.unparse(callbacks[0]) == "lambda t: time_laws.evaluate(program, t, xp=np).factor",
         "Changed qualified sweep recreation source",
     )
     return dict(value, sweep_callback_line=callbacks[0].lineno)

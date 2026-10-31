@@ -9,7 +9,53 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Real single-cell prefix runner (31 October):** Root added the
+- **Square-cell geometry and ECM match original BETSE (31 October):** the corrected square-cell
+  diagnostic completed through `makeECM` in **62.03 seconds, 255.5 MiB sampled
+  peak RSS**. All seven stage records were saved, including the actual
+  same-caller grid construction; the final 184 array columns report finite
+  values, with no source or observer error. The geometry trial identity matches
+  the ECM parent identity. The [reviewed independent comparison](/mnt/workspaces/Cells/native-single-cell-prefix-ecm-comparison-20261031-01/square-reference-01/root-review.json)
+  now matches **all nine cache pairs and four MT random-state records exactly**,
+  including geometry-to-ECM handoffs and the constructed grid. Its 1,203 array
+  occurrences include repeated observations of **one square input**. The
+  original-source reference took **5.28 seconds, 131.5 MiB sampled peak RSS**;
+  Cells was not replayed. All 798 frozen files, 617 external pins, 32 original
+  source files, 109 AST sites and runtime producers are verified. Numerical
+  source bodies are independently compiled; NumPy/SciPy/Pillow, the wire
+  serializer and original descriptor helpers/beartype remain shared. This
+  accepts bounded source correspondence, not physical validity, full native
+  Parameters/phase equivalence or checkpoint admission.
+  [Software/source review](/mnt/workspaces/Cells/native-single-cell-prefix-ecm-comparison-20261031-01/source-software-review.json)
+  binds 35 comparator tests with 136 subtests, 30 new native-driver controls and
+  14 runner tests with 47 subtests. The empty-grid comparator repair, wrapper
+  failure and pre-child runner setup failure remain separately recorded.
+  Root extended the
+  existing runner with explicit `makeECM` and `make_maskM` endpoints, preserving
+  each trial before continuing on the same live caller. Fresh parameter
+  construction precedes all geometry; saved caches cannot supply live owners.
+  The [first real ECM attempt](/mnt/workspaces/Cells/native-single-cell-prefix-ecm-extension-20261031-01/square-ecm-diagnostic-01/root-review.json)
+  failed in **11.31 seconds, 218.0 MiB sampled peak RSS** because the native grid
+  descriptor's package import needed `beartype`. Four preparation stages and
+  13 captures survived; two opaque-prefix captures failed explicitly. Continuing
+  geometry and the ECM grid were not executed, so this adds no ECM qualification.
+  The [runtime correction and held successor](/mnt/workspaces/Cells/native-single-cell-prefix-ecm-extension-20261031-01/runtime-repair-review.json)
+  bind a separate read-only `beartype 0.22.9` overlay copied from the existing
+  reference environment, with all 427 non-bytecode files verified. Preparation
+  now checks and pins that package and the original BETSE package initializer
+  before source work. **53 software checks passed in 7.05 seconds, 81.8 MiB
+  sampled peak RSS**; a separate import-only check also passed. Its earlier
+  fileless-module inventory failure is preserved. The
+  [second diagnostic](/mnt/workspaces/Cells/native-single-cell-prefix-ecm-extension-20261031-01/square-ecm-diagnostic-02/root-review.json)
+  exposed a separate callable-inspection error after native descriptor creation.
+  Its 13 saved captures and two opaque capture failures remain preserved;
+  the descriptor's partial internal state was not archived. Root corrected
+  function-instance detection directly in Git; **15 focused software checks
+  passed**, including code/closure/default drift rejection. The successful third
+  diagnostic used a fresh snapshot with that single source change and the same
+  591 external pins. Environment execution still awaits Specialist's two source
+  repairs below; physical and ordinary-checkpoint admission remain held.
+
+- **Single-cell prefix and independent BETSE comparison (31 October):** Root added the
   [diagnostic runner](validation/betse/native_single_cell_prefix_qualification.py)
   and its tests directly to Git. It prepares immutable source from the checkout
   and can run either existing square/hex owned-image case through authentic
@@ -27,8 +73,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   numeric columns report finite values. There was no source or observer error.
   The logger reconciles 4,599,765 observed attempts and 5,007 ordered trace rows;
   four pre-mesh executions include authentication work, not four independent
-  cases. **This is one completed source diagnostic, without an independent
-  numerical comparison, physical geometry or checkpoint qualification.**
+  cases. The [independent original-source comparison passed](/mnt/workspaces/Cells/native-single-cell-prefix-comparison-20261031-01/square-reference-01/root-review.json):
+  freshly compiled BETSE methods reproduce all six recorded stage snapshots,
+  the final cache and both MT random-state records **exactly, with no mismatches**.
+  The 882 compared array occurrences include repeated stage observations;
+  they represent **one square input**, not 882 cases. The reference child took
+  **3.78 seconds, 96.3 MiB sampled peak RSS** and did not rerun Cells.
+  Original source ASTs, 794 frozen files, 174 input pins and runtime producers
+  were checked. NumPy/SciPy/Pillow and the wire serializer are shared; normalized
+  parameter/phase adapters remain explicit. This establishes bounded source
+  correspondence, not an independent physical oracle, full BETSE/package
+  equivalence or checkpoint qualification.
+  The [comparison runner and software review](/mnt/workspaces/Cells/native-single-cell-prefix-comparison-20261031-01/root-source-software-review.json)
+  binds 41 driver software passes and 23 comparator tests with 124 subtests.
+  Earlier 17-pass driver evidence, the comparator's initial lint failure and
+  its pre-test memory-limit harness failure remain separately preserved.
   The [prior square failure](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/square-diagnostic-02/root-review.json)
   remains preserved: **17.08 seconds, 222.8 MiB sampled peak RSS**, stopped by
   frozen request-evidence serialization before continuing mesh construction.
@@ -53,10 +112,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inspected for the unchanged selected geometry path; no environment method
   was released. The [earlier preparation review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/preparation-review-02.json)
   retains both earlier snapshots and the invocation that failed before launching
-  a child. **No hex or ECM/environment diagnostic has run.**
-  Successful execution alone will not establish parity: the full-prefix
-  independent comparison is still missing. All recorded runner/preparation/
-  diagnostic outcomes are reviewed in the central ledger. Existing INIT evidence, the
+  a child. **No hex or environment diagnostic has run.**
+  Broader input coverage and environment/mask execution remain next. All recorded
+  runner/preparation/diagnostic/comparison outcomes are reviewed in the central
+  ledger. Existing INIT evidence, the
   11 invalidated post-cut owners and 12 held cases are unchanged.
 
 - **Source integration into Git (31 October):** production modules, reusable
@@ -244,10 +303,34 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   material guard remains unchanged. **351 focused software checks passed in
   31.69 seconds, 247.6 MiB sampled peak RSS**: 128 periodic and 223 affected
   controls, not additions to the previous 471. All three outcomes and 54 archives
-  are reviewed; the earlier 126-pass source version remains separate. Key next
-  implements actual selected native parameter-store provenance for periodic
-  and frequency-sweep inputs together; full Parameters/YAML parsing remains
-  distinct from that normalized configuration scope.
+  are reviewed; the earlier 126-pass source version remains separate.
+  Key has now implemented selected native parameter-store provenance for
+  periodic and frequency-sweep inputs together, before their finalizers.
+  The [saved-result review](/mnt/workspaces/Cells/molecule-temporal-configuration-store-development-20261031-01/root-results-review.json)
+  verifies **475 blocked software passes in 43.52 seconds, 247.1 MiB sampled
+  peak RSS**: 124 temporal controls and the prior 351 affected controls. All
+  seven outcomes and 66 final archives are reviewed. The initial lint failure
+  and 471-pass/two-failure attempt remain preserved; the later 473- and 475-pass
+  versions have separate source bindings. These are software checks, including
+  synthetic store operations, not actual native callback qualification.
+  [Source review](/mnt/workspaces/Cells/molecule-temporal-configuration-store-development-20261031-01/root-source-review.json)
+  found that the selected context must also bind the global helpers its factory
+  calls. The [repair source review](/mnt/workspaces/Cells/molecule-temporal-context-binding-repair-20261031-01/root-source-review.json)
+  closes that gap without changing the constructor or literal assignment bodies.
+  The [saved-result review](/mnt/workspaces/Cells/molecule-temporal-context-binding-repair-20261031-01/root-results-review.json)
+  verifies **515 software passes in 60.62 seconds, 250.8 MiB sampled peak RSS**:
+  40 new controls plus the prior 475 IDs. All four outcomes and 66 archives are
+  reviewed; seven baseline failures and the 488-pass/25-failure capture attempt
+  remain preserved. Full Parameters/YAML parsing stays outside this normalized
+  scope. Key delivered the paired original-source/checkpoint-continuation
+  validation route, requiring an actual exhausted INIT parent and matching
+  inputs. Its [saved-result review](/mnt/workspaces/Cells/molecule-temporal-paired-continuity-preparation-20261031-01/root-results-review.json)
+  verifies **114 final software passes and nine complete archives**, with all
+  eight outcomes checked, including two failures. The initial failed batch's
+  two intercepted verifier calls remain explicit; zero attempted entries applies
+  to the final batch. Source review will be consolidated with the callback API
+  repair (`.value` must use the existing time law's `.factor`), now assigned with
+  focused direct API checks. Both positive comparison families remain unrun.
   The 16 proposed periodic branches span eight scenarios; no actual periodic
   callback or checkpoint qualification has run.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
@@ -421,11 +504,27 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   while preserving the original source error. **79 blocked checks passed in
   142.91 seconds, 485.2 MiB sampled peak RSS**, including the prior 48 and 31 new
   controls. The guarded result, lint outcome and all 184 evidence files are
-  reviewed. This accepts the source/software continuation through `makeECM`;
-  the positive descriptor/grid/native path remains unrun. Specialist next owns
-  ordinary `environment -> grid_len -> make_maskM`, including fresh native
-  `plot_grid_size` parameter construction, stopping before the first Poisson
-  solve. Phase/callback and full
+  reviewed. The actual square continuation now completes through `makeECM`,
+  with independent source comparison pending as recorded above. Specialist
+  has implemented ordinary `environment -> grid_len -> make_maskM`,
+  including fresh native `plot_grid_size` construction, before the first Poisson
+  solve. The [saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-mask-20261031-01/root-results-review.json)
+  verifies **39 disjoint software passes in four groups**, with a longest group
+  of **399.15 seconds** and maximum sampled RSS **423.7 MiB**. Seven owned pins
+  match, but group04 predates one parent-record correction used by groups05–07;
+  this is not identical full-source coverage across all four groups. The
+  [dependency adoption review](/mnt/workspaces/Cells/native-single-cell-environment-mask-20261031-01/dependency-adoption-01/root-review.json)
+  verifies a fresh 393-file image: 391 common files match group07, with two Root
+  software files added. This metadata check adds no execution credit. All three
+  earlier failures remain uncredited, including the timeout whose incomplete
+  artifacts cannot certify passes or zero native entries. Saved failure files
+  retain exception chains, not complete attached partial-state buffers.
+  [Source correspondence](/mnt/workspaces/Cells/native-single-cell-environment-mask-20261031-01/root-source-correspondence-review.json)
+  and [lifetime review](/mnt/workspaces/Cells/native-single-cell-environment-mask-20261031-01/root-source-lifetime-review.json)
+  found two blockers: an extra argument passed to `assign_grid_len`, masked by
+  the synthetic signature, and helper work continuing after an entry-capture
+  failure. Specialist owns both repairs; environment qualification stays held.
+  Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,
   all 11 invalidated owners and all 12 post-cut scientific cases remain

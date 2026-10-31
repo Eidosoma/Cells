@@ -247,7 +247,7 @@ def prepared_callback(record):
             provenance=record["provenance"],
         )
         # Qualified helper preserves literal multiplication order, with NumPy only.
-        return lambda t: time_laws.evaluate(program, t, xp=np).value
+        return lambda t: time_laws.evaluate(program, t, xp=np).factor
     if kind == "sweep":
         program = time_laws.sweep_program(
             start_Hz=record["start"],
@@ -255,7 +255,7 @@ def prepared_callback(record):
             run_sim=True,
             provenance=record["provenance"],
         )
-        return lambda t: time_laws.evaluate(program, t, xp=np).value
+        return lambda t: time_laws.evaluate(program, t, xp=np).factor
     raise ValueError("Require explicit prepared constant/periodic/sweep callback ownership")
 
 

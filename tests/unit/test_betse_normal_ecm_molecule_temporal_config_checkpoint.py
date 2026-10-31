@@ -292,7 +292,130 @@ def test_context_only_early_constructor_delta_and_upstream_guard():
     assert temporal.source_identity()["original_context_AST"] == temporal.context.ORIGINAL_AST
 
 
-@pytest.mark.parametrize("target", ["original", "selected", "populate", "float"])
+def test_context_binding_record_honestly_identifies_builtin_or_file_math():
+    saved = temporal.context.binding_record()["modules"]["math"]
+    if getattr(temporal.context.math, "__file__", None) is None:
+        assert saved["kind"] == "interpreter_builtin_module" and saved["origin"] == "built-in"
+        assert (
+            saved["executable_sha256"]
+            == hashlib.sha256(Path(sys.executable).resolve().read_bytes()).hexdigest()
+        )
+        assert "sha256" not in saved
+    else:
+        assert saved["kind"] == "module_file"
+        assert (
+            saved["sha256"]
+            == hashlib.sha256(Path(temporal.context.math.__file__).read_bytes()).hexdigest()
+        )
+
+
+def test_context_unexplained_missing_module_file_cannot_become_builtin(monkeypatch):
+    with monkeypatch.context() as changed:
+        changed.setattr(temporal.context.source, "__file__", None)
+        with pytest.raises(ValueError, match="non-builtin"):
+            temporal.context._module_record("source", temporal.context.source)
+
+
+@pytest.mark.parametrize("side", ["original", "selected", "both"])
+@pytest.mark.parametrize(
+    "name", ["np", "math", "source", "Values", "SimpleNamespace", "len", "list", "setattr"]
+)
+def test_context_global_alias_substitution_refuses_before_any_execution(monkeypatch, side, name):
+    called = []
+
+    def foreign(*args, **kwargs):
+        called.append(name)
+        raise AssertionError("Foreign factory global must never execute")
+
+    with monkeypatch.context() as changed:
+        for selected in ("original", "selected") if side == "both" else (side,):
+            namespace = (
+                temporal.context.ORIGINAL.__globals__
+                if selected == "original"
+                else vars(temporal.context)
+            )
+            changed.setitem(namespace, name, foreign)
+        with pytest.raises(ValueError, match="context.*binding|factory global"):
+            temporal.context.check_original()
+    assert called == []
+
+
+@pytest.mark.parametrize(
+    "owner,name",
+    [
+        ("np", "asarray"),
+        ("np", "ones"),
+        ("np", "zeros"),
+        ("np", "arange"),
+        ("np", "float64"),
+        ("math", "prod"),
+        ("source", "augment"),
+    ],
+)
+def test_context_attribute_callable_substitution_refuses_before_execution(monkeypatch, owner, name):
+    called = []
+
+    def foreign(*args, **kwargs):
+        called.append(name)
+        raise AssertionError("Foreign factory callable must never execute")
+
+    with monkeypatch.context() as changed:
+        changed.setattr(getattr(temporal.context, owner), name, foreign)
+        with pytest.raises(ValueError, match="context.*binding|factory global"):
+            temporal.context.check_original()
+    assert called == []
+
+
+@pytest.mark.parametrize("field", ["__code__", "__defaults__", "__kwdefaults__"])
+def test_context_same_augment_function_runtime_mutation_refuses(monkeypatch, field):
+    actual = temporal.context.source.augment
+    replacement = (
+        (lambda: None).__code__
+        if field == "__code__"
+        else (None,)
+        if field == "__defaults__"
+        else {"foreign": None}
+    )
+    with monkeypatch.context() as changed:
+        changed.setattr(actual, field, replacement)
+        with pytest.raises(ValueError, match="context.*binding|factory global"):
+            temporal.context.check_original()
+
+
+def test_context_numpy_same_keyword_dictionary_mutation_refuses(monkeypatch):
+    actual = temporal.context.np.ones
+    with monkeypatch.context() as changed:
+        changed.setitem(actual.__kwdefaults__, "device", "foreign")
+        with pytest.raises(ValueError, match="context.*binding|factory global"):
+            temporal.context.check_original()
+
+
+@pytest.mark.parametrize("name", ["MATERIAL_PAIRS", "_fields"])
+def test_context_material_axes_replacement_refuses(monkeypatch, name):
+    actual = temporal.context.source if name == "MATERIAL_PAIRS" else temporal.context.Values
+    with monkeypatch.context() as changed:
+        changed.setattr(actual, name, tuple(reversed(getattr(actual, name))))
+        with pytest.raises(ValueError, match="context.*binding|factory global"):
+            temporal.context.check_original()
+
+
+@pytest.mark.parametrize("family", ["periodic", "f_sweep"])
+def test_frozen_projection_declaration_transports_without_live_owner_promotion(family):
+    configured = lifecycle.ions.freeze(configuration(family))
+    before = checkpoint.codec.fingerprint(configured)
+    raw = validation.configure_sim(
+        source_template(),
+        "periodic_combined" if family == "periodic" else "sweep_combined",
+        configuration=configured,
+    )
+    assert temporal.same(raw["source_setup"][temporal.CONFIG_KEY], configured)
+    assert checkpoint.codec.fingerprint(configured) == before
+    assert not isinstance(raw["source_setup"][temporal.CONFIG_KEY], temporal.Issuance)
+
+
+@pytest.mark.parametrize(
+    "target", ["original", "selected", "populate", "float", "parameter_namespace"]
+)
 def test_source_owner_substitution_refuses(monkeypatch, target):
     if target == "original":
         monkeypatch.setattr(temporal.context.network, "make_context", lambda: None)
@@ -300,6 +423,8 @@ def test_source_owner_substitution_refuses(monkeypatch, target):
         monkeypatch.setattr(temporal.context, "construct_context", lambda: None)
     elif target == "populate":
         monkeypatch.setattr(temporal.source, "populate", lambda: None)
+    elif target == "parameter_namespace":
+        monkeypatch.setattr(temporal, "SimpleNamespace", lambda: None)
     else:
         monkeypatch.setattr(temporal.source, "float", lambda x: 1.0, raising=False)
     with pytest.raises(ValueError):

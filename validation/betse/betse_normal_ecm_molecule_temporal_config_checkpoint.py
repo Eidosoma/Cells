@@ -42,7 +42,7 @@ def configure_sim(raw, scenario, *, configuration):
     # The unchanged no-intervention material table still has its common schema.
     # Its unused frequency_sweep declaration is not the selected source store.
     cfg.pop("frequency_sweep", None)
-    cfg[temporal.CONFIG_KEY] = copy.deepcopy(declared)
+    cfg[temporal.CONFIG_KEY] = temporal.ions.data(declared)
     cfg[temporal.TABLE_KEY] = copy.deepcopy(table)
     result["sim_phase"] = copy.deepcopy(raw["sim_phase"])
     cfg["provenance"] += "; " + temporal.AUTHORITY

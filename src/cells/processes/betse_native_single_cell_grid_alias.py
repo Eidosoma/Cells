@@ -11,7 +11,7 @@ import importlib
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from types import SimpleNamespace
+from types import FunctionType, MethodType, SimpleNamespace
 from weakref import WeakKeyDictionary
 
 SELECTOR = "native_grid_size_yaml_alias@1"
@@ -62,7 +62,10 @@ def _atoms(fn):
             return
         seen.add(id(value))
         result.append(value)
-        if callable(value) and hasattr(value, "__code__"):
+        # FunctionType itself exposes member descriptors named __code__ and
+        # __closure__. Only actual Python functions/methods own these values;
+        # callable classes and other objects retain their identity here.
+        if type(value) in (FunctionType, MethodType):
             result.append(value.__code__)
             for cell in value.__closure__ or ():
                 result.append(cell)

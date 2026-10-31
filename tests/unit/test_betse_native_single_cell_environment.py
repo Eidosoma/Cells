@@ -2,11 +2,13 @@
 
 import ast
 import hashlib
+import inspect
 import os
 import pickle
 import runpy
 import sys
 from pathlib import Path
+from threading import get_ident
 from types import SimpleNamespace
 
 import numpy as np
@@ -120,7 +122,11 @@ def harness(monkeypatch, tmp_path, *, failure=None):
     exec(
         compile(
             "\n".join(
-                "def " + name + "(self,p):\n    step(self,p," + repr(name) + ")"
+                (
+                    "def " + name + "(self):\n    step(self,None," + repr(name) + ")"
+                    if name == "assign_grid_len"
+                    else "def " + name + "(self,p):\n    step(self,p," + repr(name) + ")"
+                )
                 for name in env.METHODS
             ),
             "<synthetic-environment>",
@@ -136,7 +142,10 @@ def harness(monkeypatch, tmp_path, *, failure=None):
 
         def step(cells, p, name):
             events.append(name)
-            assert p.plot_grid_size == 50
+            if name == "assign_grid_len":
+                assert p is None
+            else:
+                assert p.plot_grid_size == 50
             if name == "environment":
                 cells.ecm_sa = 4 * cells.delta * p.cell_height
                 cells.ecm_vol = p.cell_height * cells.delta**2
@@ -243,6 +252,104 @@ def test_software_literal_order_stores_and_preserved_yv_expression(evidence):
         and any(isinstance(t, ast.Name) and t.id == "yv" for t in n.targets)
     )
     assert [a.attr for a in yv.value.args[:2]] == ["xmin", "xmax"]
+
+
+def test_software_literal_order_exact_method_signatures_and_dispatch(evidence):
+    calls = []
+    caller, p = SimpleNamespace(xypts=[object(), object()]), object()
+
+    def environment(self, p):
+        calls.append(("environment", self, p))
+
+    def assign_grid_len(self):
+        self.grid_len = len(self.xypts)
+        calls.append(("assign_grid_len", self))
+
+    def make_maskM(self, p):
+        assert self.grid_len == len(self.xypts)
+        calls.append(("make_maskM", self, p))
+
+    methods = dict(environment=environment, assign_grid_len=assign_grid_len, make_maskM=make_maskM)
+    parent = SimpleNamespace(parent=SimpleNamespace(parent=SimpleNamespace(caller=caller, p=p)))
+    context = SimpleNamespace(parent=parent, methods=methods)
+    for name in env.METHODS:
+        original = getattr(env.source.CellsEnvironment, name)
+        assert inspect.signature(methods[name]) == inspect.signature(original)
+        env._invoke_method(context, name)
+    assert calls == [
+        ("environment", caller, p),
+        ("assign_grid_len", caller),
+        ("make_maskM", caller, p),
+    ]
+    assert caller.grid_len == 2
+    save(evidence, "dispatch", calls)
+
+
+@pytest.mark.parametrize(
+    "helper", ["tree_constructor", "tree_query", "griddata", "gaussian_filter"]
+)
+@pytest.mark.parametrize("boundary", ["enter", "return", "unwind"])
+def test_software_literal_order_helper_observation_boundaries_block_or_preserve_primary(
+    helper, boundary, monkeypatch, evidence
+):
+    capture = SyntheticCaptureFailure("synthetic helper observation failed at " + boundary)
+    cause = SyntheticSourceCause("original synthetic helper cause")
+    primary = SyntheticSourceFailure("original synthetic helper error")
+
+    class Events(list):
+        def append(self, item):
+            if item[0] == helper + "_" + boundary:
+                raise capture
+            super().append(item)
+
+    context = SimpleNamespace(
+        active=True,
+        executing=True,
+        thread=get_ident(),
+        events=Events([("previous", "retained")]),
+        observation_error=None,
+        observation_errors=(),
+        observation_origin=None,
+        observation_raw=None,
+    )
+    checks, calls = [], []
+    monkeypatch.setattr(env, "_check", lambda actual: checks.append(actual))
+
+    class Token:
+        pass
+
+    token, result = Token(), object()
+    record = SimpleNamespace(constructed=False)
+    monkeypatch.setitem(env._TREES, token, record)
+
+    def delegate(actual, *, original):
+        calls.append((actual, original))
+        if boundary == "enter":
+            raise AssertionError("Failed enter observation must block the helper delegate")
+        if boundary == "unwind":
+            try:
+                raise cause
+            except SyntheticSourceCause as error:
+                raise primary from error
+        return result
+
+    if boundary == "unwind":
+        with pytest.raises(SyntheticSourceFailure) as caught:
+            env._operation(context, helper, delegate, token, original=result)
+        assert caught.value is primary and caught.value.__cause__ is cause
+        save(evidence, "primary", caught.value)
+    else:
+        with pytest.raises(env.ecm._CaptureStop):
+            env._operation(context, helper, delegate, token, original=result)
+    assert checks == [context]
+    assert calls == ([] if boundary == "enter" else [(token, result)])
+    assert context.observation_error is capture
+    assert context.observation_origin == helper + "_" + boundary
+    assert context.events[0] == ("previous", "retained")
+    assert record.constructed is (helper == "tree_constructor" and boundary == "return")
+    assert not any(c is context for c in env._ISSUED.values())
+    save(evidence, "capture", capture)
+    save(evidence, "retained-events", context.events)
 
 
 def test_software_fresh_projection_same_caller_grid_trees_masks_and_work(

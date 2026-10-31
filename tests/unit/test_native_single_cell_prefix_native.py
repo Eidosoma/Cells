@@ -6,6 +6,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -385,3 +386,742 @@ def test_make_world_source_order_places_mask_before_constructor():
     assert all(
         k not in kwargs for k in ("use_centroids", "close_thresh", "merge_thresh", "alpha_shape")
     )
+
+
+def test_ecm_endpoint_keeps_original_geometry_and_exact_native_grid_methods():
+    groups, sites = native.source_nodes(ROOT, stop_after="makeECM")
+    legacy, _ = native.source_nodes(ROOT)
+    assert native.methods_for() == native.METHODS
+    assert native.methods_for("makeECM") == (*native.METHODS, "makeECM")
+    assert native.pins_for() == native.NATIVE_PINS and len(native.pins_for()) == 20
+    assert native.metadata_imports_for() == ()
+    assert native.pins_for("makeECM") == native.NATIVE_PINS | native.ECM_PINS
+    cells = next(nodes[0] for file, nodes in groups if file == "betse/science/cells.py")
+    original = original_class("betse/science/cells.py", "Cells")
+    selected = {n.name: n for n in cells.body}
+    originals = {n.name: n for n in original.body if isinstance(n, ast.FunctionDef)}
+    for name, node in selected.items():
+        if name != "make_world":
+            assert node_dump(node) == node_dump(originals[name])
+    prefix = selected["make_world"]
+    assert [node_dump(n) for n in prefix.body] == [
+        node_dump(n) for n in originals["make_world"].body[: len(prefix.body)]
+    ]
+    assert node_dump(prefix.body[-1]) == node_dump(ast.parse("self.makeECM(phase.p)").body[0])
+    assert "self.environment" not in ast.unparse(prefix)
+    assert "makeLaplacian" not in ast.unparse(prefix)
+    grid = next(nodes[0] for file, nodes in groups if file == "betse/science/math/finitediff.py")
+    original_grid = original_class("betse/science/math/finitediff.py", "FiniteDiffSolver")
+    assert [node_dump(b) for b in grid.bases] == [node_dump(b) for b in original_grid.bases]
+    assert [n.name for n in grid.body] == ["__init__", "cell_grid"]
+    for node in grid.body:
+        assert node_dump(node) == node_dump(
+            next(n for n in original_grid.body if getattr(n, "name", None) == node.name)
+        )
+    # Every pre-existing group except the intentionally extended Cells class is exact.
+    for file, nodes in legacy:
+        if file != "betse/science/cells.py":
+            assert any(
+                file == f and [node_dump(n) for n in nodes] == [node_dump(n) for n in ns]
+                for f, ns in groups
+            )
+    assert "betse/science/math/finitediff.py:FiniteDiffSolver" in sites
+    for file, nodes in groups:
+        compile(ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[])), file, "exec")
+
+
+@pytest.mark.parametrize("stop", [None, True, "environment", "near_neigh ", "makeLaplacian"])
+def test_ecm_endpoint_policy_is_closed(stop, declared):
+    for fn in (native.methods_for, native.pins_for, native.metadata_imports_for):
+        with pytest.raises(ValueError, match="endpoint"):
+            fn(stop)
+    with pytest.raises(ValueError, match="endpoint"):
+        native.source_nodes(ROOT, stop_after=stop)
+    with pytest.raises(ValueError, match="endpoint"):
+        native.inputs(*declared, stop_after=stop)
+
+
+def test_ecm_input_requires_explicit_retained_grid_configuration(declared):
+    raw, conf = declared
+    conf["general options"] = {"comp grid size": 25}
+    values, _ = native.inputs(raw, conf, stop_after="makeECM")
+    assert values == raw and conf["general options"] == {"comp grid size": 25}
+    with pytest.raises(ValueError, match="configuration"):
+        native.inputs(raw, conf)
+
+
+@pytest.mark.parametrize(
+    "general",
+    [
+        None,
+        {},
+        {"comp grid size": True},
+        {"comp grid size": 25.0},
+        {"comp grid size": 24},
+        {"comp grid size": 25, "other": 0},
+    ],
+)
+def test_ecm_configuration_does_not_coerce_or_invent_descriptor_values(general, declared):
+    raw, conf = declared
+    conf["general options"] = general
+    with pytest.raises(ValueError, match="grid size"):
+        native.inputs(raw, conf, stop_after="makeECM")
+
+
+@pytest.mark.parametrize(
+    "path", ["betse/science/math/finitediff.py", "betse/lib/yaml/yamlalias.py", "betse/__init__.py"]
+)
+def test_ecm_new_source_pin_drift_refuses_before_compilation(path, monkeypatch):
+    monkeypatch.setattr(native, "ECM_PINS", native.ECM_PINS | {path: "0" * 64})
+    with pytest.raises(ValueError, match="Changed original source"):
+        native.source_nodes(ROOT, stop_after="makeECM")
+
+
+def test_ecm_descriptor_assignment_is_original_and_lazy_before_parameter_birth():
+    groups, _ = native.source_nodes(ROOT, stop_after="makeECM")
+    factory = next(
+        n for file, nodes in groups for n in nodes if getattr(n, "name", None) == "parameter_type"
+    )
+    original = original_class("betse/science/parameters.py", "Parameters")
+    store = next(
+        n
+        for n in original.body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "grid_size" for t in n.targets)
+    )
+    assert node_dump(factory.body[0]) == node_dump(store)
+    calls = []
+
+    class SyntheticDescriptor:
+        def __get__(self, owner, cls):
+            calls.append(("read", owner))
+            return owner._conf["general options"]["comp grid size"]
+
+    descriptor = SyntheticDescriptor()
+
+    def synthetic_factory(expression, dtype):
+        calls.append(("factory", expression, dtype))
+        return descriptor
+
+    namespace = {"SimpleNamespace": SimpleNamespace}
+    # Only an assembly wrapper plus a synthetic descriptor executes. No original
+    # factory, grid body, geometry body, image decoder or numeric package enters.
+    exec(
+        compile(
+            ast.fix_missing_locations(ast.Module(body=[factory], type_ignores=[])),
+            "synthetic-assembly",
+            "exec",
+        ),
+        namespace,
+    )
+    first = namespace["parameter_type"](synthetic_factory)
+    second = namespace["parameter_type"](synthetic_factory)
+    assert first is not second
+    assert vars(first)["grid_size"] is descriptor
+    assert calls == [("factory", "['general options']['comp grid size']", int)] * 2
+    parameter = first(_conf={"general options": {"comp grid size": 25}})
+    assert parameter.grid_size == 25
+    assert calls[-1] == ("read", parameter)
+
+
+@pytest.mark.parametrize("failure", [None, "import", "factory", "changed_producer"])
+def test_ecm_lazy_import_order_and_path_restoration_on_failure(failure, monkeypatch):
+    calls, before_path = [], list(sys.path)
+    producer = {"synthetic": {"path": "not an actual module", "sha256": "a" * 64}}
+    checks = []
+
+    def records(root):
+        checks.append(root)
+        return {"changed": {}} if failure == "changed_producer" and len(checks) == 3 else producer
+
+    def load(name):
+        assert sys.path[0] == str(ROOT)
+        calls.append(name)
+        if failure == "import":
+            raise ImportError("synthetic missing dependency")
+        return SimpleNamespace(yaml_alias="synthetic callable token")
+
+    def factory(value):
+        assert value == "synthetic callable token"
+        calls.append("factory")
+        if failure == "factory":
+            raise RuntimeError("synthetic factory error")
+        return type("SyntheticParameters", (), {})
+
+    monkeypatch.setattr(native, "metadata_records", records)
+    monkeypatch.setattr(native.importlib, "import_module", load)
+    if failure is None:
+        runtime, result = native.grid_parameter_type(factory, ROOT)
+        assert runtime.__name__ == "SyntheticParameters" and result == producer
+    else:
+        with pytest.raises((ImportError, RuntimeError, ValueError)):
+            native.grid_parameter_type(factory, ROOT)
+    assert sys.path == before_path
+    if failure != "import":
+        assert calls == [
+            "betse.lib.yaml.yamlalias",
+            "betse.util.type.descriptor.expralias",
+            "betse.util.type.cls.classes",
+            "factory",
+        ]
+
+
+@pytest.mark.parametrize("change", [None, "origin", "path", "science"])
+def test_ecm_actual_metadata_module_paths_are_pinned(change, monkeypatch, tmp_path):
+    name = "betse.lib.yaml.yamlalias" if change != "science" else "betse.science.cells"
+    path = ROOT / "betse/lib/yaml/yamlalias.py"
+    module = SimpleNamespace(__file__=str(path), __spec__=SimpleNamespace(origin=str(path)))
+    if change == "path":
+        module.__file__ = str(tmp_path / "other.py")
+    elif change == "origin":
+        module.__spec__.origin = str(tmp_path / "other.py")
+    monkeypatch.setitem(sys.modules, name, module)
+    if change is None:
+        assert (
+            native.metadata_records(ROOT)[name]["sha256"]
+            == native.ECM_PINS["betse/lib/yaml/yamlalias.py"]
+        )
+    else:
+        with pytest.raises((ValueError, ImportError)):
+            native.metadata_records(ROOT)
+
+
+def test_ecm_import_allowlist_includes_only_pinned_metadata_packages():
+    names = native.metadata_imports_for("makeECM")
+    assert len(names) == len(set(names)) == 13
+    assert {
+        "betse",
+        "betse.metadata",
+        "betse.exceptions",
+        "betse.util.type.types",
+        "betse.lib.yaml.yamlalias",
+        "betse.util.type.descriptor.expralias",
+        "betse.util.type.cls.classes",
+    } <= set(names)
+    assert not any(name.startswith("betse.science") for name in names)
+    pins = native.pins_for("makeECM")
+    for name in names:
+        stem = name.replace(".", "/")
+        assert stem + ".py" in pins or stem + "/__init__.py" in pins
+    package = ast.parse((ROOT / "betse/__init__.py").read_bytes())
+    assert any(isinstance(n, ast.ImportFrom) and n.module == "beartype.claw" for n in package.body)
+    assert any(
+        isinstance(n, ast.Expr)
+        and isinstance(n.value, ast.Call)
+        and isinstance(n.value.func, ast.Name)
+        and n.value.func.id == "beartype_this_package"
+        for n in package.body
+    )
+
+
+def test_ecm_descriptor_precedes_parameter_birth_stores_and_one_original_world_call():
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    calls = [n for n in ast.walk(evaluate) if isinstance(n, ast.Call)]
+    descriptor = next(
+        n for n in calls if isinstance(n.func, ast.Name) and n.func.id == "grid_parameter_type"
+    )
+    birth = next(n for n in calls if isinstance(n.func, ast.Name) and n.func.id == "runtime")
+    stores = next(
+        n
+        for n in calls
+        if isinstance(n.func, ast.Subscript)
+        and isinstance(n.func.slice, ast.Constant)
+        and n.func.slice.value == "store_parameters"
+    )
+    caller = next(
+        n
+        for n in calls
+        if isinstance(n.func, ast.Subscript)
+        and isinstance(n.func.slice, ast.Constant)
+        and n.func.slice.value == "Cells"
+    )
+    worlds = [n for n in calls if isinstance(n.func, ast.Attribute) and n.func.attr == "make_world"]
+    assert len(worlds) == 1
+    assert descriptor.lineno < birth.lineno < stores.lineno < caller.lineno < worlds[0].lineno
+
+
+def test_ecm_snapshot_separates_grid_owner_and_preserves_geometry_schema():
+    grid = SimpleNamespace(cents_X=[1, 2])
+    mesh = SimpleNamespace(vertices=[3, 4])
+    caller = SimpleNamespace(mesh=mesh, grid_obj=grid, X=grid.cents_X)
+    parameter = SimpleNamespace(
+        _conf={"general options": {"comp grid size": 25}}, hidden_control="external"
+    )
+    geometry = native.snapshot_state(caller, parameter, ("_conf",))
+    assert set(geometry) == {"caller", "mesh", "parameters"}
+    ecm = native.snapshot_state(caller, parameter, ("_conf",), ecm=True, grid=grid)
+    assert set(ecm) == {"caller", "mesh", "parameters", "grid"}
+    assert ecm["caller"] == {"X": [1, 2]} and ecm["grid"] == {"cents_X": [1, 2]}
+    assert ecm["mesh"] == geometry["mesh"] and ecm["parameters"] == geometry["parameters"]
+    assert native.snapshot_state(caller, parameter, ("_conf",), ecm=True)["grid"] is None
+
+
+@pytest.mark.parametrize("fails", [False, True])
+def test_ecm_observation_wrapper_keeps_geometry_handoff_and_raw_endpoint_separate(fails):
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    observed = next(
+        n for n in ast.walk(evaluate) if isinstance(n, ast.FunctionDef) and n.name == "observed"
+    )
+    outer = ast.parse(
+        "def make_observer(name, original, state, stream, save_stage, "
+        "save_ecm, geometry_aliases, ecm):\n"
+        "    aliases = None\n"
+        "    pass\n"
+        "    return observed\n"
+    ).body[0]
+    outer.body[1] = copy.deepcopy(observed)
+    namespace = {"METHODS": native.METHODS}
+    exec(
+        compile(
+            ast.fix_missing_locations(ast.Module(body=[outer], type_ignores=[])),
+            "synthetic-observer",
+            "exec",
+        ),
+        namespace,
+    )
+    state, history, ecm = {"counter": 0}, [], {}
+
+    def stream():
+        return {"synthetic_counter": state["counter"]}
+
+    def action(self):
+        state["counter"] += 1
+
+    def observe(name, operation):
+        return namespace["make_observer"](
+            name,
+            operation,
+            state,
+            stream,
+            lambda stage: history.append((stage, state["counter"])),
+            lambda key: ecm.update({key: {"synthetic_counter": state["counter"]}}),
+            lambda: {"synthetic_alias": True},
+            ecm,
+        )(None)
+
+    observe("cellVerts", action)
+    observe("near_neigh", action)
+    assert history == [("before", 0), ("cellVerts", 1), ("near_neigh", 2)]
+    handoff = state["after_geometry"]
+
+    def final_action(self):
+        action(self)
+        if fails:
+            raise RuntimeError("synthetic original ECM failure")
+
+    if fails:
+        with pytest.raises(RuntimeError, match="original ECM"):
+            observe("makeECM", final_action)
+        assert "cache" not in ecm and "stream_after" not in ecm
+    else:
+        observe("makeECM", final_action)
+        assert ecm["cache"] == ecm["stream_after"] == {"synthetic_counter": 3}
+    assert state["after_geometry"] is handoff
+    assert handoff == ecm["before"] == ecm["stream_before"] == {"synthetic_counter": 2}
+    assert history[-1] == ("near_neigh", 2)
+
+
+def test_environment_literal_prefix_and_inline_assignment_are_original():
+    groups, sites = native.source_nodes(ROOT, stop_after="make_maskM")
+    cells = next(nodes[0] for file, nodes in groups if file == "betse/science/cells.py")
+    originals = {
+        n.name: n
+        for n in original_class("betse/science/cells.py", "Cells").body
+        if isinstance(n, ast.FunctionDef)
+    }
+    methods = {n.name: n for n in cells.body}
+    assert native.ENVIRONMENT_STAGES == ("environment", "assign_grid_len", "make_maskM")
+    assert native.methods_for("make_maskM") == (
+        *native.METHODS,
+        "makeECM",
+        "environment",
+        "make_maskM",
+    )
+    assert "assign_grid_len" not in methods
+    for name in ("environment", "make_maskM"):
+        assert node_dump(methods[name]) == node_dump(originals[name])
+    world = methods["make_world"]
+    assert [node_dump(n) for n in world.body] == [
+        node_dump(n) for n in originals["make_world"].body[: len(world.body)]
+    ]
+    assert [node_dump(n) for n in world.body[-3:]] == [
+        node_dump(n)
+        for n in ast.parse(
+            "self.environment(phase.p)\nself.grid_len = len(self.xypts)\nself.make_maskM(phase.p)"
+        ).body
+    ]
+    assignment = world.body[-2]
+    assert sites["betse/science/cells.py:make_world.grid_len"] == {
+        "first_line": 494,
+        "last_line": 494,
+        "ast_sha256": hashlib.sha256(node_dump(assignment).encode()).hexdigest(),
+    }
+    assert "makeLaplacian" not in ast.unparse(world)
+    # Retain the literal native yv xmin/xmax expression and scalar overwrites.
+    assert "yv = np.linspace(self.xmin, self.xmax, p.plot_grid_size)" in ast.unparse(
+        methods["make_maskM"]
+    )
+    for field in ("ecm_sa", "ecm_vol"):
+        assignments = [
+            n
+            for n in methods["environment"].body
+            if isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Attribute) and t.attr == field for t in n.targets)
+        ]
+        assert len(assignments) == 1 and not isinstance(assignments[0].value, ast.Call)
+    for file, nodes in groups:
+        compile(ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[])), file, "exec")
+
+
+def test_environment_store13_keeps_other_endpoints_at12_and_descriptor_before_birth():
+    original = original_class("betse/science/parameters.py", "Parameters")
+    stores = {n.lineno: n for n in ast.walk(original) if isinstance(n, ast.Assign)}
+    factories = []
+    for stop in ("near_neigh", "makeECM", "make_maskM"):
+        groups, _ = native.source_nodes(ROOT, stop_after=stop)
+        selected = next(
+            n
+            for _, nodes in groups
+            for n in nodes
+            if getattr(n, "name", None) == "store_parameters"
+        )
+        lines = (521, *native.STORE_LINES) if stop == "make_maskM" else native.STORE_LINES
+        assert [node_dump(n) for n in selected.body] == [node_dump(stores[line]) for line in lines]
+        if stop != "near_neigh":
+            factories.append(
+                next(
+                    n
+                    for _, nodes in groups
+                    for n in nodes
+                    if getattr(n, "name", None) == "parameter_type"
+                )
+            )
+    assert node_dump(stores[521]) == node_dump(ast.parse("self.plot_grid_size = 50").body[0])
+    assert node_dump(factories[0]) == node_dump(factories[1])
+
+
+def test_environment_input_and_import_closure_share_only_existing_declared_helpers(declared):
+    raw, conf = declared
+    conf["general options"] = {"comp grid size": 25}
+    assert native.inputs(raw, conf, stop_after="make_maskM") == native.inputs(
+        raw, conf, stop_after="makeECM"
+    )
+    assert native.pins_for("make_maskM") == native.pins_for("makeECM")
+    assert native.metadata_imports_for("make_maskM") == native.metadata_imports_for("makeECM")
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    optional = next(
+        n
+        for n in evaluate.body
+        if isinstance(n, ast.If)
+        and ast.unparse(n.test) == "stop_after == 'make_maskM'"
+        and any(isinstance(a, ast.ImportFrom) for a in n.body)
+    )
+    assert [(n.module, [a.name for a in n.names]) for n in optional.body] == [
+        ("scipy.interpolate", ["griddata"]),
+        ("scipy.ndimage", ["gaussian_filter"]),
+    ]
+    assert "copy=copy" in ast.unparse(evaluate)
+
+
+def test_environment_snapshot_has_exact_owner_order_and_raw_tree_fields():
+    values = dict(
+        data=[1, 2], indices=[0, 1], mins=[1], maxes=[2], n=2, m=1, leafsize=16, boxsize=None
+    )
+
+    class SyntheticTree:
+        @property
+        def tree(self):
+            raise AssertionError("Lazy native tree node view must not be read")
+
+    tree = SyntheticTree()
+    vars(tree).update(values)
+    grid = SimpleNamespace(cents_X=[3, 4])
+    caller = SimpleNamespace(
+        mesh=SimpleNamespace(vertices=[5]), grid_obj=grid, points_tree=tree, ecm_sa=3.0, ecm_vol=4.0
+    )
+    parameter = SimpleNamespace(
+        plot_grid_size=50, _conf={"general options": {"comp grid size": 25}}
+    )
+    observed = native.environment_snapshot(caller, parameter, tuple(vars(parameter)), grid, [tree])
+    assert tuple(observed) == ("caller", "grid", "mesh", "parameters", "trees")
+    assert observed["caller"] == {"ecm_sa": 3.0, "ecm_vol": 4.0}
+    assert observed["grid"] == vars(grid) and observed["mesh"] == vars(caller.mesh)
+    assert observed["parameters"] == vars(parameter)
+    assert observed["trees"] == [values]
+    assert tuple(observed["trees"][0]) == native.TREE_FIELDS
+    assert observed["trees"][0]["data"] is tree.data
+    assert caller.points_tree is tree and caller.grid_obj is grid
+
+
+def test_environment_tree_field_unavailability_is_explicit_without_hydration():
+    partial = SimpleNamespace(data=[7])
+    observed = native.tree_state(partial)
+    assert observed["data"] is partial.data
+    for field in native.TREE_FIELDS[1:]:
+        assert observed[field] == ("unavailable", field)
+    assert vars(partial) == {"data": [7]}
+
+
+def test_environment_constructor_observation_returns_original_object_and_arguments():
+    trees, events, called = [], [], []
+    source_data = [1, 2]
+    args = (source_data,)
+    kwargs = {"leafsize": 16}
+    results = [object(), object(), object()]
+
+    def constructor(*actual, **options):
+        assert actual[0] is source_data
+        assert options == kwargs
+        called.append((actual, options))
+        return results[len(called) - 1]
+
+    for expected in results:
+        assert (
+            native.observe_tree(
+                constructor,
+                args,
+                kwargs,
+                trees,
+                events,
+                copy.deepcopy,
+                runner.prior.exception_record,
+            )
+            is expected
+        )
+    assert all(a is b for a, b in zip(trees, results, strict=True))
+    assert len(called) == 3
+    assert [e["tree_index"] for e in events] == [0, 1, 2]
+    assert [e["prior_successful_trees"] for e in events] == [0, 1, 2]
+    assert all(
+        e["request"] == {"args": args, "kwargs": kwargs} and e["outcome"] == "returned"
+        for e in events
+    )
+
+
+@pytest.mark.parametrize("recorder_fails", [False, True])
+def test_environment_constructor_failure_retains_request_cause_and_prior_objects(recorder_fails):
+    previous = object()
+    trees, events = [previous], []
+    data = [1, 2]
+    source_error = RuntimeError("synthetic native constructor failed")
+    cause = ValueError("synthetic native cause")
+
+    def constructor(*args, **kwargs):
+        args[0].append(3)
+        raise source_error from cause
+
+    def record(error):
+        if recorder_fails:
+            raise OSError("synthetic secondary recorder failure")
+        return runner.prior.exception_record(error)
+
+    with pytest.raises(RuntimeError) as caught:
+        native.observe_tree(
+            constructor, (data,), {"leafsize": 16}, trees, events, copy.deepcopy, record
+        )
+    assert caught.value is source_error and caught.value.__cause__ is cause
+    assert trees == [previous] and trees[0] is previous
+    row = events[0]
+    assert row["request"] == {"args": ([1, 2],), "kwargs": {"leafsize": 16}}
+    assert row["outcome"] == "raised" and row["unreturned_c_allocation_available"] is False
+    assert "tree_index" not in row
+    if recorder_fails:
+        assert row["error_capture_failure"]["type"] == "OSError"
+    else:
+        text = json.dumps(row["error"])
+        assert "synthetic native cause" in text and "synthetic native constructor failed" in text
+
+
+def test_environment_request_capture_failure_prevents_constructor_entry():
+    trees, events, calls = [], [], []
+
+    def capture(value):
+        raise OSError("synthetic metadata capture failure")
+
+    with pytest.raises(OSError, match="metadata capture"):
+        native.observe_tree(
+            lambda *a, **k: calls.append(True),
+            ([1],),
+            {},
+            trees,
+            events,
+            capture,
+            runner.prior.exception_record,
+        )
+    assert not calls and not events and not trees
+
+
+@pytest.mark.parametrize("failed_stage", [None, "environment", "make_maskM"])
+def test_environment_wrapper_observes_inline_assignment_without_reexecution(failed_stage):
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    observed = next(
+        n for n in ast.walk(evaluate) if isinstance(n, ast.FunctionDef) and n.name == "observed"
+    )
+    outer = ast.parse(
+        "def make_observer(name, original, state, stream, save_stage, save_ecm, "
+        "geometry_aliases, ecm, environment, save_environment, events, sites, "
+        "namespace, environment_tree):\n"
+        "    aliases = None\n    pass\n    return observed\n"
+    ).body[0]
+    outer.body[1] = copy.deepcopy(observed)
+    scope = {"METHODS": native.METHODS}
+    exec(
+        compile(
+            ast.fix_missing_locations(ast.Module(body=[outer], type_ignores=[])),
+            "synthetic-env-observer",
+            "exec",
+        ),
+        scope,
+    )
+    state = {"counter": 0}
+    geometry, events = [], []
+    ecm, environment = (
+        {},
+        dict(before=None, stages=[], cache=None, stream_before=None, stream_after=None),
+    )
+    original_tree = object()
+    namespace = {"cKDTree": original_tree}
+    caller = SimpleNamespace()
+    trees = []
+
+    def stream():
+        return {"counter": state["counter"]}
+
+    def save_environment(name):
+        snapshot = dict(
+            counter=state["counter"], grid_len=getattr(caller, "grid_len", None), trees=list(trees)
+        )
+        if name == "before":
+            environment[name] = snapshot
+        else:
+            environment["stages"].append((name, snapshot))
+
+    def environment_tree():
+        trees.append(len(trees))
+        return trees[-1]
+
+    def observe(name, action):
+        return scope["make_observer"](
+            name,
+            action,
+            state,
+            stream,
+            lambda stage: geometry.append((stage, state["counter"])),
+            lambda key: ecm.update({key: stream()}),
+            lambda: {"synthetic_alias": True},
+            ecm,
+            environment,
+            save_environment,
+            events,
+            {"betse/science/cells.py:make_world.grid_len": {"first_line": 494}},
+            namespace,
+            environment_tree,
+        )(caller)
+
+    def advance(self):
+        state["counter"] += 1
+
+    for name in ("cellVerts", "near_neigh", "makeECM"):
+        observe(name, advance)
+    saved_geometry = copy.deepcopy(geometry)
+    saved_ecm = copy.deepcopy(ecm)
+
+    def action(self):
+        assert namespace["cKDTree"] is environment_tree
+        advance(self)
+        namespace["cKDTree"]()
+        if state["stage"] == failed_stage:
+            raise RuntimeError("synthetic native stage failure")
+        if state["stage"] == "make_maskM":
+            assert self.grid_len == 7
+            namespace["cKDTree"]()
+
+    if failed_stage == "environment":
+        with pytest.raises(RuntimeError):
+            observe("environment", action)
+        assert environment["stages"] == []
+    else:
+        observe("environment", action)
+        assert not hasattr(caller, "grid_len")
+        # Stand-in for the independently AST-verified original inline assignment.
+        caller.grid_len = 7
+        if failed_stage == "make_maskM":
+            with pytest.raises(RuntimeError):
+                observe("make_maskM", action)
+            assert [n for n, _ in environment["stages"]] == ["environment", "assign_grid_len"]
+            assert environment["cache"] is None
+        else:
+            observe("make_maskM", action)
+            assert [n for n, _ in environment["stages"]] == list(native.ENVIRONMENT_STAGES)
+            assert environment["cache"] is environment["stages"][-1][1]
+            assert len(trees) == 3
+        assert events[-1]["kind"] == "inline_assignment_observed"
+        assert events[-1]["observed_at"] == "make_maskM_entry"
+        assert environment["stages"][0][1]["grid_len"] is None
+        assert environment["stages"][1][1]["grid_len"] == 7
+    assert namespace["cKDTree"] is original_tree
+    assert geometry == saved_geometry and ecm == saved_ecm
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        None,
+        "missing_stage",
+        "wrong_order",
+        "missing_cache",
+        "two_trees",
+        "four_trees",
+        "source_error",
+        "capture_error",
+    ],
+)
+def test_environment_completion_refuses_partial_stages_or_tree_rosters(mutation):
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    assignment = next(
+        n
+        for n in evaluate.body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "completed" for t in n.targets)
+    )
+    env = dict(
+        before={},
+        cache={},
+        stream_before={},
+        stream_after={},
+        stages=[(name, {}) for name in native.ENVIRONMENT_STAGES],
+    )
+    scope = dict(
+        stop_after="make_maskM",
+        error=None,
+        state={"capture_error": None},
+        METHODS=native.METHODS,
+        ENVIRONMENT_STAGES=native.ENVIRONMENT_STAGES,
+        stages=[(n, {}) for n in ("before", *native.METHODS)],
+        ecm=dict(before={}, cache={}, stream_before={}, stream_after={}),
+        environment=env,
+        environment_trees=[object() for _ in range(3)],
+    )
+    if mutation == "missing_stage":
+        env["stages"].pop()
+    elif mutation == "wrong_order":
+        env["stages"].reverse()
+    elif mutation == "missing_cache":
+        env["cache"] = None
+    elif mutation == "two_trees":
+        scope["environment_trees"].pop()
+    elif mutation == "four_trees":
+        scope["environment_trees"].append(object())
+    elif mutation == "source_error":
+        scope["error"] = {"source": "failed"}
+    elif mutation == "capture_error":
+        scope["state"]["capture_error"] = {"capture": "failed"}
+    observed = eval(
+        compile(ast.Expression(assignment.value), "synthetic-completion", "eval"), scope
+    )
+    assert observed is (mutation is None)

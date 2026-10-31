@@ -1,8 +1,9 @@
 """Prepare and run bounded real single-cell prefix diagnostics.
 
 This runner exercises the owned-image request, its authentication replays and
-the ordinary caller through near_neigh. It is NOT an independent geometry
-oracle: even a completed prefix receives no qualification or physical credit.
+the ordinary caller through a declared geometry, ECM or mask boundary. It is
+NOT an independent geometry oracle: even a completed prefix receives no
+qualification or physical credit.
 Preparation imports no model. Execution requires a separate, exact-plan release
 and runs one declared case per guarded process; it never retries a failure.
 """
@@ -14,8 +15,10 @@ import os
 import resource
 import runpy
 import sys
+import sysconfig
 import traceback
 from contextlib import contextmanager
+from importlib.machinery import PathFinder
 from pathlib import Path
 
 from validation import source_snapshot
@@ -30,10 +33,12 @@ CLOSURE = "agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_succes
 CASES = ("caller-single-square-cache", "caller-single-hex-cache")
 KINDS = ("cells.single_cell_prefix_diagnostic_plan@1", "cells.single_cell_prefix_release@1")
 STAGES = ("owned_image_request", "initial_pre_mesh", "core_request", "geometry_request", "geometry")
+ENDPOINTS = ("near_neigh", "makeECM", "make_maskM")
 LIMITS = dict(timeout=480, max_rss_bytes=2**30, min_available_bytes=8 * 2**30)
 NATIVE = BASE / "betse-v1.5.0"
 DEFAULTS = NATIVE / "betse/data/yaml/sim_config.yaml"
 DEFAULTS_SHA256 = "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415"
+GRID_PACKAGE_SHA256 = "a3dce54aab848c36dfc4738f5dba889505adefad819d63d4c61a4310655cf200"
 CONFIGURATION = {"world options": {"cell height": 1e-5, "cell spacing": 2.6e-8}}
 NO_CREDIT = dict(
     independent_comparison_performed=False,
@@ -42,6 +47,50 @@ NO_CREDIT = dict(
     ordinary_checkpoint_admitted=False,
     invalidated_postcut_owners_cleared=0,
 )
+
+
+def stage_names(stop_after):
+    if stop_after not in ENDPOINTS:
+        raise ValueError("Unknown source-prefix endpoint")
+    stages = STAGES
+    if stop_after != "near_neigh":
+        stages += ("ecm_request", "makeECM")
+    if stop_after == "make_maskM":
+        stages += ("environment_request", "make_maskM")
+    return stages
+
+
+def configuration_for(stop_after):
+    stage_names(stop_after)
+    configuration = json.loads(json.dumps(CONFIGURATION))
+    if stop_after != "near_neigh":
+        # Native default at sim_config.yaml:106; retain the native descriptor
+        # read on the fresh parameter owner rather than supplying grid_size.
+        configuration["general options"] = {"comp grid size": 25}
+    return configuration
+
+
+def descriptor_runtime_pins(runtime_paths):
+    """Find and bind beartype without executing it or a native descriptor.
+
+    The original BETSE package initializer installs its beartype import hook.
+    Do not silently replace that hook or expose a whole reference environment.
+    Search only explicit overlays and this interpreter's installed packages.
+    Availability is not a claim of native factory compatibility.
+    """
+    paths = sysconfig.get_paths()
+    search = list(dict.fromkeys([*runtime_paths, paths["purelib"], paths["platlib"]]))
+    spec = PathFinder.find_spec("beartype", search)
+    if spec is None or not spec.origin or not spec.submodule_search_locations:
+        raise ValueError("Grid descriptor requires a pinned beartype runtime or explicit overlay")
+    root = Path(spec.origin).absolute().parent
+    if root.is_symlink() or tuple(map(Path, spec.submodule_search_locations)) != (root,):
+        raise ValueError("Require one regular beartype package origin")
+    return [
+        pin(path)
+        for path in sorted(root.rglob("*"))
+        if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
+    ]
 
 
 def read(path):
@@ -85,7 +134,7 @@ def verify_pins(rows):
             raise ValueError("Changed external input: " + row["path"])
 
 
-def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
+def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=(), stop_after="near_neigh"):
     """Freeze current Git source, never restore a historical implementation.
 
     runtime_paths explicitly names required overlays, e.g. the existing Pillow
@@ -93,6 +142,7 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
     dependencies, not a claim of hermetic scientific qualification.
     """
     destination = execution_output(destination, repository, {"runtime_paths": runtime_paths})
+    stages = stage_names(stop_after)
     if type(cpu) is not int or cpu not in os.sched_getaffinity(0):
         raise ValueError("Select an available CPU")
     destination.mkdir(parents=True, exist_ok=False)
@@ -108,8 +158,11 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
         external = {str(DEFAULTS): DEFAULTS_SHA256}
         # Literal native authority tables already used by the model retain
         # their original paths and pins. No native source is rewritten here.
-        for module in ("caller_lattice", "image_mask"):
-            name = f"src/cells/processes/betse_native_single_cell_{module}_source.py"
+        modules = ["caller_lattice_source", "image_mask_source"]
+        if stop_after != "near_neigh":
+            modules.append("grid_alias")
+        for module in modules:
+            name = f"src/cells/processes/betse_native_single_cell_{module}.py"
             tree = ast.parse((repository / name).read_text())
             pins = next(
                 ast.literal_eval(node.value)
@@ -122,6 +175,17 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
                 if path in external and external[path] != expected:
                     raise ValueError("Conflicting native authority pins")
                 external[path] = expected
+        if stop_after != "near_neigh":
+            name = "src/cells/processes/betse_native_single_cell_ecm_source.py"
+            tree = ast.parse((repository / name).read_text())
+            expected = next(
+                ast.literal_eval(node.value)
+                for node in tree.body
+                if isinstance(node, ast.Assign)
+                and any(isinstance(n, ast.Name) and n.id == "GRID_SHA256" for n in node.targets)
+            )
+            external[str(NATIVE / "betse/science/math/finitediff.py")] = expected
+            external[str(NATIVE / "betse/__init__.py")] = GRID_PACKAGE_SHA256
         overlays = []
         for raw in runtime_paths:
             path = Path(raw).absolute()
@@ -132,6 +196,9 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
                 if file.is_file() and "__pycache__" not in file.parts:
                     row = pin(file)
                     external[row["path"]] = row["sha256"]
+        if stop_after != "near_neigh":
+            for row in descriptor_runtime_pins(overlays):
+                external[row["path"]] = row["sha256"]
         pins = [dict(path=name, sha256=value) for name, value in sorted(external.items())]
         verify_pins(pins)
         frozen = destination / "source"
@@ -140,8 +207,12 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
             kind=KINDS[0],
             purpose="source_prefix_diagnostic_only",
             cases=list(CASES),
-            configuration=CONFIGURATION,
-            scalar_provenance=dict(path=str(DEFAULTS), sha256=DEFAULTS_SHA256, lines=[160, 164]),
+            configuration=configuration_for(stop_after),
+            scalar_provenance=dict(
+                path=str(DEFAULTS),
+                sha256=DEFAULTS_SHA256,
+                lines=[160, 164] if stop_after == "near_neigh" else [106, 160, 164],
+            ),
             snapshot_sha256=source_snapshot.digest(frozen / "SNAPSHOT.json"),
             git_revision=snap["git_revision"],
             runner_sha256=source_snapshot.digest(frozen / OWN),
@@ -150,7 +221,8 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=()):
             interpreter=str(Path(sys.executable).absolute()),
             cpu=cpu,
             limits=LIMITS,
-            stop_after="near_neigh",
+            stop_after=stop_after,
+            execution_stages=list(stages),
             source_review_required_before_release=True,
             full_prefix_independent_oracle="unavailable; completion cannot grant qualification",
             automatic_retry=False,
@@ -174,14 +246,15 @@ def verify_plan(prepared, expected_sha256):
     if source_snapshot.digest(prepared / "plan.json") != expected_sha256:
         raise ValueError("Changed diagnostic plan")
     plan = read(prepared / "plan.json")
+    stages = stage_names(plan.get("stop_after"))
     if (
         (prepared / "preparation-failure.json").exists()
         or plan.get("kind") != KINDS[0]
         or plan.get("purpose") != "source_prefix_diagnostic_only"
         or plan.get("cases") != list(CASES)
-        or plan.get("configuration") != CONFIGURATION
+        or plan.get("configuration") != configuration_for(plan["stop_after"])
         or plan.get("limits") != LIMITS
-        or plan.get("stop_after") != "near_neigh"
+        or plan.get("execution_stages", list(STAGES)) != list(stages)
         or any(plan.get(key) != value for key, value in NO_CREDIT.items())
         or type(plan.get("cpu")) is not int
     ):
@@ -191,6 +264,13 @@ def verify_plan(prepared, expected_sha256):
     if source_snapshot.digest(source / OWN) != plan["runner_sha256"]:
         raise ValueError("Changed diagnostic worker")
     verify_pins(plan["external_inputs"])
+    if plan["stop_after"] != "near_neigh":
+        # Repeat metadata resolution in the execution environment, detecting
+        # an added shadow package or unpinned producer before any source work.
+        required = descriptor_runtime_pins(plan["runtime_paths"])
+        required.append(dict(path=str(NATIVE / "betse/__init__.py"), sha256=GRID_PACKAGE_SHA256))
+        if any(row not in plan["external_inputs"] for row in required):
+            raise ValueError("Grid descriptor runtime origin is missing from the plan pins")
     return plan
 
 
@@ -203,6 +283,7 @@ def verify_release(prepared, expected_sha256, release_path, case):
         or release.get("plan_sha256") != expected_sha256
         or release.get("snapshot_sha256") != plan["snapshot_sha256"]
         or release.get("case") != case
+        or release.get("stop_after", "near_neigh") != plan["stop_after"]
         or case not in CASES
         or release.get("allow_actual_source_diagnostic") is not True
         or release.get("scientific_qualification") is not False
@@ -410,7 +491,7 @@ class WorkLog:
                         raise
 
 
-def _steps(case, output, configuration):
+def _steps(case, output, configuration, stop_after="near_neigh"):
     # Lazy scientific imports are below the worker's release/source/resource
     # gates. No fixture helper, validator or exporter runs during preparation.
     from cells.processes import betse_initial_mesh_preparation as initial
@@ -418,6 +499,46 @@ def _steps(case, output, configuration):
     from cells.processes import betse_native_single_cell_initial_geometry as geometry
     from validation.betse import betse_initial_mesh_preparation_fixtures as fixtures
 
+    ecm = environment_source = None
+    if stop_after != "near_neigh":
+        from cells.processes import betse_native_single_cell_make_ecm as ecm
+    if stop_after == "make_maskM":
+        from cells.processes import betse_native_single_cell_environment as environment_source
+    return _pipeline(
+        case,
+        output,
+        configuration,
+        stop_after,
+        fixtures=fixtures,
+        initial=initial,
+        core=core,
+        geometry=geometry,
+        ecm=ecm,
+        environment_source=environment_source,
+    )
+
+
+def _pipeline(
+    case,
+    output,
+    configuration,
+    stop_after,
+    *,
+    fixtures,
+    initial,
+    core,
+    geometry,
+    ecm=None,
+    environment_source=None,
+):
+    """Capture each sealed trial before consuming its live owner downstream.
+
+    Extended paths select their parameter projection before the caller exists.
+    They use public continuation APIs on the same process-local owners; saved
+    cache data is never reconstructed into authority. Dependency arguments let
+    software controls exercise order/failure boundaries without model imports.
+    """
+    stages = stage_names(stop_after)
     values = {}
 
     def fixture():
@@ -435,20 +556,57 @@ def _steps(case, output, configuration):
         return values["core_request"]
 
     def geometry_request():
-        values["geometry_request"] = geometry.from_core(
-            values["core_request"], configuration, law_id=geometry.LAW_ID
-        )
+        if stop_after == "near_neigh":
+            request = geometry.from_core(
+                values["core_request"], configuration, law_id=geometry.LAW_ID
+            )
+        elif stop_after == "makeECM":
+            values["prefix_request"] = ecm.from_core(
+                values["core_request"], configuration, law_id=ecm.LAW_ID
+            )
+            request = values["prefix_request"].geometry_request
+        else:
+            values["prefix_request"] = environment_source.from_core(
+                values["core_request"], configuration, law_id=environment_source.LAW_ID
+            )
+            request = values["prefix_request"].ecm_request.geometry_request
+        values["geometry_request"] = request
         return values["geometry_request"]
 
     def execute():
-        values["owner"] = geometry.prepare(values["geometry_request"])
+        values["geometry_owner"] = geometry.prepare(values["geometry_request"])
         # Inspection of the sealed trial does not call validate_state/export
         # helpers that would silently launch another authentication replay.
-        return values["owner"].trial
+        return values["geometry_owner"].trial
 
-    return tuple(
-        zip(STAGES, (fixture, pre_mesh, core_request, geometry_request, execute), strict=True)
-    )
+    def ecm_request():
+        values["ecm_request"] = ecm.from_geometry(values["geometry_owner"], law_id=ecm.LAW_ID)
+        # Continuation requests contain live owners, which must not be saved as
+        # executable authority. Their public record binds the sealed parent.
+        return ecm.request_record(values["ecm_request"])
+
+    def make_ecm():
+        values["ecm_owner"] = ecm.prepare_continuation(values["ecm_request"])
+        return values["ecm_owner"].trial
+
+    def environment_request():
+        values["environment_request"] = environment_source.from_ecm(
+            values["ecm_owner"], law_id=environment_source.LAW_ID
+        )
+        return environment_source.request_record(values["environment_request"])
+
+    def make_mask():
+        values["environment_owner"] = environment_source.prepare_continuation(
+            values["environment_request"]
+        )
+        return values["environment_owner"].trial
+
+    actions = [fixture, pre_mesh, core_request, geometry_request, execute]
+    if stop_after != "near_neigh":
+        actions += [ecm_request, make_ecm]
+    if stop_after == "make_maskM":
+        actions += [environment_request, make_mask]
+    return tuple(zip(stages, actions, strict=True))
 
 
 def run_stages(steps, evidence, work):
@@ -515,7 +673,9 @@ def worker(prepared, plan_sha256, release, case, output):
     result = None
     try:
         with work.active():
-            result = run_stages(_steps(case, output, plan["configuration"]), evidence, work)
+            result = run_stages(
+                _steps(case, output, plan["configuration"], plan["stop_after"]), evidence, work
+            )
         write(output / "runtime-producers.json", runtime_inventory(source))
         verify_plan(prepared, plan_sha256)
     except Exception as error:
@@ -532,7 +692,10 @@ def worker(prepared, plan_sha256, release, case, output):
             accepted_cases=0,
             **NO_CREDIT,
         )
-    write(output / "diagnostic.json", dict(case=case, plan_sha256=plan_sha256, **result))
+    write(
+        output / "diagnostic.json",
+        dict(case=case, plan_sha256=plan_sha256, stop_after=plan["stop_after"], **result),
+    )
     return 0 if result["status"] == "source_completed_unqualified" else 1
 
 
@@ -564,7 +727,13 @@ def launch(prepared, plan_sha256, release, case, output):
         (output / "process").mkdir()
         write(
             output / "inputs.json",
-            dict(case=case, plan_sha256=plan_sha256, release=pin(release), **NO_CREDIT),
+            dict(
+                case=case,
+                stop_after=plan["stop_after"],
+                plan_sha256=plan_sha256,
+                release=pin(release),
+                **NO_CREDIT,
+            ),
         )
         if guard.memory_available() < 12 * 2**30:
             raise RuntimeError("Diagnostic launch requires 12 GiB available host memory")
@@ -576,13 +745,18 @@ def launch(prepared, plan_sha256, release, case, output):
             **plan["limits"],
         )
         diagnostic = read(output / "diagnostic.json")
-        if diagnostic["status"] != "source_completed_unqualified":
+        if (
+            diagnostic["status"] != "source_completed_unqualified"
+            or diagnostic.get("stop_after") != plan["stop_after"]
+            or diagnostic.get("completed_stages") != list(stage_names(plan["stop_after"]))
+        ):
             raise RuntimeError("Worker did not complete the declared prefix")
     except Exception as error:
         failure = exception_record(error)
     record = dict(
         status="failed" if failure else "completed_unqualified",
         case=case,
+        stop_after=plan["stop_after"],
         process=result,
         failure=failure,
         diagnostic=pin(output / "diagnostic.json")
@@ -608,6 +782,7 @@ def main():
     preparation.add_argument("--output", type=Path, required=True)
     preparation.add_argument("--cpu", type=int, default=3)
     preparation.add_argument("--runtime-path", type=Path, action="append", default=[])
+    preparation.add_argument("--stop-after", choices=ENDPOINTS, default="near_neigh")
     for action in ("run", "worker"):
         p = sub.add_parser(action)
         p.add_argument("--prepared", type=Path, required=True)
@@ -618,7 +793,9 @@ def main():
     args = parser.parse_args()
     if args.command == "prepare":
         resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
-        prepare(args.output, cpu=args.cpu, runtime_paths=args.runtime_path)
+        prepare(
+            args.output, cpu=args.cpu, runtime_paths=args.runtime_path, stop_after=args.stop_after
+        )
         return 0
     if args.command == "worker":
         return worker(args.prepared, args.plan_sha256, args.release, args.case, args.output)

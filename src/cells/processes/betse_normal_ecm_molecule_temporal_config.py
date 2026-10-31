@@ -160,8 +160,9 @@ def source_identity():
         and POPULATE.__code__ is POPULATE_CODE
         and POPULATE.__globals__ is vars(source)
         and "float" not in vars(source)
-        and builtins.float is FLOAT,
-        "Changed selected temporal assignment function/globals/float",
+        and builtins.float is FLOAT
+        and SimpleNamespace is context.PARAMETER_NAMESPACE,
+        "Changed selected temporal assignment function/globals/float/parameter namespace",
     )
     node = next(
         n
@@ -181,6 +182,7 @@ def source_identity():
         selected_assignment_AST=POPULATE_AST,
         context_sha256=hashlib.sha256(Path(context.__file__).read_bytes()).hexdigest(),
         original_context_AST=context.ORIGINAL_AST,
+        context_runtime_bindings=context.binding_record(),
         excluded="gradient stores/lookups, other Parameters/YAML/parser and native constructors",
         temporal_defaults="none; native sweep slope None assigned last",
     )

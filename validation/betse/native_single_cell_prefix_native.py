@@ -1,10 +1,12 @@
-"""Independent original-BETSE AST execution through ordinary near_neigh.
+"""Independent original-BETSE AST execution through a closed source prefix.
 
 No Cells model, source kernel, fixture or cache implementation is imported.
 The native source is compiled afresh. A normalized parameter/phase boundary
 supplies scalar configuration and records callbacks; it is not the full native
 Parameters/YAML/SimPhase/package lifecycle. Numerical library implementations
 and the independent wire encoder are shared and must be recorded by the runner.
+The opt-in ECM endpoint also shares the pinned original metadata descriptor
+factory and its genuine package initialization; no native science is imported.
 """
 
 import __future__
@@ -13,6 +15,7 @@ import ast
 import builtins
 import copy
 import hashlib
+import importlib
 import json
 import math
 import os
@@ -82,6 +85,39 @@ NATIVE_PINS = {
     ),
 }
 METHODS = ("cellVerts", "cellMatrices", "cell_vols", "mem_processing", "near_neigh")
+ENVIRONMENT_STAGES = ("environment", "assign_grid_len", "make_maskM")
+# Independent observation schema only; no Cells runtime/tree adapter is used.
+TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
+ECM_PINS = {
+    "betse/__init__.py": "a3dce54aab848c36dfc4738f5dba889505adefad819d63d4c61a4310655cf200",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/lib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/__init__.py": (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ),
+    "betse/lib/yaml/yamlalias.py": (
+        "cc87d9403c088a936a00187e33417b05ae2d26f64ee02b37d7857504cf3f0e37"
+    ),
+    "betse/util/__init__.py": "27ba859ab475847ac208aa581afc5c24053ae1b487e1cd3a73ab750a0c245d11",
+    "betse/util/type/__init__.py": (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ),
+    "betse/util/type/descriptor/__init__.py": (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ),
+    "betse/util/type/descriptor/expralias.py": (
+        "96f5095f544894dd880a63cbdcb6333dbd178e0d64ed173b6afec384878a1986"
+    ),
+    "betse/util/type/cls/__init__.py": (
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ),
+    "betse/util/type/cls/classes.py": (
+        "518cf58a45b621fae925595c3e3ed48dcba8c1f71df6718b10ffbe253710aab4"
+    ),
+    "betse/science/math/finitediff.py": (
+        "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350"
+    ),
+}
 STORE_LINES = (533, 534, 535, 536, 1118, 1119, 1122, 1127, 1128, 1129, 1130, 1131)
 FUNCTIONS = {
     "betse/util/type/types.py": ("type_check",),
@@ -117,11 +153,88 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def source_nodes(root):
+def methods_for(stop_after="near_neigh"):
+    if type(stop_after) is not str or stop_after not in ("near_neigh", "makeECM", "make_maskM"):
+        raise ValueError("Unknown independent native endpoint")
+    if stop_after == "near_neigh":
+        return METHODS
+    if stop_after == "makeECM":
+        return (*METHODS, "makeECM")
+    return (*METHODS, "makeECM", "environment", "make_maskM")
+
+
+def pins_for(stop_after="near_neigh"):
+    methods_for(stop_after)
+    return dict(NATIVE_PINS) if stop_after == "near_neigh" else NATIVE_PINS | ECM_PINS
+
+
+def metadata_imports_for(stop_after="near_neigh"):
+    """Exact shared metadata imports; never a prefix-wide BETSE allowance."""
+    methods_for(stop_after)
+    if stop_after == "near_neigh":
+        return ()
+    paths = (ECM_PINS.keys() - {"betse/science/math/finitediff.py"}) | {
+        "betse/exceptions.py",
+        "betse/util/type/types.py",
+    }
+    return tuple(
+        sorted(p.removesuffix("/__init__.py").removesuffix(".py").replace("/", ".") for p in paths)
+    )
+
+
+def metadata_records(native_root):
+    """Check actual shared metadata producers without importing anything."""
+    root = Path(native_root).resolve()
+    allowed = set(metadata_imports_for("makeECM"))
+    pins = pins_for("makeECM")
+    records = {}
+    for name, module in tuple(sys.modules.items()):
+        if name != "betse" and not name.startswith("betse."):
+            continue
+        if name not in allowed:
+            raise ImportError("Undeclared native metadata module: " + name)
+        relative = name.replace(".", "/") + ".py"
+        if relative not in pins:
+            relative = name.replace(".", "/") + "/__init__.py"
+        expected = root / relative
+        path = Path(getattr(module, "__file__", ""))
+        origin = getattr(getattr(module, "__spec__", None), "origin", None)
+        if (
+            path != expected
+            or origin != str(expected)
+            or path.is_symlink()
+            or digest(path) != pins[relative]
+        ):
+            raise ValueError("Changed native metadata import producer: " + name)
+        records[name] = dict(path=str(path), sha256=pins[relative])
+    return records
+
+
+def grid_parameter_type(factory, native_root):
+    """Use the genuine lazy factory/hook before any parameter instance exists."""
+    metadata_records(native_root)
+    old_path = list(sys.path)
+    sys.path.insert(0, str(Path(native_root).resolve()))
+    try:
+        yaml = importlib.import_module("betse.lib.yaml.yamlalias")
+        importlib.import_module("betse.util.type.descriptor.expralias")
+        importlib.import_module("betse.util.type.cls.classes")
+        before = metadata_records(native_root)
+        runtime = factory(yaml.yaml_alias)
+        after = metadata_records(native_root)
+        if before != after:
+            raise ValueError("Native descriptor producers changed during construction")
+        return runtime, after
+    finally:
+        sys.path[:] = old_path
+
+
+def source_nodes(root, *, stop_after="near_neigh"):
     """Read/verify/assemble AST only; no numerical imports or execution."""
     root = Path(root)
     trees = {}
-    for name, expected in NATIVE_PINS.items():
+    methods = methods_for(stop_after)
+    for name, expected in pins_for(stop_after).items():
         path = root / name
         if path.is_symlink() or digest(path) != expected:
             raise ValueError("Changed original source: " + name)
@@ -188,6 +301,15 @@ def source_nodes(root):
         ),
     )
     add("betse/science/math/mesh.py", (cls("betse/science/math/mesh.py", "DECMesh"),))
+    if stop_after != "near_neigh":
+        file = "betse/science/math/finitediff.py"
+        grid = copy.deepcopy(cls(file, "FiniteDiffSolver"))
+        grid.body = [
+            n
+            for n in grid.body
+            if isinstance(n, ast.FunctionDef) and n.name in ("__init__", "cell_grid")
+        ]
+        add(file, (grid,))
     original = cls("betse/science/cells.py", "Cells")
     selected = (
         "__init__",
@@ -195,7 +317,7 @@ def source_nodes(root):
         "_make_cell_lattice",
         "make_voronoi",
         "cell_index",
-        *METHODS,
+        *methods,
     )
     cells = copy.deepcopy(original)
     cells.body = [n for n in cells.body if isinstance(n, ast.FunctionDef) and n.name in selected]
@@ -206,16 +328,51 @@ def source_nodes(root):
         if isinstance(n, ast.Expr)
         and isinstance(n.value, ast.Call)
         and isinstance(n.value.func, ast.Attribute)
-        and n.value.func.attr == "near_neigh"
+        and n.value.func.attr == stop_after
     )
     make_world.body = make_world.body[: stop + 1]
     add("betse/science/cells.py", (cells,))
+    if stop_after == "make_maskM":
+        assignment = next(
+            n
+            for n in make_world.body
+            if isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Attribute) and t.attr == "grid_len" for t in n.targets)
+        )
+        sites["betse/science/cells.py:make_world.grid_len"] = dict(
+            first_line=assignment.lineno,
+            last_line=assignment.end_lineno,
+            ast_sha256=hashlib.sha256(
+                ast.dump(assignment, include_attributes=False).encode()
+            ).hexdigest(),
+        )
     parameters = cls("betse/science/parameters.py", "Parameters")
     stores = {n.lineno: n for n in ast.walk(parameters) if isinstance(n, ast.Assign)}
     wrapper = ast.parse("def store_parameters(self):\n    pass\n").body[0]
-    wrapper.body = [copy.deepcopy(stores[line]) for line in STORE_LINES]
+    store_lines = (521, *STORE_LINES) if stop_after == "make_maskM" else STORE_LINES
+    wrapper.body = [copy.deepcopy(stores[line]) for line in store_lines]
     ast.fix_missing_locations(wrapper)
     add("betse/science/parameters.py", (wrapper,))
+    if stop_after != "near_neigh":
+        descriptor = next(
+            n
+            for n in parameters.body
+            if isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "grid_size" for t in n.targets)
+        )
+        expected = ast.parse(
+            "grid_size = yaml_alias(\"['general options']['comp grid size']\", int)"
+        ).body[0]
+        if ast.dump(descriptor) != ast.dump(expected):
+            raise ValueError("Original grid_size descriptor declaration changed")
+        factory = ast.parse(
+            "def parameter_type(yaml_alias):\n"
+            "    pass\n"
+            "    return type('NativeGridParameters', (SimpleNamespace,), "
+            "{'grid_size': grid_size})\n"
+        ).body[0]
+        factory.body[0] = copy.deepcopy(descriptor)
+        add("betse/science/parameters.py", (factory,))
     return groups, sites
 
 
@@ -235,7 +392,8 @@ def scalars(value):
     raise ValueError("Unsupported declared input")
 
 
-def inputs(raw, configuration):
+def inputs(raw, configuration, *, stop_after="near_neigh"):
+    methods_for(stop_after)
     value = scalars(raw)
     if type(value) is not dict or set(value) != {
         "seed_recipe",
@@ -289,10 +447,23 @@ def inputs(raw, configuration):
         raise ValueError("Diagnostic lattice bound exceeded")
     if (
         type(configuration) is not dict
-        or set(configuration) != {"world options"}
+        or set(configuration)
+        != (
+            {"world options"}
+            if stop_after == "near_neigh"
+            else {"world options", "general options"}
+        )
+        or type(configuration["world options"]) is not dict
         or set(configuration["world options"]) != {"cell height", "cell spacing"}
     ):
         raise ValueError("Require explicit geometry configuration")
+    if stop_after != "near_neigh" and (
+        type(configuration["general options"]) is not dict
+        or set(configuration["general options"]) != {"comp grid size"}
+        or type(configuration["general options"]["comp grid size"]) is not int
+        or configuration["general options"]["comp grid size"] != 25
+    ):
+        raise ValueError("Require declared original integer computational grid size 25")
     for v in configuration["world options"].values():
         if type(v) not in (int, float) or not math.isfinite(v) or v <= 0:
             raise ValueError("Require declared finite positive geometry controls")
@@ -351,14 +522,87 @@ def finalize(record, probes, record_exception):
     return result
 
 
-def evaluate(raw, configuration, native_root, *, record_exception):
+def snapshot_state(caller, parameter, parameter_names, *, ecm=False, grid=None):
+    """Original public owner axes; ECM keeps its grid separate from the caller."""
+    excluded = {"mesh", "grid_obj"} if ecm else {"mesh"}
+    result = dict(
+        caller={k: v for k, v in vars(caller).items() if k not in excluded},
+        mesh=dict(vars(caller.mesh)),
+        parameters={
+            k: getattr(parameter, k).name if k == "cell_lattice_type" else getattr(parameter, k)
+            for k in parameter_names
+        },
+    )
+    if ecm:
+        result["grid"] = None if grid is None else dict(vars(grid))
+    return result
+
+
+def tree_state(tree):
+    values = {}
+    for name in TREE_FIELDS:
+        try:
+            values[name] = getattr(tree, name)
+        except AttributeError:
+            values[name] = ("unavailable", name)
+    return values
+
+
+def environment_snapshot(caller, parameter, parameter_names, grid, trees):
+    """Five ordered observation owners; native tree objects are never hydrated."""
+    base = snapshot_state(caller, parameter, parameter_names, ecm=True, grid=grid)
+    base["caller"].pop("points_tree", None)
+    return dict(
+        caller=base["caller"],
+        grid=base["grid"],
+        mesh=base["mesh"],
+        parameters=base["parameters"],
+        trees=[tree_state(tree) for tree in trees],
+    )
+
+
+def observe_tree(constructor, args, kwargs, trees, events, capture, record_exception):
+    """Observe the original type call; keep its returned object unchanged.
+
+    A failed C constructor does not return its allocation. Preserve its inputs,
+    original exception and previously returned trees without claiming that self.
+    """
+    row = dict(
+        kind="environment_tree_constructor",
+        prior_successful_trees=len(trees),
+        request=capture(dict(args=args, kwargs=kwargs)),
+        outcome="entered",
+    )
+    events.append(row)
+    try:
+        tree = constructor(*args, **kwargs)
+    except Exception as error:
+        row.update(outcome="raised", unreturned_c_allocation_available=False)
+        try:
+            row["error"] = record_exception(error)
+        except Exception as capture_error:
+            row["error_capture_failure"] = dict(
+                type=type(capture_error).__name__, message=str(capture_error)
+            )
+        raise
+    trees.append(tree)
+    row.update(outcome="returned", tree_index=len(trees) - 1)
+    return tree
+
+
+def evaluate(raw, configuration, native_root, *, record_exception, stop_after="near_neigh"):
     """One actual source execution; caller must own resource/release gates."""
-    declared, image_path = inputs(raw, configuration)
-    groups, sites = source_nodes(native_root)
+    declared, image_path = inputs(raw, configuration, stop_after=stop_after)
+    groups, sites = source_nodes(native_root, stop_after=stop_after)
+    methods = methods_for(stop_after)
     import numpy as np
     from PIL import Image
     from scipy.interpolate import RectBivariateSpline
     from scipy.spatial import ConvexHull, Delaunay, cKDTree
+
+    if stop_after == "make_maskM":
+        from scipy.interpolate import griddata
+        from scipy.ndimage import gaussian_filter
 
     from validation.betse import betse_initial_mesh_preparation_wire as wire
 
@@ -371,7 +615,9 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         caller=None,
         parameter=None,
         constructing_mesh=None,
+        constructing_grid=None,
         before_geometry=None,
+        after_geometry=None,
         capture_error=None,
         stage="namespace",
     )
@@ -430,6 +676,7 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         ABCMeta=ABCMeta,
         abstractmethod=abstractmethod,
         Enum=Enum,
+        SimpleNamespace=SimpleNamespace,
         np=NumpyNamespace(),
         array=np.array,
         ndarray=np.ndarray,
@@ -470,30 +717,40 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         pilnumpy=SimpleNamespace(load_image=namespace["load_image"]),
         tb=SimpleNamespace(flatten=namespace["flatten"]),
     )
+    if stop_after != "near_neigh":
+        namespace["fd"] = SimpleNamespace(FiniteDiffSolver=namespace["FiniteDiffSolver"])
+    if stop_after == "make_maskM":
+        namespace.update(interp=SimpleNamespace(griddata=griddata), gaussian_filter=gaussian_filter)
     recipe, controls, image = (declared[k] for k in ("seed_recipe", "controls", "image_recipe"))
-    parameter = SimpleNamespace(
+    parameter_values = dict(
         _conf=copy.deepcopy(configuration),
         world_len=recipe["world_len_m"],
         cell_radius=recipe["cell_radius_m"],
         cell_lattice_disorder=recipe["lattice_disorder"],
         cell_lattice_type=getattr(namespace["CellLatticeType"], recipe["lattice_type"]),
     )
-    state["parameter"] = parameter
+    parameter = None
     parameter_names = None
+    metadata = {}
+    ecm = dict(before=None, cache=None, stream_before=None, stream_after=None)
+    environment = dict(before=None, stages=[], cache=None, stream_before=None, stream_after=None)
+    environment_trees = []
 
-    def public():
+    def public(*, ecm=False):
         caller = state["caller"]
-        return dict(
-            caller={k: v for k, v in vars(caller).items() if k != "mesh"},
-            mesh=dict(vars(caller.mesh)),
-            parameters={
-                k: (
-                    getattr(parameter, k).name
-                    if k == "cell_lattice_type"
-                    else getattr(parameter, k)
-                )
-                for k in parameter_names
-            },
+        grid = getattr(caller, "grid_obj", state["constructing_grid"]) if ecm else None
+        return snapshot_state(
+            caller,
+            parameter,
+            parameter_names,
+            ecm=ecm,
+            grid=grid,
+        )
+
+    def public_environment():
+        caller = state["caller"]
+        return environment_snapshot(
+            caller, parameter, parameter_names, caller.grid_obj, environment_trees
         )
 
     class CaptureFailure(Exception):
@@ -506,16 +763,106 @@ def evaluate(raw, configuration, native_root, *, record_exception):
             state["capture_error"] = record_exception(error)
             raise CaptureFailure("Native stage capture failed") from error
 
-    for name in METHODS:
+    def save_ecm(key):
+        try:
+            ecm[key] = wire.capture(public(ecm=True))
+        except Exception as error:
+            state["capture_error"] = record_exception(error)
+            raise CaptureFailure("Native ECM capture failed") from error
+
+    def capture_environment(value):
+        try:
+            return wire.capture(value)
+        except Exception as error:
+            state["capture_error"] = record_exception(error)
+            raise CaptureFailure("Native environment capture failed") from error
+
+    def save_environment(name):
+        # Include snapshot extraction in capture-error attribution as well.
+        try:
+            snapshot = capture_environment(public_environment())
+        except CaptureFailure:
+            raise
+        except Exception as error:
+            state["capture_error"] = record_exception(error)
+            raise CaptureFailure("Native environment snapshot failed") from error
+        if name == "before":
+            environment["before"] = snapshot
+        else:
+            environment["stages"].append((name, snapshot))
+
+    def environment_tree(*args, **kwargs):
+        if state["stage"] not in ("environment", "make_maskM"):
+            raise ValueError("Environment tree observation outside original source stage")
+        return observe_tree(
+            cKDTree,
+            args,
+            kwargs,
+            environment_trees,
+            events,
+            capture_environment,
+            record_exception,
+        )
+
+    def geometry_aliases():
+        caller = state["caller"]
+        return dict(
+            ecm_verts_is_vcell_verts=caller.ecm_verts is caller.mesh.vcell_verts,
+            ecm_verts_unique_is_vor_verts=caller.ecm_verts_unique is caller.mesh.vor_verts,
+            cell_centres_is_vor_cents=caller.cell_centres is caller.mesh.vor_cents,
+        )
+
+    for name in methods:
         original = getattr(namespace["Cells"], name)
 
         def observed(self, *args, _name=name, _original=original, **kwargs):
+            nonlocal aliases
             state["stage"] = _name
             if _name == METHODS[0]:
                 state["before_geometry"] = stream()
                 save_stage("before")
-            value = _original(self, *args, **kwargs)
-            save_stage(_name)
+            if _name == "makeECM":
+                ecm["stream_before"] = stream()
+                save_ecm("before")
+            if _name == "environment":
+                environment["stream_before"] = stream()
+                save_environment("before")
+            if _name == "make_maskM":
+                state["stage"] = "assign_grid_len"
+                save_environment("assign_grid_len")
+                events.append(
+                    dict(
+                        kind="inline_assignment_observed",
+                        observed_at="make_maskM_entry",
+                        source_site="betse/science/cells.py:make_world.grid_len",
+                        site=sites["betse/science/cells.py:make_world.grid_len"],
+                    )
+                )
+                state["stage"] = _name
+            if _name in ("environment", "make_maskM"):
+                # Only source-created ENV trees enter this roster. Geometry and
+                # ECM keep their existing ordinary constructor binding.
+                prior_tree = namespace["cKDTree"]
+                namespace["cKDTree"] = environment_tree
+                try:
+                    value = _original(self, *args, **kwargs)
+                finally:
+                    namespace["cKDTree"] = prior_tree
+            else:
+                value = _original(self, *args, **kwargs)
+            if _name == "makeECM":
+                ecm["stream_after"] = stream()
+                save_ecm("cache")
+            elif _name in ("environment", "make_maskM"):
+                save_environment(_name)
+                if _name == "make_maskM":
+                    environment["cache"] = environment["stages"][-1][1]
+                    environment["stream_after"] = stream()
+            else:
+                save_stage(_name)
+                if _name == "near_neigh":
+                    state["after_geometry"] = stream()
+                    aliases = geometry_aliases()
             return value
 
         setattr(namespace["Cells"], name, observed)
@@ -523,11 +870,6 @@ def evaluate(raw, configuration, native_root, *, record_exception):
     def callback(*args, **kwargs):
         events.append(dict(kind="normalized_phase_callback", args=args, kwargs=kwargs))
 
-    phase = SimpleNamespace(
-        p=parameter,
-        callbacks=SimpleNamespace(progress_stated=callback, progressed_next=callback),
-        die_unless_kind_seed=lambda: events.append(dict(kind="normalized_seed_phase_assertion")),
-    )
     error, aliases = None, None
     previous = sys.getprofile()
     native_prefix = str(Path(native_root)) + os.sep
@@ -540,6 +882,11 @@ def evaluate(raw, configuration, native_root, *, record_exception):
                 # The native assignment occurs only after constructor return.
                 # Retain a failed constructor's original object separately.
                 state["constructing_mesh"] = frame.f_locals["self"]
+            if (
+                stop_after != "near_neigh"
+                and frame.f_code is namespace["FiniteDiffSolver"].__init__.__code__
+            ):
+                state["constructing_grid"] = frame.f_locals["self"]
             events.append(
                 dict(
                     kind="source_entry",
@@ -553,6 +900,14 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         warnings.simplefilter("always")
         try:
             sys.setprofile(profile)
+            if stop_after != "near_neigh":
+                state["stage"] = "grid_descriptor"
+                runtime, metadata = grid_parameter_type(namespace["parameter_type"], native_root)
+            else:
+                runtime = SimpleNamespace
+            state["stage"] = "parameter_constructor"
+            parameter = runtime(**parameter_values)
+            state["parameter"] = parameter
             state["stage"] = "parameter_stores"
             namespace["store_parameters"](parameter)
             parameter_names = tuple(vars(parameter))
@@ -562,26 +917,48 @@ def evaluate(raw, configuration, native_root, *, record_exception):
             for k, v in controls.items():
                 if k != "kind":
                     setattr(parameter, k, v)
+            phase = SimpleNamespace(
+                p=parameter,
+                callbacks=SimpleNamespace(progress_stated=callback, progressed_next=callback),
+                die_unless_kind_seed=lambda: events.append(
+                    dict(kind="normalized_seed_phase_assertion")
+                ),
+            )
             state["stage"] = "constructor"
             state["caller"] = namespace["Cells"](parameter)
             state["stage"] = "make_world_prefix"
             state["caller"].make_world(phase)
-            caller = state["caller"]
-            aliases = dict(
-                ecm_verts_is_vcell_verts=caller.ecm_verts is caller.mesh.vcell_verts,
-                ecm_verts_unique_is_vor_verts=caller.ecm_verts_unique is caller.mesh.vor_verts,
-                cell_centres_is_vor_cents=caller.cell_centres is caller.mesh.vor_cents,
-            )
+            if stop_after != "near_neigh" and metadata_records(native_root) != metadata:
+                raise ValueError("Native descriptor producers changed during source work")
         except Exception as exc:
             if not isinstance(exc, CaptureFailure):
                 error = record_exception(exc)
+            if (
+                stop_after != "near_neigh"
+                and ecm["stream_before"] is not None
+                and ecm["stream_after"] is None
+            ):
+                try:
+                    ecm["stream_after"] = stream()
+                except Exception as capture_error:
+                    state["capture_error"] = record_exception(capture_error)
+            if environment["stream_before"] is not None and environment["stream_after"] is None:
+                try:
+                    environment["stream_after"] = stream()
+                except Exception as capture_error:
+                    state["capture_error"] = record_exception(capture_error)
             try:
                 if state["caller"] is not None and hasattr(state["caller"], "mesh"):
-                    captures.append(wire.capture(public()))
+                    if stop_after == "make_maskM" and environment["stream_before"] is not None:
+                        partial = wire.capture(public_environment())
+                        environment["cache"] = partial
+                    else:
+                        partial = wire.capture(public(ecm=stop_after != "near_neigh"))
+                    captures.append(partial)
                 else:
                     partial_parameter = {
                         k: (v.name if k == "cell_lattice_type" else v)
-                        for k, v in vars(parameter).items()
+                        for k, v in (vars(parameter).items() if parameter is not None else ())
                         if k != "tissue_default"
                     }
                     if hasattr(parameter, "tissue_default"):
@@ -616,6 +993,18 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         error is None
         and state["capture_error"] is None
         and [s[0] for s in stages] == ["before", *METHODS]
+        and (stop_after == "near_neigh" or all(v is not None for v in ecm.values()))
+        and (
+            stop_after != "make_maskM"
+            or (
+                [s[0] for s in environment["stages"]] == list(ENVIRONMENT_STAGES)
+                and all(
+                    environment[k] is not None
+                    for k in ("before", "cache", "stream_before", "stream_after")
+                )
+                and len(environment_trees) == 3
+            )
+        )
     )
     record = dict(
         source_body_completed=completed,
@@ -623,23 +1012,52 @@ def evaluate(raw, configuration, native_root, *, record_exception):
         capture_error=state["capture_error"],
         failed_stage=None if completed else state["stage"],
         stages=stages,
-        cache=stages[-1][1] if completed else None,
+        cache=stages[-1][1]
+        if (
+            completed
+            if stop_after == "near_neigh"
+            else [s[0] for s in stages] == ["before", *METHODS]
+        )
+        else None,
         partial_captures=captures,
         stream_before=state["before_geometry"],
         source_sites=sites,
-        original_source_pins=NATIVE_PINS,
+        original_source_pins=pins_for(stop_after),
         events=events,
         aliases=aliases,
         actual_source_executions=1,
         normalized_parameters_phase_callbacks_only=True,
         full_package_or_physical_admission=False,
     )
+    if stop_after != "near_neigh":
+        record.update(stop_after=stop_after, ecm=ecm, shared_native_metadata=metadata)
+    if stop_after == "make_maskM":
+        record.update(
+            environment=environment,
+            environment_observation=dict(
+                stages=ENVIRONMENT_STAGES,
+                tree_fields=TREE_FIELDS,
+                successful_tree_count=len(environment_trees),
+                native_type_call_preserved=True,
+                failed_unreturned_c_allocation_captured=False,
+                shared_helpers=(
+                    "scipy.spatial.cKDTree",
+                    "scipy.interpolate.griddata",
+                    "scipy.ndimage.gaussian_filter",
+                    "copy.deepcopy",
+                ),
+            ),
+        )
     return finalize(
         record,
         dict(
             image_unchanged=lambda: digest(image_path) == image["image_sha256"],
             global_random_stream_unchanged=unchanged_global,
-            stream_after=stream,
+            stream_after=lambda: (
+                state["after_geometry"]
+                if stop_after != "near_neigh" and state["after_geometry"] is not None
+                else stream()
+            ),
             warnings=lambda: [str(w.message) for w in caught],
         ),
         record_exception,

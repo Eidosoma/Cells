@@ -50,10 +50,28 @@ def packet(tmp_path, monkeypatch):
     defaults.write_text("cell height: 1e-5\ncell spacing: 2.6e-8\n")
     original = native / "original.py"
     original.write_text("# retained synthetic source authority\n")
+    grid = native / "betse/science/math/finitediff.py"
+    grid.parent.mkdir(parents=True)
+    grid.write_text("# synthetic grid authority; never imported\n")
+    bootstrap = native / "betse/__init__.py"
+    bootstrap.write_text("# synthetic package bootstrap; never imported\n")
+    site = base / "site-packages"
+    package = site / "beartype"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text(
+        "raise AssertionError('must not import during preparation')\n"
+    )
+    (package / "claw.py").write_text("# metadata-only synthetic dependency\n")
     files = {runner.OWN: "# synthetic runner bytes\n", runner.TEST: "# controls\n"}
     for suffix in ("caller_lattice", "image_mask"):
         name = f"src/cells/processes/betse_native_single_cell_{suffix}_source.py"
         files[name] = "NATIVE_PINS = " + repr({"original.py": runner.pin(original)["sha256"]})
+    files["src/cells/processes/betse_native_single_cell_grid_alias.py"] = "NATIVE_PINS = " + repr(
+        {"original.py": runner.pin(original)["sha256"]}
+    )
+    files["src/cells/processes/betse_native_single_cell_ecm_source.py"] = "GRID_SHA256 = " + repr(
+        runner.pin(grid)["sha256"]
+    )
     names = [*files, runner.CLOSURE]
     files[runner.CLOSURE] = (
         "def closure(root, starts):\n    return {name: '' for name in " + repr(names) + "}\n"
@@ -83,6 +101,10 @@ def packet(tmp_path, monkeypatch):
     monkeypatch.setattr(runner, "NATIVE", native)
     monkeypatch.setattr(runner, "DEFAULTS", defaults)
     monkeypatch.setattr(runner, "DEFAULTS_SHA256", runner.pin(defaults)["sha256"])
+    monkeypatch.setattr(runner, "GRID_PACKAGE_SHA256", runner.pin(bootstrap)["sha256"])
+    monkeypatch.setattr(
+        runner.sysconfig, "get_paths", lambda: dict(purelib=str(site), platlib=str(site))
+    )
     cpu = next(iter(runner.os.sched_getaffinity(0)))
     monkeypatch.setattr(runner.os, "sched_getaffinity", lambda pid: {cpu})
     prepared = base / "prepared"
@@ -113,6 +135,7 @@ def packet(tmp_path, monkeypatch):
         review=review,
         native=original,
         cpu=cpu,
+        site=site,
     )
 
 
@@ -125,6 +148,226 @@ def test_prepare_freezes_git_and_native_inputs_without_model_imports(packet):
     assert not plan["scientific_qualification"]
     assert not (packet.prepared / "release.json").exists()
     assert not (packet.prepared / "source" / runner.OWN).stat().st_mode & 0o222
+
+
+@pytest.mark.parametrize("endpoint", ["makeECM", "make_maskM"])
+@pytest.mark.parametrize("changed_path", ["betse/science/math/finitediff.py", "betse/__init__.py"])
+def test_extended_preparation_binds_fresh_configuration_native_grid_and_endpoint(
+    packet, endpoint, changed_path
+):
+    prepared = packet.root / endpoint
+    plan = runner.prepare(
+        prepared, repository=packet.repository, cpu=packet.cpu, stop_after=endpoint
+    )
+    digest = runner.pin(prepared / "plan.json")["sha256"]
+    assert runner.verify_plan(prepared, digest) == plan
+    assert plan["configuration"] == {
+        **runner.CONFIGURATION,
+        "general options": {"comp grid size": 25},
+    }
+    assert plan["execution_stages"] == list(runner.stage_names(endpoint))
+    assert plan["scalar_provenance"]["lines"] == [106, 160, 164]
+    assert runner.pin(runner.NATIVE / "betse/science/math/finitediff.py") in plan["external_inputs"]
+    assert not (prepared / "release.json").exists()
+    grant = runner.read(packet.release)
+    grant.update(plan_sha256=digest, snapshot_sha256=plan["snapshot_sha256"])
+    release = packet.root / (endpoint + "-release.json")
+    runner.write(release, grant)
+    with pytest.raises(ValueError, match="release"):
+        runner.verify_release(prepared, digest, release, runner.CASES[0])
+    grant["stop_after"] = endpoint
+    release.write_text(json.dumps(grant))
+    assert runner.verify_release(prepared, digest, release, runner.CASES[0]) == plan
+    path = runner.NATIVE / changed_path
+    path.write_text("changed original source")
+    with pytest.raises(ValueError, match="external"):
+        runner.verify_plan(prepared, digest)
+
+
+def test_missing_descriptor_runtime_refuses_before_source_work(packet):
+    (packet.site / "beartype").rename(packet.site / "not-beartype")
+    prepared = packet.root / "missing-runtime"
+    with pytest.raises(ValueError, match="beartype"):
+        runner.prepare(prepared, repository=packet.repository, cpu=packet.cpu, stop_after="makeECM")
+    assert (prepared / "preparation-failure.json").is_file()
+    assert not (prepared / "plan.json").exists()
+
+
+def test_added_descriptor_runtime_file_refuses_without_importing_package(packet):
+    prepared = packet.root / "runtime-drift"
+    runner.prepare(prepared, repository=packet.repository, cpu=packet.cpu, stop_after="makeECM")
+    (packet.site / "beartype/added.py").write_text("# new unpinned import target\n")
+    with pytest.raises(ValueError, match="runtime origin"):
+        runner.verify_plan(prepared, runner.pin(prepared / "plan.json")["sha256"])
+
+
+def test_legacy_near_neigh_plan_without_stage_field_still_verifies(packet):
+    plan = runner.read(packet.prepared / "plan.json")
+    plan.pop("execution_stages")
+    path = packet.prepared / "plan.json"
+    path.chmod(0o644)
+    path.write_text(json.dumps(plan))
+    assert runner.verify_plan(packet.prepared, runner.pin(path)["sha256"]) == plan
+
+
+@pytest.mark.parametrize("change", ["endpoint", "configuration", "stages"])
+def test_extended_plan_rejects_widened_or_incomplete_scope(packet, change):
+    prepared = packet.root / "extended"
+    plan = runner.prepare(
+        prepared, repository=packet.repository, cpu=packet.cpu, stop_after="make_maskM"
+    )
+    if change == "endpoint":
+        plan["stop_after"] = "makeLaplacian"
+    elif change == "configuration":
+        plan["configuration"]["general options"]["comp grid size"] = 26
+    else:
+        plan.pop("execution_stages")
+    path = prepared / "plan.json"
+    path.chmod(0o644)
+    path.write_text(json.dumps(plan))
+    with pytest.raises(ValueError, match="endpoint|Incomplete"):
+        runner.verify_plan(prepared, runner.pin(path)["sha256"])
+
+
+def pipeline_control(output, endpoint):
+    """Synthetic distinct owners; public APIs are stubs, not native fixtures."""
+    calls, values = [], {}
+
+    class Owner:
+        def __init__(self, stage):
+            self.trial = {"stage": stage, "synthetic": True}
+
+    def mark(stage, result):
+        calls.append(stage)
+        return result
+
+    initial_request = {"synthetic_image_request": True}
+    initial_state = {"synthetic_pre_mesh": True}
+    core_request = {"synthetic_core_request": True}
+
+    def fixture(case, path):
+        assert case == runner.CASES[0] and path is output
+        return mark("fixture", (initial_request, {"synthetic_native_inputs": True}))
+
+    def initial_prepare(request):
+        assert request is initial_request
+        return mark("pre_mesh", initial_state)
+
+    def core_from_initial(request, state, *, law_id):
+        assert request is initial_request and state is initial_state and law_id == "core"
+        return mark("core_request", core_request)
+
+    def prefix(mode):
+        def from_core(request, configuration, *, law_id):
+            assert request is core_request and law_id == mode
+            assert configuration == runner.configuration_for(endpoint)
+            geo = {"fresh_projection": mode}
+            values["geometry_request"] = geo
+            mark("projection:" + mode, None)
+            if mode == "geometry":
+                return geo
+            req = SimpleNamespace(geometry_request=geo)
+            return SimpleNamespace(ecm_request=req) if mode == "environment" else req
+
+        return from_core
+
+    def geometry_prepare(request):
+        assert request is values["geometry_request"]
+        owner = values["geometry_owner"] = Owner("geometry")
+        return mark("geometry", owner)
+
+    def transition(stage, parent_stage):
+        def request(owner, *, law_id):
+            assert owner is values[parent_stage + "_owner"] and law_id == stage
+            live = values[stage + "_request"] = SimpleNamespace(owner=owner)
+            return mark(stage + "_request", live)
+
+        def record(live):
+            assert live is values[stage + "_request"]
+            assert live.owner is values[parent_stage + "_owner"]
+            return mark(stage + "_record", {"parent_stage": parent_stage})
+
+        def execute(live):
+            assert live is values[stage + "_request"]
+            owner = values[stage + "_owner"] = Owner(stage)
+            return mark(stage, owner)
+
+        return request, record, execute
+
+    er, em, ep = transition("ecm", "geometry")
+    vr, vm, vp = transition("environment", "ecm")
+    steps = runner._pipeline(
+        runner.CASES[0],
+        output,
+        runner.configuration_for(endpoint),
+        endpoint,
+        fixtures=SimpleNamespace(caller=fixture),
+        initial=SimpleNamespace(prepare=initial_prepare),
+        core=SimpleNamespace(LAW_ID="core", from_initial=core_from_initial),
+        geometry=SimpleNamespace(
+            LAW_ID="geometry", from_core=prefix("geometry"), prepare=geometry_prepare
+        ),
+        ecm=SimpleNamespace(
+            LAW_ID="ecm",
+            from_core=prefix("ecm"),
+            from_geometry=er,
+            request_record=em,
+            prepare_continuation=ep,
+        ),
+        environment_source=SimpleNamespace(
+            LAW_ID="environment",
+            from_core=prefix("environment"),
+            from_ecm=vr,
+            request_record=vm,
+            prepare_continuation=vp,
+        ),
+    )
+    return steps, calls, values
+
+
+@pytest.mark.parametrize("endpoint", runner.ENDPOINTS)
+def test_pipeline_captures_distinct_trials_on_same_owners_without_rehydration(tmp_path, endpoint):
+    steps, calls, values = pipeline_control(tmp_path, endpoint)
+    assert not calls  # Merely building the plan performs no source work.
+    result = runner.run_stages(steps, runner.Evidence(tmp_path), SimpleNamespace(count=0, phase=""))
+    assert result["status"] == "source_completed_unqualified"
+    assert result["completed_stages"] == list(runner.stage_names(endpoint))
+    mode = dict(near_neigh="geometry", makeECM="ecm", make_maskM="environment")[endpoint]
+    expected = ["fixture", "pre_mesh", "core_request", "projection:" + mode, "geometry"]
+    if endpoint != "near_neigh":
+        expected += ["ecm_request", "ecm_record", "ecm"]
+    if endpoint == "make_maskM":
+        expected += ["environment_request", "environment_record", "environment"]
+    assert calls == expected
+    captured = {r["label"]: runner.read(tmp_path / r["path"]) for r in result["captures"]}
+    assert captured["geometry"] == values["geometry_owner"].trial
+    if endpoint != "near_neigh":
+        assert captured["makeECM"] == values["ecm_owner"].trial
+        assert captured["ecm_request"] == {"parent_stage": "geometry"}
+    if endpoint == "make_maskM":
+        assert captured["make_maskM"] == values["environment_owner"].trial
+        assert captured["environment_request"] == {"parent_stage": "ecm"}
+    assert result["accepted_cases"] == 0
+
+
+@pytest.mark.parametrize("stop", ["geometry", "makeECM", "make_maskM"])
+def test_extended_pipeline_capture_failure_stops_before_next_owner_use(tmp_path, stop):
+    steps, calls, _ = pipeline_control(tmp_path, "make_maskM")
+
+    class CaptureFailure(runner.Evidence):
+        def save(self, label, value):
+            return super().save(label, object() if label == stop else value)
+
+    result = runner.run_stages(steps, CaptureFailure(tmp_path), SimpleNamespace(count=0, phase=""))
+    assert result["failed_stage"] == stop + ":capture" and result["source_error"] is None
+    assert len(result["captures"]) == runner.stage_names("make_maskM").index(stop) + 1
+    assert (
+        calls[-1] == {"geometry": "geometry", "makeECM": "ecm", "make_maskM": "environment"}[stop]
+    )
+    if stop == "geometry":
+        assert "ecm_request" not in calls
+    if stop == "makeECM":
+        assert "environment_request" not in calls
 
 
 def test_execution_verification_uses_frozen_source_after_checkout_moves(packet):
@@ -489,7 +732,12 @@ def test_launch_retains_terminal_artifacts_without_retry(packet, monkeypatch, mo
         assert env["PYTHONPATH"].startswith(str(cwd))
         if mode == "success":
             runner.write(
-                directory.parent / "diagnostic.json", dict(status="source_completed_unqualified")
+                directory.parent / "diagnostic.json",
+                dict(
+                    status="source_completed_unqualified",
+                    stop_after="near_neigh",
+                    completed_stages=list(runner.STAGES),
+                ),
             )
             result = dict(status="completed", returncode=0)
             runner.write(directory / "result.json", result)

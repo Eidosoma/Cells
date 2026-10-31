@@ -216,6 +216,7 @@ def _operation(context, name, delegate, *args, **kwargs):
         )
     _check(context)
     ecm._observe(context, name + "_enter", (args, kwargs))
+    _stop(context)
     try:
         value = delegate(*args, **kwargs)
     except Exception:
@@ -375,6 +376,7 @@ def _bindings():
         _TreeRuntime.tree.fget,
         _allocate_native_tree,
         _operation,
+        _invoke_method,
         _new_tree,
         source.tb.flatten,
         source.tb.flatten.__globals__["copy"].deepcopy,
@@ -433,6 +435,13 @@ def _namespace_bindings(methods):
         ):
             bindings.extend(ecm.aliases._atoms(fn))
     return tuple(bindings)
+
+
+def _invoke_method(context, name):
+    caller = context.parent.parent.parent.caller
+    if name == "assign_grid_len":
+        return context.methods[name](caller)
+    return context.methods[name](caller, context.parent.parent.parent.p)
 
 
 def _check(context):
@@ -666,7 +675,7 @@ def prepare_continuation(request, *, _work=None):
                     _check(context)
                     context.executing = True
                     try:
-                        context.methods[name](parent.parent.parent.caller, parent.parent.parent.p)
+                        _invoke_method(context, name)
                     finally:
                         context.executing = False
                     _stop(context)

@@ -8231,3 +8231,254 @@ No equation/fixture/tolerance/codec, Root INIT/shared/other-lane change, actual
 factory/law/model/RNG/native/reference/trajectory/save-load, detached run,
 INIT/old-job query, stage or commit occurred.
 
+## 2026-10-31 — selected periodic/f_sweep native temporal configuration stores
+
+Implemented the combined selected mode directly in Git. The earlier genuine
+missing prerequisite was parameter creation: the shared ECM context constructor
+had no early p/config hook. The new Key-owned context is AST-corresponding to
+that exact factory, allowing only its constructor argument/call delta; original
+or copied-context drift refuses. Unselected paths keep the original constructor.
+No shared or Specialist parameter/environment module was edited.
+
+New temporal_config_source retains the exact seven selected native statements
+from parameters.py: two empty dictionaries, four ordered required float lookups,
+then sweep slope None. There are no temporal defaults. Gradient assignments,
+their earlier errors, full Parameters/YAML/parser execution and native derivation
+of the normalized input projection are explicitly outside this scope. Missing
+keys and invalid primitive values remain raw lookup/float failures with partial
+stores; no fallback, generated owner/phase, or completed-p patch is used.
+
+The new ephemeral Issuance creates p and _conf together and permits one attempt.
+It checks the same live p/config/dictionary/phase associations at original
+factory boundaries and retains source/INIT-parent/complete/SIM/config ancestry.
+The receipt requires the completed original temporal factory observation,
+retains both initial and final stores and counts constructor/lookups/returns.
+Runtime object ids are historical observations, not saved live-object authority.
+The codec vocabulary is unchanged: live issuers cannot be serialized or decoded;
+closed receipts retain both original finalization and later publication epochs.
+No float parsing, factory/callback execution or setup replay occurs on decode.
+
+Selected configuration has its own explicit source table and normalized raw
+projection. Manual frequency_sweep/periodic_properties source seams are absent
+and refused in this mode; original supplied/constant routes remain available.
+Original no-intervention material owner/clock/profile/three-call guards stay.
+Sweep source validation invokes the original common validator; periodic invokes
+the accepted SIM-only validator with its unchanged full common-guard comparison.
+Both publication and resolve require the selected source receipt/parent match.
+The new reusable preparer/declaration helper keeps both scientific gates; it
+does not extend or release the old actual-continuity dispatcher.
+
+Changed 11 owned implementation/test/validator files: new
+src/cells/processes/betse_normal_ecm_molecule_temporal_config{,_source,_context}.py;
+minimal existing molecule_lifecycle{,_owners,_setup}.py, molecule_event_owner.py,
+molecule_{periodic,sweep}_authority.py; and new
+validation/betse/betse_normal_ecm_molecule_temporal_config_checkpoint.py plus its
+tests/unit peer. Exact file hashes and deltas are in results.json. All 471 other
+snapshot files match the accepted periodic-separation parent; equations, source
+factories, fixtures, tolerances, material phase, codec and Root tools unchanged.
+
+475 fresh final-source blocked software controls passed:124 new temporal controls
+and351 directly affected periodic/publication/sweep/published-global/producer
+controls. Coverage includes native/selected AST order, upstream drift refusal,
+missing/bad lookup failure order, live owner/value/category substitutions,
+missing/foreign typed inputs before complete_INIT, source/material routing,
+factory receipt prerequisites, both epochs/aliases, closed checkpoint transport,
+both gates and complete synthetic primary/cause failure retention. 21 synthetic
+test-only assignment-program invocations (60 lookup attempts/56 float calls)
+are software work, not actual owned constructor/native/parser/scientific entry.
+All actual constructors/factories/laws/model/native/RNG remained blocked.
+
+Preserved initial lint failure and its source, intermediate115 source01 passes,
+failed471/2 batch, and the separately sealed473 source-final-02 result. The two
+failed lowering tests used reduced metadata
+templates without required scientific owner fields; corrected only those tests
+with explicit unowned structural sentinels. Final interface inspection also
+found deepcopy refused the frozen mappings accepted by the configuration
+checker. The validator now uses existing ions.data transport, with two new
+controls. This is an explicit validator source change, not a test-only retry;
+production module bytes match the473 batch. All seven processes are terminal:
+5 completed,2 failed.66 complete raw archives and every failed outcome are bound.
+
+CPU0/one thread,1GiB480s8GiB-reserve software/512MiB metadata. Final software
+process43.52s/259,076,096B sampled peak; compile/Ruff passed. Snapshot482,
+producer73/runtime2300 pins, exact pytest producer matched; full loaded inventory
+belongs to the binding child. Existing exact runtime map reused.
+
+Results: /mnt/workspaces/Cells/molecule-temporal-configuration-store-development-20261031-01/results-final.json
+SHA256 5141f081e6d34b1ec7766d20b0206498117b4d64146e66670a1b32dca0c6a43d.
+Final source-final-03/SNAPSHOT.json SHA256
+53f694b345017d6174285a72914b0ca1a30ca291fa67b20de20904c618b0ad77.
+
+All old and new actual routes remain held. Genuine Root input authorities,
+source/runtime/resource review, both releases and actual source/finalizer/
+continuity comparisons remain prerequisites. No full Parameters/YAML/parser,
+native live-object persistence, biological or independent numerical credit.
+No Root/shared/other-lane edit, actual scientific execution, detached/GPU launch,
+INIT/old-job query, stage or commit occurred.
+
+## 2026-10-31 — original temporal context globals/callables binding
+
+The subsequent scope confirmation explicitly requires original factory globals
+and callables. Inspection found the delivered guard pinned function/code/AST
+but did not pin its resolved runtime aliases or mutable NumPy/source members.
+Seven saved local substitution controls all failed DID NOT RAISE before repair.
+No actual constructor, model, numerical verifier or public bypass was executed.
+
+Changed only molecule_temporal_config_context.py, the minimal source descriptor
+in molecule_temporal_config.py, the existing temporal-config test, and this log.
+Both original and selected factories now resolve all eight direct global names
+to their original objects; complete bytecode LOAD_GLOBAL names are checked.
+Direct NumPy/math/source members, dtype and material/Values axis associations
+are pinned. Python original/selected/augment/np.ones callable code, globals,
+defaults and closure identities are checked, including in-place keyword-default
+changes. The selected p constructor must use the original namespace type.
+construct_context body AST is byte-for-byte identical as AST data to the prior
+accepted seam: no additional constructor-body change. Original common factory,
+both literal temporal assignment sequences, fixtures, owner guards, defaults,
+source factories, codecs and existing routes are unchanged.
+
+Closed context-runtime binding descriptors are retained in temporal source
+provenance. The first repair passed488 controls but failed25 capture/publication
+controls because this interpreter builds math in without __file__. Preserved
+that source and all failures. Built-in math is now explicitly bound to its
+interpreter executable hash and built-in origin; an unexplained missing module
+file refuses. No module file hash or authority is fabricated. Runtime objects
+remain ephemeral; descriptors contain data and cannot reconstruct a live owner.
+
+515 fresh final-source blocked controls passed:40 new binding controls and475
+affected existing checks. Raw failures, partial stores, normalized-projection
+labels, both temporal routes, both publication epochs, checkpoint aliases,
+factory-unwind handling, typed source/parent gates and original common context
+AST remain covered.66 complete archives; all four processes terminal,2 completed
+and2 failed. The prior475 packet and its seven process outcomes remain immutable.
+
+CPU0/one thread; software1GiB480s8GiB reserve, metadata512MiB. Final software
+60.62s/263,004,160B sampled peak (pytest52.67s); compile/Ruff passed. Snapshot482,
+producer73/runtime2300,479 other sources byte-identical to the prior packet.
+Actual pytest producer matched; full loaded inventory belongs to binding child.
+
+Results: /mnt/workspaces/Cells/molecule-temporal-context-binding-repair-20261031-01/results.json
+SHA256 2a4b6d340150ad7dd458ef677ca8643e6f6d5964c5087b6740d87a437fda2932.
+Source source-final-02/SNAPSHOT.json SHA256
+5a3d56ac26c076fed8ee67e9d5cd39bc950e8217365cb525b79568584e1a33c2.
+Exact three changed pins, before/failed/final sources, runtime bindings and all
+control/process/evidence references are retained there.
+
+This is a direct factory lookup/augment-boundary source/software contract;
+transitive NumPy/native/numerical admission remains separate. No actual p/setup/
+factory/INIT/SIM/event/RNG/reference/trajectory/checkpoint execution occurred.
+All scientific routes remain held. No full Parameters/YAML/parser or native
+live-object persistence authority, independent biological credit, Root prefix/
+shared/Specialist edit, scientific launch, detached run, GPU, INIT/old-job query,
+stage or commit by this agent.
+
+## 2026-10-31 — prepared temporal callback factor API integration repair
+
+Root released only the actual prepared-callback/qualified-helper NumPy scalar
+API check and authorized the integration fix. Announced the additional exact
+scope first. Changed two Attribute nodes in event_join_source.prepared_callback
+from value to factor. The entire remaining module AST is identical; no value
+alias, fallback, equation, fixture, tolerance or time-law-module change.
+Both sweep/periodic source-order observers now require the exact factor access
+and bind the new source hash; old malformed source is refused. Updated two
+temporal preparation tests to recognize the working ABI and retain the frozen
+malformed source as a negative control. Added one isolated API test module.
+
+Preserved two actual malformed callbacks failing AttributeError after two NumPy
+helper computations. The earlier guard-only attempt blocked a comprehension
+inside the authorized helper; that failed run remains separate and gets no
+malformed-callback credit. All four guarded processes are terminal:2 completed,
+2 failed. Old packets, failed sources, source receipts and historical protocol/
+source-map pins remain unchanged, with explicit successor pins rather than a
+silent rebase. Exhausted actual INIT and typed input/source authority remain
+mandatory for the held broader route.
+
+337 final checks passed:7 API controls and330 model/native/reference-blocked
+controls. Final API work:4 prepared-callback requests (including2 malformed
+parameter refusals),6 successful scalar callback returns,12 scalar qualified
+helper evaluations including direct comparisons, at t=0,.125,.5. Across all
+three test batches16 helper entries include2 initial incomplete guard attempts,
+2 malformed-source computations and12 final evaluations. These are work counts,
+not biological cases. All non-API lifecycle/native/reference/RNG/checkpoint
+execution stayed blocked; no actual parent was constructed or admitted.
+
+CPU0/one thread,1GiB480s8GiB reserve software and512MiB metadata. Final process
+26.45s/258,740,224B sampled peak (pytest17.12s); compile/Ruff passed.489 source,
+73 producer/2300 runtime pins,43 complete archives. Actual pytest producer
+matched; full loaded inventory belongs to binding child. Only one producer
+source changed: event_join_source85972f7c -> fb2abd30. New exact source SHA256
+fb2abd30982e513c356f87478c0642af0b8188d999fd4a0eb4ba982e7e744ad8.
+
+Results: /mnt/workspaces/Cells/molecule-prepared-callback-factor-repair-20261031-01/results.json
+SHA256 a151c9b5b090a84b86ba52737b59f7c92f40d65586024fdc7447bf5c982f3833.
+Source-final/SNAPSHOT.json SHA256
+8c76d0226cb65491ab272d8ffb1695030a7490ef26350203e70948d452436b68.
+The exact six changed pins, original/final AST correspondence, observer hashes,
+authorized work receipts, historical pins and all outcomes are bound there.
+
+This closes the API integration gap only. No full INIT/SIM/native/checkpoint/
+original-source/reference qualification, GPU, old-job query, Root prefix/shared/
+Specialist edit, detached run, stage or commit occurred. All broader scientific
+release and genuine-parent prerequisites remain in force.
+
+## 2026-10-31 — held paired temporal source comparison and restored continuation
+
+Added only four new paths: validation/betse/betse_normal_ecm_molecule_temporal_
+reference.py and temporal_continuity.py, and their tests/unit peers. Existing
+production, validators, tests, fixtures and all frozen packets were untouched.
+All482 prior snapshot files match the515 context-binding parent exactly;488
+candidate files include the four new paths and two unchanged existing time-law
+reference helpers. The older5141f081 review target and pre-existing515 source
+delta remain separately identified, with no rebase or retrospective credit.
+
+The reusable route requires an externally supplied exhausted typed INIT run,
+explicit original identities and matching typed event/geometry inputs. It never
+calls prepare_INIT or fabricates a fixture parent. Existing numeric verification,
+complete_INIT, selected preparation, event observers, run/pause/save/load/resume,
+full graph/cache/store/owner/clock/journal/sampling comparisons and source/epoch
+association remain mandatory behind both releases and exact expected producer.
+Checkpoint work uses actual Receipt.verification_attempts; nested callable work
+remains in the reused profiler, never independent biological cases.
+
+The paired probe retains original seven selected Parameters statements and
+factories on one isolated reference p/_conf, then compares actual candidate
+callbacks and dispatch values using exact original equality plus the unchanged
+independent Decimal reference budgets/domain. Its reference p is never a native
+phase/lifecycle parent. Original f_sweep's tuple return annotation and docstring
+whitespace differ from the earlier owned adoption: only these exact declared
+non-executing differences are normalized; operational AST is exact. Neither
+equations nor numerical tolerances changed. No source/reference evaluation ran.
+
+Inspection found a genuine earlier runtime prerequisite: existing recreated
+periodic/sweep callbacks access evaluate(...).value, but the time-law result has
+factor/phase_rad/finite fields and no value alias. Saved exact source pins and
+static ABI refusal; production remains untouched pending Root review. Both held
+family templates explicitly lack an actual INIT/SIM/input authority and retain
+this ABI blocker. Their normalized projection values are labelled software
+control examples, not genuine native configuration or admission authorities.
+
+Final114 blocked controls passed (113 new + existing actual pytest producer
+binding control). Nine complete refusal archives retained. Initial lint failure,
+first102/3 with2 teardown errors, intermediate109 and same-source113 remain.
+The first failure included two test-only binding.calendar reads intercepted by
+the forbidden verifier before its body; tests now read structural owner fields.
+All eight processes terminal:6 completed,2 failed. No failed evidence erased.
+
+CPU0/one thread,1GiB480s8GiB reserve software;512MiB metadata. Final bound pytest
+process6.79s/233,803,776B sampled peak; source check12.32s/254,615,552B. Final
+template preparation60.28s/235,757,568B. Compile/Ruff passed. Producer73/runtime
+2300 exactly reused; actual pytest producer matched, binding child owns full
+loaded inventory. No old INIT or Root square job/status query occurred.
+
+Results: /mnt/workspaces/Cells/molecule-temporal-paired-continuity-preparation-20261031-01/results.json
+SHA256 ce671ecc64a91cf510ca458c14157dd25e8fa0052f2b6b6be472ffbce8ed5b38.
+Final source-final-02/SNAPSHOT.json SHA256
+5c8d4717890502d9c9ec251d44a66871280a6ef5d30f775627b18ad09bf1273c.
+
+Positive original-reference and restored trajectories remain unexecuted and
+held for genuine parent/input authorities, callback/observer ABI repair/review,
+source/runtime review and Root releases/resources. No full Parameters/YAML,
+native storage/physical admission, independent biological credit, production/
+shared/Specialist edit, scientific/native/reference job, GPU, detached run,
+stage or commit by this agent.
+
