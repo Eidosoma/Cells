@@ -9,6 +9,30 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Real single-cell prefix runner (31 October):** Root added the
+  [diagnostic runner](validation/betse/native_single_cell_prefix_qualification.py)
+  and its tests directly to Git. It prepares immutable source from the checkout
+  and can run either existing square/hex owned-image case through authentic
+  pre-mesh preparation, core authentication and the ordinary geometry methods
+  ending at `near_neigh`. All reconstruction/replay work is within the guard;
+  observed source entries are attempts, not independent cases. Exact-case
+  release, input protection, typed failed-parent capture and separate
+  source/capture/observer errors prevent a failed prerequisite from becoming
+  a completed geometry result. No automatic retry is performed.
+  [Saved results and review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/review.json)
+  bind **35 software passes in 3.78 seconds, 39.4 MiB sampled peak RSS**, with
+  no scientific imports. The first **26-pass/1-failure** attempt remains saved:
+  its assertion expected a plain cached RNG float instead of the correct exact
+  bit record. The intermediate 31-pass version remains separately bound.
+  Metadata preparation also passed, freezing 788 selected files and 158
+  external file pins, including 13 original native source files and the YAML
+  provenance of the two declared scalars. The prepared candidate contains
+  concurrent tissue development and needs coherent source review before use;
+  **no release or numerical run was created**. Successful execution alone will
+  not establish parity: the full-prefix independent comparison is still missing.
+  All four new terminal outcomes are reviewed in the central ledger. Existing
+  INIT evidence, the 11 invalidated post-cut owners and 12 held cases are unchanged.
+
 - **Source integration into Git (31 October):** production modules, reusable
   validators and tests belong in this checkout. `/mnt/workspaces/Cells` holds
   outputs and frozen execution evidence, not the sole active implementation.

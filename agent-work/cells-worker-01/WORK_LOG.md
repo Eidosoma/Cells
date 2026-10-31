@@ -8049,3 +8049,51 @@ The28 explicit selector/cut aliases are held controls, not independent cases;
 original22 targeted/26 global cases and frozen packets remain held/unchanged.
 No detached launch, job query, shared edit, stage or commit occurred.
 
+## 2026-10-31 — source-backed f_sweep checkpoint boundary
+
+Implemented the missing factory authority in a new molecule_sweep_authority
+helper. Minimal setup changes observe the existing literal SIM factory while
+forwarding/restoring the current work profiler. Capture checks factory/finalizer
+code/globals, actual target/phase/p associations, scalar one, exact closure and
+shared before/after slope mutation/order. Failed/incomplete observations remain
+distinct. Only closed data enters the original event_finalized and its later
+typed Publication; the callable and parameter objects are not persisted.
+
+Extended run-component event_scope to require those records for f_sweep while
+retaining constant authority, original config/targets and existing owner checks.
+New sweep_checkpoint validator and tests use the explicit finalized_sweep route
+in the existing dispatcher. Qualified callback recreation/literal time laws and
+the graph codec remain unchanged. Sweep/global observer groups are separate;
+factory, recreation, constructor/evaluation and nested work counts are never
+converted to cases. Constant and published_global paths keep their defaults.
+
+359 final-source blocked software controls passed:83 sweep +276 affected
+constant/global/published-global/event controls. These cover live source/code/
+closure/p/target substitutions, omitted/duplicate/reordered factory and event
+records, synchronized resealing, early/later epoch aliases, structural graph
+transport, genuine-Inputs refusal before INIT/SIM admission, failure archives,
+work-profile restoration and observer stream closure.42 complete raw archives
+verified. All controls use manufactured frames/unowned records; none establishes
+native derivation or numerical auto-slope/time-law/continuity qualification.
+
+Initial77 passes bind source-01 only. Six later controls and final helper/observer
+changes bind source-final. An earlier lint-only E731 failure is retained; no
+scientific failure was relabeled. All five processes are terminal. CPU0/one
+thread, software1GiB/480s/8GiB reserve, metadata512MiB; final process27.41s,
+258,166,784B sampled peak (pytest18.61s). Compile/Ruff passed. Snapshot474 files,
+69 producer files/2300 runtime pins; pytest producer matches metadata producer.
+468 other sources, all fixtures, literal equations/time law and codec bytes
+match the published-global parent. No other existing production methods changed.
+
+Results: /mnt/workspaces/Cells/molecule-sweep-checkpoint-development-20261031-01/results.json
+SHA256 0ce50f9bddcbd886da5b44a84e93731a6aa226eb065c1f4bd49e757f5b7e43ee.
+Snapshot source-final SHA256 e30cedeb99ae48a3d15a3361adac081f9020e9ed584418bc7ad2e91f0e8ba403.
+Exact six source/test pins, method correspondence, parent/source links, failed
+lint/intermediate artifacts and all process receipts are bound in the result.
+All original22/26/28 routes and16 new sweep selector/cut branches remain held.
+Actual factories/finalizers, time-law construction/evaluation, setup/native/RNG/
+reference/trajectory and real save/load remain Root-coordinated prerequisites.
+No periodic/spatial/bitmap, pressure/ecmJ/cut/voltage/noise or native-pickle
+admission was added. No shared/other-lane edit, detached run, INIT/job query,
+stage or commit occurred; historical snapshots remain immutable.
+
