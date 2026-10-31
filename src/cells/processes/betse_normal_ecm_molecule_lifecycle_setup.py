@@ -22,6 +22,7 @@ from cells.processes import betse_normal_ecm_init_phase_setup as init_setup
 from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
 from cells.processes import betse_normal_ion_join as ions
 from cells.processes import betse_perturbations as perturbations
 
@@ -148,7 +149,7 @@ def constant_callback_record(suffix, actual=None):
     )
 
 
-def finalized_owner(template, actual, p):
+def finalized_owner(template, actual, p, *, sweep_observation=None):
     owner = ions.data(template)
     owner.update(
         {
@@ -187,6 +188,15 @@ def finalized_owner(template, actual, p):
             )
         if function == "None":
             constant_callback_record(suffix, actual)
+        else:
+            if (type(sweep_observation) is not sweep_authority.FactoryObservation
+                    or sweep_observation.owner is not actual or sweep_observation.p is not p
+                    or not sweep_observation.complete
+                    or suffix not in sweep_observation.records
+                    or getattr(actual, "dyna_" + suffix, None) is not sweep_observation.returned[suffix]):
+                raise ValueError("Missing actual source sweep factory observation; no hydration allowed")
+            sweep_authority.inspect_callback(getattr(actual, "dyna_" + suffix),
+                                             getattr(actual, "scalar_" + suffix), p)
         dynamic = (
             dict(kind="constant")
             if function == "None"
@@ -325,8 +335,23 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         sim.rho_channel = 1
         stage = "SIM_event_finalization"
         source._finalize_events_global(owner, ctx.phase, shuffle=python_rng.shuffle)
-        source._finalize_events_tissue(owner, ctx.phase)
-        event_owner = finalized_owner(packet["event_owner"], owner, p)
+        sweep_observation = None
+        if any(p.scheduled_options[key] != 0 and p.scheduled_options[key][5] == "f_sweep"
+               for key in sweep_authority.MEMBRANE_KEYS):
+            sweep_observation = sweep_authority.FactoryObservation(owner, ctx.phase, cfg["frequency_sweep"])
+            try:
+                with sweep_observation:
+                    source._finalize_events_tissue(owner, ctx.phase)
+            except BaseException as error:
+                try:
+                    observe("sweep_factory_observed", sweep_observation.data())
+                except BaseException as secondary:
+                    error.add_note("Sweep observation retention also failed: " + repr(secondary))
+                raise
+            observe("sweep_factory_observed", sweep_observation.data())
+        else:
+            source._finalize_events_tissue(owner, ctx.phase)
+        event_owner = finalized_owner(packet["event_owner"], owner, p, sweep_observation=sweep_observation)
         callback_authority = {
             suffix: constant_callback_record(suffix, owner)
             for suffix, callback in event_owner["callbacks"].items()
@@ -346,6 +371,8 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                     if callback_authority
                     else {}
                 ),
+                **(dict(sweep_callback_authority=sweep_observation.records)
+                   if sweep_observation is not None else {}),
             ),
         )
         stage = "source_screening_conductivity"

@@ -17,6 +17,7 @@ from validation.betse import betse_normal_ecm_molecule_membrane_event_checkpoint
 from validation.betse import (
     betse_normal_ecm_molecule_published_global_checkpoint as published_global,
 )
+from validation.betse import betse_normal_ecm_molecule_sweep_checkpoint as sweep_events
 from validation.betse.betse_normal_ecm_init_phase_capture import record_failure
 from validation.source_snapshot import write_json
 
@@ -42,6 +43,9 @@ SOURCE_FILES = (
     "tests/unit/test_betse_normal_ecm_molecule_event_owner.py",
     "validation/betse/betse_normal_ecm_molecule_published_global_checkpoint.py",
     "tests/unit/test_betse_normal_ecm_molecule_published_global_checkpoint.py",
+    "src/cells/processes/betse_normal_ecm_molecule_sweep_authority.py",
+    "validation/betse/betse_normal_ecm_molecule_sweep_checkpoint.py",
+    "tests/unit/test_betse_normal_ecm_molecule_sweep_checkpoint.py",
 )
 
 
@@ -170,7 +174,10 @@ def check_observation(value, anchor):
         )
     if anchor["scenario"] in global_events.SCENARIOS:
         global_events.check_stores(value, anchor)
-    if anchor["scenario"] in membrane_events.SCENARIOS:
+    if (
+        anchor["scenario"] in membrane_events.SCENARIOS
+        or anchor.get("preparation_route") == sweep_events.ROUTE
+    ):
         global_events.check_stores(value, anchor)
         membrane_events.check_stores(value, anchor)
     if anchor.get("preparation_route") == published_global.ROUTE:
@@ -197,11 +204,17 @@ def actual_continuity(
     )
     require(__debug__ and sys.flags.optimize == 0, "Assertions must be enabled")
     require(
-        scenario in SCENARIOS and type(cut) is int and cut in CUTS,
+        preparation_route in ("legacy", published_global.ROUTE, sweep_events.ROUTE),
+        "Unknown preparation route",
+    )
+    explicit_sweep = preparation_route == sweep_events.ROUTE
+    require(
+        scenario in (sweep_events.SCENARIOS if explicit_sweep else SCENARIOS)
+        and type(cut) is int
+        and cut in CUTS,
         "Bounded event case/cut required",
     )
-    membrane = scenario in membrane_events.SCENARIOS
-    require(preparation_route in ("legacy", published_global.ROUTE), "Unknown preparation route")
+    membrane = explicit_sweep or scenario in membrane_events.SCENARIOS
     explicit_global = preparation_route == published_global.ROUTE
     if explicit_global:
         published_global.check_route(scenario)
@@ -286,7 +299,9 @@ def actual_continuity(
     try:
         stream = (directory / "invocations.jsonl").open("x")
         calls = (
-            membrane_events.observer(Calls, stream, events.events.__file__, directory)
+            sweep_events.observer(Calls, stream, events.events.__file__, directory)
+            if explicit_sweep
+            else membrane_events.observer(Calls, stream, events.events.__file__, directory)
             if membrane
             else global_events.observer(Calls, stream, events.events.__file__, directory)
             if store_observations
@@ -303,7 +318,16 @@ def actual_continuity(
             directory / "INIT", "zero_INIT_calls", attempts
         )
         sim_binding, sim = (
-            published_global.prepare_sim(
+            sweep_events.prepare_sim(
+                directory / "SIM",
+                initial_binding,
+                initial,
+                attempts,
+                scenario=scenario,
+                event_owner_inputs=event_owner_inputs,
+            )
+            if explicit_sweep
+            else published_global.prepare_sim(
                 directory / "SIM",
                 initial_binding,
                 initial,
@@ -324,7 +348,12 @@ def actual_continuity(
             else preparation.prepare_SIM(directory / "SIM", initial_binding, initial, attempts)
         )
         labels = tuple(float(t) for t in sim.active.active.clock.source_times_s)
-        if explicit_global:
+        if explicit_sweep:
+            original = take(
+                "actual-source-sweep-publication-declaration",
+                lambda: sweep_events.declaration(sim_binding.composition, sim.active, scenario),
+            )
+        elif explicit_global:
             original, intervention = take(
                 "declared-global-intervention-on-actual-publication",
                 lambda: published_global.declaration(
@@ -438,7 +467,9 @@ def actual_continuity(
                 scheduled_options=run.ions.data(actual_owner["scheduled_options"]),
                 callback_identity=fp(actual_owner["callbacks"]),
                 callback_authority=fp(
-                    component.base.setup_receipt["event_finalization"]["source_fields"][
+                    sweep_events.source_authority(component)
+                    if explicit_sweep
+                    else component.base.setup_receipt["event_finalization"]["source_fields"][
                         "constant_callback_authority"
                     ]
                 ),
@@ -451,6 +482,11 @@ def actual_continuity(
                 },
                 entry_membrane={key: stamp(entry.stores[key]) for key in membrane_events.STORES},
             )
+            if explicit_sweep:
+                anchor.update(
+                    preparation_route=preparation_route,
+                    callbacks=run.ions.data(actual_owner["callbacks"]),
+                )
 
         def observation(current_binding, current):
             run.verify(
@@ -501,7 +537,9 @@ def actual_continuity(
                     scheduled_options=run.ions.data(owner.raw["event_owner"]["scheduled_options"]),
                     callback_identity=fp(owner.raw["event_owner"]["callbacks"]),
                     callback_authority=fp(
-                        owner.base.setup_receipt["event_finalization"]["source_fields"][
+                        sweep_events.source_authority(owner)
+                        if explicit_sweep
+                        else owner.base.setup_receipt["event_finalization"]["source_fields"][
                             "constant_callback_authority"
                         ]
                     ),
@@ -643,7 +681,13 @@ def actual_continuity(
         )
         expected = (
             ["before_onset", "onset", "release"]
-            if scenario in ("temperature_boundaries", "global_boundaries", "membrane_boundaries")
+            if scenario
+            in (
+                "temperature_boundaries",
+                "global_boundaries",
+                "membrane_boundaries",
+                "sweep_boundaries",
+            )
             else ["before_onset", "active", "after_release"]
             if scenario != "no_events"
             else ["zero_configured_event"] * 3
@@ -667,6 +711,11 @@ def actual_continuity(
         )
         if explicit_global:
             result.update(preparation_route=preparation_route, declared_intervention=intervention)
+        elif explicit_sweep:
+            result.update(
+                preparation_route=preparation_route,
+                actual_sweep_authority=run.ions.data(sweep_events.source_authority(component)),
+            )
     except BaseException as error:
         retain_failure(error, "actual_event_checkpoint_continuity")
         raise
@@ -729,9 +778,9 @@ def actual_continuity(
                 accounting, anchor["global_options"], labels
             )
         if membrane:
-            result["membrane_source_callbacks_pulses"] = membrane_events.check_calls(
-                accounting, anchor
-            )
+            result["membrane_source_callbacks_pulses"] = (
+                sweep_events.check_calls if explicit_sweep else membrane_events.check_calls
+            )(accounting, anchor)
         write_json(directory / "result.json", result)
     except BaseException as error:
         retain_failure(error, "event_checkpoint_result_validation_or_publication")
@@ -741,11 +790,13 @@ def actual_continuity(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=SCENARIOS, required=True)
+    parser.add_argument("--scenario", choices=SCENARIOS + sweep_events.SCENARIOS, required=True)
     parser.add_argument("--cut", choices=CUTS, type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
-        "--preparation-route", choices=("legacy", published_global.ROUTE), default="legacy"
+        "--preparation-route",
+        choices=("legacy", published_global.ROUTE, sweep_events.ROUTE),
+        default="legacy",
     )
     args = parser.parse_args()
     actual_continuity(

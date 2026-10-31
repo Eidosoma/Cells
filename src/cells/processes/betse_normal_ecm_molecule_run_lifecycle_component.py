@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from cells.processes import betse_normal_ecm_molecule_events as events
 from cells.processes import betse_normal_ecm_molecule_lifecycle as lifecycle
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as phase
+from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
 
 source = lifecycle.catalog
 MEMBRANE_KEYS = dict(Na_mem="Namem", K_mem="Kmem", Cl_mem="Clmem", Ca_mem="Camem")
@@ -43,7 +44,7 @@ def verify_binding(binding):
 
 
 def event_scope(binding):
-    """Existing global pulses and actual finalized constant membrane callbacks.
+    """Existing global pulses and actual finalized constant/sweep callbacks.
 
     The event module still checks complete source/phase/profile ownership.
     The callback declaration must equal the actual SIM finalizer return and
@@ -58,7 +59,7 @@ def event_scope(binding):
         or owner["voltage"] is not None
     ):
         raise ValueError(
-            "Headless event checkpoint supports only deterministic global/constant membrane events"
+            "Headless event checkpoint supports deterministic global/constant/sweep membrane events"
         )
     selected = {
         key: suffix for key, suffix in MEMBRANE_KEYS.items() if owner["scheduled_options"][key] != 0
@@ -81,19 +82,29 @@ def event_scope(binding):
     if not lifecycle.event_owner_bridge.same(published.event_finalized, fields):
         raise ValueError("Foreign actual finalized callback publication association")
     original = published.owner
+    swept = any(
+        len(owner["scheduled_options"][key]) == 6
+        and owner["scheduled_options"][key][5] == "f_sweep"
+        for key in selected
+    )
+    if swept:
+        sweep_authority.validate(binding.source_binding, owner, published, fields)
     for key, suffix in selected.items():
         row, callback = owner["scheduled_options"][key], owner["callbacks"][suffix]
         if (
             len(row) != 6
-            or row[5] != "None"
-            or callback["source_function"] != "None"
-            or callback["dynamic"] != {"kind": "constant"}
+            or row[5] not in ("None", "f_sweep")
+            or callback["source_function"] != row[5]
+            or (row[5] == "None" and callback["dynamic"] != {"kind": "constant"})
             or type(callback["source_scalar"]) is not int
             or callback["source_scalar"] != 1
             or not source.equal_tree(callback, original["callbacks"].get(suffix))
             or not source.equal_tree(row, original["scheduled_options"][key])
-            or not same_constant_authority(
-                authority.get(suffix), lifecycle.setup.constant_callback_record(suffix)
+            or (
+                row[5] == "None"
+                and not same_constant_authority(
+                    authority.get(suffix), lifecycle.setup.constant_callback_record(suffix)
+                )
             )
         ):
             raise ValueError(

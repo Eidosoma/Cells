@@ -1,6 +1,6 @@
 """Fresh normalized parameter ownership before Cells construction/lattice work.
 
-Only the retained scalar stores plus the original cell-height lookup are owned.
+The retained scalar stores and explicit selected descriptor reads are owned.
 No YAML, full Parameters, SimPhase, package or physical authority is supplied.
 The live instance is constructed once, then claimed by one actual caller request.
 """
@@ -17,6 +17,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_single_cell_caller_completion_source as source
 from cells.processes import betse_native_single_cell_caller_lattice as callers
 from cells.processes import betse_native_single_cell_geometry_parameter_source as geometry_source
+from cells.processes import betse_native_single_cell_grid_alias as grid_alias
 
 core = callers.core
 LAW_ID = "betse_owned_single_cell_normalized_height_parameters@1"
@@ -51,6 +52,7 @@ class Request:
     configuration_json: str
     identity: str
     projection: str = HEIGHT
+    grid_descriptor: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +68,7 @@ class Trial:
     store_roster: tuple = ()
     store_lines: tuple = ()
     stores_ast_sha256: str = ""
+    descriptor_proof: tuple = ()
 
 
 class ParameterRejected(ValueError):
@@ -106,6 +109,7 @@ def _verify_sources():
         Path(source.__file__),
         Path(geometry_source.__file__),
         Path(callers.__file__),
+        Path(grid_alias.__file__),
         original,
     ):
         pins[str(path.resolve())] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -114,7 +118,7 @@ def _verify_sources():
 
 def request_record(request):
     projection = _projection(request.projection)
-    return dict(
+    record = dict(
         law=projection[0],
         projection=request.projection,
         core_request_identity=request.core_request.identity,
@@ -126,6 +130,11 @@ def request_record(request):
         normalized_configuration_only=True,
         full_Parameters_YAML_phase_package=False,
     )
+    if request.grid_descriptor is not None:
+        if request.grid_descriptor != grid_alias.SELECTOR or request.projection != GEOMETRY:
+            raise ParameterRejected("Unknown selected parameter read authority", stage="descriptor")
+        record["selected_descriptor"] = grid_alias.specification()
+    return record
 
 
 def _projection(name):
@@ -159,7 +168,7 @@ def _projection(name):
     raise ParameterRejected("Unknown normalized parameter projection", stage="projection")
 
 
-def from_core(parent, configuration, *, law_id, projection=HEIGHT):
+def from_core(parent, configuration, *, law_id, projection=HEIGHT, grid_descriptor=None):
     if (
         law_id != _projection(projection)[0]
         or type(law_id) is not str
@@ -178,7 +187,7 @@ def from_core(parent, configuration, *, law_id, projection=HEIGHT):
         raise ParameterRejected(
             "Bounded normalized configuration mapping required", stage="configuration"
         )
-    value = Request(parent, text, "", projection)
+    value = Request(parent, text, "", projection, grid_descriptor)
     return replace(value, identity=core.records._digest(request_record(value)))
 
 
@@ -232,7 +241,7 @@ def _bindings():
 
 
 def trial_record(trial):
-    return dict(
+    record = dict(
         request=trial.request_identity,
         projection=trial.projection,
         store_roster=trial.store_roster,
@@ -246,6 +255,9 @@ def trial_record(trial):
         full_Parameters_YAML_phase_package=False,
         physical_checkpoint_admitted=False,
     )
+    if trial.descriptor_proof:
+        record["selected_descriptor"] = trial.descriptor_proof
+    return record
 
 
 class ParameterOwner:
@@ -291,8 +303,14 @@ def _validate(owner):
             or _verify_sources() != context.producers
         ):
             raise ValueError("Changed parameter source authority")
-        if type(context.p) is not _Runtime or context.p._conf is not context.configuration:
+        if type(context.p) is not context.runtime or context.p._conf is not context.configuration:
             raise ValueError("Original parameter/configuration identity changed")
+        if context.request.grid_descriptor != context.grid_descriptor:
+            raise ValueError("Changed fresh parameter descriptor selection")
+        if context.descriptor_info is not None:
+            grid_alias.validate(context.descriptor_info)
+        if context.trial.descriptor_proof != context.descriptor_proof:
+            raise ValueError("Changed selected parameter descriptor proof")
         if core.records._digest(request_record(context.request)) != context.request.identity:
             raise ValueError("Changed typed parameter request")
         selected = _projection(context.projection)
@@ -402,7 +420,20 @@ def prepare_parameters(request):
         )
     producers = _verify_sources()
     recipe = request.core_request.initial_request.upstream[0].definition
-    p = object.__new__(_Runtime)
+    descriptor_info = None
+    if request.grid_descriptor is not None:
+        try:
+            descriptor_info = grid_alias.prepare_runtime(_Runtime)
+        except Exception as error:
+            raise ParameterRejected(
+                "Selected native grid descriptor preparation failed",
+                stage="descriptor",
+                request=request,
+                partial=dict(configuration=configuration, usable_parameter_owner_available=False),
+                source_error=error,
+            ) from error
+    runtime = _Runtime if descriptor_info is None else descriptor_info.runtime
+    p = object.__new__(runtime)
     selected = _projection(request.projection)
     context = SimpleNamespace(
         request=request,
@@ -419,6 +450,16 @@ def prepare_parameters(request):
         store_roster=selected[3],
         store_method=selected[2],
         store_code=selected[2].__code__,
+        runtime=runtime,
+        grid_descriptor=request.grid_descriptor,
+        descriptor_info=descriptor_info,
+        descriptor_proof=()
+        if descriptor_info is None
+        else (
+            grid_alias.SELECTOR,
+            descriptor_info.occurrence,
+            tuple(sorted(descriptor_info.pins.items())),
+        ),
     )
     error = None
     _ACTIVE[p] = context
@@ -458,6 +499,7 @@ def prepare_parameters(request):
             context.store_roster,
             tuple(selected[1].STORE_LINES),
             selected[1].STORES_AST_SHA256,
+            context.descriptor_proof,
         )
         trial = replace(trial, identity=core.records._digest(trial_record(trial)))
     except Exception as capture:

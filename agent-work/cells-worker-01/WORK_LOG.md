@@ -8008,3 +8008,44 @@ All original/intermediate evidence and prior255/49 remain frozen. All22 targeted
 and26 global actual conditions remain held; no actual setup/publication/finalizer,
 event/RNG/reference/science, INIT/job query, shared edit, stage or commit occurred.
 
+## 2026-10-31 — explicit global preparation on later Publication
+
+Added published_global_checkpoint validator and its unit tests; wired the
+explicit published_global route in event_checkpoint and optional typed Inputs
+in the common SIM preparer. No production source, codec, literal event law,
+fixture, numerical tolerance or release gate changed. The no-input route stays
+the default. Complete owners come only from the retained resolved Publication;
+global configuration is a separately sealed declaration bound to original
+source configuration, supplied provenance, both epochs and actual labels/dt.
+Mixed preparation retains the existing finalized membrane/callback authority.
+Missing/foreign INIT/geometry authority and owner substitution refuse; no
+reservoir, default profile, boundary ID or callback is hydrated.
+
+125 final-source blocked software controls passed:68 new route checks and57
+affected existing controls. These include global/mixed/zero declarations,
+strict route/input association, both epochs, closed-codec aliases, legacy
+no-input preparation, held gates and retained failures before event-model entry.
+17 complete new-route archive manifests verified. Initial55/3 evidence remains:
+three synthetic SimpleNamespace parents were unsupported by evidence JSON;
+closed typed stubs repaired the controls without relaxing production archiving.
+A later metadata-only19-versus17 archive-count failure is also retained; no
+source change or test retry followed it. All six processes are terminal.
+
+Final snapshot471 files,68 producer files and2300 runtime pins;467 other source
+files match the resolver parent, including every production file. The actual
+pytest producer record equals the separately guarded metadata producer. CPU0,
+one thread,1GiB/480s/8GiB reserve; final source/software process17.10s with
+256,073,728B sampled peak; pytest9.04s. Compile/Ruff passed.
+
+Results: /mnt/workspaces/Cells/molecule-published-global-preparation-20261031-01/results.json
+SHA256 88b1b02d9cea4249765efe560c26596245abb27a6f2ae18f7a14f5b9f7d8daa3.
+Snapshot source-03 SHA256 d01f1d61b1c33b800c3a5320aebca406c3b8752fda1d945e7605d24ce9c028c2.
+Exact four changed source pins, failed trials, unique archives, original failed
+parent links and all process receipts are bound in results/evidence-index.
+No actual setup/INIT/SIM/event/RNG/reference/native/timestep or real checkpoint
+execution occurred. Genuine typed authority and Root source/runtime/resource
+review/releases remain prerequisites; typed data alone proves no native origin.
+The28 explicit selector/cut aliases are held controls, not independent cases;
+original22 targeted/26 global cases and frozen packets remain held/unchanged.
+No detached launch, job query, shared edit, stage or commit occurred.
+

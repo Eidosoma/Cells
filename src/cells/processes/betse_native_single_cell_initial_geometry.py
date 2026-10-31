@@ -29,6 +29,7 @@ METHODS = ("cellVerts", "cellMatrices", "cell_vols", "mem_processing", "near_nei
 _NATIVE = {name: getattr(source.CellKernel, name) for name in METHODS}
 _NUMPY_HELPERS = ("asarray", "array", "sqrt", "vstack", "zeros", "abs", "roll", "dot")
 _ISSUED = WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _BUSY = WeakSet()
 _LOCK = RLock()
 
@@ -410,6 +411,12 @@ def _check(context):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise GeometryRejected(
+            "Geometry epoch was consumed by a makeECM attempt",
+            stage="geometry_epoch_consumed",
+            trial=context.trial,
+        )
     try:
         if context.invalid or context.thread != get_ident():
             raise ValueError("Invalid initial-geometry source owner")
@@ -437,6 +444,15 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_makeECM(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise GeometryRejected("Changed actual geometry owner", stage="geometry_owner")
+        _FORWARDED[owner] = transition
+        return context
 
 
 def prepare_continuation(request, *, _prefix=None):

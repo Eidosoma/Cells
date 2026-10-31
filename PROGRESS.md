@@ -153,9 +153,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retained 15 missing-refusal failures, one separate NumPy construction failure
   and one valid-copy pass; the first repair's 65-pass/one-failure attempt also
   remains preserved. The NumPy digest refusal receives no resolver credit.
-  Key's next work adds an explicit global-event preparation path using the later
-  publication and genuine supplied inputs, preserving the legacy path and
-  frozen global packet. Actual conditions remain held.
+  The [explicit global-route review](/mnt/workspaces/Cells/molecule-published-global-preparation-20261031-01/root-review.json)
+  accepts that preparation path at source/software level: **125 blocked checks
+  passed in 17.10 seconds, 244.2 MiB sampled peak RSS** (68 new route controls
+  and 57 affected controls). Supplied inputs remain unchanged; the original
+  publication/configuration and separately declared intervention stay distinct.
+  The legacy path and scientific release gates remain intact. All six process
+  outcomes and 17 complete final archives are reviewed. The initial 55-pass/
+  three-failure attempt retains its operation-level exceptions and three empty
+  fallback files; the later 19-versus-17 archive-count metadata failure also
+  remains failed. The final validator additionally strengthens INIT/geometry
+  checks; the retry was not wholly test-only. Original 22 targeted and 26 global
+  conditions remain held, as do 28 explicit route aliases, which are not new
+  independent cases. Key next implements actual `f_sweep` callback authority
+  and a separate membrane-event preparation route; actual execution stays held.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
