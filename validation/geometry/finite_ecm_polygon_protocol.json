@@ -1,0 +1,204 @@
+{
+  "kind": "cells.finite_ecm_polygon_preparation_protocol@1",
+  "status": "static_unexecuted_candidate",
+  "geometry_law_id": "cells_finite_ecm_conforming_polygon_partition@1",
+  "physical_law_id": "cells_finite_ecm_polygon_passive_preparation@1",
+  "actual_family": "resolved_tissue@1",
+  "public_admission": "cells.core.surface_tissue_spec.parse",
+  "actual_model_type": "cells.core.surface_tissue_spec.SurfaceTissueModel",
+  "positive_cases": [
+    "one-cell-grid",
+    "unequal-width-grid",
+    "two-cell-grid",
+    "diamond-grid",
+    "translated-grid",
+    "reordered-owners"
+  ],
+  "partition_domain_cases": [
+    "wrong-units",
+    "native-source-claim",
+    "duplicate-coordinate",
+    "duplicate-vertex-id",
+    "clockwise-region",
+    "overlapping-region",
+    "t-junction",
+    "hole-in-domain",
+    "direct-cell-cell",
+    "cell-at-outer-boundary",
+    "concave-bath",
+    "nonorthogonal-dual",
+    "missing-boundary",
+    "wrong-boundary-owner",
+    "reversed-boundary-side",
+    "unsegmented-domain-edge",
+    "outer-reservoir-boundary",
+    "axial-flux-boundary",
+    "centroid-midpoint-policy",
+    "finite-membrane-volume-policy",
+    "zero-height",
+    "zero-membrane-path",
+    "volume-underflow",
+    "unused-vertex",
+    "missing-bath-polygon",
+    "invented-bath-volume"
+  ],
+  "physical_domain_cases": [
+    "wrong-law",
+    "wrong-geometry",
+    "active-family",
+    "missing-provenance",
+    "missing-cell",
+    "missing-bath",
+    "numeric-bath-volume",
+    "wrong-volume-owner",
+    "wrong-membrane-bath",
+    "numeric-membrane-area",
+    "zero-capacitance",
+    "negative-membrane-diffusivity",
+    "missing-face",
+    "reversed-face",
+    "numeric-face-length",
+    "wrong-face-area-owner",
+    "negative-face-diffusivity",
+    "held-reservoir",
+    "direct-junction",
+    "reference-in-amount",
+    "reference-in-control",
+    "missing-control",
+    "duplicate-control-clock",
+    "bad-charge-anchor",
+    "unowned-gauge",
+    "nongauge-boundary-potential"
+  ],
+  "independent_corruption_cases": [
+    "bath-volume",
+    "membrane-area",
+    "face-distance",
+    "face-normal",
+    "face-owner",
+    "boundary-owner",
+    "face-incidence",
+    "geometry-certificate"
+  ],
+  "ownership_cases": [
+    "wrong-opt-in",
+    "request-identity",
+    "binding-resealed-normal",
+    "prepared-volume",
+    "prepared-inventory",
+    "returned-copy-alias"
+  ],
+  "expected_checks": 78,
+  "fresh_reference_records": 52,
+  "proposed_guarded_units": 131,
+  "scope": {
+    "explicit_finite_cell_and_bath_volumes": true,
+    "one_actual_interface_area_per_shared_edge": true,
+    "geometrically_orthogonal_face_distances": true,
+    "complete_passive_initial_physical_admission": true,
+    "polarized_complete_initial_field_and_nonzero_face_flux": true,
+    "independent_floating_bulk_bath_components": true,
+    "unchanged_initial_state_control_probes_s": [
+      0.0,
+      5e-07
+    ],
+    "complete_state_derivative_and_physical_field_reference": true,
+    "trajectories": false,
+    "native_equivalence": false,
+    "qualification_inherited": false
+  },
+  "geometry_rules": {
+    "max_regions": 32,
+    "max_cells": 16,
+    "max_vertices": 256,
+    "max_region_ring": 64,
+    "max_half_edges": 512,
+    "uniform_extrusion_height": true,
+    "actual_declared_binary64_inputs": true,
+    "volume": "Exact region area times height; exact pL conversion before rounding",
+    "membrane": "Thin zero-excluded-volume interface with caller-declared positive constitutive path",
+    "faces": "Exact area-centroid link perpendicular to face, common projection strictly inside shared edge, correct side ownership; exact link and both side distances retained",
+    "boundary": "Each directed outer edge and both axial caps sealed; finite baths and one existing bath gauge",
+    "unsupported": [
+      {
+        "domain": "Explicit source polygons only",
+        "rule": "No generated/native source inference or previous whole-mesh acceptance"
+      },
+      {
+        "domain": "Convex conforming connected partition",
+        "rule": "One explicitly segmented outer ring; exact area exhausts domain; no holes/gaps/overlap/T joins/unused vertices"
+      },
+      {
+        "domain": "Cell interfaces",
+        "rule": "Every cell side has a bath; direct cell-cell contacts/guessed clefts or cells on outer boundary refuse"
+      },
+      {
+        "domain": "Bath face stencil",
+        "rule": "Exact area centroids have a perpendicular link and strictly interior common projection; skew/midpoint or nonlocal substitutions refuse"
+      },
+      {
+        "domain": "Membrane volume/path",
+        "rule": "Zero excluded volume thin interface, explicit positive path; no guessed compartment volume correction"
+      },
+      {
+        "domain": "Boundary conditions",
+        "rule": "All exterior sides and both axial caps explicitly sealed; actual finite baths; held reservoirs/outer fluxes refuse"
+      },
+      {
+        "domain": "Family scope",
+        "rule": "Complete actual resolved_tissue@1 only; active/Ca/fuel/water/transport/intervention/event/epoch families require their separate future bridge"
+      },
+      {
+        "domain": "Scientific claims",
+        "rule": "Static candidate; no trajectories, native equivalence, whole-mesh or prior pending polygon qualification inherited"
+      }
+    ]
+  },
+  "independence": {
+    "geometry_conversion": "Fresh process denies Cells/BETSE/all scientific packages; original integer-grid Green/ear measures, rational centroids, exact projection/length targets and integer rounding-cell tests at4096/4608 Decimal digits",
+    "initial_field": "Fresh process allows NumPy/SciPy, denies Cells/BETSE/JAX/Torch/Pillow; independent scalar transport and full-node charge/current equations, full derivative and physical field/rate comparisons",
+    "actual_array_and_nonfinite_evidence": "Typed NPZ arrays captured before JSON assertions; nonfinite binary64 bits retained; field returned before derivative construction saved independently",
+    "source_module_and_mapped_library_hash_inventory": true
+  },
+  "numerical_budgets": {
+    "existing_field_protocol": "validation/tissue/surface_field_protocol.json",
+    "existing_field_protocol_sha256": "8dfaaf2390941700d2b5de6f7fc221fdeaa0fd6390af717ae1d3b88dff2109c5",
+    "unchanged_field_tolerances": {
+      "physical_rtol": 3e-10,
+      "voltage_atol_V": 3e-13,
+      "charge_atol_C": 3e-25,
+      "charge_rtol": 2e-12,
+      "current_constraint_atol_A": 1e-23,
+      "current_constraint_rtol": 2e-12,
+      "current_newton_target": 0.01,
+      "flux_atol_fmol_s": 3e-12,
+      "chemical_potential_atol_J_mol": 3e-08,
+      "current_comparison_atol_A": 3e-23,
+      "energy_atol_pJ": 3e-12,
+      "power_atol_pJ_s": 3e-12,
+      "voltage_rate_atol_V_s": 3e-08,
+      "material_rate_atol_fmol_s": 3e-14,
+      "energy_balance_atol_pJ_s": 1e-10,
+      "energy_derivative_atol_pJ_s": 1e-09
+    },
+    "complete_derivative_atol": 3e-12,
+    "complete_charge_derivative_atol_C_s": 3e-23,
+    "complete_derivative_rtol": 3e-10,
+    "geometry": "Exact correctly rounded binary64 target; no tolerance widening"
+  },
+  "field_comparison_scope": {
+    "physical_outputs": "Potentials, membrane and node capacitor charges, electrode/supply charge/current, membrane voltage rates, energies/powers, all transport fields and full state derivatives",
+    "diagnostics": "Complete raw internal Newton iteration/normalized coordinates retained; no cross-solver diagnostic equality claim"
+  },
+  "evidence": {
+    "payload_limit_bytes": 16777216,
+    "exclusive_immutable_files": true,
+    "inputs_actual_preludes_targets_refusals_saved_before_asserts": true,
+    "finalizer": "Root supplies reviewed finalizer/external startup-failure wrapper; full payloads remain sidecars and bounded summary metadata uses hashes/counts"
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "scientific_imports": false,
+  "fixture_materialization": false,
+  "pytest_collection": false
+}

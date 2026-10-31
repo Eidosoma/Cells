@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-10-30 UTC.
+Last updated: 2026-10-31 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -40,6 +40,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The [current review receipts and assigned actions](/mnt/workspaces/Cells/qualification-completion-audit-20261030-01/current-review.json)
   bind the observed outcomes across all three owners. Older paragraphs retain
   intermediate status checks; the latest linked closeout determines acceptance.
+  The requested [11:00:14 UTC observation](/mnt/workspaces/Cells/root-runners/status-observation-20261031-110014.json) after the account restart
+  found the catalog failed in its first context case: the saved audit
+  records 83 passed, one failed and ten unrun. Its reference-domain
+  correction remains held. The earlier
+  flow failure and held successor are recorded below. Three fresh
+  molecule/first-advance qualifications have now launched; completion
+  reviews await the next requested check. The external developer connector
+  is unavailable after the restart; internal reviewers are covering the
+  ready work. No repeated polling or automatic retry is queued.
 
   | Owner | Outstanding qualification | Latest reviewed disposition / next action |
   | --- | --- | --- |
@@ -49,10 +58,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   | Root / Specialist implementation | Active-temperature CPU JAX arrays | Ionic and four-stage calcium passed below 1 GiB. Calcium: two complete worlds, maximum error 0.00474 of budget, only 1.63% memory margin. Fresh-reference runtime inventory gap is explicit. Other families, trajectories and GPU unqualified |
   | Root | Finite-fuel staged execution | Reviewed CPU pass with explicit warmup cache release: two complete worlds, all 56 laws/38 rate fields/32 field columns, and two fresh reference replays. Peak 999.85 MB below unchanged 1-GiB cap. First memory failure retained; default-factory memory, GPU and trajectories remain unqualified |
   | Root | Reusable closed-family CPU warmup | Reviewed pass: 15 checks, six complete ionic/calcium/fuel worlds and six fresh reference replays. Three/four/five retained executables; explicit warmup cache release stays below 1 GiB. Open families, default-cache memory, GPU and trajectories remain separate |
+  | Root | Open-bath staged execution | Reviewed NumPy pass: 22 checks, ten fresh reference records for six supplied contexts. Complete reservoir/charge/work/fuel accounting retained. Compiled JAX, CPU warmup, GPU and trajectories remain separate |
+  | Root | Reusable open-family CPU warmup | Reviewed pass: 16 checks, four complete contexts and four fresh reference records. Five/six retained executables with explicit cache release fit below 1 GiB with 23.5 MiB margin. Default-cache memory, GPU and advancing trajectories remain separate |
   | Root | Explicit numerical refinement | Prior 25 checks/reference retained; one compiled scalar check passed with a bounded 2-GiB cap. Compiled batches/GPU remain separate; the single recovery-arm outcome is recorded below |
   | Root | Half-second salt/water/fuel response | Single recovery arm passed all three reviewed checks: 0.5-s trajectory, three-grid refinement gate and exact fresh-process restart. Some finest-grid errors exceed middle-grid errors; no fourth-order or six-arm-panel claim. Earlier failures preserved |
   | Specialist / Root review | Native environment field reconstruction | Reviewed pass: 46 checks, 22 distinct supplied inputs across 24 labeled sets; advancing ECM transport is next |
-  | Root / Specialist implementation | Native ECM ion/material join | Original failure remains 39/40. Archival-only rerun now retains both references and reproduces exactly the single failing diagnostic field; state/native buffers and all numerical inputs/budgets unchanged |
+  | Root / Specialist implementation | Native ECM ion/material join | Separate requested-increment diagnostic passed saved-evidence review: 17 checks/26 fresh workers. Finalizer metadata failure and original 39/40 raw-difference failure remain preserved; no conservation repair claimed |
   | Key Dev / Root review | Native pump/ion/gate/current/voltage join | Reviewed pass: 34 checks with meaningful fresh conditional per-call budgets; runtime-inventory and nested-label limitations retained |
   | Key Dev / Root review | Native late channel/normal-solver join | Reviewed pass, 26 checks for Nav1p6/Kv1p5/Kv3p2/ClLeak; exact native state/cache correspondence and unchanged local budgets. Full catalog remains separate; original failures retained |
   | Root qualification / Key implementation | Full modern channel catalog | Reviewed pass: 73 checks, 55 modern classes, 70 native captures and 170 local reference forms. Scalar-bath component scope; 130 carried forms are diagnostics. Original Cav_G failure retained |
@@ -65,32 +76,885 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   | Key implementation / Root qualification | Nonempty molecule chemistry/transport | Reviewed pass: 21 checks, 17 native captures, 45 fresh conditional points/90 reference forms. Max error 0.001285 of budget. Original missing-attribute failure retained; native physical bath defect remains explicit |
   | Key implementation / Root qualification | Configured active transporters | Reviewed pass: 25 checks, 18 three-call histories, 54 pre-transporter plus 54 pre-network points and 216 fresh reference forms. Both earlier failures and source accounting defects remain retained |
   | Key implementation / Root qualification | Native GRN initialization/dispatch | Reviewed pass: 19 checks, ten cold points, 30 actual pre-network points and 80 fresh reference forms. Neutral supplied-geometry scope; charged and standalone GRN remain separate |
-  | Key implementation / Root qualification | Charged GRN initialization/dispatch | Initial run completed all 22 checks; terminal evidence review underway. Cold compensation, compensated-parent carry and four partial-capacity failures remain distinct from physical conservation |
+  | Key implementation / Root qualification | Charged GRN initialization/dispatch | Reviewed pass: 22 checks, 16 cold and 36 pre-network points, 104 fresh reference forms. Cold compensation, compensated-parent carry and four partial-capacity failures remain distinct from physical conservation |
+  | Key implementation / Root qualification | Standalone GRN execution | Reviewed pass: 22 checks, 95 conditional points and 190 fresh reference forms. Actual `run_core_sim`, source clocks, reinitialization and in-memory CSV capture verified; filesystem persistence and whole initialization remain separate |
   | Specialist / Root qualification | Native constructor/pre-mesh | First attempt remains 19/22. Separate clipping now passed review: 31 retained tests, 21 fresh native and 21 independent records plus four domains. Dictionary-order replay failure retained. Initial-mesh accuracy and downstream geometry remain open |
   | Specialist / Root qualification | Native mesh lifecycle | Reviewed pass: 39 checks, 26 fresh native replays, 24 independent algebra targets and two raw-failure scope records. Six exhausted-step cases receive no convergence credit; auxiliary operators are helper-only and upstream accuracy limitations remain |
-  | Specialist / Root qualification | Stable geometry primitives | Separate arithmetic law: 84-check qualification launched detached at 23:16 UTC on CPU6, with 75 fresh replay records planned. Results pending; whole meshes and physical geometry remain separate |
+  | Specialist / Root qualification | Stable geometry primitives | Reviewed pass: 84 checks and 75 fresh reference records, including exact-rational/square-root fallbacks. Transform/order controls stay distinct from base cases; native equivalence and whole physical meshes remain separate |
+  | Specialist / Root qualification | Stable initial-mesh bridge | Reviewed failure: 23/32 checks and 11/11 conditional-source records passed; 0/9 complete meshes passed independent geometry. Two raw-failure records passed separately. Original edge-incidence defects and the separate summary-size failure remain preserved |
+  | Specialist / Root qualification | Conservative polygon geometry and physical owners | Reviewed scientific pass: 64 checks and 35 fresh records; three neutral initial admissions. Terminal packaging failed on pytest aliases; failure preserved, with a separately verified inventory and 16 software checks |
+  | Key implementation / Root qualification | ECM gene-network execution | Reviewed pass: 25 checks, 17 native captures and 104 fresh conditional forms. Max 0.000108362 of fixed budget. Full field-solver lifecycle and charged cold compensation remain separate; both earlier failures retained |
+  | Key implementation / Root qualification | Charged ECM gene-network execution | Reviewed pass: 18 new history checks plus 17 retained guard/refusal checks; 144 new reference forms plus eight retained refusal forms. Cache timing repaired; earlier failed runs and separate 39/40 material limitation remain preserved |
+  | Key implementation / Root qualification | Standalone ECM gene-network execution | Reviewed pass: 35 checks and 350 fresh conditional forms, with complete source clocks, caches and sampling. Thirteen new contexts and five controls remain distinct; ordinary full-solver execution remains separate |
+  | Key implementation / Root review | Normal ECM field/material/network composition | Reviewed pass: 31 unique checks, 16 three-call histories and 352 fresh conditional forms. Largest discrepancy 0.2241 of budget; original failure and native accounting limitations preserved |
+  | Root qualification / Key implementation | Normal ECM calcium-pump/full-field composition | Reviewed pass: 34 checks, 442 fresh conditional forms and 22 native captures. Fifteen complete three-call histories; unchanged failed negative_genes input retains two complete calls and 23 shared third-call frames, with distinct stops. Original failures retained |
+  | Root qualification / Key implementation | Modern channel catalog in ordinary ECM | Reviewed failure: 82 passed, one failed, 11 unrun; all 55 class prefixes and four three-call controls passed. Nav1p2's independent reference rejected the next voltage outside its declared domain. Seven-law voltage support passed review. Fresh catalog06 stopped at 83/1/10 on the CaLeak reference-domain gate; its saved diagnosis and unapplied correction are recorded below |
+  | Root repair / Key implementation | Events in the coupled ordinary ECM loop | Reviewed failure: 22 passed / six failed / 14 unrun. Channel inputs reached the gene-network reference adapter. Root repaired dispatch and scalar ownership; 42 synthetic controls pass, numerical rerun pending. All failed parents retained |
+  | Specialist implementation / Root review | Saved-mesh topology correction | Accepted topology-only: 33 checks, six candidate layouts and nine corruption controls with 15 nested reference workers. Original 0/9 complete-mesh failure and metric/physical admission remain open |
+  | Root review / Specialist implementation | Metrics on retained mesh coordinates | Reviewed pass: 39 checks / 40 actual nested children, one positive layout, five domain refusals and 18 baseline-checked corruptions. Original 0/9 panel unchanged; physical/native/operator admission remains closed |
+  | Root qualification / Specialist implementation | Primal graph operator reconstruction | Reviewed pass: 45 checks / 17 actual nested children, one square layout and five domain refusals. All 18 exact algebra identities and original storage budgets verified. Original 0/9, physical/native and weighted-Laplacian admission remain unchanged |
+  | Root repair / Specialist implementation | Supplied membrane initialization bridge | Latest run remains 0 passed / one failure / 40 unrun. Explicit source05 adopts the reviewed scalar-copy and calcium callback fixes; dependency pins remain draft-only pending review. No retry launched |
+  | Root repair / Specialist implementation | Supplied-owner component routing | Reviewed pass: 30 checks, five supplied examples / 15 existing-component calls, four cold baselines and 23 refusal controls. Exact supplied owners and cold physical state retained; no native INIT or independent accuracy claim. Original failed run preserved |
+  | Root qualification / Specialist implementation | Fixed-seed control volumes | Reviewed pass: 41 unique checks / 19 actual children, covering three source geometries and 16 output-corruption controls. Original 0/9 remains unchanged; no physical/native/operator admission |
+  | Key implementation / Root review | Native cut pre-mesh lifecycle | Accepted prefix-only: 25 checks, 14 native captures and six conditional owner forms. Five native exceptions and three defective completed prefixes retained. Full cutting, geometry rebuild and ordinary continuation remain unqualified |
+  | Root repair / Specialist implementation | Ordinary pressure and steady mechanics | Reviewed scope pass: 37 checks/35 fresh workers; 14 supplied contexts, 39 source calls and five display samples. Largest independent error 0.2451 of budget. Finalizer alias repair verified; original failures preserved |
+  | Specialist / Root review | Ordinary ECM pressure/mechanics composition | Explicit dependency successor and runner02 sealed, held: 36 checks/28 fresh workers unrun; 87 metadata controls passed. Original runner and failures preserved. Supplied geometry and disabled flow/dynamic/display limits remain |
+  | Specialist / Root qualification | Active physiology on polygon meshes | Reviewed pass: 77 checks/36 fresh reference records/114 units. Fifteen initial contexts across ten families; independent energy evidence in 12 contexts, unavailable in three ionic contexts. Original failure preserved |
+  | Specialist / Root review | Explicit finite-ECM polygon geometry | Reviewed pass: 78 checks/52 fresh records/131 units. Six finite-bath initial contexts; complete arrays, fields, RHS and energy/material limits verified. No advancing trajectory credit |
+  | Specialist / Root review | Active finite-ECM polygon physiology | Reviewed pass: 100 checks/46 fresh reference records/147 units. Sixteen initial contexts across ten families; complete fields, derivatives and independent energy checks verified, no trajectory claim |
   | Root | Finite-energy GPU replay | Failed a 900-second fresh-worker deadline; retained for the deferred GPU qualification batch |
 
-- **Three parallel development owners are active.** Root owns numerical
-  resolution, compiled temperature execution and shared qualification/status.
-  Key Dev's molecule join passed review; the latest transporter comparison
-  repair and neutral GRN passed terminal review; charged-GRN initialization
-  completed 22 checks and is under evidence review. Key is now implementing
-  standalone GRN execution separately.
-  Specialist's native mesh lifecycle passed terminal review;
-  separate stable geometry primitives have launched qualification,
-  their opt-in initial-mesh bridge is in static review, and a separate physical
-  owner adapter for generated polygon meshes is being developed.
-  The **22:39 UTC** requested recovery check found all three phases complete;
-  their final review accepts the single original-start recovery arm. The same
-  requested check found the mesh-lifecycle supervisor alive without a terminal
-  result; no later status is inferred. Root's reusable CPU warmup interface
-  passed six checks with explicit cache release and the unchanged memory limit.
-  Its extension to the closed ionic/calcium families passed review of all
-  15 checks and six independent reference replays.
-  Earlier failed attempts remain retained. Each process uses one thread and
-  bounded memory. Finite-family reservoir and active-family temperature
-  restrictions remain explicit.
+- **Three parallel development owners are active.** Root owns reference and
+  resource-packaging repairs, qualifications and shared result review. Key Dev has frozen
+  a combined event/steady-mechanics update without duplicate material steps:
+  [source-only packet](agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_mechanics_static_receipt_01.json),
+  **62 checks / 36 native captures / 1,508 fresh forms**, all unrun. Independent
+  source review found the calendar API blocker described below; the original
+  packet stays held. The new
+  [headless run lifecycle](agent-work/cells-worker-01/workfiles/betse_normal_ecm_run_lifecycle_static_receipt_01.json)
+  is source-only: **48 checks / 22 captures / 624 fresh forms**, all unrun.
+  It coordinates supplied-entry SIM calls, state carry, stopping and sampling;
+  whole native initialization and file loading remain closed.
+  [Source review](/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-preflight-20261031-01/REVIEW.json) found three
+  evidence defects: repeated observer-archive paths, insufficiently specific raw
+  failure assertions, and completed native captures archived only after later
+  checks. The [reviewed repair proposal03](/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-preflight-20261031-01/repair-review-02/REVIEW.json)
+  resolves all three; the earlier proposal's incorrect exact mechanics-error
+  string is preserved. The
+  [four explicit successors](agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_handoff_01.json)
+  are now frozen: catalog05 **94 checks**, event04 **42**, event/mechanics03
+  **62**, lifecycle02 **48**. [Complete packet review](/mnt/workspaces/Cells/ecm-reviewed-successors-preflight-20261031-01/REVIEW.json)
+  cleared the declared source changes. Seventeen late lint-cache files are
+  separately bound, with no other undeclared files allowed. The
+  [catalog runner](/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-launch-preparation-20261031-04/root-runner-review.json)
+  is cleared after **17 distinct metadata controls**, with earlier preparation
+  failures retained. All 94 scientific checks must run fresh. The
+  [noncatalog capture-capacity review](/mnt/workspaces/Cells/ecm-capture-capacity-review-20261031-01/REVIEW.json)
+  derives a conservative **310,689-member** ceiling from the unchanged 64-MiB
+  stored-archive format. Its 13 software controls are separate from scientific
+  qualification; the ceiling does not guarantee any history fits its memory,
+  time or byte limits. [Three runner integrations](/mnt/workspaces/Cells/ecm-noncatalog-runners-preparation-20261031-01/BATCH-HANDOFF.json)
+  are sealed with **111 unique metadata controls across the batch**, not per runner.
+  Root [cleared event42](/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-04/root-runner-review.json)
+  after checking the full packet and unchanged scientific worker/finalizer logic.
+  The fresh **42-check qualification [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-04/launch-01/launch.json)** on CPU4 at **06:49:35 UTC**, estimated **12–25 minutes** (unmeasured). No post-launch query was made.
+  Its 20 three-call histories contain 14 manufactured contexts and six controls;
+  26 native captures and 920 conditional precision forms are planned. Full
+  runtime binding is mandatory at completion. The requested
+  [06:51:00 UTC observation](/mnt/workspaces/Cells/root-runners/status-observation-20261031-065100.json)
+  found the event batch and catalog05 terminally failed. No later job query was made.
+  [Independent event failure review](/mnt/workspaces/Cells/ecm-event04-failure-review-20261031-01/REVIEW.json)
+  verifies **21 passes, one failure and 20 unrun**: sixteen dependency checks
+  and five raw controls passed, with six complete native captures. No independent
+  precision forms or positive history comparisons ran. All 154 typed archives,
+  2,820 copied files and 1,033 runtime file hashes were verified. The negative-Dm
+  assertion expected zero completed calls; the original smooth pulse at native
+  labels **0, 150, 300 microseconds** with **100-microsecond configured dt**
+  leaves diffusion nonnegative on call 0, then negative on call 1. Cells correctly
+  refuses the second call; native code returns all three. Root
+  [promoted the source-supported test correction](/mnt/workspaces/Cells/ecm-event-raw-timing-repair-20261031-01/promotion.json)
+  after executing the exact proposed assertion branch on saved evidence. The
+  original assertion still fails on that same evidence. Clocks, stages, full
+  post-event stores and the strict guard message are checked; equations,
+  fixtures and numerical bounds are unchanged. A pre-event temperature scalar
+  versus zero-dimensional-array difference remains explicit, with equal bits.
+  The matching mechanics test received the same prospective correction, but
+  has not run. [Event05 and event/mechanics04 successors](/mnt/workspaces/Cells/ecm-event-negative-dm-successors-20261031-01/HANDOFF.json)
+  preserve their 42/62 check rosters and
+  920/1,508 planned reference forms. Seventy-seven metadata
+  controls passed, with a sealing-script failure retained separately; no
+  scientific execution follows from this preparation. [Independent event05 runner review](/mnt/workspaces/Cells/betse-normal-ecm-event-join-runner-preflight-20261031-05/REVIEW.json)
+  verified the full source/runner and unchanged archive producers. Root
+  [cleared its fresh 42-check qualification](/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-05/root-runner-review.json)
+  with 26 planned native captures, 920 fresh conditional forms and all 952
+  runtime records required. The fresh **42-check event05 qualification [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-05/launch-01/launch.json)** on CPU4 at **07:49:43 UTC**, estimated **12–25 minutes** (unmeasured). No post-launch query was made.
+  [Event05 completion review](/mnt/workspaces/Cells/ecm-event05-failure-review-20261031-01/REVIEW.json)
+  records **22 passed, six failed and 14 unrun**. Every control failed because
+  explicit channel inputs were dispatched as conditioned gene-network inputs.
+  Twelve native captures completed; of 60 generated precision forms, 24 cold
+  forms were compared and 36 later forms remain uncompared. No complete owned
+  positive call or history passed. Root [promoted the reviewed adapter repair](/mnt/workspaces/Cells/ecm-event-reference-dispatch-repair-20261031-01/promotion.json):
+  dispatch channels first and preserve scalar controls until their native
+  modulator writes arrays. **42 synthetic software checks** passed; equations,
+  raw inputs, clocks, tolerances and voltage domains are unchanged. Explicit
+  [event06/mechanics05 packets are frozen](/mnt/workspaces/Cells/ecm-event-reference-successors-20261031-01/HANDOFF.json)
+  with unchanged 42/62 check rosters. Mechanics explicitly binds the repaired
+  event reference. Both await runner binding and numerical qualification. Lifecycle02/48 stays
+  unchanged and held for its own dependency/release review. Key Dev's [ordinary INIT audit](agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_design.md)
+  found SIM-only warmup, incorrect counter coupling for INIT-inactive channels,
+  and a mechanics hook incorrectly dependent on protein noise. A separate INIT
+  adapter/reference is now [frozen and held](agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_handoff_01.json):
+  **62 prospective checks / 29 native captures / 986 conditional forms**,
+  with 61 planned calls. Twelve author AST proofs and ten metadata controls
+  confer no scientific credit. [Independent source review](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-01/REVIEW.json)
+  found incomplete
+  bootstrap/setup failure capture and missing comparisons against native/reference
+  sampling records. Key Dev's [explicit INIT02 successor](agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_handoff_02.json)
+  is now sealed and held for independent review: the same 62 check IDs, 61
+  calls, 29 captures and 986 planned forms, with fixtures/equations/budgets
+  unchanged. Eighteen exception/sampling metadata controls and ten capture/hold
+  controls passed; no scientific import, collection or evaluation ran. These
+  author checks alone do not establish numerical acceptance. [Root's independent source review](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-02/REVIEW.json)
+  clears both evidence repairs, verifying all 3,599 files and full inverse
+  evaluator/test ASTs. Root then added [reference-worker failure capture](/mnt/workspaces/Cells/ecm-init-reference-failure-repair-20261031-01/promotion.json):
+  preserve the original exception, input/runtime identity, completed raw forms
+  and incomplete output bytes without crediting failed attempts. Eleven
+  targeted metadata checks passed; [independent review](/mnt/workspaces/Cells/ecm-init-reference-failure-repair-20261031-01/root-review-01/REVIEW.json)
+  cleared the CLI-only change. [Explicit INIT03](/mnt/workspaces/Cells/ecm-init-reference-failure-repair-20261031-01/HANDOFF.json)
+  is frozen with the same scientific equations, cases and budgets. Its
+  [held runner](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-launch-preparation-20261031-01/PREPARATION.json)
+  is sealed with 79 metadata controls and requires all 1,296 declared typed
+  archives, complete precision records and frozen runtime/source/executable
+  identities. [Independent runner review](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-runner-preflight-20261031-01/REVIEW.json)
+  verified the full source/runner and found one startup-origin omission:
+  the interpreter's system `sitecustomize.py` resolves under `/etc/python3.13`,
+  outside the permitted roots. [Runner02 passed independent review](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-runner-preflight-20261031-02/REVIEW.json)
+  with that exact file/hash pinned for every runtime role; trusted directories
+  and the scientific plan are unchanged. It adds **25 metadata controls**,
+  retaining the original 79. The separate sealing-harness failure is preserved.
+  The **62-check INIT qualification [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-launch-preparation-20261031-02/launch-01/launch.json)**
+  on CPU1 at **08:32:05 UTC**, estimated **30–90 minutes**
+  (unmeasured). No post-launch query was made.
+  Each scientific unit retains its 1-GiB/480-second limit, readers 120 seconds,
+  and the host an 8-GiB reserve. No new aggregate cutoff is imposed. All 62
+  checks, 29 native captures, 986 precision forms and 1,296 typed archives must
+  be reviewed before acceptance. The original runner remains held.
+  The requested check found runner02 stopped after its first dependency test
+  passed: its reader omitted the legitimate `tests.unit` namespace. A saved
+  replay exposed a second origin check that ignored exact copied-tool pins
+  inside the runner directory. Root's [reviewed reader correction](/mnt/workspaces/Cells/ecm-init-runtime-namespace-repair-20261031-01/root-review-01/REVIEW.json)
+  passed **26 software controls** and the unchanged full reader on copied
+  evidence. This verifies one original dependency check, **61 unrun**, and
+  zero native captures/reference forms; the original campaign remains failed.
+  [Explicit INIT04](/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/HANDOFF.json)
+  also adopts the reviewed scalar-control reference adapter: native INIT setup
+  supplies scalar controls to that path. Other source equations, fixtures and
+  budgets remain exact. [Runner03 passed integration review](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-runner-preflight-20261031-03/REVIEW.json).
+  The replacement **fresh 62-check qualification [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-launch-preparation-20261031-03/launch-01/launch.json)**
+  on CPU1 at **08:57:32 UTC**, estimated **30–90 minutes**
+  (unmeasured), with the original resource limits. At **08:58:06 UTC**,
+  four dependency groups were complete. The later requested observation found
+  a terminal failure at 09:00:33 UTC: **25 passed / one failed / 36 unrun**.
+  [Saved-evidence review](/mnt/workspaces/Cells/ecm-init04-failure-review-20261031-01/REVIEW.json)
+  verified four preparation parents but zero accepted INIT calls or reference forms.
+  The invalid inactive-channel count was correctly rejected by an earlier guard
+  than the test expected. Root [repaired validation order and challenged-state capture](/mnt/workspaces/Cells/ecm-init-count-order-repair-20261031-01/promotion.json):
+  **23 software controls / 864 synthetic admission combinations** preserve the
+  admitted domain, equations and budgets. [INIT05 and runner04](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-runner-preflight-20261031-04/REVIEW.json)
+  retain all 62 checks, 986 planned forms and 1,296 archive paths.
+  The replacement [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-init-phase-launch-preparation-20261031-04/launch-01/launch.json) on CPU1 at **09:56:50 UTC**,
+  estimated **30–90 minutes**, with the original resource limits. All checks
+  ran fresh. The 10:22:30 UTC observation found a terminal failure at
+  10:02:02 UTC: **35 passed / one failed / 26 unrun**. The failed
+  `raw-CaATP_nonfinite` assertion expected an earlier helper refusal.
+  [Saved-evidence review and Root acceptance](/mnt/workspaces/Cells/ecm-init05-failure-review-20261031-01/ROOT_ACCEPTANCE.json) verify all
+  **47 shared material frames, five ECM records and the pre-field
+  candidate** against native bytes. Both first overflow at frame 41;
+  Cells rejects call 0 before field/acceptance, while native completes it
+  and fails in call 1. Root promoted stronger shared-state/distinct-stop
+  assertions; equations, guards and tolerances are unchanged. The explicit
+  source06/runner06 successor is held. Root also [repaired its raw reader
+  contract](/mnt/workspaces/Cells/ecm-init-raw-reader-contract-repair-20261031-01/REVIEW.json): the actual refusal stage/cause and both extra
+  network/mechanics archives are required. Nine saved-evidence/software
+  checks passed; all 62 scientific checks still need a fresh run. No
+  positive INIT history or reference form is accepted from this failure.
+  Active KLeak/CaLeak still inherit a bounded reference
+  domain, and inactive Nav coverage does not qualify active Nav beyond that
+  domain. Key Dev's separate [INIT-to-SIM source package](agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_sim_transition_handoff_01.json)
+  is sealed: 42 prospective IDs, 928 conditional forms
+  and 33 captures, with complete/failed INIT prefixes, retained caches and fresh
+  SIM clocks kept distinct. It pins INIT02 explicitly; it does not claim a
+  complete native INIT/SIM trajectory. [Independent source review](/mnt/workspaces/Cells/betse-normal-ecm-init-sim-transition-preflight-20261031-01/REVIEW.json)
+  found two capture defects and no concrete new equation or source-order defect:
+  unexpected INIT failures could lose their partial state, and the new reference
+  CLI did not capture all failure stages. Root's
+  [capture-only repair](/mnt/workspaces/Cells/ecm-init-sim-capture-repair-20261031-01/software-02/result.json)
+  passed 19 distinct synthetic controls, including original exception retention
+  and unchanged successful paths. The earlier run and explicit callback-binding
+  correction remain saved; repeated checks are not additional cases.
+  [Independent repair review](/mnt/workspaces/Cells/ecm-init-sim-capture-repair-20261031-01/root-review-01/REVIEW.json)
+  cleared both fixes, and Root [promoted the two tested files](/mnt/workspaces/Cells/ecm-init-sim-capture-repair-20261031-01/promotion.json).
+  [Explicit transition02](/mnt/workspaces/Cells/ecm-init-sim-capture-repair-20261031-01/HANDOFF.json)
+  is frozen and held: 3,721 packet files, 2,745 sources, historical INIT02
+  unchanged. Its separate capture profile adds one failure writer while
+  preserving all 25 earlier archive-call ASTs and the existing byte/member
+  limits. No fresh transition numerical qualification has run.
+  Key Dev's [general-molecule dispatch source](/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_dispatch_handoff_01.json)
+  is frozen and held: 44 prospective checks, 57 calls,
+  942 conditional forms and 84 native captures, all unrun. Its 26 source
+  correspondence proofs and ten metadata controls confer no numerical pass.
+  It includes explicit GRN-enabled/disabled branches. The source's
+  shared charge/current overwrite and undefined missing-network flag remain
+  explicit source behavior, not inferred physical accounting. The compact
+  [redistribution audit](/mnt/workspaces/Cells/betse-normal-ecm-redistribution-source-audit-20261031-01/betse_normal_ecm_redistribution_audit_01.json)
+  confirms dormant ordinary activation and unity weights. The
+  [ordinary-flow source packet](/mnt/workspaces/Cells/betse-normal-ecm-flow-join-preparation-20261031-01.json)
+  records its disabled owner/order seam; neither establishes enabled trajectories.
+  Key Dev has [frozen general active-transporter composition](agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_handoff_01.json):
+  **60 prospective checks / 69 calls / 1,306 conditional forms / 102 captures**,
+  all unrun. [Joint source review](/mnt/workspaces/Cells/betse-normal-ecm-molecule-composition-preflight-20261031-01/REVIEW.json)
+  found two test-evidence gaps: unexpected owned partials/returns could be
+  lost, and four molecule negatives accepted overly broad failures. Root
+  [repaired and promoted the validation code](/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/promotion.json)
+  after **39 distinct synthetic controls** and [independent review](/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/REVIEW.json).
+  The checks now require the actual failing owner and X/Y molecule, full
+  completed prefix, negative-cell witness and matching native/owned partials.
+  Equations, fixtures and tolerances are unchanged. [Explicit source02 packets](/mnt/workspaces/Cells/ecm-molecule-capture-successors-20261031-01/HANDOFF.json)
+  are frozen and verified; all 44/60 scientific checks still need fresh runs.
+  Key Dev has sealed [separate 44/60-check executable runners](/mnt/workspaces/Cells/ecm-molecule-qualification-runners-20261031-01/SOURCE_STATIC_REVIEW.json),
+  retained with 70 software controls. [Review](/mnt/workspaces/Cells/ecm-molecule-qualification-runners-preflight-20261031-01/REVIEW.json)
+  caught a native-library path joined one directory too high. Root
+  [reviewed the one-line correction and sealed runner02](/mnt/workspaces/Cells/ecm-molecule-native-root-repair-20261031-01/SUCCESSOR.json)
+  after 14 targeted metadata controls; all scientific sources and budgets
+  remain unchanged. The [44-check dispatch run](/mnt/workspaces/Cells/root-runners/catalog-molecule-round-20261031-01/molecule-dispatch/launch.json)
+  and [60-check transporter run](/mnt/workspaces/Cells/root-runners/catalog-molecule-round-20261031-01/molecule-transport/launch.json) launched detached on
+  CPU3/CPU7 at **10:21:02 / 10:21:03 UTC**,
+  estimated **30–90 minutes each** (unmeasured), with separate result/failure
+  artifacts. The requested observation found both stopped after their
+  first dependency pytest passed: the reader lacked JAX-related runtime
+  pins. Root [corrected the preparer and sealed runner03](/mnt/workspaces/Cells/ecm-molecule-runtime-closure-repair-20261031-01/REVIEW.json),
+  adding 758 complete-package file hashes while retaining all 2,567 prior
+  pins. The unchanged reader verifies each saved dependency check; eight
+  shared software controls were applied to both families. **43 / 59 IDs
+  remain unrun**, with zero positive-history or reference-form credit.
+  Reader logic, equations and tolerances are unchanged. Original failures
+  remain saved. The fresh [44-check dispatch](/mnt/workspaces/Cells/root-runners/molecule-runtime-round-20261031-01/dispatch/launch.json) and
+  [60-check transporter](/mnt/workspaces/Cells/root-runners/molecule-runtime-round-20261031-01/transport/launch.json) qualifications launched detached on
+  CPU1/CPU7 at **11:05:45 / 11:05:46 UTC**. All checks run fresh;
+  estimated 30–90 minutes each, unmeasured. Completion review is pending,
+  with no post-launch query.
+  Their [54-check molecule lifecycle passed source review](/mnt/workspaces/Cells/betse-normal-ecm-molecule-lifecycle-preflight-20261031-01/REVIEW.json);
+  all 3,006 conditional forms remain unrun. Key Dev has now
+  [sealed the molecule-aware headless run lifecycle](/mnt/workspaces/Cells/betse_normal_ecm_molecule_run_lifecycle-20261031-01/packet-02/SOURCE_STATIC_REVIEW.json):
+  59 prospective checks, 139 INIT/SIM calls and 3,302 conditional forms,
+  all unrun. Independent review found missing duplicate-window/control
+  preparation captures and weaker inherited negative-case witnesses. An
+  [isolated test-only repair](/mnt/workspaces/Cells/betse-normal-ecm-molecule-run-lifecycle-evidence-repair-20261031-01/HANDOFF.json) is ready for Root review and successor
+  producer rebinding. Duplicate window calls earn no extra accuracy credit. The [combined lifecycle/run execution capsule](/mnt/workspaces/Cells/betse_normal_ecm_molecule_combined_execution-20261031-01/capsule-03/SOURCE_STATIC_REVIEW.json)
+  is author-complete and hard held, with separate outcomes and explicit
+  prerequisites; its semantic reader is still pending. Key Dev is now
+  building the separate molecule/intervention-event composition.
+  The Specialist has
+  [frozen standalone GRN flow/advection](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-preparation-20261031-01.json):
+  **ten planned trees / ten children / 96 forms**, preserving the actual
+  once-per-invocation velocity calculation and partial failures. The first
+  qualification outcome is recorded below.
+  [Independent flow source review](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-preflight-20261031-01/REVIEW.json)
+  is clear; its [executable capsule02](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-execution-preparation-20261031-02/HELD_RECEIPT.json)
+  remains held after review found its 4,096-entry reader cap smaller than
+  inherited complete traces. [The separate decoder repair passed review](/mnt/workspaces/Cells/flow10-decoder-capacity-preflight-20261031-01/REVIEW.json):
+  34 software controls, unchanged 16-MiB byte limits and explicit compression
+  constraints. [Root verified the complete capsule03 integration](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-root-release-20261031-01/REVIEW.json):
+  scientific sources, ten-test schedule, byte limits and numerical
+  budgets are unchanged. The [fresh flow/advection qualification](/mnt/workspaces/Cells/betse-standalone-grn-flow-join-root-release-20261031-01/launch-record.json)
+  launched detached on CPU1 at **10:36:01 UTC** and failed its first
+  case: **zero passed / one failed / nine unrun**, with no native or
+  independent child executed. The unit took 7.30 seconds and 222 MB,
+  within its resource limits. [Root bound the saved failure](/mnt/workspaces/Cells/flow-mean-valence-repair-20261031-01/REVIEW.json):
+  five typed archives, 4,472 arrays and 44,262 scalars. The inherited
+  Na/K/Cl/P valences average to zero, so the literal source flow formula
+  produces infinite velocity before molecular transport fails. A held
+  fixture-only successor uses an explicitly nonempirical finite-domain
+  profile and retains the original zero-mean input as a separate raw
+  control. [Source02/capsule04](/mnt/workspaces/Cells/flow-mean-valence-successor-20261031-01/HANDOFF.json) are prepared and held for Root
+  integration review: eleven tests, seven native children, four independent
+  children and 96 forms. Source equations, clocks and tolerances stay
+  unchanged. No retry or source-accuracy claim.
+  The Specialist has [finished the held charged membrane-population source](/mnt/workspaces/Cells/betse-charged-surface-work-source-20261031-01/metadata/HELD_RECEIPT.json):
+  43 prospective checks and 16 Decimal children, all unrun.
+  [Independent review](/mnt/workspaces/Cells/betse-charged-surface-work-preflight-20261031-01/REVIEW.json) found no constitutive sign/unit blocker,
+  and Root has now [reviewed both test-evidence fixes and sealed source02](/mnt/workspaces/Cells/betse-charged-surface-work-evidence-repair-20261031-01/SUCCESSOR.json).
+  Thirty-nine synthetic controls and exact inverse call checks preserve
+  all scientific calls. Charge self-resolution uses the declared unit
+  tolerances; setup, return and failure records retain their complete
+  inputs and partial states. All 43 scientific tests remain unrun; exact-law
+  reasoning does not waive numerical domain guards.
+  The separate [CPU/JAX batch adapter source](/mnt/workspaces/Cells/betse-charged-surface-work-backend-20261031-01/metadata/HELD_RECEIPT.json) is now held for independent
+  review: 55 prospective cases and 90 Decimal children, all unrun. The
+  scalar qualification runner is being prepared. Both remain behind those qualification
+  gates; no ordinary BETSE activation or GPU acceptance is implied.
+  Their [multi-step trajectory and restart draft](/mnt/workspaces/Cells/stable-seed-partition-trajectory-draft-20261031-01/receipt.json)
+  remains unfrozen: 38 proposed test trees, all unrun. It adds fresh full-horizon
+  initial bindings and a separate 8-MiB four-cell storage control while
+  retaining the 1/4-MiB refusals. Initial-state, first-advance and independent
+  trajectory qualifications remain prerequisites; exact restart is separate
+  from numerical accuracy.
+  No missing projection, ordinary activation or pressure recomputation is invented.
+  Failed and held
+  predecessors stay unchanged. An
+  [ER source-boundary audit](agent-work/cells-worker-01/workfiles/betse_normal_ecm_er_join_source_boundary_01.json)
+  found the pinned ordinary parameter path disables `Ca_dyn`; the earlier 23
+  supplied-state ER checks do not qualify ordinary ER enablement.
+  The Specialist has frozen the
+  [operator02 source packet](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-preparation-20261031-02.json):
+  **45 checks / 17 nested children**, with an explicitly bound
+  square-layout baseline and five retained domain refusals. Exact primal algebra
+  remains separate from BETSE's factorized inverse; weighted-inverse and physical
+  admission remain closed. [Independent operator02 source review](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-preflight-20261031-02/REVIEW.json)
+  found no blocker. The [corrected held runner](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-launch-preparation-20261031-01/runner-02/PREPARATION.json)
+  passed 62 distinct metadata checks; earlier attempts and the first sealed
+  runner remain preserved. [Independent runner review](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-runner-preflight-20261031-01/REVIEW.json)
+  verified all 130 runner files and the original 407-file source packet. Root
+  [cleared the 45-check / 17-child batch](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-launch-preparation-20261031-01/runner-02/root-runner-review.json)
+  on CPU2 with the original guards and zero inherited passes.
+  The fresh **45-check qualification [launched detached](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-launch-preparation-20261031-01/runner-02/launch-01/launch.json)** on CPU2 at **07:28:14 UTC**, estimated **5–25 minutes** (unmeasured). No post-launch query was made.
+  [Independent completion review](/mnt/workspaces/Cells/stable-mesh-operator-reconstruction-completion-review-20261031-01/REVIEW.json)
+  now accepts all 45 checks and 17 actual children: 18 exact algebra identities,
+  2,145 rounded values and 1,559 original storage-budget entries. The largest
+  error reaches the inclusive budget; source-factorization defects are retained.
+  Runtime was 305.60 seconds, peak tree RSS 190.8 MB. This accepts one square
+  layout and the declared refusal/control scope; physical/native and weighted
+  inverse admission remain closed. An initial audit assumption was corrected
+  to use the original tighter rounding budgets; that audit failure is preserved.
+  The original accepted square-probe/metric03 identities remain explicit. The new
+  [fixed-seed control-volume constructor](/mnt/workspaces/Cells/stable-seed-control-volumes-preparation-20261031-01.json)
+  is frozen and [source-reviewed](/mnt/workspaces/Cells/stable-seed-control-volumes-preflight-20261031-01/REVIEW.json):
+  production half-plane clipping and an independent constraint-intersection/hull
+  construction compare complete geometry, ownership and conservation.
+  [Independent completion review](/mnt/workspaces/Cells/stable-seed-control-volumes-completion-review-20261031-01/REVIEW.json)
+  accepts **41 unique checks / 19 actual nested children**: three source
+  geometries and sixteen output-corruption controls, with input and raw controls
+  counted separately. All 9,340 artifact hashes were verified. Maximum area
+  readout error was **0.535223 of budget**; bisector projection reached the
+  inclusive bound of **1.0**. The whole job took **122.16 seconds**, peak
+  **106.1 MiB**. The requested
+  [06:24:47 UTC observation](/mnt/workspaces/Cells/root-runners/status-observation-20261031-062447.json)
+  found this job complete and catalog05 still running; no later job query was made.
+  The original 0/9 layout failure remains unchanged. This qualifies the declared
+  computational constructor, with no native, physical or operator admission.
+  The [held-runner review](/mnt/workspaces/Cells/stable-seed-control-volumes-launch-preparation-20261031-01/root-runner-review.json)
+  binds **58 distinct metadata controls**; the superseded 55 are not counted again. Root
+  [declared three prospective computational domains](/mnt/workspaces/Cells/stable-seed-control-volumes-preflight-20261031-01/root-prospective-domain-declaration.json)
+  using recorded boxes; this does not identify native tissue boundaries. Two
+  lattice-derived caller caches still lack outer envelopes. The five failed
+  layouts contain **37 owners, 20 outside**; the earlier six-layout diagnostic's
+  50 includes the passing square baseline. Frozen metadata errors are retained
+  with these corrections. No margin or seed movement is invented. The separate
+  [physical bridge](/mnt/workspaces/Cells/stable-seed-control-volume-physical-bridge-preparation-20261031-01.json)
+  remains held: ten proposed test trees and 20 potential actual children, all unrun.
+  [Independent source review](/mnt/workspaces/Cells/stable-seed-control-volume-physical-bridge-preflight-20261031-01/REVIEW.json)
+  found missing exact vector-length and permeability-species-key checks in its
+  independent oracle. Root [reviewed and promoted the narrow repair](/mnt/workspaces/Cells/stable-seed-control-volume-physical-bridge-preflight-20261031-01/repair-review-01/promotion.json),
+  preserving production equations and every other reference/test AST operation.
+  Three new geometry and two species-map corruption controls are prospective;
+  the unchanged passing-baseline gate remains mandatory. Physical-bridge02
+  is frozen with **19 geometry / 14 physical corruption assertions**
+  inside the same ten test trees. [Combined source review](/mnt/workspaces/Cells/stable-seed-bridge-environment-preflight-20261031-02/REVIEW.json)
+  verified all 607 bridge02 and 645 environment02 files and their preserved
+  predecessors. Both are clear for guarded preparation; all numerical checks
+  remain unrun. No qualification pass follows from source review.
+  It requires explicit caller domain selection and
+  refuses stale operators. The Specialist is preparing the next environment
+  correspondence: these cells fill their domain and touch directly, whereas the
+  existing finite-ECM adapter requires a positive extracellular polygon partition.
+  Bath IDs alone cannot supply that missing geometry; no clefts or bath volumes
+  are inferred. The [environment correspondence packet](/mnt/workspaces/Cells/stable-seed-control-volume-environment-preparation-20261031-01.json)
+  is frozen with **eight proposed trees / 24 potential actual children**, all unrun.
+  It retains the exact obstruction and refuses finite-ECM adaptation. Its original
+  bridge01 dependency stays explicit; environment02 adopts the repaired
+  reference through an explicit pin. It remains obstruction-only. A new
+  [explicit positive-partition constructor](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preparation-20261031-01.json)
+  now declares isolated rectangular cells and positive bath slots using caller
+  domains, seed owners, offsets and every cleft width. Its five proposed cases,
+  23 input controls and 23 output controls occupy nine test trees with nine
+  potential children, all unrun. [Independent source review](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preflight-20261031-01/REVIEW.json)
+  confirmed two
+  evidence gaps: named refusal checks must identify the intended failure, and
+  completed reference precisions must survive a later failure. The frozen packet
+  stays held. The [explicit02 successor](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preparation-20261031-02.json)
+  is frozen with the same physics, cases and budgets, precise refusal contracts
+  and immediate retention of each completed reference. Its 58-file inventory
+  preserves all 38 original files. [Independent repair review](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preflight-20261031-02/REVIEW.json)
+  clears both source blockers: 23 exact refusal contracts and 14 immediate
+  partial-retention assignments, with unchanged numerical algorithms. Its nine
+  trees/nine potential children remain unrun. The [held CPU5 runner](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/PREPARATION.json)
+  has 34 passing metadata controls. [Root reviewed and released it](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/root-runner-review.json)
+  for the exact nine test trees and nine actual nested children, retaining
+  full geometry, precise refusal contracts, original guards and failed evidence.
+  The fresh **nine-tree qualification [launched detached](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/launch-01/launch.json)** on CPU5 at **08:11:01 UTC**, estimated **3–20 minutes** (unmeasured). No post-launch query was made.
+  [Saved-result review and Root acceptance](/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-completion-review-20261031-01/ROOT_ACCEPTANCE.json)
+  now verify **nine tests / nine reference workers**, with five manufactured
+  positive geometries, 23 input and 23 output controls. All **2,258 scalar
+  comparisons** satisfy their original budgets, with maximum error fraction 0.
+  The original finalizer failed on JSON region order, signed-zero identity and
+  legitimate empty `AssertionError` messages. An isolated correction passed
+  **24 metadata controls** and complete saved-evidence replay; no simulation
+  was repeated. The original failure remains unchanged. Original runtime was
+  **121.85 seconds**, with **103.60 MB** aggregate peak RSS. This accepts only
+  the declared partition geometry; original native meshes remain **0/9**.
+  The exact accepted reports can support the initial-state qualification. The
+  Specialist's [initial-physiology bridge source01](/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-preparation-20261031-01.json)
+  is frozen with 503 files and [cleared by independent source review](/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-preflight-20261031-01/REVIEW.json). Four
+  literal callers, sixteen input controls, twenty-six output controls and three
+  metadata controls are prospective. It requires explicit caller physics and
+  complete field, derivative, material/charge/energy and concentration-conversion
+  evidence. The upstream geometry source gate is clear; neither layer receives
+  numerical credit from compilation or source review. No fixture, model or
+  reference has executed. The Specialist's [first-advance draft](/mnt/workspaces/Cells/stable-seed-partition-advance-draft-20261031-01/receipt.json)
+  uses the existing Cells checked RK4/driver and preserves the original first
+  interval and all state/accounting. Ten prospective trees remain unrun.
+  Refinement needs an explicit initial-caller successor: the Specialist is
+  declaring dt/2 and dt/4 controls at the original endpoint, each with its own
+  initial check. The four original callers, initial packet and first-advance
+  draft remain unchanged; these controls are not new biological cases.
+  Source-size arithmetic exceeds the original 1-MiB trace cap in some larger
+  cases. Those original refusals stay intact. Root authorized explicit 4-MiB
+  storage-control variants, with matching base/refinement storage contracts;
+  physical laws, numerical tolerances and process/host-memory guards are unchanged.
+  The [refinement source handoff](/mnt/workspaces/Cells/stable-seed-partition-advance-refinement-preparation-20261031-01.json)
+  now declares 18 initial case/step/storage combinations
+  across the same four physical cases. Four predicted original-cap refusals
+  remain controls; six separately declared storage arms do not replace them.
+  Its 530-file initial successor preserves the original 503-file packet and
+  first-advance source. The advancing draft has 15 prospective test trees and
+  four nested children. [Independent source review](/mnt/workspaces/Cells/stable-seed-partition-advance-refinement-preflight-20261031-01/REVIEW.json)
+  cleared the field assembly, signs, units and unchanged dynamics. The initial
+  [18-comparison runner passed Root review](/mnt/workspaces/Cells/stable-seed-partition-advance-initial-runner-preflight-20261031-01/REVIEW.json)
+  with **54 metadata controls** and exact accepted geometry reports.
+  It [launched detached](/mnt/workspaces/Cells/stable-seed-partition-advance-initial-launch-preparation-20261031-01/launch-01/launch.json) on CPU3 at **09:29:24 UTC**,
+  estimated **10–40 minutes**, with 18 producers, 18 fresh independent workers
+  and one finalizer. Original per-unit and aggregate resource caps remain.
+  The 09:57:42 UTC observation found all 36 workers finished, with a final
+  runtime-origin classification failure. Root corrected the exact input-file
+  exception ordering, preserving every input/file hash guard; 15 metadata
+  controls passed. [Independent saved-result review](/mnt/workspaces/Cells/stable-seed-partition-advance-initial-completion-review-20261031-01/REVIEW.json)
+  accepts **18 bindings / four physical cases**, with 2,124 complete array
+  rows and 39,156 scalar comparisons. Maximum difference is **0.008132 of
+  budget**. Original runtime was **155.39 seconds**, peak tree RSS **247.99 MB**.
+  The wrapper failure remains unchanged; no scientific rerun was needed.
+  All 18 bindings prepare time-zero states across **four physical cases**.
+  The four storage refusals remain predictions for later advancing runs,
+  not executed initial outcomes. [The first-advance source and runner
+  passed independent review](/mnt/workspaces/Cells/stable-seed-partition-advance-refinement-runner-preflight-20261031-01/REVIEW.json): 15 tests, four passive cases,
+  12 comparison arms and four nested DOP853 children at the original
+  **one-microsecond endpoint**. Forty-nine metadata controls are software
+  evidence only. The [fresh qualification](/mnt/workspaces/Cells/stable-seed-partition-advance-refinement-root-release-20261031-01/launch-record.json) launched
+  detached on CPU2 at **11:05:49 UTC**; expected over ten
+  minutes, with actual runtime unmeasured. Original unit/aggregate resource
+  limits remain enforced. Completion review is pending; no post-launch query.
+  Initial records are reused explicitly; no extra geometry or reference
+  replay, reference-uncertainty or fourth-order accuracy claim is made.
+  The
+  [single square-layout probe](/mnt/workspaces/Cells/stable-mesh-metric-square-zero-probe-20261031-01/result.json)
+  completed its unchanged metric02 test and two existing fresh reference children
+  in **4.54 seconds** on CPU2. [Independent closeout](/mnt/workspaces/Cells/stable-mesh-metric-square-zero-probe-review-20261031-01/REVIEW.json)
+  verified 591 comparison rows, 520 scalar events and all 122 artifacts; Root
+  accepts this one layout as a positive metric baseline. Maximum stored-coefficient
+  error is **0.906227 of the half-ULP allowance**; other metric error is at most
+  **0.000016649 of budget**. These are bounded component steps;
+  complete native initialization and whole-solver parity remain open.
+
+  The requested **03:57:40 UTC** observation found both calcium03 and catalog02
+  terminally failed. [Saved failure review](/mnt/workspaces/Cells/ecm-calcium-catalog-failure-review-20261031-01/REVIEW.json)
+  verified source/runtime identity and **925 typed archives**, without rerunning
+  simulations. Calcium ran all **34 checks: 33 passed, one failed**; the
+  controller credited 29 because four passes were inside the failed group.
+  **15 complete three-call histories / 45 calls / 420 compared reference forms**
+  remain valid partial evidence. Four additional constructor forms were generated
+  but not compared. In the failed `negative_genes` case, BETSE first produces
+  NaNs during third-call sodium junction transport, following a saved voltage
+  reaching **955.88 V**. Later calcium and GRN stops are distinct; this does not
+  establish which mechanism caused instability. The original test stops before
+  any owned hot-loop comparison for that case. Key Dev's
+  [frozen domain04 successor](agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_domain04_static_receipt_01.json)
+  retains the same raw input and requires all 23 shared pre-handler frames,
+  with distinct source/owned refusal stages and unchanged forcing/tolerances.
+  Review found that the new chemistry-prefix reference omitted runtime identity
+  for two forms. The [runtime-only05 successor](/mnt/workspaces/Cells/betse-normal-ecm-calcium-domain-launch-preparation-20261031-05/root-runner-review.json)
+  adds the existing runtime capture and strict source/executable/CPU checks;
+  Root recovered the original whole-module ASTs outside that metadata delta.
+  **27 repair controls and 23 controller controls** passed. Its **34 fresh
+  checks / 442 forms / 22 native captures**
+  [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-calcium-domain-launch-preparation-20261031-05/launch-01/launch.json)
+  at **05:05:30 UTC** on CPU1, with zero inherited credit. The requested
+  **05:21:52 UTC** observation found it complete at **05:11:46 UTC**.
+  [Independent closeout](/mnt/workspaces/Cells/betse-normal-ecm-calcium-domain-completion-review-20261031-01/REVIEW.json)
+  accepts all **34 checks / 442 fresh forms / 22 native captures**, with 470
+  runtime inventories verified. Fifteen complete three-call histories comprise
+  eleven manufactured contexts and four component controls. The original
+  `negative_genes` input retains two complete calls and **23 exact shared
+  third-call frames**; the owned calcium finite-value guard and later native
+  GRN failure remain distinct. Largest error is **0.2571 of the unchanged
+  budget**, peak tree memory **366.7 MB**, controller elapsed **6m16s**.
+  This does not recover the failed third call, establish its cause or qualify
+  an independently carried trajectory. Original 33/34 calcium and 39/40
+  material failures remain preserved.
+
+  Catalog02 has **37 passes, three HCN failures and 54 unrun checks**.
+  [Exact saved-cache diagnosis](/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/saved-cache-result.json)
+  shows native and owned complete channel/network caches match byte-for-byte
+  for all three failures. The native funny-current classes add `vrev=-45`
+  during their first update; the cache schema omitted that legitimate field.
+  Root now uses the existing exact class write inventory for hot-cache fields.
+  Cold, owner, target, extra-field and finite-value checks remain strict; equations,
+  comparators and tolerances are unchanged. **27 software controls** passed,
+  including all six funny-current classes and the 55-class literal write audit.
+  [Independent review](/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/root-review-01/REVIEW.json)
+  is clear. [Frozen source04](/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/preparation04.json)
+  preserves all earlier callback repairs and failures. Its
+  [reviewed runner03](/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-launch-preparation-20261031-03/root-runner-review.json)
+  [launched](/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-launch-preparation-20261031-03/launch-01/launch.json)
+  at **04:33:52 UTC** on CPU5: a fresh **94-check / 71-history / 1,314-form**
+  run with **zero inherited pass credit**, estimated **20–45 minutes**. Its 19 new
+  metadata checks and 65 explicitly reused controls are separate from science.
+  The requested **05:06:18 UTC** observation found it failed in `controls-02`.
+  [Saved-evidence review](/mnt/workspaces/Cells/ecm-catalog04-failure-review-20261031-01/REVIEW.json)
+  verified **79 passes, one failed control and 14 unrun**: all 55 individual
+  channel-class prefixes, 16 dependency checks, seven raw cases and the empty
+  channel control passed. Eleven combined histories and three controls remain
+  unrun. **818 conditional forms** were completed and compared, including 14
+  from the failed prefix; one reference attempt failed. Largest error was
+  **0.199325 of budget**. The review verified 1,192 typed archives and 910 runtime
+  inventories; summed test-group time was **703.74 seconds**, peak tree memory
+  **364.74 MB**.
+  The `rho_blocked` control reached
+  its second-call independent material reference before the owned advance. The
+  sodium helper refused **0.16058–0.37417 V** for the constant `NaLeak` law.
+  Pinned native code sets its four targets/time constants to one. The ECM
+  protocol declares finite admission; the reused standalone sodium helper has
+  a separate bounded-voltage contract. Root's
+  [prospective adapter-domain correction](/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/result.json)
+  passed **38 targeted checks** in 0.51 seconds, retaining finite/type refusals,
+  every voltage-dependent dispatch, the shared sodium helper and all budgets.
+  [Independent review](/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/root-review-01/REVIEW.json)
+  cleared the correction, and Root
+  [promoted the exact tested reference and test](/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/promotion.json).
+  That explicit ECM adapter-domain repair itself executed no new catalog history.
+  The saved three-call native archive also exceeds the runner's 10,000-member
+  cap: **15,247 members, 3.37 MB expanded**. A
+  [reviewed metadata correction](/mnt/workspaces/Cells/ecm-catalog-archive-cardinality-repair-20261031-01/root-review-01/REVIEW.json)
+  raises that fixed cap to **32,768**, retaining all 64-MiB byte, header, type,
+  ownership, hash and CRC checks. **36 software controls** passed; the saved
+  archive binds completely in 1.49 seconds. Its 31,726-member capture allowance
+  is a static catalog estimate, not a measured full-roster maximum or a guarantee
+  for longer lifecycle captures. The reviewed source05/runner04 now binds both
+  corrections, all 94 checks, 71 positive histories, 78 native captures and 1,314
+  fresh precision forms. Root release changes only the runtime administrative
+  hold after verification; prepared inputs stay unchanged. It has [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-launch-preparation-20261031-04/launch-01/launch.json)
+  on CPU5, estimated **20–45 minutes**, with zero inherited scientific passes.
+  The requested **06:51:00 UTC** observation found it failed in `controls-05`.
+  [Independent saved-result review](/mnt/workspaces/Cells/ecm-catalog05-failure-review-20261031-01/REVIEW.json)
+  verifies **82 passed, one failed, 11 unrun**. All 55 individual channel prefixes
+  and four three-call controls passed. **920 fresh forms / 460 conditional points**
+  completed and were compared; no completed form was left uncompared. Maximum
+  completed discrepancy remains **0.199325 of budget**, peak tree memory
+  **383.5 MB**. All 2,590 source files, 1,324 typed archives and 1,018 runtime
+  records were verified. `no_CaATP` reaches **+0.162116 to +0.380431 V** at the
+  second call. Its voltage-dependent `Nav1p2` reference rejects that input beyond
+  its unchanged **−0.120 to +0.060 V** contract, before the second owned material
+  step. Native code completes three calls; the first owned call and next input
+  match native. This remains a failed reference-domain exit, without a numerical
+  tolerance failure. A separate prospective qualification of the wider
+  voltage-dependent reference domain follows below; the constant `NaLeak`
+  exception provides no such evidence. The [isolated domain proposal](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-proposal-20261031-01/REVIEW.json)
+  now specifies separate adapters for six sodium classes and `Ca_L2` over
+  −0.120 to +0.400 V, retaining original equations, standalone contracts and
+  failure evidence. Static source analysis found that a sodium-only change
+  would immediately reach the calcium helper's separate guard.
+  [Independent proposal review](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-preflight-20261031-01/REVIEW.json)
+  cleared the source analysis and unchanged equations. Executable scalar and
+  pinned-native controls now have a [held support runner](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-check-preparation-20261031-01/PREPARATION.json).
+  Its 126 original scalar checks remain separate from seven native probe groups
+  and 210 planned precision forms; raw singularity diagnostics confer no
+  accuracy credit. The [short support01 run failed at collection](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-check-preparation-20261031-02/failed-support01-review.json):
+  **12 software controls passed; all 126 cases collected; zero numerical
+  test bodies or native/reference probes ran**. Installed pytest reindexes
+  direct parameters, causing 45 prepared identity mismatches. Held support02
+  derives all original identities from literal parameter values and pinned
+  pytest behavior; 16 synthetic mapping controls pass. Root then found a
+  pre-existing finalizer variable shadowing its scalar decoder. The narrow
+  support03 correction passed five synthetic finalizer controls. A Root
+  release-schema mistake was refused before any worker started and is retained.
+  The corrected [fresh support03 run passed evidence review](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-completion-review-20261031-01/REVIEW.json):
+  **126 scalar checks, 105 native comparisons / 945 observables, 210 fresh
+  precision forms**, plus 12 software and two CLI controls. Runtime was
+  **15.53 seconds**; maximum native error was **0.015034 of its budget**.
+  Forty-two outside-domain refusals and 55 raw pole diagnostics remain
+  distinct from accepted comparisons. Root [promoted the reference adapters](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-promotion-20261031-01/promotion.json);
+  [live lint cleanup](/mnt/workspaces/Cells/ecm-catalog-voltage-domain-promotion-20261031-01/maintenance.json)
+  preserves their equations and records the separate current source hashes.
+  [The full catalog06 successor passed integration review](/mnt/workspaces/Cells/ecm-catalog-voltage-successor-preparation-20261031-01/ROOT_REVIEW.json),
+  retaining all 94 checks and stricter Nav1p6 budgets. The [fresh qualification](/mnt/workspaces/Cells/root-runners/catalog-molecule-round-20261031-01/catalog/launch.json)
+  launched detached on CPU5 at **10:21:03 UTC**, estimated
+  **20–45 minutes** (unmeasured), with 1,314 conditional forms planned.
+  The requested 11:00:14 UTC check found a terminal failure at
+  **10:38:14 UTC**, after 31 completed groups. The [saved audit](/mnt/workspaces/Cells/ecm-catalog06-failure-review-20261031-01/catalog/AUDIT.json) records
+  **83 passed / one failed / ten unrun**: all 55 class prefixes and five
+  controls passed. Of 954 completed conditional precision forms, 940
+  belong to passing histories and 14 to the failed case's completed
+  prefix; its partial next reference is uncredited. The `cat_zero_Ca`
+  reference rejected call 1 at the CaLeak helper voltage gate. Native
+  CaLeak is constant; a narrow source-supported dispatch correction is
+  [isolated and unapplied](/mnt/workspaces/Cells/ecm-catalog06-failure-review-20261031-01/saved-failure-diagnosis.json). Review sealing and successor qualification
+  remain pending. The proposed ECM adapter admission change would be
+  explicit; all voltage-dependent guards and accuracy budgets stay fixed.
+  The original 82/1/11 campaign stays failed. This computational range confers no biological
+  validity at high voltage. Original 79/1/14 evidence, inputs,
+  guard thresholds and all failed runners remain unchanged.
+  Reference forms are conditional comparisons, not independent
+  biological cases or whole-trajectory accuracy tests.
+
+  [Topology02](/mnt/workspaces/Cells/stable-mesh-physical-reconstruction-launch-preparation-20261031-01/launch-01/launch.json)
+  completed before the requested **04:34:32 UTC** check.
+  [Independent closeout](/mnt/workspaces/Cells/stable-mesh-physical-reconstruction-completion-review-20261031-01/REVIEW.json)
+  accepted **33 checks / 15 already-nested reference children / finalizer**,
+  with no duplicate replays. It verified **1,211 reference rows**, 518 across
+  six candidates and 693 across nine corruption controls, plus 618 artifacts
+  and 49 runtime records. Runtime was **50.03 seconds**, peak tree RSS
+  **107.6 MB**. This qualifies topology correction only; the original
+  **0/9 complete-mesh failure** remains unchanged. The
+  [metric02 runner](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-launch-preparation-20261031-01/root-runner-review.json)
+  [launched](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-launch-preparation-20261031-01/launch-01/launch.json)
+  at **04:33:52 UTC** on CPU4 and failed the first `irregular-centroid-aux`
+  check at the strict seed-inside-polygon admission rule: **0 passes, one
+  failure, 38 unrun checks and zero reference children executed**. Its 43
+  metadata checks remain software evidence only. Root implemented an
+  [exact saved-coordinate diagnostic](validation/geometry/stable_mesh_metric_saved_domains.py),
+  with **22 passing analytical/software checks** covering boundaries, concavity,
+  underflow and preserved owner ordering. [Independent diagnosis review](/mnt/workspaces/Cells/stable-mesh-metric-domain-diagnosis-review-20261031-01/REVIEW.json)
+  verified all **212 edge witnesses**: **20 of 50 seeds** are strictly outside
+  their polygons across five layouts; only `caller-square-zero` passes this
+  containment test. This is a saved-coordinate diagnosis, with no new metric
+  construction or physical qualification. Distinct parent seals remain recorded;
+  geometry and non-identity values match exactly. No contemporaneous full runtime
+  inventory or import-denied replay is claimed for the lightweight diagnostic.
+  Original coordinates, arithmetic, budgets, strict guards and all failed evidence
+  are unchanged. The Specialist owns the explicit domain/baseline successor,
+  retaining all five refused layouts. The separate square probe passed the
+  existing full metric assertions; independent review verified its source,
+  complete comparisons and two child inventories. The frozen metric03 candidate
+  keeps 39 checks, with five explicit domain refusals and 40 planned reference
+  children; it receives no inherited qualification passes. Its
+  [companion](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-companion-20261031-03/binding.json)
+  binds the independent probe closeout and discloses a new test-only blocker:
+  comparing whole parent seals confuses capture identity with geometry. The
+  correction compares every nonidentity field and retains both original seals
+  separately. [Independent review](/mnt/workspaces/Cells/stable-mesh-metric-domain-successor-preflight-20261031-01/REVIEW.json)
+  accepted that change. Root applied the exact reviewed AST and froze
+  [metric04](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-preparation-20261031-04.json):
+  272 files, with all 252 metric03 files preserved. The
+  [reviewed runner02](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-launch-preparation-20261031-02/root-runner-review.json)
+  passed **69 metadata controls**. Its fresh **39 checks / 40 nested children**
+  [launched detached](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-launch-preparation-20261031-02/launch-01/launch.json)
+  on CPU4 at **05:41:11 UTC**, estimated **5–20 minutes** with zero inherited
+  passes. The requested **05:41:55 UTC** observation found the same process
+  active; the next requested **05:55:29 UTC** observation found it complete.
+  [Independent closeout](/mnt/workspaces/Cells/stable-mesh-metric-reconstruction-completion-review-20261031-01/REVIEW.json)
+  accepts **39 checks / 40 actual children**, comprising 38 successful precision
+  forms and two expected reference refusals. This covers **one positive square
+  layout**, five retained domain refusals and 18 corruptions with verified
+  passing baselines. All 591 complete metric rows, 520 arithmetic events and
+  1,063 certificate assertions were checked. Maximum non-storage error was
+  **0.000016649 of budget**; stored coefficients reached **0.90623 of half an ULP**.
+  Qualification elapsed **161.50 seconds**, peak tree RSS **104.34 MB**.
+  The original 0/9 mesh failure remains unchanged; this grants no physical,
+  inverse-operator or native-loop admission.
+  Its first exact-byte review refusal remains recorded;
+  tested-to-sealed full-module AST correspondence verifies formatting-only
+  differences. Eighteen corruption
+  controls must first pass their unchanged baseline against the same reference
+  pair. The separate unused-edge refusal remains distinct. The initial Root
+  preparation stopped on a review-field name mismatch before creating outputs;
+  its script and failure are retained. No equations, guards or budgets changed.
+  No physical, inverse-operator or native-loop admission follows from that probe.
+
+  Ordinary mechanics remains [accepted within its supplied-state scope](/mnt/workspaces/Cells/betse-mechanics-join-completion-review-20261031-02/REVIEW.json):
+  **37 checks / 35 fresh workers**, 14 contexts, 39 source calls and five
+  display samples; maximum independent error **0.2451 of budget**. Root's
+  [saved finalizer repair](/mnt/workspaces/Cells/mechanics-finalizer-repair-20261031-01/preparation.json)
+  removed an introduced object alias, preserved all five corruption outcomes,
+  and completed the saved recheck in **19.59 seconds** without numerical reruns.
+  Both failed originals remain, including the disclosed divergence-category
+  floor correction from **3e-20 to 3e-14**. Live protocol/source-map/plan
+  metadata matches the qualified source. The explicit
+  [ECM/mechanics successor02](/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-launch-preparation-20261031-02/PREPARATION.json)
+  is sealed and held: **36 checks / 28 fresh workers** remain unrun; 87 metadata
+  controls passed. Enabled flow, dynamic deformation, physical rebuilding and
+  full ordinary-solver execution remain unqualified.
+
+  The [scheduled-event/tissue successor02](/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-02/root-runner-review.json)
+  was reviewed and released, but **has not launched**. Key Dev's lifecycle audit
+  found two calls to the absent `calendars.dense` API; the
+  [event/mechanics review](/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-preflight-20261031-01/REVIEW.json)
+  confirmed three more. Root [held event02 before launch](/mnt/workspaces/Cells/ecm-event-calendar-api-repair-20261031-03/event02-hold.json),
+  superseding the earlier release. Its **42 checks / 26 captures / 920 forms**
+  and the combined mechanics panel remain unrun. Root replaced all five calls
+  with the existing full `window` API; inverse AST comparison leaves every other
+  operation unchanged. [Bounded repair checks](/mnt/workspaces/Cells/ecm-event-calendar-api-repair-20261031-03/result.json)
+  passed **20 existing calendar checks** in 0.77 seconds and exercised all five
+  isolated source call expressions in 0.26 seconds. The first package lacked
+  two native source copies (two checks passed, 18 failed); a second preparation
+  used the wrong parent copy path and stopped before tests. Both failures remain
+  preserved. No event or mechanics trajectory is qualified by these API checks.
+  [Independent review and held runners](/mnt/workspaces/Cells/ecm-event-calendar-api-repair-20261031-03/root-review-01/runner-completion.json)
+  are complete: event03 keeps 42 checks/920 forms; event-mechanics02 keeps
+  62 checks/1,508 forms, with 36 new synthetic runner controls. A static audit
+  resolved 219 local API calls. Both numerical runs remain held for explicit
+  successor integration of the NaLeak reference and archive corrections; their
+  original references stay pinned. Event references have a separate kinetics
+  dispatch. Root [tested and promoted its reviewed correction](/mnt/workspaces/Cells/ecm-event-naleak-reference-repair-20261031-01/promotion.json):
+  **72 software checks** passed in **0.77 seconds**, comprising 34 event checks,
+  34 catalog checks and four shared native-law/domain/import checks. Existing
+  assertion bodies, the shared sodium helper and all voltage-dependent laws
+  are unchanged. These software checks do not qualify combined histories.
+  The new event04/mechanics03/lifecycle02 packets bind the correction explicitly.
+  The original packets, calendar calculations, equations and tolerances are unchanged.
+  The Python sources among calcium's 105 controlled files contain no imports of
+  the affected event modules. The
+  [cut-lifecycle review](/mnt/workspaces/Cells/betse-native-cut-lifecycle-preflight-20261031-01/REVIEW.json)
+  found missing archival when construction raises. A capture-only successor02
+  preserves the complete trial before re-raising the same exception; all 25
+  planned IDs, fixtures, equations and assertions remain unchanged. Its
+  [reviewed runner](/mnt/workspaces/Cells/betse-native-cut-lifecycle-launch-preparation-20261031-01/PREPARATION.json)
+  passed **36 metadata/exception controls plus four startup-fault controls**;
+  the earlier 31 are not additional cases. The attached qualification completed
+  and [passed independent closeout](/mnt/workspaces/Cells/betse-native-cut-lifecycle-completion-review-20261031-01/REVIEW.json):
+  **25 unique checks / 14 native captures / six conditional owner forms**,
+  87 typed alias graphs and 23 runtime inventories. The six prefix conditions,
+  eight raw cases and eleven ownership/continuation refusals remain distinct;
+  five native exceptions and three defective completed prefixes are preserved.
+  Runtime was **14.60 seconds**, peak **112.84 MiB**; maximum owner-quantity
+  discrepancy was **4.14e-13 of budget**. NaN/Inf coverage remains absent.
+  Full native cuts, geometry rebuilding and ordinary-loop continuation remain
+  unqualified and refused.
+
+  The supplied-owner initialization panel has **30 checks**, distinct
+  from native initialization. Its [resource-only source03](/mnt/workspaces/Cells/betse-normal-ecm-initialization-preparation-20261031-03.json)
+  and [held runner02](/mnt/workspaces/Cells/betse-normal-ecm-initialization-launch-preparation-20261031-02/PREPARATION.json)
+  now include the required inventory and before/after-copy resource checks;
+  all 398 previous source files are unchanged. Seven new metadata controls
+  passed in 2.53 seconds, peak `VmHWM` 36.8 MB. Root
+  [cleared the runner](/mnt/workspaces/Cells/betse-normal-ecm-initialization-launch-preparation-20261031-02/root-runner-review.json)
+  after verifying the full 599-file packet, original 581 artifacts, all 398
+  unchanged source files and the exact tested runner deltas. The five supplied
+  contexts make 15 existing-component calls with four component baselines;
+  23 refusals and two buffer/unreadable controls remain separate. There are no
+  fresh native or independent reference workers. Actual refusal stages must be
+  retained; generic rejection does not prove every intended finer branch.
+  The [CPU3 qualification launched detached](/mnt/workspaces/Cells/betse-normal-ecm-initialization-launch-preparation-20261031-02/launch-01/launch.json),
+  estimated **3–12 minutes**,
+  using unchanged memory/time guards and zero inherited passes.
+  The requested 06:24:47 UTC observation found **0 passed, one failed, 29 unrun**.
+  [Saved-failure review](/mnt/workspaces/Cells/betse-normal-ecm-initialization-failure-review-20261031-01/REVIEW.json)
+  verifies that the first supplied field-state comparison failed before any
+  advancing call. Capture converted nine actual NumPy float64 cache scalars to
+  Python floats. Separately, cold component controls are declaration sequences,
+  whereas supplied controls correctly retain their original array representation.
+  Root [reviewed and promoted the repair](/mnt/workspaces/Cells/betse-normal-ecm-initialization-type-repair-20261031-01/promotion.json):
+  retain exact float64 scalar types/bits, explicitly refuse unsupported NumPy
+  scalar types, and construct the expected component state from independently
+  saved pre-handoff owners. The original cold baseline remains archived; its
+  material, fields, calcium clock/rate and mechanics stay unchanged. Full state
+  digests and typed inventories remain mandatory. Shared hashing is unchanged.
+  [Thirteen unique software checks and nine saved scalar witnesses](/mnt/workspaces/Cells/betse-normal-ecm-initialization-type-repair-20261031-01/result03.json)
+  passed under the existing guard, in 2.02 seconds at 209.1 MB peak tree memory.
+  Two harness-only failures from an overstrict import assertion remain preserved;
+  the final inventory records JAX/JAXLIB, NumPy and SciPy imports, with no model
+  construction or advancing call. Repeated checks are not counted again.
+  [Independent repair review](/mnt/workspaces/Cells/betse-normal-ecm-initialization-type-repair-20261031-01/REVIEW.json)
+  is clear. The original 30-check failure remains failed; explicit successor
+  preparation also binds the previously reviewed calcium callback fix. The
+  [explicit source04 packet](/mnt/workspaces/Cells/initialization-scalar-owner-successors-20261031-01/HANDOFF.json)
+  preserves 798 files and all 30 original IDs. [Independent runner03 review](/mnt/workspaces/Cells/betse-normal-ecm-initialization-runner-preflight-20261031-03/REVIEW.json)
+  verified the source repair but found two checker defects before launch:
+  the exact inventory omitted nine newly required typed records, and the
+  finalizer still compared the admitted parent against the original cold
+  representation. Root's separate runner04 corrects those metadata checks:
+  supplied controls/cache must match the pre-capture owners and boundary;
+  cold physical, field, rate, clock and mechanical state must remain unchanged;
+  the full admitted parent must match the owner-rebound baseline. Source04,
+  scientific cases, three-call continuity and resource limits are unchanged.
+  [Thirty-eight synthetic metadata controls passed](/mnt/workspaces/Cells/ordinary-owner-finalizer-repair-review-20261031-01/REVIEW.json),
+  covering all five positive metadata paths, missing archives, corrupt controls,
+  cache/physical-state changes and type-only changes. Guarded runtime was
+  2.02 seconds; reported worker high-water memory 27.5 MB. No numerical
+  initialization or advancing call was executed by these controls. Root
+  [cleared the separate checker runner04](/mnt/workspaces/Cells/betse-normal-ecm-initialization-launch-preparation-20261031-04/root-runner-review.json)
+  after verifying all source, unchanged runner/resource predicates and exact
+  tested-file bindings. The fresh **30-check qualification [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-initialization-launch-preparation-20261031-04/launch-01/launch.json)** on CPU3 at **07:28:17 UTC**, estimated **3–12 minutes** (unmeasured). No post-launch query was made.
+  [Root's completion review](/mnt/workspaces/Cells/ordinary-owner-completion-review-20261031-01/REVIEW.json)
+  accepts all 30 checks: five supplied contexts, 15 component calls, four cold
+  baselines, 23 refusals and two buffer/unreadable controls. All 2,220 saved
+  artifact hashes, 380 typed records and 1,019 runtime file identities were
+  verified; supplied controls/cache and unchanged cold physical state match
+  exactly. Runtime was 148.09 seconds, peak tree RSS 246.9 MB. This qualifies
+  supplied-state routing only; native initialization, independent numerical
+  accuracy and conservation remain separate. The original 0/1/29 failure stays
+  preserved, and generic refusals retain their actual stage without finer
+  branch credit.
+  The [six-column membrane-layout runner](/mnt/workspaces/Cells/betse-native-membrane-layout-launch-preparation-20261031-01/PREPARATION.json)
+  is sealed and held: **43 checks / 14 nested byte/schema children** unrun,
+  67 metadata controls passed. It preserves all native columns and distinguishes
+  midpoint/normal from normal/tangent views. The new
+  [initialization bridge review](/mnt/workspaces/Cells/betse-native-membrane-initialization-preflight-20261031-01/REVIEW.json)
+  holds its **41 checks / 13 nested children** for two evidence repairs: decode
+  Python-float bit tags before reference hashing, and archive original array
+  strides before contiguous normalization. The
+  [capture/decoder successor02](/mnt/workspaces/Cells/betse-native-membrane-initialization-preparation-20261031-02.json)
+  is frozen with 36 passing repair controls and unchanged production projection,
+  dependencies and 41/13 planned roster. Its held runner passed 51 metadata
+  controls. [Independent source/runner review](/mnt/workspaces/Cells/betse-native-membrane-initialization-independent-preflight-20261031-02/REVIEW.json)
+  cleared the narrow repair. Root has
+  [released the initial 41-check / 13-child qualification](/mnt/workspaces/Cells/betse-native-membrane-initialization-launch-preparation-20261031-01/root-runner-review.json).
+  It [launched detached](/mnt/workspaces/Cells/betse-native-membrane-initialization-launch-preparation-20261031-01/launch-01/launch.json)
+  at **05:20:37 UTC** on CPU3. The requested **05:21:52 UTC** observation found
+  **0 passed, one failed, 40 unrun; 0/13 children started**. The fixture could
+  not read its catalog inventory, before any physics or reference evaluation.
+  [Saved-failure/resource review](/mnt/workspaces/Cells/betse-native-membrane-initialization-resource-audit-20261031-01/REVIEW.json)
+  traced the one required missing JSON to identical bytes in two frozen donors;
+  no other reached omission was found across 405 Python files and 69 read sites.
+  Root added a reusable
+  [literal-resource preparation check](validation/frozen_resource_dependencies.py),
+  with **22 passing software checks**. Dynamic paths remain explicit manual-review
+  items, not an automatic complete dependency claim. The
+  [resource-only source03](/mnt/workspaces/Cells/betse-native-membrane-initialization-preparation-20261031-03.json)
+  adds the exact pinned inventory, preserves all 646 previous files and keeps all
+  405 Python files, 41 test IDs, 13 children and scientific budgets unchanged.
+  Its scan has no missing literal resources; 43 unresolved expressions retain
+  the manual audit. Two local packaging-script failures are retained separately.
+  [Runner02 review](/mnt/workspaces/Cells/betse-native-membrane-initialization-launch-preparation-20261031-02/root-runner-review.json)
+  accepts the narrow repair and exact tested resource guard; **23 new metadata
+  checks** passed, without rerunning the previous 22 checker or 51 runner controls.
+  A duplicate result-write refusal after those checks is preserved separately.
+  The fresh **41-check / 13-child qualification**
+  [launched detached](/mnt/workspaces/Cells/betse-native-membrane-initialization-launch-preparation-20261031-02/launch-01/launch.json)
+  on CPU3 at **05:54:37 UTC**, estimated **3–8 minutes** with zero inherited
+  passes. The requested **05:55:29 UTC** observation found **0 passed, one failed,
+  40 unrun; one actual reference child**. The resource omission is resolved, but
+  the reference rejected the original pair checksum. Root's
+  [reviewed repair](/mnt/workspaces/Cells/membrane-reference-float-seal-repair-20261031-01/root-review-01/REVIEW.json)
+  restores the pinned serializer's exact Python-float bit tags during hashing,
+  preserving distinct legacy NumPy-scalar behavior. The earlier 36 codec controls
+  used the wrong plain-JSON expected digest; their receipts remain preserved.
+  **44 new software checks** passed against the actual serializer, and all
+  **29 saved-case outer assertions** passed without rerunning initialization.
+  These are repair checks, not new independent cases or qualification passes.
+  Root [promoted the exact tested reference and unit test](/mnt/workspaces/Cells/membrane-reference-float-seal-repair-20261031-01/promotion.json);
+  [source04/held-runner03](/mnt/workspaces/Cells/betse-native-membrane-initialization-launch-preparation-20261031-03/PREPARATION.json)
+  is now sealed, with 1,325 frozen files and 422 of 423 scientific sources unchanged.
+  Preparation found and repaired the same checksum assumption in the runner
+  finalizer. It reports **89 metadata passes**: 23 resource/roster controls,
+  51 corrected helper controls and 15 saved-seal/binding controls. These are
+  separate from the 44 serializer checks and confer no scientific qualification.
+  [Source/runner review](/mnt/workspaces/Cells/betse-native-membrane-initialization-independent-preflight-20261031-04/REVIEW.json)
+  cleared those narrow checksum changes. A subsequent
+  [dependency hold](/mnt/workspaces/Cells/betse-native-membrane-initialization-independent-preflight-20261031-04/dependency-hold-01.json)
+  supersedes release readiness: this packet embeds the initializer that loses
+  NumPy scalar types. An explicit successor must include the repaired copy path
+  and compare the original pre-capture cache with admitted owners. The
+  [explicit source05 packet](/mnt/workspaces/Cells/initialization-scalar-owner-successors-20261031-01/HANDOFF.json)
+  now preserves 1,544 files, adopts the reviewed scalar-copy/calcium callback
+  fixes and retains the original 41 checks/13 children. Its two membrane
+  dependency-pin edits remain draft-only pending review; no live promotion or
+  runner release is implied. Source04/runner03 remain intact and the retry has not launched.
+  Both failed runs remain
+  failed, with all original evidence and unchanged production equations.
+  Old initialization02 retains
+  the same gap, now fixed in its explicit source03; standalone layout01 does not
+  reach that fixture.
+  Physical and full native-init/load admission remain closed.
+  New long qualifications use detached launch with no post-launch polling or
+  automatic retry. GPU runs stay deferred.
 
 - **Explicit local numerical refinement passed eager and compiled scalar CPU
   checks; the original compiler-memory failure remains preserved.** Optional
@@ -541,6 +1405,47 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   failure evidence; it adds no passing scientific case and does not qualify the
   original stress case or full ECM panel.
 
+  The [retained-data diagnosis](/mnt/workspaces/Cells/betse-ecm-material-retained-diagnosis-20261031-02/result.json)
+  finds no comparator, indexing or units error. All **381 native columns** are
+  bitwise equal and all **396 reference fields** were audited. The failing
+  difference is already the nearest value obtainable by subtracting the two
+  binary64 concentration buffers: its **1.744866e-12** irreducible error exceeds
+  the **3.000103e-13** budget. Specialist is adding a separate requested transport
+  increment diagnostic while preserving the original raw difference and failure.
+  Unequal supplied reciprocal junction paths are a distinct physical conservation
+  issue; no silent path averaging, state refresh or tolerance widening is applied.
+  The [requested-increment packet](/mnt/workspaces/Cells/betse-ecm-requested-increment-preparation-20261031-01.json)
+  passed [static review](/mnt/workspaces/Cells/betse-ecm-requested-increment-preflight-20261031-01/REVIEW.json):
+  **17 checks and 26 fresh worker records** are planned.
+  Those workers comprise ten native replays, ten independent references, five
+  corruption controls and one callback control; they are not 26 independent
+  physical cases. The new observable is the requested outward junction increment
+  before binary64 addition and clipping. Original buffers, ledgers and the 39/40
+  failure remain distinct and unchanged.
+  [Root runner review](/mnt/workspaces/Cells/betse-ecm-requested-increment-launch-preparation-20261031-01/root-runner-review.json)
+  cleared **44 guarded units**, including the finalizer and **31 fresh Decimal
+  evaluations** within the 26 worker records. The
+  [initial qualification launched detached](/mnt/workspaces/Cells/betse-ecm-requested-increment-launch-preparation-20261031-01/launch-01/launch.json)
+  at **01:52:58 UTC**, PID **2197372**, on CPU5. Estimated duration is
+  **10–25 minutes**, unmeasured. Limits are one thread, **1 GiB/480 s per unit**,
+  **2 GiB/two hours** aggregate and **8 GiB** host reserve.
+  The requested **02:18 UTC** check found all **17 checks and 26 workers**
+  complete, followed by a finalizer failure: its exact resource schema omitted
+  the RSS alias emitted by the pinned guard. A separate
+  [saved-evidence closeout](/mnt/workspaces/Cells/betse-ecm-requested-increment-closeout-20261031-01/REVIEW.json)
+  accepts the requested-increment diagnostic after correcting only that metadata
+  contract and directing review output outside the original run. All **1,160
+  artifacts**, **43 runtime captures**, **665 runtime-file pins** and **83 typed
+  archives / 29,258 arrays** verify; no simulation or reference law was rerun.
+  Maximum error is **5.6464e-9 of the unchanged budget**. The two projected
+  references coincide in binary64, while **73,839 full Decimal nodes differ**;
+  this is not exact high-precision agreement or a convergence-order claim.
+  Ten separate software checks verify the resource-schema correction. Saved
+  finalization took **42.95 s** with **109.8 MB** peak sampled tree RSS.
+  The original finalizer failure, original **39/40** raw-difference failure and
+  separate unequal-path conservation issue remain unchanged. This qualifies the
+  new observable in ten retained manufactured contexts, not physical conservation.
+
 - **Native pump-to-normal-solver coupling passed 34 reviewed checks.**
   [Completion verification](/mnt/workspaces/Cells/betse-normal-pump-join-tests-20261030-01/root-review-01/completion-verification.json)
   checks 15 native captures, 36 actual-parent calls, 738 material frames and 105
@@ -770,16 +1675,318 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   remains open; this does not qualify complete physical geometry.
 
   Specialist's [opt-in initial-mesh bridge preparation](/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01.json)
-  is now in static review. It preserves the original caller's merging/rectangular
+  preserves the original caller's merging/rectangular
   flags, changes only the three declared arithmetic primitives and retains 14
   inherited methods. Its planned **32 checks**, **11 conditional source replays**
   and **11 independent geometry records** keep source correspondence under a
   typed repair tape separate from whole-mesh accuracy. Directed-incidence,
   quadrilateral and nearest-midpoint defects must remain visible; the existing
-  B09 merged-mesh physical-admission refusal stays in place. This package has
-  not run and does not inherit acceptance from the primitive job. Its numerical
-  qualification waits for that job's requested terminal check/review and its
-  own preflight. A separate conservative physical-owner adapter is in development.
+  B09 merged-mesh physical-admission refusal stays in place. This package does
+  not inherit whole-mesh acceptance from the primitive job.
+  Its [static preflight](/mnt/workspaces/Cells/stable-initial-mesh-preflight-20261030-01/REVIEW.json)
+  accepted the bounded diagnostic panel. Failed-state validation/export currently
+  re-executes and raises, so raw failures use the retained trial/state record;
+  exact failure-reason text is excluded beyond Qhull as well. These limits remain
+  explicit. A separate conservative physical-owner adapter is in development.
+
+  The **23:41 UTC** requested check found the stable-primitive run complete.
+  Its [terminal review](/mnt/workspaces/Cells/stable-geometry-primitives-qualification-20261030-01/root-review-01/REVIEW.json)
+  accepts **84 unique checks** and **75 fresh reference records**, with all **160
+  guarded units** complete. The 54 numerical declarations exercised **34 filtered**,
+  **16 exact-rational** and **four rational/square-root** paths; transformation and
+  order controls remain separate from the 12 base inputs. Worst error is
+  **0.000038482 of budget**, or **1.7624 ULP**. Total time was **116.18 s**, with
+  **55.6 MiB** peak RSS and **19.25 GiB** minimum host reserve. Review verifies
+  **1,893 artifacts**, frozen/current scientific sources and all **2,614 original
+  failed artifacts**. This qualifies the separate primitives, without native
+  equivalence, whole-mesh or physical-admission credit; the original **19/22**
+  limitation remains open. Root has prepared the mesh-bridge diagnostic's
+  [pinned external launcher](/mnt/workspaces/Cells/stable-initial-mesh-launch-20261030-01/inputs.json)
+  with unchanged **1-GiB/480-s** unit and **2-GiB/two-hour** whole-job limits.
+  The [diagnostic qualification launched detached](/mnt/workspaces/Cells/stable-initial-mesh-launch-20261030-01/launch.json)
+  at **23:59 UTC**, supervisor PID **2153022**, on **CPU6** with one thread and
+  **8-GiB host reserve**. It schedules **55 guarded units**, including the 32
+  checks, both sets of 11 replays and finalization. Expected duration exceeds
+  ten minutes; there is no measured ETA yet. Durable output is
+  `/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01`, with separate
+  [startup/controller logs](/mnt/workspaces/Cells/stable-initial-mesh-launch-20261030-01).
+  This is an initial diagnostic run, not a whole-mesh pass. No automatic polling,
+  retry or follow-up qualification is queued.
+  The **00:01 UTC on 31 October** requested check found the original supervisor
+  alive, with no terminal result or failure then. No later status is inferred.
+
+  The **00:16 UTC** requested check found a failed terminal result. The
+  [failure review](/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json)
+  verifies all **55 units**: **23/32 checks** and **11/11 conditional-source
+  replays** passed, but **0/9 complete meshes** passed independent geometry.
+  The two passing geometry records preserve expected raw failures. All nine
+  meshes lose reversed face–edge incidences in the preserved native mapping;
+  seed17 stores **12 rather than 18 incidences**. Four cases also fail dual-pair,
+  quadrilateral, area or overlap checks. The finalizer correctly reported
+  `candidate_checks_failed`, then its **38,134,521-byte** record exceeded the
+  controller's separate **16-MiB metadata limit**. Neither is a passing run.
+  Total runtime was **355.58 s**, with **354.5 MB** peak individual RSS and no
+  resource violation. Review verifies **3,288 artifacts**, **2,661 bundle files**,
+  **55 runtime inventories** and all **2,614 original failed artifacts**.
+
+  Root's [compact saved-result reader](validation/geometry/stable_initial_mesh_summary.py)
+  now separates bounded summaries from full diagnostic artifacts. Its
+  [reporting-only review](/mnt/workspaces/Cells/stable-initial-mesh-summary-20261031-01/root-review-01/REVIEW.json)
+  verifies **16 software checks** and a **14,679-byte summary** of the retained
+  run. The summary preserves both failed statuses and keeps numeric geometry
+  distinct from raw-failure records. Original artifacts and the **16-MiB metadata
+  guard** stay unchanged; the larger raw-detail reader has its own declared
+  bound. The two reporting workers took **1.28 s**, peaking at **137.6 MB**.
+  No numerical simulation or reference calculation was repeated.
+
+  The separate [conservative polygon preparation](/mnt/workspaces/Cells/conservative-polygon-geometry-preparation-20261030-01.json)
+  defines a Cells geometry law for up to **32 conforming source cells**, including
+  declared simple cell unions. Shared edges determine reciprocal membrane owners
+  and contact areas. Explicit extrusion height, membrane thickness and bath
+  volumes determine physical measures; the existing `resolved_tissue@1` parser
+  still admits the complete passive state. The proposed **64 checks** and **35
+  fresh reference records** cover independent geometry/conversions and refusal
+  domains. Static review and bounded runner preparation are underway; no numerical
+  acceptance or native Voronoi-accuracy claim is assigned. Holed/disconnected
+  unions and nonconforming joins are refused. All **2,614 original failed mesh
+  artifacts** remain retained. Specialist is preparing a separate active-family
+  bridge while this packet stays frozen.
+  The [static preflight](/mnt/workspaces/Cells/conservative-polygon-geometry-preflight-20261031-01/REVIEW.json)
+  found an evidence gap before execution: the generated fixture
+  could raise during upstream preparation or replay validation before saving its
+  complete request and failure trial. The immutable
+  [capture02 successor](/mnt/workspaces/Cells/conservative-polygon-geometry-preparation-20261030-02.json)
+  and [delta review](/mnt/workspaces/Cells/conservative-polygon-geometry-preflight-20261031-02/REVIEW.json)
+  now retain requests and complete returned/rejected caches, events and RNG
+  records before polygon work, including both replay-failure paths. Equations,
+  references, cases and budgets remain fixed; no additional preparation or draw
+  was introduced. The **2,676-file** successor and **2,671-file** predecessor verify.
+  The first package is held statically, with no numerical failure inferred.
+  Its physical scope is three neutral initial admissions plus independent unit
+  and owner checks, with no independently evolving field or trajectory claim.
+  The [sealed runner preparation](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-01/PREPARATION.json)
+  uses isolated evidence directories for all **100 guarded units**. Full detail
+  and runtime artifacts remain separate and hash-bound to a **1-MiB** controller
+  summary. CPU5, one thread, **1-GiB/480-s** unit and **2-GiB/two-hour** aggregate
+  limits retain **8-GiB host reserve**. The
+  [initial qualification launched detached](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-01/launch-01/launch.json)
+  at **00:40:37 UTC on 31 October**, PID **2168231**. Its **15–35 minute estimate**
+  is unmeasured. Logs, startup failures and worker result/failure artifacts are
+  durable under that launcher directory. No post-launch status poll or automatic
+  retry is scheduled; terminal acceptance awaits a requested check and review.
+
+  The **00:42 UTC** requested check found that launch had failed at generated
+  check `check-042`. The [worker failure](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-01/qualification-01/failure.json)
+  records **42 completed checks**, one failed check and **21 unrun checks**;
+  all **35 fresh reference workers** and finalization are unrun. The passing
+  partition is ten explicit polygon cases, 20 domain refusals, six ownership
+  controls and six checker-corruption controls. Neither generated case nor any
+  of the 19 physical checks is qualified. Importing the generated-mesh prelude
+  required `PIL`, but the launcher omitted the bundle's existing, pinned Pillow
+  directory from `PYTHONPATH`. The failure precedes an upstream generator trial;
+  the archive correctly records no generated captures. Root's separate
+  [launcher02 preparation](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-02/PREPARATION.json)
+  adds that dependency path. A static environment check verifies all **144
+  pinned Pillow files** and resolves `PIL`, `Image` and `_imaging` without
+  importing them. Scientific source, cases, budgets, failed evidence and the
+  shared Python environment remain unchanged.
+  The [failure review](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  verifies **2,676 frozen files**, **244 external pins** and **46 runtime
+  inventories**. Ten supplied geometry cases retain 468 quantity comparisons,
+  with maximum error **0.5 ULP** and **0.0000185037 of budget**. Whole-job duration
+  was **84.69 s**, with **243,113,984 bytes** peak tree RSS and no resource breach.
+  The [launcher02 environment review](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-02/independent-environment-review.json)
+  accepts the sole runtime path change. Root issued a separate sealed release;
+  the 42 repeated checks will not earn new-case credit in the retry.
+  The [full retry launched detached](/mnt/workspaces/Cells/conservative-polygon-launch-preparation-20261031-02/launch-01/launch.json)
+  at **00:55:24 UTC**, PID **2174130**, on **CPU5**, with the unchanged
+  **100-unit** panel and resource limits. The **15–35 minute estimate** remains
+  unmeasured. No post-launch status poll or automatic retry is scheduled.
+
+  At the user's **00:57:34 UTC** check, the original retry process was alive
+  and **51 checks** had completed, including both generated cases and all three
+  physical admissions. No terminal result existed at that observation. No later
+  status is inferred here; completion and the 35 fresh references await the next
+  requested check.
+
+  The **01:21 UTC** requested check found all **100 units** complete and the
+  scientific finalizer passed. Terminal packaging then rejected two pytest
+  temporary-directory aliases, so the original job has no success `result.json`.
+  The [saved-evidence closeout](/mnt/workspaces/Cells/conservative-polygon-closeout-20261031-01/REVIEW.json)
+  accepts **64 unique checks and 35 fresh reference records**, preserving that
+  wrapper failure. Ten supplied geometry cases and two generated cases remain
+  separate from refusals/controls; physical scope is only **three neutral passive
+  initial admissions**. All **2,676 frozen files**, runtime identities and
+  **1,092 precision rows** verify. Maximum geometry/conversion errors are
+  **0.0000185037 / 0.0000129509 of budget**, at most **0.5 ULP**. Full Decimal
+  differences remain retained, including 315 nonzero values whose displayed
+  float fractions are zero. Aggregate duration was **230.47 s**, peak tree RSS
+  **271.68 MB**, with no resource stop.
+  Root's [inventory repair checks](/mnt/workspaces/Cells/qualification-inventory-checks-20261031-01/result.json)
+  passed **16 software checks** and bind all **3,826 real files** plus the two
+  explicitly allowed, untraversed aliases. No simulation was repeated, artifact
+  changed or native geometry/trajectory accuracy inferred.
+
+  The separate [active-physiology preparation02](/mnt/workspaces/Cells/active-polygon-physiology-preparation-20261031-02.json)
+  covers complete caller-supplied physical templates across ten existing
+  families, including polarized cells, calcium/ER and finite fuel. Its planned
+  **77 checks** and **36 fresh reference records** compare conversions, initial
+  full-node potentials and state derivatives; unchanged-state controls remain distinct
+  from the 15 active/polarized contexts. Static review found the first reference
+  returning a hexadecimal string where later arithmetic required a float.
+  Immutable02 decodes that string without changing equations, cases or budgets.
+  Its [static delta review](/mnt/workspaces/Cells/active-polygon-physiology-preflight-20261031-02/REVIEW.json)
+  verifies all **2,695 frozen files**, unchanged production and exact recovery
+  of the predecessor reference AST when the type fix is removed. At that static
+  review, neither package had run. The inherited top-level `declared-units.json` belongs
+  to the passive packet and must not drive an active qualification. A future
+  runner must bind the active plan's own IDs. The separate
+  [sealed active runner](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-01/PREPARATION.json)
+  binds exactly **77 checks**, **36 fresh references** and one finalizer, with
+  the frozen Pillow dependency path and its own active declaration. Root reviewed
+  its full-state/reference association, fixed budgets, failure capture and
+  compact summaries. Its [initial qualification launched detached](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-01/launch-01/launch.json)
+  at **00:55:25 UTC**, PID **2174133**, on **CPU6** with one thread. Unit limits
+  are **1 GiB/480 s**, aggregate **2 GiB/two hours**, and host reserve **8 GiB**.
+  Estimated duration is **30–75 minutes**, unmeasured. No post-launch status
+  poll, automatic retry, trajectory or biological qualification is implied.
+
+  The **00:57:34 UTC** requested check found a terminal failure after two ionic
+  checks passed. The [failure review](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  records **two passes, one calcium admission failure and 74 unrun checks**;
+  all **36 fresh references** remain unrun. The parser reordered named chemical
+  tables, causing the preservation guard to reject an unchanged definition.
+  The original returned definition was not archived. A separately labelled
+  [parser-only diagnostic](/mnt/workspaces/Cells/active-polygon-parser-diagnostic-20261031-01/result.json)
+  retains a new parser return and confirms all **96 differing leaf paths** are
+  table ordering, with no changed values or model steps.
+  Root's repair canonicalizes only named chemistry tables, preserving ionic
+  axes, gate states and schedules. Actual and independent instantaneous energy
+  checks now use their respective existing family limits; missing ionic energy
+  proofs remain explicitly unavailable. All **49 software regression checks**
+  and both comparisons against the saved parser return
+  [passed](/mnt/workspaces/Cells/active-polygon-contract-checks-20261031-01/result.json)
+  in **0.762 s**, at **40.1 MB** peak tree RSS. Two setup errors occurred before
+  test execution and are retained separately. These checks add no physical-case
+  credit. A further **11 capture-only checks**
+  [passed](/mnt/workspaces/Cells/active-polygon-capture-checks-20261031-01/result.json)
+  for typed numeric arrays/scalars saved before strict JSON can reject a
+  nonfinite return. The [immutable03 review](/mnt/workspaces/Cells/active-polygon-physiology-preflight-20261031-03/REVIEW.json)
+  clears its **2,770-file** replacement for runner preparation. The prospective
+  finalizer also passed **110 software-only checks** of typed evidence, chemical
+  semantics and energy budgets, recorded
+  [separately](/mnt/workspaces/Cells/active-polygon-finalizer-checks-20261031-01/result.json).
+  The original **77 checks and 36 fresh reference records** retain their own
+  scope. [Root runner review](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-02/root-runner-review.json)
+  cleared **114 guarded units**. The
+  [retry launched detached](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-02/launch-01/launch.json)
+  at **01:52:53 UTC**, PID **2197328**, on CPU3. Estimated duration is
+  **30–75 minutes**, unmeasured. It retains one thread, **1 GiB/480 s per unit**,
+  **2 GiB/two hours** aggregate and **8 GiB** host reserve. There is no post-launch
+  poll or automatic retry; terminal review waits for the next requested check.
+
+  The **02:18 UTC** requested check found a passing terminal result.
+  [Independent completion review](/mnt/workspaces/Cells/active-polygon-launch-preparation-20261031-02/qualification-01/root-review-01/REVIEW.json)
+  accepts **77 unique checks, 36 fresh references and 114 units**, verifying
+  **5,125 artifacts**, **2,770 frozen files**, **117 runtime captures** and all
+  **5,427 saved arrays**. Maximum RHS/potential errors are **7.678e-6 / 1.533e-5
+  of budget**. Actual energy residual is **2.331e-15 pJ/s**; independent residual
+  is **1.110e-15 pJ/s** where available. Independent energy evidence covers 12
+  of the 15 contexts; the three ionic contexts explicitly lack that proof.
+  Runtime was **519.2 s**, with **273.9 MB** peak tree RSS. Ten model families
+  are covered at initial states; unchanged-state probes and fuel-sensitivity
+  repeats do not add trajectories or independent cases. The original failure
+  remains preserved.
+
+  Specialist's [finite-ECM preparation](/mnt/workspaces/Cells/finite-ecm-polygon-preparation-20261031-01.json)
+  freezes **78 planned checks** and **52 fresh reference records**, with its own
+  `finite-ecm-declared-units.json`. Explicit convex cell and bath polygons own
+  volumes and interfaces; bath centroid links must meet their shared faces
+  orthogonally with an interior projection. Membrane paths are declared, outer
+  boundaries are sealed and bath volumes are finite. Six polarized contexts
+  include bath transport and floating bath components; complete initial
+  physical-field, derivative and energy comparisons are planned.
+  [Independent static review](/mnt/workspaces/Cells/finite-ecm-polygon-preflight-20261031-01/REVIEW.json)
+  and [Root launcher review](/mnt/workspaces/Cells/finite-ecm-polygon-launch-preparation-20261031-01/root-runner-review.json)
+  cleared the initial qualification: **131 guarded units**, including full
+  **12-field derivatives**, **31 physical field/rate arrays**, and both unchanged
+  initial-state control probes. Actual and independent energy closure must meet
+  **1e-10 pJ/s**; material residuals must meet **3e-14 fmol/s**. The reviewed
+  release uses CPU6, one thread, **1 GiB/480 s per unit**, **2 GiB/two hours**
+  aggregate and **8 GiB** host reserve. The
+  [initial qualification launched detached](/mnt/workspaces/Cells/finite-ecm-polygon-launch-preparation-20261031-01/launch-01/launch.json)
+  at **01:18:24 UTC**, PID **2182675**, on **CPU6**. Estimated duration is
+  **15–45 minutes**, unmeasured. No post-launch polling or automatic retry is
+  scheduled; terminal review waits for the user's next requested check.
+  At the **01:21 UTC** requested check, the original process identity was alive
+  with no terminal result. No later status is inferred here.
+  The next requested check at **01:53 UTC** found a passing terminal result.
+  [Independent completion review](/mnt/workspaces/Cells/finite-ecm-polygon-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  accepts **78 unique checks, 52 fresh reference records and 131 units**, verifying
+  **4,465 artifacts**, source/runtime identities and all **36 typed archives**
+  (**1,764 arrays**). Maximum field/RHS errors are **0.0134578 / 0.00323584** of
+  budget. Actual/reference energy residuals are **7.816e-14 / 2.558e-13 pJ/s**;
+  maximum material residual is **7.322e-15 fmol/s**. Aggregate runtime was
+  **531.8 s**, with **272.1 MB** peak tree RSS. Six initial contexts and two
+  unchanged-state control probes each are qualified, without trajectory credit.
+  Sixteen of 24 saved reference stage records retain a false SciPy success flag;
+  they pass the source's unchanged physical charge/current/boundary residual
+  acceptance rule. Those flags are retained, not reclassified as solver success.
+
+  The [active finite-ECM preparation](/mnt/workspaces/Cells/active-ecm-polygon-preparation-20261031-01.json)
+  now separately freezes **74 checks** and **46 fresh reference records** across
+  ten families and 16 manufactured polarized, gradient and disabled contexts.
+  Open-family identities here are explicitly empty-reservoir reductions; held
+  baths remain an unsupported boundary-owner extension. Full field, derivative,
+  patch-source, heat and energy references are planned, including six field
+  corruption controls that preserve the RHS. Its distinct declaration and
+  **2,724-file** bundle remains unrun. Its
+  [independent review](/mnt/workspaces/Cells/active-ecm-polygon-preflight-20261031-01/REVIEW.json)
+  holds launch for the chemical ordering defect and model-specific actual and
+  independent energy gates. The complete reference inventory needs **26 additions**
+  to its existing 17 declarations; exact paths/hashes are recorded. Original
+  frozen evidence is intact; this extension inherits no passive qualification.
+  The [immutable02 successor](/mnt/workspaces/Cells/active-ecm-polygon-preparation-20261031-02.json)
+  restores the distinct family gates, applies named-chemistry semantics and
+  retains typed numeric failures before strict JSON serialization. Its complete
+  reference closure contains **46 files**, including the reused capture helper.
+  **74 original checks plus 26 software contracts**, **46 fresh references** and
+  a finalizer are prepared but unrun; software contracts add no physical cases.
+  [Static review02](/mnt/workspaces/Cells/active-ecm-polygon-preflight-20261031-02/REVIEW.json)
+  verifies all **2,741 files** and clears the source corrections. Root's new
+  [typed evidence checker](validation/geometry/qualification_typed_evidence.py)
+  passed [63 software checks](/mnt/workspaces/Cells/qualification-typed-evidence-checks-20261031-01/result.json).
+  The prospective complete-field finalizer passed
+  [92 software checks](/mnt/workspaces/Cells/active-ecm-finalizer-checks-20261031-02/result.json),
+  covering fixed energy/field budgets, required numeric archives and frozen
+  source origins. The earlier 91-check pass is preserved without duplicate credit.
+  Only the three declared capture-test partial JSON files can be treated as
+  expected serialization failures; their complete numeric sidecars remain required.
+  [Independent finalizer review](/mnt/workspaces/Cells/active-ecm-polygon-launch-preparation-20261031-01/independent-finalizer-review.json)
+  and [Root release review](/mnt/workspaces/Cells/active-ecm-polygon-launch-preparation-20261031-01/root-runner-review.json)
+  cleared the complete **147-unit** runner. It
+  [launched detached](/mnt/workspaces/Cells/active-ecm-polygon-launch-preparation-20261031-01/launch-01/launch.json)
+  at **02:17:17 UTC**, PID **2205235**, on CPU6. Estimated duration is **40–110
+  minutes**, unmeasured; guards remain **1 GiB/480 s per unit**, **2 GiB/7,200 s**
+  aggregate and **8 GiB** host reserve. At the requested **02:18:08 UTC** check,
+  the original CPU6 process identity was alive without a terminal result.
+  No later query or automatic retry; terminal review awaits the next request.
+
+  The next requested check at **02:41:33 UTC** found a passing terminal result:
+  **100 checks** (74 original plus 26 software contracts), **46 fresh reference
+  records** and **147 units** completed. The
+  [terminal result](/mnt/workspaces/Cells/active-ecm-polygon-launch-preparation-20261031-01/qualification-01/result.json)
+  reports maximum RHS/field errors **0.0007496 / 0.0615804 of budget** and
+  actual/independent energy residuals **1.72945e-13 / 2.00395e-13 pJ/s**.
+  [Independent completion review](/mnt/workspaces/Cells/active-ecm-polygon-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  accepts the declared initial-state scope after verifying **5,413 files**
+  (6,035 inventory entries including directories), **2,741 frozen files**,
+  **150 runtime captures** and **16,963 typed arrays**. All 32 field/rate columns
+  and full derivatives pass, including independent energy evidence in all 16
+  contexts. Runtime was **834.8 s**, with **274.9 MB** peak sampled tree RSS.
+  The reference optimizer's success flag is false in **28/32 primary stages**;
+  unchanged physical residual gates pass, and those flags remain recorded.
+  This adds no optimizer-convergence waiver or advancing-trajectory claim.
 
 - **The modern native channel catalog passed 73 reviewed component checks.**
   Key Dev's
@@ -1071,10 +2278,330 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   four cold capacity failures, six dependencies and **104 fresh reference forms**.
   Native stale membrane caches, the negative-charge capacity threshold gap and
   counterion sinks remain explicit; source correspondence does not imply physical
-  or energetic conservation. Root assigned terminal review of the complete
-  cold/continuation evidence, reference-fixed budgets, partial failures and
-  source/runtime/resource identity; acceptance remains pending that receipt.
-  The held first package remains preserved.
+  or energetic conservation. The [terminal review](/mnt/workspaces/Cells/betse-normal-charged-grn-tests-20261030-01/root-review-01/REVIEW.json)
+  accepts all **22 unique checks**: nine new histories, three controls, four
+  intended cold capacity failures and six dependency checks. The **16 cold and
+  36 actual pre-network points** produced **104 fresh forms**, with no independently
+  carried reference trajectory. Maximum error is **0.001607 of budget**. Review
+  verifies **2,431 frozen sources**, **3,463 artifacts**, **174 typed archives**
+  and **748 runtime files**. Guarded phases total **111.92 s**, peaking at
+  **321,445,888 bytes** tree RSS. The held first package and the reviewer's
+  corrected snapshot-timing assertion are retained separately; neither is
+  relabelled as a numerical production failure.
+
+  The separate [standalone GRN preflight](/mnt/workspaces/Cells/betse-sim-grn-preflight-20261030-01/REVIEW.json)
+  accepted the actual new-owner branch and full `run_core_sim`, including source
+  clocks, repeated initialization, cache reset and sampling. Its
+  [initial CPU result](/mnt/workspaces/Cells/betse-sim-grn-tests-20261030-01/result.json)
+  completed **22 checks** at **23:54 UTC**: ten two-invocation histories, five raw
+  failures and seven dependency checks. Three histories are component controls.
+  The [terminal review](/mnt/workspaces/Cells/betse-sim-grn-tests-20261030-01/root-review-01/REVIEW.json)
+  verifies **190 fresh reference forms** across **65 pre-core**, **ten cold** and
+  **20 clock points**, together with complete native state/traces, resets,
+  sampling and **40 in-memory CSV events**. Worst error is **0.000106541 of
+  budget**. The controller took **112.27 s**; peak worker tree RSS was
+  **548,151,296 bytes**, with at least **20,544,077,824 bytes** host availability.
+  Source, runtime and artifact identities passed review. These are seven new
+  supplied cases and three controls, with no independently carried reference
+  trajectory or biological-case claim.
+  The explicit empty-transporter reconstruction exposes an already serialized
+  producer; it is not a repair of an observed missing-attribute failure. CSV
+  content is captured in memory; filesystem persistence, whole initialization,
+  ECM, mitochondria, physical global conservation and GPU remain outside scope.
+
+  The [ECM gene-network preflight](/mnt/workspaces/Cells/betse-ecm-grn-preflight-20261031-01/REVIEW.json)
+  accepted the initial supplied-field packet: **25 checks**, with 13 three-call
+  histories (nine new cases and four controls), four raw failures and eight
+  dependencies. The planned **104 fresh Decimal forms** cover actual cold and
+  pre-network states, not independently carried trajectories. ECM grid and
+  membrane owners, molecular transport, charge/current publication and native
+  fast-scatter defects remain explicit; the original material **39/40** failure
+  is not repaired or reclassified.
+
+  The [initial qualification failed](/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/failure.json)
+  at **00:31 UTC on 31 October**. Its
+  [terminal review](/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/root-review-01/REVIEW.json)
+  verifies **six passing dependency checks**, **two failures** and **17 unrun
+  checks**. Missing-cache/default guards reached their intended errors, but the
+  failure handler then serialized a GRN owner that had not been constructed,
+  masking the rejection with `AttributeError`. All eight valid baselines and
+  complete exception chains survive. The two failed controls lack complete
+  structured changed-cache/partial-state archives; later reconstruction cannot
+  replace that original evidence. No positive histories, native captures or
+  fresh reference forms were reached. CPU3 took **3.27 s**, peaking at
+  **229,384,192 bytes**, with no resource stop. Review verifies **2,456 sources**,
+  **72 native/binding copies**, **19 typed archives** and **696 numeric columns**.
+  The preceding static review missed this partially initialized-context hazard.
+
+  Key's [error-capture02 preparation](/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json)
+  preserves original causes, saves malformed incoming caches before invocation
+  and labels available partial context without fabricating a complete owner.
+  Its [static receipt](agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json)
+  reports unchanged successful scientific operations, 25 IDs and planned 104
+  forms. Its [independent delta review](/mnt/workspaces/Cells/betse-ecm-grn-preflight-20261031-02/REVIEW.json)
+  verifies **2,482 sources**, **77 native/binding copies** and unchanged
+  successful scientific operations, references and budgets. The requested
+  [CPU3 retry](/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/qualification-plan.json)
+  reused the identical controller with **1-GiB/480-s** per-group guards and
+  **8-GiB host reserve**. It [completed all 25 checks](/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/result.json)
+  at **00:50:19 UTC**, including the formerly masked rejections. The
+  [terminal review](/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json)
+  accepts **25 unique checks**, **17 native captures** and **104 fresh 100/160-digit
+  forms**, with zero independently carried reference trajectories. The 13
+  three-call histories comprise nine new cases and four controls; four raw
+  failures and eight dependency refusals remain separate. Saved comparisons
+  cover **1,131 material frames**, **117 ECM records**, **600 mover frames** and
+  complete caches. Maximum error is **0.000108362 of fixed budget**, with
+  **1.08671e-88** reference uncertainty. All **3,438 artifacts**, **2,482 sources**,
+  **77 native/binding copies**, nine owned and 275 protected live files verify.
+  Guarded phases took **102.88 s**, peaking at **353.8 MB** tree RSS. Acceptance
+  covers the supplied-field normal ECM-GRN component; full field reconstruction,
+  charged cold compensation, global physical conservation and trajectories
+  remain separate. The failed01 and older 39/40 artifacts remain untouched.
+  Key's separate
+  [charged ECM preparation02](/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-02/inputs.json)
+  includes the same error-capture repair. It plans **35 checks**: 18 three-call
+  histories (14 new and four controls), four raw capacity failures and 13
+  dependencies, with **152 fresh Decimal forms**. Cold Na/K/M compensation,
+  compensated-parent carry and native stale-cache/threshold-gap behavior remain
+  explicit. Preflight found the successful cold parent was not archived before
+  native comparison, and an unexpected success in a raw-failure case was
+  discarded. The [full static review](/mnt/workspaces/Cells/betse-ecm-charged-grn-preflight-20261031-01/REVIEW.json)
+  found that capture gap to be the sole launch blocker, verifying 48 original
+  scientific bodies, 16 bridge functions, **2,481 sources** and **82 native/binding
+  copies**. Key's [immutable capture03 successor](/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-03/inputs.json)
+  adds the two immediate archives; its static inverse-AST witness recovers02,
+  with the same 35 IDs and planned 152 forms. Its
+  [static review](/mnt/workspaces/Cells/betse-ecm-charged-grn-preflight-20261031-02/REVIEW.json)
+  cleared the initial attached CPU4 qualification, which failed at **01:04:19 UTC**.
+  The [completion review](/mnt/workspaces/Cells/betse-ecm-charged-grn-tests-20261031-02/root-review-01/REVIEW.json)
+  records **17 passes** (13 dependency checks and four expected cold refusals),
+  **four failed controls** and **14 unrun checks**. Eight native captures and
+  **24 fresh reference forms** are retained; warm accuracy gates were not reached.
+  Complete first-call material frames and dispatch feedback match native values,
+  but final candidate caches were compared with native caches from before the
+  material update. The repair will archive and compare the same post-material
+  boundary while retaining the earlier cache checks. The
+  [immutable04 correction](/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-04/PREPARATION.json)
+  was held because two protected transport dependency pins required explicit
+  reconciliation before launch. At that stage no positive three-call history
+  was accepted. Peak tree RSS was **357.7 MB**;
+  there was no resource failure. Source equations and exact comparisons remain
+  unchanged. Full-field and trajectory qualification remain separate.
+  Root's [explicit dependency refresh](/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-05/PREPARATION.json)
+  verifies that the two changed imported function bodies are not called by this
+  join; its local material update and reference helpers remain exact. A private
+  copy setup failure due to read-only file permissions is retained separately,
+  before numerical execution. The [continuation](/mnt/workspaces/Cells/betse-ecm-charged-grn-tests-20261031-03/launch.json)
+  launched attached at **01:38:25 UTC on CPU2**, with the unchanged **1-GiB/480-s**
+  group limits and **8-GiB** host reserve. Its
+  [terminal review](/mnt/workspaces/Cells/betse-ecm-charged-grn-tests-20261031-03/root-review-01/REVIEW.json)
+  accepts **18 new history checks** and **144 fresh forms**, retaining the
+  **17 prior guard/refusal passes** and eight prior raw-refusal forms with
+  hash-bound evidence. That gives **35 unique passes**, without counting old
+  failed-control forms again. All **54 post-material caches**, **1,566 material
+  frames** and **162 environment records** match native captures. Maximum
+  conditional error is **0.000123945 of budget**. New guarded work took
+  **134.55 s**, peaking at **349.26 MiB** tree RSS. This verifies the cache-timing
+  correction, not global conservation or the separate failed 39/40 material panel.
+
+  The [standalone ECM packet](/mnt/workspaces/Cells/betse-ecm-sim-grn-prepared-20261031-01/inputs.json)
+  separately plans **35 checks and 350 fresh conditional forms** for native
+  owner creation, simulation, reinitialization, caches and sampling. Its cache
+  boundaries pass initial static inspection, but four protected live sources
+  changed for the requested-increment diagnostic and charged-cache repair; the
+  unchanged packet must not launch past that guard. The
+  [static review](/mnt/workspaces/Cells/betse-ecm-sim-grn-preflight-20261031-01/REVIEW.json)
+  records the hold. The [explicit02 refresh](/mnt/workspaces/Cells/betse-ecm-sim-grn-prepared-20261031-02/PREPARATION.json)
+  and [Root review](/mnt/workspaces/Cells/betse-ecm-sim-grn-preflight-20261031-02/REVIEW.json)
+  preserve guards and verify that the changed bodies are outside this component's
+  executed paths. Its [initial attached CPU4 result](/mnt/workspaces/Cells/betse-ecm-sim-grn-tests-20261031-01/result.json)
+  completed **35 checks** at **01:33 UTC**, including **18 two-invocation histories**
+  (13 new, five controls), seven raw refusals and ten dependency checks. All
+  **350 fresh conditional forms** were verified from saved full-precision records.
+  Guarded work totalled **233.34 s** and peaked at **653.75 MB** tree RSS.
+  The [terminal review](/mnt/workspaces/Cells/betse-ecm-sim-grn-tests-20261031-01/root-review-01/REVIEW.json)
+  accepts all 35 checks, complete native snapshots/traces and sampling, with
+  maximum conditional error **0.00014244 of budget**. Source publication remains
+  forced off and incoming ionic buffers stay unchanged; no ordinary full-solver,
+  filesystem restart or independently carried-trajectory claim is made.
+
+  Key's separate [normal ECM field-join review](/mnt/workspaces/Cells/betse-normal-ecm-field-join-preflight-20261031-01/REVIEW.json)
+  cleared static preparation for **31 checks and 352 fresh conditional forms**:
+  16 three-call histories (12 new, four controls), five raw failures and ten
+  dependency checks. It uses actual bootstrap `update_V`, then network dispatch,
+  deferred material commit, complete current/voltage reconstruction and native
+  `check_v`. [Root reviewed the exact frozen runner](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-01/root-runner-review.json);
+  the initial qualification
+  [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-01/launch-01/launch.json)
+  at **02:17:17 UTC**, PID **2205228**, on CPU4, estimated **6–15 minutes**.
+  The separate [ECM CaATP review](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-preflight-20261031-01/REVIEW.json)
+  clears **34 checks and 448 fresh conditional forms**: 16 histories (12 new,
+  four controls), six raw failures and 12 dependency checks. Native calcium
+  timing, absent-to-created rate cache, cache carry and exterior copy semantics
+  are explicit. All **2,545 sources**, **61 native/binding files** and the ordinary
+  ER-disable witness verify. This is prospective maintained-fuel CaATP coupling;
+  it does not enable ordinary ER or establish global conservation. Key is now
+  implementing modern channel dispatch in a separate ECM catalog component.
+  [Root runner review](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-01/root-runner-review.json)
+  cleared its initial qualification, which
+  [launched detached](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-01/launch-01/launch.json)
+  at **02:17:17 UTC**, PID **2205231**, on CPU1, estimated **8–18 minutes**.
+  Both ordinary ECM jobs retain five separately guarded groups: one thread,
+  **1 GiB/480 s per group**, **8 GiB** reserve and a **12-GiB** launch gate.
+  Neither adds an aggregate wall guard. Estimates are unmeasured; both have
+  durable startup/group failure records and no automatic poll, retry or follow-up.
+
+  The requested **02:18 UTC** check found both runs terminally failed in raw
+  failure-case checks, before their positive-history groups. The
+  [field failure review](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  records **14 passes, one failure and 16 unrun checks**. The historical fixture
+  `late_field_driven_material_overflow` reaches a **network** refusal on call
+  three after two completed calls; its test incorrectly expected `material`.
+  The correction checks exact native network/material partials and retains the
+  fixture ID, without claiming material-overflow coverage.
+  The [calcium failure review](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-01/qualification-01/root-review-01/REVIEW.json)
+  records **15 JUnit passes, three failures and 16 unrun checks**. A local
+  arithmetic map shadowed the tracer's enclosing ion names, causing a native
+  capture error before CaATP. The earlier bootstrap pass is limited to bootstrap
+  evidence: its later native execution encountered the same defect.
+  [Immutable repair preparation](/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json)
+  freezes field02 with **14 retained/17 pending checks**, and calcium02 with
+  **14 retained/20 pending**, including a fresh bootstrap-path check. Inverse-AST
+  evidence limits changes to that raw-test branch/report and two tracer-name
+  nodes; equations, positive-history checks, references and budgets are unchanged.
+  Both original failed runs remain intact. The [field02 controller](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-02/PREPARATION.json)
+  and [calcium02 controller](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-02/PREPARATION.json)
+  were sealed for explicit release; they run only pending IDs and bind retained
+  passes to their original artifacts before combining distinct final counts.
+
+  Root's [21 evidence-reuse software controls](/mnt/workspaces/Cells/ecm-retained-evidence-contracts-20261031-01/result.json)
+  passed in **2.03 s** at **32.15 MB** sampled tree RSS. The actual readers accept
+  each valid 14-check partition and reject failed/unrun credit, duplicate or
+  missing IDs, incomplete captures, unauthorized source changes and reuse of
+  calcium's affected bootstrap result. These controls add no scientific cases.
+  Root reviewed both complete frozen packets, live/native/library pins and
+  exact pending selectors. The [field02 continuation](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-02/launch-01/launch.json)
+  launched at **02:54:11 UTC**, PID **2219808**, CPU4;
+  the [calcium02 continuation](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-02/launch-01/launch.json)
+  launched at **02:54:12 UTC**, PID **2219811**, CPU1.
+  Field runs **17 pending checks / 352 fresh conditional forms**; calcium runs
+  **20 / 448**, each reusing 14 passes without duplicate credit. Estimated
+  durations are **6–15 / 8–20 minutes**, unmeasured. Four groups per run retain
+  **1 GiB/480 s**, one thread, **8 GiB** reserve and the **12-GiB** launch gate;
+  there is no aggregate hard wall guard. No postlaunch poll, automatic retry
+  or follow-up is scheduled.
+
+  The requested **03:13:28 UTC** check found the field continuation complete.
+  [Saved evidence review](/mnt/workspaces/Cells/betse-normal-ecm-field-join-launch-preparation-20261031-02/qualification-01/root-review-01/REVIEW.json)
+  accepts **31 unique passes: 14 retained and 17 fresh**, with 16 three-call
+  histories, 21 native records and **352 fresh conditional forms**. All 2,531
+  source files, 4,756 new artifacts, 2,881 prior artifacts and 383 runtime
+  inventories verify; 410 typed archives provide 189,671 exact array comparisons.
+  Maximum error is **0.2241013 of budget**, at `zero_boundary`, call1,
+  `hodge/gradient_x`; precision difference is **6.67e-86 of budget**. Summed
+  numerical phases took **192.63 s**, at **484.2 MiB** peak tree RSS. Native
+  accounting defects and the third-call network-refusal interpretation remain;
+  this does not establish independent trajectory or complete-solver accuracy.
+
+  [Calcium02 failure review](/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-launch-preparation-20261031-02/qualification-01/root-review-01/REVIEW.json)
+  records **14 previously reviewed passes, four fresh raw passes, four failed
+  controls and 12 unrun checks**. Every control reached its first complete
+  return, then failed strict comparison because the port callback exposed
+  coerced Drive arrays where the native incoming declaration retained lists.
+  The same code pattern was present in the catalog component. Root now clones
+  the incoming packet after unchanged Drive validation; the validated immutable
+  Drive still supplies the numerical calculation. Inverse AST restores each
+  complete original module, with no changed equations, assertions or budgets.
+  [Ten focused software checks and four saved-parent comparisons](/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/result.json)
+  pass. The four old payloads reproduce the failure; repaired payloads match
+  their native parents exactly, with byte-identical numerical Drives. Saved
+  first-call candidate material, network feedback and pre-calcium inputs also
+  match. These are diagnostics, not a fresh three-call qualification.
+  [Immutable03 packages](/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/preparation.json)
+  prepare complete **34-check calcium / 94-check catalog** reruns with zero
+  retained scientific passes. The original failed runs and verifier startup
+  failures remain preserved. [Independent callback delta review](/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/root-review-01/REVIEW.json)
+  clears both source03 packages. Calcium03 and catalog02 runners are sealed
+  and held, with complete source03 provenance and no qualification launch.
+
+  Specialist's separate [mechanics static review](/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-01/REVIEW.json)
+  holds its **34-check/33-worker** packet for two ownership/capture corrections:
+  restrict no-ECM bath mapping to the native membrane axis, and hydrate supplied
+  initial display vertices in native captures. Frozen01 remains unrun and intact.
+  The [immutable02 successor](/mnt/workspaces/Cells/betse-mechanics-join-preparation-20261031-02.json)
+  adds two refusal controls and an imported-cache case: **37 checks and 35 fresh
+  workers**. [Static delta review02](/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-02/REVIEW.json)
+  clears both corrections and all **203 frozen files**; numerical execution is
+  pending. The 35 workers contain **38 Decimal evaluations**, not 35 independent
+  cases. The ordinary ECM/mechanics
+  composition uses the existing post-network,
+  pre-material-commit callback, with caller-declared pressure and complete DEC
+  owners; it cannot infer physical seed geometry from supplied field arrays.
+  Ordinary loading disables flow and dynamic deformation. Native seed builds
+  graph operators; the earlier init-only missing-operator witness does not
+  establish a defect in that seeded path. Display deformation is not a physical
+  mesh rebuild, and the small field-join composition will refuse sampled display.
+  The held mechanics runner passed
+  [34 software contracts](/mnt/workspaces/Cells/betse-mechanics-runner-contracts-20261031-01/result.json)
+  for exact resource metadata, typed evidence and result checks; these add no
+  physical-case credit. [Root launch review](/mnt/workspaces/Cells/betse-mechanics-join-launch-preparation-20261031-01/root-runner-review.json)
+  clears the exact **73-unit** initial qualification: **37 checks**, **35 fresh
+  workers** and **38 Decimal evaluations** across 14 conditional contexts.
+  It [launched detached](/mnt/workspaces/Cells/betse-mechanics-join-launch-preparation-20261031-01/launch-01/launch.json)
+  at **02:40:47 UTC**, PID **2214753**, on CPU7. Estimated duration is
+  **15–60 minutes**, unmeasured. Limits remain one thread, **1 GiB/480 s per
+  unit**, **2 GiB/two hours** aggregate and **8 GiB** host reserve. No postlaunch
+  poll, automatic retry or follow-up is scheduled. Conditional steady pressure
+  and display correspondence is distinct from physical mesh rebuilding and
+  complete native solver execution.
+
+  The next requested observation found a [terminal mechanics failure](/mnt/workspaces/Cells/mechanics-display-diagnosis-20261031-01/failure-review.json):
+  **ten passing checks, one failed sampled-display check, 26 unrun checks and
+  35 unrun fresh workers**. All 642 original artifact bindings and the 11 exact
+  JUnit records verify. The failure is numerical, with no resource stop.
+  [Saved-array diagnosis](/mnt/workspaces/Cells/mechanics-display-diagnosis-20261031-01/result.json)
+  reproduces the original interpolation error of **4.5964** times its budget.
+  Replacing monomials with a Legendre basis for the same degree-(4,4) least-squares
+  map lowers condition number from about **31,031 to 11.60**, and the propagated
+  saved-display error to **0.10282** of the unchanged operator budget. This
+  diagnostic reuses saved displacements; it is not a fresh mechanics qualification.
+  Rectangle clamping, owner axes and the least-squares rank cutoff are unchanged;
+  near-cutoff numerical rank can nevertheless depend on the basis.
+  `divergence_numeric` also used the displacement absolute floor of **3e-20**
+  instead of the preexisting auxiliary floor **3e-14**. Its corrected category
+  changes that field's effective bound by a factor of one million; the declared
+  protocol values and all interpolation budgets remain unchanged. Root's
+  [14 focused checks](/mnt/workspaces/Cells/mechanics-display-repair-tests-20261031-01/result.json)
+  passed in **1.26 s**, with **186.1 MB** sampled tree RSS: four exact-rational
+  full-weight comparisons, five domain refusals and five category controls.
+  Original failed evidence is unchanged. [Immutable03 static review](/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-03/REVIEW.json)
+  clears the exact prospective delta and 211 frozen files. Its runner is being
+  prepared and Root reviewed its exact source/guard/software-reuse contracts.
+  The [full rerun](/mnt/workspaces/Cells/betse-mechanics-join-launch-preparation-20261031-02/launch-01/launch.json)
+  launched detached at **03:34:20 UTC**, PID **2234831**, CPU7: **37 checks,
+  35 fresh workers and one finalizer**, with **zero retained scientific passes**.
+  Estimated duration is **15–60 minutes**, unmeasured. The original **1-GiB/480-s
+  unit**, **2-GiB/two-hour aggregate** and **8-GiB reserve** guards remain.
+  No postlaunch query or automatic follow-up is scheduled. The separate
+  [ECM/mechanics packet](/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-preparation-20261031-01.json)
+  freezes **36 checks and 28 fresh workers**.
+  [Static review](/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-preflight-20261031-01/REVIEW.json)
+  verifies all **2,742 frozen files** and clears the declared seam. The inherited
+  field raw-test file predates its repair, but only unchanged comparison helpers
+  are imported; the old failing test is not selected. Runner preparation is held.
+  It uses the previous electric-field cache with current post-GRN/precommit
+  concentrations. Explicit supplied geometry remains required; native seed,
+  full-loop accuracy and the incompatible small-field/display sizes are not
+  qualified by this composition.
+
+  A separate [native mitochondrial-network reachability witness](agent-work/cells-worker-01/workfiles/betse_mito_grn_reachability_witness_02.json)
+  checks all **332 pinned Python files**. Both ordinary `MasterOfNetworks`
+  callers omit `mit_enabled`, leaving its default false; the configured
+  `mol_mit_enabled` flag is assigned false and never read. This static witness
+  is not an independent numerical qualification. The conditional mitochondrial
+  component remains separate; forcing flags or supplying a pre-enabled pickle
+  would not demonstrate normal native-network reachability.
 
 - **Initialization-to-loop handoff passed 19 reviewed CPU checks and five
   separate bundle-containment checks.**
@@ -1431,6 +2958,51 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   rate/field execution with explicit cache release; default-cache memory,
   open families, GPU and advancing trajectories remain unqualified. Pre-run
   preparation and the later independent static review have distinct timestamps.
+
+  Root added separate [open-bath stages](src/cells/models/physiology_active_temperature_open_arrays.py)
+  for calcium and finite fuel, preserving complete reservoir material, electrode
+  charge, work and energy owners. The [static review](/mnt/workspaces/Cells/open-physics-stages-preparation-20261030-01/independent-static-review.json)
+  reconstructs the original `Adapter.readouts` exactly from the extracted tail;
+  its other 19 methods and the closed-family kernels remain unchanged. The
+  [initial NumPy result](/mnt/workspaces/Cells/open-physics-stages-support-20261030-01/result.json)
+  reports **22 passing checks** and **ten fresh reference records for six supplied
+  contexts**; two empty-reservoir reductions are conditional controls. Full
+  stage/ordinary outputs, reordered and partitioned batches, invalid-neighbor
+  isolation and owner/prefix refusals are retained. NumPy checks took **71.42 s**,
+  reference replay **2.27 s**, with **255,393,792 bytes** peak sampled tree RSS.
+  The [terminal review](/mnt/workspaces/Cells/open-physics-stages-support-20261030-01/root-review-01/completion-verification.json)
+  accepts **20 new checks plus two reexecuted existing checks**, all **56 laws**,
+  **34/38 rate fields** and **32 physical-field columns**. Maximum rate/field
+  errors are **0.002825 / 0.008016 of budget**. It verifies **2,344 frozen sources**,
+  **2,412 artifacts**, both runtime inventories and eight current owned files.
+  Independent static review completed after execution started; that chronology
+  remains explicit. That NumPy receipt does not assign compiled-memory,
+  open-family CPU warmup, GPU or trajectory credit.
+
+  Root's separate [open-family CPU interface](src/cells/core/physiology_active_temperature_open_compilation.py)
+  retains five/six executables with explicit warmup cache release. Its
+  [static preflight](/mnt/workspaces/Cells/open-public-warmup-preparation-20261031-01/independent-static-review.json)
+  verifies the unchanged ten protected sources and complete original ownership
+  across the new API. The [initial attached qualification](/mnt/workspaces/Cells/open-public-warmup-preparation-20261031-01/launch.json)
+  completed on **CPU2**, one thread, with **1-GiB/480-s** per-phase limits and
+  **8-GiB host reserve**. The declared panel has **two complete-family checks**,
+  **14 admission refusals**, **four supplied contexts** and **four fresh reference
+  replays**. Full held-temperature rates/fields, reusable compiled objects,
+  reorder/partition checks and invalid-neighbor isolation are required. The
+  [initial result](/mnt/workspaces/Cells/open-public-warmup-cpu-20261031-01/result.json)
+  reports **16 passing checks** and **four fresh reference records**; the outer
+  controller completed successfully in **154.73 s**. The
+  [terminal review](/mnt/workspaces/Cells/open-public-warmup-cpu-20261031-01/root-review-01/completion-verification.json)
+  accepts the explicit cache-release CPU scope: all **56 laws**, **34/38 rate
+  fields** and **32 physical columns**, with maximum rate/field errors
+  **0.002430 / 0.006956 of budget**. All **2,346 frozen sources**, **2,450
+  artifacts**, **seven runtime inventories**, **13 current owned files** and
+  authorization/controller pins verify. Maximum individual high-water memory
+  is **1,049,100,288 bytes**, leaving **24,641,536 bytes (23.5 MiB)** below the
+  cap; peak sampled tree RSS is **1,041,715,200 bytes**. Static review preceded
+  launch. Input immutability is supported by the frozen passing before/after
+  assertion; separate input copies were not archived. Default cache-retention
+  memory, advancing trajectories and GPU remain outside scope.
 
 - **Combined global control readouts passed 62 reviewed host checks.** The
   [combined view](docs/PHYSIOLOGY_RANDOM_STREAMS.md#combining-temperature-voltage-and-blocker-readouts)

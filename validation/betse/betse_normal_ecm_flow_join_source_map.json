@@ -1,0 +1,287 @@
+{
+  "GPU": 0,
+  "PROGRESS_edited": false,
+  "collection": 0,
+  "fixtures": 0,
+  "jobs": 0,
+  "kind": "cells.betse_ordinary_disabled_flow_ownership_source_audit@1",
+  "model_or_reference_evaluations": 0,
+  "new_scope": {
+    "complete_field_current_material_pressure_and_cache_owners_retained": true,
+    "complete_original_failure_and_precommit_point_retained": true,
+    "diagnostic_export_only_no_new_flow_or_unit_conversion": true,
+    "exact_typed_flow_carry_and_noop_cache_required": true,
+    "existing_disabled_component_gate": {
+      "ast_sha256": "ffe2bc1481b1149c4a1221ec7cf474c4844338557d611b58464d4db9f1b09ae8",
+      "first_line": 514,
+      "last_line": 514,
+      "source": "src/cells/processes/betse_mechanics_join.py"
+    },
+    "new_core_sha256": "d747b1a9ad98be23d391ed81a330e68fd691d90218dc9d1bfb273c7ef286cfe6",
+    "ordinary_equations_and_order_delegated_unchanged": true,
+    "physical_conservation_or_moving_geometry_claim": false,
+    "source_sites": {
+      "_point": {
+        "ast_sha256": "7902fbe7ab661afd6cc46927eb3b60db3aa97f9c774889a90c845b182776228d",
+        "first_line": 74,
+        "last_line": 130,
+        "source": "src/cells/processes/betse_normal_ecm_flow_join.py"
+      },
+      "advance": {
+        "ast_sha256": "097762d885fbfcb3201d7b15ca9450eec3173f7a05366f91ffc04e4ece12643b",
+        "first_line": 145,
+        "last_line": 196,
+        "source": "src/cells/processes/betse_normal_ecm_flow_join.py"
+      },
+      "bind": {
+        "ast_sha256": "b5259feae8975557a4f8fdd5761adf90015ed7385b3eb22bc1da17b9b48be367",
+        "first_line": 38,
+        "last_line": 52,
+        "source": "src/cells/processes/betse_normal_ecm_flow_join.py"
+      },
+      "initialize": {
+        "ast_sha256": "c30236c99d840b98cb95bcecee57846a0d1790ae60f27d2a070aa58dd4397927",
+        "first_line": 62,
+        "last_line": 64,
+        "source": "src/cells/processes/betse_normal_ecm_flow_join.py"
+      },
+      "standalone_diagnostic_input": {
+        "ast_sha256": "80209023bb8726317a70ed60f2c81bc05df227bdcbfe8061bf1649a9ddcd4d21",
+        "first_line": 199,
+        "last_line": 247,
+        "source": "src/cells/processes/betse_normal_ecm_flow_join.py"
+      }
+    }
+  },
+  "numerical_launch_authorized": false,
+  "prospective": {
+    "collected": false,
+    "disabled_boundary_points": 6,
+    "exact_source_predicted_test_ids": [
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_disabled_flow_carries_complete_ordinary_source_owners[coupled-osmotic]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_disabled_flow_carries_complete_ordinary_source_owners[mechanics-disabled]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_unsupported_activation_or_flow_feedback_is_refused[enabled-flow]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_unsupported_activation_or_flow_feedback_is_refused[nonzero-disabled-flow-drive]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_precommit_observer_failure_retains_the_complete_disabled_flow_seam"
+    ],
+    "existing_ordinary_specimen_ids": [
+      "coupled-osmotic",
+      "mechanics-disabled"
+    ],
+    "fixture_materializations": 0,
+    "functions": 3,
+    "nested_native_children": 2,
+    "nested_stdlib_conditional_children": 2,
+    "new_active_flow_equation_cases": 0,
+    "new_scientific_cases": 0,
+    "pytest_trees": 5,
+    "tests_executed": 0
+  },
+  "resources": {
+    "measured_sufficiency": false,
+    "new_launcher_or_finalizer_prepared": false
+  },
+  "scientific_imports": 0,
+  "source_correspondence": {
+    "conditional_gate": {
+      "ast_sha256": "17bb201ceb01b013330c0670378392e5b1ffc9c6f021497230584a023c68cfa4",
+      "first_line": 1347,
+      "last_line": 1348,
+      "source": "betse/science/sim.py"
+    },
+    "consumer": {
+      "ast_sha256": "896ebdc8099a53bfb1da2d3e7723ad4b14924310baf8bf49b803e8c3913a3b2c",
+      "first_line": 2221,
+      "last_line": 2229,
+      "source": "betse/science/sim.py"
+    },
+    "fast_getFlow_calls": 0,
+    "getFlow_sim_read_set": [
+      "D_env_weight",
+      "E_cell_x",
+      "E_cell_y",
+      "E_env_x",
+      "E_env_y",
+      "rho_cells",
+      "v_env"
+    ],
+    "loader": {
+      "fluid_flow": {
+        "ast_sha256": "02d658a016595c64176d2a956878db3704db2ead58e250589decc5f09b58d77b",
+        "first_line": 832,
+        "last_line": 832,
+        "source": "betse/science/parameters.py",
+        "value": false
+      },
+      "mu_water": {
+        "ast_sha256": "fdffc2b21457df8f6a215580549d6cb12dbf69882deaa05869798e61c92f9a38",
+        "first_line": 833,
+        "last_line": 833,
+        "source": "betse/science/parameters.py",
+        "value": 0.01
+      },
+      "td_deform": {
+        "ast_sha256": "6a08be2bf9f6e4ae5dcaf3320d62cf634b213b24ff09bc5a512d8198af4d053a",
+        "first_line": 845,
+        "last_line": 845,
+        "source": "betse/science/parameters.py",
+        "value": false
+      }
+    },
+    "ordinary_flow_enabled": false,
+    "ordinary_order": {
+      "getDeformation": {
+        "ast_sha256": "8c058456f1b0cdd787b50e86ecbc5e1a41326630146f623b42758b5475da9da0",
+        "first_line": 1354,
+        "last_line": 1354,
+        "source": "betse/science/sim.py"
+      },
+      "getFlow": {
+        "ast_sha256": "4fd57e094faf1efbc8aa4d640fb5e46bc0b7a7e2cbb35ddc2c4a2d71ad67cdd5",
+        "first_line": 1348,
+        "last_line": 1348,
+        "source": "betse/science/sim.py"
+      },
+      "osmotic_P": {
+        "ast_sha256": "79b00375827a4958945930ec04b8790cbab86845daf065cd9ac92fd4ed8866c3",
+        "first_line": 1345,
+        "last_line": 1345,
+        "source": "betse/science/sim.py"
+      },
+      "self.grn.core.run_loop": {
+        "ast_sha256": "9086212ebb578920d5905bd736ec24b43d130657f76fd3933735de319788970f",
+        "first_line": 1319,
+        "last_line": 1319,
+        "source": "betse/science/sim.py"
+      },
+      "self.update_V": {
+        "ast_sha256": "e61a788a574ab55bb20c5910acd65716ac99ba180607cacbf4459bf75c520a00",
+        "first_line": 1360,
+        "last_line": 1360,
+        "source": "betse/science/sim.py"
+      },
+      "self.update_all_concs": {
+        "ast_sha256": "2dff1dbd358f33a651e871423a6709151f8ecae0f1dba900e1f2952d7f390b70",
+        "first_line": 1357,
+        "last_line": 1357,
+        "source": "betse/science/sim.py"
+      },
+      "self.update_ecm": {
+        "ast_sha256": "511d839028abe2d0f8b98255c8a725b3565ef23e767569d16598816b2a0e06fa",
+        "first_line": 1276,
+        "last_line": 1276,
+        "source": "betse/science/sim.py"
+      }
+    },
+    "preceding_transport_reads_previous_flow_store_only_if_enabled": true,
+    "pressure_and_displacement_not_flow_inputs": true,
+    "source_sha256": {
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+    },
+    "standalone_GRN_activation": {
+      "cell_flow_written": false,
+      "configuration_readers": [
+        {
+          "ast_sha256": "442ce3dfd07ab8b1407af5d4df20a768c4ac9db12909bf942b455cecb65e97dc",
+          "first_line": 68,
+          "last_line": 68,
+          "method": "reinitialize",
+          "source": "betse/science/chemistry/gene.py",
+          "source_expression": "self.recalc_fluid = config_dic.get('recalculate fluid flow', False)"
+        },
+        {
+          "ast_sha256": "7018c7adc7bcba8ab98b769642496553de9eb863e82d474c5b25bd514986ea66",
+          "first_line": 150,
+          "last_line": 150,
+          "method": "read_gene_config",
+          "source": "betse/science/chemistry/gene.py",
+          "source_expression": "self.recalc_fluid = config_dic.get('recalculate fluid', False)"
+        }
+      ],
+      "denominator_floor": false,
+      "effects": [
+        "p.fluid_flow=True",
+        "u_env_x/y=-J_env_x/y/(F*mean(cc_env)*mean(zs))"
+      ],
+      "exact_source_fragment": "if self.recalc_fluid:\n    logs.log_info('Calculating fluid in terms of endogenous currents...')\n    p.fluid_flow = True\n    cc = sim.cc_env.mean(axis=0).reshape(cells.X.shape)\n    zz = sim.zs.mean()\n    sim.u_env_x = -sim.J_env_x / (p.F * cc * zz)\n    sim.u_env_y = -sim.J_env_y / (p.F * cc * zz)",
+      "future_composition_implemented": false,
+      "getFlow_called": false,
+      "kind": "standalone_GRN_flow_activation_future_composition@1",
+      "ordinary_dispatch_reachable": false,
+      "prerequisites": [
+        "Standalone GRN reinitialize phase before its loop",
+        "Actual environment current J_env_x/y on complete grid owners",
+        "All current cc_env species and zs valences plus F and cells.X.shape",
+        "Source flag self.recalc_fluid; no substituted ordinary YAML switch"
+      ],
+      "source_executed": false,
+      "source_method": "MasterOfGenes.run_core_sim",
+      "source_site": {
+        "ast_sha256": "3a45066cee873544bb7ecece9453384ab2916a72eae5476ea5917ceed620b447",
+        "first_line": 281,
+        "last_line": 291,
+        "source": "betse/science/chemistry/gene.py"
+      },
+      "zero_mean_concentration_or_valence_may_be_nonfinite": true
+    }
+  },
+  "source_only": true,
+  "standalone_qualification": {
+    "display_admitted_by_new_composition": false,
+    "new_equation_panel": false,
+    "new_owner_qualification_inherited": false,
+    "preserved_seven_component_sources": {
+      "agent-work/cells-worker-01/workfiles/check_betse_fluid_flow.py": "52cee1f5ccba144ff1b41c08f86eb0e901481cd3114ec120b6f5142279224379",
+      "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+      "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8",
+      "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+      "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+      "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+      "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0"
+    },
+    "prior_receipt_edited": false,
+    "qualified_tests": 64,
+    "receipt": "/mnt/workspaces/Cells/betse-fluid-flow-development-20261029-07/result.json",
+    "receipt_sha256": "96c8ef38e86096f3713a5c97b2a7697bf2c945e9695bb4bf4f5f408b4d9a34bd",
+    "relevant_deformation_dependency_AST_unchanged": true,
+    "sole_unrelated_dependency_AST_change": "quartic_display_interpolator"
+  },
+  "tests": 0,
+  "unchanged_dependency_sha256": {
+    "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+    "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+    "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+    "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+    "src/cells/processes/betse_normal_ecm_field_join.py": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+    "src/cells/processes/betse_normal_ecm_mechanics_join.py": "37c350ce96ac42697431e20a8c8c238cdd51557f1d753bec2642a7d05b202916",
+    "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+    "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8",
+    "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+    "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
+    "validation/betse/betse_normal_ecm_field_join_native.py": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+    "validation/betse/betse_normal_ecm_mechanics_join_boundaries.py": "61c05cc3fbc1bf399545995ae3eed84730c1cecb5e69d09cc8f115298e857d92",
+    "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+    "validation/betse/betse_normal_ecm_mechanics_join_native.py": "192ad175e417f83885bc6ad2d4a7d2af2f5df9eff6e4953334cf54120e7672b5",
+    "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+    "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+    "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+    "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc"
+  }
+}

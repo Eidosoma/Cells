@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "-B",
+    "-c",
+    "pass"
+  ],
+  "cwd": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_metadata_03",
+  "limits": {
+    "max_individual_process_rss_bytes": 536870912,
+    "max_process_tree_memory_bytes": 536870912,
+    "max_process_tree_rss_bytes": 536870912,
+    "max_wall_seconds": 10,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss",
+    "sample_interval_seconds": 0.25
+  },
+  "utc": "2026-10-31T09:50:37.887988+00:00"
+}

@@ -1,0 +1,311 @@
+{
+  "actual_scientific_evaluations": 0,
+  "callers_sha256": "f92bd42908af17b28692a681b44e8701d5d01c3a2534cb11ac5f504f00f8ae5e",
+  "driver_scope": {
+    "all_execution_gates_closed": true,
+    "checked_kernel": {
+      "ast_sha256": "ff4927392998cd89c52f1802aab1cdb0be8e47a1a8fb7373b0b23b01686002bc",
+      "first_line": 341,
+      "last_line": 574,
+      "source": "src/cells/processes/stable_seed_partition_trajectory.py"
+    },
+    "exact_restart_is_not_accuracy": true,
+    "metadata_gate": {
+      "ast_sha256": "252e9f71d7706b4d7367835f315e7b1be935d990bbe48b3d3947e267ce8513de",
+      "first_line": 67,
+      "last_line": 89,
+      "source": "validation/geometry/stable_seed_partition_trajectory_authority.py"
+    },
+    "new_full_contract_required_from_time_zero": true,
+    "no_clock_rebase_budget_extension_retry_or_new_physics": true,
+    "raw_boundary_retained_before_RHS_or_validity_gate": true,
+    "uses_existing_portable_checkpoint_IO": true,
+    "uses_existing_public_window_storage_admission": true
+  },
+  "frozen": false,
+  "independent_dynamics_ancestry": {
+    "original_DOP853_keywords": {
+      "atol": "atols",
+      "dense_output": "True",
+      "max_step": "0.0001",
+      "method": "'DOP853'",
+      "rtol": "2e-11"
+    },
+    "original_unit_specific_atol_AST_unchanged": true,
+    "raw_RHS_trials_streamed_without_truncation": true,
+    "reference_starts_at_true_epoch_zero": true,
+    "same_point_field_RHS_checker_AST_unchanged_except_explicit_context_arguments": true,
+    "seven_unchanged_numerical_functions": {
+      "bind": {
+        "ast_sha256": "9b70069da43503837a2d677ac3690cfcf7a6448b6ff284726bc11d6fbda8f87b",
+        "first_line": 19,
+        "last_line": 88,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "evaluate": {
+        "ast_sha256": "b61e706ffbe156243fcf1f597987fa29d3f23a5067955651abda52806080cb1e",
+        "first_line": 152,
+        "last_line": 216,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "field_snapshot": {
+        "ast_sha256": "648f52355c23a0bdc14a74e347ae204ed95910c73f4cd8b5cb611532f20f5749",
+        "first_line": 219,
+        "last_line": 278,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "flatten": {
+        "ast_sha256": "2307e4f927b9f52c188b780b9757332c94d4063eed2bbadfedb035928d476150",
+        "first_line": 105,
+        "last_line": 111,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "initial": {
+        "ast_sha256": "074d151b69e41af8268183dba6069eb6854502974f919e2dd2e15ffb3e32e59d",
+        "first_line": 91,
+        "last_line": 92,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "stage": {
+        "ast_sha256": "820bd2b5efe7a94d384ea5f33c1ab46f1300c75c9e962ec9c2b5f5cce77c71a8",
+        "first_line": 114,
+        "last_line": 149,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      },
+      "unpack": {
+        "ast_sha256": "c3665227948da130b5c75c2aa9c473029ffadef4587dc10c7d26000a8bdb8614",
+        "first_line": 95,
+        "last_line": 102,
+        "source": "validation/geometry/stable_seed_partition_trajectory_dynamics.py"
+      }
+    }
+  },
+  "initial_ancestry": {
+    "changed_scope": "metadata_and_full_horizon_caller_binding_only",
+    "new_initial_worker_fresh_bindings_required": true,
+    "physics_equations_changed": false,
+    "unchanged_functions": {
+      "canonical": {
+        "ast_sha256": "89b5b63a03dd7780a7ccba9fc4b17cf686353a21d211af10da6a3cc08723d350",
+        "first_line": 89,
+        "last_line": 96,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "digest": {
+        "ast_sha256": "52e06e5d144e1b7fed7c4ef507e17259e2a173a4011ffc20959dba4bcfe7e12b",
+        "first_line": 103,
+        "last_line": 104,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "encoded": {
+        "ast_sha256": "a50b766f20322d29e72961c689b2d213fcf6c6994fe112cc819178a840833b49",
+        "first_line": 99,
+        "last_line": 100,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "evaluate": {
+        "ast_sha256": "8d7c49f171238f73c8c802ffad4a4f63e47728c2cf3b5e91a1be490b4bd60ac6",
+        "first_line": 801,
+        "last_line": 902,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "json_digest": {
+        "ast_sha256": "ac79c61ca6382365e9411c3c4ac00c4b3d31d55fb842354da20bf0226e0ed563",
+        "first_line": 107,
+        "last_line": 108,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "keys": {
+        "ast_sha256": "5cfcf80f3e74a33e23576294a4df081a20f15dabaf39e6f53d39e9a748d63858",
+        "first_line": 127,
+        "last_line": 128,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "main": {
+        "ast_sha256": "8112459f4d25ae8c701d49117fe229f7c6fbbd24a93d525ee6eab909df997924",
+        "first_line": 983,
+        "last_line": 1028,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "materialization_contract": {
+        "ast_sha256": "6e19191b04cd9d940396f1c8a6bc98d523a5f688a5455d0268832ebc116a899d",
+        "first_line": 438,
+        "last_line": 540,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "parent_initial_review": {
+        "ast_sha256": "a28288a68b2d19ef89eea752eae9394ce5ba1e1dc5cdf0f151a181f9e7f59c89",
+        "first_line": 199,
+        "last_line": 214,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "parse": {
+        "ast_sha256": "e58c0bef7f0ff867e52ba296b04a08a71813403e330e58f8bdf8872ed982e57a",
+        "first_line": 111,
+        "last_line": 124,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "physical_provenance": {
+        "ast_sha256": "f16e146799dccb84bf24cd814c7abe8ee179dc39ce1297a4c9a02b8d08d5bab2",
+        "first_line": 543,
+        "last_line": 720,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "production_pin_metadata": {
+        "ast_sha256": "cc040d298b716b4424fc86d4dd65a6faf6b87b89a2c62a1b48a29102d934baee",
+        "first_line": 422,
+        "last_line": 435,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "runtime_inventory": {
+        "ast_sha256": "a9de13ee88be7c756bd6a9bbb9c450b7ae5d003f50107877056f6bc9c39ef454",
+        "first_line": 937,
+        "last_line": 980,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "safe": {
+        "ast_sha256": "f767921fb7404769388d19d670b16699dc74006d125b904597e64cfd5ef9655e",
+        "first_line": 905,
+        "last_line": 934,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      },
+      "verify": {
+        "ast_sha256": "7410d13e9061aaa681c6011b0bc2a0d9c4a6aee4444690a499a22b3a111baf05",
+        "first_line": 723,
+        "last_line": 798,
+        "source": "validation/geometry/stable_seed_partition_trajectory_initial_worker.py"
+      }
+    }
+  },
+  "kind": "cells.partition_trajectory_unfrozen_source_map@1",
+  "no_old_initial_pass_inherited": true,
+  "owned_python_sha256": {
+    "src/cells/processes/stable_seed_partition_trajectory.py": "570c8ed5b8a187bfb02bb619b3a058f26e7d343412fcf025eae4c313859d928d",
+    "tests/unit/test_stable_seed_partition_trajectory.py": "7a6f61c64b2880ee85018950661790cea40b767aff44b09d946cd31c7a97c0e7",
+    "validation/geometry/stable_seed_partition_trajectory_audit.py": "9210263696c59ebbd5465bfd9e847b93b821c00dfabf73b9557e670d9723865b",
+    "validation/geometry/stable_seed_partition_trajectory_authority.py": "30eab766441eb529d6111baf902b67b048f90c1ea3c30496f9d8d7062e667dd3",
+    "validation/geometry/stable_seed_partition_trajectory_declarations.py": "f88a4dc904f8deda59307e65a9bc9f7a73188a1189a40dba234f6a1417ee1555",
+    "validation/geometry/stable_seed_partition_trajectory_dynamics.py": "284f5885504e1a0afab41f695eea7d5a5b81cfe2ed5b52682bc662f0d4e5d092",
+    "validation/geometry/stable_seed_partition_trajectory_initial_worker.py": "9908ac39017ccd26776cfe6e9cb40cf555eb8cf19e45ffcee39b06addb36a909",
+    "validation/geometry/stable_seed_partition_trajectory_records.py": "3c066c1d21ebd97bd86884e3b8de07cc70be0c67556af366937a7408eccab3a0",
+    "validation/geometry/stable_seed_partition_trajectory_reference.py": "823dae6aa4534dd8117afb713de80d77b491bc8a372b25b2528b827313d51ddc",
+    "validation/geometry/stable_seed_partition_trajectory_restart.py": "19a17b13ab947f61e379c47cdd7b6a3fe6ea660121644eca88c3022fbf9674c6",
+    "validation/geometry/stable_seed_partition_trajectory_worker.py": "1c94fc3e9c61404b63d4a61bc0e423f627d946d787c6524cb03e344e7b3f9c87"
+  },
+  "precondition": "Initial18 and first advance must be accepted before any new source freeze/preparation",
+  "preserved": {
+    "existing_window_checkpoint_source_pins": {
+      "src/cells/core/resources.py": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954",
+      "src/cells/core/specs.py": "193d7f814d422099c2ea0c661a58d08142fb07c43de6bad3eb59c3b2f132eb09",
+      "src/cells/core/windows.py": "628068a7c1ab073cb54fe979f96e8db3e15be13eb7eeaba362b4cb16c2c09094",
+      "src/cells/io.py": "e44d65d5677da3752700f83adda27893c774e26d738dda1b6b31e8a2112a43f9"
+    },
+    "old_sources_changed": false,
+    "original_first_advance_files": 6,
+    "preserved_existing_physics_pins": 13,
+    "preserved_initial_packets": {
+      "/mnt/workspaces/Cells/stable-seed-partition-advance-initial-successor-prepared-20261031-01": 530,
+      "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01": 503
+    },
+    "refinement_draft_files": 8
+  },
+  "prospective_tests": {
+    "execution_status": "all_unrun_and_uncollected",
+    "fixture_generation": false,
+    "proposed_nested_children": 92,
+    "proposed_trees": 38,
+    "trees": [
+      {
+        "instances": 1,
+        "name": "test_unfrozen_pending_receipts_block_all_science",
+        "site": {
+          "ast_sha256": "a750a2524e009726ea93cd167e9cc2756d970491f0baae1f994eaa36e9007dcc",
+          "first_line": 102,
+          "last_line": 111,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 1,
+        "name": "test_time_scales_clocks_and_new_initial_roster_are_explicit",
+        "site": {
+          "ast_sha256": "46d6710cafffe743f06cb8ae90755f2662a8e0327c05466ebddc7437e9fd0bfe",
+          "first_line": 114,
+          "last_line": 142,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 4,
+        "name": "test_bounded_driver_matches_existing_checked_window_driver",
+        "site": {
+          "ast_sha256": "2a2c007c813b907edb88388f67b6d5601f68bc1da78c8eb013cdff44a4084d89",
+          "first_line": 146,
+          "last_line": 187,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 12,
+        "name": "test_fresh_process_exact_restart_carries_all_owners_and_raw_stages",
+        "site": {
+          "ast_sha256": "3a1044519b752a2d0b20a8ac4d78a0f425ea30c992a9d7e1a9401f08b95f46b3",
+          "first_line": 192,
+          "last_line": 216,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 2,
+        "name": "test_restart_at_first_and_penultimate_original_boundaries",
+        "site": {
+          "ast_sha256": "a229c6b573f71d45b5d9ac845202b5d4d7c79f652b29b33e5e75107851f62116",
+          "first_line": 220,
+          "last_line": 241,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 4,
+        "name": "test_independent_full_horizon_accuracy_and_common_endpoint_refinement",
+        "site": {
+          "ast_sha256": "3d640778d101f1560fc6aa74c873c2cd7ce5e6294b5b770dbb90c5e1ba178f96",
+          "first_line": 245,
+          "last_line": 265,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 6,
+        "name": "test_original_window_storage_controls_keep_all_three_clocks",
+        "site": {
+          "ast_sha256": "e5608fb957557055ef442bd27f19ca3ea63befa510af70f8e5d008f95414c920",
+          "first_line": 269,
+          "last_line": 287,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 1,
+        "name": "test_later_attempt_failure_retains_every_accepted_prefix_and_unmasked_return",
+        "site": {
+          "ast_sha256": "dd9117f0ad7b43423de6c1fc1c99142fdbc13771d2ac407e43b1d76906e43543",
+          "first_line": 290,
+          "last_line": 328,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      },
+      {
+        "instances": 7,
+        "name": "test_checkpoint_owner_clock_dtype_shape_and_definition_defects_refuse",
+        "site": {
+          "ast_sha256": "17c18e963b6e06434461641929d551344d93ab7e5154de0cf51dc37a3f48b930",
+          "first_line": 371,
+          "last_line": 404,
+          "source": "tests/unit/test_stable_seed_partition_trajectory.py"
+        }
+      }
+    ]
+  },
+  "source_and_metadata_only": true
+}

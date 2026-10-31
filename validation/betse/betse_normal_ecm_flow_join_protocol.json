@@ -1,0 +1,192 @@
+{
+  "activity": {
+    "GPU": 0,
+    "PROGRESS_edited": false,
+    "collection": 0,
+    "fixtures": 0,
+    "jobs": 0,
+    "model_or_reference_evaluations": 0,
+    "scientific_imports": 0,
+    "tests": 0
+  },
+  "actual_source_order": {
+    "getDeformation": {
+      "ast_sha256": "8c058456f1b0cdd787b50e86ecbc5e1a41326630146f623b42758b5475da9da0",
+      "first_line": 1354,
+      "last_line": 1354,
+      "source": "betse/science/sim.py"
+    },
+    "getFlow": {
+      "ast_sha256": "4fd57e094faf1efbc8aa4d640fb5e46bc0b7a7e2cbb35ddc2c4a2d71ad67cdd5",
+      "first_line": 1348,
+      "last_line": 1348,
+      "source": "betse/science/sim.py"
+    },
+    "osmotic_P": {
+      "ast_sha256": "79b00375827a4958945930ec04b8790cbab86845daf065cd9ac92fd4ed8866c3",
+      "first_line": 1345,
+      "last_line": 1345,
+      "source": "betse/science/sim.py"
+    },
+    "self.grn.core.run_loop": {
+      "ast_sha256": "9086212ebb578920d5905bd736ec24b43d130657f76fd3933735de319788970f",
+      "first_line": 1319,
+      "last_line": 1319,
+      "source": "betse/science/sim.py"
+    },
+    "self.update_V": {
+      "ast_sha256": "e61a788a574ab55bb20c5910acd65716ac99ba180607cacbf4459bf75c520a00",
+      "first_line": 1360,
+      "last_line": 1360,
+      "source": "betse/science/sim.py"
+    },
+    "self.update_all_concs": {
+      "ast_sha256": "2dff1dbd358f33a651e871423a6709151f8ecae0f1dba900e1f2952d7f390b70",
+      "first_line": 1357,
+      "last_line": 1357,
+      "source": "betse/science/sim.py"
+    },
+    "self.update_ecm": {
+      "ast_sha256": "511d839028abe2d0f8b98255c8a725b3565ef23e767569d16598816b2a0e06fa",
+      "first_line": 1276,
+      "last_line": 1276,
+      "source": "betse/science/sim.py"
+    }
+  },
+  "complete_owners": [
+    "cell/membrane/C-order ECM IDs and maps",
+    "previous complete current/environment/voltage arrays",
+    "post-GRN complete material and cache",
+    "hydrostatic pressure declaration and reached osmotic cache",
+    "complete typed mechanics cache on both sides of the disabled gate",
+    "all four flow stores",
+    "original zero transport velocity inputs and false kernel policy"
+  ],
+  "conditional_export": {
+    "enabled_ordinary_trajectory": false,
+    "existing_source_format": true,
+    "exported_owner_qualification_inherited": false,
+    "no_new_equation_panel": true,
+    "numerical_evaluation": false,
+    "ordinary_flow_caches_not_replaced": true
+  },
+  "core": "src/cells/processes/betse_normal_ecm_flow_join.py",
+  "disabled_behavior": {
+    "existing_component_gate": "betse_fluid_flow.flow(...,fluid_flow=False)",
+    "new_equations": false,
+    "output_feedback_into_transport": false,
+    "result": null,
+    "source_getFlow_executed": false,
+    "typed_cache_bitwise_unchanged": true
+  },
+  "failure_retention": {
+    "complete_completed_callbacks": true,
+    "completed_precommit_flow_point": true,
+    "full_parent": true,
+    "no_accepted_candidate_on_failure": true,
+    "original_nested_partial": true,
+    "original_type_reason_and_traceback": true
+  },
+  "future_standalone_GRN_composition_implemented": false,
+  "kind": "cells.betse_normal_ecm_disabled_flow_ownership_protocol@1",
+  "limits": {
+    "enabled_getFlow": false,
+    "full_native_simulator": false,
+    "moving_geometry": false,
+    "new_physical_conservation_claim": false,
+    "ordinary_activation_invented": false,
+    "physical_volume_evolution": false
+  },
+  "numerical_launch_authorized": false,
+  "observation": "Read-only reconstruction of existing disabled gate frames before deferred material commit",
+  "ordinary_branch": {
+    "FULL_only": true,
+    "fluid_flow": false,
+    "loader_ignores_yaml_flow_switch": true,
+    "standalone_GRN_does_not_enable_ordinary_dispatch": true,
+    "td_deform": false,
+    "viscosity_Pa_s": 0.01
+  },
+  "pending": [
+    "Chief source review of compact ownership wrapper and conditional boundary projection",
+    "Separate fixture/science/test/collection authorization and existing guarded runner closure",
+    "Complete durable source/process evidence if the five proposed checks are authorized"
+  ],
+  "preserved_refinement_handoff": {
+    "common_draft_receipt_sha256": "adc1dd3422bc76297248ed92b5aff7e005ef6f2adbe8ff52046c52d6161e9a3e",
+    "handoff_unchanged": true,
+    "initial_manifest_sha256": "61679336deda03709b6425f6dc571222a1ffdb6a3e92af01b2378bd3270c115f",
+    "receipt_sha256": "fa33c835bcc46f8f272bbaab0249656241e36917e1a7f3c0fdfc045866744af4"
+  },
+  "prospective": {
+    "collected": false,
+    "disabled_boundary_points": 6,
+    "exact_source_predicted_test_ids": [
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_disabled_flow_carries_complete_ordinary_source_owners[coupled-osmotic]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_disabled_flow_carries_complete_ordinary_source_owners[mechanics-disabled]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_unsupported_activation_or_flow_feedback_is_refused[enabled-flow]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_unsupported_activation_or_flow_feedback_is_refused[nonzero-disabled-flow-drive]",
+      "tests/unit/test_betse_normal_ecm_flow_join.py::test_precommit_observer_failure_retains_the_complete_disabled_flow_seam"
+    ],
+    "existing_ordinary_specimen_ids": [
+      "coupled-osmotic",
+      "mechanics-disabled"
+    ],
+    "fixture_materializations": 0,
+    "functions": 3,
+    "nested_native_children": 2,
+    "nested_stdlib_conditional_children": 2,
+    "new_active_flow_equation_cases": 0,
+    "new_scientific_cases": 0,
+    "pytest_trees": 5,
+    "tests_executed": 0
+  },
+  "purpose": "Close the missing ordinary disabled-flow ownership/source-order seam without inventing activation",
+  "qualification": {
+    "exact_disabled_identity_only": true,
+    "new_scope_accuracy_qualified": false,
+    "no_independently_carried_trajectory": true,
+    "no_new_tolerance": true,
+    "upstream_accuracy_inherited": false
+  },
+  "resources": {
+    "measured_sufficiency": false,
+    "new_launcher_or_finalizer_prepared": false
+  },
+  "source_auditor": "validation/betse/betse_normal_ecm_flow_join_audit.py",
+  "source_epoch": "Actual post-GRN material/cache; previous reconstructed current/field/voltage; post-osmotic pre-deformation cache frames",
+  "source_map": "validation/betse/betse_normal_ecm_flow_join_source_map.json",
+  "source_only": true,
+  "standalone_future_activation": "validation/betse/betse_normal_ecm_flow_join_standalone_grn_activation.json",
+  "standalone_future_method": "MasterOfGenes.run_core_sim",
+  "standalone_reuse": {
+    "display_admitted_by_new_composition": false,
+    "new_equation_panel": false,
+    "new_owner_qualification_inherited": false,
+    "preserved_seven_component_sources": {
+      "agent-work/cells-worker-01/workfiles/check_betse_fluid_flow.py": "52cee1f5ccba144ff1b41c08f86eb0e901481cd3114ec120b6f5142279224379",
+      "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+      "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8",
+      "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+      "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+      "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+      "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0"
+    },
+    "prior_receipt_edited": false,
+    "qualified_tests": 64,
+    "receipt": "/mnt/workspaces/Cells/betse-fluid-flow-development-20261029-07/result.json",
+    "receipt_sha256": "96c8ef38e86096f3713a5c97b2a7697bf2c945e9695bb4bf4f5f408b4d9a34bd",
+    "relevant_deformation_dependency_AST_unchanged": true,
+    "sole_unrelated_dependency_AST_change": "quartic_display_interpolator"
+  },
+  "status": "source_only_review_candidate_no_numerical_execution",
+  "unit_boundaries": {
+    "ECM_conditional_output": "source-native m3/s",
+    "ECM_conditional_potential": "source-native m4/s; not pressure",
+    "cell_conditional_velocity": "m/s",
+    "disabled_stores": "Complete original typed scalar/owner arrays carried without reinterpretation",
+    "hydrostatic_pressure": "Pa",
+    "osmotic_PP": "source-native auxiliary; not relabelled Pa",
+    "transport_velocity": "m/s; no conversion or new flow feedback"
+  }
+}

@@ -1,0 +1,564 @@
+{
+  "activity": {
+    "GPU_jobs": 0,
+    "collection": 0,
+    "existing_core_or_frozen_files_edited": false,
+    "fixture_executions": 0,
+    "geometry_evaluations": 0,
+    "numerical_jobs": 0,
+    "polls": 0,
+    "production_imports": 0,
+    "reference_evaluations": 0,
+    "scientific_imports": 0,
+    "shared_status_edited": false,
+    "tests": 0
+  },
+  "complete_constructor_and_conservation_dictionary_inventories_match": true,
+  "conservative_polygon_manifest_sha256": "2a1182f4091761f20c8048e0bd8cf8281ff67b808410be2820dddb4531f1d95b",
+  "dependencies": {
+    "src/cells/processes/conservative_polygon_geometry.py": {
+      "bundle": "/mnt/workspaces/Cells/conservative-polygon-geometry-prepared-20261030-02",
+      "sha256": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d"
+    },
+    "src/cells/processes/finite_ecm_polygon_geometry.py": {
+      "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+      "sha256": "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925"
+    },
+    "src/cells/processes/stable_geometry_primitives.py": {
+      "bundle": "/mnt/workspaces/Cells/conservative-polygon-geometry-prepared-20261030-02",
+      "sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958"
+    }
+  },
+  "evidence_contract_successor": {
+    "metadata_controls": {
+      "additional_children": 0,
+      "future_only_unrun": true,
+      "physical_cases": 0,
+      "simulated_reference_failures": 2,
+      "wrong_contract_fields": 6
+    },
+    "original_input_mutations_unchanged": true,
+    "predecessor": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-prepared-20261031-01",
+      "manifest_sha256": "9247bd691887657a40137c11ce5bc53d81f022bcbb2d080a34c0f1babc5b71fb",
+      "verified_original_files": 38
+    },
+    "reference_inserted_partial_assignments": [
+      "partial['grid_line_events'] = events",
+      "partial['stage'] = 'independent_cumulative_x_grid'",
+      "partial['x_axis'] = dict(grid_exact=xe, grid_stored=xs, width_checks=xc)",
+      "partial['stage'] = 'independent_cumulative_y_grid'",
+      "partial['y_axis'] = dict(grid_exact=ye, grid_stored=ys, width_checks=yc)",
+      "partial['stage'] = 'independent_primary_geometry'",
+      "partial['primary'] = primary",
+      "partial['stage'] = 'independent_refined_geometry'",
+      "partial['refined'] = refined",
+      "partial['stage'] = 'independent_owner_maps'",
+      "partial['owner_maps'] = maps",
+      "partial['construction'] = construction",
+      "partial['provenance'] = provenance",
+      "partial['stage'] = 'independent_conservation_and_complete_return'"
+    ],
+    "reference_inverse_AST_equal_after_removing_partial_assignments": true,
+    "refusal_expectations": {
+      "area-underflow": {
+        "cause_chain": [
+          {
+            "code": null,
+            "exception_type": "PartitionRejected",
+            "reason": "unrepresentable_output at region_area_m2",
+            "stage": "partition_and_physical_faces"
+          },
+          {
+            "code": "unrepresentable_output",
+            "exception_type": "GeometryRejected",
+            "reason": "unrepresentable_output at region_area_m2",
+            "stage": "region_area_m2"
+          }
+        ],
+        "exception_type": "ConstructionRejected",
+        "phase": "prepare",
+        "reason": "Explicit cell/bath construction refused at existing_finite_ECM_geometry_admission: unrepresentable_output at region_area_m2",
+        "source_error": {
+          "reason": "unrepresentable_output at region_area_m2",
+          "type": "PartitionRejected"
+        },
+        "stage": "existing_finite_ECM_geometry_admission"
+      },
+      "bath-in-cell-slot": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Duplicate bath slot or reclassification of a cell slot",
+        "source_error": null,
+        "stage": null
+      },
+      "cell-collapse": {
+        "cause_chain": [
+          {
+            "code": null,
+            "exception_type": "ValueError",
+            "reason": "Cell offsets collapse, overlap or meet the selected outer domain",
+            "stage": null
+          }
+        ],
+        "exception_type": "ConstructionRejected",
+        "phase": "prepare",
+        "reason": "Explicit cell/bath construction refused at exact_widths_and_shared_grid_lines: Cell offsets collapse, overlap or meet the selected outer domain",
+        "source_error": {
+          "reason": "Cell offsets collapse, overlap or meet the selected outer domain",
+          "type": "ValueError"
+        },
+        "stage": "exact_widths_and_shared_grid_lines"
+      },
+      "changed-seed": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Complete retained seed coordinate bits must match its declared tensor slot",
+        "source_error": null,
+        "stage": null
+      },
+      "clockwise-domain": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Only a CCW axis-aligned rectangle starting at lower-left is supported",
+        "source_error": null,
+        "stage": null
+      },
+      "domain-gap": {
+        "cause_chain": [
+          {
+            "code": null,
+            "exception_type": "ValueError",
+            "reason": "Explicit outer/intercellular cleft widths must exactly match seed offsets and domain",
+            "stage": null
+          }
+        ],
+        "exception_type": "ConstructionRejected",
+        "phase": "prepare",
+        "reason": "Explicit cell/bath construction refused at exact_widths_and_shared_grid_lines: Explicit outer/intercellular cleft widths must exactly match seed offsets and domain",
+        "source_error": {
+          "reason": "Explicit outer/intercellular cleft widths must exactly match seed offsets and domain",
+          "type": "ValueError"
+        },
+        "stage": "exact_widths_and_shared_grid_lines"
+      },
+      "duplicate-owner": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Distinct unchanged cell and new bath owner IDs required",
+        "source_error": null,
+        "stage": null
+      },
+      "empty-operator": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Prior geometry/caches/operators cannot be reused or reclassified",
+        "source_error": null,
+        "stage": null
+      },
+      "missing-bath": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Complete separate cell-seed and positive bath-slot owner axes required",
+        "source_error": null,
+        "stage": null
+      },
+      "missing-clefts": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Complete exact fields required: explicit offsets and clefts",
+        "source_error": null,
+        "stage": null
+      },
+      "missing-seed": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Complete separate cell-seed and positive bath-slot owner axes required",
+        "source_error": null,
+        "stage": null
+      },
+      "native-claim": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Fresh explicit manufactured seed provenance required; no prior-cell or native promotion",
+        "source_error": null,
+        "stage": null
+      },
+      "negative-offset": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Explicit finite binary64 metre values required; widths must be positive",
+        "source_error": null,
+        "stage": null
+      },
+      "oblique-domain": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Only a CCW axis-aligned rectangle starting at lower-left is supported",
+        "source_error": null,
+        "stage": null
+      },
+      "old-operator": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Prior geometry/caches/operators cannot be reused or reclassified",
+        "source_error": null,
+        "stage": null
+      },
+      "prior-cell-reclassification": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Fresh explicit manufactured seed provenance required; no prior-cell or native promotion",
+        "source_error": null,
+        "stage": null
+      },
+      "signed-zero": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Signed-zero geometry input is outside this declared manufactured law",
+        "source_error": null,
+        "stage": null
+      },
+      "unrepresentable-offset": {
+        "cause_chain": [
+          {
+            "code": null,
+            "exception_type": "ValueError",
+            "reason": "A declared width would change after binary64 projection; exact grid lines required",
+            "stage": null
+          }
+        ],
+        "exception_type": "ConstructionRejected",
+        "phase": "prepare",
+        "reason": "Explicit cell/bath construction refused at exact_widths_and_shared_grid_lines: A declared width would change after binary64 projection; exact grid lines required",
+        "source_error": {
+          "reason": "A declared width would change after binary64 projection; exact grid lines required",
+          "type": "ValueError"
+        },
+        "stage": "exact_widths_and_shared_grid_lines"
+      },
+      "unsupported-grid": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Bounded tensor layout requires 1..4 cells per axis and at most32 total regions",
+        "source_error": null,
+        "stage": null
+      },
+      "wrong-law": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Explicit new manufactured geometry, SI, width, face and boundary laws required",
+        "source_error": null,
+        "stage": null
+      },
+      "wrong-units": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Explicit new manufactured geometry, SI, width, face and boundary laws required",
+        "source_error": null,
+        "stage": null
+      },
+      "zero-cleft": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Explicit finite binary64 metre values required; widths must be positive",
+        "source_error": null,
+        "stage": null
+      },
+      "zero-membrane-path": {
+        "cause_chain": [],
+        "exception_type": "ValueError",
+        "phase": "bind",
+        "reason": "Explicit finite binary64 metre values required; widths must be positive",
+        "source_error": null,
+        "stage": null
+      }
+    },
+    "review": {
+      "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preflight-20261031-01/REVIEW.json",
+      "sha256": "e4ce212b2be31eae84076b9fd9b3880ffd1927c5b1ea14251f399bdb72f81ab3",
+      "status": "held_for_narrow_evidence_contract_successor"
+    },
+    "science_or_test_execution": false,
+    "test_helper_source": {
+      "reference_retention_metadata_controls": {
+        "ast_sha256": "f92072f924f644163651335fff4a1be5ce7c27d835c856410ab8c071cfb8a55c",
+        "first_line": 823,
+        "last_line": 909,
+        "source": "tests/unit/test_stable_seed_explicit_ecm_partition.py"
+      },
+      "refusal_contract": {
+        "ast_sha256": "e10d0e2cb6f6f80c338bf745cd23ae623309d368ea7c4aacdecb45030c85b40a",
+        "first_line": 763,
+        "last_line": 785,
+        "source": "tests/unit/test_stable_seed_explicit_ecm_partition.py"
+      },
+      "refusal_metadata_controls": {
+        "ast_sha256": "33bd4d99b2c31571646adbc1375ae9a4156b50d95d554899116b6ec7d4064e7c",
+        "first_line": 788,
+        "last_line": 820,
+        "source": "tests/unit/test_stable_seed_explicit_ecm_partition.py"
+      }
+    },
+    "tests_unchanged_outside_named_contracts_and_metadata_helpers": true,
+    "unchanged_source_sha256": {
+      "src/cells/processes/stable_seed_explicit_ecm_partition.py": "79c1bd6cd2f405425ad1b789515080c102a76c4e4110fc9007d0e7216e6179e9",
+      "validation/geometry/stable_seed_explicit_ecm_partition_callers.json": "db8a03812c9005770b16f5259295b59ee164e1282d54c176e92f98ab7e6c04f6",
+      "validation/geometry/stable_seed_explicit_ecm_partition_fixtures.py": "6ecd182a7bd52cd402b3937ca917d5b9673e9e99d033a6abeb3e19a34271d359",
+      "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py": "91e6d01931bb5856b2604c4b7348b3cf6d70e2737a75784b008495e6b025d251"
+    }
+  },
+  "exact_conservation": {
+    "ast_sha256": "cf39ac41930729ef5b9f320a542ffd13ea52a3d124eef21f668523c47882c1a0",
+    "first_line": 427,
+    "last_line": 502,
+    "source": "src/cells/processes/stable_seed_explicit_ecm_partition.py"
+  },
+  "extraction": {
+    "field_conversion_and_solver_lanes_excluded": true,
+    "new_geometry_only_reference_sha256": "91e6d01931bb5856b2604c4b7348b3cf6d70e2737a75784b008495e6b025d251",
+    "original_geometry_lane_end_exclusive": 462,
+    "original_reference_sha256": "79aaf9acb8a9cfbc557b33fbc386fbf835fb6eef12f2395e97acb08d072fde71",
+    "unchanged_geometry_AST_members": [
+      "ReferenceRejected",
+      "_metric",
+      "add",
+      "compare_geometry",
+      "divide",
+      "dot",
+      "evaluate",
+      "identity",
+      "multiply",
+      "number",
+      "ratio",
+      "subtract"
+    ]
+  },
+  "finite_ECM_manifest_sha256": "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f",
+  "independent_conservation": {
+    "ast_sha256": "293fba8cf00bbaac3f1aa74e5404c39183b4090bac72c5ecd39acb5eb6ca6296",
+    "first_line": 434,
+    "last_line": 500,
+    "source": "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
+  },
+  "independent_full_geometry_and_certificate_inventory": {
+    "ast_sha256": "6bd5fa03d3512e661c777e9795e28c0bb53fe76350233c22f2d7318865dbd424",
+    "first_line": 677,
+    "last_line": 976,
+    "source": "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
+  },
+  "independent_width_construction": {
+    "ast_sha256": "33fb50b7fb879fd847ff9431b6d7dab0389dde3e9e203a8875ada8cad6955990",
+    "first_line": 317,
+    "last_line": 357,
+    "source": "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
+  },
+  "inventory": {
+    "Root_finalizer": 1,
+    "all_checks_unrun": true,
+    "assertion_panels": {
+      "CORRUPTIONS": [
+        "stored-vertex",
+        "bath-reclassified",
+        "missing-bath",
+        "missing-membrane",
+        "face-distance",
+        "double-face-area",
+        "face-owner",
+        "boundary-owner",
+        "seed-owner-map",
+        "extra-centroid-axis",
+        "extra-tangent-axis",
+        "tangent-certificate",
+        "face-interval-certificate",
+        "boolean-incidence",
+        "empty-grid-ledger",
+        "extra-grid-event",
+        "coherent-wrong-grid-target",
+        "wrong-width-target",
+        "empty-region-targets",
+        "wrong-conservation",
+        "native-promotion",
+        "physical-promotion",
+        "extra-field"
+      ],
+      "REFUSALS": [
+        "wrong-law",
+        "missing-clefts",
+        "zero-cleft",
+        "negative-offset",
+        "cell-collapse",
+        "domain-gap",
+        "oblique-domain",
+        "clockwise-domain",
+        "changed-seed",
+        "missing-seed",
+        "duplicate-owner",
+        "missing-bath",
+        "bath-in-cell-slot",
+        "unsupported-grid",
+        "wrong-units",
+        "native-claim",
+        "prior-cell-reclassification",
+        "old-operator",
+        "empty-operator",
+        "zero-membrane-path",
+        "signed-zero",
+        "unrepresentable-offset",
+        "area-underflow"
+      ]
+    },
+    "biological_cases": 0,
+    "check_ids": [
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_positive_explicit_cell_bath_construction_and_full_independent_geometry[one-cell]",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_positive_explicit_cell_bath_construction_and_full_independent_geometry[unequal-clefts]",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_positive_explicit_cell_bath_construction_and_full_independent_geometry[two-cells]",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_positive_explicit_cell_bath_construction_and_full_independent_geometry[four-cells]",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_positive_explicit_cell_bath_construction_and_full_independent_geometry[translated-cell]",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_complete_caller_width_domain_owner_and_cache_refusals",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_resealed_constructor_and_geometry_controls_need_same_worker_baseline",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_failed_constructor_baseline_cannot_credit_output_controls",
+      "tests/unit/test_stable_seed_explicit_ecm_partition.py::test_geometry_does_not_admit_old_operators_or_physical_model"
+    ],
+    "collection": false,
+    "completed_checks": 0,
+    "duplicate_child_replays": 0,
+    "manufactured_cases": [
+      "one-cell",
+      "unequal-clefts",
+      "two-cells",
+      "four-cells",
+      "translated-cell"
+    ],
+    "potential_actual_nested_reference_children": 9,
+    "scheduled_units": 10,
+    "top_level_pytest_trees": 9,
+    "total_process_units": 19
+  },
+  "kind": "cells.explicit_cleft_width_cell_bath_constructor_static_correspondence@1",
+  "native_correspondence": "Native homothetic cell scale and separate cell_space gap length plus nearest midpoint maps are inspected, not reproduced or adopted",
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38"
+  },
+  "native_source_sites": {
+    "cellVerts": {
+      "ast_sha256": "b320e0bccbe0f05bb143eb1fdbd4e1447a9aef36ab59cc6c8f1ae2fd3de1fb51",
+      "first_line": 978,
+      "last_line": 1175,
+      "source": "betse/science/cells.py"
+    },
+    "makeECM": {
+      "ast_sha256": "902c5ad7c17116a497c7d8872051b69bd86f941a8ed1018b81e6d9586154b94f",
+      "first_line": 1576,
+      "last_line": 1718,
+      "source": "betse/science/cells.py"
+    }
+  },
+  "new_law": "Fresh manufactured tensor seeds, explicit half-widths/all clefts/domain/positive bath slots; exact representable shared coordinates",
+  "pending_grid_input_saved_before_rounding": true,
+  "production_finite_geometry_admission": {
+    "ast_sha256": "e6360a01cabd590752ecdfc75de900368d041733b35e15e0df65f5ac408b09c4",
+    "first_line": 518,
+    "last_line": 645,
+    "source": "src/cells/processes/stable_seed_explicit_ecm_partition.py"
+  },
+  "production_width_construction": {
+    "ast_sha256": "5723c0f171726de9c22322655f29da5ef3af8fd6594c0169e74c7f9f4a687098",
+    "first_line": 316,
+    "last_line": 343,
+    "source": "src/cells/processes/stable_seed_explicit_ecm_partition.py"
+  },
+  "reference_closure": {
+    "executed": false,
+    "field_or_physical_lanes_imported": false,
+    "modules": [
+      {
+        "imports": [
+          "argparse",
+          "decimal.localcontext",
+          "hashlib",
+          "importlib.abc",
+          "json",
+          "math",
+          "os",
+          "pathlib.Path",
+          "sys",
+          "traceback",
+          "validation.geometry.stable_seed_explicit_ecm_partition_geometry_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py"
+        ],
+        "sha256": "5b2240bf02166ae4bc73e03a669611d3328448fe1dd5824919ccbf59dc8f702c",
+        "source": "validation/geometry/stable_seed_explicit_ecm_partition_reference.py"
+      },
+      {
+        "imports": [
+          "collections.defaultdict",
+          "decimal.localcontext",
+          "hashlib",
+          "json",
+          "math",
+          "validation.geometry.conservative_polygon_geometry_reference",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/conservative_polygon_geometry_reference.py",
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "91e6d01931bb5856b2604c4b7348b3cf6d70e2737a75784b008495e6b025d251",
+        "source": "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py"
+      },
+      {
+        "imports": [
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "math",
+          "struct"
+        ],
+        "local_dependencies": [],
+        "sha256": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569",
+        "source": "validation/geometry/stable_geometry_primitives_reference.py"
+      },
+      {
+        "imports": [
+          "collections.Counter",
+          "collections.defaultdict",
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "hashlib",
+          "json",
+          "math",
+          "struct",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8",
+        "source": "validation/geometry/conservative_polygon_geometry_reference.py"
+      }
+    ],
+    "production_and_scientific_imports": []
+  },
+  "source_only": true
+}

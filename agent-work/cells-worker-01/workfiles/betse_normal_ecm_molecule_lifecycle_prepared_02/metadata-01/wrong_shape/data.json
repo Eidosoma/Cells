@@ -1,0 +1,14 @@
+{
+  "mapping": [
+    [
+      "value",
+      {
+        "array": "a0",
+        "dtype": "<f8",
+        "shape": [
+          1
+        ]
+      }
+    ]
+  ]
+}

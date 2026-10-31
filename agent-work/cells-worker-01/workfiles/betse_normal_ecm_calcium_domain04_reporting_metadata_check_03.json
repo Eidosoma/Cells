@@ -1,0 +1,42 @@
+{
+  "actual_metadata_expression_AST_sha256": {
+    "dependencies": "cea54b6dffd62ca2ebb043afb1a368a971d9e164a7955a06e9afa8c048ea0475",
+    "positive": "8c4a1315d5d8ab252a9cfe6a8025c8263870709579c9aaa691408253928b39b3",
+    "raw": "86b0f4527dc73c169eb9682c2849179713dc8366693b1d845127eaf806ce8084",
+    "raw_domain": "6feff747571e59a9a1320c527b4b381209f39963ec18455db3aeef6482293594"
+  },
+  "dependency_schema_cases": 12,
+  "driver_sha256": "3dbafd7952388575d8254b4a4294eab78580ebc2f7db0eeb15e4faecfeb387b9",
+  "exact_planned_ID_schema_cases": 34,
+  "existing_raw_schema_cases": 6,
+  "fixture_evaluations": 0,
+  "kind": "cells.calcium_domain04_bounded_reporting_metadata_check@1",
+  "malformed_metadata_rejected": [
+    "positive_missing_calcium_forms",
+    "raw_domain_positive_credit",
+    "raw_domain_first_nonfinite_frame",
+    "raw_domain_port_stop",
+    "raw_domain_calcium_specific_cause_claim",
+    "raw_domain_total_fresh_reference_forms",
+    "raw_domain_native_completed_calls",
+    "changed_original_input_bytes",
+    "chemistry_transport_scope_expansion",
+    "changed_partial_archive_digest",
+    "duplicate_pytest_id",
+    "skipped_pytest_id"
+  ],
+  "metadata_temporary_files_total": 163,
+  "model_evaluations": 0,
+  "numerical_runs": 0,
+  "observed_raw_domain_schema_cases": 1,
+  "positive_role_schema_cases": 2,
+  "producer_sha256": {
+    "legacy": "aaedd7954f3b630e17b6546cbc4c500c7f4d4baba2a7de7222643a67a824d418",
+    "new": "71982c5af351274583521cfe42241a21c575c61f21f29f92f99078104c7697a3"
+  },
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "status": "passed_synthetic_metadata_only"
+}

@@ -1,0 +1,23 @@
+{
+  "changes": {
+    "src/cells/processes/betse_ecm_transport.py": {
+      "inverse_AST_original_material_updates_and_all_legacy_ledgers_equal": true,
+      "new_live_sha256": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "old_frozen_sha256": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5"
+    },
+    "validation/betse/betse_ecm_transport_reference.py": {
+      "inverse_AST_original_material_updates_and_all_legacy_ledgers_equal": true,
+      "new_live_sha256": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "old_frozen_sha256": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170"
+    }
+  },
+  "kind": "cells.normal_ecm_field_coordinated_input_audit@1",
+  "optional_decimal_retention_hook_unused_in_this_join": true,
+  "original39of40_material_failure_still_failed": true,
+  "original_inputs": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+  "original_inputs_sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": "New packet explicitly pins current inputs; all prior prepared inputs stay unchanged",
+  "separately_requested_diagnostic_not_compared_or_credited_by_this_join": true
+}

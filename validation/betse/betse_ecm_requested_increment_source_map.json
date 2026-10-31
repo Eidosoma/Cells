@@ -1,0 +1,201 @@
+{
+  "kind": "cells.betse_ecm_requested_increment_source_map@1",
+  "diagnostic_scope": {
+    "new_read_only_diagnostic": "junction_requested_outward_increment_mol_m3",
+    "shape": "ion x cell",
+    "quantity": "Signed requested outward junction concentration increment before binary64 addition and clipping",
+    "production_expression": "-(dt * (owner_sum @ (-fg * membrane_area) / cell_volume))",
+    "independent_expression": "dt * scalar_sum_owner(fg[j] * area[j]) / cell_volume",
+    "stationary_or_uncommitted_increment_zero": true,
+    "clipping_does_not_redefine_operand": true,
+    "legacy_buffers_and_ledgers_unchanged": true,
+    "raw_endpoint_lag_unchanged": true,
+    "old_raw_lag_gate_preserved_and_original_panel_failed": true,
+    "binding_and_candidate_state_identity_unchanged": true,
+    "trial_identity_may_change_due_to_added_diagnostic": true,
+    "physical_conservation_claim": false,
+    "material_or_energy_parity": false,
+    "paired_path_geometry_averaged": false
+  },
+  "formula_and_native_sites": [
+    {
+      "source": "/home/robert/Cells/src/cells/processes/betse_ecm_transport.py",
+      "name": "step",
+      "parent_class": null,
+      "first_line": 375,
+      "last_line": 655,
+      "ast_sha256": "a705b782d35504f71966eb7d3ccd79134d146541b5d5030be41122863f63ef5e"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_transport_reference.py",
+      "name": "evaluate",
+      "parent_class": null,
+      "first_line": 46,
+      "last_line": 401,
+      "ast_sha256": "ace8caaddf4e3bf05fb71671f900ee923daa451fd0c2fce10606194d18dddb84"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_requested_increment_reference.py",
+      "name": "evaluate",
+      "parent_class": null,
+      "first_line": 99,
+      "last_line": 127,
+      "ast_sha256": "6d35f07bcc27b1f37b5b7023df634aa5ddd66a7c893f32f551d249b38336e95a"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_requested_increment_reference.py",
+      "name": "encode",
+      "parent_class": null,
+      "first_line": 19,
+      "last_line": 34,
+      "ast_sha256": "dac1fffbd82e6d7fe9601a939b2792353d567b0c46a5d7e68192639494ff0347"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_requested_increment_reference.py",
+      "name": "validate_payload",
+      "parent_class": null,
+      "first_line": 130,
+      "last_line": 142,
+      "ast_sha256": "771ccb9fa2cf07a582f8d4cfda5158ed9b61d943ea780273110766faeb8f058e"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_requested_increment_checks.py",
+      "name": "semantics",
+      "parent_class": null,
+      "first_line": 328,
+      "last_line": 446,
+      "ast_sha256": "a730042927903d93f9f9b9d80bc3699dcb1e68470d64caa57a79e7846c680643"
+    },
+    {
+      "source": "/home/robert/Cells/validation/betse/betse_ecm_requested_increment_checks.py",
+      "name": "exact_columns",
+      "parent_class": null,
+      "first_line": 219,
+      "last_line": 245,
+      "ast_sha256": "0bfa8e7dd09bd0c137910544837c916a80366564a0fd6d7452ef233d26929131"
+    },
+    {
+      "source": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "name": "update_all_concs",
+      "parent_class": "Simulator",
+      "first_line": 2086,
+      "last_line": 2111,
+      "ast_sha256": "4526d87d85b86e4392eb0ba28d09f6a2fb66bebcca5273d3910876c9c8a3052d"
+    },
+    {
+      "source": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim_toolbox.py",
+      "name": "update_Co",
+      "parent_class": null,
+      "first_line": 1155,
+      "last_line": 1207,
+      "ast_sha256": "21056d19c4b6ecdb6cc7966cee7b9623e546b555ccbd6bd5d0b73dc61f0a75f6"
+    },
+    {
+      "source": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim_toolbox.py",
+      "name": "no_negs",
+      "parent_class": null,
+      "first_line": 475,
+      "last_line": 503,
+      "ast_sha256": "ca58dc1cd3fc9003db9009190f1b134a4c8a678256ecf3692d12f79a66cdb29c"
+    }
+  ],
+  "original_failed_panel": {
+    "checks": 40,
+    "passed": 39,
+    "failed": 1,
+    "status": "failed",
+    "case": "signed_environment",
+    "field": "ledger.membrane_bulk_difference_mol_m3",
+    "error_over_original_fixed_budget": 5.816019768552954,
+    "original_assertion_unchanged": true,
+    "not_reclassified": true,
+    "original_run": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+    "diagnosis": "/mnt/workspaces/Cells/betse-ecm-material-retained-diagnosis-20261031-02/result.json",
+    "diagnosis_sha256": "def100bc323d6a324853895fde8a5e5e8c3aa38d46425cc7ff46123785bd9e22"
+  },
+  "legacy_task_start_source_sha256": {
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+    "tests/unit/test_betse_ecm_transport.py": "aad1bca7e19f81830222eee1315aa07e69f5505ebbc049110aa726935b2a8304",
+    "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+  },
+  "original_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3"
+  },
+  "complete_import_closure_sha256": {
+    "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+    "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "tests/unit/test_betse_ecm_requested_increment.py": "50ec32ca6374b068627df7d9c2a9ab6786ede6fcfe899bfabf465eb9f72a440e",
+    "validation/betse/betse_ecm_requested_increment_checks.py": "3e50699e0effe169e9be617dca732011b9cff63b644776bfd53f8ca3550ff003",
+    "validation/betse/betse_ecm_requested_increment_fixtures.py": "0bd221714b4b1a0b384b49037042c06fe857f7fe489a3b601b9df146f07fb54a",
+    "validation/betse/betse_ecm_requested_increment_reference.py": "3a80fbabd83d65b06e9382cd1ff05981a59a07d69faacc871e9bc36bcaed95a0",
+    "validation/betse/betse_ecm_requested_increment_replay.py": "9a25a8bcc397b1bf0bf1f79d12342baed97e693cc01a55919bcd7da9a94388ef",
+    "validation/betse/betse_ecm_requested_increment_runtime.py": "6016b65a0a107021f4955b97753d69f2101300d5c3d41a50d2f538691b70ba6f",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc"
+  },
+  "isolated_reference_closure_sha256": {
+    "validation/betse/betse_ecm_requested_increment_checks.py": "3e50699e0effe169e9be617dca732011b9cff63b644776bfd53f8ca3550ff003",
+    "validation/betse/betse_ecm_requested_increment_fixtures.py": "0bd221714b4b1a0b384b49037042c06fe857f7fe489a3b601b9df146f07fb54a",
+    "validation/betse/betse_ecm_requested_increment_reference.py": "3a80fbabd83d65b06e9382cd1ff05981a59a07d69faacc871e9bc36bcaed95a0",
+    "validation/betse/betse_ecm_requested_increment_runtime.py": "6016b65a0a107021f4955b97753d69f2101300d5c3d41a50d2f538691b70ba6f",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc"
+  },
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  },
+  "normalized_legacy_equations": {
+    "src/cells/processes/betse_ecm_transport.py": {
+      "normalized_ast_equals_original": true,
+      "normalized_ast_sha256": "6adf09098d5e3dab94b793f8b5fe4d12c416879403b8a77d03d4e4186eb31dc6",
+      "original_source_sha256": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+      "modified_source_sha256": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "removed_only": {
+        "assignments": 2,
+        "diagnostic_keywords": 1,
+        "observer_guards": 0,
+        "finish_functions": 0,
+        "observer_arguments": 0,
+        "finish_calls": 0
+      }
+    },
+    "validation/betse/betse_ecm_transport_reference.py": {
+      "normalized_ast_equals_original": true,
+      "normalized_ast_sha256": "51b0fcae696a0bdb2146dd89a9ae98dd3ab052bb2246c90510964c3aaed1bd88",
+      "original_source_sha256": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+      "modified_source_sha256": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "removed_only": {
+        "assignments": 2,
+        "diagnostic_keywords": 1,
+        "observer_guards": 1,
+        "finish_functions": 1,
+        "observer_arguments": 1,
+        "finish_calls": 1
+      }
+    }
+  },
+  "numerical_execution": false
+}

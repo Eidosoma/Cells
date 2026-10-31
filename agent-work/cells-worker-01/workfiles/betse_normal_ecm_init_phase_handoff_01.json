@@ -1,0 +1,53 @@
+{
+  "Chief_review_and_release_required": true,
+  "active_job_queries": 0,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "fixture_reference_model_evaluations": 0,
+  "inputs": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01/inputs.json",
+    "sha256": "975a586fa142342a79c27b68cfcdf891b1b18b6d45e8a28dd0b16b7f6b55b89e"
+  },
+  "kind": "cells.worker_INIT_source_handoff@1",
+  "manifest": {
+    "files": 3566,
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01/MANIFEST.json",
+    "sha256": "33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf"
+  },
+  "metadata_controls": 10,
+  "numerical_runs": 0,
+  "own_implementation": "src/cells/processes/betse_normal_ecm_init_phase.py",
+  "own_notes": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_implementation.md",
+  "planned": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "prepared_path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01",
+  "pytest_collections": 0,
+  "qualification_inherited": false,
+  "root_fresh_physical_initialization_copy_dependency_in_import_closure": false,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_AST_proofs": 12,
+  "static_receipt": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01/SOURCE_STATIC_REVIEW.json",
+    "sha256": "670f367ee2ccb1b2a4466501519ad157d3f3a10b8d9bcba6b03db205386587fa"
+  },
+  "static_validation": {
+    "Ruff_no_cache": true,
+    "compile_without_execution": true,
+    "full_native_Python_files_installed_exact": 332,
+    "manual_source_reads_classified": 180,
+    "remaining_unclassified_reads": 0,
+    "resource_files": 28,
+    "undefined_global_names": false
+  },
+  "status": "complete_held_source_handoff_unrun"
+}

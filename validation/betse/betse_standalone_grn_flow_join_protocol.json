@@ -1,0 +1,370 @@
+{
+  "activity": {
+    "GPU": 0,
+    "PROGRESS_edited": false,
+    "collection": 0,
+    "fixtures": 0,
+    "jobs": 0,
+    "model_or_reference_evaluations": 0,
+    "scientific_imports": 0,
+    "tests": 0
+  },
+  "admission": "Only declared flow lifecycle flags/configuration keys and new owner/presentation fields are removed in a private validation-only common-parent view. Actual execution receives the complete new declaration.",
+  "complete_flow_owners": [
+    "P_cells",
+    "PP",
+    "E_cell_x",
+    "E_cell_y",
+    "J_cell_x",
+    "J_cell_y",
+    "rho_cells",
+    "u_cells_x",
+    "u_cells_y",
+    "J_env_x",
+    "J_env_y",
+    "u_env_x",
+    "u_env_y"
+  ],
+  "core": "src/cells/processes/betse_standalone_grn_flow_join.py",
+  "engine": "validation/betse/betse_standalone_grn_flow_join_engine.py",
+  "flow_acceptance": {
+    "absolute_m_s": 2e-11,
+    "existing_component_also_checked_at_actual_activation_inputs": true,
+    "expected_and_complete_error_budget_rows_retained": true,
+    "origin": "Unchanged standalone GRN current-flow comparisons in test_betse_fluid_flow.py",
+    "relative": 8e-12
+  },
+  "flow_semantics": {
+    "ECM_getFlow_m3_s_output_adopted": false,
+    "actual_activation_after_reinitialize": true,
+    "configuration_at_cold": "recalculate fluid flow",
+    "configuration_at_reinitialize": "recalculate fluid",
+    "flow_computations": "Once per invocation, before the source time loop",
+    "flow_inverse_constructed": false,
+    "formula": "-J_env/(F*mean(cc_env over species)*mean(zs))",
+    "geometry_moved": false,
+    "is_ecm": true,
+    "molecular_transport_uses_actual_source_flag_and_held_velocity": true,
+    "ordinary_getFlow_called": false,
+    "ordinary_ions_advanced": false,
+    "pressure_or_electric_fields_recomputed": false,
+    "source": "MasterOfGenes.run_core_sim",
+    "velocity_held_for_whole_invocation": true,
+    "velocity_units": "m/s"
+  },
+  "full_failure_capture": {
+    "actual_returned_means_and_partial_velocity_writes_observed_read_only": true,
+    "all_completed_events_and_mover_frames": true,
+    "complete_source_return_retained_before_nonfinite_candidate_gate": true,
+    "nonfinite_or_failed_source_is_not_a_qualified_candidate": true,
+    "original_parent_and_snapshot": true,
+    "warnings_and_original_type_reason_traceback": true
+  },
+  "independent_reference": {
+    "carried_reference_forms": 0,
+    "complete_environment_function_AST_unchanged_except": {
+      "fx[i][j]": "(d(inputs['velocity_x_m_s'][i][j]) if inputs['fluid_flow'] else zero) * image[i][j]",
+      "fxg[i][j]": "abs(d(inputs['velocity_x_m_s'][i][j]) if inputs['fluid_flow'] else zero) * ig[i][j]",
+      "fy[i][j]": "(d(inputs['velocity_y_m_s'][i][j]) if inputs['fluid_flow'] else zero) * image[i][j]",
+      "fyg[i][j]": "abs(d(inputs['velocity_y_m_s'][i][j]) if inputs['fluid_flow'] else zero) * ig[i][j]"
+    },
+    "complete_raw_preprojection_and_partial_reference_retention": true,
+    "gross_advection_uses_only_actual_incoming_velocity_and_independent_concentration": true,
+    "independent_trajectory": false,
+    "old_budget_factors_floors_and_self_resolution_limits_unchanged": true,
+    "parent_reference_sha256": "b00752ff2f39f0fe933918288479dcc1518a29e0dc53334106ef5deb91b273da",
+    "precisions": [
+      100,
+      160
+    ],
+    "remaining_chemistry_clocks_stencils_and_books_inherited_verbatim": true,
+    "separate_Decimal_current_flow_readout": true
+  },
+  "independent_reference_source": "validation/betse/betse_standalone_grn_flow_join_reference.py",
+  "inherited_acceptance": {
+    "amount": "Factor times independent absolute old/new amounts, signed source mechanisms and native-true-volume gross, plus3e-13 concentration floors times input volume sums",
+    "clock": "Exact independent source-rounded binary64 linspace/sampling-index specification; actual source parameter rewrites and sampled arrays exact. Timestamp intervals and numerical dt advanced are separate.",
+    "cold": "Exact independent configured/default scalar/array fields, matrix and source publication; independently derived maps/operators checked separately",
+    "gradients": "A priori derivative gross uses sums of absolute predicted neighboring values over delta (2*delta interior); flux gross propagates cancellation plus q/kb electric terms; no actual outgoing values enter budgets",
+    "independent": "Fresh Decimal100/160 cold configuration with independent geometry, source-independent binary64 clock/sampling specification and high-precision dt counts, fresh independent ECM GAD/reaction/mover/FD/books from each actual pre-core point. Zero carried forms.",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385"
+    },
+    "material": "3e-13 concentration or1e-18 flux floor +128*eps*(ions+2+cells+membranes+environment_sites+64)*independent local gross",
+    "no_outcome_tuning": true,
+    "old_ecm_diagnostic_budget_unchanged": true,
+    "primary": "Exact independently captured original new-owner/run_core_sim, cold/full owner+grid+simulator state, every core/mover/reinit/cache/sample/IO frame, all full repeated-invocation states and raw partial errors. Port cold parent and all returned raw calls archived before subsequent calls/assertions.",
+    "publication": "All five simulator fields persist exactly through forced publication False; three existing core current fields persist, absent core rho fields stay absent. Hypothetical zero reference rho is not a source publication or conservation claim.",
+    "rates": "Inherited2e-14 mM/s +5e-12*abs(reference); delta6e-14 +5e-12*independent gross",
+    "self_resolution_fraction": 0.1,
+    "warm_reference_delta": "Entire prior ECM warm reference AST is unchanged after restoring only the removed modulator-dispatch iteration; standalone never calls these configured modulators. Scalar clock AST changes only Decimal precision90/140 to100/160."
+  },
+  "kind": "cells.betse_standalone_GRN_current_flow_advection_protocol@1",
+  "limits": {
+    "coupled_pressure_or_field_solver": false,
+    "independently_carried_reference_trajectory": false,
+    "moving_geometry": false,
+    "new_qualification_inherited": false,
+    "ordinary_flow_enabled": false,
+    "physical_global_conservation_claim": false,
+    "whole_simrunner_loading": false
+  },
+  "native": "validation/betse/betse_standalone_grn_flow_join_native.py",
+  "new_launcher_or_finalizer_prepared": false,
+  "numerical_launch_authorized": false,
+  "original_resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch in this static assignment; later explicit requested/CPU-coordinated round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "ownership": "Original cell/membrane IDs; explicit complete C-order environment IDs and source-generated shape; no remap or inferred forcing",
+  "pending": [
+    "Chief independent source review of actual activation, owner extension and private runtime adapters",
+    "Separate explicit fixture/science/test/collection authorization",
+    "Complete guarded scientific source closure and durable per-process evidence before launch"
+  ],
+  "preserved_defects": [
+    "Mean concentration or mean valence may be zero; no denominator floor",
+    "Current/valence/concentration averages are the literal source expression",
+    "X velocity can be written before missing Y current raises",
+    "One-sided FD, boundary clamps, source effective volume and existing exchange/smoothing defects persist"
+  ],
+  "preserved_handoffs": {
+    "disabled_ordinary_flow_receipt_sha256": "1f6906b41c82b5e73eaaf53beb301d64c090660c28117a0c4571478127e3cddd",
+    "previous_handoffs_unchanged": true,
+    "prior_numeric_qualification_inherited": false,
+    "refinement_receipt_sha256": "fa33c835bcc46f8f272bbaab0249656241e36917e1a7f3c0fdfc045866744af4",
+    "refinement_source_review_sha256": "84440f74eff19c7a96a275afb81f99ccc0eecc241d484c4cb3c9a13735f1f614",
+    "scalar_standalone_review_sha256": "d101eccf9302310352fcac313de9f3bde2b11df3eb482c1d4a5c22479515f5f0"
+  },
+  "proposed_controls": {
+    "disabled_reinitialization": "Cold spelling True, reinitialize spelling False; source performs no activation",
+    "positive_contexts": [
+      "active-current-advection",
+      "active-rectangular"
+    ],
+    "raw_source_defects": [
+      "zero-mean-concentration",
+      "missing-current-y-after-first-flow-write"
+    ],
+    "zero_current_active": "Source flag True and zero velocity; no invented material motion"
+  },
+  "prospective": {
+    "actual_recalculation_points": 6,
+    "clock_points": 8,
+    "cold_points": 4,
+    "collected": false,
+    "component_controls": 2,
+    "dependency_controls": 4,
+    "exact_source_predicted_test_ids": [
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-current-advection]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-rectangular]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[reinitialize-disables-flow]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-zero-current]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_source_flow_defects_keep_partial_writes_and_earn_no_accuracy_credit[zero-mean-concentration]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_source_flow_defects_keep_partial_writes_and_earn_no_accuracy_credit[missing-current-y-after-first-flow-write]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[missing-flow-owner]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[foreign-cell-owners]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[wrong-grid-shape]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[ordinary-scope]"
+    ],
+    "fixture_materializations": 0,
+    "flow_decision_points": 8,
+    "fresh_reference_precision_forms": 96,
+    "functions": 3,
+    "invocations_per_positive_context": 2,
+    "nested_native_children": 6,
+    "nested_reference_children": 4,
+    "new_active_contexts": 2,
+    "positive_contexts": 4,
+    "pytest_trees": 10,
+    "raw_defect_controls": 2,
+    "tests_executed": 0,
+    "total_conditional_points": 48,
+    "warm_points": 28,
+    "warm_points_per_positive_context": 7
+  },
+  "purpose": "Admit the actual standalone GRN activation and its held molecular ECM advection with complete owners",
+  "resource_sufficiency_measured": false,
+  "runtime_source_correspondence": {
+    "actual_activation_is_unchanged_parent_code": true,
+    "actual_source_mean_and_partial_velocity_locals_retained_read_only": true,
+    "admission_projection": {
+      "ast_sha256": "188620fe11708543419504ed6f8b36b2840eb2269353c8bda07b4025e24d4724",
+      "first_line": 49,
+      "last_line": 62,
+      "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+    },
+    "authenticated_parent_sha256": {
+      "native": [
+        "validation/betse/betse_ecm_sim_grn_native.py",
+        "24c2ced2f626b881fbf2e8378cb661bbce28f8defc84d47269f6facf679111bd"
+      ],
+      "production": [
+        "src/cells/processes/betse_ecm_sim_grn.py",
+        "2a4d93becc61379a3bb68c3a2aef6bb9ac674d3be67e55a972e9e4fde8294a3c"
+      ],
+      "reference": [
+        "validation/betse/betse_ecm_sim_grn_reference.py",
+        "b00752ff2f39f0fe933918288479dcc1518a29e0dc53334106ef5deb91b273da"
+      ]
+    },
+    "complete_current_pressure_electric_and_velocity_fields": [
+      "P_cells",
+      "PP",
+      "E_cell_x",
+      "E_cell_y",
+      "J_cell_x",
+      "J_cell_y",
+      "rho_cells",
+      "u_cells_x",
+      "u_cells_y",
+      "J_env_x",
+      "J_env_y",
+      "u_env_x",
+      "u_env_y"
+    ],
+    "existing_module_globals_edited": false,
+    "nonfinite_source_return_retained_before_candidate_gate": true,
+    "original_source_faults_not_repaired": true,
+    "parent_code_compiled_verbatim": true,
+    "plotting_inputs_captured_without_rendering_or_physics": true,
+    "private_namespace_registered_for_complete_runtime_inventory": true,
+    "private_replacements": [
+      "parent.validate",
+      "parent.make_context",
+      "parent.new_trace",
+      "parent.observe",
+      "parent.local_inputs",
+      "parent.attach",
+      "parent.configure_call",
+      "parent.plt",
+      "parent.viz"
+    ],
+    "source_sites": {
+      "install": {
+        "ast_sha256": "561e4b9048a468993b1f050c5ad08adb7a70d88baed6a64f4e00a2786f865fb7",
+        "first_line": 177,
+        "last_line": 382,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "load_parent": {
+        "ast_sha256": "1208ed844e34c4fdace118bc61f7edc82bed3ef37de791adab53ce696a1f3bc8",
+        "first_line": 144,
+        "last_line": 174,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "nonfinite_arrays": {
+        "ast_sha256": "975f82430e96a44f0e74d1101a4b0516fb86c633fbb80a74f690e4114ddf5825",
+        "first_line": 65,
+        "last_line": 89,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "parent_view": {
+        "ast_sha256": "188620fe11708543419504ed6f8b36b2840eb2269353c8bda07b4025e24d4724",
+        "first_line": 49,
+        "last_line": 62,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      }
+    }
+  },
+  "scientific_executable_capsule": false,
+  "source_accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "energetic_conservation_credit": false,
+    "physical_global_conservation_credit": false,
+    "retained_failure": "Original signed_environment diagnostic and39/40 panel remain failed; no rerun, reconstruction or budget relaxation",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained",
+    "standalone": "No ordinary ionic material advance. Ionic buffers and boundary values persist; molecular sources/transport/clamp/FD/smoothing source terms use uniform source site volume. Native true-volume diagnostics remain separate. No physical/global material/charge/energy claim follows."
+  },
+  "source_auditor": "validation/betse/betse_standalone_grn_flow_join_audit.py",
+  "source_clock": "Unchanged source linspace labels, dt parameter rewrites, cache reset and sampling-index semantics",
+  "source_execution": "Verbatim authenticated parent bytes execute in registered private module namespaces; no old module source or parent global namespace is patched",
+  "source_map": "validation/betse/betse_standalone_grn_flow_join_source_map.json",
+  "source_only": true,
+  "source_order": {
+    "ECM_getFlow_output_imported_or_converted": false,
+    "activation": {
+      "ast_sha256": "3a45066cee873544bb7ecece9453384ab2916a72eae5476ea5917ceed620b447",
+      "first_line": 281,
+      "last_line": 291,
+      "source": "betse/science/chemistry/gene.py"
+    },
+    "advection_expression": {
+      "ast_sha256": "d12ce85243cd7bab6ca75abc9459ea26154bf8542699f1137599ba1eb674fe6a",
+      "first_line": 1118,
+      "last_line": 1144,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    },
+    "complete_inherited_native_runtime_pins": {
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "complete_parent_runner_normalized_AST_matches_native": true,
+    "exact_activation_source": "if self.recalc_fluid:\n    logs.log_info('Calculating fluid in terms of endogenous currents...')\n    p.fluid_flow = True\n    cc = sim.cc_env.mean(axis=0).reshape(cells.X.shape)\n    zz = sim.zs.mean()\n    sim.u_env_x = -sim.J_env_x / (p.F * cc * zz)\n    sim.u_env_y = -sim.J_env_y / (p.F * cc * zz)",
+    "molecular_velocity_consumer": {
+      "ast_sha256": "f5c2650b3aa9693a23a28ec8540c3de043c2867c2c17b5b90abe8b74ef0c4436",
+      "first_line": 1035,
+      "last_line": 1040,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    },
+    "no_flow_inverse_or_Poisson_solve_in_this_source_branch": true,
+    "once_per_invocation_after_reinitialize_and_clear_cache": true,
+    "ordinary_getFlow_called": false,
+    "pinned_native_sources": {
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    "pressure_electric_ionic_or_geometry_updates": false,
+    "source_loop": {
+      "ast_sha256": "de7d6696b8c747e1471b2a64b8b60391865899c574c867aa163a9853fdc7d5fd",
+      "first_line": 304,
+      "last_line": 360,
+      "source": "betse/science/chemistry/gene.py"
+    },
+    "standalone_velocity_units": "m/s"
+  },
+  "status": "source_only_review_candidate_numerical_execution_held",
+  "tests": "tests/unit/test_betse_standalone_grn_flow_join.py",
+  "visualization": {
+    "autosave": false,
+    "figure_and_stream_inputs_captured": true,
+    "original_call_order_and_scaled_input_arrays_retained": true,
+    "physics_effect": false,
+    "renderer_executed": false,
+    "turn_all_plots_off": true
+  }
+}

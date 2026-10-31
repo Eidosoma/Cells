@@ -1,0 +1,157 @@
+{
+  "explicit_dependency_witness": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_mechanics_dependency_witness_02.json",
+    "sha256": "ec1c543d6f2cee908166ecc246e1d79dd5b3f28c74f902f69d20b64c766e5251"
+  },
+  "kind": "cells.event_mechanics_source_map@1",
+  "native_source_sha256": {
+    "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+    "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+    "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "no_new_budget_changes": true,
+  "no_new_scientific_equations": true,
+  "numerical_runs": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "absent_disabled_flow_cold_stores_not_claimed_native_producers": true,
+    "actual_event_pressure_temperature": true,
+    "actual_events_then_CaATP_GRN_channels_then_noise_then_mechanics": true,
+    "completed_display_output": false,
+    "component_qualification_pending": true,
+    "current_post_noise_primary_and_post_GRN_molecules": true,
+    "cut_or_geometry_rebuild": false,
+    "dynamic_deformation": false,
+    "enabled_flow": false,
+    "event01_and_ECM_mechanics02_scientific_passes_inherited": 0,
+    "exact_common_owner_measure_centres_maps": true,
+    "held_zero_fluid_stores": true,
+    "independent_carried_trajectory": false,
+    "maximum_field_cells": 16,
+    "mechanical_DEC_view_separate_from_material_geometry": true,
+    "mechanics_before_deferred_material_and_field": true,
+    "minimum_quartic_display_cells": 25,
+    "native_calendar_sample_eligibility_preserved": true,
+    "one_material_and_one_field_advance_per_call": true,
+    "ordinary_ECM_FULL_only": true,
+    "original_material39of40_still_failed": true,
+    "physical_global_conservation_credit": false,
+    "physical_initialization_or_full_native_solver": false,
+    "previous_field_current_charge_epoch": true,
+    "sampling_policy": "calendar_eligibility_only_explicit_display_refusal",
+    "supplied_mechanics_entry_cache": true,
+    "supplied_state_only": true
+  },
+  "source_AST_proof": {
+    "component_qualification_pending": true,
+    "current_post_noise_ions_and_post_GRN_molecules": true,
+    "downstream_read_write_disjoint": {
+      "get_current": {
+        "ast_sha256": "2cd0f92e837968525ff3e714e42c85690eb1ad9893ecf8e091527769ae3f0037",
+        "mechanical_store_reads": []
+      },
+      "update_V": {
+        "ast_sha256": "d74f626c7587509c3c1eb1897aa38e823e17a7b8223a808efd9d9f99b3a36c71",
+        "mechanical_store_reads": []
+      },
+      "update_all_concs": {
+        "ast_sha256": "8bbbc7e0bd748c5a862c6523b5f2487a832c10cc7301bdb76316cfd6051588c3",
+        "mechanical_store_reads": []
+      }
+    },
+    "fixture_evaluations": 0,
+    "full_partial_and_constructor_return_archives": true,
+    "full_solver_or_physical_init_claim": false,
+    "installed_exact": true,
+    "kind": "cells.event_mechanics_native_order_single_advance_AST@1",
+    "maximum_native_field_cells": 16,
+    "mechanical_write_set": [
+      "PP",
+      "d_cells_x",
+      "d_cells_y",
+      "div_u_osmo",
+      "gPxc",
+      "gPyc",
+      "osmo_P_cell",
+      "osmo_P_delta",
+      "osmo_P_env",
+      "u_osmo"
+    ],
+    "minimum_quartic_display_cells": 25,
+    "native_event_evaluator_inverse_AST_exact": true,
+    "native_mechanics_preparation_prefix_exact": true,
+    "native_sampling_while_AST_exact": true,
+    "native_splice_statements": 7,
+    "new_budget_changes": false,
+    "new_scientific_equations": false,
+    "numerical_runs": 0,
+    "one_material_and_one_field_call": true,
+    "one_mechanical_step_after_completed_noise": true,
+    "original_mechanical_guard_AST": {
+      "p.deform_osmo": "c3929c358bc7f156b995342ca50b7238903d95021cdc3c59b2ae910467002209",
+      "p.deformation": "7b99b3f52cbaa41541701a2a2109fab7dfdc82a080d8246caa6cb3cd531f467f",
+      "p.fluid_flow": "96d02c52ef33c5681a40cecbb25f4e84949270241fa61d7b520f5f5e7c7c3c30"
+    },
+    "original_mechanical_source": {
+      "getDeformation": {
+        "ast_sha256": "fadc8312a332ffb2507613c8bc882df453a7a1c2b1dff040eedac29d51752413",
+        "sha256": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+        "source": "betse/science/physics/deform.py"
+      },
+      "osmotic_P": {
+        "ast_sha256": "3f457a63bfd54ec3d2f48fc8f1373efc31b86597fa82f7ab6eb4a0dd3da8e60e",
+        "sha256": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+        "source": "betse/science/physics/pressures.py"
+      }
+    },
+    "original_native_order": [
+      "phase.dyna.fire_events",
+      "self.grn.core.run_loop",
+      "self.protein_noise_flux =",
+      "osmotic_P(",
+      "getDeformation(",
+      "self.update_all_concs(",
+      "self.update_V(",
+      "stb.check_v(",
+      "self.write2storage("
+    ],
+    "owned_event_advance_inverse_AST_exact": true,
+    "pressure_actual_event_store": true,
+    "previous_reconstructed_field_epoch": true,
+    "pytest_collection_runs": 0,
+    "reference_evaluations": 0,
+    "sampling_eligibility_only_display_refused": true,
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_Python_files": 332,
+    "strict_refusals_distinct_from_native_outputs": true
+  }
+}

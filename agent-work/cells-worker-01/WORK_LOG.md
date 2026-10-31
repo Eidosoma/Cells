@@ -5732,3 +5732,1716 @@ for the coordinated detached CPU/L4 qualification. Protocol, launch and
   authorized whole-tree freeze should account for that shared live path without
   altering existing snapshots. Chief reports charged22 run completed with its
   terminal review active; this is not recorded as acceptance yet. No status poll.
+- Standalone static-review clarification: the inherited wire exclusion set does
+  not omit `transporters`, so its empty mapping was already present in serialized
+  `core_fields` and restored by `vars(net).update`. The explicit OrderedDict
+  reconstruction/provider check makes the producer visible; the earlier
+  “hydration gap” description overstated the issue. No missing-attribute failure
+  was observed or demonstrated, and no numerical claim/snapshot was changed.
+  Chief received this correction. The next assignment is a separate ECM normal
+  GRN/network boundary; retained ECM material run02 remains failed39/40.
+- Chief reports charged GRN accepted22 checks/104 fresh forms. Bound review
+  `/mnt/workspaces/Cells/betse-normal-charged-grn-tests-20261030-01/root-review-01/REVIEW.json`
+  SHA1ea37286674ebfa9a56ddc0e52dfbaf5fcb10b6c55781638ed2c91f00d9055e0.
+  Chief also reports standalone initial qualification completed all22; its
+  saved-evidence review remains assigned, without acceptance credit here.
+- The separate ECM GRN package is now statically frozen. It executes actual
+  GRN cold initialization and normal guarded dispatch after retained ordinary
+  ECM/late flux and before deferred concentration commit. Actual nonempty X/Y
+  GAD/reaction/modulator/Core/Molecule bodies run, with full E-site environment
+  buffers, source finite differences, molecular membrane/GJ/ECM transport and
+  rho/current publication. Derived grid ownership/maps/area-sum operators,
+  original radial statements, Na diffusion normalization and original TJ-target
+  concatenation are explicit. Original boundary-index groups are supplied;
+  full barrier/tissue generation and field/pump/gate laws remain outside scope.
+  [Concrete context and limits](workfiles/BETSE_ECM_GRN_NETWORK_NOTES.md).
+  Inputs `/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-01/inputs.json`
+  SHAdf6acbe3b1f2cd3bcb61cf7c8d33ceadf1a26599ac230014cf61c3d7c6653f44;
+  [receipt01](workfiles/betse_ecm_grn_static_receipt_01.json)
+  SHA28e4903f06bd150c2987d3212575a6d9ab5c68b501f3b86959e2f134f269d8af.
+  Verified2456 frozen source files,44 native+28 bound evidence copies; nine new
+  scientific files and275 protected paths exact. Five newly imported local
+  dependencies and the retained ECM eight-file component join the old262 pins.
+  Sixteen Python compile/name/Ruff checks,47 literal scientific bodies, two real
+  normal guards, retained material-step inverse AST, native before-deferred-commit
+  placement, full common bridge, original geometry/coefficient statements and
+  all16 native GAD keys pass. Six-file stdlib reference and69-file scientific
+  import closures exclude pending transporter/standalone packages and charged
+  implementation imports. Current ionic boundary packets stay authoritative;
+  gene boundary scalars, simulator publications and complete public caches carry.
+  Disabled ion aliases are skipped, and cold readers never rerun on hot restore.
+  Planned25 checks:13 three-call histories (nine new/four controls), two cold
+  KeyErrors, two first/second-species raw ECM instabilities and eight exact
+  dependency witnesses. Thirty-nine actual pre-network points plus13 cold
+  points plan104 fresh Decimal100/160 forms, zero carried. Independent geometry,
+  Hill/reaction/membrane/GJ/scatter/grid equations and publications use predicted
+  neighbor/gross terms for gradient-cancellation and flux/current budgets.
+  Typed errors/budgets, source-effective amounts, boundary/transport/smoothing
+  terms, conservative scatter oracle, duplicate-last defect, directed GJ and
+  native-true-volume diagnostics remain separate. No physical material/charge/
+  energy, field-feedback, finite/shared-fuel, biological or trajectory credit.
+  Retained ECM run02 still fails39/40 at the unchanged signed-environment
+  membrane/bulk diagnostic. Its failed evidence, incomplete separately retained
+  reference buffers, cancelled03 and unrun low-inventory scenario are explicitly
+  bound and not repaired/reconstructed/reclassified. Full initialization, active
+  Ca/pump/gate handlers, mitochondria/fluid/cuts and standalone execution remain
+  outside the new boundary. Root's unrelated open_calcium_runtime.py extraction
+  is outside the execution closure/controlled pins and recorded for whole-tree
+  copying only. No scientific import/AST execution, fixture/packet/reference/
+  model evaluation, pytest collection or numerical launch occurred. Chief owns
+  qualification scheduling; shared status/git and prior snapshots are untouched.
+
+- Chief's mitochondria-enabled normal molecule/GRN assignment ends at a concrete
+  native reachability blocker. The pinned BETSE package has exactly two
+  MasterOfNetworks calls: gene.py141 and molecules.py132 both omit the fifth
+  mit_enabled argument. Its literal default False feeds the sole core flag
+  assignment (networks.py97). Both parameter mol_mit_enabled assignments are
+  False, with no consuming attribute read anywhere in the package. All six
+  molecule/reaction flag writes propagate the core flag; both Mito constructors
+  remain guarded by that already-true flag. Reinitialization has no enabling
+  write. The unused SimMaster class has no package caller. Normal guarded
+  dispatch is real but cannot create the missing organelle owner. Arbitrary
+  externally prepared pickle state remains an explicit boundary: loading a
+  preenabled object does not authenticate a native cold producer.
+  [Static audit](workfiles/betse_mito_grn_reachability_audit.py) parses all332
+  native Python files and checks exact installed copies at revision5269a714.
+  [Final witness02](workfiles/betse_mito_grn_reachability_witness_02.json)
+  SHA85c80c6554aa192a9fbc18083b54344496de4e9abb480dd2a77b928be0fa9d42.
+  Initial witness01 and its exact audit script remain available; the first
+  preparation had13 Ruff formatting/import findings. The final audit passes
+  Ruff, preserves identical332-file inventory, and adds explicit parameter-read
+  exclusion and clearer owner/order notes. No scientific failure or qualification
+  result is implied by those formatting findings. The existing isolated Mito
+  component is reusable only with an explicitly produced owner and external
+  charge density; it provides no missing cold reachability or network acceptance.
+  The witness preserves cold cell/env/mit compensation order, P/K mitochondrial
+  counterions, late partial failure, zero initial Q/V, source molecular-rho scale
+  omission, final extra_rho publication and ordered ion/update timing. No new
+  scientific implementation was justified; a source variation or authenticated
+  preenabled snapshot needs a separately named boundary from native cold init.
+  No NumPy/JAX/Cells/BETSE import, scientific AST execution, fixture/reference
+  evaluation, pytest collection, numerical launch, job polling or shared git/
+  PROGRESS mutation occurred. Existing scientific/frozen/failed evidence stays
+  untouched. Chief receives this blocker and the complete reproducible witness.
+
+- Chief accepted the mitochondria reachability disposition: native networks remain
+  caller-disabled; no forced flag or preenabled pickle may manufacture coverage.
+  The next authorized branch, charged ECM cold compensation, is now implemented
+  under the separate betse_ecm_charged_grn prefix and statically frozen. A prior
+  [reachability witness](workfiles/betse_ecm_charged_grn_reachability_01.json)
+  confirms the actual cold guard/readers and cell-before-env compensation path.
+  Real Na(+1), K(+1) and stationary M(-1) rows have explicit owners; the caller
+  recipe splits old P(-1) by the supplied M amount. Original weighted charge,
+  source counterion sinks, stale membrane caches, negative cell threshold gap,
+  late balanced flag and raw partial capacity failures are preserved. Full
+  E-site environments remain distinct from M-membrane arrays, including E12/M9
+  environment failure recipes. Actual original ConfException inheritance/body
+  replaces the old ECM ValueError alias only in this new prefix.
+  Cold readers receive mutable copies of the immutable admitted material parent;
+  successful compensation supplies the complete new material parent before
+  call1, while failures retain partial source-owned writes. Hot network dispatch
+  retains actual material-trial aliases, rebuilds live concentration maps, carries
+  the entire public owner/core/molecule/reaction/modulator cache plus ionic
+  snapshots/compensation observations/grid coefficients/all five simulator
+  publications, and never reruns cold readers. Cold-compensated ionic boundaries
+  carry by default; one explicit scheduled override case replaces then carries
+  the new boundary. Existing frozen ECM01 and no-ECM charged02 remain untouched.
+  Inputs /mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-01/inputs.json
+  SHA27462eb8c8fae10d694e34ac642f28f6f9ce1f1e00d9925818300a928b6e6df7;
+  [receipt01](workfiles/betse_ecm_charged_grn_static_receipt_01.json)
+  SHA2c84fd0796b0f059873d1eb40694140c5ecc698496fe488e87526f5ce086c559.
+  All2473 source/44 native/31 bound evidence copies verified; nine owned and285
+  protected paths match frozen/live hashes. Static compile/name/Ruff checks cover
+  15 Python files. The source map checks48 literal bodies, actual original normal
+  guards, compensation observer removal, source exception class, retained ECM
+  material inverse AST, before-deferred-commit placement and common full cache
+  bridge. Entire independent ECM warm-reference AST and original Hill reference
+  remain unchanged. New explicit assertions cover mutable cold copies, current
+  selected boundary ownership and source field/cache carry. Reference closure
+  is six stdlib-only files; scientific import closure75. The newly direct test
+  reference dependency validation/betse/betse_environment_field_reference.py
+  joins the controlled pins; no prior dependency is exempted or refreshed.
+  Planned35 checks:18 three-call histories (14 new/four controls), four raw cold
+  capacity failures and13 exact dependency witnesses. Fifty-four actual warm
+  pre-network points and22 cold points plan152 fresh Decimal100/160 forms, zero
+  carried. Cold reference-fixed budgets use immutable inputs and independently
+  predicted outgoing concentrations/amounts/charges, never actual outgoing
+  arrays. Independent raw/formal charge, scalar source-rounded charge/branch
+  semantics, per-species cell/source-uniform-grid amounts, true-volume diagnostic
+  and partial-failure ledgers remain distinct. Source compensation implies no
+  physical/global charge/material/energy conservation, fuel, whole-field/solver
+  lifecycle, mitochondrial, fluid/cut, biological or trajectory accuracy credit.
+  Root's retained ECM material run02 remains failed39/40; its unchanged failure,
+  incomplete separately retained reference buffers and cancelled/unrun alternatives
+  remain bound. No numerical/scientific import/AST execution, fixture/reference
+  evaluation, pytest collection or job launch/poll occurred. Static preparation
+  completed and all frozen inputs were verified; Chief owns future qualification
+  scheduling. Shared PROGRESS/git and active jobs remain untouched.
+
+- Chief's initial ECM qualification completed only the dependency group: six
+  passed/two failed,17 unrun. missing_cache and missing_default reached the
+  intended ValueError in restore, but advance's handler called source.cache
+  before sim.grn existed and masked that cause with AttributeError. Chief paused
+  charged continuation for a narrow immutable02 failure-capture repair.
+  [Error-capture witness02](workfiles/betse_ecm_grn_error_capture_witness_02.json)
+  SHA627c8fd7c109bb7d4655f2f259b8d85a18ed7210765980b9978ca1a6f854a37d
+  records the source error, saved baseline/traceback evidence and original
+  retention limit: separate malformed-parent inputs were not durably archived
+  before failed01's handler ran. No retroactive reconstruction receives credit.
+  New handlers preserve the original explicit cause, supplied malformed cache
+  and separately labelled actually available context; cache capture requires an
+  existing owner/core, and diagnostic exceptions cannot replace the cause.
+  Future dependency tests archive malformed inputs before invocation and retain
+  returned partial context. Whole join AST recovers01 after reverting only the
+  exception handlers and removing the helper; all other test AST and five other
+  scientific Python files stay exact. No equations, case IDs or budgets change.
+  Inputs /mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json
+  SHAb745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317;
+  [receipt02](workfiles/betse_ecm_grn_static_receipt_02.json)
+  SHA855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db.
+  Verified2482 source/44 native/33 bound evidence copies, nine owned and275
+  protected paths,18 Python compile/name/Ruff checks and47 original bodies.
+  Planned25 IDs/104 fresh forms are unchanged and remain unrun. Chief received
+  the finished packet; no numerical retry or collection occurred. Failed01 and
+  all frozen evidence stay intact. Chief subsequently sealed failed01 review at
+  /mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/root-review-01/REVIEW.json
+  SHA51cb27e8b0acbc65842d61826e22ddbdfd7c6f8a3475be33e9148a32e7fea881,
+  confirming six passed/two failed/17 unrun and the missing original archives.
+  ECM02 remains unrun until the next user-requested round.
+- Charged ECM01 had completed its static freeze just before the pause and was
+  never run. Continued authorization applies the same guarded error capture to
+  a new charged02 snapshot; the shared helper AST exactly matches ECM02. Its
+  four early cache-dependency refusals now retain their original causes, with
+  malformed parent/input archives preceding invocation. Charged02 join inverse
+  AST recovers held01 after reverting only exception handlers and removing the
+  helper; other tests and all five other scientific Python files remain exact.
+  Exactly four nonimported ECM predecessor pins (join/test/protocol/source-map)
+  refresh to Chief's authorized ECM02 hashes, and281 other protected pins stay
+  exact. No prior frozen snapshot is changed or numerical result inherited.
+  The held charged01 inputs/receipt, repaired ECM02 inputs/receipt, old error
+  witness and Chief's sealed failed01 review are binding evidence.
+  [Charged repair witness02](workfiles/betse_ecm_charged_grn_error_capture_witness_02.json)
+  SHAe54f16edd5cffd3ed7331e0a23fe4e7f8d0ed5dd09532fffc535124b5f65ad7a.
+  Inputs /mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-02/inputs.json
+  SHA6cbe75f4456194e81fe0f6dafef57a4292261aa3dd03614cad7c5b4159d4d767;
+  [charged receipt02](workfiles/betse_ecm_charged_grn_static_receipt_02.json)
+  SHA9fdbc76e556b6a1f8dcc50a2e22cd64f8ef71e180513f1c854387b89319d8fa5.
+  Verified2481 source/44 native/38 bound evidence copies, nine owned/285 protected
+  paths,17 Python compile/name/Ruff checks and48 original bodies; six-file
+  stdlib reference/75-file scientific import closures remain unchanged. The
+  declared35 checks/152 fresh forms and charged scientific scope/budgets remain
+  unchanged and entirely unrun. Original ECM GRN01 still fails six/two/17 unrun;
+  retained ECM material02 still fails39/40. Neither is reclassified. Chief owns
+  future qualification scheduling. No scientific import/AST execution, fixture/
+  reference evaluation, pytest collection, job launch/poll, shared PROGRESS or
+  git mutation occurred.
+
+- Charged02 independent preflight held only evidence capture: positive histories
+  did not durably archive the returned cold parent before native/equality calls,
+  and raw capacity tests discarded an unexpected successful cold return. Chief
+  requested two immediate archives, then confirmed no other scientific/budget
+  blockers. [Capture witness03](workfiles/betse_ecm_charged_grn_capture_witness_03.json)
+  SHA7dcf86c98016fe4a9845c816406a13ca8374ccf517402c7a1165d6dc3597dd69
+  proves whole-test AST recovery after removing only these captures and returning
+  the saved unexpected-parent assignment to the old expression. The six other
+  scientific Python files stay byte-exact; protocol/map inverse metadata checks
+  recover02. Frozen02 is held preflight evidence, never a numerical failure.
+  Chief's sealed review is /mnt/workspaces/Cells/betse-ecm-charged-grn-preflight-20261031-01/REVIEW.json
+  SHAa8e8bd059bb2dc28cdae66a4f080bd24f65db2dfa8e1139a3d3ca1f291e5fcb5.
+  Inputs /mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-03/inputs.json
+  SHAa44648b1d636632f1cfd1655d3fa65fce950ebb99e84422c019e66d714443f97;
+  [receipt03](workfiles/betse_ecm_charged_grn_static_receipt_03.json)
+  SHAd8599ce1c67c80e6dbbd536b75942d4f515945d0141e40c49f9cf4fba135a9d6.
+  Verified2504 source/44 native/42 bound evidence copies, nine owned/285 protected
+  paths,18 Python static checks/48 original bodies. Planned35 IDs/152 fresh
+  forms remain unchanged. Chief received the frozen03 packet; no run occurred.
+- Chief then reported terminal acceptance of ECM02:25 checks/17 native captures/
+  104 fresh conditional forms, max1.08362e-4 budget. Read the completed sealed
+  /mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json
+  once as a dependency artifact: status accepted_scoped_conditional_ECM_GRN_evidence,
+  SHAc47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb.
+  Original ECM01 six/two/17-unrun and retained material39/40 failures stay failed;
+  no old job was polled, rerun, reconstructed or reclassified.
+- The next separate betse_ecm_sim_grn branch is implemented and statically frozen.
+  [Reachability](workfiles/betse_ecm_sim_grn_reachability_01.json) checks actual
+  SimRunner new-owner and entire MasterOfGenes.run_core_sim. Original source
+  does not disable is_ecm: the prepared ECM phase is reachable. Actual Core
+  reinitialize/clear_cache/chemistry/membrane/GJ/ECM-FD/sample/report/CSV bodies
+  execute in the future qualified child, with original clocks/sampling and
+  repeated-invocation carry. Standalone forces publication False and omits normal
+  clear_run_loop/modulator/channel dispatch; all five incoming simulator charge/
+  current fields persist, three existing core current fields remain, and absent
+  core rho fields are not fabricated. Full E9/E12 environments remain distinct
+  from nine membranes. Actual original grid/owner/environment AST constructs the
+  native geometry; independent declarations derive the port operators/active
+  grid fields and fresh reference geometry. Original radial/Na diffusion-weight/
+  TJ-index statements remain explicit, old electric fields and controls are held,
+  and disabled Ca aliases are skipped. Whole public owner/core/molecule/reaction/
+  modulator, simulator/parameter/grid/coefficient/boundary/sample/IO state carries.
+  New source copies the entire original standalone caller and retains the actual
+  local owner, with no normal-solver substitution or file-persistence claim.
+  Inputs /mnt/workspaces/Cells/betse-ecm-sim-grn-prepared-20261031-01/inputs.json
+  SHA0363aa275e49931d61874568960f76533a9438b89f8237adf7c6a57382e5a1f8;
+  [standalone ECM receipt01](workfiles/betse_ecm_sim_grn_static_receipt_01.json)
+  SHAac48264484ecd8d72abfb90a4551807d866eb8b4fc5468c876538d7389386bbe.
+  Verified2501 source/46 native/48 bound evidence copies, seven owned and294
+  protected paths;14 Python compile/name/Ruff checks/52 original bodies, actual
+  entire caller and all shared state adapters pass. Entire prior ECM warm
+  reference AST recovers after restoring only the omitted modulator iteration;
+  inherited scalar clock AST changes only Decimal precision90/140 to100/160.
+  Six-file stdlib reference/69-file scientific import closures exclude pending
+  charged/transporter/scalar-standalone implementation imports. Exactly three
+  nonimported charged03 capture-only test/protocol/map pins refresh to authorized
+  frozen03 hashes;291 other pins remain exact. Accepted ECM02 and held scalar/
+  charged lineage, sealed reviews and failed evidence are bound.
+  Planned35 checks:18 two-invocation histories (13 new/five controls, of which
+  three are inherited scalar controls), seven raw failures and ten exact
+  dependency checks.121 actual pre-core points/18 cold/36 clock points plan350
+  fresh Decimal100/160 forms, zero carried. Cold parents and returned raw-call
+  states are archived immediately before later assertions/calls. Raw evidence
+  covers cold/second-invocation KeyErrors, first/second chemical or E12-grid
+  instability, and late invalid plot-cell refusal after save/directory effects;
+  clocks, prior samples/fields/cache/mover locals and tracebacks persist. Sampling
+  below dt is rejected instead of running a nonprogressing source index loop.
+  Uniform source-grid amounts, conservative scatter oracle, fast-exchange defect,
+  directed GJ/clamp/collocated transport/smoothing and native true-volume
+  diagnostics retain independent reference-fixed budgets. No physical/global
+  material/charge/energy, whole field/solver/loading/persistence, finite fuel,
+  mitochondrial/fluid/cut, biological or independently carried trajectory credit.
+  Numerical execution/fixtures/references/AST bodies were not evaluated or
+  imported; no pytest collection, job launch/poll, shared PROGRESS or git edit
+  occurred. Chief owns independent review and later requested qualification.
+
+### 2026-10-31 — Normal ECM field composition, static preparation in progress
+
+Chief assigned separate `betse_normal_ecm_field_join` ownership. Original caller
+reachability and literal AST checks pass: 47 inherited GRN bodies plus 10 complete
+field/voltage functions, original bootstrap `update_V`, and normal GRN → deferred
+commit → full field/voltage → NaN-only `check_v` order. The new binding derives
+operators, maps, radial geometry, diviterm and fixed initializer caches; material
+and gene movers receive only the actual prior reconstructed environment fields.
+The complete field/current/voltage state carries while earlier GJ caches remain
+stale exactly as in source. Full returned cold/material parents and partials are
+retained before later work or comparisons.
+
+New declared macro-geometry cases have fixed dt/capacitance/formal-charge scale
+and nominally neutral initial P; no outcomes selected these inputs. Planned panel
+is 16 three-call histories, 5 raw limits and 10 dependency controls (31 checks),
+with 352 fresh conditional Decimal100/160 forms and zero carried references.
+Raw strict-finite admission is distinct from native source exceptions. Source
+bootstrap lacks `check_v`; normal `check_v` inspects NaNs in vm only.
+
+Static witnesses: `workfiles/betse_normal_ecm_field_join_reachability_01.json`,
+`workfiles/betse_normal_ecm_field_join_AST_witness_01.json`, and
+`workfiles/betse_normal_ecm_field_join_dependency_witness_01.json`. The last proves
+that Specialist's coordinated material diagnostic and optional Decimal-retention
+hook preserve original material updates and legacy ledgers by inverse AST.
+Only this new packet will bind the current dependencies; all earlier immutable
+packets and the original failed39/40 material panel stay unchanged. No scientific
+imports, model/reference evaluations, pytest collection, launches or polls.
+Water owns charged04 capture correction; no charged test/native edits here.
+
+### 2026-10-31 — Normal ECM field join01 frozen and handed to Chief
+
+Static packet: `/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json`
+SHA256 `0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb`.
+Worker receipt: `workfiles/betse_normal_ecm_field_join_static_receipt_01.json`
+SHA256 `c8ef54bc4437adc04d5d691724ca04b26a9fc548b3d947682d3719067f1d126a`.
+Verified 2531 source copies, 44 native copies, 8 binding artifacts, 7 owned and
+77 controlled dependencies. Compile/name resolution, Ruff, original AST/order,
+reference import closure and durable runner checks passed (21 Python files,
+47 inherited GRN bodies plus 10 complete field functions;7 stdlib reference
+modules and75 test-import modules). Planned31 IDs,21 native captures and352
+fresh100/160 conditional forms remain unexecuted and unqualified. Source/native
+and binding copies plus all live owned/protected hashes match. Prepared groups:
+core5, context7, controls4, raw5, dependencies10. Chief received direct handoff.
+
+No genuine native prerequisite gap was found within the explicit prepared-phase
+boundary. Bootstrap has no check_v, and normal check_v only tests vm NaNs;
+stricter port finite rejections are separately labelled. Actual post-material
+public caches are captured separately from pre-commit GRN caches. Source-defect
+scope and the failed original39/40 material result remain explicit. Earlier
+standalone/charged packets are untouched. Preparation only: no scientific
+imports, AST execution, reference/model evaluation, pytest collection, jobs,
+polls, git staging/commits or shared project-status edits.
+
+### 2026-10-31 — Reachable ECM CaATP extension; native ER remains disabled
+
+Chief assigned the separate `betse_normal_ecm_calcium_join` prefix. A complete
+332-file installed-exact text/AST audit found sole Ca_dyn writerFalse at
+Parameters771 and8 absent legacy ER kinetics producers. Native ER cold/update
+cannot run without overrides. Chief explicitly narrowed scope to reachable
+CaATP plus disabled-ER dependency controls, preserving qualified prepared_ER
+as an external conditional inventory/cache seam. Full witness:
+`workfiles/betse_normal_ecm_calcium_join_reachability_01.json`, SHA256
+`733da3737e98e189e33d6b5b140c9dea7b0f90e6930a8b2406f7995e98611b5c`.
+
+New separately owned port/native/reference/fixture files are being prepared.
+Full original ca_handler executes after ordinary ion refresh and before late
+flux/GRN/deferred commit/full fields. Actual Parameters pool/Km/F/R/deltaG
+producers, CaATP_block ones, rho_pump1, met_concsNone and disabled ER are explicit.
+Original rate_CaATP has no cold producer: represent absence until written and
+carry it thereafter. Preserve ECM mapped-environment copy versus membrane-view
+clipping, rho twice, rate alias/mask order, zero-product replacement and unused
+reverse arithmetic. Actual normal SIM source clock is N3 linspace(0,N*dt,N),
+separate from accumulated material dt; actual t flows to ordinary/GRN calls.
+
+Draft plan16 histories(12 new/4 controls),6 raw limits,12 dependency controls;
+independent actual cold/bootstrap/material/CaATP/GRN/full-field boundaries.
+No prior field01 or shared scientific edits, forced flags, missing ER defaults,
+scientific imports, model/reference evaluation, collection, jobs or polls.
+
+### 2026-10-31 — ECM CaATP/full-field01 frozen and handed to Chief
+
+New packet: `/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-01/inputs.json`
+SHA256 `2e2ed97ee190d9495e3029fbe389a40039786fc9070f28a52f3b4e8ce3a226d8`.
+Own receipt: `workfiles/betse_normal_ecm_calcium_join_static_receipt_01.json`
+SHA256 `008f94c21a1908ff790104b1533231486b0dd70edff86cd514ccf857e718e34e`.
+Verified2545 source files,44 native copies,17 binding artifacts,7 owned and83
+protected dependencies. Static compile/name/Ruff/source-body/cold-policy/clock/
+closure/durable-runner checks passed:17 Python files,8 pure-stdlib reference
+modules and79 imported local modules. Retain47 inherited GRN bodies,10 complete
+field functions and3 full original CaATP functions. Current source audit is
+`workfiles/betse_normal_ecm_calcium_join_AST_witness_02.json`, SHA256
+`83f388961651dff5cf90ebf748b906ac9d2be71597ca173eb3226ae463e1b4c9`.
+Witness01 remains superseded: static signature review found the new native
+wrapper's observer/time argument ordering; corrected before any scientific
+execution and strengthened the audit to require identical port/native argument
+signatures. Original source functions remain unchanged.
+
+Planned34 IDs are16 three-call histories(12new/4controls),6 raw limits and12
+dependency controls.22 native captures and448 fresh Decimal100/160 forms are
+prepared, with zero carried references and zero enabled-ER calls. Source normal
+N3 linspace clock, actual t dispatch, runtime/configured temperatures, material
+dt accumulation, cold rate absence and source-written cache carry are explicit.
+ECM fancy-index environment copy, live membrane clipping, original maintained
+pools/Km, rho twice and masked handler-rate alias are preserved. Complete cold,
+CaATP, material and composed returns precede later work/assertions; raw helpers,
+material locals/ledgers, field trials, clocks and failure prefixes are retained.
+
+Chief explicitly approved narrowing after the332-file ER reachability finding.
+No forced Ca_dyn, missing ER kinetics, invented rate defaults, full native
+cold/restart, finite-fuel ATP, physical/global conservation or trajectory claim.
+Prepared_ER and failed literal ER remain distinct; original failed39/40 material
+panel and all field01/shared scientific files remain unchanged. Direct handoff
+sent to Chief. No numerical imports, model/reference execution, collection,
+launches, polls, git staging/commits or shared PROGRESS edits.
+
+### 2026-10-31 — Modern ECM catalog composition source audit
+
+Chief assigned `betse_normal_ecm_catalog_join` after calcium01: genuine modern
+GRN channel dispatch with evolving fields and reachable CaATP, static only.
+The installed-exact332-file witness finds55 reachable classes across7 factory
+families,23 Ca routes,110 concrete numeric methods, and no legacy cagPotassium
+runtime caller. Witness `workfiles/betse_normal_ecm_catalog_join_reachability_01.json`
+SHA256 `57d3520b0e041219bf92a78ac10e2f0e4aa99c4219cab6c1d39c8f926c54f192`.
+Gate laws use Vm/dt and cached gates, not implicit free Ca. Source Ca modulation
+is separately declared through original activator/inhibitor configuration.
+
+Existing ECM GRN rejects channels and drops class/core state from cache. New
+owned literal reader/factory/dispatch and full private gate-cache serialization
+will close that seam. All original lower math and field01/calcium01 scientific
+components remain unchanged. Real source order, mapped ECM direct updates,
+last-route caches, zero-weight routes, absent cold CaATP cache, SIM init_active
+behavior, cold prepared Vm and normal source clock are retained. Named profiles
+require explicitly prepared sim.dyna indices; expression/INIT/legacy/ER overrides
+remain explicit dependency refusals. Full parent/partial snapshots precede checks.
+Chief reported two test/capture defects now owned by water; avoid trace names
+shadowing and do not edit those files. Final new pins will name their successors.
+No numerical imports/evaluations, collection, runs, jobs or polls.
+
+### 2026-10-31 — Modern ECM catalog/CaATP/full-field01 frozen for Chief
+
+New separately owned packet:
+`/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-01/inputs.json`
+SHA256 `f5ffaf4f9f9d39973525f9f39a88e8d78ea2567277106e97505c43bb8279ac36`.
+Own receipt `workfiles/betse_normal_ecm_catalog_join_static_receipt_01.json`
+SHA256 `43f7a74ca55864fb70c5d32d27c3924f64579ec159b0771be28f895072c4bc5d`.
+Verified2577 frozen source files,44 native checkout/installed copies,24 binding
+artifacts,9 owned files and120 protected dependencies. Compile/name/Ruff/source
+AST/closure/cache/chronology/budget/durable-runner checks passed across24 Python
+files. Reference closure has14 pure-stdlib modules; imported local closure84.
+
+Literal modern read_channels/run_loop_channels and Channel constructor/factory
+close the previously missing genuine-GRN channel seam. Four new literal bodies
+compose unchanged47 network bodies,10 complete field functions,3 full CaATP
+functions and all55 modern class primitives/110 numeric methods. New owned wire8
+retains full Channel metadata, all private gate/core fields, constructor snapshots
+and mutable hot epochs/counters; actual source cold reader creates the owner flag.
+Cold prepared Vm precedes bootstrap. Each population gates latest Vm; each route
+reads fresh bulk-gathered cytosol/full mapped grid and directly updates ECM aliases.
+No ordinary channel flux storage/boundary mask is invented. Last-route cache,
+zero-weight route nonce/shell refresh and SIM init_activeFalse behavior survive.
+
+Prepared94 deferred IDs:55 one-call class prefixes,16 three-call contextual
+histories(including5 controls),7 raw limits and16 dependency controls.78 native
+captures and1314 fresh Decimal100/160 conditional forms are planned, zero carried
+forms/ER calls/biology credit. Actual normal N3 source-clock vector is retained
+even for one-call prefixes. Independent material now includes the full ordered
+scalar modern-channel sequence after CaATP/late flux and before ordinary commit;
+actual before-channels and post-channels/pre-GRN inputs remain separate. All
+inherited per-class gate, B24 flux, B23 current, ECM material, CaATP, GRN and field
+budgets remain fixed. Source-effective/conservative/true-grid amount books remain
+distinct, including direct-channel amounts in literal legacy material residuals.
+
+Chief finalized two water-owned test/capture repairs. Explicit new current pins:
+field test `5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d`;
+calcium native tracer `1cbbc9791267387c882c73a97752b70faeb093710a86e52f7b3430c6e8b1908b`.
+Own dependency witness proves observation-map inverse AST exact and sole field
+raw-test change. Chief result is bound from
+`/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json`.
+All other field01/calcium01 owned files remain exact. Earlier frozen receipts,
+failed Cav_G/ER/material evidence and active jobs are untouched. Expression state,
+legacy cagPotassium, forced INIT/ER and missing channel/profile/cache prerequisites
+are separate refusals. Full native/port constructor, route and later raw partials
+are retained before comparisons; strict port finite refusal stays separate from
+native exception/nonfinite return. No full initialization/restart/trajectory claim.
+
+Static preparation only: no scientific imports or scientific AST execution,
+fixture/model/reference evaluation, pytest collection, jobs, numerical runs,
+polls, shared PROGRESS edits or git staging/commits. Chief owns launches/review.
+
+### 2026-10-31 — Ordinary ECM event/tissue lane source audit started
+
+Chief assigned separate `betse_normal_ecm_event_join`, static preparation only.
+Keep frozen catalog01 and all shared laws/files unchanged; Specialist owns
+`betse_normal_ecm_initialization` supplied-owner handoff. Native loop resets flux
+before SIM fire_events, then pumps/ions/CaATP/catalog/GRN. TissueHandler applies
+K/Cl/Na salts, temperature, GJ and NaK globals; targeted Na/K/Cl/Ca permeability,
+pressure and ECM junction changes; voltage event; then makeAllChanges. The latter
+sets Dm_cells=scheduled+base and P_cells=P_mod+P_base. Dynamic protein noise is a
+separate post-GRN/pre-commit branch. Events use source linspace labels, all
+transport/noise uses configured phase dt. Each call includes t0, independently
+of storage/sample times.
+
+Concrete bridge gaps flagged to Chief before implementation: old catalog material
+kernel fixes Dm/D_env; native event NaKATP block can become scalar where previous
+GRN admission assumes vectors; native ECM K/Na salts require an actual M-1 row
+missing from the5-ion catalog preparation. New owned live coefficient/control
+records must represent these source writes explicitly. Salt order includes
+shared Na/M boundary overwrites. Existing calendar, global setters, tissue and
+local-MT protein arithmetic are reusable only where exact correspondence holds.
+Initializer static K draw is reset by first SIM makeAllChanges; unused Python
+shuffle still consumes its distinct RNG during event finalization. Both belong
+to explicit supplied post-initialization owner evidence. Single-cell callback
+construction consumes a separate NumPy choice; profile/callback values, native
+order/duplicates and callback output shapes cannot be inferred or repaired.
+Cuts/geometry changes/bitmap state need distinct prerequisites. No numerical
+imports, fixture execution, collection, computations, launches or polls.
+
+### 2026-10-31 — Catalog02 reporting correction prepared; final review pending
+
+Chief's static reviewer found the catalog01 driver asks plural
+`conditional_channels_reference_forms`, while the actual test/report schema
+emits singular `conditional_channel_reference_forms`. Frozen01 and its original
+live runner remain unchanged. New `workfiles/betse_normal_ecm_catalog_join_checks_02.py`
+SHA256 `895dc66de971a67aae1fad4d565bcef2b082dd8f3a633d61f0ae121bcc08b237`
+changes one report-key expression; actual mode/folder remains `channels`.
+`workfiles/betse_normal_ecm_catalog_join_reporting_witness_02.json` proves the
+inverse AST is exactly01 and checks all five keys against actual emitted test
+AST. All9 owned science/test/fixture/protocol files remain byte-exact. Ruff and
+compile pass; no computation/collection. Chief explicitly requests waiting for
+remaining static-review findings before freezing02. Event implementation waits
+to avoid propagating any remaining issue; independent source audit continues.
+
+### 2026-10-31 — Catalog driver-only02 frozen after final independent review
+
+Chief's final static review found no additional concrete source blocker:
+`/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-preflight-20261031-01/REVIEW.json`
+SHA256 `fc24a488b881d81fa221160ce312e3a8ffcd963c3e9d799ed1e6080d1666e814`.
+Per explicit request, froze reporting-only successor02:
+`/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-02/inputs.json`
+SHA256 `2683f32049555429139bff971fcc443aa30fe021c3bc6f94baff879915b70420`.
+Receipt `workfiles/betse_normal_ecm_catalog_join_static_receipt_02.json`
+SHA256 `8f9dbe457c40d4143a7617e9c1e79abcbf1efa96123165a277155b56dff1407a`.
+
+The single corrected driver expression maps mode `channels` to report key
+`conditional_channel_reference_forms`, retaining folder/mode names. Inverse AST
+proof is exact to01. A bounded synthetic metadata-only check evaluates solely
+the allowlisted actual test producer's metadata dictionary, then executes only
+the stdlib report-reader function on74 tiny temporary JSON metadata files for
+one-call and three-call reports. Original reader reproduces the exact plural
+KeyError; corrected reader passes both. No test/scientific module is imported,
+no scientific fixture/state/reference is generated or evaluated, and the
+synthetic zero-error metrics carry no numerical qualification credit. Result
+`workfiles/betse_normal_ecm_catalog_join_reporting_metadata_check_02.json`, SHA256
+`a5b64fe56892c7b0edccdceb1dde9fba36f101115e585e763596b614a9546d89`.
+Final bound witness SHA256
+`8be6e3ecb09662aa208ecfd00ee7f7645ad3829c5ba3f9ea2dac299b0116f3ad`.
+
+Verified2588 frozen source files/44 native copies/29 binding artifacts; all9
+owned science/test/fixture/protocol files and120 protected pins are identical
+to01. Exact94 IDs, required report schemas, plans and14-module stdlib reference
+closure match01;1314 planned fresh forms remain unrun. Compile/name checks pass
+for28 Python files. Original01 and driver are preserved; pre-repair current
+workqueue copied before metadata updated to02. No numerical launch/collection,
+polling, GPU, shared law/status or git edits. Chief owns launch and review.
+Resume independent event lane from owned source witness/notes; no remaining
+catalog source blocker was reported.
+
+### 2026-10-31 — ECM event/noise packet implemented; static checks pass, Chief03 review pending
+
+Separate event prefix now owns10 files: literal source event/noise adapter,
+post-event material adapter, typed persistent composition, supplied-owner fixture
+CODE, independent native owner/capture, independent Decimal conditionals, deferred
+tests, protocol/map. Own workqueue:
+`workfiles/betse_normal_ecm_event_join_workqueue.json`. The feature retains source
+reset→event→material/CaATP/catalog/GRN→noise→commit→field order, legitimate current
+coefficient binding identities, separate source labels/material dt, scalar control
+shapes, full local MT/cache epochs and returned failure partials. No mesh/profile
+initialization, enabled ER, mechanics or whole SimRunner claim is introduced.
+
+Explicit Chief03 dependency refresh:
+`workfiles/betse_normal_ecm_event_join_dependency_witness_01.json` proves127/129
+catalog02 pins unchanged and full inverse-AST equality for the two callback-only
+changes. Source pins: calcium `d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63`,
+catalog `3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504`.
+No failed or frozen evidence changed. Chief03 final source-review artifact is a
+separate pending freeze prerequisite; the event runner enforces it.
+
+`workfiles/betse_normal_ecm_event_join_AST_witness_02.json` passes literal source,
+independent native and inverse adapter/reference checks. Final static witness01
+passes compile/global names/Ruff/33 keyword interfaces:23 Python files,14 stdlib
+reference modules,93 scientific import modules,10 owned/131 protected pins.
+`workfiles/betse_normal_ecm_event_join_reporting_metadata_check_02.json` SHA256
+`091c0836a86a853542b91a8091105562fe8dabe604018b583b71d4bc89f83470`
+checks162 bounded synthetic metadata JSON files using actual producer AST and
+stdlib reader only; no scientific results are synthesized. Earlier01 retained.
+Draft tooling failures/corrections are recorded in the event notes.
+
+Planned only:42 IDs =20 histories (6 controls),6 raw limits,16 prerequisites;
+26 native captures and920 fresh100/160 forms. No scientific imports/evaluations,
+fixture generation, pytest collection, numerical jobs, job queries/polls, GPU,
+PROGRESS edits or git changes by this worker. Chief informed directly; final
+freeze/review will precede any separately authorized numerical round.
+
+### 2026-10-31 — Event01 immutable handoff completed; separate cutting audit assigned
+
+Chief's final callback source03 review is clear with zero blockers, SHA256
+`d0eb124095d187ee26c5cb52520a8add4a45d74b86dd0da45d2f3e8de974c95c`.
+Explicitly bound it, completed final static witness02 and froze:
+`/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-01/inputs.json`
+SHA256 `569101232c058441830f794fd5209356027e4d609237d444ee637e676fa626c9`.
+This inputs file is the complete source/native/binding/driver hash manifest.
+Receipt `workfiles/betse_normal_ecm_event_join_static_receipt_01.json` SHA256
+`74c65599befdf2faf23bef43a5017cf6a0a37aeb74401532f767f2d95b807f60`.
+Verified2607 source/52 native/38 binding files;10 owned/131 protected pins.
+All42 tests/26 native captures/920 fresh forms remain planned and unrun.
+Chief notified directly and assigned independent event review. App-server direct
+messaging to that subagent is unavailable; Chief received all handoff pins to relay.
+
+Next authorized separate work: audit original cutting/tissue-handler lifecycle,
+actual deletion/remapping/cache invalidation/rebind order and failures; determine
+admissible scope from source before implementation. Static source/code/prep only;
+no invented geometry regeneration or physical-mesh/whole-loop credit. Preserve
+frozen events and shared code, reuse existing owner/epoch primitives where exact.
+
+### 2026-10-31 — Separate native cut lifecycle source audit and bounded implementation draft
+
+`workfiles/betse_native_cut_lifecycle_source_witness_01.json` passes332-file
+installed-exact audit across32 methods. Ordinary ECM/Ca_dynFalse deletion prefix
+ends at first changing DEC call, TissueHandler._cut_cells line1153. Complete
+source geometry/operator/diffusion/profile/GRN/channel lifecycles are mapped;
+source array-length/list alias and partial-mutation defects, repeated profile/RNG
+calls and cache reset/staleness are retained. Chief informed of this admissible
+prefix boundary before implementation.
+
+New separate source/wrapper drafts preserve literal deletion arithmetic and
+complete graph/alias/failure evidence, reuse existing explicit CutPlan/OwnedField
+sink ledgers separately, and refuse ordinary continuation without qualified
+changing geometry and an actual typed checkpoint. Native reconstruction/physical
+mesh/whole-loop credit stays zero. Independent original-AST capture and supplied
+fixture CODE added; deferred reference/tests/protocol/runner/freeze remain. Own
+notes `workfiles/BETSE_NATIVE_CUT_LIFECYCLE_NOTES.md` contain concrete source risks
+and scope. No scientific import/evaluation/collection/run or job query occurred;
+frozen events and shared laws remain untouched.
+
+### 2026-10-31 — Cut prefix/capability packet static audits pass; freeze pending
+
+New prefix has9 owned files with25 deferred checks (6 supplied prefix conditions,
+8 raw limits,11 prerequisites),14 independent native captures and6 fresh stdlib
+reference forms planned. Original normalized pre-mesh prefix and flatten match
+exactly; the sole extra interface is return-locals observation. Native capture
+independently reads original AST. Typed evidence retains dictionary/container
+aliases and full source/helper failure locals; distinct ndarray-view ownership is
+explicitly outside checkpoint scope. Stable removal/quantity sinks remain a
+separate existing policy. Even empty selections invalidate; a complete supplied
+metadata chain cannot unlock an ordinary checkpoint or physical mesh.
+
+Final static audit `workfiles/betse_native_cut_lifecycle_static_witness_01.json`
+passes source/scope/closure/fixed-budget/compile/name/Ruff/runner checks;9 owned and
+143 protected pins. Metadata witness01 exercises actual report producers and
+stdlib reader on15 tiny temporary JSON schema files only; no science evaluated.
+Existing80-digit quantity law/tolerances and frozen event01 source pins unchanged.
+No scientific imports, fixture/reference evaluation, collection, numerics, jobs,
+polls, GPU, PROGRESS or git mutation by this worker. Immutable source preparation
+and Chief handoff are the remaining authorized static steps.
+
+### 2026-10-31 — Cut01 immutable handoff completed; calcium raw-domain repair next
+
+Frozen cut prefix/capability package:
+`/mnt/workspaces/Cells/betse-native-cut-lifecycle-prepared-20261031-01/inputs.json`
+SHA256 `7a0d04b5e9acf0f3e29598a34c4fdc7e086aa94339ebfbce98ebcd3d4d3e1cb1`.
+Receipt `workfiles/betse_native_cut_lifecycle_static_receipt_01.json` SHA256
+`0a88a6403ab825447d129e65f865eda3073c305267a9a00ae98d6b651218f028`.
+Verified2621 source/16 native/5 binding files,9 owned/145 protected pins,
+17 compiled Python files/2 stdlib references/10 imports including3 explicit package
+initializers.25 tests/14 captures/6 independent forms remain planned, never run.
+The prefix ends before DEC mutation; full geometry/cut/checkpoint/ordinary resume
+remain unqualified and refused. Chief notified for independent review.
+
+Chief now owns catalog_source HCN-vrev guard repair. That unimported ancestor file
+is never edited here; cut queue explicitly watches its immutable event01 pin via
+ancestry evidence and marks current snapshot-only bytes as coordinated/unloaded.
+No new live scientific dependency pin was silently adopted. Final static witness02
+supersedes the earlier live-watch count. Current root/source job files and all
+frozen events/old failures remain untouched.
+
+Next delegated job: calcium03 negative_genes is an actual native no_negs refusal
+on the third call after2 completed calls. Prepare exact-input/partial-correspondence
+and raw-domain classification repair with a prospective complete-roster successor;
+retain cold/bootstrap/first2 calls/failed third. No dt/rate tuning, positive credit,
+scientific imports/evaluation/collection or numerical jobs. Await Chief's evidence
+review binding before a successor freeze when required.
+
+### 2026-10-31 — Calcium04 exact-input/raw-domain draft and source evidence interpretation
+
+New isolated `betse_normal_ecm_calcium_domain04` drafts preserve all shared legacy
+files. Exact saved negative_genes input copied without regeneration or metadata
+changes (SHA256 `41d5da23526aac015a219e2c7d535998c7181fc40520d5ef1a967034af808606`).
+Native archive metadata shows2 completed calls/third refusal and helper finite
+flags True/True/False. Chief's audit locates earlier nonfinite Na GJ frame4 at
+membrane7/8; later CaATP/GRN NaNs are not assigned as the root cause. Context is
+z=-1 gene charge; no_negs clips finite negatives and raises for NaNs.
+
+Prospective complete34 roster:15 original positive histories,6 original raw,
+12 prerequisites and1 observed-history raw control. Shared first2 calls retain
+full exact/independent comparisons; third native/port stops are distinct and
+complete partials retained. New pure-stdlib chemistry-prefix reference stops
+before transport, preserving old RHS/delta equations and fixed budgets. Planned
+442 fresh forms (420 positive+22 raw-prefix) remain unrun. Historical failing
+case owned hot-call credit remains0;4 prior constructor forms were un-compared.
+
+Source drafts compile/Ruff pass. No scientific imports/evaluations/collection or
+jobs/polls; only exact artifact bytes/JSON metadata and source were read. Await
+Chief's final evidence-review binding before freeze. Cut files are now reviewer-
+owned and left untouched. Details in `workfiles/BETSE_NORMAL_ECM_CALCIUM_DOMAIN04_NOTES.md`.
+
+### 2026-10-31 — Calcium domain04 final static checks and reporting passed
+
+Bound Chief saved-failure REVIEW e055aff4 and callback/source03 review. Complete
+34 prospective IDs (15 positive,6 existing raw,1 observed raw,12 dependency) retain
+442 planned fresh forms/22 native captures, with zero execution/qualification.
+Actual native metadata confirms all23 frames before calcium_handler; owned raw
+comparison now requires that exact full common prefix. Native later GRN NaN stop
+and owned existing CaATP finite guard remain distinct. No source/dt/budget tuning.
+
+Final static witness02 passes10 owned/95 protected pins,10 compiled Python files,
+9 stdlib references and92 import modules including package initializers. Final
+metadata witness03 passes163 tiny synthetic files/12 malformed-case rejections,
+using actual report producers; exact34 ID checks include duplicate/skip rejection.
+Early static preparation caught a dynamic compile-count comparison and unused
+import/lint issues; these were corrected before the final passing witness.
+14 original failure evidence files are hash-bound without array evaluation.
+Immutable copy and Chief handoff next; own notes retain details and final links.
+No science imports/evaluation, collection, numerics, jobs, polls, shared PROGRESS
+or git changes. Cut files and Chief-owned catalog source remain untouched.
+
+### 2026-10-31 — Calcium domain04 immutable preparation delivered
+
+Prepared manifest:
+`/mnt/workspaces/Cells/betse-normal-ecm-calcium-domain-prepared-20261031-04/inputs.json`
+SHA256 `83349b56ad668d95b8c19e98320dd6872e40390c5558bc2cc3b91216f5e542a0`.
+Own receipt: `workfiles/betse_normal_ecm_calcium_domain04_static_receipt_01.json`
+SHA256 `39cb62c5d463509a8df09ddd1ef303c46a3a583755d0455e89c2fd809c98bf67`.
+Final copy verification passed2631 source files,44 native-source copies,24 binding
+copies and14 exact retained failure artifacts, plus driver and all10 owned/95
+protected live pins. Source/reference closures, fixed budgets and complete34 ID
+roster are bound. Chief receives this immutable package for independent review.
+34 checks/22 captures/442 fresh forms remain planned and unrun; zero carried or
+new qualification passes. Original failure campaigns and all frozen evidence stay
+unchanged. No scientific imports/evaluations/collection/numerical jobs, polls,
+shared PROGRESS or git staging/commits. Waiting for Chief's next delegated job.
+
+### 2026-10-31 — New event/mechanics composition, final static preparation
+
+Chief assigned separate `betse_normal_ecm_event_mechanics`; domain04 narrow runtime
+repair belongs to reviewer and was left untouched. Boundary agreed: actual source
+mechanics after protein noise and before deferred material/fields, one advance;
+carry native sample eligibility, preserve <=16 field / >=25 display limits and
+explicit display refusal with reached parents. No physical initialization claim.
+
+Implemented owned/native single-call composition, supplied shared DEC view,
+post-event pressure/temperature, current post-noise/GRN concentrations and previous
+field epoch, full failure/constructor/source-local capture, stdlib references and
+complete prospective tests. Source AST inverse passes;332 BETSE Python files are
+installed-exact. Dependency witness02 explicitly resolves121 overlaps and reviewed
+catalog04 guard (only warm/dynamic assignments), preserving mechanics02's disclosed
+prior divergence category correction. No legacy/frozen source file edited.
+
+Final static witness02 SHA256
+`c3acc3b6859746b09dd8a894e65aee4e9b134fd7c31e45e4c4f5e582280938e1`
+passes16 Python compiles/global names/Ruff,14 owned/157 protected files and111/17
+runtime/reference modules. Metadata witness02 SHA256
+`b6aa8cfab60e719274ba17a2b7077ee0bde6040810fd595821f6fe02dd7bef43`
+passes119 tiny synthetic files and exact62 ID/report contracts. Final runner counts
+10 component controls separately from15 new contexts; corruption baselines carry
+no new context credit. Details in own `workfiles/BETSE_NORMAL_ECM_EVENT_MECHANICS_NOTES.md`.
+
+Prospective62 checks:25 positive histories,7 raw,26 dependencies,4 corruption
+controls;36 native captures and1508 fresh precision forms (1300 primary+208
+baseline). These are planned and unrun; zero science or carried pass credit.
+Immutable copy/hash handoff next. No scientific imports/evaluation/collection/jobs,
+no polling/GPU/shared PROGRESS edits or git staging/commits.
+
+### 2026-10-31 — Event/mechanics immutable handoff completed
+
+Prepared inputs:
+`/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-01/inputs.json`
+SHA256 `b98ad90db9612d7cd193abb905f2112a60fa8fcaf45214be825ff0e76b5b0c46`.
+Receipt: `workfiles/betse_normal_ecm_event_mechanics_static_receipt_01.json`
+SHA256 `439b811eaebec2f87d274e6a3c7558e7889893043cafaf3bfd5a4a5955320e1b`.
+Final copy verification passes all 2,649 source files, 62 native-source copies,
+51 binding copies, the driver and 14 owned/157 protected live pins. Chief receives
+the package for independent static review; source/codegen drafting records and
+final machine-readable evidence are retained in the frozen snapshot.
+
+All 62 checks/36 captures/1,508 fresh forms remain planned and unrun. Existing
+component qualifications stay pending and no new/carried scientific pass, display,
+physical initializer, whole solver or conservation claim is made. No jobs were
+launched or polled, no science was imported/evaluated/collected, and no old frozen
+or other live source, shared PROGRESS or git index was changed. Awaiting Chief's
+next delegated task.
+
+### 2026-10-31 — Ordinary ECM ER route blocked by pinned native policy
+
+Completed new-prefix source-only audit:
+`workfiles/betse_normal_ecm_er_join_source_boundary_01.json`, SHA256
+`8abb12182d06c7a13e2d1464e2cceb9b6f0b731d9307cf468769aced3f3500d7`.
+All 332 native Python files match the pinned revision and installed package.
+The sole Ca_dyn writer is Parameters.load=False (parameters.py:771); the guarded
+constructor assigns endo_retic=None (sim.py:857–860), updates require Ca_dyn==1
+(2157), and cache clear/sample calls are guarded. All eight ER kinetic parameters
+lack native producers. The audit records the exact ten-field/state/legacy-owner
+requirements and source order/charge/material boundaries without executing them.
+
+Qualified prepared-ER review still accepts its 23 scoped checks/83 conditional
+points; its seven controlled files match exactly. That explicit Ca_dyn1/supplied-
+inventory seam is not ordinary loader reachability, initialization or restart.
+Chief accepted this decisive boundary and directed no enabled ER or alternative
+join. No activity, defaults or state were injected, no ER implementation added,
+and no old/frozen source or job touched. Audit compiles and Ruff checks pass;
+zero science imports/evaluation/collection/jobs or active-job queries.
+
+Next delegated feature: new-prefix headless ordinary ECM phase/run lifecycle
+around the existing single-advance event/mechanics composition. Audit native
+INIT/SIM clocks, reset/stop/sample ordering and explicit supplied initialization;
+keep full seed/init/load, display and physical admission closed. Source/static
+implementation and prospective checks only.
+
+### 2026-10-31 — Headless lifecycle draft and explicit calendar dependency boundary
+
+New prefix `betse_normal_ecm_run_lifecycle`: supplied-entry SIM/N3 coordinator,
+original calendar windows, exact dt/source-label separation, one delegated advance,
+full cache/state carry, explicit pause/resume/exhaustion/failure and headless-only
+observations. No whole native INIT/load/run_sim_core/write2storage/pickle/display
+call or physical admission is implied. INIT clocks are audited; INIT material
+execution remains refused because the inherited composition is SIM/N3 only.
+
+Source boundary witness01:
+`workfiles/betse_normal_ecm_run_lifecycle_source_boundary_01.json` SHA256
+`5482c2b8249bf6bdd19da24e36aa6153905669812fe4d265027defbabdd18c9d`.
+It preserves exact original caller/callee evidence for the missed dense API:
+frozen event_join has2 calls and event_mechanics has3, while frozen calendar
+SHA256 `111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb`
+exports window but no dense. Earlier name-only checks missed this attribute
+interface; no numerical event/mechanics pass had been claimed.
+
+Root owns all five live caller fixes and their validation. Repair result:
+`/mnt/workspaces/Cells/ecm-event-calendar-api-repair-20261031-03/result.json`
+SHA256 `173c398f2897105eec2fd1f2c4d06e902f84301600cfe3d068b35d8a86f8dca0`;
+20 existing calendar+5 isolated actual callsite controls, no event trajectory.
+Independent review SHA256
+`294016b28e8f47aa2a2f9669152dc510a0e8925b0a2b4db03e1dad303f5ef656`.
+The reviewer supplied immutable held event03 inputs SHA256
+`604eca1502addb301452f3cb8c5889853895c42334392f617b5a5d6f290460c6`
+and event/mechanics02 inputs SHA256
+`8df92c3695c401dcf42883394a719c93b072a69ddcb3eaf38b1be53f79275b18`.
+Lifecycle will explicitly bind these successors; the old packets remain frozen.
+All old/live event sources are Root/reviewer-owned and untouched by this worker.
+
+Root separately found a NaLeak-only ECM reference-domain mismatch and is preparing
+its own prospective correction. This lifecycle packet must retain the declared
+immutable reference dependencies; no silent live reference refresh or correction
+adoption. Native/time-slice capture, inherited complete comparison helper, fixture
+recipes and reference forwarding are draft code only; prospective tests and final
+static freeze/handoff remain. Zero science imports/evaluation/collection/jobs.
+
+### 2026-10-31 — Headless lifecycle final static preparation
+
+Completed the new supplied-entry SIM/N3 lifecycle draft and prospective checks.
+One existing component advance supplies each call; windows retain the original
+calendar, full component caches and immutable entry. An accepted candidate is
+committed before the owned observer runs; observer or component errors retain the
+last accepted run, every returned candidate/context and complete source partials.
+Failed runs cannot resume automatically. Headless observations retain full reached
+state at native sample eligibility; native init/load, whole phase, storage,
+display, pickle, physical admission and INIT material execution remain closed.
+
+Final AST witness `workfiles/betse_normal_ecm_run_lifecycle_AST_witness_01.json`
+SHA256 `6bd726973bcf7f4a392de3eb0ee02a3fcb546af90de87da87880565188b19e71`
+proves the complete captured SimPhase time-setup body, two source count statements,
+six clock/sampling statements and unchanged inherited comparison assertions.
+Draft inspection caught a missing SEED enum member and formatter changes to the
+captured docstring; both are corrected, with explicit member resolution and full
+AST equality now checked. Initial formatting/lint failures were drafting issues;
+no source arithmetic, inherited budget or saved scientific failure was changed.
+
+Final static witness `workfiles/betse_normal_ecm_run_lifecycle_static_witness_01.json`
+SHA256 `32c3a4d93b1768e15ccd5c4255be92c265edaf7cea5798bda8ade240132e651e`
+passes 16 compile/global-name/Ruff checks, source AST/interface checks, 18 owned
+files, 163 frozen dependency pins and 116/18 runtime/reference modules. All 332
+native Python files remain installed-exact; 33 source files are explicitly bound.
+Metadata witness `workfiles/betse_normal_ecm_run_lifecycle_metadata_witness_01.json`
+SHA256 `cf50d1c3bb6b1b0b37e46b7a0d8dacd6313224899dfbace369860b85dfc0f37d`
+checks six allowlisted scalar report dictionaries and the actual stdlib reader
+against 1,056 tiny synthetic files, malformed claims and the exact 48 JUnit IDs.
+This is metadata validation with zero scientific evaluation or qualification.
+
+Planned and unrun: 48 checks (12 histories, 4 raw, 3 observer, 22 dependency,
+6 clock-only and 1 display refusal), 22 captures and 624 fresh Decimal forms.
+Twelve direct three-call component controls are duplicate baselines, earning no
+additional context or reference credit. Existing component qualifications remain
+pending. Frozen event/mechanics02 is the dependency authority; later live NaLeak
+and archive-cardinality repairs are deliberately excluded pending Root's explicit
+reviewed successors. The prior mechanics divergence-category change is disclosed;
+there is no new equation or budget change. Immutable copy/hash handoff follows.
+
+Only this prefix and this own log were edited. No scientific imports, model or
+fixture/reference evaluation, pytest collection, numerical jobs, GPU activity,
+active-job queries, shared PROGRESS/ledger edits, git staging or commits.
+
+### 2026-10-31 — Headless lifecycle immutable handoff completed
+
+Prepared inputs:
+`/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-01/inputs.json`
+SHA256 `e3f1783e8b2775e1f143ffa4f184e0b155f1260e6957ed294cd4d1ba6bd8b3f3`.
+Receipt `workfiles/betse_normal_ecm_run_lifecycle_static_receipt_01.json`
+SHA256 `80879778c1bebab8672c2f4f9a29d197b512116ad57d3c594d502c7709526dfd`.
+Exact copied source set and all 2,675 source files, 66 native copies, 71 binding
+copies, runner, 18 own live pins and 163 frozen dependency pins verify. The copied
+reviewed event/mechanics02 tree remains the dependency authority; live foreign
+source changes were observed only and never adopted. Chief receives the package
+for independent review. All 48 checks, 22 captures and 624 forms remain planned,
+with zero numerical execution or new/carried qualification. Awaiting Chief's next
+delegated task; no automatic launch, polling, follow-up audit or git operation.
+
+### 2026-10-31 — Four explicit reviewed dependency successors, held handoff
+
+Chief assigned catalog05, event04, event/mechanics03 and lifecycle02 with the
+reviewed NaLeak reference repair and separately cleared archive cardinality tool.
+Copied each held parent, overlaid only declared successor deltas, preserved all
+original rosters/report sets and numerical budgets, and carried zero qualification
+passes. No live component, reference, shared helper or old frozen file was edited.
+
+Catalog reference is the promoted byte-exact `6c51cddd...8ea70`. Source audit found
+event's independent kinetics dispatch; its frozen-only proposal copies the exact
+reviewed NaLeak branch and has an exact whole-module AST/source inverse. Root owns
+the subsequent live event promotion. Lifecycle02 repairs three reviewer findings:
+unique per-call observer paths with exact RuntimeError leaf evidence; four named
+raw boundaries with inherited store/RNG/temperature/nonfinite-trial witnesses;
+and complete clock/component retention before correspondence checks, with an
+exception archive before rethrow. Proposal02's incomplete mechanics exception
+message remains preserved; proposal03 requires the exact class, stage and prefixed
+message. Other functions and source clock bodies remain AST-identical.
+
+Independent proposal/event clearance:
+`/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-preflight-20261031-01/repair-review-02/REVIEW.json`
+SHA256 `64b226aa7a4db1b4713d14623a85cc1b2cdb8e04d55cd4f30c5559290bfdc317`.
+Archive tool clearance SHA256
+`0f8a681b50d57e88adc3617099e2a1fc39ad269d6b72a9414c3583254fcf3744`
+binds candidate `e25aaedf...2e26e59`: fixed32768 members with unchanged64MiB,
+NPY headers and integrity guards. Copied only as prospective qualification tooling.
+The31726-member engineering allowance covers catalog3calls/3populations/5routes;
+event/mechanics/lifecycle capture overhead remains unaccounted and held.
+
+Used `validation/frozen_resource_dependencies.py` plus explicit manual source
+review of all175 distinct nonliteral read patterns. The four packets bind
+25/26/27/28 packaged resources and27/30/34/36 native source files, including all
+constant aliases, inventory reads and native pin-table unions. No missing sibling
+resources or unclassified reads remain; dynamic caller inputs, generated evidence
+and runtime module identities are separately recorded without a general resolver
+claim. Source/native/helper copies, candidate AST, compile/global names and Ruff
+checks pass. Scalar-only report checking passes1,056 tiny synthetic files and48
+lifecycle IDs, including unrelated raw/observer failure rejection. No scientific
+code, fixture, reference, array or model equation was evaluated.
+
+Prepared inputs (all under `/mnt/workspaces/Cells/`):
+
+| Packet | Directory | inputs.json SHA256 |
+| --- | --- | --- |
+| catalog05 | betse-normal-ecm-catalog-join-prepared-20261031-05 | 513b3a4030f79eb027db8eea664e4acd0854b314634f0bbb97c2c2b86d77bc33 |
+| event04 | betse-normal-ecm-event-join-prepared-20261031-04 | d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c |
+| event/mechanics03 | betse-normal-ecm-event-mechanics-prepared-20261031-03 | e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a |
+| lifecycle02 | betse-normal-ecm-run-lifecycle-prepared-20261031-02 | 0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4 |
+
+Final verification caught17 Ruff cache files created after manifest hashing
+because I omitted its no-cache option. The frozen inputs remain unchanged; every
+cache byte is preserved and separately pinned in the final receipt. The verifier
+rejects any other unmanifested source/resource/config file. An earlier preparator
+inverse-guard assumption failed before creating a packet; its corrected two-part
+inverse and original failure are recorded in own workfiles. Neither issue ran
+science or altered inherited outcomes.
+
+Machine-readable handoff:
+`workfiles/betse_normal_ecm_reviewed_successors_handoff_01.json` SHA256
+`48dd25863c91cf0a79add7045945f4f0aa6edd47ab9440e37dd99fb8150165b1`.
+All-copy verification:
+`workfiles/betse_normal_ecm_reviewed_successors_static_receipt_01.json` SHA256
+`b2f1c0fcb76c2301f968c8fed026a593e1b471ca881d430e7618ea5a09c1aa70`.
+All94/42/62/48 checks and associated captures/forms remain planned and unrun.
+Complete packet review and non-catalog capture-overhead accounting remain before
+runner release. Source-only source hashes plus declared live production/reference
+pins guard future requested runs; all drivers explicitly refuse execution while
+held. No science imports/evaluation/collection/jobs/GPU, active-job queries,
+shared PROGRESS/ledger edits, git staging/commits or automatic follow-up.
+
+### 2026-10-31 — Chief's event reference promotion recorded
+
+Chief promoted the exact reviewed event reference already pinned in event04,
+event/mechanics03 and lifecycle02:
+`2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b`.
+Promotion record:
+`/mnt/workspaces/Cells/ecm-event-naleak-reference-repair-20261031-01/promotion.json`
+SHA256 `25334fa048baaf68bf6dfffe8afcaa6eacb515ac4086e1e9ebfeb48d62238081`.
+It records72 software checks (34 event,34 catalog,4 shared), exact tested bytes,
+preserved assertions and no shared sodium helper, voltage-dependent domain,
+source-history or numerical-budget change. This is Chief's saved software result,
+not a new run by this worker or a coupled-history qualification. All four frozen
+packets and their holds remain unchanged. Only this own log was updated; no new
+audit, scientific import/evaluation, collection, job, polling or git operation.
+
+
+### 2026-10-31 — Non-catalog capture-overhead accounting handed off
+
+Audited event04/mechanics03/lifecycle02 capture paths under new prefix
+`betse_normal_ecm_capture_limits`:31/32/31 explicit archive sites, both terminal
+writers, and complete imported writer closures. Repeated state, cache, callback,
+mechanics trial, source partial, observation, clock and native failed-reached
+archives all use the pinned plain-numeric uncompressed np.savez writer. Every
+occurrence is charged; there is no array identity deduplication assumption.
+
+Declared a source/format capacity bound rather than an unmeasured case maximum.
+The shortest accepted numeric NPY header is128 bytes. A canonical member also
+requires at least30 local+46 central ZIP bytes and two6-byte filenames, giving
+216 bytes/member plus22-byte end record. Thus an archive within unchanged64MiB
+cannot exceed floor((67108864-22)/216)=310689 members. Longer names, payloads,
+growth padding and ZIP64 records add bytes. This covers all duplicated capture
+paths without evaluating a state or fixture. It does not claim that every actual
+capture fits the unchanged byte limits or that a theoretical endpoint archive is
+constructible. NumPy/stdlib writer source hashes and exact helper profiles are
+pinned; a changed format/compression requires separate review.
+
+Prepared a separate310689-member helper for the three non-catalog profiles, with
+exact whole-helper inverse to the reviewed32768-member catalog tool. Every64MiB,
+header/type/shape/depth/owner/hash/CRC guard remains unchanged. Profile wrapper
+verifies sources, rejects catalog selection and requires the actual uncompressed
+writer format. Catalog32768 and its31726 schema allocation remain catalog-only.
+No frozen packet or live/shared helper was edited; no runner release is granted.
+
+Thirteen stdlib-only synthetic metadata controls pass in3.57s, VmHWM85,487,616
+bytes under512MiB/90CPU-s/120wall-s limits and8GiB host reserve. A32769-member
+archive is accepted by the new helper and refused by original catalog32768.
+All three profiles, exact scalar cap predicates, negative-zero bits, wrong
+compression, object dtype and bad hashes are covered. Cap endpoints are scalar
+metadata predicates, not fabricated full-cap archive or physical-run evidence.
+The earlier13-pass metadata source/result is preserved; the final repeat followed
+nonbehavior lint cleanup. No scientific imports, arrays/models, fixture/reference
+evaluation, pytest collection, numerical jobs or qualification credit.
+
+Immutable handoff:
+`/mnt/workspaces/Cells/ecm-event-mechanics-lifecycle-capture-capacity-prepared-20261031-01/MANIFEST.json`
+SHA256 `36f9688dc664b9c2a196cb8282bb4d89dd97fb699d549c7e94efac31341c53d3`.
+All43 copied artifacts hash-verified. Own receipt:
+`workfiles/betse_normal_ecm_capture_limits_static_receipt_01.json` SHA256
+`8edb653efedcf7defb02df34129449c675b11e7deaec0e33a5ab266c43c6b813`.
+Chief receives this for independent review and prospective evidence-tool selection.
+External worker CPU/memory/time/reserve controls remain required. No automatic
+launch, polling, follow-up audit, PROGRESS/ledger or git operation.
+
+Next authorized work: source audit/design of separate ordinary ECM INIT execution
+under new prefix `betse_normal_ecm_init_phase`, with exact native clocks, dispatch,
+order and defaults. No SIM assumptions, enabled ER or physical initializer are
+inferred; all existing frozen work and active jobs remain untouched.
+
+
+### 2026-10-31 — Separate ordinary ECM INIT source audit/design handed off
+
+Completed `betse_normal_ecm_init_phase` source audit and design only. All332 native
+Python files match the installed pinned revision. Native INIT loads a seed into a
+fresh Simulator and calls init_core; SIM loads an existing simulator. Source
+phase setup sets _run_sim=False, INIT dt/total/sampling and binary64-truncated
+count; original linspace labels and sampling recurrence remain separate from dt.
+Native counts are not forced toN3. Whole seed/load/physical initialization remains
+outside the proposed supplied-entry material/field seam.
+
+Concrete existing-interface gaps are bound to exact frozen source: warm dispatch
+forces SIM, the owned wrapper requires every population count to equal the
+material tick, and mechanics is nested inside the SIM protein-noise hook. The
+new INIT adapter must preserve mixed active/inactive per-population counts and
+place mechanics after network handling before deferred primary commit without
+executing a noise branch. Native init_active defaultsTrue; explicitFalse skips
+warm updates while retaining the constructed cold private fields. Fresh GRN
+construction and phase reinitialization are distinct; blind INIT-to-SIM cache
+carry is not admitted.
+
+INIT skips scheduled-event execution and dynamic protein noise, but still runs
+phase setup/event finalization. A static NumPy noise-factor draw occurs even at
+zero level; configured GJ event setup can consume Python shuffle state. The
+legacy sweep calculation depends on _run_sim, so no INIT slope or time settings
+are invented. Exact molecule/GRN internal order is clear, transporters, channels,
+modulators, then chemistry/movement, each under its source guards. Configured
+CaATP and steady/osmotic mechanics remain possible; ordinary Ca_dyn, fluid flow,
+dynamic deformation and electroosmosis are hard-disabled. No enabled ER route.
+
+New design records explicit entry owners/receipts/RNG and cold voltage/INIT dt,
+source body versus slice scope, independent fresh conditional checks with old
+budgets, original-calendar prefix/cap handling, exact failures and window carry.
+Display, native storage/pickle, whole physical init and INIT-to-SIM transition
+stay closed. No implementation in src/tests/validation and no scientific execution.
+
+Immutable audit/design:
+`/mnt/workspaces/Cells/betse-normal-ecm-init-phase-design-prepared-20261031-01/MANIFEST.json`
+SHA256 `a0ab291fff3e384b783157713a33e54712a329c5625f48535867480952c53885`.
+Boundary SHA256
+`fc458bbdd0d5c0cbb0228cbecd65838bd959971ae7be6f656b1a367e30946e87`;
+design SHA256
+`aa1d23f8496b8d0ed20490bb8254572c54c5ff34dd45541a75913fe9b7a7068d`.
+Readable design: `workfiles/betse_normal_ecm_init_phase_design.md`.
+Own receipt `workfiles/betse_normal_ecm_init_phase_static_receipt_01.json` SHA256
+`0890c75b933539ad338e20513c02b68c0dca296c613f2a8da21ad2bb8711860b`.
+All25 copies (18 native,3 interface,4 own artifacts) verify; compile/global names
+and Ruff pass without scientific imports. Zero model/fixture/reference evaluation,
+collection, numerical jobs, active-job queries, shared/frozen edits, qualification
+credit, PROGRESS/ledger edits, git operations or automatic follow-up. Chief gets
+the concrete gaps and design for the next substantive implementation assignment.
+
+### 2026-10-31 — Ordinary ECM INIT implementation: held source handoff
+
+Completed Chief's source/static implementation assignment under the separate
+`betse_normal_ecm_init_phase` prefix. The adapter now handles one-time native
+static-K setup, explicit NumPy/Python RNG receipts, fresh GRN/catalog construction,
+true INIT dispatch, per-population active/default/inactive counters and complete
+inactive cold caches, real maintained NaK, CaATP, primary transport, independent
+post-network steady/osmotic mechanics before deferred commit, full fields, and
+original-calendar headless windows. N0/N1 and longer-calendar prefixes retain
+native labels; the existing three-call material cap is unchanged. Source density
+defaults are written after cold GRN/mechanics setup, before event finalization.
+INIT fires no event or dynamic protein-noise callback. The original dormant
+f_sweep legacy guard and unused shuffled-copy convention remain explicit.
+
+Supplied core/tissue, geometry, conductivity/screening and mechanical DEC seams
+are identified separately from full physical initialization. General molecules,
+GRN-disabled composition, ER, flow, dynamic deformation, electroosmosis,
+seed/load, whole init_dynamics/run_sim_core, storage/pickle/display and INIT-to-SIM
+transition receive no qualification credit. Root's latest ordinary-initializer
+_copy promotion is outside this import closure; no silent dependency refresh.
+All common bodies derive from immutable lifecycle02 inputs SHA256
+`0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4`.
+
+Static evidence:12 AST correspondence proofs; compile/global-name and owned-file
+Ruff checks;332 checkout/installed-exact native Python files;123 runtime and23
+reference import-closure modules;28 resources;180 classified reads;zero missing
+resources or unresolved reads. AST comparisons exclude leading docstrings only
+because formatting dedented copied methods; scientific statements are compared
+unchanged. Initial docstring-comparison failure and both preparation drafts are
+preserved.10 new bounded stdlib metadata controls pass, including scalar archive,
+wrong profile/compression/shape/hash, scalar capacity endpoints, exact manifests
+and the hold before run-directory creation. Final metadata RSS22,458,368 bytes;
+no large-capacity archive was fabricated and no scientific claim follows.
+
+Prospective only:62 checks (22 positive,5 raw,33 dependencies,2 observers),61
+accepted calls,986 fresh conditional Decimal100/160 forms and29 native captures.
+The new INIT capture profile is held for Chief review;310689 members derives
+from the existing64MiB ZIP_STORED/NPY format-capacity bound, not a measured case
+maximum or a promise every future capture fits. Other archive/numerical guards
+and budgets remain unchanged. The signed_environment material failure remains
+39/40; no old result was regenerated or accepted.
+
+Immutable held package:
+`/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01/`.
+MANIFEST SHA256
+`33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf`
+binds3566 artifacts. Inputs SHA256
+`975a586fa142342a79c27b68cfcdf891b1b18b6d45e8a28dd0b16b7f6b55b89e`.
+SOURCE_STATIC_REVIEW SHA256
+`670f367ee2ccb1b2a4466501519ad157d3f3a10b8d9bcba6b03db205386587fa`.
+Own handoff: `workfiles/betse_normal_ecm_init_phase_handoff_01.json`.
+Readable scope/API: `workfiles/betse_normal_ecm_init_phase_implementation.md`.
+
+Zero scientific imports/AST executions, fixture/model/reference evaluations,
+pytest collections, numerical jobs, GPU work or active-job queries. No shared
+source/frozen edits, PROGRESS/ledger edits, git staging/commits, retries, polling,
+subagents or automatic follow-up. Chief receives the complete held package for
+independent source/resource/capture review and a separately requested,
+CPU-coordinated qualification round. The package driver refuses while held.
+Delivered the final handoff directly to Chief thread
+`01a0ba89-33fd-7c52-8dd5-ae4a9473b922`; message delivery succeeded.
+
+### 2026-10-31 — INIT02 evidence repair delivered; transition work resumes
+
+Chief's final INIT01 review (SHA256
+`ab6b07e33489748bdfa75d01a037aa82b0c22e8e8cfb33c0e0a36acca0137c3d`)
+required INIT-CAPTURE-01 and INIT-SAMPLING-02 repairs first. The held successor
+retains original preparation/bootstrap/reset exceptions and reached
+owner/material/cache/store/RNG buffers before re-raising. Sampling checks
+compare both independent indices, native records and owned eligibility, and
+full selected network/field/mechanics against saved accepted/native buffers.
+Only the owned native harness and positive test changed; one stdlib evidence
+helper was added. Complete evaluator and test ASTs recover INIT01 after removing
+exactly the capture/assertion additions. Fixtures, equations, all 62 IDs,
+budgets, 61 calls, 986 forms, 29 captures and the held driver are unchanged.
+
+18 bounded stdlib exception/sampling controls and 10 capture/hold metadata
+controls pass. Ruff without cache and compile without execution pass. Closure:
+124 runtime modules, 23 reference modules, 28 resources, 0 unresolved reads.
+Earlier proposal/software receipts and all INIT01 review/failure evidence are
+preserved. The initial generator record is historical; current pins are in the
+INIT02 receipt and full source delta. Zero scientific imports/AST execution,
+fixture/model/reference evaluation, collection, numerical work or job queries.
+
+Immutable held package:
+`/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-02/`.
+MANIFEST SHA256
+`528a1c7d1df0be152919b9dd446f3247676856585652f2c2924d82840c27d36f`
+binds 3599 artifacts. Inputs SHA256
+`bd0c4a284aa414a0fb2195c0826b862ebaeb72580b18032cd3668c2c6a01375d`.
+Receipt SHA256
+`2f68c98fbda8fa4c4a3a146100677b326e1f8bb615cd0af4144cd85af2a03a38`.
+Own handoff: `workfiles/betse_normal_ecm_init_phase_handoff_02.json`.
+Delivered directly to Chief. Promoted only the corresponding three owned
+evidence source files after exclusive freeze; INIT01 and shared Root repairs
+remain untouched. Future runner-origin/completeness and reference early-failure
+observations remain explicitly held for Root.
+
+INIT-ORACLE-DOMAIN-03 remains: active KLeak/CaLeak references retain their
+[-0.120,+0.060] V guards before constant branches; inactive Nav does not qualify
+active Nav. Catalog05 remains 82 passed/1 reference refusal/11 unrun: no_CaATP
+second-call Nav1p2 receives +0.162 to +0.380 V while native completes three calls.
+No fixture tuning, oracle widening, tolerance changes or inherited pass.
+
+Resuming Chief's explicit INIT-to-SIM assignment under the separate
+`betse_normal_ecm_init_sim_transition` prefix. Its source audit distinguishes
+retained current owners/concentrations/rate caches from native SIM
+reinitializers, fresh clock/dt, clear-storage/bootstrap writes, and explicitly
+supplied or same-process RNG continuity. Whole seed/load/pickle/display phases
+remain excluded. The incomplete feature has not been scientifically imported
+or run.
+
+### 2026-10-31 — INIT02 source gate clear; transition source handoff delivered
+
+Chief independently cleared the narrow INIT02 source repair. Review:
+`/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-02/REVIEW.json`,
+SHA256 `09ddb3c75ddef1492744932e16ae7c40890dc1df6ba2c077b3553717190a9fd2`.
+Runner/runtime/evidence release requirements remain pending with Chief, who is
+preparing reference-CLI failure/runtime capture and finalizer work separately.
+No INIT02 numerical result is implied. This feature pins sealed INIT02 and
+does not refresh those later Root proposals.
+
+Completed the separate held INIT-to-SIM source assignment. The adapter admits
+only exhausted full-calendar headless INIT artifacts. Actual setup and call
+failures retain separately typed failed-prefix artifacts; failed/paused/capped
+prefixes cannot enter normal SIM. Runtime owner snapshots are hydrated and
+reinitialized using the native retained GRN body without calling cold
+initialization. Core/molecular state carries while non-None channel declarations
+reconstruct gates at carried Vm. None with latent gates is captured and refused;
+empty-list and None with no channels remain distinct. Native primary charge
+balancing under a changed publication flag is preserved rather than assuming
+all primary concentrations carry byte-for-byte.
+
+Source environment/profile/static setup, mechanical entry writes, event
+finalization, density defaults, conductivity and storage clearing precede new
+bootstrap fields. CaATP/NaK caches survive this boundary; private SIM entry
+guards preserve CaATP presence, and the real NaK source producer writes its
+new rate at the first normal call. A fresh SIM clock/journal and all original
+INIT buffers remain separate. Explicit supplied-process or conditional
+same-process RNG association replaces any inferred pickle continuity. The full
+existing SIM lifecycle and component bodies are copied privately with declared
+inverse proofs; shared Root source and frozen parents stay untouched.
+
+Conditional native captures consume actual incoming reinitialize and post-clear,
+pre-bootstrap buffers. They do not establish an independently carried complete
+INIT/SIM trajectory, whole physical initializer, native profile selection,
+seed/load/pickle, storage or display. N0/N1 headless INIT completion receives no
+persistence credit: native save precedes the final sampled-report access.
+Ordinary fixed geometry/DEC and supported GRN scope remain bounded; ER,
+general-molecule handler, GRN-disabled composition, flow, electroosmosis,
+dynamic deformation, FAST, GPU and global conservation remain excluded.
+
+29 source/AST proofs pass, including regeneration, literal native bodies, full
+private SIM producer/cache inverse and entire lifecycle entry-label/module
+inverse. Global/direct-module attribute checks found and corrected a missing
+private sample alias before any execution. Earlier generator/parser/alias
+failures and regeneration snapshots are preserved. Ruff without cache and
+compile without execution pass. Resource closure has 133 runtime modules,
+24 reference modules, 28 resources and no pending source reads. Ten bounded
+capture/hold metadata controls pass; no large archive was fabricated. The new
+profile uses the unchanged format-capacity bound, not an observed case maximum
+or an assurance that every future capture fits its byte caps.
+
+Prospective only: 42 IDs (16 positive, five prefix refusals, 18 dependency,
+three observer controls), 48 positive SIM calls plus three reached observer
+calls, 928 fresh Decimal 100/160 forms and 33 conditional native captures.
+Existing budgets and oracle domains remain unchanged; failures receive no
+accuracy credit. Nav1p2 and constant KLeak/CaLeak domain caveats and the old
+signed_environment 39/40 failure are explicit. No scientific pass is inherited.
+The metadata-only driver refuses every launch; Chief owns separate independent
+review and any later explicitly requested release controller.
+
+Immutable held package:
+`/mnt/workspaces/Cells/betse-normal-ecm-init-sim-transition-prepared-20261031-01/`.
+MANIFEST SHA256
+`6c1f818873ea74affc95a83a6a3f7c4d7befcd04a2081e7761405336aae049d7`
+binds 3610 artifacts. Inputs SHA256
+`2b1c1bff915ceb8574130a500097320ae1f7c47cf7651996fa4bc29085503a67`.
+Author receipt SHA256
+`8c551a2b1ca5b7531d76ff890c14f5ff3358e2fd1a01482dff15663d314fa38f`.
+Own handoff: `workfiles/betse_normal_ecm_init_sim_transition_handoff_01.json`.
+Readable scope/API: `workfiles/betse_normal_ecm_init_sim_transition_implementation.md`.
+Delivered directly to Chief thread; delivery succeeded. Zero scientific
+imports/AST execution, fixture/model/reference evaluation, pytest collection,
+numerical work, GPU work or active-job queries. No PROGRESS/ledger edits,
+git staging/commits, subagents, automatic retries, polling or follow-up jobs.
+
+### 2026-10-31 — General-molecule-handler composition assignment begins
+
+Chief received transition01 and assigned the next substantial source/static
+feature under `betse_normal_ecm_molecule_dispatch`. The assignment includes
+general molecules with GRN independently enabled or disabled, native setup and
+FULL call order, complete cache/material/amount/charge/field ownership, disabled
+and component controls and fresh conditional source correspondence. Existing
+INIT02, transition01 and shared Root source remain unchanged. No science,
+fixture/reference/model evaluation, collection, launch, GPU or PROGRESS edit.
+
+Initial source audit covers 22 native methods and all 332 installed-exact Python
+files. Actual setup and FULL dispatch run general molecules before GRN. Each
+core's published charge/current arrays replace shared simulator fields; they
+are not summed. Osmotic pressure independently sums current concentrations
+from both enabled owners. Same-named X/Y molecules belong to separate owner
+dictionaries. Clear-storage clears each enabled core under its own flag.
+
+Exact obstruction sent to Chief: Parameters.load lines 777-798 writes
+`molecules_enabled` only when `network_config is not None`; its else writes
+only `mol_mit_enabled=False`. An absent general-network section leaves the
+dispatch flag unwritten. This path is refused rather than normalized to False.
+A present `implement network` True/False and independent explicit GRN flag are
+permitted. `Ca_dyn` remains hard-set False; no ER branch is inferred.
+
+Own source-boundary evidence:
+`workfiles/betse_normal_ecm_molecule_dispatch_source_boundary_01.json`.
+The initial audit incorrectly searched Simulator for get_current, which is a
+module function in physics/ion_current.py; corrected the static lookup without
+executing native code. The source audit then passed. The source generator
+writes literal MasterOfMolecules constructor/read/reinitialize and adjacent
+FULL two-owner setup/dispatch guards, plus role-specific evidence/cache helper
+lowerings. New controller/runtime drafts compose existing ECM material/CaATP
+and full fields with distinct general/GRN cache envelopes and actual last-writer
+publication. Ruff passes for the three new product modules. These are unrun
+drafts; independent native/reference controls, audit and held packaging remain.
+
+### 2026-10-31 — General-molecule dispatch held source package delivered
+
+Completed the substantial `betse_normal_ecm_molecule_dispatch` source proposal.
+It composes existing ordinary ECM primary material, CaATP and full fields with
+literal native MasterOfMolecules setup and independent GRN-enabled/disabled
+dispatch. The adjacent FULL guards and scientific class methods retain exact
+native AST correspondence. No GRN constructor substitutes for a disabled GRN.
+General owner declarations and cache identities remain `molecules`; a temporary
+validation-only owner label reuses the qualified core predicates without
+changing runtime flags or objects.
+
+Distinct owner envelopes preserve all molecular/gate state, source-effective
+amounts and private caches. Native general-then-GRN publications replace the
+shared charge/current arrays rather than summing them. Disabled/publication-off
+paths retain explicit previous shared arrays, including a nonzero supplied
+disabled control, and those arrays are bound to the actual field epoch.
+Primary/CaATP prefix, per-owner channel/chemistry/ECM transport, deferred commit,
+full fields and original amount ledgers have fresh prospective Decimal100/160
+conditional checks using existing component budgets. No independently carried
+trajectory or global conservation claim is made. Native osmotic pressure sums
+both owners; its enabled coupling, noise, mechanics and scheduled events remain
+explicitly outside this first supplied material/field composition. Other
+exclusions include latent disabled owner/phase carry, additional transporters,
+mitochondria, ER, flow/electroosmosis, FAST, seed/load/pickle/storage/display and
+whole physical initialization.
+
+Source obstruction is preserved precisely: the local Parameters.load missing
+general-network branch leaves molecules_enabled unwritten; no default False is
+inferred. Native file parsing was not run. Present implement network True/False
+and the independent explicit GRN flag are supported. Ca_dyn remains source-set
+False; the auxiliary handler never implies an enabled ER route.
+
+Static evidence: 22 native methods, 332 installed-exact Python files, 26
+regeneration/native/qualified inverse/equation proofs, compile/global-name
+checks and new-file Ruff without cache. The general-cache getter needed both
+attribute and getattr literal lowering; this was corrected before the audit.
+Invalid inherited case spellings and a partial draft cold comparison were also
+corrected using source inspection, without fixture/model/test execution.
+Correction evidence is retained in the worker workfiles. A final metadata-only
+sealer's two long report-string lint lines were suppressed as E501; its already
+sealed provenance copy remains byte-exact, and scientific/source inputs did not
+change. New-file Ruff passes. Resource closure: 96 runtime modules, 25 reference
+modules, 25 resources, zero pending reads. Ten bounded capture/profile/hold
+metadata controls pass; no large archive or empirical worst-case bound is claimed.
+
+Prospective only: 44 IDs (19 positive/disabled/component, four original molecular
+failure declarations, 21 dependency controls), 57 accepted calls, 942 fresh
+reference forms and 84 native setup/dispatch conditionals. All are unrun and
+uncollected. Original channel domains and budgets remain unchanged. The old
+signed_environment 39/40 failure and catalog05 82 passed/one Nav reference
+refusal/11 unrun remain uncredited. No trajectory was tuned or prior scientific
+pass inherited. The metadata-only driver refuses launch; Chief owns independent
+review and any separately requested release controller.
+
+Immutable held package:
+`/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01/`.
+MANIFEST SHA256
+`e51f7eead8d6bfe3a0e4f669005386e6f4271632f0531084754320025b1ed922`
+binds 3598 artifacts. Inputs SHA256
+`9c3a2c8c1ce17de9f121d2f9db887470ef97b8030d465ee7745ed4c36837352e`.
+Author receipt SHA256
+`1c87ad445f0567f310f450cb69028f6dd5ce3062753cc5fd61d9c051f13f2f9e`.
+Own handoff: `workfiles/betse_normal_ecm_molecule_dispatch_handoff_01.json`.
+Readable scope/API: `workfiles/betse_normal_ecm_molecule_dispatch_implementation.md`.
+Delivered directly to Chief thread; delivery succeeded. Frozen INIT02 remains
+the explicit common parent, and shared/frozen source and status files are intact.
+
+During this task Chief reported a separate held transition02 capture successor,
+with 19 synthetic controls and an independent review. Its handoff is
+`/mnt/workspaces/Cells/ecm-init-sim-capture-repair-20261031-01/HANDOFF.json`,
+SHA256 `790705da88a8bd379b8f7a44dbf734391e2b5a65a8ef9a54c81613a35c1c8767`.
+The 42 transition cases/928 forms/33 captures remain unrun. No transition
+dependency was implicitly adopted into this package and no old packet refreshed.
+
+Zero scientific imports/AST execution, fixture/model/reference evaluations,
+pytest collection, numerical launches, GPU work or active-job queries. No
+PROGRESS/ledger edits, git staging/commits, subagents, polling, retries or
+automatic follow-up scientific jobs. The complete source proposal is now with
+Chief for the next explicit review or assignment.
+
+### 2026-10-31 — Compact redistribution correspondence sealed
+
+Completed Chief's compact source-only rescope. Ordinary setup fixes both rho
+weights to one; GRN-only setup and the optimizer also have identity resets.
+The dormant MoveChannel has no active import/caller, commented mobility/charge
+loaders and a missing scalar sim_toolbox projector. Its original channel-then-
+pump order, source equations and static failure boundaries are preserved.
+No replacement law or product module was added. Existing pump, ECM material,
+catalog and molecular consumers already cover the ordinary identity source
+correspondence. The readable matrix records the conditional nonunit ECM CaATP
+double-weight distinction and the separate configured-transporter composition
+gap, without claiming numerical qualification or physical trafficking.
+
+Own handoff: `workfiles/betse_normal_ecm_redistribution_handoff_01.json`.
+Readable correspondence: `workfiles/betse_normal_ecm_redistribution_correspondence.md`.
+Frozen compact audit:
+`/mnt/workspaces/Cells/betse-normal-ecm-redistribution-source-audit-20261031-01/`.
+MANIFEST SHA256
+`22f6dc369ae84118123acda0861cdb1e2a668973695e6d966f3007763fe10b77`
+binds three source/metadata members. Receipt SHA256
+`b3bcad76d528a325287370c5a52bac2a76e39b18cf60b0d241345976e6597bcc`.
+382 static checks pass: all 332 native Python files match installed bytes;
+11 explicit tracked writers and 34 attribute occurrences are inventoried.
+Frozen INIT02 and molecule-dispatch01 are explicit source dependencies. Ruff
+passes after fixing one new-auditor E501 before sealing. No scientific import,
+AST execution, model/fixture/reference evaluation, pytest collection, numerical
+launch, active-job query, shared/frozen source edit or PROGRESS edit occurred.
+
+Chief's next explicit assignment is `betse_normal_ecm_molecule_transport`:
+audit reachable configured active transport in the general owner, then compose
+ordinary ECM with the optional GRN owner using explicit prior dependencies.
+Source/metadata scope, independent owners/current overwrites, complete books,
+original refusals and independent conditional references remain required.
+
+### 2026-10-31 — General-owner ECM transporter source handoff completed
+
+The compact redistribution audit was sent directly to Chief; delivery succeeded.
+Completed Chief's next explicit `betse_normal_ecm_molecule_transport` assignment.
+Native general-network setup reaches configured read/write transporters and
+dispatches them before channels/modulators/chemistry, followed by the optional
+independent GRN owner. This first supplied FULL/ECM binding admits up to three
+ordered all-target cell-zone general transporters. Null and empty configurations
+retain their distinct native dispatch flags. Ordinary pump weight stays one.
+
+The new files preserve native rate/build/commit bodies, current-before-commit
+ordering, omitted membrane-buffer coefficients, fast repeated-site exchange,
+slow area-map exchange and the stored-but-unused ignore flag. Complete ordered
+transporter objects, generated equations, flux presence and initial metadata
+are cached under the general owner. Pre-channel/chemistry conditionals now occur
+after transporter writes. General/GRN shared publications still overwrite in
+native order; field projections retain that exact epoch. The entire primary,
+CaATP and full-field controller bodies remain those of molecule-dispatch01.
+
+Fresh prospective Decimal100/160 transport references change the inherited rate
+prefix only at ECM outside-sample mapping. Independent ordered commits/bookkeeping
+retain all species buffers, current frames, bulk/environment changes, requested
+exchange, collocation and membrane-buffer defects and source-weighted charge.
+Existing component references/domains/budgets remain explicit dependencies.
+There is no carried reference trajectory, arbitrary-rho activation or global
+physical-conservation/energy claim. Additional GRN transporters, profile targets,
+molecular pump/gating branches and the prior excluded lifecycle/physics remain
+outside this binding.
+
+Static evidence: 55 regeneration/native/qualified proofs, ten compile/global-name
+and direct-module-export checks, 14 boundary methods and 332 installed-exact
+native Python files. Ruff without cache passes. Audit01's documentation-string
+normalization mismatch and audit02's overly broad inverse class selector were
+corrected in the auditor; executable source was unchanged. Both failed logs and
+regenerations are retained. Earlier prospective floor-export and form-counter
+draft corrections are recorded, without evaluating tests or fixtures.
+
+Resource closure is complete: 104 runtime modules, 28 reference modules,
+26 resources, 157 classified reads, zero pending. Ten bounded synthetic capture
+and hold controls pass. All byte/type/header/shape/depth/CRC/hash/compression
+limits remain; the format-derived 310689-member limit is neither a measured
+case maximum nor a guarantee that every future capture fits. The metadata-only
+driver refuses launch. Chief owns independent review and any separately
+requested release controller.
+
+Prospective only: 60 IDs, including 23 positive/disabled/component declarations,
+four inherited molecular refusals, two first/second original transporter setup
+refusals and 31 dependencies; 69 calls, 1306 fresh forms and 102 native captures.
+All remain unrun and uncollected; biological cases and inherited passes are zero.
+The raw missing-rate field remains absent at execution; its private structural
+validation witness never fills runtime/native configuration. Existing signed-
+environment and catalog05 Nav failures remain untouched and uncredited.
+
+Frozen handoff:
+`/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-01/`.
+MANIFEST SHA256
+`166e53330a63866f42897029daafde64b3b957bb1ec1771191e46b8c458b5ba6`
+binds 3654 artifacts, including 2772 source files. Inputs SHA256
+`4a00be2ef81abd7e393de593ce861a6482d81133dc5816d6f170c44d2c770f4e`;
+author receipt SHA256
+`b663141bfe2340f8083cd288d31a0f4f9fe477e82b812903a33975b01ec64ab1`.
+Own handoff: `workfiles/betse_normal_ecm_molecule_transport_handoff_01.json`.
+Readable API/scope: `workfiles/betse_normal_ecm_molecule_transport_implementation.md`.
+Molecule-dispatch01 and transporter03 remain explicit frozen dependencies;
+the four reused component source/reference/protocol files are byte-exact
+between them. No live foreign source or transition successor was adopted.
+
+Zero scientific imports/AST execution, model/fixture/reference evaluations,
+pytest collection, numerical/GPU launches or active computation queries. No
+shared/frozen/PROGRESS edits, git staging/commits, subagents, polling or automatic
+scientific follow-up. Both completed source handoffs are ready for Chief review.
+
+### 2026-10-31 — Phase-aware molecule/GRN transporter lifecycle assigned
+
+Chief accepted transport60 as held for Root review and explicitly assigned
+`betse_normal_ecm_molecule_lifecycle`: supplied cold setup, INIT carry, actual
+INIT-to-SIM reinitialization/reset/clocks and full general-then-GRN owners with
+transporter caches/partials. Source/metadata only, new prefix only; no scientific
+imports/evaluation/collection/launch, shared status/frozen edits or physical
+initializer claim. INIT04 references are held until Chief supplies its exact
+receipt for the reviewed scalar-owner event reference fix.
+
+Native boundary audit completed: 27 methods and 332 installed-exact Python
+sources. Evidence: `workfiles/betse_normal_ecm_molecule_lifecycle_boundary_01.json`,
+SHA256 `66e5f37f06d3a0f71d3037a6b4d34160e8f5f688fedb2e8b94759b4ae040b9f6`.
+Both phases dispatch active transporters before channels. Disabled flags leave
+old owner objects; null transporter/channel/modulator configuration leaves old
+dictionaries. Non-null transporter readers rebuild objects/flux None; null
+reactions can remain active in the core loop. Reinitialization keeps the core
+and molecule objects and skips read_substances, but conditional charge balancing
+can use saved initial c_cello/c_envo values. Enabled-owner clear_cache resets
+time lists, not transporter flux. These distinctions cannot be replaced with
+erased owners, fresh cold substitutes or invented activation. Findings sent
+directly to Chief; delivery succeeded.
+
+Frozen dispatch01 and transport01 are pinned. Verified transition02 capture-only
+successor MANIFEST
+`fab41871bfaf8e457141bd76a491926577f1a84d16a6052aee2538e0e5eec312`,
+inputs `404bf6f9d9868ad8a35b1757df55f6a212035f09fc1cce9addde68b58f9dbb76`,
+author receipt `3a12395054b503e4aabfeb811c61b00677e587763abc7fde291ae59dffd7ac7b`.
+It preserves historical INIT02 and the 42/928/33 unrun scientific plan.
+No requiring reference dependency has been adopted before the pending INIT04
+receipt. The current work is the phase/carry implementation and frozen-source
+correspondence; scientific validation remains unrun.
+
+### 2026-10-31 — Lifecycle dependencies authenticated; six source drafts generated
+
+Chief supplied exact INIT04 handoff
+`/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/HANDOFF.json`,
+SHA256 `2825a1310b1dc8f6426406cf36fe5e2012b1ad3ed514a7784c7eb94e75a9b58f`.
+Verified INIT04 MANIFEST
+`a6495a39ff5af284a0dce6df146d949f0f772f605bcdd8d998409a84a026f017`
+and inputs `c2a9c280de04448e71f768546be6f57b423f5b2a876198e2dbaebe8cb0c2396f`.
+Its reviewed dependency receipt is authenticated. Against historical INIT02,
+only the event reference and INIT reference CLI differ; the latter's only
+changed top-level AST is main. The event reference changes conditioned_network
+and evaluate for the reviewed scalar-owner adapter. New dependency evidence:
+`workfiles/betse_normal_ecm_molecule_lifecycle_dependencies_01.json`, SHA256
+`f40179becb4bec00771ef5ae6203a46e6dc4ce03e8aef62c94420761367555c2`.
+The old transition02 source still matches its original INIT02 reference; no old
+packet or historical association was rebased. Exact dependency adoption and the
+explicit first lifecycle scope were sent directly to Chief; delivery succeeded.
+
+Generated six new private product drafts: lifecycle controller, phase
+coordinator, owner runtime, source bodies, setup and mechanics projection.
+Fresh INIT and retained SIM use independent calendars/journals; complete INIT
+and actual failure prefixes remain distinct. The source owner runtime selects
+phase/legacy flags before constructors/dispatch, retains INIT-inactive private
+gate state, rebuilds transporters at real reinitialize, and clears actual
+time-storage lists. A canonical phase token prevents dynamically decoded
+strings from bypassing the native identity-based INIT channel guard.
+
+The initial supplied binding keeps independent owner flags stable across the
+handoff, declared owner configurations/gates and cold-publication policy stable,
+and extra static/dynamic noise, timed interventions and active mechanics/osmotic
+couplings closed. Actual retained owner/core/molecule identities, original
+non-null transporter rebuilds, clocks, rate carry, reset stores and full fields
+remain in scope. Unsupported flag/null/latent or balance-once changes are
+explicit boundary refusals rather than state erasure or invented activation.
+This scope was sent to Chief without stopping implementation. Existing native
+source bodies and the complete pre-existing ROOT validators are reused.
+
+Draft audit: 33 regeneration/frozen-helper/source-artifact proofs and compile/
+global-name checks for all six modules pass, with zero scientific imports or
+execution. Receipt `workfiles/betse_normal_ecm_molecule_lifecycle_draft_audit_01.json`,
+SHA256 `b9d4cf01f0f42f8a2a711b268d4c5061660c7c8bfa268e1fe6b9eadb31cac3cc`.
+Ruff without cache passes. Static-only corrections included exposing the
+existing clear_cache lowering as a local global helper, preserving native
+f_sweep's lambda, capturing the updated post-setup declaration before its
+observer, and storing associated clocks as explicit mappings for lossless
+comparison. Draft generation/source reading did not evaluate models or tests.
+
+Implementation notes: `workfiles/betse_normal_ecm_molecule_lifecycle_workplan.md`.
+The independent native/Decimal adapters, prospective declarations/checks, full
+native/frozen proof audit and held resource/capture packaging remain to finish.
+These drafts have no numerical result or qualification credit.
+
+### 2026-10-31 — Lifecycle54 source handoff sealed and frozen
+
+Completed the new phase-aware molecule/GRN transporter lifecycle source packet.
+The six product modules, independent native/Decimal adapters, fixture factories
+and prospective capture/check suite are prepared under the new prefix. Complete
+headless INIT admission remains separate from failed, paused and capped prefixes;
+SIM retains the original owners/core/molecule objects, executes the actual
+configured transporter/channel readers and storage reset, and starts independent
+clocks and journals. The supplied no-intervention material seam makes no whole
+SIM event-loop, physical initializer, load/pickle or display claim.
+
+Final source audit: 70 native/frozen/regeneration/inverse proofs across 14
+scientific source/test modules, compile/global-name/direct-export checks and
+Ruff without cache pass. Audit receipt:
+`workfiles/betse_normal_ecm_molecule_lifecycle_implementation_audit_03.json`,
+SHA256 `d7397c2ae8f7f72de61e66b59568731feec38530e6ac9e5e39ac50f32cf44615`.
+Earlier draft and audit receipts/regenerations are retained. Source review
+corrected cold attribute-presence assumptions, the inherited noise schema,
+phase-aware failure snapshots and complete per-owner partial-field capture;
+these changes did not evaluate scientific code.
+
+Chief explicitly approved the helper-only capture dependency: Root review
+`/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/REVIEW.json`,
+SHA256 `e46bf69108beb45ff4d312e06dacc205f2c26c02de3a29ffb1e6320145b3f1f1`;
+reviewed generic helper SHA256
+`95b303d2816379a719b045acf9c211b9dde2900ef19de3c9e81cb963410fca19`.
+The lifecycle retains outcomes before expected-exception classification and
+checks original molecular exception chains, source stages, chemical/transporter
+prefixes and negative buffers against native conditionals. Old transport01
+positive comparators remain frozen and unchanged. No implicit adoption of the
+new dispatch02/transport02 packets or historical transition02 rebase occurred.
+
+The first package attempt found two uncategorized binary file opens in reviewed
+failure-only reference file_record helpers. Their exact modules/functions/read
+expressions were classified as hashing explicit inputs or already-written
+outputs. The failed package/read audit and log remain untouched, with copies in
+the final packet. The fresh second preparation has 156 runtime modules, 31
+reference modules, 29 resources and zero pending reads. Ten bounded stdlib
+synthetic capture/hold controls pass; current-process VmHWM is recorded rather
+than claiming inherited getrusage RSS is a process measurement. Capture byte,
+header/type/shape/hash/CRC/depth/compression limits and the format-derived 310689
+member bound are unchanged; no all-captures-fit or measured-maximum claim.
+
+Frozen handoff:
+`/mnt/workspaces/Cells/betse-normal-ecm-molecule-lifecycle-prepared-20261031-01`.
+MANIFEST SHA256
+`1373771db1c6195f650b1bbd1962e28cdbaf1c28df56aa0a88a927cfbe9561f5`
+binds 3759 artifacts, including 2847 source files. Inputs SHA256
+`759e7086daea07005921cee61c7f84baf62ff3617087dfeeda876d5a0e99996e`;
+author receipt SHA256
+`c46a5beb560938120232501caaf73f5aaf2f04c8f3aa83c1f8d73df5462d3821`.
+Own handoff: `workfiles/betse_normal_ecm_molecule_lifecycle_handoff_01.json`.
+API/scope: `workfiles/betse_normal_ecm_molecule_lifecycle_implementation.md`.
+
+All 54 IDs, 61 INIT and 66 SIM positive calls, 3006 fresh reference forms and
+177 native conditionals remain unrun/unqualified. The metadata-only driver
+refuses scientific launch. No scientific imports/AST execution, model/fixture/
+reference evaluation, pytest collection, numerical/GPU launches, existing
+scientific-job queries, shared PROGRESS/frozen edits, git staging/commits,
+subagents or automatic follow-up occurred. The completed held source handoff
+is ready for Chief's independent review.
+
+### 2026-10-31 — Reviewed molecule qualification runners prepared, held and delivered
+
+Chief assigned executable qualification orchestration for the exact reviewed
+capture02 packets: separate dispatch44 (942 forms/84 native captures) and
+transport60 (1306 forms/102 captures). Source and synthetic metadata only,
+CPU0, <=512 MiB metadata and 8 GiB reserve; no scientific imports, fixtures,
+collection, launches or existing-job queries. The INIT count-order/INIT05 work
+was acknowledged without changing lifecycle54 or rebasing either molecule02
+packet. No release contract was created.
+
+New prefix: `betse_normal_ecm_molecule_qualification`. The runner prepares a
+separate exact roster per family, detaches only a separately requested and
+explicitly released future round, and stops after the first failed/incomplete
+group without retry or follow-up. Both launch entry points require an external
+Chief release bound to the runner manifest, exact packet manifests, user request,
+families, CPU, output and round ID. Missing release is refused before directory
+or subprocess creation. Frozen packets and the runner cannot become outputs.
+
+Reused the existing process resource supervisor, descendant sampler and exact
+JUnit ID reader bodies verbatim. A standalone stdlib adapter avoids importing
+the ensemble/model into the supervisor. New provenance records actual pytest
+and conditional subprocess identities, CPUs, executables, exits, input hashes,
+loaded files and complete test phases. Python optimization is forced to zero
+and checked, preventing inherited PYTHONOPTIMIZE from disabling frozen asserts.
+2567 interpreter/library files are explicitly pinned. Scientific limits remain
+480 seconds/1 GiB RSS/8 GiB reserve; the reader keeps the original 120-second
+limit with a 512 MiB allowance and compact sequential archive binding.
+
+The reader requires the new complete baseline/dispatch/setup outcomes wherever
+capture02 writes them, plus original source partials, wrapper/cause chains,
+native raw-before-runtime evidence, exact source order, chemistry/transporter
+prefixes, actual negative buffers and parent/native linkage. Every original
+reference pair and comparison is required; original error/resolution limits
+remain 1/0.1. Exact profile02 and byte/header/member/hash/CRC/compression guards
+are reused. No measured capacity or all-captures-fit claim was introduced.
+
+Final bounded metadata evidence: 70 unique synthetic controls and 20 literal
+source/compile proofs pass on CPU0. Measured current-process VmHWM 39,989,248
+bytes, AS cap 536,870,912 bytes and host reserve 8,589,934,592 bytes.
+Evidence: `workfiles/betse_normal_ecm_molecule_qualification_metadata_04/result.json`.
+Controls reuse only Root-reviewed synthetic metadata witness/chain functions;
+no scientific AST or fixture/reference/model was evaluated. Earlier draft
+snapshots and logs are preserved, including the initial missing exact-ID-reader
+source-copy failure. The reusable reader source is now explicitly copied and
+pinned. Ruff without cache passes; complete manifest verification passes.
+
+Frozen held bundle:
+`/mnt/workspaces/Cells/ecm-molecule-qualification-runners-20261031-01`.
+MANIFEST SHA256
+`815a7b25af16a7a37a2723aec0f89c6498323b6768587c53eae287d53aed321d`;
+inputs SHA256
+`e901b604d0977f25f0dfac3d7a91e1f356e4bfb784f47704476c95f56b9882c7`;
+author receipt SHA256
+`336b6c87c0a3d8851da4eda65f380a9923107c9f0f9acde412143ab6b3ee8a38`.
+Own handoff: `workfiles/betse_normal_ecm_molecule_qualification_handoff_01.json`.
+Usage/release schema: `workfiles/betse_normal_ecm_molecule_qualification_implementation.md`.
+The reviewed packet handoff and Root verification are included and pinned.
+
+All 44/60 scientific IDs, 942/1306 reference forms and 84/102 native captures
+remain unrun. Zero scientific imports/evaluations, pytest collections or
+scientific launches; zero existing-job queries, shared PROGRESS/frozen edits,
+git staging/commits or subagents. The sealed held runner receipt is ready for
+Chief's independent review before any separately authorized release.

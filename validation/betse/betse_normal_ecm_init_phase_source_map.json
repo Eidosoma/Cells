@@ -1,0 +1,42 @@
+{
+  "conditional_supplied_owners": [
+    "tissue/init_core values before setup",
+    "original macro geometry and cache-initializer inputs",
+    "mechanical DEC and neighbor/inverse view"
+  ],
+  "full_bodies": [
+    "native global and targeted finalizers",
+    "native f_sweep",
+    "native pumpNaKATP",
+    "common _material_step with one mechanics hook",
+    "native CaATP/current/environment/voltage capture bodies"
+  ],
+  "implementation_audit": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_implementation_audit_03.json",
+  "kind": "cells.ordinary_INIT_source_map@1",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+    }
+  },
+  "qualification_inherited": false,
+  "same_node_parent_sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4",
+  "shared_or_prior_frozen_files_edited": false,
+  "source_boundary": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_source_boundary_01.json",
+  "source_dispatch": "native read_channels/init_active and run_loop_channels under INIT; exact private dispatch phase substitution",
+  "source_slices": [
+    "init_dynamics static_K/base/pressure/block/ER-disabled stores",
+    "ordinary ECM NaK caller",
+    "native count/phase-time/linspace/sampling clock"
+  ],
+  "source_stage_equations_changed": false
+}

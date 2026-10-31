@@ -1,0 +1,176 @@
+{
+  "bindings": {
+    "additional_domain_and_correspondence_files": {
+      "validation/betse/betse_normal_ecm_event_join_reference.py": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b",
+      "validation/betse/betse_normal_ecm_run_lifecycle_native.py": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc",
+      "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+    },
+    "author_static_receipt_sha256": "670f367ee2ccb1b2a4466501519ad157d3f3a10b8d9bcba6b03db205386587fa",
+    "authoritative_parent": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+      "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+    },
+    "frozen_AST_script_sha256": "8db211e2ddf2b39399927c8481c1e7bf0ef21f62c53ad4e8427a28adbe2c1f9d",
+    "held_driver_sha256": "d22b6fd737c31dd79237d8dde014c1a396c1a849329ef01c113bc14a7d224b92",
+    "metadata_10_controls_receipt_sha256": "6903f3ecded31ec2336caeb1b584489911eb7ce3293265d7e3f0da4c670555ca",
+    "recomputed_AST": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-01/AST-correspondence.json",
+      "sha256": "ce65fa9513f7e2f019f2e9a2b60d8a282ed98817c02e739a658cea6cd6fe0fa6"
+    },
+    "reviewed_scientific_owned_files": {
+      "src/cells/processes/betse_normal_ecm_init_phase.py": "f60afbf1cac76bdce19e9d8cee80f764dfb2f0c29936cde5ce8a790116f526d6",
+      "src/cells/processes/betse_normal_ecm_init_phase_material.py": "1ac0918177b590c091e4915afbe87247b96a2ce283a282b6d4dcf72efc7212f1",
+      "src/cells/processes/betse_normal_ecm_init_phase_mechanics.py": "b8b58fb964679baf2c1279823d7aebe3a1adc259043eb472df07c9f8c09a54fa",
+      "src/cells/processes/betse_normal_ecm_init_phase_pump.py": "40a44ece79523048e72dfe883171af79abb4892acdffbfb69fb55b1e103e6f6b",
+      "src/cells/processes/betse_normal_ecm_init_phase_setup.py": "01e915cfc4e1d0b655c001d48076dec5697c71052d155ac72c6af732b86c2431",
+      "src/cells/processes/betse_normal_ecm_init_phase_source.py": "361c1ff18eed3cc4bd67a64c807c211b4636f7d48b6d548fd9935ebbc391aa59",
+      "tests/unit/test_betse_normal_ecm_init_phase.py": "3cbfe48604c6f0c7f2cc88aca1526c98bcc5aa4b0c07baa84a480576a46acb61",
+      "validation/betse/betse_normal_ecm_init_phase_fixtures.py": "609cac0c222dde94260ef77034c8e77417713f98b3f40fef7676827a4fb7b656",
+      "validation/betse/betse_normal_ecm_init_phase_native.py": "e28640c28fab7da71b25759e8cedccf6839a0ac5c71da89807325a1131c261ff",
+      "validation/betse/betse_normal_ecm_init_phase_native_setup.py": "01f76f14dcc3c86920a0ea6673fbee1ffa3c230ad675a42110cf4c49d8601a65",
+      "validation/betse/betse_normal_ecm_init_phase_protocol.json": "47b778b6c01c0c3a9584c398adf1be6e2d469ae5ff17cb9fdcc1c4748da1cf7f",
+      "validation/betse/betse_normal_ecm_init_phase_reference.py": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a",
+      "validation/betse/betse_normal_ecm_init_phase_reference_models.py": "bba92372125bc4f87839002027c027c253593f235ddc64b319aa01ac28519b52",
+      "validation/betse/betse_normal_ecm_init_phase_source_map.json": "f9989c5c6a1321c7e647d646a8a3242a85894135eaefc1c405150ccac0d6fb70"
+    },
+    "static_evidence": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-01/static-evidence.json",
+      "sha256": "03a42e9949f9021767293598a874064545bfa2be380b3453590d869a8a7b9d1a"
+    },
+    "verify_script_sha256": "d6f79ab2bcd98f8a2dea8196b27fa53528dcc1e3e00bec7f815d53b7073c7aea"
+  },
+  "exclusions_and_preservation": [
+    "All 62 proposed science/contract checks and 986 forms remain unrun. A passed static audit is not scientific acceptance.",
+    "At most three ordinary material calls per positive panel; the long-calendar case is only a prefix of its original calendar. No complete native INIT run, native storage/display/pickle, physical geometry initialization, or INIT-to-SIM transition is qualified.",
+    "No enabled ER, general-molecule handler, GRN-disabled composition, enabled flow/electroosmosis/dynamic deformation, FAST solver, GPU, global material/energy conservation or biological realism claim.",
+    "Inherited signed_environment 39/40 failure remains failed; neither the new setup nor conditional source correspondence repairs that physical material panel.",
+    "Original frozen source, author failures and metadata receipts are unchanged. No production, repository status or ledger file was edited."
+  ],
+  "findings": [
+    {
+      "finding": "A bootstrap or first-reset exception reaches a handler that reads reset_return before assignment; this can replace the original failure with UnboundLocalError and prevent the source-return archive. Setup-owner construction, mechanics construction and finalization also occur outside this capture try, with no outer main exception archive.",
+      "id": "INIT-CAPTURE-01",
+      "locations": [
+        "validation/betse/betse_normal_ecm_init_phase_native.py:688",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:717",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:747",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:761",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:771",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:888",
+        "validation/betse/betse_normal_ecm_init_phase_native.py:983"
+      ],
+      "minimal_correction": "Initialize reset_return before bootstrap and each attempted reset. Ensure unexpected preparation/bootstrap failures retain the original type/stage/traceback and every already-available owner, material/cache/store/RNG buffer before re-raising. Add small exception-injection metadata controls for these seams without changing scientific laws, fixtures, assertions or tolerances.",
+      "precision": "material_candidate and post_material_cache are initialized at line 201 and calcium_count at line 209. They are not additional uninitialized-local defects; an earlier advisory message was corrected.",
+      "scope": "Failure-evidence bug, not evidence that a positive physical case will fail.",
+      "severity": "required_before_qualification"
+    },
+    {
+      "finding": "Tests compare full source clocks and numerical states, but never inspect native sample_states, independent sample_indices, or production sample_eligible. Observation length is checked only by production verify against the same production calendar. A consistently wrong eligibility implementation could pass the proposed sampling panel.",
+      "id": "INIT-SAMPLING-02",
+      "locations": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py:262",
+        "tests/unit/test_betse_normal_ecm_init_phase.py:339",
+        "tests/unit/test_betse_normal_ecm_init_phase.py:365",
+        "validation/betse/betse_normal_ecm_init_phase_reference.py:36",
+        "validation/betse/betse_normal_ecm_init_phase_reference.py:210",
+        "src/cells/processes/betse_normal_ecm_init_phase.py:500",
+        "src/cells/processes/betse_normal_ecm_init_phase.py:695"
+      ],
+      "minimal_correction": "Within the existing N0, N1, fractional-sampling, no-samples and long-prefix cases, compare source call indices/labels and eligibility against both saved native sample_states and independently computed sample_indices. Compare every emitted observation payload with the corresponding already-saved full accepted state/field/mechanics buffers. No new simulation or broader storage/display claim is required.",
+      "severity": "required_for_declared_sampling_qualification"
+    },
+    {
+      "action": "Retain these inherited oracle domains explicitly. No trajectory was evaluated and no future domain refusal is predicted. Any constant-leak dispatch correction would require a separately declared source delta and boundary controls; voltage-dependent Nav guards must remain unchanged.",
+      "finding": "Inactive Nav1p2 is skipped after cold initialization at zero Vm, so this panel does not qualify active Nav at later voltages. Active KLeak and CaLeak still reach standalone [-0.120,+0.060] V guards before their constant targets/time constants; NaLeak already has a separate finite/type-checked constant branch. Native KLeak/CaLeak targets and taus are all one, independent of voltage.",
+      "id": "INIT-ORACLE-DOMAIN-03",
+      "locations": [
+        "validation/betse/betse_normal_ecm_event_join_reference.py:429",
+        "validation/channels/potassium_catalog_reference.py:51",
+        "validation/channels/calcium_catalog_extra_reference.py:33"
+      ],
+      "native_source_locations": [
+        "native-inputs/checkout/betse/science/channels/vg_k.py:684",
+        "native-inputs/checkout/betse/science/channels/vg_ca.py:699"
+      ],
+      "severity": "explicit_prospective_limit_no_domain_change"
+    }
+  ],
+  "future_runner_observations_not_runner_preparation": [
+    "The draft driver is held before imports/output creation, verifies exact unique JUnit IDs and start/end source/native/tool hashes, and retains fixed resource bounds. A later release controller must bind each saved runtime inventory to frozen origins/hashes rather than relying only on production_imports_denied booleans.",
+    "Draft read_evidence skips a manifest when arrays.npz or data.json is absent. A release finalizer should require all expected declared native/reference/owned archives complete and authenticate inventory counts, not accept the existence of any one complete archive.",
+    "The reference CLI writes completed forms and logs but has no structured top-level failure capture/runtime inventory on an early reference exception. Successful-form acceptance remains strict; failed attempted forms must remain uncredited and their available input/log/partial evidence preserved."
+  ],
+  "identity_checks": {
+    "inherited_scientific_pass_credit": 0,
+    "installed_and_checkout_native_Python_files_equal": 332,
+    "manifest_files_verified": 3566,
+    "native_and_binding_files_verified": 824,
+    "new_scientific_passes": 0,
+    "owned_current_correspondence": "All author-owned files matched frozen bytes at the static-evidence check. This is an identity observation, not live scientific qualification.",
+    "source_files_verified": 2717,
+    "tool_files_verified": 5
+  },
+  "inputs_sha256": "975a586fa142342a79c27b68cfcdf891b1b18b6d45e8a28dd0b16b7f6b55b89e",
+  "kind": "cells.ordinary_INIT_independent_static_review@1",
+  "manifest_sha256": "33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf",
+  "package": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01",
+  "planned_only": {
+    "accepted_calls": 61,
+    "biological_cases": 0,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_complete_trajectories": 0,
+    "independent_reference_forms": 986,
+    "native_capture_arithmetic": "22 positive + 5 intended raw failures + 2 observer controls = 29",
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "positive_conditional_panels": 22,
+    "raw_cases": 5,
+    "reference_form_arithmetic": "22 * 6 setup/cold/bootstrap forms + 61 * 14 seven-mode per-call forms = 986",
+    "software_vs_science": "12 recomputed AST proofs and 10 already-completed metadata controls are separate software/static evidence, not the planned 62 science/contract checks."
+  },
+  "release_recommendation": "Keep source01 held. Preserve it and make an explicit successor for the two concrete evidence corrections before qualification. Do not silently alter oracle domains or inherited budgets.",
+  "resource_and_capture_limits": {
+    "JSON_compressed_expanded_bytes_each": 67108864,
+    "NPY_header_bytes": 16384,
+    "capture_claim": "Declared format-capacity allowance derived from minimal ZIP_STORED/NPY overhead; not an observed full-panel maximum or proof that every capture fits. The byte/header/hash/CRC/type guards remain in force. Ten metadata controls are not a worst-case memory benchmark.",
+    "capture_profile": "ordinary_ecm_init_phase_01",
+    "member_bound": 310689,
+    "prospective_cpu_threads": 1,
+    "prospective_host_reserve_bytes": 8589934592,
+    "prospective_process_tree_RSS_bytes": 1073741824,
+    "prospective_unit_wall_seconds": 480,
+    "static_verifier_resources": {
+      "VmHWM": "VmHWM:\t   32656 kB",
+      "address_space_limit_bytes": 536870912,
+      "cpu": 1,
+      "elapsed_seconds": 2.3739668920170516,
+      "min_available_host_bytes": 22959177728
+    }
+  },
+  "review_resource_note": {
+    "CPU_affinity": [
+      1
+    ],
+    "VmHWM_bytes": 18595840,
+    "VmHWM_scope": "Current metadata sealing process only; earlier bounded static verifier has its own measurement above. No historical ru_maxrss is used.",
+    "address_space_cap_bytes": 536870912,
+    "minimum_sampled_host_available_bytes": 22816788480,
+    "seal_elapsed_seconds": 0.010862333001568913
+  },
+  "reviewed_contracts": [
+    "One local MT19937 static-K draw occurs during initialization even at zero level; pause/resume does not reconstruct setup or advance either tape. Complete global/targeted finalizers and local Python shuffle retain native unused shuffled-copy behavior.",
+    "Native INIT and legacy _run_sim=False are explicit. Default init-active is True; all populations are cold-constructed, while inactive populations retain their complete original private caches and zero call counts. SIM event fire and dynamic protein noise are unreachable independently of the configured noise flag.",
+    "The copied material path is AST-identical to its parent after removing the post-network mechanics callback and added receipt. The declared order is reset, actual maintained-pool NaK, primary movers, CaATP, INIT-active GRN, osmotic/steady mechanics, deferred primary commit, field/voltage reconstruction, then headless sample eligibility.",
+    "NaK uses actual membrane/outside concentrations, voltage, temperature, density and block with the source maintained ATP/ADP/Pi constants and native boundary masking. The independent material form substitutes independently predicted NaK flux from the pre-pump inputs rather than fitting the outgoing candidate flux. This does not create a finite-ATP consumption claim.",
+    "CaATP/cache-presence state, actual controls and mechanics owner geometry/measures/maps remain associated with the full state. Full current and prior fields, original native count and source labels, material dt-sum, cache counters and phase stores are compared. N0/N1 and a bounded prefix of an unchanged longer calendar are declared separately.",
+    "Decimal100/160 conditional references do not import production/native/NumPy/JAX in the intended fresh CLI. Setup equations consume the actual archived draws and explicitly do not independently qualify the RNG algorithm. Each conditional mode begins at the actual supplied incoming state; the pair is precision uncertainty, not timestep convergence or a continuously carried independent trajectory.",
+    "Expected dependency refusals name a stage or reason; raw numerical failures and both observer failure seams retain available owned parents/trials before assertions. This positive review of normal paths does not remove INIT-CAPTURE-01 for early unexpected native failures."
+  ],
+  "scope": "Read-only frozen source/AST/metadata review. No scientific imports, evaluations, collection, qualification, launch or active-job query; no runner prepared.",
+  "seal_script_sha256": "42adac943e1ed9f33d26877e36fdb92dffd30ec1070b55a8e83d7db5b218eb1c",
+  "status": "source_review_complete_required_capture_and_sampling_evidence_corrections"
+}

@@ -1,0 +1,4963 @@
+{
+  "active_job_queries": 0,
+  "authoritative_dependencies": {
+    "INIT_manifest": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-01/MANIFEST.json",
+      "sha256": "33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf"
+    },
+    "SIM_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+      "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+    }
+  },
+  "fixture_reference_model_evaluations": 0,
+  "implementation_constraints": [
+    "Never invoke existing cold initialize() to manufacture a transition; restore the retained GRN then execute its real reinitialize body.",
+    "The existing SIM _advance_events index0 CaATP-absence guard conflicts with retained native rates; use a private first-phase cache adapter without shared edits.",
+    "Whole seed/load/pickle/profile picking/physical initializer and full run_sim_core remain outside a supplied in-memory headless handoff.",
+    "Prepared complete-headless and failed-prefix artifacts must be different types. No automatic failed/paused/capped prefix promotion to complete."
+  ],
+  "kind": "cells.pinned_INIT_SIM_source_boundary@1",
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_source_sha256": {
+    "betse/__init__.py": "a3dce54aab848c36dfc4738f5dba889505adefad819d63d4c61a4310655cf200",
+    "betse/__main__.py": "567bbfc745cbdaaa96c3a0434919c880bb73eb81d1e0c18d6c3725cd3dbdb1ca",
+    "betse/appmeta.py": "5cf6789033f62889ca01cdb083495f608f6432f92aacfeb7fac1a077e4476d9b",
+    "betse/cli/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/cli/__main__.py": "6021cc030e55199423bba252e45d0cff0314f6e93c0a0dd18e67617f6955fa43",
+    "betse/cli/cliinfo.py": "a46c500841300590f0f4d957db5e83786eb0df9910013cb88be5b7292b206dd2",
+    "betse/cli/climain.py": "6dbaa372c92660d7ce06e0b65c431d3394d854d69b6d0f37662ff9e7e524e36b",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/gui/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/gui/interact.py": "0428ac526ed7ef568728482195024e7a3528189621674b7535ce1f0579b5d6cd",
+    "betse/lib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/libs.py": "67e541ba7faec5f425e3139310ab7199868d3f35e5071a81a390b2473d6ca1a9",
+    "betse/lib/matplotlib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/matplotlibs.py": "cc3553e81cbdae48ffd3968c8abb83e772a11268bceab6f71a95d5c68726ca3c",
+    "betse/lib/matplotlib/mplcolormap.py": "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820",
+    "betse/lib/matplotlib/mplfigure.py": "8f1d06ec5a8673d933756699974c34c213168614541fa91ac07c166ba5bfd405",
+    "betse/lib/matplotlib/mplutil.py": "c3aff56c540625720abb8889df2ee968966435f3bf4da4304ef3175cf192f1ec",
+    "betse/lib/matplotlib/mplzorder.py": "8386adcdc57d563243cdd63ad372b728e4e2f3a3c58d63ad5fb0c14154dbe2a0",
+    "betse/lib/matplotlib/writer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/writer/mplcls.py": "2521cf416c44a8fd94d45f86b2643379c38267d64527533d1458f67d5f881a93",
+    "betse/lib/matplotlib/writer/mplvideo.py": "773f643b33b9ac68c3cd75d7fee52058f2148623d5862bf59c86142313b458df",
+    "betse/lib/numpy/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npcsv.py": "7db280c870216d6597da8d845553a878b28eba9c531a05c398de8957bc169108",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/lib/numpy/nptest.py": "90bf1455a75473073c45fba84aa7b271944e5766e1319de69b1d7e937a936830",
+    "betse/lib/numpy/numpys.py": "f3fff48b63db53fc53b88f112fca21c7e378e2a1ae5c2eb2ef5e8d5a26445d3d",
+    "betse/lib/pickle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pickle/pickles.py": "10ebdbadabde32d85f310c532b463d5fddf53a0427a62af926af488d4b0b897b",
+    "betse/lib/pil/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pil/pilnumpy.py": "0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4",
+    "betse/lib/pil/pils.py": "60bfbe2643ba314e1d3d7e0c3225ae2fb4044ecc4085606674f496f3d224e10c",
+    "betse/lib/setuptools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/setuptools/setuptool.py": "121e5b7ab9cc9580911dd9a5c95fc5ca4c50e8a5e4ae9886eedfd972ae267c5c",
+    "betse/lib/setuptools/supresource.py": "83f9ad09c87b1150d16dfe42254e81a0a6c888c3b55ea71d091d616ef3a60d42",
+    "betse/lib/yaml/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/yamlabc.py": "73366a8a5b9c21d6743854e4ec965c6b5d31073f5145030842ccc12e72679e72",
+    "betse/lib/yaml/abc/yamlfileabc.py": "996cb5748cd6a1c975cfd6af9e0aa3b017810157dd9e3822538317c70a5ce4b1",
+    "betse/lib/yaml/abc/yamllistabc.py": "3facad0e3dc8f93a978595bb197145980f99bc8527ae15085486f92b2a357c1d",
+    "betse/lib/yaml/abc/yamlmixin.py": "fdfa4a4025378d0f8726ebd2309f5d35e2653d4a84bda5946064d8a49fd1448f",
+    "betse/lib/yaml/yamlalias.py": "cc87d9403c088a936a00187e33417b05ae2d26f64ee02b37d7857504cf3f0e37",
+    "betse/lib/yaml/yamlrepr.py": "e70d1b4b08052b42a112ed98665520301904724a31ba44b332198c33fa613907",
+    "betse/lib/yaml/yamls.py": "d159e016257ecc2c0268e8d7189cca430157bfee099b1bd02872d087e4d24091",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/metadeps.py": "854263fb4e2d3c4c5215cffafdb72cb0ee301cbb7295f83ee6445b9031d6afc2",
+    "betse/science/__init__.py": "1b505ba1b4b8f88950e2665b954feb099e81c77bbb9d9fad0d3a87b99e600859",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/channels/wound_channel.py": "a6a545e4e814e7e378d069f9ace425895b9a78c4bb44554a9513dd184e573035",
+    "betse/science/chemistry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/molecules.py": "69e50cbca8281d7ececc12d6136846244a0fe273e43b3d1dfaf793ea19cc2926",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/compat/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/compat/compatconf.py": "3aa5ac52e1235d12307b82b0e597c9f72761ab64d177b0176e76d2fc468ef49a",
+    "betse/science/compat/compatgrnconf.py": "d3180c1d42d7312e7d4d3df45bbd9843627ba944d041629eec4e4ac5d32da352",
+    "betse/science/compat/compatsim.py": "e3aa9072b18280972708b2884e933a4a660b389018096b2b04e2b3101cc2fe1e",
+    "betse/science/config/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/confexpabc.py": "8ce9cb6e5df7923b222a636089de0712ccb1eba7166fe1d5c3640a3cca66ede5",
+    "betse/science/config/export/confexpcsv.py": "30946d7b6196a4d074547c19514dbc6e522638724245372f2790a11fd1ddeb6f",
+    "betse/science/config/export/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/visual/confexpvisabc.py": "9ccb1bf7bfb30e3509656dbbf3b8cbf1fc7030c96eade8a1b8b01b0f816da5f8",
+    "betse/science/config/export/visual/confexpvisanim.py": "3ff2738c610f0cc3fc711764e009123a9f866536a39fbd1c86c6038ac08ef99d",
+    "betse/science/config/export/visual/confexpvisplot.py": "32593e272c553eb4b32c7aea27d9b4b9e64ac5b740ec753a800978fe01624628",
+    "betse/science/config/export/visual/confexpvisual.py": "2ce6c4e7e943842d432bb8bd2c59a1a4985f7dceaf14964662348c3df9c893f2",
+    "betse/science/config/grn/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/grn/confgrn.py": "5e2aea781fa57af25d2ade5e6f5710239f3188b8da0dac2f2841139719c0a55f",
+    "betse/science/config/model/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/model/confphase.py": "32abb2e83ba7d17b02c87e0436f191ffbcf2149d694884af837ac03498348c33",
+    "betse/science/config/model/conftis.py": "6842f6e7f8d586ec7ff94aacfd1ce2003622bd31278a8d378d4a747bb5145352",
+    "betse/science/enum/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/science/enum/enumion.py": "f5dfa5f6f8581c2164e25cc95911ae27b20644ddc9c3e195f98a637156032799",
+    "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+    "betse/science/filehandling.py": "194ecf36cdc4e10a81b953ddb1a515cdd206eeea6a14670967e6fcf75c4a20c4",
+    "betse/science/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/cacheabc.py": "0dbcc8d32758db0a9aa78834ae1ad3c178c702cb4ca0e9e03a798c19c1621549",
+    "betse/science/math/cache/cachelyrvec.py": "f47d6cfef01e36a5d91a123a2a573e78e118d26a95a704b23374aaf1a5bb98b7",
+    "betse/science/math/cache/cacheupscaled.py": "4ecc030236338007013479641c1cdcacfba26b4570df8e9ef69da346d25db940",
+    "betse/science/math/cache/cachevec.py": "ae9550c6fba5f7c8a863e0b1ae13609110c0b977915e81dffc579ddb07446b5c",
+    "betse/science/math/cache/cachevecfld.py": "c17acfd400c7eca94f3479909128be0b41146e4362680a199b5fc4bcf6f17aa9",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/math/mathunit.py": "34f8112b5f6af9ec43baba08ee0847ed54b89da2f8b37a6ef44cc2634ba5c86b",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/math/systems.py": "5463f401dac898502c463980d70caf977b2b2f4549be46981a6b71c08e46ca23",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/math/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/vector/veccls.py": "4303453d4f74b14811506f263deb82209456c7e4fdc6df536dd334749fb08314",
+    "betse/science/math/vector/vecfldcls.py": "6db978b38bab5f86eaa26373cdd92ea70405660ed6722054707ebc79774a5463",
+    "betse/science/math/waves.py": "d84a1acb4870881ffaa955db7e2c562a5bfbb29835dbf3e8449eeb349d2df61a",
+    "betse/science/math/werner.py": "08efa10146d50b26a4ec6116f247ea19f4fe133e96fe83e8347747fb69cee478",
+    "betse/science/organelles/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/organelles/mitochondria.py": "68c313b172813ed86398b26cc311835e98aaf9d3085a4f3169bc0d90def08607",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/phase/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/phasecallbacks.py": "5938685e17f94e1066c938ae080800e22e918e5457d6406820e37d847540ac2b",
+    "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+    "betse/science/phase/require/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/phasereqabc.py": "51ebf4dbd28de9961b3913fb1794295f17a64d338d61a26bebc82c5be265b5c6",
+    "betse/science/phase/require/abc/phasereqset.py": "718f4b1015af8427f86e6c3e43b1db8e14240746efa71b1fac40a966ca5e0490",
+    "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+    "betse/science/phase/require/phasereqsmake.py": "cc30ccf9b5c8db3a25a0e7dfb53049d9a9ebfe73c389a54d47f683bf7f31a905",
+    "betse/science/physics/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+    "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/physics/move_channels.py": "b857d8d125962ef50cc48a17c53044a20b09e2e0141f046521d7909d8df23ffb",
+    "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+    "betse/science/pipe/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/pipeexpabc.py": "1ad253c6ddc5f6a56c0520fafba8e100b7b98cecf7bd514e8b066c4d07634b14",
+    "betse/science/pipe/export/pipeexpanim.py": "c2d7380c95c87c49cee6b2b60966835ea17b26ee2267318455edce34c6bd330c",
+    "betse/science/pipe/export/pipeexpcsv.py": "ddedc91955309f459cd161ae0191fcbd466e3cc6f44c608e7b76ac6f1f0d3e1c",
+    "betse/science/pipe/export/pipeexpenum.py": "3aa14de3c2439a63022ad429519cd6a848496469cefe0c188876a922e68e6b28",
+    "betse/science/pipe/export/pipeexps.py": "cc41b7fd1acf35d7f11b26eac9dcbc50a9ca75564bdfdc79423d79d838be0dc2",
+    "betse/science/pipe/export/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/plot/pipeexpplotabc.py": "ee1f34490c8fb674b0fbb90b9ebf91fb546f43ca5288735f98f13eeb27642067",
+    "betse/science/pipe/export/plot/pipeexpplotcell.py": "230602b5fbc0ca47db361c23a2de608a6b4f2c6169ab9a2a308f0c4b7fd85290",
+    "betse/science/pipe/export/plot/pipeexpplotcells.py": "4246e2a2a9edce94b1b59d73e747b8ba9ed10754bf78cd0c9d58963bbe9d5097",
+    "betse/science/pipe/pipeabc.py": "8608bac4e1a565dc859a9e7478032fad5a532cd3b8d22fe164c0d03e9a35b9f4",
+    "betse/science/pipe/piperun.py": "04e82dcb038afabee1f7e9fc99936a3a5e1d18cd76328df4ec1ea12b0e76a1a9",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+    "betse/science/tissue/__init__.py": "7c3dbc1d832c967df5b90f071bfe313502237588cd4166a62c60a759c5abfc71",
+    "betse/science/tissue/channelpedia.py": "3b554b22dd1236f2dee7618be8b98fa1f33191f7f68a872df6f4b13ccf2b92a3",
+    "betse/science/tissue/channels_o.py": "ee6f9c538661f42d72e01afc6d01530dcfa1a9cbf1af9945d7227842827e7251",
+    "betse/science/tissue/event/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/event/tiseveabc.py": "490e9e10f3ff713878145bc332a79a3b11bf0d7650238d31d7ff1032e85205a6",
+    "betse/science/tissue/event/tisevecut.py": "95056b3486323f025b9a8ac2777073911b6303b930f23efaf12ec4937cf5c1a6",
+    "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+    "betse/science/tissue/picker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/picker/tispickcls.py": "c1c592ddc600479806da73c37ade7aecf19df0f49cd46706a74ad6bb9f1bc773",
+    "betse/science/tissue/picker/tispickimage.py": "75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/science/tissue/tisprofile.py": "9477385aea149803d1f7f8611ce6e61550056f0f2ba9e5f91ab967ff3344eb4d",
+    "betse/science/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/anim.py": "8eb19d783fc3409f98a75d073c80543a1abb97be290364cffcdc38e5549be85a",
+    "betse/science/visual/anim/animabc.py": "113f50cfa150e96438f5225a43b80d7c377b9cb2eed9d61418f095dcc6e92d49",
+    "betse/science/visual/anim/animafter.py": "8561cdc3024553acf83cfcded77cd15fc279cc87213865217a5a5f98c21ae48d",
+    "betse/science/visual/anim/animwhile.py": "2ff235af6d8c4f2635f66b1b7ce882bf684a2e944aad219be1eb1997371e7408",
+    "betse/science/visual/layer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/lyrabc.py": "f26411080790cc9121c5558f685b70d00fe00d02a2d965e961f4fd4085906047",
+    "betse/science/visual/layer/lyrtext.py": "0098cf584024a8f5dc03b5e3a67249b3498c4c6c62259998973f0630bda49315",
+    "betse/science/visual/layer/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vector/lyrvecabc.py": "e95765b115bbe5c43b842fba566be9a05429fad2e68e9834e958285626a06671",
+    "betse/science/visual/layer/vector/lyrvecdiscrete.py": "448c3aa86c7fdca28a6054eb39d65ecb3185a6b344610cb574c2779c38f3799f",
+    "betse/science/visual/layer/vector/lyrvecsmooth.py": "0765974ace7d6c0652c287007804ee0e26aa8ea0643a3c33d26063197593efd3",
+    "betse/science/visual/layer/vectorfield/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vectorfield/lyrvecfldabc.py": "fbb56eba1837ac4bd793df529cd0808169f6549d6e4a0410b1ba8cd0144e76ac",
+    "betse/science/visual/layer/vectorfield/lyrvecfldquiver.py": "4c87afe5cd259bbad77c295abd996a35b1aeba925d41487724c1ec8a339ff7eb",
+    "betse/science/visual/layer/vectorfield/lyrvecfldstream.py": "d0420faef5b1f9f709ebcfc7ba2d8afb0050f31655b90d5464122785e58d3220",
+    "betse/science/visual/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/plot/plotabc.py": "f31d57c1a588592fed6b4121f6a3d207d890a5569d64adace8c0250a954159fc",
+    "betse/science/visual/plot/plotutil.py": "52c058f48751d7ebf1d8472629b84aa39bf41b04294a018cd2a04eefd1a2b2eb",
+    "betse/science/visual/visabc.py": "31910c4188fa1e10c07e3a188243faba1ebc79b7778abe3dc189dce38faa4e51",
+    "betse/science/wrapper.py": "4f9faa20a1415e3e5e6aced0c4b9664fd723238800ccc8822a18260b9e0ac982",
+    "betse/util/__init__.py": "27ba859ab475847ac208aa581afc5c24053ae1b487e1cd3a73ab750a0c245d11",
+    "betse/util/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/apppath.py": "e52cff6d97ecdc27c5e551ff24df91364376f578b4970a1474d5c33488dc19c9",
+    "betse/util/app/meta/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/meta/appmetaabc.py": "73716c647565fc92a5fa9ab95038d035405e8d845b8b3f16ea717bb7d7103b4c",
+    "betse/util/app/meta/appmetamod.py": "1b0ff1358ee4b423712b0a556db3602f54575d1a9c8808e992c3a6adbc84e827",
+    "betse/util/app/meta/appmetaone.py": "61cf84869bc9691e31a5f96ab34be6e3f4eed9bf2cec35a88af4fdcd87e7d68e",
+    "betse/util/cli/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/cli/cliabc.py": "7e125a4eb0b3b70221aa661f04b308876624a82a9b1c29eb4e79ac22c7570cfd",
+    "betse/util/cli/cliarg.py": "3b63e06bcab23a9b1d40c6c583770783b79bc3580fc8e7400ad4a8433d275418",
+    "betse/util/cli/clicmd.py": "589e7e8ba58b2221347dd96ba59859a559375348cc410356f9883b4eb2d57b5e",
+    "betse/util/cli/clicmdabc.py": "9355398fa263e5e453957dd4d1e24a06c89976cc50161f5ab70ca02a3af9230c",
+    "betse/util/cli/cliopt.py": "9c025c7675d9a05769783e9b16ec78502da1febdab617ec9c6283cc02de35927",
+    "betse/util/cli/repl/__init__.py": "a195680f3dd78947fc8db9e244a4c6be548fff25434836b07a2ac34e7b9a7355",
+    "betse/util/cli/repl/replenv.py": "71db441f6edf7097d39c2d96398271c28ec8c11f41a6c31ea4f3a9f93572e8af",
+    "betse/util/cli/repl/repls.py": "fed099e7b26a6be45ca009086b1e74e880a6ddb6bce61f264118f07ccf8787af",
+    "betse/util/io/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/errexception.py": "89d76db13363c25af671443546ce125fe6c6a447ed2e47bdc97cfff6749ff830",
+    "betse/util/io/error/errfault.py": "4252d0d7a3c03bf793e02a358fcd2e0ca3df73c04452eed0a1e78439ea3d4abe",
+    "betse/util/io/error/errhaiku.py": "389692bebf25f036e156f58a8cd260396ed0e45a0547db6bdcab44016f1b10bb",
+    "betse/util/io/error/errwarning.py": "93bfcdfd06df3bd086e8494a27f93c807a72e6c89c45bcd428e8f308c3659c1b",
+    "betse/util/io/iofiles.py": "76d8ae28816192718dc4473381f97ea9550ba1e50800f76756f3839033ba91bf",
+    "betse/util/io/log/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/logconf.py": "23ea0cc8122eee4903b11bb1a501e3f0f4115cf3edbd47872ce2803748afa5f0",
+    "betse/util/io/log/conf/logconfcls.py": "5f92d67b906ef1f9a2f5490c51d042997367164ed8d327df1d0a76ae8cb3411e",
+    "betse/util/io/log/conf/logconfformat.py": "4c2fb0e558416240627c01eb074180f59b248be1c43134b47b678b8c0bc18613",
+    "betse/util/io/log/conf/logconfhandle.py": "b04f7fcb07dbe64b056acf4c58c2ac2e9226ca254f8e778ea12353aaa16f2042",
+    "betse/util/io/log/logenum.py": "b5030970ec3c8976de11c0ba65c3348a84b1e046e4b250ca89563e9f37840b83",
+    "betse/util/io/log/logfilter.py": "0252faf8367486f7554aef1f1c7fb6c7dc3550f70b6006836b419ff2f396019f",
+    "betse/util/io/log/logs.py": "73195e9d13a76ad5982be04e13847d2abc76819079d1caddc6122a23d89920f2",
+    "betse/util/io/stderrs.py": "be56e74d81754e980c40e6845e6273225ba23f9b22a1fd2b3649d1d10dfff38a",
+    "betse/util/io/stdouts.py": "748f9bf242712030165d560cbbcc789bffab7998387c3abb7ecaed48afc3d1b2",
+    "betse/util/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/math/geometry/polygon/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/os/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/linux.py": "eb4ca2ed55752603d85af421b2487756d11c9d7fb42cb5488da549c66e05d91e",
+    "betse/util/os/brand/macos.py": "810ba648d63c0f68b6c997e768eaf65731d85c367f1ccf1d1e3f32b164b53400",
+    "betse/util/os/brand/posix.py": "1f68b86f98dd1a73c8e43062cf885ac298b5e84d20e0ecfb8191eb789ef3ede0",
+    "betse/util/os/brand/windows.py": "39fb953ffb920d0e2dca2f28a3a3a4f37c5034e6f39d68ad82f524b3d7ec09a1",
+    "betse/util/os/command/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/command/cmdexit.py": "c56a20f2396f999d3c3d9a6dbdf5600db81e8852f6cdd76a7cb961645b35961f",
+    "betse/util/os/command/cmdpath.py": "3cf00f6d26ba7c8a5bbd155799d03fb8844fe718f42be260712b214e4f04f653",
+    "betse/util/os/command/cmdrun.py": "5af4ac5bf0cef111c07bb63c81f64f166366534737b0e9306635be39a3cce29f",
+    "betse/util/os/command/cmds.py": "46f67be4bc30bad0871795e09b7ed5f42a2b0fc114ae9637008c3019412a9aef",
+    "betse/util/os/displays.py": "2787c498c936cd7b561707c8db41bbffedbe07df81c7fec85c98905e018a4f99",
+    "betse/util/os/dlls.py": "66139d185595780b8603da3997102bcb49325c0609c71f614785148c83b598de",
+    "betse/util/os/kernels.py": "851cda286868360ad8b1c4fccac599fec1cae7c558f4f152031a37f67f42bca0",
+    "betse/util/os/oses.py": "0f725069755e36bb6b78049e2ec8ba51704d307dfa8c4af33d0bfa73cc981b88",
+    "betse/util/os/process/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/process/prctest.py": "320671fea230660da8941ffaec2457f8cbbbc3e918f2b4e7ea47c824fe398c1b",
+    "betse/util/os/shell/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/shell/shelldir.py": "30587a56b42063802bfe38ae17d43e1634d5d10bd417698ee8ce4f67ba0b8961",
+    "betse/util/os/shell/shellenv.py": "6917a95c35b1b4e21d7bc27547a5a4b49b571120c6c2a38e72e131f054c27403",
+    "betse/util/os/shell/shellstr.py": "10683f615a184461de498cfe934b827dcb2a5a904d498df478085b81df273f4f",
+    "betse/util/path/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/path/archives.py": "8b62a4877fc089a3459bd0853fd9c12b7d618269a7859d578b753ad028bfe554",
+    "betse/util/path/dirs.py": "c18337d0564727251cf5367cca094ad373148f159ca55317d3d64de8a2436d4a",
+    "betse/util/path/files.py": "5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66",
+    "betse/util/path/gits.py": "4a74f78beb4be9c048af321dd1703b4e499b90d38487347214af894e81a4d69a",
+    "betse/util/path/pathnames.py": "7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b",
+    "betse/util/path/paths.py": "4dd3c7aa0a9e9e973d556ecaea6b9dcf63ac9e248e1011560516d7f901521b4f",
+    "betse/util/path/temps.py": "28a742af5365bc39863a5c863feb1e89b48d8e0e9683f58cc9943d22f5b7c6f7",
+    "betse/util/py/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/pyimport.py": "c85beba1ff700bd5b665929e9b8208492e52524a5a2fea325fdc193c2135cdbd",
+    "betse/util/py/module/pymodname.py": "488e209a4dfd24d29b77d77453ede7d897694eb298dbf6b49ee973ac31aac634",
+    "betse/util/py/module/pymodule.py": "5022e9a1991a594b8ffa08eff5cb9b087ad8933defde72c190d05595364eaf4e",
+    "betse/util/py/module/pypackage.py": "cb8ab223386f7019a7acf5dc11933dde78e3c97a3a560c60af36d8a558b4dc19",
+    "betse/util/py/pyfreeze.py": "2737d5f0ee7fbaf0bc54bcfd771d31427b0c474dc4cee0456005874e6cbe4780",
+    "betse/util/py/pyident.py": "9c3573288519eed2cbc0ce9cde0acff523a50dc71a467acffac2a293ff05f692",
+    "betse/util/py/pyimpl.py": "516ce9913bc4728f965431a86b791c9b907248054bd4c970ddf3f44f74d807be",
+    "betse/util/py/pyprofile.py": "639c428a9a80d8c6d561df066bb74cbe89a8d0d09513971f0d76bbf14cc97aa8",
+    "betse/util/py/pyref.py": "acc3d4169b1bd2cc3b21766b6305fde6bcfeb90288da6e5f3ba5983e5e85ec29",
+    "betse/util/py/pys.py": "90f8aa6d4c83ec552b2f0ecd748ff8b5d86496e286dd6e47d7d49d8a1c9ebf09",
+    "betse/util/py/pythread.py": "8b72c5f181c4aaa566693803d75ba81f905240616ea1b2186b6510289a396788",
+    "betse/util/py/pyvenv.py": "219007a2753db42fec9580886a812c85d81b8111fc664536ad9757a4f0490a11",
+    "betse/util/test/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/pytfixture.py": "54fed051128c422cafd3177cecb6f1408850582a24a2ae1d62f6a0a8c684b1ff",
+    "betse/util/test/pytest/mark/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/mark/pytfail.py": "69285d8282aea27ff41fe99cce33af2aa0678d064faf2395245fa96f077a5ca3",
+    "betse/util/test/pytest/mark/pytmark.py": "16bf121ef7e97a1e6cb78c54b76d23f7f23f1dc5603fa0bc3b0436e755ed1471",
+    "betse/util/test/pytest/mark/pytparam.py": "8758dce94d17d0f660aede61648e00284e19300fb58243c72fcd0e42895406cc",
+    "betse/util/test/pytest/mark/pytskip.py": "35c5001bdc372f14940bfa88d4ee934458ceb3e9f8cff0e8eaa920f86b9b51f0",
+    "betse/util/test/pytest/pytabc.py": "c1a72752a833ea5d27e5ecdc532c3d60ee66d009b31918693c77f77b2fd40d76",
+    "betse/util/test/pytest/pytests.py": "fae1b4c1f8c6541dfb3f7cea6c5325ca41d3b2be066142b5dc5acf6af2e6b816",
+    "betse/util/test/pytest/pytrequest.py": "373f5c64a7f43f82c9ccef10e7da037d194983ed34d9bd2e48c71893a3f14792",
+    "betse/util/test/tstci.py": "2068a54c9260e5823028feb1c3c1dcaacdaad9f4c34d49a030dada97c77bfca0",
+    "betse/util/test/tsttest.py": "3e6843aa386e717d38e5640ffe30587435f3e22bc35629878243c18ba4fdf2c7",
+    "betse/util/type/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/callables.py": "0579a3d547c6752cb1387bbaa537a62bab762d388ddf1fbebf22cab868fa8ca7",
+    "betse/util/type/call/callbacks.py": "3d1bfd3a77c4f84dbad8392757edbb254f8f79e95bd1e528d0d5a40cf3693f83",
+    "betse/util/type/call/callers.py": "f8e6c2b1cf6f946be7c6192fa39fab695110a9f3bf590ac88230cc3f0f314771",
+    "betse/util/type/cls/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/cls/classes.py": "518cf58a45b621fae925595c3e3ed48dcba8c1f71df6718b10ffbe253710aab4",
+    "betse/util/type/contexts.py": "66fad70e4b3458f3d24e66c93c741628112be7ba591d745e034529caaa8da8ef",
+    "betse/util/type/decorator/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/decorator/deccls.py": "a294b66d7dda74a1c059046fc83776c386f24e94cb1cde8e325592c81b882f27",
+    "betse/util/type/decorator/decmemo.py": "04ba224b0b3f89a7b01e81daabc1e090c569534ccaf680118308c897fe0b96fd",
+    "betse/util/type/decorator/decorators.py": "34928e23f814b433fa5dc88bd45ec94d7d54ed0145a1c789e96f5995704bb84e",
+    "betse/util/type/decorator/decprof.py": "1e6e67c99ee56e423e14c988e93f0b27a42ba5161306a4bc8422ffaea2e4ded8",
+    "betse/util/type/descriptor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/descriptor/datadescs.py": "738468044761a2a36b2c4cde12213a3d7c910ca321eac3204e63fceb7da3a9c3",
+    "betse/util/type/descriptor/descs.py": "ddbd20c4cc4ffb3cbda95d632108ba3387936e6e70f2fe9e8ce9174701a4ba45",
+    "betse/util/type/descriptor/expralias.py": "96f5095f544894dd880a63cbdcb6333dbd178e0d64ed173b6afec384878a1986",
+    "betse/util/type/enums.py": "61924f3d1f3be6245a6696a77d90b9bfe34b5214683919b127ca46d3372d4c18",
+    "betse/util/type/iterable/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/iterators.py": "e7a534602fc73e64aaad768cb4072c0548a9562671eb309c779fbb7d15d262c7",
+    "betse/util/type/iterable/iterget.py": "0507d60daf5dbf1f3facadc0b0b80c7165e7ae0425cc930ff9a57660388522bd",
+    "betse/util/type/iterable/iteriter.py": "069329248e2a9578e0a1284d84268d65402c8052c25ceac1f6920630058ec7b3",
+    "betse/util/type/iterable/itersort.py": "acbff05481ff7e4e6283efab444de3ff48b5759fd8255aa3cc1be7435f8ddce8",
+    "betse/util/type/iterable/itertest.py": "b52190a6589231f4055e018fd9de36291e4c26fe277b7db738f1122eca51be2d",
+    "betse/util/type/iterable/mapping/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58",
+    "betse/util/type/iterable/mapping/mapmerge.py": "e49ec4d4fb4dbe84732f57294b406793cba2e01287081c066be2455c9678fbc0",
+    "betse/util/type/iterable/mapping/mappings.py": "37be12540d4f51b0ec62d17a7f321d6b61e2fdbaf030b7528c192099a42a57cf",
+    "betse/util/type/iterable/mapping/maptest.py": "9bbd2f2bd5e6007f5cb5f94a951ae676ca38940d8b544ba844341d411e16c488",
+    "betse/util/type/iterable/queues.py": "0477a235a70219d602abb4ede2a725c810e39cd4bd6cb4f06f52b796c626b404",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/util/type/iterable/set/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/set/setcls.py": "e53cd54b698ef7457280fc8a4c201f096d5f7ebb29c26309a79f2546dc1bc46a",
+    "betse/util/type/iterable/set/sets.py": "930bbb8e7fae15d1568ccf1d6b0e714ce5da4fac60e02c9414e34471bc8678a5",
+    "betse/util/type/iterable/tuples.py": "af9f097ed1983c88a3a278da8d5f80102a64c0ff39e1d05477459dd60d243bbf",
+    "betse/util/type/numeric/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/numeric/bits.py": "0e1d425a5e291e6742ffe37505c157db0a39168917016e8d908b47792368395f",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/util/type/numeric/ints.py": "cadf886fe9a34b04a89ade6fccac244116abeac9e9391782e31e50078dc3e011",
+    "betse/util/type/numeric/numerics.py": "4a948ec077371d3db6f1017d827112cbcc9a17329e91716c3a44c2ca37b27557",
+    "betse/util/type/numeric/versions.py": "f297a745a1c2f632c7700d1f3c666932934d368fadf8414ca7091fe91a7df774",
+    "betse/util/type/obj/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/obj/objects.py": "2f61869278221ea2640c6b6a0d69938e6407d29fcb91d8f2be286ec3f84a4945",
+    "betse/util/type/obj/objiter.py": "5efba02633c6d3cc6673dff7bc45ed18b0d301c1030610a834315ab89aa2f89b",
+    "betse/util/type/obj/objsize.py": "4b52f82bfe3b20f879f5f73f5196ee7bc4e08eb71f156b344cfc9defbb170cef",
+    "betse/util/type/obj/objtest.py": "22589d50c66ab6c0cdd3590ff2c5928fd901397aeafd56cac29add9c8017c837",
+    "betse/util/type/obj/sentinels.py": "cef85d8726d4bebb106eb3d3a72082971968497156aa9713f546d3925961e679",
+    "betse/util/type/text/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/chars.py": "5abae6a46e06d9ecceebf75b50f534f717f078a90b7690403219d0209fedd920",
+    "betse/util/type/text/mls.py": "52ec27d5ac0644cc37d1b78d77756cb41f2d60cb52bc1809fe2d49f7372ad622",
+    "betse/util/type/text/regexes.py": "85c5b1470bb773b82a99b2300cefa529710aefd3442d0942f1412e67ca43a700",
+    "betse/util/type/text/string/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/string/strjoin.py": "ba85964d929a9080d7ca06e713042c07858c2dd8747e3e1206fbfa8ff2a852e7",
+    "betse/util/type/text/string/strs.py": "351a1a8cd61d7942c83cf8c7bffcbf918de9dffab9d58764ffd38e88d88c841c",
+    "betse/util/type/typehints.py": "fd1ac6d86cae62d2d4ea22afa2a7f87b91a35aa0763b2e8fba89a567c8ebfc39",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089"
+  },
+  "numerical_runs": 0,
+  "pytest_collection": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_methods": {
+    "MasterOfGenes.read_gene_config": {
+      "AST_sha256": "8f3c0717dfe58254c1651d80b5c5bf63c85a52be97b0dc7fa078e0f15b0f294e",
+      "calls": [
+        {
+          "callee": "config_dic.get",
+          "line": 134
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 135
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 136
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 137
+        },
+        {
+          "callee": "MasterOfNetworks",
+          "line": 141
+        },
+        {
+          "callee": "float",
+          "line": 144
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 147
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 150
+        },
+        {
+          "callee": "self.core.read_substances",
+          "line": 153
+        },
+        {
+          "callee": "self.core.tissue_init",
+          "line": 154
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 195
+        },
+        {
+          "callee": "set_net_opts",
+          "line": 198
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 200
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 144
+        },
+        {
+          "callee": "self.core.read_reactions",
+          "line": 158
+        },
+        {
+          "callee": "self.core.write_reactions",
+          "line": 159
+        },
+        {
+          "callee": "self.core.create_reaction_matrix",
+          "line": 160
+        },
+        {
+          "callee": "self.core.write_reactions_env",
+          "line": 161
+        },
+        {
+          "callee": "self.core.create_reaction_matrix_env",
+          "line": 162
+        },
+        {
+          "callee": "self.core.create_reaction_matrix",
+          "line": 166
+        },
+        {
+          "callee": "self.core.create_reaction_matrix_env",
+          "line": 167
+        },
+        {
+          "callee": "self.core.read_transporters",
+          "line": 172
+        },
+        {
+          "callee": "self.core.write_transporters",
+          "line": 173
+        },
+        {
+          "callee": "self.core.read_channels",
+          "line": 181
+        },
+        {
+          "callee": "self.core.read_modulators",
+          "line": 189
+        },
+        {
+          "callee": "float",
+          "line": 208
+        },
+        {
+          "callee": "float",
+          "line": 209
+        },
+        {
+          "callee": "float",
+          "line": 210
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 214
+        },
+        {
+          "callee": "self.core.optimizer",
+          "line": 215
+        },
+        {
+          "callee": "self.reinitialize",
+          "line": 216
+        }
+      ],
+      "first_line": 122,
+      "function": "read_gene_config",
+      "last_line": 216,
+      "owner": "MasterOfGenes",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/gene.py",
+      "sha256": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 125,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 126,
+          "target": "p"
+        },
+        {
+          "expression": "phase.sim",
+          "line": 127,
+          "target": "sim"
+        },
+        {
+          "expression": "p.grn.conf",
+          "line": 130,
+          "target": "config_dic"
+        },
+        {
+          "expression": "config_dic['biomolecules']",
+          "line": 133,
+          "target": "substances_config"
+        },
+        {
+          "expression": "config_dic.get('reactions', None)",
+          "line": 134,
+          "target": "reactions_config"
+        },
+        {
+          "expression": "config_dic.get('transporters', None)",
+          "line": 135,
+          "target": "transporters_config"
+        },
+        {
+          "expression": "config_dic.get('channels', None)",
+          "line": 136,
+          "target": "channels_config"
+        },
+        {
+          "expression": "config_dic.get('modulators', None)",
+          "line": 137,
+          "target": "modulators_config"
+        },
+        {
+          "expression": "MasterOfNetworks(sim, cells, substances_config, p)",
+          "line": 141,
+          "target": "self.core"
+        },
+        {
+          "expression": "float(config_dic.get('time dilation factor', 1.0))",
+          "line": 144,
+          "target": "self.core.time_dila"
+        },
+        {
+          "expression": "config_dic.get('reset microtubules', False)",
+          "line": 147,
+          "target": "self.reset_MT"
+        },
+        {
+          "expression": "config_dic.get('recalculate fluid', False)",
+          "line": 150,
+          "target": "self.recalc_fluid"
+        },
+        {
+          "expression": "config_dic.get('network plotting', None)",
+          "line": 195,
+          "target": "self.core.net_plot_opts"
+        },
+        {
+          "expression": "config_dic.get('optimization', None)",
+          "line": 200,
+          "target": "optim_exists"
+        },
+        {
+          "expression": "True",
+          "line": 164,
+          "target": "self.reactions"
+        },
+        {
+          "expression": "False",
+          "line": 168,
+          "target": "self.reactions"
+        },
+        {
+          "expression": "True",
+          "line": 175,
+          "target": "self.transporters"
+        },
+        {
+          "expression": "False",
+          "line": 177,
+          "target": "self.transporters"
+        },
+        {
+          "expression": "True",
+          "line": 182,
+          "target": "self.channels"
+        },
+        {
+          "expression": "False",
+          "line": 184,
+          "target": "self.channels"
+        },
+        {
+          "expression": "True",
+          "line": 190,
+          "target": "self.modulators"
+        },
+        {
+          "expression": "False",
+          "line": 192,
+          "target": "self.modulators"
+        },
+        {
+          "expression": "config_dic['optimization']['optimize network']",
+          "line": 205,
+          "target": "opti"
+        },
+        {
+          "expression": "config_dic['optimization']['optimization steps']",
+          "line": 206,
+          "target": "self.core.opti_N"
+        },
+        {
+          "expression": "config_dic['optimization']['optimization method']",
+          "line": 207,
+          "target": "self.core.opti_method"
+        },
+        {
+          "expression": "float(config_dic['optimization']['target Vmem'])",
+          "line": 208,
+          "target": "self.core.target_vmem"
+        },
+        {
+          "expression": "float(config_dic['optimization']['optimization T'])",
+          "line": 209,
+          "target": "self.core.opti_T"
+        },
+        {
+          "expression": "float(config_dic['optimization']['optimization step'])",
+          "line": 210,
+          "target": "self.core.opti_step"
+        }
+      ]
+    },
+    "MasterOfGenes.reinitialize": {
+      "AST_sha256": "528516db988dcbff2584b713429c0c85f00c93a6427716fc2d6cafdb990c51e6",
+      "calls": [
+        {
+          "callee": "float",
+          "line": 62
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 65
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 68
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 72
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 73
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 74
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 75
+        },
+        {
+          "callee": "self.core.tissue_init",
+          "line": 77
+        },
+        {
+          "callee": "config_dic.get",
+          "line": 62
+        },
+        {
+          "callee": "self.core.read_reactions",
+          "line": 81
+        },
+        {
+          "callee": "self.core.write_reactions",
+          "line": 82
+        },
+        {
+          "callee": "self.core.create_reaction_matrix",
+          "line": 83
+        },
+        {
+          "callee": "self.core.write_reactions_env",
+          "line": 84
+        },
+        {
+          "callee": "self.core.create_reaction_matrix_env",
+          "line": 85
+        },
+        {
+          "callee": "self.core.create_reaction_matrix",
+          "line": 90
+        },
+        {
+          "callee": "self.core.create_reaction_matrix_env",
+          "line": 91
+        },
+        {
+          "callee": "self.core.read_transporters",
+          "line": 96
+        },
+        {
+          "callee": "self.core.write_transporters",
+          "line": 97
+        },
+        {
+          "callee": "self.core.read_channels",
+          "line": 106
+        },
+        {
+          "callee": "self.core.read_modulators",
+          "line": 114
+        }
+      ],
+      "first_line": 51,
+      "function": "reinitialize",
+      "last_line": 118,
+      "owner": "MasterOfGenes",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/gene.py",
+      "sha256": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 54,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 55,
+          "target": "p"
+        },
+        {
+          "expression": "phase.sim",
+          "line": 56,
+          "target": "sim"
+        },
+        {
+          "expression": "p.grn.conf",
+          "line": 59,
+          "target": "config_dic"
+        },
+        {
+          "expression": "float(config_dic.get('time dilation factor', 1.0))",
+          "line": 62,
+          "target": "self.core.time_dila"
+        },
+        {
+          "expression": "config_dic.get('reset microtubules', False)",
+          "line": 65,
+          "target": "self.reset_MT"
+        },
+        {
+          "expression": "config_dic.get('recalculate fluid flow', False)",
+          "line": 68,
+          "target": "self.recalc_fluid"
+        },
+        {
+          "expression": "config_dic['biomolecules']",
+          "line": 71,
+          "target": "substances_config"
+        },
+        {
+          "expression": "config_dic.get('reactions', None)",
+          "line": 72,
+          "target": "reactions_config"
+        },
+        {
+          "expression": "config_dic.get('transporters', None)",
+          "line": 73,
+          "target": "transporters_config"
+        },
+        {
+          "expression": "config_dic.get('channels', None)",
+          "line": 74,
+          "target": "channels_config"
+        },
+        {
+          "expression": "config_dic.get('modulators', None)",
+          "line": 75,
+          "target": "modulators_config"
+        },
+        {
+          "expression": "True",
+          "line": 87,
+          "target": "self.reactions"
+        },
+        {
+          "expression": "False",
+          "line": 92,
+          "target": "self.reactions"
+        },
+        {
+          "expression": "True",
+          "line": 99,
+          "target": "self.transporters"
+        },
+        {
+          "expression": "False",
+          "line": 102,
+          "target": "self.transporters"
+        },
+        {
+          "expression": "True",
+          "line": 107,
+          "target": "self.channels"
+        },
+        {
+          "expression": "False",
+          "line": 110,
+          "target": "self.channels"
+        },
+        {
+          "expression": "True",
+          "line": 115,
+          "target": "self.modulators"
+        },
+        {
+          "expression": "False",
+          "line": 118,
+          "target": "self.modulators"
+        }
+      ]
+    },
+    "MasterOfNetworks.clear_cache": {
+      "AST_sha256": "63dde055e5cf3f1c49ae96ed1a822e4b1aa4fea38252a5ba6103da60923e83f0",
+      "calls": [],
+      "first_line": 4172,
+      "function": "clear_cache",
+      "last_line": 4208,
+      "owner": "MasterOfNetworks",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/networks.py",
+      "sha256": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "writes": [
+        {
+          "expression": "[]",
+          "line": 4208,
+          "target": "self.chi_time"
+        },
+        {
+          "expression": "self.molecules[name]",
+          "line": 4180,
+          "target": "obj"
+        },
+        {
+          "expression": "[]",
+          "line": 4182,
+          "target": "obj.c_mems_time"
+        },
+        {
+          "expression": "[]",
+          "line": 4183,
+          "target": "obj.c_cells_time"
+        },
+        {
+          "expression": "[]",
+          "line": 4184,
+          "target": "obj.c_env_time"
+        },
+        {
+          "expression": "self.transporters[name]",
+          "line": 4190,
+          "target": "obj"
+        },
+        {
+          "expression": "[]",
+          "line": 4192,
+          "target": "obj.flux_time"
+        },
+        {
+          "expression": "self.channels[name]",
+          "line": 4196,
+          "target": "obj"
+        },
+        {
+          "expression": "[]",
+          "line": 4197,
+          "target": "obj.D_time"
+        },
+        {
+          "expression": "[]",
+          "line": 4198,
+          "target": "obj.flux_time"
+        },
+        {
+          "expression": "self.reactions[name]",
+          "line": 4201,
+          "target": "obj"
+        },
+        {
+          "expression": "[]",
+          "line": 4203,
+          "target": "obj.rate_time"
+        },
+        {
+          "expression": "[]",
+          "line": 4206,
+          "target": "self.vmit_time"
+        },
+        {
+          "expression": "[]",
+          "line": 4187,
+          "target": "obj.c_mit_time"
+        }
+      ]
+    },
+    "MasterOfNetworks.read_channels": {
+      "AST_sha256": "04f055d398a080eb5c95630cc3ab9e22696e6395dc883318cee83b5af24a7475",
+      "calls": [
+        {
+          "callee": "logs.log_info",
+          "line": 1020
+        },
+        {
+          "callee": "OrderedDict",
+          "line": 1023
+        },
+        {
+          "callee": "enumerate",
+          "line": 1025
+        },
+        {
+          "callee": "str",
+          "line": 1027
+        },
+        {
+          "callee": "Channel",
+          "line": 1030
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1046
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1054
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1056
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1057
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1058
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1059
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1060
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1062
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1063
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1064
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1065
+        },
+        {
+          "callee": "chan_dic.get",
+          "line": 1066
+        },
+        {
+          "callee": "obj.init_channel",
+          "line": 1068
+        },
+        {
+          "callee": "self.default_zones",
+          "line": 1071
+        },
+        {
+          "callee": "self.get_influencers",
+          "line": 1102
+        },
+        {
+          "callee": "np.ones",
+          "line": 1092
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1096
+        },
+        {
+          "callee": "len",
+          "line": 1092
+        },
+        {
+          "callee": "len",
+          "line": 1096
+        }
+      ],
+      "first_line": 1015,
+      "function": "read_channels",
+      "last_line": 1110,
+      "owner": "MasterOfNetworks",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/networks.py",
+      "sha256": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "writes": [
+        {
+          "expression": "phase.sim",
+          "line": 1016,
+          "target": "sim"
+        },
+        {
+          "expression": "phase.cells",
+          "line": 1017,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 1018,
+          "target": "p"
+        },
+        {
+          "expression": "OrderedDict({})",
+          "line": 1023,
+          "target": "self.channels"
+        },
+        {
+          "expression": "str(chan_dic['name'])",
+          "line": 1027,
+          "target": "name"
+        },
+        {
+          "expression": "Channel(sim, cells, p)",
+          "line": 1030,
+          "target": "self.channels[name]"
+        },
+        {
+          "expression": "self.channels[name]",
+          "line": 1035,
+          "target": "obj"
+        },
+        {
+          "expression": "name",
+          "line": 1038,
+          "target": "obj.name"
+        },
+        {
+          "expression": "'cell'",
+          "line": 1041,
+          "target": "obj.reaction_zone"
+        },
+        {
+          "expression": "chan_dic['channel class']",
+          "line": 1043,
+          "target": "obj.channel_class"
+        },
+        {
+          "expression": "chan_dic['channel type']",
+          "line": 1044,
+          "target": "obj.channel_type"
+        },
+        {
+          "expression": "chan_dic.get('max conductivity', None)",
+          "line": 1046,
+          "target": "chan_Dmem"
+        },
+        {
+          "expression": "chan_dic['apply to']",
+          "line": 1053,
+          "target": "obj.channel_profiles_list"
+        },
+        {
+          "expression": "chan_dic.get('init active', True)",
+          "line": 1054,
+          "target": "obj.init_active"
+        },
+        {
+          "expression": "chan_dic.get('channel activators', None)",
+          "line": 1056,
+          "target": "obj.channel_activators_list"
+        },
+        {
+          "expression": "chan_dic.get('activator Km', None)",
+          "line": 1057,
+          "target": "obj.channel_activators_Km"
+        },
+        {
+          "expression": "chan_dic.get('activator n', None)",
+          "line": 1058,
+          "target": "obj.channel_activators_n"
+        },
+        {
+          "expression": "chan_dic.get('activator zone', None)",
+          "line": 1059,
+          "target": "obj.channel_activators_zone"
+        },
+        {
+          "expression": "chan_dic.get('activator max', None)",
+          "line": 1060,
+          "target": "obj.channel_activators_max"
+        },
+        {
+          "expression": "chan_dic.get('channel inhibitors', None)",
+          "line": 1062,
+          "target": "obj.channel_inhibitors_list"
+        },
+        {
+          "expression": "chan_dic.get('inhibitor Km', None)",
+          "line": 1063,
+          "target": "obj.channel_inhibitors_Km"
+        },
+        {
+          "expression": "chan_dic.get('inhibitor n', None)",
+          "line": 1064,
+          "target": "obj.channel_inhibitors_n"
+        },
+        {
+          "expression": "chan_dic.get('inhibitor zone', None)",
+          "line": 1065,
+          "target": "obj.channel_inhibitors_zone"
+        },
+        {
+          "expression": "chan_dic.get('inhibitor max', None)",
+          "line": 1066,
+          "target": "obj.channel_inhibitors_max"
+        },
+        {
+          "expression": "self.default_zones(obj.channel_activators_zone, obj.channel_inhibitors_zone, obj.channel_activators_list, obj.channel_inhibitors_list)",
+          "line": 1071,
+          "target": "(obj.channel_activators_zone, obj.channel_inhibitors_zone)"
+        },
+        {
+          "expression": "obj.channel_activators_list",
+          "line": 1078,
+          "target": "a_list"
+        },
+        {
+          "expression": "obj.channel_activators_Km",
+          "line": 1079,
+          "target": "Km_a_list"
+        },
+        {
+          "expression": "obj.channel_activators_n",
+          "line": 1080,
+          "target": "n_a_list"
+        },
+        {
+          "expression": "obj.channel_activators_zone",
+          "line": 1081,
+          "target": "zone_a"
+        },
+        {
+          "expression": "obj.channel_activators_max",
+          "line": 1082,
+          "target": "max_a"
+        },
+        {
+          "expression": "obj.channel_inhibitors_list",
+          "line": 1084,
+          "target": "i_list"
+        },
+        {
+          "expression": "obj.channel_inhibitors_Km",
+          "line": 1085,
+          "target": "Km_i_list"
+        },
+        {
+          "expression": "obj.channel_inhibitors_n",
+          "line": 1086,
+          "target": "n_i_list"
+        },
+        {
+          "expression": "obj.channel_inhibitors_zone",
+          "line": 1087,
+          "target": "zone_i"
+        },
+        {
+          "expression": "obj.channel_inhibitors_max",
+          "line": 1088,
+          "target": "max_i"
+        },
+        {
+          "expression": "[]",
+          "line": 1100,
+          "target": "tex_vars"
+        },
+        {
+          "expression": "self.get_influencers(a_list, Km_a_list, n_a_list, i_list, Km_i_list, n_i_list, tex_list=tex_vars, reaction_zone='mem', zone_tags_a=zone_a, zone_tags_i=zone_i, in_mem_tag=True, max_activators=max_a, max_inhibitors=max_i)",
+          "line": 1102,
+          "target": "(all_alpha, alpha_tex, tex_vars)"
+        },
+        {
+          "expression": "'(' + all_alpha + ')'",
+          "line": 1110,
+          "target": "obj.alpha_eval_string"
+        },
+        {
+          "expression": "chan_dic['max conductivity']",
+          "line": 1049,
+          "target": "obj.channelMax"
+        },
+        {
+          "expression": "chan_dic['max Dm']",
+          "line": 1052,
+          "target": "obj.channelMax"
+        },
+        {
+          "expression": "np.ones(len(a_list))",
+          "line": 1092,
+          "target": "max_a"
+        },
+        {
+          "expression": "np.zeros(len(i_list))",
+          "line": 1096,
+          "target": "max_i"
+        }
+      ]
+    },
+    "MasterOfNetworks.run_loop_channels": {
+      "AST_sha256": "c30a2d546d602ebe54bf4fb8f5ef759635fcd85e0571f844e9942dde5538f817",
+      "calls": [
+        {
+          "callee": "globals",
+          "line": 3130
+        },
+        {
+          "callee": "locals",
+          "line": 3131
+        },
+        {
+          "callee": "enumerate",
+          "line": 3134
+        },
+        {
+          "callee": "eval",
+          "line": 3147
+        },
+        {
+          "callee": "chan.channel_core.run",
+          "line": 3153
+        },
+        {
+          "callee": "zip",
+          "line": 3156
+        },
+        {
+          "callee": "sim.get_ion",
+          "line": 3161
+        },
+        {
+          "callee": "np.ones",
+          "line": 3176
+        },
+        {
+          "callee": "stb.update_Co",
+          "line": 3193
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 3179
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 3183
+        }
+      ],
+      "first_line": 3115,
+      "function": "run_loop_channels",
+      "last_line": 3213,
+      "owner": "MasterOfNetworks",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/networks.py",
+      "sha256": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "writes": [
+        {
+          "expression": "phase.sim",
+          "line": 3126,
+          "target": "sim"
+        },
+        {
+          "expression": "phase.cells",
+          "line": 3127,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 3128,
+          "target": "p"
+        },
+        {
+          "expression": "globals()",
+          "line": 3130,
+          "target": "globalo"
+        },
+        {
+          "expression": "locals()",
+          "line": 3131,
+          "target": "localo"
+        },
+        {
+          "expression": "self.channels[name]",
+          "line": 3136,
+          "target": "chan"
+        },
+        {
+          "expression": "False",
+          "line": 3138,
+          "target": "pass_chan"
+        },
+        {
+          "expression": "True",
+          "line": 3141,
+          "target": "pass_chan"
+        },
+        {
+          "expression": "eval(chan.alpha_eval_string, globalo, localo)",
+          "line": 3147,
+          "target": "moddy"
+        },
+        {
+          "expression": "moddy",
+          "line": 3150,
+          "target": "chan.channel_core.modulator"
+        },
+        {
+          "expression": "self.zmol[ion]",
+          "line": 3159,
+          "target": "zzz"
+        },
+        {
+          "expression": "sim.get_ion(ion)",
+          "line": 3161,
+          "target": "ioni"
+        },
+        {
+          "expression": "chan.channel_core.P * rel_perm * chan.maxDm * moddy",
+          "line": 3164,
+          "target": "DChan"
+        },
+        {
+          "expression": "np.ones(sim.mdl)",
+          "line": 3176,
+          "target": "IdM"
+        },
+        {
+          "expression": "stb.update_Co(sim, ccell, cmem, cenv, f_ED, cells, p, ignoreECM=True)",
+          "line": 3193,
+          "target": "(self.cell_concs[ion], self.mem_concs[ion], self.env_concs[ion])"
+        },
+        {
+          "expression": "-f_ED * p.F * zzz",
+          "line": 3207,
+          "target": "self.extra_J_mem"
+        },
+        {
+          "expression": "f_ED",
+          "line": 3210,
+          "target": "chan.channel_core.chan_flux"
+        },
+        {
+          "expression": "DChan",
+          "line": 3213,
+          "target": "chan.channel_core.DChan"
+        },
+        {
+          "expression": "self.env_concs[ion]",
+          "line": 3167,
+          "target": "cenv"
+        },
+        {
+          "expression": "self.cell_concs[ion]",
+          "line": 3171,
+          "target": "ccell"
+        },
+        {
+          "expression": "self.cell_concs[ion][cells.mem_to_cells]",
+          "line": 3172,
+          "target": "cmem"
+        },
+        {
+          "expression": "stb.electroflux(cenv[cells.map_mem2ecm], cmem, DChan, IdM * p.tm, zzz * IdM, sim.vm, sim.T, p, rho=sim.rho_channel)",
+          "line": 3179,
+          "target": "f_ED"
+        },
+        {
+          "expression": "stb.electroflux(cenv, cmem, DChan, IdM * p.tm, zzz * IdM, sim.vm, sim.T, p, rho=sim.rho_channel)",
+          "line": 3183,
+          "target": "f_ED"
+        }
+      ]
+    },
+    "MasterOfNetworks.tissue_init": {
+      "AST_sha256": "9565a20e800eb77e440fa8639677813960b7631d6658e1967ebce35f6839a078",
+      "calls": [
+        {
+          "callee": "logs.log_info",
+          "line": 331
+        },
+        {
+          "callee": "self.write_growth_and_decay",
+          "line": 615
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 618
+        },
+        {
+          "callee": "self.cell_concs.items",
+          "line": 619
+        },
+        {
+          "callee": "enumerate",
+          "line": 339
+        },
+        {
+          "callee": "self.bal_charge",
+          "line": 606
+        },
+        {
+          "callee": "self.bal_charge",
+          "line": 607
+        },
+        {
+          "callee": "\"'{}'\".format",
+          "line": 621
+        },
+        {
+          "callee": "str",
+          "line": 341
+        },
+        {
+          "callee": "float",
+          "line": 358
+        },
+        {
+          "callee": "float",
+          "line": 359
+        },
+        {
+          "callee": "float",
+          "line": 360
+        },
+        {
+          "callee": "float",
+          "line": 361
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 364
+        },
+        {
+          "callee": "float",
+          "line": 367
+        },
+        {
+          "callee": "float",
+          "line": 368
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 371
+        },
+        {
+          "callee": "float",
+          "line": 383
+        },
+        {
+          "callee": "float",
+          "line": 392
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 395
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 473
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 533
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 549
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 567
+        },
+        {
+          "callee": "self.bal_charge",
+          "line": 610
+        },
+        {
+          "callee": "logs.log_warning",
+          "line": 346
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 360
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 367
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 368
+        },
+        {
+          "callee": "mol_dic.get",
+          "line": 383
+        },
+        {
+          "callee": "float",
+          "line": 404
+        },
+        {
+          "callee": "gad.get",
+          "line": 412
+        },
+        {
+          "callee": "gad.get",
+          "line": 414
+        },
+        {
+          "callee": "gad.get",
+          "line": 415
+        },
+        {
+          "callee": "gad.get",
+          "line": 416
+        },
+        {
+          "callee": "gad.get",
+          "line": 417
+        },
+        {
+          "callee": "gad.get",
+          "line": 419
+        },
+        {
+          "callee": "gad.get",
+          "line": 420
+        },
+        {
+          "callee": "gad.get",
+          "line": 421
+        },
+        {
+          "callee": "gad.get",
+          "line": 422
+        },
+        {
+          "callee": "self.default_zones",
+          "line": 425
+        },
+        {
+          "callee": "gad.get",
+          "line": 432
+        },
+        {
+          "callee": "gad.get",
+          "line": 434
+        },
+        {
+          "callee": "gad.get",
+          "line": 435
+        },
+        {
+          "callee": "gad.get",
+          "line": 436
+        },
+        {
+          "callee": "gad.get",
+          "line": 437
+        },
+        {
+          "callee": "gad.get",
+          "line": 439
+        },
+        {
+          "callee": "gad.get",
+          "line": 440
+        },
+        {
+          "callee": "gad.get",
+          "line": 441
+        },
+        {
+          "callee": "gad.get",
+          "line": 442
+        },
+        {
+          "callee": "self.default_zones",
+          "line": 445
+        },
+        {
+          "callee": "mol.init_growth",
+          "line": 451
+        },
+        {
+          "callee": "icg.get",
+          "line": 478
+        },
+        {
+          "callee": "float",
+          "line": 492
+        },
+        {
+          "callee": "float",
+          "line": 493
+        },
+        {
+          "callee": "float",
+          "line": 494
+        },
+        {
+          "callee": "icg.get",
+          "line": 498
+        },
+        {
+          "callee": "icg.get",
+          "line": 499
+        },
+        {
+          "callee": "icg.get",
+          "line": 500
+        },
+        {
+          "callee": "icg.get",
+          "line": 501
+        },
+        {
+          "callee": "icg.get",
+          "line": 503
+        },
+        {
+          "callee": "icg.get",
+          "line": 504
+        },
+        {
+          "callee": "icg.get",
+          "line": 505
+        },
+        {
+          "callee": "icg.get",
+          "line": 506
+        },
+        {
+          "callee": "self.default_zones",
+          "line": 509
+        },
+        {
+          "callee": "self.get_influencers",
+          "line": 519
+        },
+        {
+          "callee": "bool",
+          "line": 553
+        },
+        {
+          "callee": "float",
+          "line": 554
+        },
+        {
+          "callee": "float",
+          "line": 555
+        },
+        {
+          "callee": "float",
+          "line": 556
+        },
+        {
+          "callee": "float",
+          "line": 557
+        },
+        {
+          "callee": "'(self.Dmem[{}]/p.tm)*((p.F*sim.vm)/(p.R*sim.T))*self.zmol[{}]*((self.mem_concs[{}] - self.env_concs[{}][cells.map_mem2ecm]*np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T)))/(1-np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T))))'.format",
+          "line": 627
+        },
+        {
+          "callee": "'(self.Dmem[{}]/p.tm)*((p.F*sim.vm)/(p.R*sim.T))*self.zmol[{}]*((self.mem_concs[{}] - self.env_concs[{}][cells.mem_to_cells]*np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T)))/(1-np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T))))'.format",
+          "line": 636
+        },
+        {
+          "callee": "gad.get",
+          "line": 404
+        },
+        {
+          "callee": "getattr(mods, modulator_function_name)",
+          "line": 459
+        },
+        {
+          "callee": "np.ones",
+          "line": 465
+        },
+        {
+          "callee": "'(self.Dmem[{}]/p.tm)*(self.mem_concs[{}] - self.env_concs[{}][cells.map_mem2ecm])'.format",
+          "line": 647
+        },
+        {
+          "callee": "'(self.Dmem[{}]/p.tm)*(self.mem_concs[{}] - self.env_concs[{}][cells.mem_to_cells])'.format",
+          "line": 652
+        },
+        {
+          "callee": "getattr",
+          "line": 459
+        },
+        {
+          "callee": "mol.gating_ion.append",
+          "line": 486
+        },
+        {
+          "callee": "sim.get_ion",
+          "line": 486
+        }
+      ],
+      "first_line": 307,
+      "function": "tissue_init",
+      "last_line": 657,
+      "owner": "MasterOfNetworks",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/chemistry/networks.py",
+      "sha256": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 334,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 335,
+          "target": "p"
+        },
+        {
+          "expression": "phase.sim",
+          "line": 336,
+          "target": "sim"
+        },
+        {
+          "expression": "0",
+          "line": 592,
+          "target": "Qcells"
+        },
+        {
+          "expression": "0",
+          "line": 593,
+          "target": "Qenv"
+        },
+        {
+          "expression": "0",
+          "line": 594,
+          "target": "Qmit"
+        },
+        {
+          "expression": "True",
+          "line": 612,
+          "target": "self.charge_has_been_balanced"
+        },
+        {
+          "expression": "\"'{}'\".format(k)",
+          "line": 621,
+          "target": "name"
+        },
+        {
+          "expression": "str(mol_dic['name'])",
+          "line": 341,
+          "target": "name"
+        },
+        {
+          "expression": "self.molecules[name]",
+          "line": 354,
+          "target": "mol"
+        },
+        {
+          "expression": "name",
+          "line": 356,
+          "target": "mol.name"
+        },
+        {
+          "expression": "float(mol_dic['Dm'])",
+          "line": 358,
+          "target": "mol.Dm"
+        },
+        {
+          "expression": "float(mol_dic['Do'])",
+          "line": 359,
+          "target": "mol.Do"
+        },
+        {
+          "expression": "float(mol_dic.get('Dgj', 1e-16))",
+          "line": 360,
+          "target": "mol.Dgj"
+        },
+        {
+          "expression": "float(mol_dic['z'])",
+          "line": 361,
+          "target": "mol.z"
+        },
+        {
+          "expression": "mol_dic.get('update intracellular', True)",
+          "line": 364,
+          "target": "mol.update_intra_conc"
+        },
+        {
+          "expression": "float(mol_dic.get('u_mtube', 0.0))",
+          "line": 367,
+          "target": "mol.u_mt"
+        },
+        {
+          "expression": "float(mol_dic.get('Mu_mem', 0.0))",
+          "line": 368,
+          "target": "mol.Mu_mem"
+        },
+        {
+          "expression": "mol_dic.get('transmem', False)",
+          "line": 371,
+          "target": "mol.transmem"
+        },
+        {
+          "expression": "mol.z",
+          "line": 379,
+          "target": "self.zmol[name]"
+        },
+        {
+          "expression": "mol.Dm",
+          "line": 380,
+          "target": "self.Dmem[name]"
+        },
+        {
+          "expression": "float(mol_dic.get('scale factor', 1.0))",
+          "line": 383,
+          "target": "mol.scale_factor"
+        },
+        {
+          "expression": "True",
+          "line": 385,
+          "target": "mol.ignore_ECM_pump"
+        },
+        {
+          "expression": "mol_dic['TJ permeable']",
+          "line": 389,
+          "target": "mol.ignoreTJ"
+        },
+        {
+          "expression": "mol_dic['GJ impermeable']",
+          "line": 390,
+          "target": "mol.ignoreGJ"
+        },
+        {
+          "expression": "float(mol_dic['TJ factor'])",
+          "line": 392,
+          "target": "mol.TJ_factor"
+        },
+        {
+          "expression": "mol_dic.get('growth and decay', None)",
+          "line": 395,
+          "target": "gad"
+        },
+        {
+          "expression": "mol_dic.get('ion channel gating', None)",
+          "line": 473,
+          "target": "icg"
+        },
+        {
+          "expression": "mol_dic.get('active pumping', None)",
+          "line": 533,
+          "target": "ap"
+        },
+        {
+          "expression": "mol_dic.get('clamp cell conc', None)",
+          "line": 549,
+          "target": "cell_clamp"
+        },
+        {
+          "expression": "mol_dic.get('change at bounds', None)",
+          "line": 567,
+          "target": "cab"
+        },
+        {
+          "expression": "mol_dic['plotting']",
+          "line": 581,
+          "target": "pd"
+        },
+        {
+          "expression": "pd['plot 2D']",
+          "line": 582,
+          "target": "mol.make_plots"
+        },
+        {
+          "expression": "pd['animate']",
+          "line": 583,
+          "target": "mol.make_ani"
+        },
+        {
+          "expression": "pd['autoscale colorbar']",
+          "line": 585,
+          "target": "mol.plot_autoscale"
+        },
+        {
+          "expression": "pd['max val']",
+          "line": 586,
+          "target": "mol.plot_max"
+        },
+        {
+          "expression": "pd['min val']",
+          "line": 587,
+          "target": "mol.plot_min"
+        },
+        {
+          "expression": "self.molecules[name]",
+          "line": 598,
+          "target": "mol"
+        },
+        {
+          "expression": "mol.c_cello * mol.z * mol.scale_factor",
+          "line": 600,
+          "target": "Qcells"
+        },
+        {
+          "expression": "mol.c_envo * mol.z * mol.scale_factor",
+          "line": 601,
+          "target": "Qenv"
+        },
+        {
+          "expression": "True",
+          "line": 399,
+          "target": "mol.simple_growth"
+        },
+        {
+          "expression": "gad['production rate']",
+          "line": 401,
+          "target": "mol.r_production"
+        },
+        {
+          "expression": "gad['decay rate']",
+          "line": 402,
+          "target": "mol.r_decay"
+        },
+        {
+          "expression": "float(gad.get('scale factor', 1.0))",
+          "line": 404,
+          "target": "mol.gad_scale_factor"
+        },
+        {
+          "expression": "gad['apply to']",
+          "line": 408,
+          "target": "mol.growth_profiles_list"
+        },
+        {
+          "expression": "gad.get('modulator function', None)",
+          "line": 412,
+          "target": "modulator_function_name"
+        },
+        {
+          "expression": "gad.get('activators', None)",
+          "line": 414,
+          "target": "mol.growth_activators_list"
+        },
+        {
+          "expression": "gad.get('zone activators', None)",
+          "line": 415,
+          "target": "mol.growth_activators_zone"
+        },
+        {
+          "expression": "gad.get('Km activators', None)",
+          "line": 416,
+          "target": "mol.growth_activators_Km"
+        },
+        {
+          "expression": "gad.get('n activators', None)",
+          "line": 417,
+          "target": "mol.growth_activators_n"
+        },
+        {
+          "expression": "gad.get('inhibitors', None)",
+          "line": 419,
+          "target": "mol.growth_inhibitors_list"
+        },
+        {
+          "expression": "gad.get('zone inhibitors', None)",
+          "line": 420,
+          "target": "mol.growth_inhibitors_zone"
+        },
+        {
+          "expression": "gad.get('Km inhibitors', None)",
+          "line": 421,
+          "target": "mol.growth_inhibitors_Km"
+        },
+        {
+          "expression": "gad.get('n inhibitors', None)",
+          "line": 422,
+          "target": "mol.growth_inhibitors_n"
+        },
+        {
+          "expression": "self.default_zones(mol.growth_activators_zone, mol.growth_inhibitors_zone, mol.growth_activators_list, mol.growth_inhibitors_list)",
+          "line": 425,
+          "target": "(mol.growth_activators_zone, mol.growth_inhibitors_zone)"
+        },
+        {
+          "expression": "gad.get('decay max', 0.0)",
+          "line": 432,
+          "target": "mol.decay_max"
+        },
+        {
+          "expression": "gad.get('decay activators', None)",
+          "line": 434,
+          "target": "mol.decay_activators_list"
+        },
+        {
+          "expression": "gad.get('zone decay activators', None)",
+          "line": 435,
+          "target": "mol.decay_activators_zone"
+        },
+        {
+          "expression": "gad.get('Km decay activators', None)",
+          "line": 436,
+          "target": "mol.decay_activators_Km"
+        },
+        {
+          "expression": "gad.get('n decay activators', None)",
+          "line": 437,
+          "target": "mol.decay_activators_n"
+        },
+        {
+          "expression": "gad.get('decay inhibitors', None)",
+          "line": 439,
+          "target": "mol.decay_inhibitors_list"
+        },
+        {
+          "expression": "gad.get('zone decay inhibitors', None)",
+          "line": 440,
+          "target": "mol.decay_inhibitors_zone"
+        },
+        {
+          "expression": "gad.get('Km decay inhibitors', None)",
+          "line": 441,
+          "target": "mol.decay_inhibitors_Km"
+        },
+        {
+          "expression": "gad.get('n decay inhibitors', None)",
+          "line": 442,
+          "target": "mol.decay_inhibitors_n"
+        },
+        {
+          "expression": "self.default_zones(mol.decay_activators_zone, mol.decay_inhibitors_zone, mol.decay_activators_list, mol.decay_inhibitors_list)",
+          "line": 445,
+          "target": "(mol.decay_activators_zone, mol.decay_inhibitors_zone)"
+        },
+        {
+          "expression": "False",
+          "line": 468,
+          "target": "mol.simple_growth"
+        },
+        {
+          "expression": "None",
+          "line": 469,
+          "target": "mol.growth_profiles_list"
+        },
+        {
+          "expression": "1.0",
+          "line": 470,
+          "target": "mol.gad_scale_factor"
+        },
+        {
+          "expression": "True",
+          "line": 477,
+          "target": "mol.ion_channel_gating"
+        },
+        {
+          "expression": "icg.get('channel name', 'Gated channel')",
+          "line": 478,
+          "target": "mol.gating_channel_name"
+        },
+        {
+          "expression": "icg['ion channel target']",
+          "line": 479,
+          "target": "mol.gating_ion_name"
+        },
+        {
+          "expression": "float(icg['target Hill coefficient'])",
+          "line": 492,
+          "target": "mol.gating_Hill_K"
+        },
+        {
+          "expression": "float(icg['target Hill exponent'])",
+          "line": 493,
+          "target": "mol.gating_Hill_n"
+        },
+        {
+          "expression": "float(icg['peak channel opening'])",
+          "line": 494,
+          "target": "mol.gating_max_val"
+        },
+        {
+          "expression": "icg['acts extracellularly']",
+          "line": 495,
+          "target": "mol.gating_extracell"
+        },
+        {
+          "expression": "icg.get('activators', None)",
+          "line": 498,
+          "target": "mol.ion_activators_list"
+        },
+        {
+          "expression": "icg.get('Km activators', None)",
+          "line": 499,
+          "target": "mol.ion_activators_Km"
+        },
+        {
+          "expression": "icg.get('n activators', None)",
+          "line": 500,
+          "target": "mol.ion_activators_n"
+        },
+        {
+          "expression": "icg.get('zone activators', None)",
+          "line": 501,
+          "target": "mol.ion_activators_zone"
+        },
+        {
+          "expression": "icg.get('inhibitors', None)",
+          "line": 503,
+          "target": "mol.ion_inhibitors_list"
+        },
+        {
+          "expression": "icg.get('Km inhibitors', None)",
+          "line": 504,
+          "target": "mol.ion_inhibitors_Km"
+        },
+        {
+          "expression": "icg.get('n inhibitors', None)",
+          "line": 505,
+          "target": "mol.ion_inhibitors_n"
+        },
+        {
+          "expression": "icg.get('zone inhibitors', None)",
+          "line": 506,
+          "target": "mol.ion_inhibitors_zone"
+        },
+        {
+          "expression": "self.default_zones(mol.ion_activators_zone, mol.ion_inhibitors_zone, mol.ion_activators_list, mol.ion_inhibitors_list)",
+          "line": 509,
+          "target": "(mol.ion_activators_zone, mol.ion_inhibitors_zone)"
+        },
+        {
+          "expression": "[]",
+          "line": 515,
+          "target": "tex_vars"
+        },
+        {
+          "expression": "self.get_influencers(mol.ion_activators_list, mol.ion_activators_Km, mol.ion_activators_n, mol.ion_inhibitors_list, mol.ion_inhibitors_Km, mol.ion_inhibitors_n, reaction_zone='mem', tex_list=tex_vars, zone_tags_a=mol.ion_activators_zone, zone_tags_i=mol.ion_inhibitors_zone, in_mem_tag=True)",
+          "line": 518,
+          "target": "(alpha_ion, alpha_tex, tex_vars)"
+        },
+        {
+          "expression": "'(' + alpha_ion + ')'",
+          "line": 527,
+          "target": "mol.gating_mod_eval_string"
+        },
+        {
+          "expression": "False",
+          "line": 530,
+          "target": "mol.ion_channel_gating"
+        },
+        {
+          "expression": "True",
+          "line": 537,
+          "target": "mol.active_pumping"
+        },
+        {
+          "expression": "ap['turn on']",
+          "line": 538,
+          "target": "mol.use_pumping"
+        },
+        {
+          "expression": "ap['pump to cell']",
+          "line": 539,
+          "target": "mol.pump_to_cell"
+        },
+        {
+          "expression": "ap['maximum rate']",
+          "line": 540,
+          "target": "mol.pump_max_val"
+        },
+        {
+          "expression": "ap['pump Km']",
+          "line": 541,
+          "target": "mol.pump_Km"
+        },
+        {
+          "expression": "ap['uses ATP']",
+          "line": 542,
+          "target": "mol.pumps_use_ATP"
+        },
+        {
+          "expression": "False",
+          "line": 546,
+          "target": "mol.active_pumping"
+        },
+        {
+          "expression": "True",
+          "line": 552,
+          "target": "mol.cell_clamp"
+        },
+        {
+          "expression": "bool(cell_clamp['event happens'])",
+          "line": 553,
+          "target": "mol.cell_clamp_event"
+        },
+        {
+          "expression": "float(cell_clamp['change start'])",
+          "line": 554,
+          "target": "mol.cell_clamp_start"
+        },
+        {
+          "expression": "float(cell_clamp['change finish'])",
+          "line": 555,
+          "target": "mol.cell_clamp_end"
+        },
+        {
+          "expression": "float(cell_clamp['change rate'])",
+          "line": 556,
+          "target": "mol.cell_clamp_rate"
+        },
+        {
+          "expression": "float(cell_clamp['concentration'])",
+          "line": 557,
+          "target": "mol.cell_clamp_target"
+        },
+        {
+          "expression": "False",
+          "line": 560,
+          "target": "mol.cell_clamp"
+        },
+        {
+          "expression": "False",
+          "line": 561,
+          "target": "mol.cell_clamp_event"
+        },
+        {
+          "expression": "99999",
+          "line": 562,
+          "target": "mol.cell_clamp_start"
+        },
+        {
+          "expression": "9999999",
+          "line": 563,
+          "target": "mol.cell_clamp_end"
+        },
+        {
+          "expression": "True",
+          "line": 570,
+          "target": "mol.change_bounds"
+        },
+        {
+          "expression": "cab['event happens']",
+          "line": 571,
+          "target": "mol.change_at_bounds"
+        },
+        {
+          "expression": "cab['change start']",
+          "line": 572,
+          "target": "mol.change_bounds_start"
+        },
+        {
+          "expression": "cab['change finish']",
+          "line": 573,
+          "target": "mol.change_bounds_end"
+        },
+        {
+          "expression": "cab['change rate']",
+          "line": 574,
+          "target": "mol.change_bounds_rate"
+        },
+        {
+          "expression": "cab['concentration']",
+          "line": 575,
+          "target": "mol.change_bounds_target"
+        },
+        {
+          "expression": "False",
+          "line": 578,
+          "target": "mol.change_bounds"
+        },
+        {
+          "expression": "mol.c_mito * mol.z * mol.scale_factor",
+          "line": 604,
+          "target": "Qmit"
+        },
+        {
+          "expression": "'(self.Dmem[{}]/p.tm)*((p.F*sim.vm)/(p.R*sim.T))*self.zmol[{}]*((self.mem_concs[{}] - self.env_concs[{}][cells.map_mem2ecm]*np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T)))/(1-np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T))))'.format(name, name, name, name, name, name)",
+          "line": 627,
+          "target": "self.ED_eval_strings[k]"
+        },
+        {
+          "expression": "'(self.Dmem[{}]/p.tm)*((p.F*sim.vm)/(p.R*sim.T))*self.zmol[{}]*((self.mem_concs[{}] - self.env_concs[{}][cells.mem_to_cells]*np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T)))/(1-np.exp(-(self.zmol[{}]*p.F*sim.vm)/(p.R*sim.T))))'.format(name, name, name, name, name, name)",
+          "line": 636,
+          "target": "self.ED_eval_strings[k]"
+        },
+        {
+          "expression": "getattr(mods, modulator_function_name)(cells.cell_i, cells, p)",
+          "line": 459,
+          "target": "(mol.growth_mod_function_cells, _)"
+        },
+        {
+          "expression": "np.ones(sim.cdl)",
+          "line": 465,
+          "target": "mol.growth_mod_function_cells"
+        },
+        {
+          "expression": "True",
+          "line": 482,
+          "target": "mol.use_gating_ligand"
+        },
+        {
+          "expression": "[]",
+          "line": 483,
+          "target": "mol.gating_ion"
+        },
+        {
+          "expression": "False",
+          "line": 489,
+          "target": "mol.use_gating_ligand"
+        },
+        {
+          "expression": "[]",
+          "line": 490,
+          "target": "mol.gating_ion"
+        },
+        {
+          "expression": "'(self.Dmem[{}]/p.tm)*(self.mem_concs[{}] - self.env_concs[{}][cells.map_mem2ecm])'.format(name, name, name)",
+          "line": 647,
+          "target": "self.ED_eval_strings[k]"
+        },
+        {
+          "expression": "'(self.Dmem[{}]/p.tm)*(self.mem_concs[{}] - self.env_concs[{}][cells.mem_to_cells])'.format(name, name, name)",
+          "line": 652,
+          "target": "self.ED_eval_strings[k]"
+        },
+        {
+          "expression": "'np.zeros(sim.mdl)'",
+          "line": 657,
+          "target": "self.ED_eval_strings[k]"
+        }
+      ]
+    },
+    "SimPhase.__init__": {
+      "AST_sha256": "7931edda64809f0dcb721d8a385c9eaf19055486afb065883488879a4d46bcf1",
+      "calls": [
+        {
+          "callee": "SimPhaseCaches",
+          "line": 185
+        },
+        {
+          "callee": "TissueHandler",
+          "line": 186
+        },
+        {
+          "callee": "self._init_kludge",
+          "line": 189
+        },
+        {
+          "callee": "phasecallbacks.make_default",
+          "line": 149
+        },
+        {
+          "callee": "Cells",
+          "line": 151
+        },
+        {
+          "callee": "Simulator",
+          "line": 153
+        },
+        {
+          "callee": "BetseSimPhaseException",
+          "line": 203
+        },
+        {
+          "callee": "'Simulation phase \"{}\" unrecognized.'.format",
+          "line": 204
+        }
+      ],
+      "first_line": 107,
+      "function": "__init__",
+      "last_line": 204,
+      "owner": "SimPhase",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/phase/phasecls.py",
+      "sha256": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "writes": [
+        {
+          "expression": "callbacks",
+          "line": 156,
+          "target": "self.callbacks"
+        },
+        {
+          "expression": "cells",
+          "line": 157,
+          "target": "self.cells"
+        },
+        {
+          "expression": "kind",
+          "line": 158,
+          "target": "self.kind"
+        },
+        {
+          "expression": "p",
+          "line": 159,
+          "target": "self.p"
+        },
+        {
+          "expression": "sim",
+          "line": 160,
+          "target": "self.sim"
+        },
+        {
+          "expression": "SimPhaseCaches(phase=self)",
+          "line": 185,
+          "target": "self.cache"
+        },
+        {
+          "expression": "TissueHandler(p=p)",
+          "line": 186,
+          "target": "self.dyna"
+        },
+        {
+          "expression": "phasecallbacks.make_default()",
+          "line": 149,
+          "target": "callbacks"
+        },
+        {
+          "expression": "Cells(p=p)",
+          "line": 151,
+          "target": "cells"
+        },
+        {
+          "expression": "Simulator()",
+          "line": 153,
+          "target": "sim"
+        },
+        {
+          "expression": "p.init_export_dirname",
+          "line": 197,
+          "target": "self.export_dirname"
+        },
+        {
+          "expression": "p.init_export_dirname",
+          "line": 199,
+          "target": "self.export_dirname"
+        },
+        {
+          "expression": "p.sim_export_dirname",
+          "line": 201,
+          "target": "self.export_dirname"
+        }
+      ]
+    },
+    "SimPhase._init_kludge": {
+      "AST_sha256": "467e4d27a93a9eb5becebc1487b201a00d728b8aa2d5d5515a9d9cc5170d2706",
+      "calls": [
+        {
+          "callee": "self._init_kludge_time",
+          "line": 259
+        }
+      ],
+      "first_line": 208,
+      "function": "_init_kludge",
+      "last_line": 259,
+      "owner": "SimPhase",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/phase/phasecls.py",
+      "sha256": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "writes": [
+        {
+          "expression": "self.dyna",
+          "line": 224,
+          "target": "self.sim.dyna"
+        },
+        {
+          "expression": "self.kind is SimPhaseKind.SIM",
+          "line": 256,
+          "target": "self.p._run_sim"
+        }
+      ]
+    },
+    "SimPhase._init_kludge_time": {
+      "AST_sha256": "217d087c46c3b971818fb6bcd05f4e10c9c4ee4d0471982d831ca2ccebddebbc",
+      "calls": [
+        {
+          "callee": "BetseSimPhaseException",
+          "line": 325
+        },
+        {
+          "callee": "'Simulation phase \"{}\" unsupported.'.format",
+          "line": 326
+        }
+      ],
+      "first_line": 262,
+      "function": "_init_kludge_time",
+      "last_line": 330,
+      "owner": "SimPhase",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/phase/phasecls.py",
+      "sha256": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "writes": [
+        {
+          "expression": "self.p.resample / self.p.dt",
+          "line": 330,
+          "target": "self.p.t_resample"
+        },
+        {
+          "expression": "self.p.init_time_step",
+          "line": 316,
+          "target": "self.p.dt"
+        },
+        {
+          "expression": "self.p.init_time_sampling",
+          "line": 317,
+          "target": "self.p.resample"
+        },
+        {
+          "expression": "self.p.init_time_total",
+          "line": 318,
+          "target": "self.p.total_time"
+        },
+        {
+          "expression": "self.p.sim_time_step",
+          "line": 321,
+          "target": "self.p.dt"
+        },
+        {
+          "expression": "self.p.sim_time_sampling",
+          "line": 322,
+          "target": "self.p.resample"
+        },
+        {
+          "expression": "self.p.sim_time_total",
+          "line": 323,
+          "target": "self.p.total_time"
+        }
+      ]
+    },
+    "SimRunner._die_if_seed_differs": {
+      "AST_sha256": "bab16aee038bc029e8a539016a896f1316e62eda816d587b680dc4b86e11726c",
+      "calls": [
+        {
+          "callee": "BetseSimConfException",
+          "line": 940
+        }
+      ],
+      "first_line": 914,
+      "function": "_die_if_seed_differs",
+      "last_line": 944,
+      "owner": "SimRunner",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/simrunner.py",
+      "sha256": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "writes": []
+    },
+    "SimRunner.init": {
+      "AST_sha256": "0e3444d3da1b82fc21f57b787c824cd5818a2a6f818818ee3409ae7ec1a2cd1f",
+      "calls": [
+        {
+          "callee": "log_time_seconds",
+          "line": 181
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 199
+        },
+        {
+          "callee": "fh.loadWorld",
+          "line": 218
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 219
+        },
+        {
+          "callee": "self._die_if_seed_differs",
+          "line": 222
+        },
+        {
+          "callee": "SimPhase",
+          "line": 225
+        },
+        {
+          "callee": "phase.sim.init_core",
+          "line": 233
+        },
+        {
+          "callee": "phase.sim.sim_info_report",
+          "line": 236
+        },
+        {
+          "callee": "phase.sim.run_sim_core",
+          "line": 237
+        },
+        {
+          "callee": "files.is_file",
+          "line": 204
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 213
+        },
+        {
+          "callee": "self.seed",
+          "line": 214
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 215
+        },
+        {
+          "callee": "BetseSimException",
+          "line": 208
+        }
+      ],
+      "first_line": 182,
+      "function": "init",
+      "last_line": 240,
+      "owner": "SimRunner",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/simrunner.py",
+      "sha256": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "writes": [
+        {
+          "expression": "SimPhaseKind.INIT",
+          "line": 202,
+          "target": "phase_kind"
+        },
+        {
+          "expression": "fh.loadWorld(self._p.seed_pickle_filename)",
+          "line": 218,
+          "target": "(cells, p_old)"
+        },
+        {
+          "expression": "SimPhase(kind=phase_kind, cells=cells, p=self._p, callbacks=self._callbacks)",
+          "line": 225,
+          "target": "phase"
+        }
+      ]
+    },
+    "SimRunner.sim": {
+      "AST_sha256": "5237d06172e437bcdd8af4b5b2e7af465b5bd33093373a3b9e369eeaa866c409",
+      "calls": [
+        {
+          "callee": "log_time_seconds",
+          "line": 243
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 261
+        },
+        {
+          "callee": "fh.loadSim",
+          "line": 277
+        },
+        {
+          "callee": "self._die_if_seed_differs",
+          "line": 280
+        },
+        {
+          "callee": "SimPhase",
+          "line": 283
+        },
+        {
+          "callee": "sim.sim_info_report",
+          "line": 292
+        },
+        {
+          "callee": "sim.run_sim_core",
+          "line": 293
+        },
+        {
+          "callee": "files.is_file",
+          "line": 266
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 272
+        },
+        {
+          "callee": "self.init",
+          "line": 273
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 274
+        },
+        {
+          "callee": "BetseSimException",
+          "line": 268
+        }
+      ],
+      "first_line": 244,
+      "function": "sim",
+      "last_line": 296,
+      "owner": "SimRunner",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/simrunner.py",
+      "sha256": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "writes": [
+        {
+          "expression": "SimPhaseKind.SIM",
+          "line": 264,
+          "target": "phase_kind"
+        },
+        {
+          "expression": "fh.loadSim(self._p.init_pickle_filename)",
+          "line": 277,
+          "target": "(sim, cells, p_old)"
+        },
+        {
+          "expression": "SimPhase(kind=phase_kind, cells=cells, p=self._p, sim=sim, callbacks=self._callbacks)",
+          "line": 283,
+          "target": "phase"
+        }
+      ]
+    },
+    "Simulator._pickle_phase": {
+      "AST_sha256": "b737ba2edcc653791aa10aecbc585802a6de9819d8b46a9004baea09b3c966fd",
+      "calls": [
+        {
+          "callee": "logs.log_info",
+          "line": 1922
+        },
+        {
+          "callee": "copy.deepcopy",
+          "line": 1907
+        },
+        {
+          "callee": "fh.saveSim",
+          "line": 1913
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1914
+        },
+        {
+          "callee": "fh.saveSim",
+          "line": 1917
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1918
+        },
+        {
+          "callee": "np.round",
+          "line": 1921
+        },
+        {
+          "callee": "range",
+          "line": 1927
+        },
+        {
+          "callee": "range",
+          "line": 1933
+        },
+        {
+          "callee": "self.molecules.core.report",
+          "line": 1947
+        },
+        {
+          "callee": "self.grn.core.report",
+          "line": 1950
+        },
+        {
+          "callee": "np.mean",
+          "line": 1921
+        },
+        {
+          "callee": "len",
+          "line": 1927
+        },
+        {
+          "callee": "np.round",
+          "line": 1928
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1929
+        },
+        {
+          "callee": "len",
+          "line": 1933
+        },
+        {
+          "callee": "np.round",
+          "line": 1934
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1935
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1942
+        },
+        {
+          "callee": "np.mean",
+          "line": 1928
+        },
+        {
+          "callee": "np.mean",
+          "line": 1934
+        },
+        {
+          "callee": "np.round",
+          "line": 1940
+        },
+        {
+          "callee": "np.mean",
+          "line": 1941
+        }
+      ],
+      "first_line": 1888,
+      "function": "_pickle_phase",
+      "last_line": 1950,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "None",
+          "line": 1902,
+          "target": "phase.cells.points_tree"
+        },
+        {
+          "expression": "None",
+          "line": 1909,
+          "target": "self.cellso"
+        },
+        {
+          "expression": "[self, phase.cells, phase.p]",
+          "line": 1910,
+          "target": "datadump"
+        },
+        {
+          "expression": "1000 * np.round(np.mean(self.vm_time[-1]), 6)",
+          "line": 1921,
+          "target": "final_vmean"
+        },
+        {
+          "expression": "copy.deepcopy(self.cellso)",
+          "line": 1907,
+          "target": "phase.cells"
+        },
+        {
+          "expression": "np.round(np.mean(self.cc_time[-1][i]), 6)",
+          "line": 1928,
+          "target": "endconc"
+        },
+        {
+          "expression": "np.round(np.mean(self.cc_env_time[-1][i]), 6)",
+          "line": 1934,
+          "target": "endconc"
+        },
+        {
+          "expression": "1000 * np.round(np.mean(self.vm_GHK_time[-1]), 6)",
+          "line": 1940,
+          "target": "final_vmean_GHK"
+        }
+      ]
+    },
+    "Simulator._run_sim_core_loop": {
+      "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+      "calls": [
+        {
+          "callee": "self.fluxes_mem.fill",
+          "line": 1175
+        },
+        {
+          "callee": "self.fluxes_gj.fill",
+          "line": 1176
+        },
+        {
+          "callee": "self.update_all_concs",
+          "line": 1357
+        },
+        {
+          "callee": "self.update_V",
+          "line": 1360
+        },
+        {
+          "callee": "stb.check_v",
+          "line": 1363
+        },
+        {
+          "callee": "time.time",
+          "line": 1172
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1179
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1180
+        },
+        {
+          "callee": "phase.dyna.fire_events",
+          "line": 1188
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1194
+        },
+        {
+          "callee": "np.ones",
+          "line": 1254
+        },
+        {
+          "callee": "self.update_gj",
+          "line": 1272
+        },
+        {
+          "callee": "self.update_intra",
+          "line": 1279
+        },
+        {
+          "callee": "self.ca_handler",
+          "line": 1283
+        },
+        {
+          "callee": "self.molecules.core.clear_run_loop",
+          "line": 1291
+        },
+        {
+          "callee": "self.molecules.core.run_loop",
+          "line": 1303
+        },
+        {
+          "callee": "self.grn.core.clear_run_loop",
+          "line": 1307
+        },
+        {
+          "callee": "self.grn.core.run_loop",
+          "line": 1319
+        },
+        {
+          "callee": "stb.update_Co",
+          "line": 1330
+        },
+        {
+          "callee": "osmotic_P",
+          "line": 1345
+        },
+        {
+          "callee": "getFlow",
+          "line": 1348
+        },
+        {
+          "callee": "phase.callbacks.progressed_next",
+          "line": 1371
+        },
+        {
+          "callee": "self.write2storage",
+          "line": 1374
+        },
+        {
+          "callee": "self._log_solver_time_estimate",
+          "line": 1389
+        },
+        {
+          "callee": "stb.pumpNaKATP",
+          "line": 1199
+        },
+        {
+          "callee": "stb.pumpNaKATP",
+          "line": 1212
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 1257
+        },
+        {
+          "callee": "stb.electroflux",
+          "line": 1261
+        },
+        {
+          "callee": "self.update_ecm",
+          "line": 1276
+        },
+        {
+          "callee": "self.molecules.core.run_loop_transporters",
+          "line": 1294
+        },
+        {
+          "callee": "self.molecules.core.run_loop_channels",
+          "line": 1297
+        },
+        {
+          "callee": "self.molecules.core.run_loop_modulators",
+          "line": 1300
+        },
+        {
+          "callee": "self.grn.core.run_loop_transporters",
+          "line": 1310
+        },
+        {
+          "callee": "self.grn.core.run_loop_channels",
+          "line": 1313
+        },
+        {
+          "callee": "self.grn.core.run_loop_modulators",
+          "line": 1316
+        },
+        {
+          "callee": "timeDeform",
+          "line": 1352
+        },
+        {
+          "callee": "getDeformation",
+          "line": 1354
+        },
+        {
+          "callee": "anim_cells.plot_frame",
+          "line": 1381
+        },
+        {
+          "callee": "len",
+          "line": 1179
+        },
+        {
+          "callee": "len",
+          "line": 1180
+        },
+        {
+          "callee": "np.random.random",
+          "line": 1327
+        }
+      ],
+      "first_line": 1132,
+      "function": "_run_sim_core_loop",
+      "last_line": 1390,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "phase.p",
+          "line": 1163,
+          "target": "p"
+        },
+        {
+          "expression": "phase.cells",
+          "line": 1164,
+          "target": "cells"
+        },
+        {
+          "expression": "True",
+          "line": 1167,
+          "target": "is_time_step_first"
+        },
+        {
+          "expression": "time.time()",
+          "line": 1172,
+          "target": "loop_measure"
+        },
+        {
+          "expression": "np.zeros((len(self.zs), self.edl))",
+          "line": 1179,
+          "target": "self.fluxes_env_x"
+        },
+        {
+          "expression": "np.zeros((len(self.zs), self.edl))",
+          "line": 1180,
+          "target": "self.fluxes_env_y"
+        },
+        {
+          "expression": "np.zeros(self.mdl)",
+          "line": 1194,
+          "target": "self.rate_NaKATP"
+        },
+        {
+          "expression": "self.rho_pump * fNa_NaK",
+          "line": 1225,
+          "target": "fNa_NaK"
+        },
+        {
+          "expression": "self.rho_pump * fK_NaK",
+          "line": 1226,
+          "target": "fK_NaK"
+        },
+        {
+          "expression": "fNa_NaK",
+          "line": 1233,
+          "target": "self.fluxes_mem[self.iNa]"
+        },
+        {
+          "expression": "fK_NaK",
+          "line": 1234,
+          "target": "self.fluxes_mem[self.iK]"
+        },
+        {
+          "expression": "np.ones(self.mdl)",
+          "line": 1254,
+          "target": "IdM"
+        },
+        {
+          "expression": "f_ED",
+          "line": 1269,
+          "target": "self.fluxes_mem[i]"
+        },
+        {
+          "expression": "p.dynamic_noise_level * (np.random.random(self.mdl) - 0.5)",
+          "line": 1326,
+          "target": "self.protein_noise_flux"
+        },
+        {
+          "expression": "stb.update_Co(self, self.cc_cells[self.iP], self.cc_at_mem[self.iP], self.cc_env[self.iP], self.protein_noise_flux, cells, p, ignoreECM=False)",
+          "line": 1330,
+          "target": "(self.cc_cells[self.iP], self.cc_at_mem[self.iP], self.cc_env[self.iP])"
+        },
+        {
+          "expression": "False",
+          "line": 1386,
+          "target": "is_time_step_first"
+        },
+        {
+          "expression": "stb.pumpNaKATP(self.cc_at_mem[self.iNa], self.cc_env[self.iNa][cells.map_mem2ecm], self.cc_at_mem[self.iK], self.cc_env[self.iK][cells.map_mem2ecm], self.vm, self.T, p, self.NaKATP_block, met=self.met_concs)",
+          "line": 1199,
+          "target": "(fNa_NaK, fK_NaK, self.rate_NaKATP)"
+        },
+        {
+          "expression": "stb.pumpNaKATP(self.cc_at_mem[self.iNa], self.cc_env[self.iNa], self.cc_at_mem[self.iK], self.cc_env[self.iK], self.vm, self.T, p, self.NaKATP_block, met=self.met_concs)",
+          "line": 1212,
+          "target": "(fNa_NaK, fK_NaK, self.rate_NaKATP)"
+        },
+        {
+          "expression": "0",
+          "line": 1229,
+          "target": "fNa_NaK[cells.bflags_mems]"
+        },
+        {
+          "expression": "0",
+          "line": 1230,
+          "target": "fK_NaK[cells.bflags_mems]"
+        },
+        {
+          "expression": "stb.electroflux(self.cc_env[i][cells.map_mem2ecm], self.cc_at_mem[i], self.Dm_cells[i], IdM * p.tm, self.zs[i] * IdM, self.vm, self.T, p, rho=self.rho_channel)",
+          "line": 1257,
+          "target": "f_ED"
+        },
+        {
+          "expression": "stb.electroflux(self.cc_env[i], self.cc_at_mem[i], self.Dm_cells[i], IdM * p.tm, self.zs[i] * IdM, self.vm, self.T, p, rho=self.rho_channel)",
+          "line": 1261,
+          "target": "f_ED"
+        },
+        {
+          "expression": "0",
+          "line": 1266,
+          "target": "f_ED[cells.bflags_mems]"
+        }
+      ]
+    },
+    "Simulator.ca_handler": {
+      "AST_sha256": "7418c2be3f9b6db82f3831749fd649d7178cff4616be372958389a0de2579dbf",
+      "calls": [
+        {
+          "callee": "self.endo_retic.update",
+          "line": 2159
+        },
+        {
+          "callee": "stb.pumpCaATP",
+          "line": 2133
+        },
+        {
+          "callee": "stb.pumpCaATP",
+          "line": 2143
+        }
+      ],
+      "first_line": 2126,
+      "function": "ca_handler",
+      "last_line": 2159,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "f_CaATP",
+          "line": 2148,
+          "target": "self.rate_CaATP"
+        },
+        {
+          "expression": "self.rho_pump * f_CaATP",
+          "line": 2154,
+          "target": "self.fluxes_mem[self.iCa]"
+        },
+        {
+          "expression": "stb.pumpCaATP(self.cc_at_mem[self.iCa], self.cc_env[self.iCa][cells.map_mem2ecm], self.vm, self.T, p, self.CaATP_block, met=self.met_concs)",
+          "line": 2133,
+          "target": "f_CaATP"
+        },
+        {
+          "expression": "self.rho_pump * f_CaATP",
+          "line": 2137,
+          "target": "f_CaATP"
+        },
+        {
+          "expression": "stb.pumpCaATP(self.cc_at_mem[self.iCa], self.cc_env[self.iCa], self.vm, self.T, p, self.CaATP_block, met=self.met_concs)",
+          "line": 2143,
+          "target": "f_CaATP"
+        },
+        {
+          "expression": "0",
+          "line": 2151,
+          "target": "f_CaATP[cells.bflags_mems]"
+        }
+      ]
+    },
+    "Simulator.clear_storage": {
+      "AST_sha256": "884d79232639fabbc8abc850f402df7338b33c3e5a1cb1804cd3eefb86bba22f",
+      "calls": [
+        {
+          "callee": "np.zeros",
+          "line": 1686
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1687
+        },
+        {
+          "callee": "np.zeros",
+          "line": 1759
+        },
+        {
+          "callee": "self.molecules.core.clear_cache",
+          "line": 1763
+        },
+        {
+          "callee": "self.grn.core.clear_cache",
+          "line": 1766
+        },
+        {
+          "callee": "self.endo_retic.clear_cache",
+          "line": 1773
+        }
+      ],
+      "first_line": 1680,
+      "function": "clear_storage",
+      "last_line": 1786,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "np.zeros(self.fluxes_mem.shape)",
+          "line": 1686,
+          "target": "self.fluxes_mem"
+        },
+        {
+          "expression": "np.zeros(self.fluxes_gj.shape)",
+          "line": 1687,
+          "target": "self.fluxes_gj"
+        },
+        {
+          "expression": "[]",
+          "line": 1689,
+          "target": "self.Ax_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1690,
+          "target": "self.Ay_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1692,
+          "target": "self.Bz_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1694,
+          "target": "self.cc_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1695,
+          "target": "self.cc_env_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1697,
+          "target": "self.dd_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1698,
+          "target": "self.vm_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1699,
+          "target": "self.vm_ave_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1700,
+          "target": "self.vm_GHK_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1701,
+          "target": "self.time"
+        },
+        {
+          "expression": "[]",
+          "line": 1702,
+          "target": "self.gjopen_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1703,
+          "target": "self.osmo_P_delta_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1705,
+          "target": "self.I_mem_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1707,
+          "target": "self.I_cell_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1708,
+          "target": "self.I_cell_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1709,
+          "target": "self.I_tot_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1710,
+          "target": "self.I_tot_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1712,
+          "target": "self.efield_gj_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1713,
+          "target": "self.efield_gj_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1715,
+          "target": "self.P_cells_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1716,
+          "target": "self.u_cells_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1717,
+          "target": "self.u_cells_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1719,
+          "target": "self.rho_cells_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1721,
+          "target": "self.F_electro_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1722,
+          "target": "self.F_electro_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1729,
+          "target": "self.F_hydro_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1730,
+          "target": "self.F_hydro_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1732,
+          "target": "self.P_electro_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1734,
+          "target": "self.rate_NaKATP_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1736,
+          "target": "self.vm_ave_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1738,
+          "target": "self.venv_time"
+        },
+        {
+          "expression": "cells.ecm_verts_unique[:]",
+          "line": 1745,
+          "target": "self.ecm_verts_unique_to"
+        },
+        {
+          "expression": "[]",
+          "line": 1747,
+          "target": "self.cell_centres_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1748,
+          "target": "self.mem_mids_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1749,
+          "target": "self.maskM_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1750,
+          "target": "self.mem_edges_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1751,
+          "target": "self.cell_verts_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1753,
+          "target": "self.dx_cell_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1754,
+          "target": "self.dy_cell_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1756,
+          "target": "self.dx_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1757,
+          "target": "self.dy_time"
+        },
+        {
+          "expression": "np.zeros(self.mdl)",
+          "line": 1759,
+          "target": "self.phi"
+        },
+        {
+          "expression": "[]",
+          "line": 1760,
+          "target": "self.phi_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1776,
+          "target": "self.charge_env_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1778,
+          "target": "self.efield_ecm_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1779,
+          "target": "self.efield_ecm_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1782,
+          "target": "self.u_env_x_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1783,
+          "target": "self.u_env_y_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1785,
+          "target": "self.rho_pump_time"
+        },
+        {
+          "expression": "[]",
+          "line": 1786,
+          "target": "self.rho_channel_time"
+        }
+      ]
+    },
+    "Simulator.init_dynamics": {
+      "AST_sha256": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+      "calls": [
+        {
+          "callee": "logs.log_info",
+          "line": 775
+        },
+        {
+          "callee": "self.initDenv",
+          "line": 793
+        },
+        {
+          "callee": "p.ions_dict.items",
+          "line": 798
+        },
+        {
+          "callee": "phase.dyna.init_profiles",
+          "line": 809
+        },
+        {
+          "callee": "np.asarray",
+          "line": 823
+        },
+        {
+          "callee": "np.copy",
+          "line": 825
+        },
+        {
+          "callee": "np.copy",
+          "line": 827
+        },
+        {
+          "callee": "np.copy",
+          "line": 830
+        },
+        {
+          "callee": "np.copy",
+          "line": 831
+        },
+        {
+          "callee": "np.zeros",
+          "line": 833
+        },
+        {
+          "callee": "np.random.random",
+          "line": 837
+        },
+        {
+          "callee": "np.ones",
+          "line": 854
+        },
+        {
+          "callee": "phase.dyna.init_events",
+          "line": 968
+        },
+        {
+          "callee": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_env)).mean",
+          "line": 974
+        },
+        {
+          "callee": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_cells)).mean",
+          "line": 975
+        },
+        {
+          "callee": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum(axis=0).mean",
+          "line": 986
+        },
+        {
+          "callee": "np.asarray([z ** 2 * p.q * p.F * cc * D * 0.1 / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum",
+          "line": 991
+        },
+        {
+          "callee": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_env, self.D_env)]).sum",
+          "line": 994
+        },
+        {
+          "callee": "Gap_Junction",
+          "line": 790
+        },
+        {
+          "callee": "copy.copy",
+          "line": 813
+        },
+        {
+          "callee": "np.zeros",
+          "line": 816
+        },
+        {
+          "callee": "np.zeros",
+          "line": 817
+        },
+        {
+          "callee": "np.zeros",
+          "line": 819
+        },
+        {
+          "callee": "np.zeros",
+          "line": 820
+        },
+        {
+          "callee": "np.ones",
+          "line": 843
+        },
+        {
+          "callee": "np.ones",
+          "line": 849
+        },
+        {
+          "callee": "EndoRetic",
+          "line": 858
+        },
+        {
+          "callee": "np.zeros",
+          "line": 904
+        },
+        {
+          "callee": "np.zeros",
+          "line": 905
+        },
+        {
+          "callee": "np.zeros",
+          "line": 909
+        },
+        {
+          "callee": "np.zeros",
+          "line": 910
+        },
+        {
+          "callee": "np.zeros",
+          "line": 912
+        },
+        {
+          "callee": "np.zeros",
+          "line": 913
+        },
+        {
+          "callee": "np.zeros",
+          "line": 929
+        },
+        {
+          "callee": "np.zeros",
+          "line": 930
+        },
+        {
+          "callee": "cells.deform_tools",
+          "line": 932
+        },
+        {
+          "callee": "copy.deepcopy",
+          "line": 934
+        },
+        {
+          "callee": "gaussian_filter(self.sigma_env.reshape(cells.X.shape), 1).ravel",
+          "line": 1001
+        },
+        {
+          "callee": "self.fast_sim_init",
+          "line": 1012
+        },
+        {
+          "callee": "self.get_ion",
+          "line": 802
+        },
+        {
+          "callee": "len",
+          "line": 816
+        },
+        {
+          "callee": "len",
+          "line": 817
+        },
+        {
+          "callee": "len",
+          "line": 843
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 868
+        },
+        {
+          "callee": "MasterOfMolecules",
+          "line": 871
+        },
+        {
+          "callee": "self.molecules.read_mol_config",
+          "line": 873
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 875
+        },
+        {
+          "callee": "self.molecules.reinitialize",
+          "line": 881
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 886
+        },
+        {
+          "callee": "MasterOfGenes",
+          "line": 889
+        },
+        {
+          "callee": "self.grn.read_gene_config",
+          "line": 891
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 893
+        },
+        {
+          "callee": "self.grn.reinitialize",
+          "line": 899
+        },
+        {
+          "callee": "np.zeros",
+          "line": 918
+        },
+        {
+          "callee": "np.zeros",
+          "line": 919
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 941
+        },
+        {
+          "callee": "cells.graphLaplacian",
+          "line": 942
+        },
+        {
+          "callee": "np.sqrt",
+          "line": 974
+        },
+        {
+          "callee": "np.sqrt",
+          "line": 975
+        },
+        {
+          "callee": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum",
+          "line": 986
+        },
+        {
+          "callee": "np.asarray",
+          "line": 991
+        },
+        {
+          "callee": "np.asarray",
+          "line": 994
+        },
+        {
+          "callee": "len",
+          "line": 819
+        },
+        {
+          "callee": "len",
+          "line": 820
+        },
+        {
+          "callee": "np.dot",
+          "line": 974
+        },
+        {
+          "callee": "np.dot",
+          "line": 975
+        },
+        {
+          "callee": "gaussian_filter",
+          "line": 1001
+        },
+        {
+          "callee": "np.asarray",
+          "line": 986
+        },
+        {
+          "callee": "self.sigma_env.reshape",
+          "line": 1001
+        },
+        {
+          "callee": "zip",
+          "line": 992
+        },
+        {
+          "callee": "zip",
+          "line": 995
+        },
+        {
+          "callee": "zip",
+          "line": 987
+        }
+      ],
+      "first_line": 758,
+      "function": "init_dynamics",
+      "last_line": 1012,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 778,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 779,
+          "target": "p"
+        },
+        {
+          "expression": "p.smooth_cells",
+          "line": 782,
+          "target": "nfrac"
+        },
+        {
+          "expression": "(nfrac * cells.num_mems[cells.mem_to_cells] - 1) / (nfrac * cells.num_mems[cells.mem_to_cells])",
+          "line": 783,
+          "target": "self.smooth_weight_mem"
+        },
+        {
+          "expression": "1 / (nfrac * cells.num_mems[cells.mem_to_cells])",
+          "line": 786,
+          "target": "self.smooth_weight_o"
+        },
+        {
+          "expression": "np.asarray(self.Dm_cells)",
+          "line": 823,
+          "target": "Dm_cellsA"
+        },
+        {
+          "expression": "np.copy(Dm_cellsA)",
+          "line": 825,
+          "target": "self.Dm_base"
+        },
+        {
+          "expression": "np.copy(Dm_cellsA)",
+          "line": 827,
+          "target": "self.Dm_scheduled"
+        },
+        {
+          "expression": "0",
+          "line": 828,
+          "target": "self.Dm_scheduled[:]"
+        },
+        {
+          "expression": "np.copy(self.P_cells[:])",
+          "line": 830,
+          "target": "self.P_mod"
+        },
+        {
+          "expression": "np.copy(self.P_cells[:])",
+          "line": 831,
+          "target": "self.P_base"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 833,
+          "target": "self.div_u_osmo"
+        },
+        {
+          "expression": "np.random.random(self.mdl)",
+          "line": 837,
+          "target": "self.channel_noise_factor"
+        },
+        {
+          "expression": "(p.channel_noise_level * self.channel_noise_factor + 1) * self.Dm_cells[self.iK]",
+          "line": 839,
+          "target": "self.Dm_cells[self.iK]"
+        },
+        {
+          "expression": "np.ones(self.mdl)",
+          "line": 854,
+          "target": "self.CaATP_block"
+        },
+        {
+          "expression": "1",
+          "line": 964,
+          "target": "self.rho_pump"
+        },
+        {
+          "expression": "1",
+          "line": 965,
+          "target": "self.rho_channel"
+        },
+        {
+          "expression": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_env)).mean()",
+          "line": 974,
+          "target": "self.ko_env"
+        },
+        {
+          "expression": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_cells)).mean()",
+          "line": 975,
+          "target": "self.ko_cell"
+        },
+        {
+          "expression": "p.er * p.eo * self.ko_env",
+          "line": 977,
+          "target": "self.cedl_env"
+        },
+        {
+          "expression": "p.er * p.eo * self.ko_cell",
+          "line": 978,
+          "target": "self.cedl_cell"
+        },
+        {
+          "expression": "p.er * p.eo * self.ko_env",
+          "line": 980,
+          "target": "self.cedl"
+        },
+        {
+          "expression": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum(axis=0).mean()",
+          "line": 986,
+          "target": "self.sigma"
+        },
+        {
+          "expression": "np.asarray([z ** 2 * p.q * p.F * cc * D * 0.1 / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum(axis=0)",
+          "line": 991,
+          "target": "self.sigma_cell"
+        },
+        {
+          "expression": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_env, self.D_env)]).sum(axis=0)",
+          "line": 994,
+          "target": "self.sigma_env"
+        },
+        {
+          "expression": "cells.mem_sa / cells.R_rads",
+          "line": 1004,
+          "target": "self.rho_factor"
+        },
+        {
+          "expression": "1 / (2 / p.cm)",
+          "line": 1008,
+          "target": "self.cgj"
+        },
+        {
+          "expression": "Gap_Junction(self, cells, p)",
+          "line": 790,
+          "target": "self.gj_funk"
+        },
+        {
+          "expression": "copy.copy(self.D_env)",
+          "line": 813,
+          "target": "self.D_env_base"
+        },
+        {
+          "expression": "np.zeros(len(cells.xypts))",
+          "line": 816,
+          "target": "self.J_env_x"
+        },
+        {
+          "expression": "np.zeros(len(cells.xypts))",
+          "line": 817,
+          "target": "self.J_env_y"
+        },
+        {
+          "expression": "np.zeros((len(self.zs), self.edl))",
+          "line": 819,
+          "target": "self.fluxes_env_x"
+        },
+        {
+          "expression": "np.zeros((len(self.zs), self.edl))",
+          "line": 820,
+          "target": "self.fluxes_env_y"
+        },
+        {
+          "expression": "np.ones(len(cells.mem_i))",
+          "line": 843,
+          "target": "self.gj_block"
+        },
+        {
+          "expression": "1",
+          "line": 845,
+          "target": "self.gj_block"
+        },
+        {
+          "expression": "np.ones(self.mdl)",
+          "line": 849,
+          "target": "self.NaKATP_block"
+        },
+        {
+          "expression": "1",
+          "line": 851,
+          "target": "self.NaKATP_block"
+        },
+        {
+          "expression": "EndoRetic(self, cells, p)",
+          "line": 858,
+          "target": "self.endo_retic"
+        },
+        {
+          "expression": "None",
+          "line": 860,
+          "target": "self.endo_retic"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 904,
+          "target": "self.div_u_osmo"
+        },
+        {
+          "expression": "np.zeros(self.mdl)",
+          "line": 905,
+          "target": "self.u_net"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 909,
+          "target": "self.u_cells_x"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 910,
+          "target": "self.u_cells_y"
+        },
+        {
+          "expression": "np.zeros(self.mdl)",
+          "line": 912,
+          "target": "self.u_gj_x"
+        },
+        {
+          "expression": "np.zeros(self.mdl)",
+          "line": 913,
+          "target": "self.u_gj_y"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 929,
+          "target": "self.d_cells_x"
+        },
+        {
+          "expression": "np.zeros(self.cdl)",
+          "line": 930,
+          "target": "self.d_cells_y"
+        },
+        {
+          "expression": "copy.deepcopy(cells)",
+          "line": 934,
+          "target": "self.cellso"
+        },
+        {
+          "expression": "cells",
+          "line": 944,
+          "target": "self.cellso"
+        },
+        {
+          "expression": "gaussian_filter(self.sigma_env.reshape(cells.X.shape), 1).ravel()",
+          "line": 1001,
+          "target": "self.sigma_env"
+        },
+        {
+          "expression": "self.get_ion(key)",
+          "line": 802,
+          "target": "ion_i"
+        },
+        {
+          "expression": "MasterOfMolecules(p)",
+          "line": 871,
+          "target": "self.molecules"
+        },
+        {
+          "expression": "MasterOfGenes(p)",
+          "line": 889,
+          "target": "self.grn"
+        },
+        {
+          "expression": "np.zeros(cells.X.shape)",
+          "line": 918,
+          "target": "self.u_env_x"
+        },
+        {
+          "expression": "np.zeros(cells.X.shape)",
+          "line": 919,
+          "target": "self.u_env_y"
+        },
+        {
+          "expression": "p.cbnd[key]",
+          "line": 806,
+          "target": "self.c_env_bound[ion_i]"
+        }
+      ]
+    },
+    "Simulator.run_sim_core": {
+      "AST_sha256": "86d7910fa4e55eaba60afa058765aba37a0ac228288462118311237b3784cfb2",
+      "calls": [
+        {
+          "callee": "phase.die_unless_kind_init_or_sim",
+          "line": 1030
+        },
+        {
+          "callee": "self.init_dynamics",
+          "line": 1034
+        },
+        {
+          "callee": "self.clear_storage",
+          "line": 1037
+        },
+        {
+          "callee": "self.update_V",
+          "line": 1041
+        },
+        {
+          "callee": "self._plot_loop",
+          "line": 1049
+        },
+        {
+          "callee": "phase.callbacks.progress_ranged",
+          "line": 1055
+        },
+        {
+          "callee": "self._pickle_phase",
+          "line": 1121
+        },
+        {
+          "callee": "logs.log_info",
+          "line": 1078
+        },
+        {
+          "callee": "len",
+          "line": 1055
+        },
+        {
+          "callee": "solver_method",
+          "line": 1082
+        },
+        {
+          "callee": "logs.log_error",
+          "line": 1107
+        },
+        {
+          "callee": "BetseSimException",
+          "line": 1073
+        },
+        {
+          "callee": "'Solver type \"{}\" unrecognized.'.format",
+          "line": 1074
+        },
+        {
+          "callee": "isinstance",
+          "line": 1100
+        }
+      ],
+      "first_line": 1016,
+      "function": "run_sim_core",
+      "last_line": 1128,
+      "owner": "Simulator",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/sim.py",
+      "sha256": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "writes": [
+        {
+          "expression": "self._plot_loop(phase)",
+          "line": 1049,
+          "target": "(time_steps, time_steps_sampled, solver_context)"
+        },
+        {
+          "expression": "None",
+          "line": 1059,
+          "target": "exception_instability"
+        },
+        {
+          "expression": "'Full BETSE simulator'",
+          "line": 1065,
+          "target": "solver_label"
+        },
+        {
+          "expression": "self._run_sim_core_loop",
+          "line": 1066,
+          "target": "solver_method"
+        },
+        {
+          "expression": "exception",
+          "line": 1114,
+          "target": "exception_instability"
+        },
+        {
+          "expression": "'Fast (equivalent circuit) simulator'",
+          "line": 1069,
+          "target": "solver_label"
+        },
+        {
+          "expression": "self._run_fast_sim_core_loop",
+          "line": 1070,
+          "target": "solver_method"
+        }
+      ]
+    },
+    "TissueHandler._finalize_events_global": {
+      "AST_sha256": "809f13dd8a3ccd912d22f47c5019a679f655ce10cd171f083010834fb07f99d6",
+      "calls": [
+        {
+          "callee": "int",
+          "line": 513
+        },
+        {
+          "callee": "len",
+          "line": 523
+        },
+        {
+          "callee": "int",
+          "line": 524
+        },
+        {
+          "callee": "np.copy",
+          "line": 526
+        },
+        {
+          "callee": "shuffle",
+          "line": 527
+        },
+        {
+          "callee": "range",
+          "line": 529
+        }
+      ],
+      "first_line": 469,
+      "function": "_finalize_events_global",
+      "last_line": 534,
+      "owner": "TissueHandler",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/tissue/tishandler.py",
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 481,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 482,
+          "target": "p"
+        },
+        {
+          "expression": "p.global_options['K_env'][0]",
+          "line": 485,
+          "target": "self.t_on_Kenv"
+        },
+        {
+          "expression": "p.global_options['K_env'][1]",
+          "line": 486,
+          "target": "self.t_off_Kenv"
+        },
+        {
+          "expression": "p.global_options['K_env'][2]",
+          "line": 487,
+          "target": "self.t_change_Kenv"
+        },
+        {
+          "expression": "p.global_options['K_env'][3]",
+          "line": 488,
+          "target": "self.mem_mult_Kenv"
+        },
+        {
+          "expression": "p.global_options['Cl_env'][0]",
+          "line": 491,
+          "target": "self.t_on_Clenv"
+        },
+        {
+          "expression": "p.global_options['Cl_env'][1]",
+          "line": 492,
+          "target": "self.t_off_Clenv"
+        },
+        {
+          "expression": "p.global_options['Cl_env'][2]",
+          "line": 493,
+          "target": "self.t_change_Clenv"
+        },
+        {
+          "expression": "p.global_options['Cl_env'][3]",
+          "line": 494,
+          "target": "self.mem_mult_Clenv"
+        },
+        {
+          "expression": "p.global_options['Na_env'][0]",
+          "line": 497,
+          "target": "self.t_on_Naenv"
+        },
+        {
+          "expression": "p.global_options['Na_env'][1]",
+          "line": 498,
+          "target": "self.t_off_Naenv"
+        },
+        {
+          "expression": "p.global_options['Na_env'][2]",
+          "line": 499,
+          "target": "self.t_change_Naenv"
+        },
+        {
+          "expression": "p.global_options['Na_env'][3]",
+          "line": 500,
+          "target": "self.mem_mult_Naenv"
+        },
+        {
+          "expression": "p.global_options['T_change'][0]",
+          "line": 503,
+          "target": "self.tonT"
+        },
+        {
+          "expression": "p.global_options['T_change'][1]",
+          "line": 504,
+          "target": "self.toffT"
+        },
+        {
+          "expression": "p.global_options['T_change'][2]",
+          "line": 505,
+          "target": "self.trampT"
+        },
+        {
+          "expression": "p.global_options['T_change'][3]",
+          "line": 506,
+          "target": "self.multT"
+        },
+        {
+          "expression": "p.global_options['gj_block'][0]",
+          "line": 509,
+          "target": "self.tonGJ"
+        },
+        {
+          "expression": "p.global_options['gj_block'][1]",
+          "line": 510,
+          "target": "self.toffGJ"
+        },
+        {
+          "expression": "p.global_options['gj_block'][2]",
+          "line": 511,
+          "target": "self.trampGJ"
+        },
+        {
+          "expression": "int(p.global_options['gj_block'][3])",
+          "line": 513,
+          "target": "numo"
+        },
+        {
+          "expression": "len(cells.mem_i)",
+          "line": 523,
+          "target": "data_length"
+        },
+        {
+          "expression": "int(numo / 100 * data_length)",
+          "line": 524,
+          "target": "data_fraction"
+        },
+        {
+          "expression": "np.copy(cells.mem_i[:])",
+          "line": 526,
+          "target": "mem_i_copy"
+        },
+        {
+          "expression": "[cells.mem_i[x] for x in range(0, data_fraction)]",
+          "line": 528,
+          "target": "self.targets_gj_block"
+        },
+        {
+          "expression": "p.global_options['NaKATP_block'][0]",
+          "line": 532,
+          "target": "self.tonNK"
+        },
+        {
+          "expression": "p.global_options['NaKATP_block'][1]",
+          "line": 533,
+          "target": "self.toffNK"
+        },
+        {
+          "expression": "p.global_options['NaKATP_block'][2]",
+          "line": 534,
+          "target": "self.trampNK"
+        },
+        {
+          "expression": "100",
+          "line": 516,
+          "target": "numo"
+        },
+        {
+          "expression": "1",
+          "line": 518,
+          "target": "numo"
+        }
+      ]
+    },
+    "TissueHandler._finalize_events_tissue": {
+      "AST_sha256": "103e32681a275123708e7a1cb3f210ef5e6f139ff192a2a523ef167a6f50ad58",
+      "calls": [
+        {
+          "callee": "self.targets_Namem.append",
+          "line": 565
+        },
+        {
+          "callee": "getattr(mod, self.function_Namem)",
+          "line": 577
+        },
+        {
+          "callee": "self.targets_Kmem.append",
+          "line": 593
+        },
+        {
+          "callee": "getattr(mod, self.function_Kmem)",
+          "line": 605
+        },
+        {
+          "callee": "self.targets_Clmem.append",
+          "line": 621
+        },
+        {
+          "callee": "getattr(mod, self.function_Clmem)",
+          "line": 632
+        },
+        {
+          "callee": "self.targets_Camem.append",
+          "line": 648
+        },
+        {
+          "callee": "getattr(mod, self.function_Camem)",
+          "line": 659
+        },
+        {
+          "callee": "self.targets_P.append",
+          "line": 676
+        },
+        {
+          "callee": "getattr(mod, self.function_P)",
+          "line": 687
+        },
+        {
+          "callee": "self.targets_ecmJ.append",
+          "line": 702
+        },
+        {
+          "callee": "getattr",
+          "line": 577
+        },
+        {
+          "callee": "getattr",
+          "line": 605
+        },
+        {
+          "callee": "getattr",
+          "line": 632
+        },
+        {
+          "callee": "getattr",
+          "line": 659
+        },
+        {
+          "callee": "getattr",
+          "line": 687
+        }
+      ],
+      "first_line": 538,
+      "function": "_finalize_events_tissue",
+      "last_line": 705,
+      "owner": "TissueHandler",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/tissue/tishandler.py",
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 551,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 552,
+          "target": "p"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][0]",
+          "line": 555,
+          "target": "self.t_on_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][1]",
+          "line": 556,
+          "target": "self.t_off_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][2]",
+          "line": 557,
+          "target": "self.t_change_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][3]",
+          "line": 558,
+          "target": "self.mem_mult_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][4]",
+          "line": 559,
+          "target": "self.apply_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['Na_mem'][5]",
+          "line": 560,
+          "target": "self.function_Namem"
+        },
+        {
+          "expression": "[]",
+          "line": 562,
+          "target": "self.targets_Namem"
+        },
+        {
+          "expression": "[item for sublist in self.targets_Namem for item in sublist]",
+          "line": 567,
+          "target": "self.targets_Namem"
+        },
+        {
+          "expression": "1",
+          "line": 570,
+          "target": "self.scalar_Namem"
+        },
+        {
+          "expression": "lambda t: 1",
+          "line": 571,
+          "target": "self.dyna_Namem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][0]",
+          "line": 583,
+          "target": "self.t_on_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][1]",
+          "line": 584,
+          "target": "self.t_off_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][2]",
+          "line": 585,
+          "target": "self.t_change_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][3]",
+          "line": 586,
+          "target": "self.mem_mult_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][4]",
+          "line": 587,
+          "target": "self.apply_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['K_mem'][5]",
+          "line": 588,
+          "target": "self.function_Kmem"
+        },
+        {
+          "expression": "[]",
+          "line": 590,
+          "target": "self.targets_Kmem"
+        },
+        {
+          "expression": "[item for sublist in self.targets_Kmem for item in sublist]",
+          "line": 595,
+          "target": "self.targets_Kmem"
+        },
+        {
+          "expression": "1",
+          "line": 598,
+          "target": "self.scalar_Kmem"
+        },
+        {
+          "expression": "lambda t: 1",
+          "line": 599,
+          "target": "self.dyna_Kmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][0]",
+          "line": 611,
+          "target": "self.t_on_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][1]",
+          "line": 612,
+          "target": "self.t_off_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][2]",
+          "line": 613,
+          "target": "self.t_change_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][3]",
+          "line": 614,
+          "target": "self.mem_mult_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][4]",
+          "line": 615,
+          "target": "self.apply_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Cl_mem'][5]",
+          "line": 616,
+          "target": "self.function_Clmem"
+        },
+        {
+          "expression": "[]",
+          "line": 618,
+          "target": "self.targets_Clmem"
+        },
+        {
+          "expression": "[item for sublist in self.targets_Clmem for item in sublist]",
+          "line": 623,
+          "target": "self.targets_Clmem"
+        },
+        {
+          "expression": "1",
+          "line": 626,
+          "target": "self.scalar_Clmem"
+        },
+        {
+          "expression": "lambda t: 1",
+          "line": 627,
+          "target": "self.dyna_Clmem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][0]",
+          "line": 638,
+          "target": "self.t_on_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][1]",
+          "line": 639,
+          "target": "self.t_off_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][2]",
+          "line": 640,
+          "target": "self.t_change_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][3]",
+          "line": 641,
+          "target": "self.mem_mult_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][4]",
+          "line": 642,
+          "target": "self.apply_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['Ca_mem'][5]",
+          "line": 643,
+          "target": "self.function_Camem"
+        },
+        {
+          "expression": "[]",
+          "line": 645,
+          "target": "self.targets_Camem"
+        },
+        {
+          "expression": "[item for sublist in self.targets_Camem for item in sublist]",
+          "line": 650,
+          "target": "self.targets_Camem"
+        },
+        {
+          "expression": "1",
+          "line": 653,
+          "target": "self.scalar_Camem"
+        },
+        {
+          "expression": "lambda t: 1",
+          "line": 654,
+          "target": "self.dyna_Camem"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][0]",
+          "line": 666,
+          "target": "self.t_onP"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][1]",
+          "line": 667,
+          "target": "self.t_offP"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][2]",
+          "line": 668,
+          "target": "self.t_changeP"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][3]",
+          "line": 669,
+          "target": "self.rate_P"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][4]",
+          "line": 670,
+          "target": "self.apply_P"
+        },
+        {
+          "expression": "p.scheduled_options['pressure'][5]",
+          "line": 671,
+          "target": "self.function_P"
+        },
+        {
+          "expression": "[]",
+          "line": 673,
+          "target": "self.targets_P"
+        },
+        {
+          "expression": "[item for sublist in self.targets_P for item in sublist]",
+          "line": 678,
+          "target": "self.targets_P"
+        },
+        {
+          "expression": "1",
+          "line": 681,
+          "target": "self.scalar_P"
+        },
+        {
+          "expression": "lambda t: 1",
+          "line": 682,
+          "target": "self.dyna_P"
+        },
+        {
+          "expression": "p.scheduled_options['ecmJ'][0]",
+          "line": 693,
+          "target": "self.t_on_ecmJ"
+        },
+        {
+          "expression": "p.scheduled_options['ecmJ'][1]",
+          "line": 694,
+          "target": "self.t_off_ecmJ"
+        },
+        {
+          "expression": "p.scheduled_options['ecmJ'][2]",
+          "line": 695,
+          "target": "self.t_change_ecmJ"
+        },
+        {
+          "expression": "p.scheduled_options['ecmJ'][3]",
+          "line": 696,
+          "target": "self.apply_ecmJ"
+        },
+        {
+          "expression": "p.scheduled_options['ecmJ'][4]",
+          "line": 697,
+          "target": "self.mult_ecmJ"
+        },
+        {
+          "expression": "[]",
+          "line": 699,
+          "target": "self.targets_ecmJ"
+        },
+        {
+          "expression": "[item for sublist in self.targets_ecmJ for item in sublist]",
+          "line": 704,
+          "target": "self.targets_ecmJ"
+        },
+        {
+          "expression": "self.tissue_target_inds[profile]",
+          "line": 564,
+          "target": "targets"
+        },
+        {
+          "expression": "getattr(mod, self.function_Namem)(self.targets_Namem, cells, p)",
+          "line": 577,
+          "target": "(self.scalar_Namem, self.dyna_Namem)"
+        },
+        {
+          "expression": "self.tissue_target_inds[profile]",
+          "line": 592,
+          "target": "targets"
+        },
+        {
+          "expression": "getattr(mod, self.function_Kmem)(self.targets_Kmem, cells, p)",
+          "line": 605,
+          "target": "(self.scalar_Kmem, self.dyna_Kmem)"
+        },
+        {
+          "expression": "self.tissue_target_inds[profile]",
+          "line": 620,
+          "target": "targets"
+        },
+        {
+          "expression": "getattr(mod, self.function_Clmem)(self.targets_Clmem, cells, p)",
+          "line": 632,
+          "target": "(self.scalar_Clmem, self.dyna_Clmem)"
+        },
+        {
+          "expression": "self.tissue_target_inds[profile]",
+          "line": 647,
+          "target": "targets"
+        },
+        {
+          "expression": "getattr(mod, self.function_Camem)(self.targets_Camem, cells, p)",
+          "line": 659,
+          "target": "(self.scalar_Camem, self.dyna_Camem)"
+        },
+        {
+          "expression": "self.cell_target_inds[profile]",
+          "line": 675,
+          "target": "targets"
+        },
+        {
+          "expression": "getattr(mod, self.function_P)(self.targets_P, cells, p)",
+          "line": 687,
+          "target": "(self.scalar_P, self.dyna_P)"
+        },
+        {
+          "expression": "self.env_target_inds[profile]",
+          "line": 701,
+          "target": "targets"
+        }
+      ]
+    },
+    "TissueHandler.init_profiles": {
+      "AST_sha256": "d19e6c50d26e9b6c5f9900f1123c43f246235a29c016b43675973fc80b06b085",
+      "calls": [
+        {
+          "callee": "logs.log_debug",
+          "line": 383
+        },
+        {
+          "callee": "self.tissue_name_to_profile.items",
+          "line": 402
+        },
+        {
+          "callee": "tissue_profile.picker.pick_cells_and_mems",
+          "line": 406
+        },
+        {
+          "callee": "len",
+          "line": 413
+        },
+        {
+          "callee": "list",
+          "line": 416
+        }
+      ],
+      "first_line": 363,
+      "function": "init_profiles",
+      "last_line": 443,
+      "owner": "TissueHandler",
+      "path": "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/tissue/tishandler.py",
+      "sha256": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "writes": [
+        {
+          "expression": "phase.cells",
+          "line": 386,
+          "target": "cells"
+        },
+        {
+          "expression": "phase.p",
+          "line": 387,
+          "target": "p"
+        },
+        {
+          "expression": "phase.sim",
+          "line": 388,
+          "target": "sim"
+        },
+        {
+          "expression": "{}",
+          "line": 394,
+          "target": "self.cell_target_inds"
+        },
+        {
+          "expression": "{}",
+          "line": 395,
+          "target": "self.env_target_inds"
+        },
+        {
+          "expression": "{}",
+          "line": 399,
+          "target": "self.tissue_target_inds"
+        },
+        {
+          "expression": "tissue_profile.picker.pick_cells_and_mems(cells=cells, p=p)",
+          "line": 405,
+          "target": "(tissue_cells_index, tissue_mems_index)"
+        },
+        {
+          "expression": "tissue_cells_index",
+          "line": 409,
+          "target": "self.cell_target_inds[tissue_name]"
+        },
+        {
+          "expression": "tissue_mems_index",
+          "line": 410,
+          "target": "self.tissue_target_inds[tissue_name]"
+        },
+        {
+          "expression": "list(cells.map_mem2ecm[tissue_mems_index])",
+          "line": 416,
+          "target": "ecm_targs_mem"
+        },
+        {
+          "expression": "ecm_targs_mem",
+          "line": 417,
+          "target": "self.env_target_inds[tissue_name]"
+        },
+        {
+          "expression": "tissue_profile.Dm_Na",
+          "line": 422,
+          "target": "sim.Dm_cells[sim.iNa][tissue_mems_index]"
+        },
+        {
+          "expression": "tissue_profile.Dm_K",
+          "line": 426,
+          "target": "sim.Dm_cells[sim.iK][tissue_mems_index]"
+        },
+        {
+          "expression": "tissue_profile.Dm_Cl",
+          "line": 430,
+          "target": "sim.Dm_cells[sim.iCl][tissue_mems_index]"
+        },
+        {
+          "expression": "tissue_profile.Dm_Ca",
+          "line": 434,
+          "target": "sim.Dm_cells[sim.iCa][tissue_mems_index]"
+        },
+        {
+          "expression": "tissue_profile.Dm_M",
+          "line": 438,
+          "target": "sim.Dm_cells[sim.iM][tissue_mems_index]"
+        },
+        {
+          "expression": "tissue_profile.Dm_P",
+          "line": 442,
+          "target": "sim.Dm_cells[sim.iP][tissue_mems_index]"
+        }
+      ]
+    }
+  },
+  "status": "audited_source_only",
+  "transition_rules": [
+    "SimRunner.sim loads Simulator/cells, checks seed compatibility, constructs a new SIM phase using new parameters, and does not rerun init_core.",
+    "SimPhase replaces sim.dyna with the new tissue/event owner, sets _run_sim=True, selects SIM dt/total/sampling and derives a fresh phase clock.",
+    "init_dynamics reruns initDenv, optional c_env_bound overrides, supplied tissue target/profile assignments, base/scheduled Dm and pressure setup, unconditional static_K RNG draw, GJ/NaK/Ca blocks and ER-disabled None.",
+    "Existing GRN owner/core/molecule objects are reinitialized; read_substances and fresh MasterOfGenes are skipped. tissue_init refreshes configuration while preserving current molecular concentrations.",
+    "tissue_init can balance primary charge if the existing charge_has_been_balanced flag is false and the new publication flag is true; unconditional ionic byte-carry is therefore invalid.",
+    "A non-None channel configuration reconstructs the channel dictionary and all gates at carried pre-bootstrap Vm; SIM ignores init_active when warming them.",
+    "A None channel configuration disables the owner flag but does not clear a preexisting channel dictionary. Empty list instead rebuilds an empty enabled dictionary. Latent cache retention needs explicit handling or refusal.",
+    "Mechanical entry stores/tools are initialized again under source flags; rho_pump/rho_channel are then reset to scalar1. Event finalization can consume Python shuffle and SIM f_sweep computes an unspecified slope using SIM total.",
+    "Rate_CaATP and rate_NaKATP attributes survive phase setup and clear_storage. First SIM NaK alpha0 writes zeros; CaATP alpha0 leaves its retained cache unchanged.",
+    "clear_storage resets flux_mem/flux_gj and storage caches; GRN clear_cache clears output histories, not current molecular concentrations. Bootstrap update_V then runs without the loop check_v.",
+    "The new SIM cursor/material dt/mechanics counter and headless journal begin at0; primary concentrations and stale gap bookkeeping retain their actual reached values except explicit source setup writers.",
+    "RNG states are process globals, not members of the pickle datadump [sim,cells,p]. Separate-process SIM RNG must be supplied; same-process stream continuity requires an explicit no-unowned-draw seam.",
+    "Native instability is saved then reraised; unexpected exceptions bypass _pickle_phase. saveSim occurs before final vm_time[-1] reporting, so a zero-sample report failure can follow a written pickle."
+  ]
+}

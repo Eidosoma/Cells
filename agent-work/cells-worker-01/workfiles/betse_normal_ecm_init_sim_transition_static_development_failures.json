@@ -1,0 +1,35 @@
+{
+  "kind": "cells.transition_static_development_evidence@1",
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "pytest_collections": 0,
+  "numerical_runs": 0,
+  "failures": [
+    {
+      "tool": "native SIM source generator",
+      "cause": "Unclosed embedded source string, then material_before anchor selected a chained None initializer rather than its later dict call.",
+      "correction": "Close template strings and require ast.Call for the dict anchor before copying source.",
+      "scientific_source_executed": false
+    },
+    {
+      "tool": "Ruff/parser",
+      "cause": "Manual diagnostic frame insertion had incorrect indentation in unrun native SIM draft.",
+      "correction": "Indent inside the original source loop; final generator regenerates the entire module's AST.",
+      "scientific_source_executed": false
+    },
+    {
+      "tool": "implementation AST audit, first attempt",
+      "cause": "Private composition did not export sample used by existing lifecycle sample refusal.",
+      "correction": "Add direct base.sample alias in the private adapter and generator.",
+      "preserved_generation": "betse_normal_ecm_init_sim_transition_regenerated_01",
+      "scientific_source_executed": false
+    },
+    {
+      "tool": "implementation regeneration audit, second attempt",
+      "cause": "New sample alias occupied a different statement position in live versus generated source.",
+      "correction": "Match generator and live alias ordering; third source-only attempt passes all 29 proofs.",
+      "preserved_generation": "betse_normal_ecm_init_sim_transition_regenerated_02",
+      "scientific_source_executed": false
+    }
+  ]
+}

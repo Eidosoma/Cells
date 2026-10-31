@@ -1,0 +1,43 @@
+{
+  "authority": "Chief direct finalized03 callback-pin instruction; review still a separate freeze prerequisite",
+  "changes": {
+    "src/cells/processes/betse_normal_ecm_calcium_join.py": {
+      "equations_order_guards_and_budgets_unchanged": true,
+      "inverse_callback_representation_AST_exact": true,
+      "new_sha256": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
+      "old_sha256": "80ccf03ce5b758274930e94c89f3411531aed5eeef924f6b2334b3ab8e6ea184"
+    },
+    "src/cells/processes/betse_normal_ecm_catalog_join.py": {
+      "equations_order_guards_and_budgets_unchanged": true,
+      "inverse_callback_representation_AST_exact": true,
+      "new_sha256": "3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504",
+      "old_sha256": "a7a9b05883d488efd899731ce9f376eec9f6b31a418a7ef79c093bc01e76524f"
+    }
+  },
+  "controlled_files": 129,
+  "fixture_evaluations": 0,
+  "kind": "cells.ECM_events_explicit_dependency_refresh@1",
+  "no_frozen_inputs_receipts_or_failed_evidence_changed": true,
+  "no_new_numerical_qualification_credit": true,
+  "numerical_runs": 0,
+  "preparation": {
+    "path": "/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/preparation.json",
+    "sha256": "d33625a65ab87fcc021bf94dcf17280087ad5ae09ad6c30291340992ba6d9b61"
+  },
+  "prior_inputs": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-02/inputs.json",
+  "prior_inputs_sha256": "2683f32049555429139bff971fcc443aa30fe021c3bc6f94baff879915b70420",
+  "pytest_collection_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "successors": {
+    "calcium": {
+      "inputs": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-03/inputs.json",
+      "sha256": "9df5f4fd651d81aaa4fdb9e33aeabd10f599715a243dc3b9f58f6bc2c93fe490"
+    },
+    "catalog": {
+      "inputs": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-03/inputs.json",
+      "sha256": "de6330ffd844d14ad2c8d2d209e1fddfcb9aa021dfe6dc3ef12f4fb9532db8a4"
+    }
+  },
+  "unchanged_files": 127
+}

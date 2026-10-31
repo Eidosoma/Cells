@@ -1,0 +1,427 @@
+{
+  "baseline_rule": "Complete unchanged physical baseline must pass in the same worker before any output-control credit",
+  "control_case_credit": 0,
+  "execution": {
+    "control_assertions_executed": 0,
+    "controls_materialized": 0,
+    "physical_cases_generated": 0,
+    "workers_launched": 0
+  },
+  "independent_geometry_controls": {
+    "additional_geometry_evaluations": 0,
+    "counts_as_physical_cases": false,
+    "owner": "upstream explicit ECM successor",
+    "source_roster_counts": {
+      "input": 23,
+      "output": 23
+    }
+  },
+  "input_controls": [
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: complete caller physiology",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-species",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: complete species values",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-concentration",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Explicit finite binary64 physical value with required sign is needed",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "zero-concentration",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Explicit finite binary64 physical value with required sign is needed",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "negative-permeability",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: membranes",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-diffusivity",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "BridgeRejected",
+      "expected_original_reason": "Explicit caller P and D disagree under the existing D/path law",
+      "expected_original_type": "ValueError",
+      "expected_reason": "Partition physiology bridge refused at explicit_physical_materialization: Explicit caller P and D disagree under the existing D/path law",
+      "expected_stage": "explicit_physical_materialization",
+      "expects_refusal": true,
+      "id": "P-D-disagreement",
+      "phase": "prepare"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: membranes",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-capacitance",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Membrane caller owners disagree with actual geometry",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "wrong-membrane-owner",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Face caller owners disagree with actual geometry",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "wrong-face-owner",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "The finite-ECM law requires explicitly finite baths",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "reservoir-adoption",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: electrical cells",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-charge-anchor",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "BridgeRejected",
+      "expected_finite_trial_failure_type": "ConfigError",
+      "expected_finite_trial_stage": "existing_complete_physical_admission",
+      "expected_original_reason": "Invalid resolved tissue definition: Initial inventory, fixed background and explicit charge anchor disagree",
+      "expected_original_type": "PhysicalRejected",
+      "expected_reason": "Partition physiology bridge refused at existing_finite_ECM_physical_admission: Invalid resolved tissue definition: Initial inventory, fixed background and explicit charge anchor disagree",
+      "expected_stage": "existing_finite_ECM_physical_admission",
+      "expects_refusal": true,
+      "id": "incompatible-charge-anchor",
+      "phase": "prepare"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "Complete exact fields required: initial electrical policy",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "missing-gauge",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "No old state, operator, membrane, concentration or electrical cache may be adopted",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "old-state-adoption",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ValueError",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "This bridge evaluates only time zero, with no direct junctions",
+      "expected_stage": null,
+      "expects_refusal": true,
+      "id": "nonzero-observation-time",
+      "phase": "bind"
+    },
+    {
+      "expectations_source_derived_only_unrun": true,
+      "expected_exception_type": "ReferenceRejected",
+      "expected_original_reason": null,
+      "expected_original_type": null,
+      "expected_reason": "exact_complete_physical_caller_declaration",
+      "expected_stage": "complete_independent_input",
+      "expects_refusal": true,
+      "id": "wrong-caller-document",
+      "phase": "independent_authenticate"
+    }
+  ],
+  "kind": "cells.partition_initial_physiology_prospective_control_declarations@1",
+  "metadata_controls": [
+    {
+      "id": "failed-baseline-suppresses-controls",
+      "scientific_case_credit": 0
+    },
+    {
+      "id": "root-return-before-gate-failure",
+      "scientific_case_credit": 0
+    },
+    {
+      "id": "wrong-refusal-contract-uncredited",
+      "scientific_case_credit": 0
+    }
+  ],
+  "native_equivalence": false,
+  "output_controls": [
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "missing-field",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "extra-field",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "extra-potential-axis",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-array-dtype",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-potential",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-membrane-flux",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-face-flux",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-rhs",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "missing-state-ledger",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "missing-rhs-ledger",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-node-charge",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-component-current",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "missing-gauge-component",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-charge-rate",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-chemical-power",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-capacitor-power",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-dissipation",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-energy-balance",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-layout-owner",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "wrong-material-inventory",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "missing-concentration-defect",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "coherent-concentration-defect",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "changed-temperature",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "species-key-loss",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "native-promotion",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    },
+    {
+      "expected_error_code": "physical_snapshot_contract",
+      "expected_stage": "independent_complete_verification",
+      "full_resealed_preparation_required": true,
+      "id": "advancing-promotion",
+      "requires_same_worker_positive_baseline": true,
+      "scientific_case_credit": 0
+    }
+  ],
+  "status": "source_only_unmaterialized_unrun",
+  "time_advanced": false
+}

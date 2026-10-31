@@ -1,0 +1,1558 @@
+{
+  "active_job_queries": 0,
+  "all_other_type_shape_hash_CRC_byte_depth_and_owner_guards_unchanged": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "capacity_derivation": {
+    "alignment": 64,
+    "filename_copies": 2,
+    "formula": "floor((67108864 - 22) / (128 + 30 + 46 + 2*6))",
+    "ignored_positive_overhead": [
+      "numeric payload bytes",
+      "longer owner names",
+      "ZIP64 extra fields",
+      "ZIP64 end records",
+      "longer shapes/dtypes/headers",
+      "growth padding"
+    ],
+    "minimum_NPY_member_bytes": 128,
+    "minimum_NPY_prefix_and_newline_bytes": 11,
+    "minimum_accepted_plain_dtype_string_length": 3,
+    "minimum_canonical_filename_bytes": 6,
+    "minimum_central_ZIP_header_bytes": 46,
+    "minimum_end_record_bytes": 22,
+    "minimum_header_text_characters": 54,
+    "minimum_local_ZIP_header_bytes": 30,
+    "minimum_total_archive_bytes_per_member": 216,
+    "new_fixed_member_limit": 310689,
+    "unchanged_archive_file_bytes": 67108864,
+    "unchanged_expanded_and_JSON_bytes": 67108864
+  },
+  "catalogue_profile_may_not_select_this_tool": true,
+  "external_worker_memory_time_and_host_reserve_limits_still_required": true,
+  "fixture_evaluations": 0,
+  "kind": "cells.complete_ECM_capture_member_capacity_source_accounting@1",
+  "method": "Charge every array occurrence at the actual uncompressed writer, including all repeated state/observer/failure paths; apply unchanged total archive bytes",
+  "new_or_retained_qualification_passes": 0,
+  "no_semantic_case_maximum_or_physical_model_bound_claim": true,
+  "numeric_header_source": {
+    "header_function": {
+      "AST_sha256": "76550a87320475b78403576e073269a324b11e348f00ac4b8166b931c8c458b1",
+      "end_line": 478,
+      "line": 445,
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py"
+    },
+    "minimal_header_scalar_metadata_cases": [
+      {
+        "NPY_header_bytes": 128,
+        "before_alignment_bytes": 65,
+        "fortran_order": true,
+        "header_characters": 54,
+        "prefix_bytes": 10
+      },
+      {
+        "NPY_header_bytes": 128,
+        "before_alignment_bytes": 66,
+        "fortran_order": false,
+        "header_characters": 55,
+        "prefix_bytes": 10
+      }
+    ],
+    "padding_function": {
+      "AST_sha256": "26482299cd403500134b8858f33455a2bb009d51238f4db193e40d0673485c8e",
+      "end_line": 418,
+      "line": 397,
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py"
+    },
+    "source": {
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py",
+      "sha256": "5d7fd66e8c78d0bd9fab82e8893609ba88f7fcd3569eaebb0748f40768e85c16"
+    }
+  },
+  "numerical_runs": 0,
+  "original_catalog_allowance_remains_catalog_only": true,
+  "original_catalog_limit": 32768,
+  "original_catalog_schema_allowance": 31726,
+  "producer_policy": "Only pinned plain-numeric np.savez/ZIP_STORED capture writers; changed writer/format/compression requires a new review",
+  "pytest_collection_runs": 0,
+  "python": {
+    "executable": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]"
+  },
+  "reference_evaluations": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope_profiles": [
+    "ordinary_ecm_init_sim_transition_01"
+  ],
+  "source_sha256": {
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/__init__.py": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py": "5d7fd66e8c78d0bd9fab82e8893609ba88f7fcd3569eaebb0748f40768e85c16",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_npyio_impl.py": "51eb4572baad1e8198f71b3488a3cbcdb81ac85aa3c15cc2708cd907198a1fb5",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/format.py": "9e9274789853eee28d2b96b49423067e226ff91e23c8d86220f7996c970d5c1b",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/npyio.py": "79a3ef7c7192cd413bd132471cb3823c85fd1b98a132e0447b1cbafcf36127d4",
+    "/usr/lib/python3.13/zipfile/__init__.py": "9f026f5b6aadb80224e187f703a2f7667f37418b8b6f0dfaed7a6ce194461dbd",
+    "source/tests/unit/test_betse_ecm_grn_join.py": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+    "source/tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+    "source/tests/unit/test_betse_normal_calcium_join.py": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+    "source/tests/unit/test_betse_normal_channel_join.py": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+    "source/tests/unit/test_betse_normal_ecm_catalog_join.py": "8639b53a83be820b405c94366844a072c432c36972c61c377335bbd26125af02",
+    "source/tests/unit/test_betse_normal_ecm_event_join.py": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902",
+    "source/tests/unit/test_betse_normal_ecm_event_mechanics.py": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c",
+    "source/tests/unit/test_betse_normal_ecm_field_join.py": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+    "source/tests/unit/test_betse_normal_ecm_init_phase.py": "63fcf14e66c78cf3e9c4bb762fcd07ddc893b34a53341cb1bbd863fd9503ef7e",
+    "source/tests/unit/test_betse_normal_ecm_init_sim_transition.py": "97dff59301679b8c5b18a0eb6684599d473a345f58cdea0bd338aaa57cf561f1",
+    "source/tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+    "source/tests/unit/test_betse_normal_grn_join.py": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+    "source/tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+    "source/tests/unit/test_betse_normal_network_join.py": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+    "source/validation/betse/betse_ecm_grn_native.py": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+    "source/validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "source/validation/betse/betse_normal_calcium_join_native.py": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+    "source/validation/betse/betse_normal_channel_join_native.py": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+    "source/validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "source/validation/betse/betse_normal_ecm_catalog_join_native.py": "f155c3722accd0e51d2a901f2dbf739d6bcbe42b1d5244749eb32663c7b2d4db",
+    "source/validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea",
+    "source/validation/betse/betse_normal_ecm_event_mechanics_native.py": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4",
+    "source/validation/betse/betse_normal_ecm_field_join_native.py": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+    "source/validation/betse/betse_normal_ecm_init_phase_native.py": "b59b8a9209a7e550d8a0db37e9d98b54243a26d407e076a7c891161f4e1cd5e6",
+    "source/validation/betse/betse_normal_ecm_run_lifecycle_native.py": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc",
+    "source/validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+    "source/validation/betse/betse_normal_grn_join_native.py": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+    "source/validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+    "source/validation/betse/betse_normal_network_join_native.py": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+    "source/validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228"
+  },
+  "status": "transition_format_profile_held_for_Chief_review",
+  "transition_archive_call_sites": [
+    {
+      "AST_sha256": "79f532e289dc40adaa523b20741bf72a5563f2ce3d8ba5b7eaa4e16f5b5e0e06",
+      "callee": "archives.write_archive",
+      "line": 42,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 124,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "6c0c1a95a8dd39c91b3bc584ce42cf1fdc56bee53120678cf345e33909a1aca1",
+      "callee": "archive",
+      "line": 140,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "2995d0ffb6313f6f496cec3f77bb22aa56c2dac35f9464f539b2af06325ff2ad",
+      "callee": "archive",
+      "line": 143,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "c42664743f21fcc65ff9add24e14cebfcdada9f469ecd4026a35581785fd9a93",
+      "callee": "archive",
+      "line": 157,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "873db3489c7fde5194f1ae3d3c5d861ae7d745f504ea96073970a6ac53511603",
+      "callee": "archive",
+      "line": 284,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "5ffa2d1a3f1dc57d3a5c3a4ae6cfa630ba1f3443200407b91cd01f65f1b5f467",
+      "callee": "archive",
+      "line": 295,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "866a82f31a75a01b557dc35ab2bd4d0ef47eb65b8288b64cd94f7e4db46c0a64",
+      "callee": "archive",
+      "line": 306,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "9a980ed83a315d4ddbffef0f86869d73793a3b7962d94bb6db6ffafe73066991",
+      "callee": "archive",
+      "line": 397,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "18a1978b8f49aeffb6836421edf495a44954dc68807fcd19c0d6738194a18e6a",
+      "callee": "archive",
+      "line": 457,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "e6ddd59f7b9b0880bdf6b2965e6f8fda159ebdf38a5ae920bc715bd1f5584728",
+      "callee": "archive",
+      "line": 547,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "ddbf5cd1434f40a947bf5f6fa051f50b45573f2e55527cbfad3044900d39736b",
+      "callee": "archive",
+      "line": 146,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "17637420e122833fa919c377ca8a5200d4619211849dafe7deec783508a277ff",
+      "callee": "archive",
+      "line": 260,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "a97713b3d553eb6c363f532981b03beadbb0e8a47ed737be53cade831e1745d5",
+      "callee": "archive",
+      "line": 264,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "6ac07927da949571be87a4c838d881734a25b15d4833e5b67acd5bdc323ea817",
+      "callee": "archive",
+      "line": 502,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "edb6301e50203b1b007ccde280c809829844cab3cc213de8461d2eb90c8e1c07",
+      "callee": "archive",
+      "line": 537,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "560b251623713a06807f96ecaa289332b34c47de6489eeade50ed3c295c4568f",
+      "callee": "archive",
+      "line": 272,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "3d0ae5facad371bdfe1762338e7955f53b85c4f7c54720dc56ad9e4739edb55e",
+      "callee": "archive",
+      "line": 345,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "a6bf37ff9e85c2232ab18a7e99fc9527a25db9119a5a764271ccafde05302850",
+      "callee": "archive",
+      "line": 510,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "be715babe300b79cdcfa683380185d36d23bdb18f48bc75cb748fa4712be0e23",
+      "callee": "archive",
+      "line": 524,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "75423a1bec0579c4b5dc06f4200cd83963367d623491b059524bc427ed2a499e",
+      "callee": "archive",
+      "line": 329,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "e863db0888d10cfd5261829081e3a9a74e120d3033b44afe526fb389891fda3a",
+      "callee": "archive",
+      "line": 349,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "b95289a09e3b7a3a14389b4bfc0d19e15affff5b7be32091e0cd9f5b8f116ae0",
+      "callee": "archive",
+      "line": 434,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "a1ef495b0359b38975a1033e8176b12f727aabfdedd0489f50483987e9d60947",
+      "callee": "archive",
+      "line": 455,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "1bc7371cfa9d2fea74836791baeb1bfa86c2eb55375f09b2dde046ea6a55d00b",
+      "callee": "archive",
+      "line": 444,
+      "module": "tests/unit/test_betse_normal_ecm_init_sim_transition.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 724,
+      "module": "validation/betse/betse_normal_grn_join_native.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 297,
+      "module": "validation/betse/betse_normal_voltage_native.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 358,
+      "module": "validation/betse/betse_normal_ion_join_native.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 314,
+      "module": "validation/betse/betse_normal_current_native.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 464,
+      "module": "validation/betse/betse_normal_gated_join_native.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 36,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 108,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+      "callee": "archive",
+      "line": 444,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "1c161264d6e4f596e1aebd433425e917d8e0c4b3a9b2b26b8507be9d69a9c504",
+      "callee": "archive",
+      "line": 569,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "fa459fccc8cc79a74a7d6c95fe010214d090a1c91f437704f748cbd146a6df83",
+      "callee": "archive",
+      "line": 747,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "7c6d0c8de9b26b15a9ec696fb342c39528c775430725dc829b564e15c6444e2c",
+      "callee": "archive",
+      "line": 752,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "1676b473669f9e36736e6547a5eb9facd9dfdfb0f8c90760a9ba6d8c167c0dc2",
+      "callee": "archive",
+      "line": 194,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "9dbad4b0ad431592e6083f24e968cce95e6609ddbd59d137e049b153644686dd",
+      "callee": "archive",
+      "line": 204,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "e52167c057b334a58c9761d93828fef744948d2c33fd56574741c2d04da26ebb",
+      "callee": "archive",
+      "line": 560,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "c9fd378e646df4bffae90a72d0f05e85342426a39eab9426b5e69f67edf082a1",
+      "callee": "archive",
+      "line": 574,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "75da2934b289f4def4716db9858d5be1191f24b84af9fc20858d0c978e866e56",
+      "callee": "archive",
+      "line": 808,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "e58b4429e2e7b1d5d5ee57a68ca68b560907cf0a308f9f147ac2322d1726cdbd",
+      "callee": "archive",
+      "line": 823,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "970f51b325c6cb860f49250ebcace987fca0371f948823a5dba8d2a17a25e248",
+      "callee": "archive",
+      "line": 206,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "4f4ab263d61fd3db35abad49fd762e68a3bcba09f6846f3741c7a76c57b4b21c",
+      "callee": "archive",
+      "line": 293,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "d25476117d061defb77a3aec323d98020ae5e415a407b7ea142a120078a58dd8",
+      "callee": "archive",
+      "line": 474,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "f5d21bec6ab901c63583ab84562c7d11194c9d4c553a34251cffc38e0546ca3b",
+      "callee": "archive",
+      "line": 483,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "2f0430aee1f5cf07e24103ed7d9369f1475f448577ade2a982b8d214aea90a22",
+      "callee": "archive",
+      "line": 548,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "8a5cf64b74f2a6e4cd0ff148ca3ec9ca53158b979c1ae2418037fb43249df68c",
+      "callee": "archive",
+      "line": 576,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "edffaef3ff455251443ac2fe208465d79376336d66bc34ce1d93e9bf64c1107b",
+      "callee": "archive",
+      "line": 262,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "1c6a3235fe69095bbb6770dd157ff6c058f4d2bb88f4f270602e0167d2031646",
+      "callee": "archive",
+      "line": 270,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "eb6a502a7e0e130ac9eb4cad3695e4f12e3c1005638a3b584df058415ea88cfe",
+      "callee": "archive",
+      "line": 299,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "2ce8194b37968c828ee542f1b33eb92e16c7045dae98d929b914cab59930997b",
+      "callee": "archive",
+      "line": 451,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "bdff827e78c80d42a3c437d832f983dfb86a7f2788e8794d00e60494072cecd6",
+      "callee": "archive",
+      "line": 459,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "7f29792fa2100a8ac8819d32e50e31f5bcb4a14e5886c05930879c979986ced0",
+      "callee": "archive",
+      "line": 462,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "ea3730954e438fdd9fed0a7ddfa422ff9da856bedde495722e807c4e72885bc1",
+      "callee": "archive",
+      "line": 465,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "c9f49b104c5e818aec7971f1b495f435b69baffffce587637708e121b9a88c2a",
+      "callee": "archive",
+      "line": 468,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "405203f1c7472132bfc81d41061619a0370326e4af6716ead1700bdfa831d669",
+      "callee": "archive",
+      "line": 655,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+      "callee": "archive",
+      "line": 668,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+      "callee": "archive",
+      "line": 714,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "abdfd04bde4364edd212fc55510777f1ac28b4020ac5952343e717ad065d0131",
+      "callee": "archive",
+      "line": 736,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "1625db432d302232fb0fb429218df248c70a022054606a5987f5988525af2854",
+      "callee": "archive",
+      "line": 725,
+      "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 985,
+      "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 1159,
+      "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+    },
+    {
+      "AST_sha256": "001c29a1f5a09517ed461555aacd6240335128afb93aaf585d2f3d00b01d69f5",
+      "callee": "native.write_archive",
+      "line": 76,
+      "module": "tests/unit/test_betse_fast_solver.py"
+    },
+    {
+      "AST_sha256": "5b3698be980d04e1b5131049fa8c539c6bff8da4cd410eee79ac7bf116122ea9",
+      "callee": "archive",
+      "line": 279,
+      "module": "tests/unit/test_betse_fast_solver.py"
+    },
+    {
+      "AST_sha256": "db9d28f8f62974f4f1012ce144ede91be02510e333978f5b5b94015b9e0c5100",
+      "callee": "archive",
+      "line": 383,
+      "module": "tests/unit/test_betse_fast_solver.py"
+    },
+    {
+      "AST_sha256": "604f24db719ab441bbb40e9ec39a1bfe7f316bf300873032e3c0aabeb26e411a",
+      "callee": "archive",
+      "line": 398,
+      "module": "tests/unit/test_betse_fast_solver.py"
+    },
+    {
+      "AST_sha256": "a2cc23c1a9efe0eee8c7aa608fb14cbd19b2202388369a455f44d3cd3a4812c2",
+      "callee": "archive",
+      "line": 414,
+      "module": "tests/unit/test_betse_fast_solver.py"
+    },
+    {
+      "AST_sha256": "ed50ba9a8ed6b7a63887c3aede406f5598d0102bb73bf4c83bc9719275bd1758",
+      "callee": "write_archive",
+      "line": 466,
+      "module": "validation/betse/betse_fast_solver_native.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 32,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 98,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+      "callee": "archive",
+      "line": 508,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "1c161264d6e4f596e1aebd433425e917d8e0c4b3a9b2b26b8507be9d69a9c504",
+      "callee": "archive",
+      "line": 622,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "cfd6590fd121f61b739d1c2487a2785a15cefb526bc36a38bede9e3a2a1bea50",
+      "callee": "archive",
+      "line": 627,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "d36eb0e34f40d17b753aec180deeae10fb13e05ba1000ef2f1d9e0876d712745",
+      "callee": "archive",
+      "line": 735,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+      "callee": "archive",
+      "line": 738,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "1676b473669f9e36736e6547a5eb9facd9dfdfb0f8c90760a9ba6d8c167c0dc2",
+      "callee": "archive",
+      "line": 269,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "9dbad4b0ad431592e6083f24e968cce95e6609ddbd59d137e049b153644686dd",
+      "callee": "archive",
+      "line": 278,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "4ad5fd5fc457898f9fb1240763a9cfa70039c1a67cfe87ae7dcdcb875f37a632",
+      "callee": "archive",
+      "line": 608,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+      "callee": "archive",
+      "line": 685,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "463f6db667ed054697338d43ef8fee892b168426ec8ac0612ca2fac4defd97fb",
+      "callee": "archive",
+      "line": 280,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "257c29662bf7085735442d22bf57779804be6f1c4fec2697aa1a4233895d7c59",
+      "callee": "archive",
+      "line": 334,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "86a7e085423bde964fa28c11407a9c24ceeb319555745ac542342f2bd8700cc3",
+      "callee": "archive",
+      "line": 366,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "2efeeba37c7c39cc34ab8eed86d6b029e2ee9b6c3dab9595cb0d4130f40fa6df",
+      "callee": "archive",
+      "line": 539,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "41f000e2f964abc50b87eb851cc29d9238757653def8c0929da20fe68de983cd",
+      "callee": "archive",
+      "line": 544,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "e7012eefbec35ec2487c9d47c13b9247f6d76fc05ccad415b44e1366c7612a23",
+      "callee": "archive",
+      "line": 596,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "fa459fccc8cc79a74a7d6c95fe010214d090a1c91f437704f748cbd146a6df83",
+      "callee": "archive",
+      "line": 731,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "edffaef3ff455251443ac2fe208465d79376336d66bc34ce1d93e9bf64c1107b",
+      "callee": "archive",
+      "line": 327,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "e54a08d63e94a7181ea9c9193b4834e09bbe54c884b08353e2555928c39c35cd",
+      "callee": "archive",
+      "line": 380,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "08a163a23bf168b689d675185894ca520e0103c154bf0addf30b0efd10f26c74",
+      "callee": "archive",
+      "line": 625,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "2ce8194b37968c828ee542f1b33eb92e16c7045dae98d929b914cab59930997b",
+      "callee": "archive",
+      "line": 514,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "015ae9185a24b33ed226afcc47252a55f0bf8f968d26751ce29ccbcfcace8c4d",
+      "callee": "archive",
+      "line": 358,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "306b168a35a94b6e5ff565573b5ad9dad1a0fc05dd527f3a00674736fbe0404c",
+      "callee": "archive",
+      "line": 361,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "9ed7588a953e99db219b871392512f7368da9d34e5a36830cb0d5be08189361e",
+      "callee": "archive",
+      "line": 520,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "f2d463fc0a064e1b398a7498d1e242b3f351dddde34079b02a02849f7b97adf8",
+      "callee": "archive",
+      "line": 523,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "b5af1c2c19c3a4351cd9c8abcdeec69442712cbd5a9b0bd74da291f8ebfc2dd0",
+      "callee": "archive",
+      "line": 526,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "2b7b702d592d9d33841e16f018d2355746aedd81e8635e632e87e4e8926d82e7",
+      "callee": "archive",
+      "line": 529,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "1469b7b29fd97bc321eaac1d59c3f3527ce2bc38cada609a6bd3af9da15c40e7",
+      "callee": "archive",
+      "line": 532,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "3105e8942f164c4bdd8ed2d23d4ae3325a424687c4a7f295139687cdb3ec0dff",
+      "callee": "archive",
+      "line": 535,
+      "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 33,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 102,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+      "callee": "archive",
+      "line": 465,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "f5df819de8480905b9623cb3392fa505f78d1d843c54aeb7cbfbbf9058523b75",
+      "callee": "archive",
+      "line": 595,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "cfd6590fd121f61b739d1c2487a2785a15cefb526bc36a38bede9e3a2a1bea50",
+      "callee": "archive",
+      "line": 615,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+      "callee": "archive",
+      "line": 677,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "06bcabea0415d32c526d5f12d4271acdddc2c545e17e8df4e9ccd7b07b03d1dd",
+      "callee": "archive",
+      "line": 291,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "8d92b261b3ecf4a1afd6a27b9ffb9b2cda4d17b679373a39469f6681d6655f4f",
+      "callee": "archive",
+      "line": 300,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "98febcac1a068ae4efb90b1893635b3f6d7d04cccb18e17d5ec143310197d3b1",
+      "callee": "archive",
+      "line": 471,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "744701a07d85cbae42d8051c8b1c4d4c0b7400018998e00fb6725edba4bc34d5",
+      "callee": "archive",
+      "line": 474,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "eec044431c2975b06b10edced933c26a09079ac13c42235886077402c968e305",
+      "callee": "archive",
+      "line": 483,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "92629e18bb949ee37c3158192887c8dcf573021c7d0dc5e27fe18ab056fe2338",
+      "callee": "archive",
+      "line": 570,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "08b3b2351960170d6cd3e5ebef83cc4176edfbbdab7d15323ca3fe3c64c3687d",
+      "callee": "archive",
+      "line": 647,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "4137ea9f5d5f104222513b27553a5f1e0fcfc89ff6bc819effce239b4cf42e94",
+      "callee": "archive",
+      "line": 654,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "c1882e6b1957ce9fb43c6e6da31168e10207770fb19a78107f6497c731777400",
+      "callee": "archive",
+      "line": 671,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "463f6db667ed054697338d43ef8fee892b168426ec8ac0612ca2fac4defd97fb",
+      "callee": "archive",
+      "line": 302,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "5b3c9da15fb7beaf0abe83568ee4c89ab5528883e2c6547a8b03b62a30b5585b",
+      "callee": "archive",
+      "line": 351,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "4fbee344e15615a80e845d10adc4de3d56c88657b650918e721f16d8bfba202c",
+      "callee": "archive",
+      "line": 367,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "2a94fe0c84ffda217cd45cede96b1f2a26f15f91acf4676d8dc2db3f3352a4f1",
+      "callee": "archive",
+      "line": 488,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "3cecdac40f1c8fc60e440bfee3718c32781c891223702c1214293d15d433c510",
+      "callee": "archive",
+      "line": 502,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "e7012eefbec35ec2487c9d47c13b9247f6d76fc05ccad415b44e1366c7612a23",
+      "callee": "archive",
+      "line": 558,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "4f065d15fe1ba89add75adf2c7d6f336e9e63e8342678ca8de0b89e259604e28",
+      "callee": "archive",
+      "line": 605,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "e54a08d63e94a7181ea9c9193b4834e09bbe54c884b08353e2555928c39c35cd",
+      "callee": "archive",
+      "line": 379,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "ff46fa3ed38e6e99bf93f8d25946fad9b4f2cc31f156b60bedca6d25fedb4293",
+      "callee": "archive",
+      "line": 600,
+      "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 717,
+      "module": "validation/betse/betse_normal_ecm_field_join_native.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 28,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "33a4fa53d589525acf21f63bdad774ff83a031a077c66620cb5d3d26a9ecb19b",
+      "callee": "archive",
+      "line": 116,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "14e49cc4fb1da7c1134636383f22015f644bc9e1a0f7c7ba1d44721e56552c2b",
+      "callee": "archive",
+      "line": 442,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "cfd6590fd121f61b739d1c2487a2785a15cefb526bc36a38bede9e3a2a1bea50",
+      "callee": "archive",
+      "line": 522,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+      "callee": "archive",
+      "line": 577,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "4adcb7668d7e1e225ac4637b28e6a32f57004316665624e5937e4d34ab50ec04",
+      "callee": "archive",
+      "line": 376,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "385f62163ba1aa4d51583570609a191a506379c283fd48ab936c0649c78d511c",
+      "callee": "archive",
+      "line": 542,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "d5a1ae5f977abfdde69dcaaa0b7d1f62f9935a6fd1e0f8b078506640b5dcc7fa",
+      "callee": "archive",
+      "line": 549,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "02931a0689df67881cfccbca605f7675ad007b6489901acc1a1efffe27cd0a02",
+      "callee": "archive",
+      "line": 571,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "463f6db667ed054697338d43ef8fee892b168426ec8ac0612ca2fac4defd97fb",
+      "callee": "archive",
+      "line": 335,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "92e5d21b39647bc11f8ffb4daf7185d738cb290dad4f500c23106a252fef8732",
+      "callee": "archive",
+      "line": 454,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "8fa9c9a913e605679a7a77cce4dbd7baf9d12873f5ad262eac3d16bdac303e56",
+      "callee": "archive",
+      "line": 479,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "4f065d15fe1ba89add75adf2c7d6f336e9e63e8342678ca8de0b89e259604e28",
+      "callee": "archive",
+      "line": 512,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "e54a08d63e94a7181ea9c9193b4834e09bbe54c884b08353e2555928c39c35cd",
+      "callee": "archive",
+      "line": 365,
+      "module": "tests/unit/test_betse_ecm_grn_join.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 381,
+      "module": "validation/betse/betse_ecm_grn_native.py"
+    },
+    {
+      "AST_sha256": "8d8b771cab40c3a7616f37c373d495cb2e7a0683000c48ede8e4f2554932d59b",
+      "callee": "native.write_archive",
+      "line": 43,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "13a73ddd84635f6ac1dc857b01c30627e7adf12e4e9a55ced9b677a3244b1461",
+      "callee": "archive",
+      "line": 64,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "39ec7a03f8b994ad630f055c6ee82748f954b11c8312660ce56bb35168859227",
+      "callee": "archive",
+      "line": 416,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "25d50338b9e9617c0dc4667c4f7052293d9f7d3e4e5a50b0e1351dc81f065aa0",
+      "callee": "archive",
+      "line": 426,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "14e49cc4fb1da7c1134636383f22015f644bc9e1a0f7c7ba1d44721e56552c2b",
+      "callee": "archive",
+      "line": 613,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "003b423306d5f2205581427618297cc67d136599b004903f062cfbfa75845693",
+      "callee": "archive",
+      "line": 688,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "dc3bfea678f4e383ff623bd5c5d3af409c5a80a1058b8ebf4d3f3ce3d1533648",
+      "callee": "archive",
+      "line": 712,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "13dcf918f796ee9af4caed4f37bea3580c2f0d943823af1485bc93026e4f25e1",
+      "callee": "archive",
+      "line": 755,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 471,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "eae18c43a8b613253b79ef5eabaf4aa9de2fc5562178037c215894a5f827fcd6",
+      "callee": "archive",
+      "line": 555,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "600d0d0ca80935b185e8101cd657095dfb358a381e0fa9322d12106fd96d211f",
+      "callee": "archive",
+      "line": 459,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "a591091a32854abe9f7c83ed98c889e8ac7b6c24af4e3bcd0bd1066b93bab094",
+      "callee": "archive",
+      "line": 654,
+      "module": "tests/unit/test_betse_normal_grn_join.py"
+    },
+    {
+      "AST_sha256": "27604ea5b697ffbf1a3dace84d1aaa025f001480136834f9589d680c28e7d0fc",
+      "callee": "native.write_archive",
+      "line": 39,
+      "module": "tests/unit/test_betse_normal_ion_join.py"
+    },
+    {
+      "AST_sha256": "83e5f09bceadc16fd9f16896271db97bfe6e8e47daa745ce004e33d84923900e",
+      "callee": "archive",
+      "line": 533,
+      "module": "tests/unit/test_betse_normal_ion_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 166,
+      "module": "tests/unit/test_betse_normal_ion_join.py"
+    },
+    {
+      "AST_sha256": "cc0caf263a7547638f378e794a76f9afc0c20055ed4baa5b4a59cdda477758bb",
+      "callee": "archive",
+      "line": 204,
+      "module": "tests/unit/test_betse_normal_ion_join.py"
+    },
+    {
+      "AST_sha256": "8d8b771cab40c3a7616f37c373d495cb2e7a0683000c48ede8e4f2554932d59b",
+      "callee": "native.write_archive",
+      "line": 43,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "13a73ddd84635f6ac1dc857b01c30627e7adf12e4e9a55ced9b677a3244b1461",
+      "callee": "archive",
+      "line": 64,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "39ec7a03f8b994ad630f055c6ee82748f954b11c8312660ce56bb35168859227",
+      "callee": "archive",
+      "line": 276,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 299,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "8d625ca1e014f8fdc40c17fa0e64099ba21a088ed7928bedf23522a4720ff45b",
+      "callee": "archive",
+      "line": 335,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "2952abca6deb25261e1e6142b66e4bdf1c4743205421eea0350a37512e263924",
+      "callee": "archive",
+      "line": 392,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "600d0d0ca80935b185e8101cd657095dfb358a381e0fa9322d12106fd96d211f",
+      "callee": "archive",
+      "line": 287,
+      "module": "tests/unit/test_betse_normal_network_join.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 718,
+      "module": "validation/betse/betse_normal_network_join_native.py"
+    },
+    {
+      "AST_sha256": "27604ea5b697ffbf1a3dace84d1aaa025f001480136834f9589d680c28e7d0fc",
+      "callee": "native.write_archive",
+      "line": 35,
+      "module": "tests/unit/test_betse_normal_channel_join.py"
+    },
+    {
+      "AST_sha256": "8a82b31458a8c2c028ef9501444cd70365b9ff56f1fba4ef78258422ddc85c99",
+      "callee": "archive",
+      "line": 846,
+      "module": "tests/unit/test_betse_normal_channel_join.py"
+    },
+    {
+      "AST_sha256": "0de1d7aa82a8bf7078b1da1b61a39567f843da18b3d51defdd93cd7a78e10702",
+      "callee": "archive",
+      "line": 560,
+      "module": "tests/unit/test_betse_normal_channel_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 587,
+      "module": "tests/unit/test_betse_normal_channel_join.py"
+    },
+    {
+      "AST_sha256": "619f76159cd71043bda0ef12be1ca679fef8c9e194482d1025c73c467a8fe9ef",
+      "callee": "archive",
+      "line": 614,
+      "module": "tests/unit/test_betse_normal_channel_join.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 652,
+      "module": "validation/betse/betse_normal_channel_join_native.py"
+    },
+    {
+      "AST_sha256": "27604ea5b697ffbf1a3dace84d1aaa025f001480136834f9589d680c28e7d0fc",
+      "callee": "native.write_archive",
+      "line": 30,
+      "module": "tests/unit/test_betse_normal_gated_join.py"
+    },
+    {
+      "AST_sha256": "60f3e5275500c8d75d53699166e87cba7dec302b90f278e844713f94f3185fc0",
+      "callee": "archive",
+      "line": 201,
+      "module": "tests/unit/test_betse_normal_gated_join.py"
+    },
+    {
+      "AST_sha256": "f5f7e8c776dd52f551db9c0a911b6d57d2029b3aa32c8e909700bbbeb22b6233",
+      "callee": "archive",
+      "line": 600,
+      "module": "tests/unit/test_betse_normal_gated_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 214,
+      "module": "tests/unit/test_betse_normal_gated_join.py"
+    },
+    {
+      "AST_sha256": "4ee657eb11b810a071dea171786b58b98830afd7862e3d3113021a791be9bc6a",
+      "callee": "archive",
+      "line": 319,
+      "module": "tests/unit/test_betse_normal_gated_join.py"
+    },
+    {
+      "AST_sha256": "1875d4f61b8175cae91a7428cf961a9f067e5f1557b1d3b473516011b221a70b",
+      "callee": "native.write_archive",
+      "line": 33,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "13a73ddd84635f6ac1dc857b01c30627e7adf12e4e9a55ced9b677a3244b1461",
+      "callee": "archive",
+      "line": 54,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "a3547166059fa09b5cbd4ee6e07efb2688a0fbca1589b5d1c04bcce53096f719",
+      "callee": "archive",
+      "line": 460,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "1a2565096d53f3dcdf98c33b306b93be14ca88fb43497358e10b3aeb59630d2b",
+      "callee": "native.write_archive",
+      "line": 100,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "984161bc4a7cb7f9d2f2fd2dee0c75680584b8d04fcd25409a403a6443e25ad3",
+      "callee": "archive",
+      "line": 302,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "23c452dc5271cd4eaccb1a78182ec1815a82927177504046b3a240d943960963",
+      "callee": "archive",
+      "line": 326,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "12eebbc4ecf0534b33ec9644887113416733cd97987d32aa70a905f1f6d7ff1e",
+      "callee": "archive",
+      "line": 394,
+      "module": "tests/unit/test_betse_normal_calcium_join.py"
+    },
+    {
+      "AST_sha256": "749b59321060c866750b1ed76b0490c53e1a2f6c522b7375eae5685eed72bccc",
+      "callee": "write_archive",
+      "line": 758,
+      "module": "validation/betse/betse_normal_calcium_join_native.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 32,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 103,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+      "callee": "archive",
+      "line": 646,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "f5df819de8480905b9623cb3392fa505f78d1d843c54aeb7cbfbbf9058523b75",
+      "callee": "archive",
+      "line": 752,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "cfd6590fd121f61b739d1c2487a2785a15cefb526bc36a38bede9e3a2a1bea50",
+      "callee": "archive",
+      "line": 770,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "4137ea9f5d5f104222513b27553a5f1e0fcfc89ff6bc819effce239b4cf42e94",
+      "callee": "archive",
+      "line": 876,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+      "callee": "archive",
+      "line": 880,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "1fc517d1f51818894d1c600ec5877d2f8e47f766948e0002df139b71dceff1af",
+      "callee": "archive",
+      "line": 412,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "8d92b261b3ecf4a1afd6a27b9ffb9b2cda4d17b679373a39469f6681d6655f4f",
+      "callee": "archive",
+      "line": 421,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "2ce8194b37968c828ee542f1b33eb92e16c7045dae98d929b914cab59930997b",
+      "callee": "archive",
+      "line": 652,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "11fe230eaccd9b4830e4b03a00a6d66119770283df03d38e2c539a03f8ebfbde",
+      "callee": "archive",
+      "line": 658,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "1d9edbc5bef6d9e58c5bf9eac6d2ef9c174cf73e23df267769718719bbb1f866",
+      "callee": "archive",
+      "line": 675,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "5afab3faa6e634f7c63387476b5d580076f63ac5337a412359f8a18f907ccbe3",
+      "callee": "archive",
+      "line": 821,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "c1882e6b1957ce9fb43c6e6da31168e10207770fb19a78107f6497c731777400",
+      "callee": "archive",
+      "line": 873,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "463f6db667ed054697338d43ef8fee892b168426ec8ac0612ca2fac4defd97fb",
+      "callee": "archive",
+      "line": 423,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "5b50167359a8154ddbdcc380f6faed05ed6c5efef33dd7dd14c5e07ae5c93b36",
+      "callee": "archive",
+      "line": 479,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "a2e4819c476c0b885fb206ba2929a78eab464286bc98e639dd27be2743255a3c",
+      "callee": "archive",
+      "line": 486,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "80e3fc4de1babece2bda22d1e9cda2254bd9f75ad75397e09143a6e75a76c8bb",
+      "callee": "archive",
+      "line": 507,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "41f000e2f964abc50b87eb851cc29d9238757653def8c0929da20fe68de983cd",
+      "callee": "archive",
+      "line": 678,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "e7012eefbec35ec2487c9d47c13b9247f6d76fc05ccad415b44e1366c7612a23",
+      "callee": "archive",
+      "line": 717,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "4f065d15fe1ba89add75adf2c7d6f336e9e63e8342678ca8de0b89e259604e28",
+      "callee": "archive",
+      "line": 760,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "1b6c67505fd818a41394878f1c265bf7d45393af33832e25b4692e9499ff3348",
+      "callee": "archive",
+      "line": 468,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "e54a08d63e94a7181ea9c9193b4834e09bbe54c884b08353e2555928c39c35cd",
+      "callee": "archive",
+      "line": 520,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "b48214c9d6335e53667cf973bcf86a045bbec749d5f50551659f0efe2db2540e",
+      "callee": "archive",
+      "line": 662,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "dda73669497c0ff7fd159bed242e3e453a126153f6741c47217a881c1bfb7122",
+      "callee": "archive",
+      "line": 663,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "799dd95cb63d4fc55a22c7eb1654c627c7a6d56a43c65337324f161c09b15d45",
+      "callee": "archive",
+      "line": 666,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "9212622ec576510e762e13ace12d7b2de545077500a5259bed05a558e675ca98",
+      "callee": "archive",
+      "line": 669,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "467c3cbfa89e486fe1adc3e12a75f9be1159acd39aa19882f2b1bbef14de61ed",
+      "callee": "archive",
+      "line": 757,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "c1882e6b1957ce9fb43c6e6da31168e10207770fb19a78107f6497c731777400",
+      "callee": "archive",
+      "line": 842,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+      "callee": "archive",
+      "line": 846,
+      "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 1083,
+      "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+    },
+    {
+      "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+      "callee": "native.archives.write_archive",
+      "line": 41,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "b4f0c4cd7666148773bf825882e3b0e286d94ac7e3e9c3b6984132544b3cf601",
+      "callee": "archive",
+      "line": 102,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+      "callee": "archive",
+      "line": 109,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "c9258539554ac25020dde52fba1e38472da2b8e9e94391d5697e33e8f29a0552",
+      "callee": "archive",
+      "line": 205,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+      "callee": "archive",
+      "line": 455,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "d048a710ae2173e9ac8cb3f9bb3153e32d5431d12c6b3d7855bdf8115a66c210",
+      "callee": "archive",
+      "line": 711,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "eddd47a41e67e7c04602158a83aed37cec079249de6d248d6813dd1af6cb12bd",
+      "callee": "archive",
+      "line": 214,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "bb7e33bd54034be4cf806df0972d2217773c4ec21984fb2c9e03df9c69eef21a",
+      "callee": "archive",
+      "line": 234,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "a97713b3d553eb6c363f532981b03beadbb0e8a47ed737be53cade831e1745d5",
+      "callee": "archive",
+      "line": 238,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "0678410c21b8edcba3b7af2e8c69ba0e348b1f890732b0c34a366aa500b63ade",
+      "callee": "archive",
+      "line": 248,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "a5d8beab4b24722f3437c78f7d7ca85636ee7f1151da6bf4f62beb3756960f92",
+      "callee": "archive",
+      "line": 534,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "ebacf9fd38641421199479e76bd7fbc567600ab0f1bf3758695a6f16eea872b9",
+      "callee": "archive",
+      "line": 254,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "562f70f22d3ab98b38f093c6300ead0374079cc8fd11afbde81066f06488be61",
+      "callee": "archive",
+      "line": 339,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "a1d03aa3534222dc7f86a1c685e4fbc6c912b2df11f1e5d27429e016f3444582",
+      "callee": "archive",
+      "line": 462,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "50f2ecd59964389ae012026f238f23b1c9cdebc6a5b4d2362156adf605664357",
+      "callee": "archive",
+      "line": 314,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "d07b613f3075c5fb4a53096aa54581ba77fbea2415f1ea7835c8dc0a0e98ad50",
+      "callee": "archive",
+      "line": 345,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "7d12aff1aeb515b6c54497834981064d764ec7c34e410209bfcb6994f9f60f25",
+      "callee": "archive",
+      "line": 484,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "173569efee6ac2a044602c46635565adc2fd8cc15efb6051f73ab7435fb72261",
+      "callee": "archive",
+      "line": 542,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "9ac412a3fa4c3a5aeece5b0ef0d0ac69bdcb82adecec0fef5bfae81d49dd1c54",
+      "callee": "archive",
+      "line": 722,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "f3b1f5890529982458c98a351e05256622ec1395cc27c142df15867fc4b44d21",
+      "callee": "archive",
+      "line": 635,
+      "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+    },
+    {
+      "AST_sha256": "91aa6530dc4d99e67d6a2a7cdc32b1940f7161cfc23301988cf8fbeb82f02428",
+      "callee": "archives.write_archive",
+      "line": 1175,
+      "module": "validation/betse/betse_normal_ecm_init_phase_native.py"
+    },
+    {
+      "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+      "callee": "archives.write_archive",
+      "line": 1183,
+      "module": "validation/betse/betse_normal_ecm_init_phase_native.py"
+    },
+    {
+      "AST_sha256": "98ba2db36e0eb94c0b5706d53f14e83461954ea70641eaf86183bd376247aaf2",
+      "callee": "archives.write_archive",
+      "line": 1156,
+      "module": "validation/betse/betse_normal_ecm_init_phase_native.py"
+    },
+    {
+      "AST_sha256": "d6e7c3ec0090bcf3ce7f5ace48142f20c7aa917ec6c3566c00587176dff2a272",
+      "callee": "component.archives.write_archive",
+      "line": 206,
+      "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py"
+    },
+    {
+      "AST_sha256": "df9d7733255cd78da8fc15128779cd91bb86838b06fdaac1cd7b6e0109febec4",
+      "callee": "component.archives.write_archive",
+      "line": 210,
+      "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "active_job_queries": 0,
+  "authoritative_parent": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+    "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "core_capture_helper_only_member_constant_changed": true,
+  "fixture_model_reference_evaluations": 0,
+  "implementation_audit": {
+    "AST_correspondence_proofs": 12,
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_implementation_audit_03.json",
+    "sha256": "ce65fa9513f7e2f019f2e9a2b60d8a282ed98817c02e739a658cea6cd6fe0fa6"
+  },
+  "inputs_sha256": "975a586fa142342a79c27b68cfcdf891b1b18b6d45e8a28dd0b16b7f6b55b89e",
+  "kind": "cells.ordinary_INIT_held_source_receipt@1",
+  "metadata": {
+    "controls_passed": 10,
+    "max_rss_bytes": 22458368,
+    "path": "software-02/result.json",
+    "sha256": "6903f3ecded31ec2336caeb1b584489911eb7ce3293265d7e3f0da4c670555ca"
+  },
+  "new_INIT_capture_profile_requires_Chief_review": true,
+  "numerical_runs": 0,
+  "profile_wrapper_relative_frozen_paths_only_change": true,
+  "prospective": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "pytest_collection": 0,
+  "qualifications_inherited": 0,
+  "reference_import_closure_files": 23,
+  "runtime_import_closure_files": 123,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_files": 2717,
+  "source_scope": "Supplied ordinary FULL/ECM INIT, GRN enabled/general molecules off, Ca_dyn/flow/dynamic deformation/electroosmosis false; no whole initializer/phase/display/storage/transition claim",
+  "static_checks": {
+    "Ruff_no_cache": true,
+    "compile_without_execution": true,
+    "full_native_Python_files_installed_exact": 332,
+    "manual_source_reads_classified": 180,
+    "remaining_unclassified_reads": 0,
+    "resource_files": 28,
+    "undefined_global_names": false
+  },
+  "status": "held_source_static_preparation_complete",
+  "strict_hold_before_import_or_run_directory": true
+}

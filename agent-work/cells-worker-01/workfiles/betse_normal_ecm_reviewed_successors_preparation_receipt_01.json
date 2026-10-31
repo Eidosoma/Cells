@@ -1,0 +1,69 @@
+{
+  "automatic_followup": false,
+  "inputs": {
+    "catalog05": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-05/inputs.json",
+      "sha256": "513b3a4030f79eb027db8eea664e4acd0854b314634f0bbb97c2c2b86d77bc33"
+    },
+    "event04": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/inputs.json",
+      "sha256": "d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c"
+    },
+    "event_mechanics03": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/inputs.json",
+      "sha256": "e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a"
+    },
+    "lifecycle02": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+      "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+    }
+  },
+  "kind": "cells.explicit_ECM_successor_batch_receipt@1",
+  "new_or_retained_qualification_passes": 0,
+  "numerical_runs": 0,
+  "repairs": {
+    "archive_cardinality_basis": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-archive-cardinality-repair-20261031-01/cardinality-bound.json",
+      "sha256": "bac5dff464cf80da88d2663ae4e038a9eab9495e731a460351322eae713d13fa"
+    },
+    "archive_cardinality_result": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-archive-cardinality-repair-20261031-01/result.json",
+      "sha256": "d65a142266ad6eaa75aa7ba1a06c7887dfce08e18f711d9932d32d298d25f556"
+    },
+    "lifecycle01_held_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-preflight-20261031-01/REVIEW.json",
+      "sha256": "4d28d4bc4f18283f2f5d2b1c4ec5108e0598f3c044ac108306c8c3f699520e4a"
+    },
+    "proposed_event_NaLeak_inverse_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_01/source-proposals.json",
+      "sha256": "715c3c4d4abcef6fe1ceffe2b8f747d10f5fac0e952d3ae1c110b9292aef48d3"
+    },
+    "proposed_lifecycle_evidence_repairs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_03/lifecycle-evidence-proposals.json",
+      "sha256": "3724d4b8e16fe933f34339dc35569b2249c27f4e74ae2a6a41d2d4e7f94abe62"
+    },
+    "reviewed_NaLeak_promotion": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/promotion.json",
+      "sha256": "627f96f8d9e531371826493213ff33536b33de35a34eda6f1b5c5ae248c2713f"
+    },
+    "reviewed_NaLeak_source_review": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "abcc73bdd4b50c53bb79e44a603ac33a56508b60d42920260520bb9510610277"
+    },
+    "reviewed_archive_cardinality": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-archive-cardinality-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "0f8a681b50d57e88adc3617099e2a1fc39ad269d6b72a9414c3583254fcf3744"
+    },
+    "successor_scalar_metadata_contract": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_metadata_witness_01.json",
+      "sha256": "30485d81931787272fe7345484a1deb50db8ea694aa079bdb21599c9348bba78"
+    }
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_preparation_tool": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_reviewed_successors.py",
+    "sha256": "7f699b2aa4314c306b7ffd01515c9b094064b79335f466e5199b344a30ec0890"
+  },
+  "status": "prepared_four_held_source_only_successors"
+}

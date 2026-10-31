@@ -1,0 +1,99 @@
+{
+  "kind": "cells.INIT_metadata_controls@1",
+  "status": "passed",
+  "controls": [
+    {
+      "name": "new_INIT_profile_accepts_scalar",
+      "passed": true,
+      "result": {
+        "kind": "cells.betse_normal_current_raw_evidence@1",
+        "complete": true,
+        "manifest_sha256": "a242a849f6ce337c40a70f9842d5eca4ca7bad3b059d729d0ef48c49f45fc92d",
+        "files": {
+          "data.json": "96ffaccfe3294c32403bda30afdbed7fe5940ed8593f5e7df4b201d87498f59e",
+          "arrays.npz": "d71eb7aa711411a60af6968a3a66fd72838884a6984b3062baab0ea593d6ea6f"
+        },
+        "arrays": 1,
+        "numeric_scalars": 1,
+        "exact_float64_scalar_nodes": 0,
+        "typed_nodes": 2,
+        "typed_headers": {
+          "a0": {
+            "dtype": "<f8",
+            "shape": [],
+            "fortran": false,
+            "payload_sha256": "1cab600f57951016c0b4bd619177c26235366a7f52e26e839e3aac1219cda82d",
+            "owner_path": "root/value"
+          }
+        },
+        "nonfinite_bits_preserved": true,
+        "no_numeric_recomputation": true,
+        "capture_profile": "ordinary_ecm_init_phase_01",
+        "fixed_member_limit": 310689,
+        "source_format_capacity_bound": true,
+        "observed_case_maximum_claim": false,
+        "physical_or_numerical_qualification_credit": false
+      }
+    },
+    {
+      "name": "catalog_profile_cannot_select_INIT_tool",
+      "passed": true,
+      "cause": "Select an explicit non-catalog capture profile"
+    },
+    {
+      "name": "compressed_writer_refusal",
+      "passed": true,
+      "cause": "Capture profile requires uncompressed NPY members of at least128 bytes"
+    },
+    {
+      "name": "descriptor_shape_refusal",
+      "passed": true,
+      "cause": "Typed descriptor/header mismatch"
+    },
+    {
+      "name": "payload_hash_refusal",
+      "passed": true,
+      "cause": "Typed archive hash mismatch"
+    },
+    {
+      "name": "format_capacity_endpoint_310688",
+      "passed": true,
+      "scalar_predicate_only": true,
+      "full_size_archive_constructed": false
+    },
+    {
+      "name": "format_capacity_endpoint_310689",
+      "passed": true,
+      "scalar_predicate_only": true,
+      "full_size_archive_constructed": false
+    },
+    {
+      "name": "format_capacity_endpoint_310690",
+      "passed": true,
+      "scalar_predicate_only": true,
+      "full_size_archive_constructed": false
+    },
+    {
+      "name": "held_driver_refuses_before_run_directory",
+      "passed": true,
+      "returncode": 1
+    },
+    {
+      "name": "complete_prepared_manifest_unchanged",
+      "passed": true,
+      "files": 3583
+    }
+  ],
+  "elapsed_s": 0.3894785209558904,
+  "max_rss_bytes": 22507520,
+  "cpu_limit_s": 30,
+  "address_space_limit_bytes": 536870912,
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "fixture_reference_model_evaluations": 0,
+  "pytest_collections": 0,
+  "numerical_runs": 0,
+  "active_job_queries": 0,
+  "large_capacity_archive_generated": false,
+  "scientific_qualification_credit": false
+}

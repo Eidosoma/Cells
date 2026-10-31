@@ -1,0 +1,21 @@
+{
+  "kind": "cells.init_native_setup_generation@1",
+  "scientific_execution": false,
+  "statements": {
+    "static": [
+      823,
+      860
+    ],
+    "pump": [
+      1193,
+      1234
+    ]
+  },
+  "native_sha256": {
+    "science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7"
+  }
+}

@@ -1,0 +1,5402 @@
+{
+  "Python_files": 332,
+  "active_job_queries": 0,
+  "admissible_implementation": {
+    "credit": "Source conditional prefix/capability preparation only; zero physical-mesh, complete native-cut, whole-loop or conservation/biological credit.",
+    "explicit_owner_sidecar": "Reuse existing stable CutPlan/OwnedField removal ledgers separately from native arrays, recording disagreement instead of repairing source.",
+    "lifecycle": "Ordered capability and epoch/invalidation gate for source continuation; require explicit changing geometry, operators, diffusion, profile/callback/RNG, GRN/channel and typed checkpoint owners.",
+    "prefix": "Literal native deletion/hurt/ECM-target/vertex prefix up to the first mesh call, preserving all actual arrays/alias mutations and failure partials. No mesh or source numerical evaluation during preparation.",
+    "refusal": "Current frozen ordinary event state cannot be resumed after cut. Missing/unqualified geometry or owner/rebind evidence is a deliberate prerequisite refusal, retaining prefix return and source failure evidence."
+  },
+  "cache_semantics": {
+    "channels": "Actual init_channel is called again after molecules/transporters, resetting gate/route/core state; no hot gate remap or constructor skipping.",
+    "diffusion": "initDenv resets D_env,D_env_weight,D_env_weight_base,TJ_modulator,TJ_targets,Chi; no reinitialization of D_env_base shown in _cut_cells.",
+    "fields": "Geometry/graph operators rebuilt; sigma_env/ko_env and other initializer caches are not explicitly refreshed here; shape coincidences cannot authorize cache reuse.",
+    "molecules": "remove_cells deletes cell/membrane concentrations, refreshes profiles/growth, preserves ECM arrays; flux_intra deletion is assigned to cc_grad_x while old flux_intra persists.",
+    "profiles": "init_profiles writes current Dm_cells; outer makeAllChanges later overwrites it from retained/deleted Dm_base+Dm_scheduled, not newly fabricated bases.",
+    "rate_RNG": "Source dynamic/cache clocks and complete local RNG/repeated picker/finalizer epochs need explicit records. Source cut does not supply a sealed full ordinary checkpoint."
+  },
+  "direct_cut_order": [
+    "tissue_picker.pick_cells_and_mems",
+    "cells.mesh.cut_mesh",
+    "cells.cellVerts",
+    "cells.cellMatrices",
+    "cells.intra_updater",
+    "cells.cell_vols",
+    "cells.mem_processing",
+    "cells.near_neigh",
+    "cells.calc_gj_vects",
+    "cells.environment",
+    "cells.make_maskM",
+    "cells.graphLaplacian",
+    "sim.grn.core.mod_after_cut_event",
+    "sim.initDenv",
+    "self.init_profiles",
+    "cells.redo_gj"
+  ],
+  "findings": [
+    "ECM cc_env is excluded from special nesting but still enters generic length classification; species count equal cell/membrane count can corrupt a global grid array.",
+    "Scalar NumPy arrays can fail len; nested unknown lengths can reuse stale data2 or raise; list deletion can fail after partial mutation.",
+    "DEC cut_mesh documentation promises restructure edge indices but returns removed edges; dangling geometry/operator limitations remain unqualified.",
+    "ATP/cell-content release and sigma recomputation are commented out, not native material/energy mechanisms.",
+    "Native source repeats profile mapping and callback/finalizer construction; RNG consumption cannot be replaced by one old owner map or one seed."
+  ],
+  "fixture_evaluations": 0,
+  "installed_exact": true,
+  "kind": "cells.native_cut_lifecycle_source_capability_audit@1",
+  "methods": {
+    "Cells.calc_gj_vects": {
+      "AST_sha256": "a714e5693a2a365882d7fcd9510ae77614c72b9c480fb5a63a6af79e44791f09",
+      "calls": [
+        {
+          "function": "enumerate",
+          "line": 2032
+        },
+        {
+          "function": "np.sqrt",
+          "line": 2047
+        },
+        {
+          "function": "self.nn_mids.append",
+          "line": 2057
+        },
+        {
+          "function": "np.sqrt",
+          "line": 2065
+        },
+        {
+          "function": "self.nn_len.append",
+          "line": 2068
+        },
+        {
+          "function": "self.nn_len.append",
+          "line": 2070
+        },
+        {
+          "function": "self.nn_tx.append",
+          "line": 2072
+        },
+        {
+          "function": "self.nn_ty.append",
+          "line": 2073
+        },
+        {
+          "function": "self.nn_edges[mem_i].append",
+          "line": 2075
+        },
+        {
+          "function": "self.nn_edges[mem_i].append",
+          "line": 2076
+        },
+        {
+          "function": "np.asarray",
+          "line": 2078
+        },
+        {
+          "function": "np.asarray",
+          "line": 2080
+        },
+        {
+          "function": "np.asarray",
+          "line": 2081
+        },
+        {
+          "function": "np.asarray",
+          "line": 2082
+        },
+        {
+          "function": "np.asarray",
+          "line": 2083
+        },
+        {
+          "function": "np.sqrt",
+          "line": 2093
+        },
+        {
+          "function": "self.cell_nn_tx.append",
+          "line": 2103
+        },
+        {
+          "function": "self.cell_nn_ty.append",
+          "line": 2104
+        },
+        {
+          "function": "np.asarray",
+          "line": 2106
+        },
+        {
+          "function": "np.asarray",
+          "line": 2107
+        },
+        {
+          "function": "range",
+          "line": 2110
+        },
+        {
+          "function": "len",
+          "line": 2110
+        },
+        {
+          "function": "enumerate",
+          "line": 2112
+        },
+        {
+          "function": "self.cell_to_nn_full[cell_i].append",
+          "line": 2115
+        },
+        {
+          "function": "self.cell_to_nn_full[cell_j].append",
+          "line": 2116
+        },
+        {
+          "function": "np.asarray",
+          "line": 2118
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 2018,
+      "last_line": 2118,
+      "name": "calc_gj_vects",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 2025,
+          "target": "self.nn_mids"
+        },
+        {
+          "line": 2026,
+          "target": "self.nn_tx"
+        },
+        {
+          "line": 2027,
+          "target": "self.nn_ty"
+        },
+        {
+          "line": 2028,
+          "target": "self.nn_len"
+        },
+        {
+          "line": 2030,
+          "target": "self.nn_edges"
+        },
+        {
+          "line": 2078,
+          "target": "self.nn_mids"
+        },
+        {
+          "line": 2080,
+          "target": "self.nn_tx"
+        },
+        {
+          "line": 2081,
+          "target": "self.nn_ty"
+        },
+        {
+          "line": 2082,
+          "target": "self.nn_len"
+        },
+        {
+          "line": 2083,
+          "target": "self.nn_edges"
+        },
+        {
+          "line": 2085,
+          "target": "self.cell_nn_tx"
+        },
+        {
+          "line": 2086,
+          "target": "self.cell_nn_ty"
+        },
+        {
+          "line": 2100,
+          "target": "tang[0]"
+        },
+        {
+          "line": 2101,
+          "target": "tang[1]"
+        },
+        {
+          "line": 2106,
+          "target": "self.cell_nn_tx"
+        },
+        {
+          "line": 2107,
+          "target": "self.cell_nn_ty"
+        },
+        {
+          "line": 2110,
+          "target": "self.cell_to_nn_full"
+        },
+        {
+          "line": 2118,
+          "target": "self.cell_to_nn_full"
+        }
+      ]
+    },
+    "Cells.cellMatrices": {
+      "AST_sha256": "0a138ebac00024b96fec201b11cb2281b1dcd5452b3239751d25f2e3686aa891",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 1282
+        },
+        {
+          "function": "np.zeros",
+          "line": 1297
+        },
+        {
+          "function": "len",
+          "line": 1297
+        },
+        {
+          "function": "len",
+          "line": 1297
+        },
+        {
+          "function": "enumerate",
+          "line": 1300
+        },
+        {
+          "function": "self.num_mems.append",
+          "line": 1306
+        },
+        {
+          "function": "np.linalg.pinv",
+          "line": 1308
+        },
+        {
+          "function": "np.asarray",
+          "line": 1309
+        },
+        {
+          "function": "np.zeros",
+          "line": 1314
+        },
+        {
+          "function": "len",
+          "line": 1314
+        },
+        {
+          "function": "len",
+          "line": 1314
+        },
+        {
+          "function": "np.zeros",
+          "line": 1320
+        },
+        {
+          "function": "len",
+          "line": 1320
+        },
+        {
+          "function": "enumerate",
+          "line": 1322
+        },
+        {
+          "function": "np.roll",
+          "line": 1324
+        },
+        {
+          "function": "np.sqrt",
+          "line": 1328
+        },
+        {
+          "function": "np.abs",
+          "line": 1330
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1276,
+      "last_line": 1333,
+      "name": "cellMatrices",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1297,
+          "target": "self.M_sum_mems"
+        },
+        {
+          "line": 1298,
+          "target": "self.num_mems"
+        },
+        {
+          "line": 1303,
+          "target": "self.M_sum_mems[i, j]"
+        },
+        {
+          "line": 1308,
+          "target": "self.M_sum_mems_inv"
+        },
+        {
+          "line": 1309,
+          "target": "self.num_mems"
+        },
+        {
+          "line": 1310,
+          "target": "self.mem_distance"
+        },
+        {
+          "line": 1311,
+          "target": "self.cell_number"
+        },
+        {
+          "line": 1314,
+          "target": "self.gradTheta"
+        },
+        {
+          "line": 1320,
+          "target": "self.radial_len"
+        },
+        {
+          "line": 1330,
+          "target": "self.radial_len[mem_i]"
+        },
+        {
+          "line": 1332,
+          "target": "self.gradTheta[mem_i, mem_i]"
+        },
+        {
+          "line": 1333,
+          "target": "self.gradTheta[mem_i, mem_io]"
+        }
+      ]
+    },
+    "Cells.cellVerts": {
+      "AST_sha256": "b320e0bccbe0f05bb143eb1fdbd4e1447a9aef36ab59cc6c8f1ae2fd3de1fb51",
+      "calls": [
+        {
+          "function": "zip",
+          "line": 1009
+        },
+        {
+          "function": "pt_scale.append",
+          "line": 1013
+        },
+        {
+          "function": "self.cell_verts.append",
+          "line": 1014
+        },
+        {
+          "function": "np.asarray",
+          "line": 1014
+        },
+        {
+          "function": "np.asarray",
+          "line": 1016
+        },
+        {
+          "function": "range",
+          "line": 1044
+        },
+        {
+          "function": "len",
+          "line": 1044
+        },
+        {
+          "function": "np.asarray",
+          "line": 1047
+        },
+        {
+          "function": "np.asarray",
+          "line": 1048
+        },
+        {
+          "function": "edge.append",
+          "line": 1049
+        },
+        {
+          "function": "mps.append",
+          "line": 1051
+        },
+        {
+          "function": "mid.tolist",
+          "line": 1051
+        },
+        {
+          "function": "np.sqrt",
+          "line": 1053
+        },
+        {
+          "function": "surfa.append",
+          "line": 1055
+        },
+        {
+          "function": "np.linalg.norm",
+          "line": 1058
+        },
+        {
+          "function": "np.array",
+          "line": 1060
+        },
+        {
+          "function": "cv_x.append",
+          "line": 1061
+        },
+        {
+          "function": "cv_y.append",
+          "line": 1062
+        },
+        {
+          "function": "cv_nx.append",
+          "line": 1063
+        },
+        {
+          "function": "cv_ny.append",
+          "line": 1064
+        },
+        {
+          "function": "cv_tx.append",
+          "line": 1065
+        },
+        {
+          "function": "cv_ty.append",
+          "line": 1066
+        },
+        {
+          "function": "mem_edges.append",
+          "line": 1068
+        },
+        {
+          "function": "mem_mids.append",
+          "line": 1069
+        },
+        {
+          "function": "mem_length.append",
+          "line": 1070
+        },
+        {
+          "function": "np.array",
+          "line": 1089
+        },
+        {
+          "function": "np.asarray",
+          "line": 1093
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1095
+        },
+        {
+          "function": "np.asarray",
+          "line": 1096
+        },
+        {
+          "function": "range",
+          "line": 1103
+        },
+        {
+          "function": "len",
+          "line": 1103
+        },
+        {
+          "function": "range",
+          "line": 1104
+        },
+        {
+          "function": "len",
+          "line": 1104
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1107
+        },
+        {
+          "function": "np.asarray",
+          "line": 1108
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1112
+        },
+        {
+          "function": "np.asarray",
+          "line": 1113
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1116
+        },
+        {
+          "function": "np.asarray",
+          "line": 1117
+        },
+        {
+          "function": "np.vstack",
+          "line": 1120
+        },
+        {
+          "function": "np.asarray",
+          "line": 1123
+        },
+        {
+          "function": "(self.mem_to_cells == cell_index).nonzero",
+          "line": 1143
+        },
+        {
+          "function": "self.cell_to_mems.append",
+          "line": 1144
+        },
+        {
+          "function": "np.asarray",
+          "line": 1146
+        },
+        {
+          "function": "sum",
+          "line": 1152
+        },
+        {
+          "function": "self.cell_sa.append",
+          "line": 1153
+        },
+        {
+          "function": "np.asarray",
+          "line": 1155
+        },
+        {
+          "function": "cKDTree",
+          "line": 1159
+        },
+        {
+          "function": "cellVertTree.query",
+          "line": 1164
+        },
+        {
+          "function": "cellVertTree.query",
+          "line": 1165
+        },
+        {
+          "function": "self.index_to_mem_verts.append",
+          "line": 1166
+        },
+        {
+          "function": "np.asarray",
+          "line": 1167
+        },
+        {
+          "function": "np.sqrt",
+          "line": 1173
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 978,
+      "last_line": 1175,
+      "name": "cellVerts",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1004,
+          "target": "self.gj_len"
+        },
+        {
+          "line": 1007,
+          "target": "self.cell_verts"
+        },
+        {
+          "line": 1016,
+          "target": "self.cell_verts"
+        },
+        {
+          "line": 1019,
+          "target": "self.cell_sa"
+        },
+        {
+          "line": 1020,
+          "target": "self.cell_area"
+        },
+        {
+          "line": 1089,
+          "target": "self.mem_vects_flat"
+        },
+        {
+          "line": 1093,
+          "target": "self.mem_mids"
+        },
+        {
+          "line": 1095,
+          "target": "self.mem_mids_flat"
+        },
+        {
+          "line": 1096,
+          "target": "self.mem_mids_flat"
+        },
+        {
+          "line": 1103,
+          "target": "self.cell_i"
+        },
+        {
+          "line": 1104,
+          "target": "self.mem_i"
+        },
+        {
+          "line": 1110,
+          "target": "self.mem_sa"
+        },
+        {
+          "line": 1112,
+          "target": "self.mem_edges_flat"
+        },
+        {
+          "line": 1113,
+          "target": "self.mem_edges_flat"
+        },
+        {
+          "line": 1116,
+          "target": "self.mem_verts"
+        },
+        {
+          "line": 1117,
+          "target": "self.mem_verts"
+        },
+        {
+          "line": 1120,
+          "target": "self.plot_xy"
+        },
+        {
+          "line": 1126,
+          "target": "self.mem_to_cells"
+        },
+        {
+          "line": 1129,
+          "target": "self.cell_to_mems"
+        },
+        {
+          "line": 1146,
+          "target": "self.cell_to_mems"
+        },
+        {
+          "line": 1150,
+          "target": "self.cell_sa"
+        },
+        {
+          "line": 1155,
+          "target": "self.cell_sa"
+        },
+        {
+          "line": 1161,
+          "target": "self.index_to_mem_verts"
+        },
+        {
+          "line": 1167,
+          "target": "self.index_to_mem_verts"
+        },
+        {
+          "line": 1170,
+          "target": "self.rads"
+        },
+        {
+          "line": 1173,
+          "target": "self.R_rads"
+        },
+        {
+          "line": 1174,
+          "target": "self.nx_rads"
+        },
+        {
+          "line": 1175,
+          "target": "self.ny_rads"
+        }
+      ]
+    },
+    "Cells.cell_vols": {
+      "AST_sha256": "3bbe811383e5108d344b3b3b490a10ed5a4c78ae1e55ae24b0469f6328ea5e74",
+      "calls": [
+        {
+          "function": "np.dot",
+          "line": 1385
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1358,
+      "last_line": 1390,
+      "name": "cell_vols",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1382,
+          "target": "self.mem_vol"
+        },
+        {
+          "line": 1385,
+          "target": "self.cell_vol"
+        },
+        {
+          "line": 1387,
+          "target": "self.R"
+        },
+        {
+          "line": 1390,
+          "target": "self.diviterm"
+        }
+      ]
+    },
+    "Cells.deform_tools": {
+      "AST_sha256": "23509a3905e4f64e1947da95a4ef9279256c791f10ebe1c06f81704bc2dff069",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 2218
+        },
+        {
+          "function": "cKDTree",
+          "line": 2224
+        },
+        {
+          "function": "ecmTree.query",
+          "line": 2232
+        },
+        {
+          "function": "sublist.append",
+          "line": 2233
+        },
+        {
+          "function": "self.inds2ecmVerts.append",
+          "line": 2234
+        },
+        {
+          "function": "np.asarray",
+          "line": 2236
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 2214,
+      "last_line": 2236,
+      "name": "deform_tools",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 2226,
+          "target": "self.inds2ecmVerts"
+        },
+        {
+          "line": 2236,
+          "target": "self.inds2ecmVerts"
+        }
+      ]
+    },
+    "Cells.environment": {
+      "AST_sha256": "819c5651ec400b949316adaa3820c58d7453431a182d62511b3d1c5b9bf1de12",
+      "calls": [
+        {
+          "function": "self.cell_vol.mean",
+          "line": 1749
+        },
+        {
+          "function": "cKDTree",
+          "line": 1754
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1757
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1758
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1762
+        },
+        {
+          "function": "np.column_stack",
+          "line": 1782
+        },
+        {
+          "function": "np.column_stack",
+          "line": 1783
+        },
+        {
+          "function": "np.column_stack",
+          "line": 1784
+        },
+        {
+          "function": "np.column_stack",
+          "line": 1785
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1787
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1788
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1789
+        },
+        {
+          "function": "self.points_tree.query",
+          "line": 1790
+        },
+        {
+          "function": "enumerate",
+          "line": 1795
+        },
+        {
+          "function": "self.map_ecm2mem[ind_ecm].append",
+          "line": 1796
+        },
+        {
+          "function": "np.zeros",
+          "line": 1801
+        },
+        {
+          "function": "len",
+          "line": 1801
+        },
+        {
+          "function": "np.zeros",
+          "line": 1802
+        },
+        {
+          "function": "len",
+          "line": 1802
+        },
+        {
+          "function": "np.ones",
+          "line": 1806
+        },
+        {
+          "function": "len",
+          "line": 1806
+        },
+        {
+          "function": "enumerate",
+          "line": 1808
+        },
+        {
+          "function": "len",
+          "line": 1810
+        },
+        {
+          "function": "self.envInds_inClust.append",
+          "line": 1811
+        },
+        {
+          "function": "np.sum",
+          "line": 1812
+        },
+        {
+          "function": "len",
+          "line": 1814
+        },
+        {
+          "function": "np.asarray",
+          "line": 1818
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1824
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1827
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1828
+        },
+        {
+          "function": "np.zeros",
+          "line": 1838
+        },
+        {
+          "function": "len",
+          "line": 1838
+        },
+        {
+          "function": "len",
+          "line": 1838
+        },
+        {
+          "function": "enumerate",
+          "line": 1840
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1720,
+      "last_line": 1842,
+      "name": "environment",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1744,
+          "target": "self.ecm_sa"
+        },
+        {
+          "line": 1746,
+          "target": "self.ecm_vol"
+        },
+        {
+          "line": 1749,
+          "target": "self.ratio_cell2ecm"
+        },
+        {
+          "line": 1754,
+          "target": "self.points_tree"
+        },
+        {
+          "line": 1757,
+          "target": "self.map_cell2ecm"
+        },
+        {
+          "line": 1758,
+          "target": "self.map_mem2ecm"
+        },
+        {
+          "line": 1765,
+          "target": "self.ecm_bound_k"
+        },
+        {
+          "line": 1767,
+          "target": "self.ecm_allbound_k"
+        },
+        {
+          "line": 1787,
+          "target": "self.bBot_k"
+        },
+        {
+          "line": 1788,
+          "target": "self.bTop_k"
+        },
+        {
+          "line": 1789,
+          "target": "self.bL_k"
+        },
+        {
+          "line": 1790,
+          "target": "self.bR_k"
+        },
+        {
+          "line": 1793,
+          "target": "self.map_ecm2mem"
+        },
+        {
+          "line": 1800,
+          "target": "self.envInds_inClust"
+        },
+        {
+          "line": 1801,
+          "target": "self.memSa_per_envSquare"
+        },
+        {
+          "line": 1802,
+          "target": "self.mems_per_envSquare"
+        },
+        {
+          "line": 1806,
+          "target": "self.true_ecm_vol"
+        },
+        {
+          "line": 1813,
+          "target": "self.memSa_per_envSquare[ind_ecm]"
+        },
+        {
+          "line": 1814,
+          "target": "self.mems_per_envSquare[ind_ecm]"
+        },
+        {
+          "line": 1816,
+          "target": "self.true_ecm_vol[ind_ecm]"
+        },
+        {
+          "line": 1818,
+          "target": "self.envInds_inClust"
+        },
+        {
+          "line": 1821,
+          "target": "self.cell2env_corrF"
+        },
+        {
+          "line": 1830,
+          "target": "self.all_bound_mem_inds"
+        },
+        {
+          "line": 1831,
+          "target": "self.interior_bound_mem_inds"
+        },
+        {
+          "line": 1832,
+          "target": "self.inds_outmem"
+        },
+        {
+          "line": 1833,
+          "target": "self.ecm_inds_bound_cell"
+        },
+        {
+          "line": 1838,
+          "target": "self.M_divmap_mem2ecm"
+        },
+        {
+          "line": 1842,
+          "target": "self.M_divmap_mem2ecm[ecm_i, mem_i]"
+        }
+      ]
+    },
+    "Cells.graphLaplacian": {
+      "AST_sha256": "c9bda6b98491dc8887701b7626ea1acc14e5e1941a3bab208a80c8725826eb90",
+      "calls": [
+        {
+          "function": "logs.log_debug",
+          "line": 1861
+        },
+        {
+          "function": "np.diag",
+          "line": 1866
+        },
+        {
+          "function": "np.dot",
+          "line": 1869
+        },
+        {
+          "function": "np.diag",
+          "line": 1871
+        },
+        {
+          "function": "np.dot",
+          "line": 1873
+        },
+        {
+          "function": "np.diag",
+          "line": 1877
+        },
+        {
+          "function": "np.dot",
+          "line": 1880
+        },
+        {
+          "function": "np.diag",
+          "line": 1882
+        },
+        {
+          "function": "np.dot",
+          "line": 1884
+        },
+        {
+          "function": "np.dot",
+          "line": 1887
+        },
+        {
+          "function": "np.dot",
+          "line": 1891
+        },
+        {
+          "function": "np.dot",
+          "line": 1894
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1845,
+      "last_line": 1894,
+      "name": "graphLaplacian",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1887,
+          "target": "self.lapGJinv"
+        },
+        {
+          "line": 1891,
+          "target": "self.lapGJ"
+        },
+        {
+          "line": 1894,
+          "target": "self.geom_weight"
+        }
+      ]
+    },
+    "Cells.intra_updater": {
+      "AST_sha256": "bf5eecbcff883d6c3ef16aaaca63ab5c5bb5f996245604a3016d531711af6219",
+      "calls": [
+        {
+          "function": "np.zeros",
+          "line": 2195
+        },
+        {
+          "function": "len",
+          "line": 2195
+        },
+        {
+          "function": "len",
+          "line": 2195
+        },
+        {
+          "function": "enumerate",
+          "line": 2201
+        },
+        {
+          "function": "np.asarray",
+          "line": 2204
+        },
+        {
+          "function": "np.roll",
+          "line": 2206
+        },
+        {
+          "function": "np.roll",
+          "line": 2207
+        },
+        {
+          "function": "np.roll",
+          "line": 2208
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 2186,
+      "last_line": 2212,
+      "name": "intra_updater",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 2195,
+          "target": "self.M_int_mems"
+        },
+        {
+          "line": 2210,
+          "target": "self.M_int_mems[inds_o, inds_o]"
+        },
+        {
+          "line": 2211,
+          "target": "self.M_int_mems[inds_o, inds_p1]"
+        },
+        {
+          "line": 2212,
+          "target": "self.M_int_mems[inds_o, inds_n1]"
+        }
+      ]
+    },
+    "Cells.make_maskM": {
+      "AST_sha256": "d993d43e535a9b5052c4da15a36878cacdbda2a43541fe3ca114a18cdb8c008c",
+      "calls": [
+        {
+          "function": "cKDTree",
+          "line": 2148
+        },
+        {
+          "function": "voronoiTree.query",
+          "line": 2149
+        },
+        {
+          "function": "np.zeros",
+          "line": 2151
+        },
+        {
+          "function": "len",
+          "line": 2151
+        },
+        {
+          "function": "np.linspace",
+          "line": 2154
+        },
+        {
+          "function": "np.linspace",
+          "line": 2155
+        },
+        {
+          "function": "np.meshgrid",
+          "line": 2157
+        },
+        {
+          "function": "interp.griddata",
+          "line": 2162
+        },
+        {
+          "function": "gaussian_filter",
+          "line": 2167
+        },
+        {
+          "function": "np.round",
+          "line": 2168
+        },
+        {
+          "function": "interp.griddata",
+          "line": 2170
+        },
+        {
+          "function": "X.ravel",
+          "line": 2171
+        },
+        {
+          "function": "Y.ravel",
+          "line": 2171
+        },
+        {
+          "function": "self.maskM.ravel",
+          "line": 2171
+        },
+        {
+          "function": "gaussian_filter",
+          "line": 2174
+        },
+        {
+          "function": "np.round",
+          "line": 2175
+        },
+        {
+          "function": "list",
+          "line": 2177
+        },
+        {
+          "function": "(self.maskECM.ravel() == 0).nonzero",
+          "line": 2177
+        },
+        {
+          "function": "self.maskECM.ravel",
+          "line": 2177
+        },
+        {
+          "function": "list",
+          "line": 2178
+        },
+        {
+          "function": "(self.maskECM.ravel() == 1).nonzero",
+          "line": 2178
+        },
+        {
+          "function": "self.maskECM.ravel",
+          "line": 2178
+        },
+        {
+          "function": "cKDTree",
+          "line": 2182
+        },
+        {
+          "function": "vertTree.query",
+          "line": 2183
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 2142,
+      "last_line": 2183,
+      "name": "make_maskM",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 2149,
+          "target": "self.map_voronoi2ecm"
+        },
+        {
+          "line": 2151,
+          "target": "self.voronoi_mask"
+        },
+        {
+          "line": 2152,
+          "target": "self.voronoi_mask[self.map_voronoi2ecm]"
+        },
+        {
+          "line": 2159,
+          "target": "self.Xgrid"
+        },
+        {
+          "line": 2160,
+          "target": "self.Ygrid"
+        },
+        {
+          "line": 2162,
+          "target": "self.maskM"
+        },
+        {
+          "line": 2167,
+          "target": "self.maskM"
+        },
+        {
+          "line": 2168,
+          "target": "self.maskM"
+        },
+        {
+          "line": 2170,
+          "target": "self.maskECM"
+        },
+        {
+          "line": 2174,
+          "target": "self.maskECM"
+        },
+        {
+          "line": 2175,
+          "target": "self.maskECM"
+        },
+        {
+          "line": 2177,
+          "target": "self.inds_env"
+        },
+        {
+          "line": 2178,
+          "target": "self.inds_clust"
+        },
+        {
+          "line": 2180,
+          "target": "self.voronoi_centres"
+        },
+        {
+          "line": 2183,
+          "target": "self.cell_to_grid"
+        }
+      ]
+    },
+    "Cells.mem_processing": {
+      "AST_sha256": "f6fd3029cc8a6dd264b2b14152801140b241391b2039be5aa2bdd538c31cef2d",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 1400
+        },
+        {
+          "function": "cKDTree",
+          "line": 1404
+        },
+        {
+          "function": "memTree.query_ball_point",
+          "line": 1406
+        },
+        {
+          "function": "enumerate",
+          "line": 1410
+        },
+        {
+          "function": "len",
+          "line": 1411
+        },
+        {
+          "function": "mem_bound.append",
+          "line": 1412
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1413
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1414
+        },
+        {
+          "function": "len",
+          "line": 1416
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1417
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1418
+        },
+        {
+          "function": "len",
+          "line": 1424
+        },
+        {
+          "function": "round",
+          "line": 1429
+        },
+        {
+          "function": "np.dot",
+          "line": 1429
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1433
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1434
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1438
+        },
+        {
+          "function": "mem_nn[i].append",
+          "line": 1439
+        },
+        {
+          "function": "np.asarray",
+          "line": 1443
+        },
+        {
+          "function": "np.asarray",
+          "line": 1446
+        },
+        {
+          "function": "self.bflags_cells.append",
+          "line": 1455
+        },
+        {
+          "function": "np.asarray",
+          "line": 1457
+        },
+        {
+          "function": "set",
+          "line": 1461
+        },
+        {
+          "function": "range",
+          "line": 1464
+        },
+        {
+          "function": "len",
+          "line": 1464
+        },
+        {
+          "function": "np.asarray",
+          "line": 1467
+        },
+        {
+          "function": "np.asarray",
+          "line": 1468
+        },
+        {
+          "function": "ecm_mids.add",
+          "line": 1472
+        },
+        {
+          "function": "list",
+          "line": 1474
+        },
+        {
+          "function": "np.asarray",
+          "line": 1475
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1392,
+      "last_line": 1475,
+      "name": "mem_processing",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1432,
+          "target": "mem_nn[i]"
+        },
+        {
+          "line": 1437,
+          "target": "mem_nn[i]"
+        },
+        {
+          "line": 1443,
+          "target": "self.mem_nn"
+        },
+        {
+          "line": 1446,
+          "target": "self.bflags_mems"
+        },
+        {
+          "line": 1449,
+          "target": "self.bflags_cells"
+        },
+        {
+          "line": 1457,
+          "target": "self.bflags_cells"
+        },
+        {
+          "line": 1475,
+          "target": "self.ecm_mids"
+        }
+      ]
+    },
+    "Cells.near_neigh": {
+      "AST_sha256": "25e2317ff91ee3c9ca91e47b5dd51309b16135ec64a6f52bf64ca7a666eca52d",
+      "calls": [
+        {
+          "function": "enumerate",
+          "line": 1501
+        },
+        {
+          "function": "self.nn_i.append",
+          "line": 1505
+        },
+        {
+          "function": "self.cell_nn_i[mem_i].append",
+          "line": 1507
+        },
+        {
+          "function": "self.cell_nn_i[mem_i].append",
+          "line": 1508
+        },
+        {
+          "function": "self.nn_i.append",
+          "line": 1512
+        },
+        {
+          "function": "self.cell_nn_i[i].append",
+          "line": 1516
+        },
+        {
+          "function": "self.cell_nn_i[i].append",
+          "line": 1517
+        },
+        {
+          "function": "self.nn_i.append",
+          "line": 1521
+        },
+        {
+          "function": "self.cell_nn_i[i].append",
+          "line": 1525
+        },
+        {
+          "function": "self.cell_nn_i[i].append",
+          "line": 1526
+        },
+        {
+          "function": "logs.log_info",
+          "line": 1529
+        },
+        {
+          "function": "np.asarray",
+          "line": 1532
+        },
+        {
+          "function": "np.asarray",
+          "line": 1533
+        },
+        {
+          "function": "enumerate",
+          "line": 1537
+        },
+        {
+          "function": "cell_neigh_set.append",
+          "line": 1553
+        },
+        {
+          "function": "self.cell_nn.append",
+          "line": 1555
+        },
+        {
+          "function": "self.num_nn.append",
+          "line": 1560
+        },
+        {
+          "function": "len",
+          "line": 1560
+        },
+        {
+          "function": "sum",
+          "line": 1562
+        },
+        {
+          "function": "len",
+          "line": 1562
+        },
+        {
+          "function": "np.asarray",
+          "line": 1563
+        },
+        {
+          "function": "np.asarray",
+          "line": 1564
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1568
+        },
+        {
+          "function": "self.nn_bound.append",
+          "line": 1573
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1477,
+      "last_line": 1573,
+      "name": "near_neigh",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1498,
+          "target": "self.nn_i"
+        },
+        {
+          "line": 1499,
+          "target": "self.cell_nn_i"
+        },
+        {
+          "line": 1532,
+          "target": "self.nn_i"
+        },
+        {
+          "line": 1533,
+          "target": "self.cell_nn_i"
+        },
+        {
+          "line": 1536,
+          "target": "self.cell_nn"
+        },
+        {
+          "line": 1557,
+          "target": "self.num_nn"
+        },
+        {
+          "line": 1562,
+          "target": "self.average_nn"
+        },
+        {
+          "line": 1563,
+          "target": "self.num_nn"
+        },
+        {
+          "line": 1564,
+          "target": "self.cell_nn"
+        },
+        {
+          "line": 1570,
+          "target": "self.nn_bound"
+        }
+      ]
+    },
+    "Cells.redo_gj": {
+      "AST_sha256": "b72ca08dcf484811c94806f130b445805b044ded09a4967200855de043800350",
+      "calls": [
+        {
+          "function": "range",
+          "line": 1956
+        },
+        {
+          "function": "len",
+          "line": 1956
+        },
+        {
+          "function": "dyna.tissue_name_to_profile.items",
+          "line": 1958
+        },
+        {
+          "function": "enumerate",
+          "line": 1965
+        },
+        {
+          "function": "int",
+          "line": 1967
+        },
+        {
+          "function": "int",
+          "line": 1971
+        },
+        {
+          "function": "flag_cell_nn[i].append",
+          "line": 1974
+        },
+        {
+          "function": "range",
+          "line": 1976
+        },
+        {
+          "function": "len",
+          "line": 1976
+        },
+        {
+          "function": "enumerate",
+          "line": 1978
+        },
+        {
+          "function": "new_cell_nn[i].append",
+          "line": 1983
+        },
+        {
+          "function": "np.asarray",
+          "line": 1985
+        },
+        {
+          "function": "self.num_nn.append",
+          "line": 1991
+        },
+        {
+          "function": "len",
+          "line": 1991
+        },
+        {
+          "function": "sum",
+          "line": 1993
+        },
+        {
+          "function": "len",
+          "line": 1993
+        },
+        {
+          "function": "np.asarray",
+          "line": 1994
+        },
+        {
+          "function": "np.ones",
+          "line": 1995
+        },
+        {
+          "function": "len",
+          "line": 1995
+        },
+        {
+          "function": "enumerate",
+          "line": 1997
+        },
+        {
+          "function": "self.calc_gj_vects",
+          "line": 2015
+        }
+      ],
+      "cls": "Cells",
+      "first_line": 1941,
+      "last_line": 2015,
+      "name": "redo_gj",
+      "path": "betse/science/cells.py",
+      "writes": [
+        {
+          "line": 1985,
+          "target": "self.cell_nn_connected"
+        },
+        {
+          "line": 1988,
+          "target": "self.num_nn"
+        },
+        {
+          "line": 1993,
+          "target": "self.average_nn"
+        },
+        {
+          "line": 1994,
+          "target": "self.num_nn"
+        },
+        {
+          "line": 1995,
+          "target": "self.gj_default_weights"
+        },
+        {
+          "line": 2008,
+          "target": "self.gj_default_weights[mem_i]"
+        }
+      ]
+    },
+    "DECMesh.create_core_operators": {
+      "AST_sha256": "8efd40922b84fb222db394f6d1d7ac939cd04737d0085e8e420777c0321fd675",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 1175
+        },
+        {
+          "function": "np.zeros",
+          "line": 1178
+        },
+        {
+          "function": "enumerate",
+          "line": 1180
+        },
+        {
+          "function": "np.asarray",
+          "line": 1184
+        },
+        {
+          "function": "np.linalg.pinv",
+          "line": 1187
+        }
+      ],
+      "cls": "DECMesh",
+      "first_line": 1166,
+      "last_line": 1187,
+      "name": "create_core_operators",
+      "path": "betse/science/math/mesh.py",
+      "writes": [
+        {
+          "line": 1181,
+          "target": "delta_tri_0[ei, vj]"
+        },
+        {
+          "line": 1182,
+          "target": "delta_tri_0[ei, vi]"
+        },
+        {
+          "line": 1184,
+          "target": "self.delta_tri_0"
+        },
+        {
+          "line": 1187,
+          "target": "self.delta_tri_0_inv"
+        }
+      ]
+    },
+    "DECMesh.create_mappings": {
+      "AST_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82",
+      "calls": [
+        {
+          "function": "range",
+          "line": 707
+        },
+        {
+          "function": "range",
+          "line": 711
+        },
+        {
+          "function": "len",
+          "line": 711
+        },
+        {
+          "function": "cKDTree",
+          "line": 713
+        },
+        {
+          "function": "enumerate",
+          "line": 715
+        },
+        {
+          "function": "np.roll",
+          "line": 716
+        },
+        {
+          "function": "zip",
+          "line": 718
+        },
+        {
+          "function": "edge_tree.query",
+          "line": 719
+        },
+        {
+          "function": "face_to_edges[ci].append",
+          "line": 722
+        },
+        {
+          "function": "verts_to_edges[vi].append",
+          "line": 723
+        },
+        {
+          "function": "verts_to_edges[vj].append",
+          "line": 724
+        },
+        {
+          "function": "np.asarray",
+          "line": 727
+        },
+        {
+          "function": "np.asarray",
+          "line": 731
+        },
+        {
+          "function": "enumerate",
+          "line": 735
+        },
+        {
+          "function": "tedges_to_tcell[ei].append",
+          "line": 737
+        },
+        {
+          "function": "np.asarray",
+          "line": 739
+        },
+        {
+          "function": "np.asarray",
+          "line": 743
+        }
+      ],
+      "cls": "DECMesh",
+      "first_line": 699,
+      "last_line": 743,
+      "name": "create_mappings",
+      "path": "betse/science/math/mesh.py",
+      "writes": [
+        {
+          "line": 727,
+          "target": "self.tcell_to_tedges"
+        },
+        {
+          "line": 731,
+          "target": "self.tverts_to_tedges"
+        },
+        {
+          "line": 739,
+          "target": "self.tedges_to_tcell"
+        },
+        {
+          "line": 743,
+          "target": "self.bflags_tcells"
+        }
+      ]
+    },
+    "DECMesh.create_tri_map": {
+      "AST_sha256": "144ef580df8bd92abf80a9544872b5dcc5fcf608c24b810f3d3e75531a30d3b7",
+      "calls": [
+        {
+          "function": "range",
+          "line": 683
+        },
+        {
+          "function": "len",
+          "line": 683
+        },
+        {
+          "function": "set",
+          "line": 686
+        },
+        {
+          "function": "enumerate",
+          "line": 688
+        },
+        {
+          "function": "self.free_to_merge.add",
+          "line": 689
+        },
+        {
+          "function": "tverts_to_tcell[vi].append",
+          "line": 692
+        },
+        {
+          "function": "array",
+          "line": 696
+        }
+      ],
+      "cls": "DECMesh",
+      "first_line": 677,
+      "last_line": 696,
+      "name": "create_tri_map",
+      "path": "betse/science/math/mesh.py",
+      "writes": [
+        {
+          "line": 686,
+          "target": "self.free_to_merge"
+        },
+        {
+          "line": 696,
+          "target": "self._tverts_to_tcell"
+        }
+      ]
+    },
+    "DECMesh.cut_mesh": {
+      "AST_sha256": "96e346305b1ef1ee230afafdd8d1ca0bfd21968d67c7372732bb58f010dc39cb",
+      "calls": [
+        {
+          "function": "tcell_targets.extend",
+          "line": 2690
+        },
+        {
+          "function": "np.unique",
+          "line": 2691
+        },
+        {
+          "function": "np.delete",
+          "line": 2693
+        },
+        {
+          "function": "np.delete",
+          "line": 2694
+        },
+        {
+          "function": "np.delete",
+          "line": 2697
+        },
+        {
+          "function": "np.delete",
+          "line": 2698
+        },
+        {
+          "function": "np.delete",
+          "line": 2699
+        },
+        {
+          "function": "np.delete",
+          "line": 2700
+        },
+        {
+          "function": "cKDTree",
+          "line": 2703
+        },
+        {
+          "function": "self.tri_cells.append",
+          "line": 2708
+        },
+        {
+          "function": "tri_vtree.query",
+          "line": 2708
+        },
+        {
+          "function": "np.asarray",
+          "line": 2710
+        },
+        {
+          "function": "len",
+          "line": 2712
+        },
+        {
+          "function": "np.linspace",
+          "line": 2713
+        },
+        {
+          "function": "len",
+          "line": 2717
+        },
+        {
+          "function": "np.asarray",
+          "line": 2720
+        },
+        {
+          "function": "range",
+          "line": 2720
+        },
+        {
+          "function": "tedge_targs.extend",
+          "line": 2726
+        },
+        {
+          "function": "np.unique",
+          "line": 2727
+        },
+        {
+          "function": "np.delete",
+          "line": 2729
+        },
+        {
+          "function": "tri_vtree.query",
+          "line": 2734
+        },
+        {
+          "function": "len",
+          "line": 2735
+        },
+        {
+          "function": "tri_edges.append",
+          "line": 2736
+        },
+        {
+          "function": "np.asarray",
+          "line": 2738
+        },
+        {
+          "function": "len",
+          "line": 2740
+        },
+        {
+          "function": "np.linspace",
+          "line": 2741
+        },
+        {
+          "function": "np.delete",
+          "line": 2744
+        },
+        {
+          "function": "np.delete",
+          "line": 2745
+        },
+        {
+          "function": "np.delete",
+          "line": 2746
+        },
+        {
+          "function": "np.delete",
+          "line": 2750
+        },
+        {
+          "function": "np.delete",
+          "line": 2751
+        },
+        {
+          "function": "self.create_tri_map",
+          "line": 2754
+        },
+        {
+          "function": "self.create_mappings",
+          "line": 2756
+        },
+        {
+          "function": "self.create_core_operators",
+          "line": 2759
+        },
+        {
+          "function": "logs.log_info",
+          "line": 2772
+        }
+      ],
+      "cls": "DECMesh",
+      "first_line": 2651,
+      "last_line": 2774,
+      "name": "cut_mesh",
+      "path": "betse/science/math/mesh.py",
+      "writes": [
+        {
+          "line": 2681,
+          "target": "self.tri_mids_o"
+        },
+        {
+          "line": 2682,
+          "target": "self.tri_edge_i_o"
+        },
+        {
+          "line": 2693,
+          "target": "self.tri_verts"
+        },
+        {
+          "line": 2694,
+          "target": "self.tcell_verts"
+        },
+        {
+          "line": 2697,
+          "target": "self.tri_ccents"
+        },
+        {
+          "line": 2698,
+          "target": "self.tri_rcircs"
+        },
+        {
+          "line": 2699,
+          "target": "self.tri_cents"
+        },
+        {
+          "line": 2700,
+          "target": "self.tri_sa"
+        },
+        {
+          "line": 2705,
+          "target": "self.tri_cells"
+        },
+        {
+          "line": 2710,
+          "target": "self.tri_cells"
+        },
+        {
+          "line": 2712,
+          "target": "self.n_tverts"
+        },
+        {
+          "line": 2713,
+          "target": "self.tri_vert_i"
+        },
+        {
+          "line": 2717,
+          "target": "self.n_tcell"
+        },
+        {
+          "line": 2720,
+          "target": "self.tri_cell_i"
+        },
+        {
+          "line": 2738,
+          "target": "self.tri_edges"
+        },
+        {
+          "line": 2740,
+          "target": "self.n_tedges"
+        },
+        {
+          "line": 2741,
+          "target": "self.tri_edge_i"
+        },
+        {
+          "line": 2744,
+          "target": "self.tri_mids"
+        },
+        {
+          "line": 2745,
+          "target": "self.tri_edge_len"
+        },
+        {
+          "line": 2746,
+          "target": "self.tri_tang"
+        },
+        {
+          "line": 2750,
+          "target": "self.vor_sa"
+        },
+        {
+          "line": 2751,
+          "target": "self.vor_edge_len"
+        }
+      ]
+    },
+    "MasterOfNetworks.mod_after_cut_event": {
+      "AST_sha256": "8852a0088bfa9feb5ac939deab6ac8610c9fc8fdc11718ad6e5f40f41c668a5c",
+      "calls": [
+        {
+          "function": "np.zeros",
+          "line": 4047
+        },
+        {
+          "function": "obj.remove_cells",
+          "line": 4052
+        },
+        {
+          "function": "self.mit.remove_mits",
+          "line": 4055
+        },
+        {
+          "function": "obj.update_transporter",
+          "line": 4065
+        },
+        {
+          "function": "obj.init_channel",
+          "line": 4069
+        }
+      ],
+      "cls": "MasterOfNetworks",
+      "first_line": 4016,
+      "last_line": 4073,
+      "name": "mod_after_cut_event",
+      "path": "betse/science/chemistry/networks.py",
+      "writes": [
+        {
+          "line": 4047,
+          "target": "self.extra_J_mem"
+        },
+        {
+          "line": 4058,
+          "target": "sim.met_concs"
+        }
+      ]
+    },
+    "MasterOfNetworks.redefine_dynamic_dics": {
+      "AST_sha256": "fc36024be42d3b002ae76dbb912041310c2d7057b0f63575b414109a6e67e7e5",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 4087
+        },
+        {
+          "function": "Mito",
+          "line": 4099
+        },
+        {
+          "function": "p.ions_dict.items",
+          "line": 4106
+        },
+        {
+          "function": "sim.get_ion",
+          "line": 4109
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4112
+        },
+        {
+          "function": "sim.cc_cells.__setitem__",
+          "line": 4114
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4116
+        },
+        {
+          "function": "sim.cc_at_mem.__setitem__",
+          "line": 4118
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4120
+        },
+        {
+          "function": "sim.cc_env.__setitem__",
+          "line": 4122
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4124
+        },
+        {
+          "function": "sim.c_env_bound.__setitem__",
+          "line": 4126
+        },
+        {
+          "function": "sim.Dm_cells[ion_index].mean",
+          "line": 4129
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4132
+        },
+        {
+          "function": "sim.cc_mit.__setitem__",
+          "line": 4134
+        },
+        {
+          "function": "self.molecules.items",
+          "line": 4136
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4139
+        },
+        {
+          "function": "setattr",
+          "line": 4141
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4143
+        },
+        {
+          "function": "setattr",
+          "line": 4145
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4147
+        },
+        {
+          "function": "setattr",
+          "line": 4149
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4151
+        },
+        {
+          "function": "setattr",
+          "line": 4153
+        },
+        {
+          "function": "DynamicValue",
+          "line": 4157
+        },
+        {
+          "function": "setattr",
+          "line": 4159
+        },
+        {
+          "function": "DynamicValueDict",
+          "line": 4161
+        },
+        {
+          "function": "DynamicValueDict",
+          "line": 4162
+        },
+        {
+          "function": "DynamicValueDict",
+          "line": 4163
+        },
+        {
+          "function": "DynamicValueDict",
+          "line": 4164
+        },
+        {
+          "function": "DynamicValueDict",
+          "line": 4167
+        }
+      ],
+      "cls": "MasterOfNetworks",
+      "first_line": 4076,
+      "last_line": 4170,
+      "name": "redefine_dynamic_dics",
+      "path": "betse/science/chemistry/networks.py",
+      "writes": [
+        {
+          "line": 4099,
+          "target": "self.mit"
+        },
+        {
+          "line": 4102,
+          "target": "self.mit"
+        },
+        {
+          "line": 4112,
+          "target": "cell_concs_mapping[k]"
+        },
+        {
+          "line": 4116,
+          "target": "mem_concs_mapping[k]"
+        },
+        {
+          "line": 4120,
+          "target": "env_concs_mapping[k]"
+        },
+        {
+          "line": 4124,
+          "target": "bound_concs_mapping[k]"
+        },
+        {
+          "line": 4128,
+          "target": "self.zmol[k]"
+        },
+        {
+          "line": 4129,
+          "target": "self.Dmem[k]"
+        },
+        {
+          "line": 4132,
+          "target": "mit_concs_mapping[k]"
+        },
+        {
+          "line": 4139,
+          "target": "cell_concs_mapping[name]"
+        },
+        {
+          "line": 4143,
+          "target": "mem_concs_mapping[name]"
+        },
+        {
+          "line": 4147,
+          "target": "env_concs_mapping[name]"
+        },
+        {
+          "line": 4151,
+          "target": "bound_concs_mapping[name]"
+        },
+        {
+          "line": 4157,
+          "target": "mit_concs_mapping[name]"
+        },
+        {
+          "line": 4161,
+          "target": "self.cell_concs"
+        },
+        {
+          "line": 4162,
+          "target": "self.mem_concs"
+        },
+        {
+          "line": 4163,
+          "target": "self.env_concs"
+        },
+        {
+          "line": 4164,
+          "target": "self.bound_concs"
+        },
+        {
+          "line": 4167,
+          "target": "self.mit_concs"
+        },
+        {
+          "line": 4170,
+          "target": "self.mit_concs"
+        }
+      ]
+    },
+    "Molecule.init_growth": {
+      "AST_sha256": "d8cca284bddd9f78310d27a554a57ea6645e454a657b49eb1b1ec48cf08d51d7",
+      "calls": [
+        {
+          "function": "self.growth_targets_cell.extend",
+          "line": 6018
+        },
+        {
+          "function": "self.growth_targets_mem.extend",
+          "line": 6021
+        },
+        {
+          "function": "np.zeros",
+          "line": 6029
+        },
+        {
+          "function": "np.zeros",
+          "line": 6030
+        },
+        {
+          "function": "phase.p.expression_data[self.name].items",
+          "line": 6032
+        }
+      ],
+      "cls": "Molecule",
+      "first_line": 6000,
+      "last_line": 6043,
+      "name": "init_growth",
+      "path": "betse/science/chemistry/networks.py",
+      "writes": [
+        {
+          "line": 6013,
+          "target": "self.growth_targets_cell"
+        },
+        {
+          "line": 6014,
+          "target": "self.growth_targets_mem"
+        },
+        {
+          "line": 6025,
+          "target": "self.growth_targets_cell"
+        },
+        {
+          "line": 6026,
+          "target": "self.growth_targets_mem"
+        },
+        {
+          "line": 6029,
+          "target": "self.expr_map_cell"
+        },
+        {
+          "line": 6030,
+          "target": "self.expr_map_mem"
+        },
+        {
+          "line": 6035,
+          "target": "self.expr_map_mem[tinds_mem]"
+        },
+        {
+          "line": 6036,
+          "target": "self.expr_map_cell[tinds_cell]"
+        },
+        {
+          "line": 6038,
+          "target": "self.vmax"
+        },
+        {
+          "line": 6042,
+          "target": "self.growth_targets_cell"
+        },
+        {
+          "line": 6043,
+          "target": "self.growth_targets_mem"
+        }
+      ]
+    },
+    "Molecule.remove_cells": {
+      "AST_sha256": "2b0ba8e0082015a63a95eb46dab8f76be191ca18e6b439ca5053dd99990cfb3f",
+      "calls": [
+        {
+          "function": "np.delete",
+          "line": 5947
+        },
+        {
+          "function": "np.delete",
+          "line": 5952
+        },
+        {
+          "function": "np.delete",
+          "line": 5957
+        },
+        {
+          "function": "np.delete",
+          "line": 5977
+        },
+        {
+          "function": "phase.dyna.init_profiles",
+          "line": 5984
+        },
+        {
+          "function": "self.init_growth",
+          "line": 5985
+        },
+        {
+          "function": "np.delete",
+          "line": 5988
+        },
+        {
+          "function": "np.delete",
+          "line": 5993
+        }
+      ],
+      "cls": "Molecule",
+      "first_line": 5920,
+      "last_line": 5995,
+      "name": "remove_cells",
+      "path": "betse/science/chemistry/networks.py",
+      "writes": [
+        {
+          "line": 5949,
+          "target": "self.c_cells"
+        },
+        {
+          "line": 5954,
+          "target": "self.cc_at_mem"
+        },
+        {
+          "line": 5959,
+          "target": "self.cc_grad_x"
+        },
+        {
+          "line": 5978,
+          "target": "self.growth_mod_function_cells"
+        },
+        {
+          "line": 5989,
+          "target": "self.c_env"
+        },
+        {
+          "line": 5995,
+          "target": "self.c_mit"
+        }
+      ]
+    },
+    "Simulator._run_sim_core_loop": {
+      "AST_sha256": "5bb6033a2b9180b7a54ea74c1f92e4ace8e4e1293f1457b24118732c9ef1757b",
+      "calls": [
+        {
+          "function": "time.time",
+          "line": 1172
+        },
+        {
+          "function": "self.fluxes_mem.fill",
+          "line": 1175
+        },
+        {
+          "function": "self.fluxes_gj.fill",
+          "line": 1176
+        },
+        {
+          "function": "np.zeros",
+          "line": 1179
+        },
+        {
+          "function": "len",
+          "line": 1179
+        },
+        {
+          "function": "np.zeros",
+          "line": 1180
+        },
+        {
+          "function": "len",
+          "line": 1180
+        },
+        {
+          "function": "phase.dyna.fire_events",
+          "line": 1188
+        },
+        {
+          "function": "np.zeros",
+          "line": 1194
+        },
+        {
+          "function": "stb.pumpNaKATP",
+          "line": 1199
+        },
+        {
+          "function": "stb.pumpNaKATP",
+          "line": 1212
+        },
+        {
+          "function": "np.ones",
+          "line": 1254
+        },
+        {
+          "function": "stb.electroflux",
+          "line": 1257
+        },
+        {
+          "function": "stb.electroflux",
+          "line": 1261
+        },
+        {
+          "function": "self.update_gj",
+          "line": 1272
+        },
+        {
+          "function": "self.update_ecm",
+          "line": 1276
+        },
+        {
+          "function": "self.update_intra",
+          "line": 1279
+        },
+        {
+          "function": "self.ca_handler",
+          "line": 1283
+        },
+        {
+          "function": "self.molecules.core.clear_run_loop",
+          "line": 1291
+        },
+        {
+          "function": "self.molecules.core.run_loop_transporters",
+          "line": 1294
+        },
+        {
+          "function": "self.molecules.core.run_loop_channels",
+          "line": 1297
+        },
+        {
+          "function": "self.molecules.core.run_loop_modulators",
+          "line": 1300
+        },
+        {
+          "function": "self.molecules.core.run_loop",
+          "line": 1303
+        },
+        {
+          "function": "self.grn.core.clear_run_loop",
+          "line": 1307
+        },
+        {
+          "function": "self.grn.core.run_loop_transporters",
+          "line": 1310
+        },
+        {
+          "function": "self.grn.core.run_loop_channels",
+          "line": 1313
+        },
+        {
+          "function": "self.grn.core.run_loop_modulators",
+          "line": 1316
+        },
+        {
+          "function": "self.grn.core.run_loop",
+          "line": 1319
+        },
+        {
+          "function": "np.random.random",
+          "line": 1327
+        },
+        {
+          "function": "stb.update_Co",
+          "line": 1330
+        },
+        {
+          "function": "osmotic_P",
+          "line": 1345
+        },
+        {
+          "function": "getFlow",
+          "line": 1348
+        },
+        {
+          "function": "timeDeform",
+          "line": 1352
+        },
+        {
+          "function": "getDeformation",
+          "line": 1354
+        },
+        {
+          "function": "self.update_all_concs",
+          "line": 1357
+        },
+        {
+          "function": "self.update_V",
+          "line": 1360
+        },
+        {
+          "function": "stb.check_v",
+          "line": 1363
+        },
+        {
+          "function": "phase.callbacks.progressed_next",
+          "line": 1371
+        },
+        {
+          "function": "self.write2storage",
+          "line": 1374
+        },
+        {
+          "function": "anim_cells.plot_frame",
+          "line": 1381
+        },
+        {
+          "function": "self._log_solver_time_estimate",
+          "line": 1389
+        }
+      ],
+      "cls": "Simulator",
+      "first_line": 1132,
+      "last_line": 1390,
+      "name": "_run_sim_core_loop",
+      "path": "betse/science/sim.py",
+      "writes": [
+        {
+          "line": 1179,
+          "target": "self.fluxes_env_x"
+        },
+        {
+          "line": 1180,
+          "target": "self.fluxes_env_y"
+        },
+        {
+          "line": 1194,
+          "target": "self.rate_NaKATP"
+        },
+        {
+          "line": 1199,
+          "target": "self.rate_NaKATP"
+        },
+        {
+          "line": 1212,
+          "target": "self.rate_NaKATP"
+        },
+        {
+          "line": 1229,
+          "target": "fNa_NaK[cells.bflags_mems]"
+        },
+        {
+          "line": 1230,
+          "target": "fK_NaK[cells.bflags_mems]"
+        },
+        {
+          "line": 1233,
+          "target": "self.fluxes_mem[self.iNa]"
+        },
+        {
+          "line": 1234,
+          "target": "self.fluxes_mem[self.iK]"
+        },
+        {
+          "line": 1266,
+          "target": "f_ED[cells.bflags_mems]"
+        },
+        {
+          "line": 1269,
+          "target": "self.fluxes_mem[i]"
+        },
+        {
+          "line": 1326,
+          "target": "self.protein_noise_flux"
+        },
+        {
+          "line": 1330,
+          "target": "self.cc_cells[self.iP]"
+        },
+        {
+          "line": 1330,
+          "target": "self.cc_at_mem[self.iP]"
+        },
+        {
+          "line": 1330,
+          "target": "self.cc_env[self.iP]"
+        }
+      ]
+    },
+    "Simulator.fast_sim_init": {
+      "AST_sha256": "7756982adacb87b0ded9506ff14583a67562d34cc71d25d0918c756a40651cbd",
+      "calls": [
+        {
+          "function": "p.ions_dict.items",
+          "line": 1403
+        },
+        {
+          "function": "self.get_ion",
+          "line": 1405
+        },
+        {
+          "function": "self.cc_cells[ii].mean",
+          "line": 1406
+        },
+        {
+          "function": "self.cc_env[ii].mean",
+          "line": 1409
+        },
+        {
+          "function": "np.log",
+          "line": 1417
+        },
+        {
+          "function": "sigma_gj.append",
+          "line": 1426
+        },
+        {
+          "function": "sigma_mem.append",
+          "line": 1427
+        },
+        {
+          "function": "stb.ghk_calculator",
+          "line": 1430
+        },
+        {
+          "function": "np.mean",
+          "line": 1440
+        },
+        {
+          "function": "self.cbar_dic.items",
+          "line": 1440
+        },
+        {
+          "function": "np.sum",
+          "line": 1441
+        },
+        {
+          "function": "v.mean",
+          "line": 1441
+        },
+        {
+          "function": "self.cbar_dic.items",
+          "line": 1441
+        },
+        {
+          "function": "np.dot",
+          "line": 1443
+        },
+        {
+          "function": "sum",
+          "line": 1443
+        },
+        {
+          "function": "sum",
+          "line": 1447
+        },
+        {
+          "function": "np.zeros",
+          "line": 1449
+        },
+        {
+          "function": "np.zeros",
+          "line": 1450
+        }
+      ],
+      "cls": "Simulator",
+      "first_line": 1393,
+      "last_line": 1450,
+      "name": "fast_sim_init",
+      "path": "betse/science/sim.py",
+      "writes": [
+        {
+          "line": 1398,
+          "target": "self.rev_E_dic"
+        },
+        {
+          "line": 1399,
+          "target": "self.cbar_dic"
+        },
+        {
+          "line": 1414,
+          "target": "self.cbar_dic[ion_n]"
+        },
+        {
+          "line": 1420,
+          "target": "self.rev_E_dic[ion_n]"
+        },
+        {
+          "line": 1434,
+          "target": "self.geo_conv"
+        },
+        {
+          "line": 1436,
+          "target": "self.E_Leak"
+        },
+        {
+          "line": 1438,
+          "target": "self.sigma_mem"
+        },
+        {
+          "line": 1440,
+          "target": "self.cbar_all"
+        },
+        {
+          "line": 1441,
+          "target": "self.cbar_sum"
+        },
+        {
+          "line": 1443,
+          "target": "self.G_Leak"
+        },
+        {
+          "line": 1447,
+          "target": "self.G_gj"
+        },
+        {
+          "line": 1449,
+          "target": "self.Emx"
+        },
+        {
+          "line": 1450,
+          "target": "self.Emy"
+        }
+      ]
+    },
+    "Simulator.initDenv": {
+      "AST_sha256": "43918dd3dba094861fc1d725978275d7b178c28942c6394b6f10f3909bd50cab",
+      "calls": [
+        {
+          "function": "enumerate",
+          "line": 2354
+        },
+        {
+          "function": "np.ones",
+          "line": 2355
+        },
+        {
+          "function": "self.D_env[self.iNa].max",
+          "line": 2369
+        },
+        {
+          "function": "D_env_weight.reshape",
+          "line": 2370
+        },
+        {
+          "function": "np.copy",
+          "line": 2371
+        },
+        {
+          "function": "np.ones",
+          "line": 2373
+        },
+        {
+          "function": "np.ones",
+          "line": 2378
+        },
+        {
+          "function": "len",
+          "line": 2378
+        },
+        {
+          "function": "gaussian_filter",
+          "line": 2385
+        },
+        {
+          "function": "Denv_o.reshape",
+          "line": 2385
+        },
+        {
+          "function": "np.copy",
+          "line": 2387
+        },
+        {
+          "function": "Denv_o.reshape",
+          "line": 2391
+        },
+        {
+          "function": "np.copy",
+          "line": 2392
+        },
+        {
+          "function": "np.hstack",
+          "line": 2394
+        },
+        {
+          "function": "np.ones",
+          "line": 2397
+        },
+        {
+          "function": "len",
+          "line": 2397
+        },
+        {
+          "function": "gaussian_filter",
+          "line": 2400
+        },
+        {
+          "function": "self.Chi.reshape",
+          "line": 2400
+        }
+      ],
+      "cls": "Simulator",
+      "first_line": 2347,
+      "last_line": 2400,
+      "name": "initDenv",
+      "path": "betse/science/sim.py",
+      "writes": [
+        {
+          "line": 2358,
+          "target": "Denv_o[cells.envInds_inClust]"
+        },
+        {
+          "line": 2361,
+          "target": "Denv_o[cells.all_bound_mem_inds]"
+        },
+        {
+          "line": 2362,
+          "target": "Denv_o[cells.interior_bound_mem_inds]"
+        },
+        {
+          "line": 2363,
+          "target": "Denv_o[cells.ecm_inds_bound_cell]"
+        },
+        {
+          "line": 2366,
+          "target": "self.D_env[i]"
+        },
+        {
+          "line": 2370,
+          "target": "self.D_env_weight"
+        },
+        {
+          "line": 2371,
+          "target": "self.D_env_weight_base"
+        },
+        {
+          "line": 2373,
+          "target": "self.TJ_modulator"
+        },
+        {
+          "line": 2381,
+          "target": "Denv_o[cells.all_bound_mem_inds]"
+        },
+        {
+          "line": 2382,
+          "target": "Denv_o[cells.interior_bound_mem_inds]"
+        },
+        {
+          "line": 2383,
+          "target": "Denv_o[cells.ecm_inds_bound_cell]"
+        },
+        {
+          "line": 2387,
+          "target": "self.D_env"
+        },
+        {
+          "line": 2391,
+          "target": "self.D_env_weight"
+        },
+        {
+          "line": 2392,
+          "target": "self.D_env_weight_base"
+        },
+        {
+          "line": 2394,
+          "target": "self.TJ_targets"
+        },
+        {
+          "line": 2397,
+          "target": "self.Chi"
+        },
+        {
+          "line": 2400,
+          "target": "self.Chi"
+        }
+      ]
+    },
+    "Simulator.init_dynamics": {
+      "AST_sha256": "8145abe368dbf3c40f85d745d4909a333ab1a8ab8acb2f24f2decfa4164d3430",
+      "calls": [
+        {
+          "function": "logs.log_info",
+          "line": 775
+        },
+        {
+          "function": "Gap_Junction",
+          "line": 790
+        },
+        {
+          "function": "self.initDenv",
+          "line": 793
+        },
+        {
+          "function": "p.ions_dict.items",
+          "line": 798
+        },
+        {
+          "function": "self.get_ion",
+          "line": 802
+        },
+        {
+          "function": "phase.dyna.init_profiles",
+          "line": 809
+        },
+        {
+          "function": "copy.copy",
+          "line": 813
+        },
+        {
+          "function": "np.zeros",
+          "line": 816
+        },
+        {
+          "function": "len",
+          "line": 816
+        },
+        {
+          "function": "np.zeros",
+          "line": 817
+        },
+        {
+          "function": "len",
+          "line": 817
+        },
+        {
+          "function": "np.zeros",
+          "line": 819
+        },
+        {
+          "function": "len",
+          "line": 819
+        },
+        {
+          "function": "np.zeros",
+          "line": 820
+        },
+        {
+          "function": "len",
+          "line": 820
+        },
+        {
+          "function": "np.asarray",
+          "line": 823
+        },
+        {
+          "function": "np.copy",
+          "line": 825
+        },
+        {
+          "function": "np.copy",
+          "line": 827
+        },
+        {
+          "function": "np.copy",
+          "line": 830
+        },
+        {
+          "function": "np.copy",
+          "line": 831
+        },
+        {
+          "function": "np.zeros",
+          "line": 833
+        },
+        {
+          "function": "np.random.random",
+          "line": 837
+        },
+        {
+          "function": "np.ones",
+          "line": 843
+        },
+        {
+          "function": "len",
+          "line": 843
+        },
+        {
+          "function": "np.ones",
+          "line": 849
+        },
+        {
+          "function": "np.ones",
+          "line": 854
+        },
+        {
+          "function": "EndoRetic",
+          "line": 858
+        },
+        {
+          "function": "logs.log_info",
+          "line": 868
+        },
+        {
+          "function": "MasterOfMolecules",
+          "line": 871
+        },
+        {
+          "function": "self.molecules.read_mol_config",
+          "line": 873
+        },
+        {
+          "function": "logs.log_info",
+          "line": 875
+        },
+        {
+          "function": "self.molecules.reinitialize",
+          "line": 881
+        },
+        {
+          "function": "logs.log_info",
+          "line": 886
+        },
+        {
+          "function": "MasterOfGenes",
+          "line": 889
+        },
+        {
+          "function": "self.grn.read_gene_config",
+          "line": 891
+        },
+        {
+          "function": "logs.log_info",
+          "line": 893
+        },
+        {
+          "function": "self.grn.reinitialize",
+          "line": 899
+        },
+        {
+          "function": "np.zeros",
+          "line": 904
+        },
+        {
+          "function": "np.zeros",
+          "line": 905
+        },
+        {
+          "function": "np.zeros",
+          "line": 909
+        },
+        {
+          "function": "np.zeros",
+          "line": 910
+        },
+        {
+          "function": "np.zeros",
+          "line": 912
+        },
+        {
+          "function": "np.zeros",
+          "line": 913
+        },
+        {
+          "function": "np.zeros",
+          "line": 918
+        },
+        {
+          "function": "np.zeros",
+          "line": 919
+        },
+        {
+          "function": "np.zeros",
+          "line": 929
+        },
+        {
+          "function": "np.zeros",
+          "line": 930
+        },
+        {
+          "function": "cells.deform_tools",
+          "line": 932
+        },
+        {
+          "function": "copy.deepcopy",
+          "line": 934
+        },
+        {
+          "function": "logs.log_info",
+          "line": 941
+        },
+        {
+          "function": "cells.graphLaplacian",
+          "line": 942
+        },
+        {
+          "function": "phase.dyna.init_events",
+          "line": 968
+        },
+        {
+          "function": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_env)).mean",
+          "line": 974
+        },
+        {
+          "function": "np.sqrt",
+          "line": 974
+        },
+        {
+          "function": "np.dot",
+          "line": 974
+        },
+        {
+          "function": "np.sqrt(np.dot(p.NAv * p.q ** 2 * self.zs ** 2 / (p.er * p.eo * p.kb * p.T), self.cc_cells)).mean",
+          "line": 975
+        },
+        {
+          "function": "np.sqrt",
+          "line": 975
+        },
+        {
+          "function": "np.dot",
+          "line": 975
+        },
+        {
+          "function": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum(axis=0).mean",
+          "line": 986
+        },
+        {
+          "function": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum",
+          "line": 986
+        },
+        {
+          "function": "np.asarray",
+          "line": 986
+        },
+        {
+          "function": "zip",
+          "line": 987
+        },
+        {
+          "function": "np.asarray([z ** 2 * p.q * p.F * cc * D * 0.1 / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_cells, self.D_free)]).sum",
+          "line": 991
+        },
+        {
+          "function": "np.asarray",
+          "line": 991
+        },
+        {
+          "function": "zip",
+          "line": 992
+        },
+        {
+          "function": "np.asarray([z ** 2 * p.q * p.F * cc * D / (p.kb * p.T) for z, cc, D in zip(self.zs, self.cc_env, self.D_env)]).sum",
+          "line": 994
+        },
+        {
+          "function": "np.asarray",
+          "line": 994
+        },
+        {
+          "function": "zip",
+          "line": 995
+        },
+        {
+          "function": "gaussian_filter(self.sigma_env.reshape(cells.X.shape), 1).ravel",
+          "line": 1001
+        },
+        {
+          "function": "gaussian_filter",
+          "line": 1001
+        },
+        {
+          "function": "self.sigma_env.reshape",
+          "line": 1001
+        },
+        {
+          "function": "self.fast_sim_init",
+          "line": 1012
+        }
+      ],
+      "cls": "Simulator",
+      "first_line": 758,
+      "last_line": 1012,
+      "name": "init_dynamics",
+      "path": "betse/science/sim.py",
+      "writes": [
+        {
+          "line": 783,
+          "target": "self.smooth_weight_mem"
+        },
+        {
+          "line": 786,
+          "target": "self.smooth_weight_o"
+        },
+        {
+          "line": 790,
+          "target": "self.gj_funk"
+        },
+        {
+          "line": 806,
+          "target": "self.c_env_bound[ion_i]"
+        },
+        {
+          "line": 813,
+          "target": "self.D_env_base"
+        },
+        {
+          "line": 816,
+          "target": "self.J_env_x"
+        },
+        {
+          "line": 817,
+          "target": "self.J_env_y"
+        },
+        {
+          "line": 819,
+          "target": "self.fluxes_env_x"
+        },
+        {
+          "line": 820,
+          "target": "self.fluxes_env_y"
+        },
+        {
+          "line": 825,
+          "target": "self.Dm_base"
+        },
+        {
+          "line": 827,
+          "target": "self.Dm_scheduled"
+        },
+        {
+          "line": 828,
+          "target": "self.Dm_scheduled[:]"
+        },
+        {
+          "line": 830,
+          "target": "self.P_mod"
+        },
+        {
+          "line": 831,
+          "target": "self.P_base"
+        },
+        {
+          "line": 833,
+          "target": "self.div_u_osmo"
+        },
+        {
+          "line": 837,
+          "target": "self.channel_noise_factor"
+        },
+        {
+          "line": 839,
+          "target": "self.Dm_cells[self.iK]"
+        },
+        {
+          "line": 843,
+          "target": "self.gj_block"
+        },
+        {
+          "line": 845,
+          "target": "self.gj_block"
+        },
+        {
+          "line": 849,
+          "target": "self.NaKATP_block"
+        },
+        {
+          "line": 851,
+          "target": "self.NaKATP_block"
+        },
+        {
+          "line": 854,
+          "target": "self.CaATP_block"
+        },
+        {
+          "line": 858,
+          "target": "self.endo_retic"
+        },
+        {
+          "line": 860,
+          "target": "self.endo_retic"
+        },
+        {
+          "line": 871,
+          "target": "self.molecules"
+        },
+        {
+          "line": 889,
+          "target": "self.grn"
+        },
+        {
+          "line": 904,
+          "target": "self.div_u_osmo"
+        },
+        {
+          "line": 905,
+          "target": "self.u_net"
+        },
+        {
+          "line": 909,
+          "target": "self.u_cells_x"
+        },
+        {
+          "line": 910,
+          "target": "self.u_cells_y"
+        },
+        {
+          "line": 912,
+          "target": "self.u_gj_x"
+        },
+        {
+          "line": 913,
+          "target": "self.u_gj_y"
+        },
+        {
+          "line": 918,
+          "target": "self.u_env_x"
+        },
+        {
+          "line": 919,
+          "target": "self.u_env_y"
+        },
+        {
+          "line": 929,
+          "target": "self.d_cells_x"
+        },
+        {
+          "line": 930,
+          "target": "self.d_cells_y"
+        },
+        {
+          "line": 934,
+          "target": "self.cellso"
+        },
+        {
+          "line": 944,
+          "target": "self.cellso"
+        },
+        {
+          "line": 964,
+          "target": "self.rho_pump"
+        },
+        {
+          "line": 965,
+          "target": "self.rho_channel"
+        },
+        {
+          "line": 974,
+          "target": "self.ko_env"
+        },
+        {
+          "line": 975,
+          "target": "self.ko_cell"
+        },
+        {
+          "line": 977,
+          "target": "self.cedl_env"
+        },
+        {
+          "line": 978,
+          "target": "self.cedl_cell"
+        },
+        {
+          "line": 980,
+          "target": "self.cedl"
+        },
+        {
+          "line": 986,
+          "target": "self.sigma"
+        },
+        {
+          "line": 991,
+          "target": "self.sigma_cell"
+        },
+        {
+          "line": 994,
+          "target": "self.sigma_env"
+        },
+        {
+          "line": 1001,
+          "target": "self.sigma_env"
+        },
+        {
+          "line": 1004,
+          "target": "self.rho_factor"
+        },
+        {
+          "line": 1008,
+          "target": "self.cgj"
+        }
+      ]
+    },
+    "TissueHandler._cut_cells": {
+      "AST_sha256": "18e642d78d726f8e7d4c9516b49f0bcc9ce61bbe8a5b6a4bd18c683af8143e46",
+      "calls": [
+        {
+          "function": "tissue_picker.pick_cells_and_mems",
+          "line": 955
+        },
+        {
+          "function": "tb.flatten",
+          "line": 960
+        },
+        {
+          "function": "list",
+          "line": 964
+        },
+        {
+          "function": "list",
+          "line": 965
+        },
+        {
+          "function": "ecm_targs.append",
+          "line": 969
+        },
+        {
+          "function": "ecm_targs.append",
+          "line": 971
+        },
+        {
+          "function": "np.zeros",
+          "line": 995
+        },
+        {
+          "function": "len",
+          "line": 995
+        },
+        {
+          "function": "np.unique",
+          "line": 998
+        },
+        {
+          "function": "enumerate",
+          "line": 1000
+        },
+        {
+          "function": "np.asarray",
+          "line": 1001
+        },
+        {
+          "function": "np.intersect1d",
+          "line": 1002
+        },
+        {
+          "function": "len",
+          "line": 1004
+        },
+        {
+          "function": "(hurt_cells == 1).nonzero",
+          "line": 1007
+        },
+        {
+          "function": "np.zeros",
+          "line": 1008
+        },
+        {
+          "function": "list",
+          "line": 1014
+        },
+        {
+          "function": "sim.__dict__.keys",
+          "line": 1014
+        },
+        {
+          "function": "specials_list.remove",
+          "line": 1046
+        },
+        {
+          "function": "specials_list.append",
+          "line": 1049
+        },
+        {
+          "function": "set",
+          "line": 1051
+        },
+        {
+          "function": "getattr",
+          "line": 1058
+        },
+        {
+          "function": "enumerate",
+          "line": 1061
+        },
+        {
+          "function": "isinstance",
+          "line": 1062
+        },
+        {
+          "function": "len",
+          "line": 1063
+        },
+        {
+          "function": "len",
+          "line": 1063
+        },
+        {
+          "function": "np.delete",
+          "line": 1064
+        },
+        {
+          "function": "len",
+          "line": 1066
+        },
+        {
+          "function": "len",
+          "line": 1066
+        },
+        {
+          "function": "np.delete",
+          "line": 1067
+        },
+        {
+          "function": "isinstance",
+          "line": 1072
+        },
+        {
+          "function": "len",
+          "line": 1074
+        },
+        {
+          "function": "len",
+          "line": 1074
+        },
+        {
+          "function": "sorted",
+          "line": 1075
+        },
+        {
+          "function": "data2.append",
+          "line": 1077
+        },
+        {
+          "function": "len",
+          "line": 1079
+        },
+        {
+          "function": "len",
+          "line": 1079
+        },
+        {
+          "function": "sorted",
+          "line": 1080
+        },
+        {
+          "function": "data2.append",
+          "line": 1082
+        },
+        {
+          "function": "super_data2.append",
+          "line": 1084
+        },
+        {
+          "function": "type",
+          "line": 1086
+        },
+        {
+          "function": "np.asarray",
+          "line": 1087
+        },
+        {
+          "function": "setattr",
+          "line": 1089
+        },
+        {
+          "function": "getattr",
+          "line": 1092
+        },
+        {
+          "function": "isinstance",
+          "line": 1094
+        },
+        {
+          "function": "len",
+          "line": 1095
+        },
+        {
+          "function": "len",
+          "line": 1095
+        },
+        {
+          "function": "np.delete",
+          "line": 1096
+        },
+        {
+          "function": "setattr",
+          "line": 1097
+        },
+        {
+          "function": "len",
+          "line": 1099
+        },
+        {
+          "function": "len",
+          "line": 1099
+        },
+        {
+          "function": "np.delete",
+          "line": 1100
+        },
+        {
+          "function": "setattr",
+          "line": 1101
+        },
+        {
+          "function": "isinstance",
+          "line": 1103
+        },
+        {
+          "function": "len",
+          "line": 1107
+        },
+        {
+          "function": "len",
+          "line": 1107
+        },
+        {
+          "function": "sorted",
+          "line": 1108
+        },
+        {
+          "function": "data2.append",
+          "line": 1110
+        },
+        {
+          "function": "setattr",
+          "line": 1111
+        },
+        {
+          "function": "len",
+          "line": 1113
+        },
+        {
+          "function": "len",
+          "line": 1113
+        },
+        {
+          "function": "sorted",
+          "line": 1114
+        },
+        {
+          "function": "data2.append",
+          "line": 1116
+        },
+        {
+          "function": "setattr",
+          "line": 1117
+        },
+        {
+          "function": "sim.endo_retic.remove_ers",
+          "line": 1120
+        },
+        {
+          "function": "np.zeros",
+          "line": 1125
+        },
+        {
+          "function": "len",
+          "line": 1125
+        },
+        {
+          "function": "enumerate",
+          "line": 1128
+        },
+        {
+          "function": "new_cell_centres.append",
+          "line": 1130
+        },
+        {
+          "function": "new_ecm_verts.append",
+          "line": 1131
+        },
+        {
+          "function": "np.asarray",
+          "line": 1133
+        },
+        {
+          "function": "np.asarray",
+          "line": 1134
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1137
+        },
+        {
+          "function": "set",
+          "line": 1138
+        },
+        {
+          "function": "ecm_verts_set.add",
+          "line": 1143
+        },
+        {
+          "function": "list",
+          "line": 1145
+        },
+        {
+          "function": "list",
+          "line": 1145
+        },
+        {
+          "function": "np.asarray",
+          "line": 1146
+        },
+        {
+          "function": "logs.log_info",
+          "line": 1149
+        },
+        {
+          "function": "cells.mesh.cut_mesh",
+          "line": 1153
+        },
+        {
+          "function": "cells.cellVerts",
+          "line": 1157
+        },
+        {
+          "function": "cells.cellMatrices",
+          "line": 1158
+        },
+        {
+          "function": "cells.intra_updater",
+          "line": 1159
+        },
+        {
+          "function": "cells.cell_vols",
+          "line": 1160
+        },
+        {
+          "function": "cells.mem_processing",
+          "line": 1161
+        },
+        {
+          "function": "cells.near_neigh",
+          "line": 1162
+        },
+        {
+          "function": "cells.calc_gj_vects",
+          "line": 1163
+        },
+        {
+          "function": "cells.environment",
+          "line": 1164
+        },
+        {
+          "function": "cells.make_maskM",
+          "line": 1165
+        },
+        {
+          "function": "len",
+          "line": 1166
+        },
+        {
+          "function": "len",
+          "line": 1169
+        },
+        {
+          "function": "len",
+          "line": 1170
+        },
+        {
+          "function": "len",
+          "line": 1173
+        },
+        {
+          "function": "len",
+          "line": 1175
+        },
+        {
+          "function": "logs.log_info",
+          "line": 1177
+        },
+        {
+          "function": "cells.graphLaplacian",
+          "line": 1178
+        },
+        {
+          "function": "sim.gj_funk.init",
+          "line": 1187
+        },
+        {
+          "function": "sim.molecules.core.mod_after_cut_event",
+          "line": 1191
+        },
+        {
+          "function": "sim.grn.core.mod_after_cut_event",
+          "line": 1195
+        },
+        {
+          "function": "sim.initDenv",
+          "line": 1204
+        },
+        {
+          "function": "np.zeros",
+          "line": 1206
+        },
+        {
+          "function": "len",
+          "line": 1206
+        },
+        {
+          "function": "np.zeros",
+          "line": 1207
+        },
+        {
+          "function": "len",
+          "line": 1207
+        },
+        {
+          "function": "cells.deform_tools",
+          "line": 1211
+        },
+        {
+          "function": "copy.deepcopy",
+          "line": 1216
+        },
+        {
+          "function": "logs.log_info",
+          "line": 1220
+        },
+        {
+          "function": "cells.graphLaplacian",
+          "line": 1221
+        },
+        {
+          "function": "(sim.hurt_mask == 1.0).nonzero",
+          "line": 1230
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1231
+        },
+        {
+          "function": "(sim.hurt_mask == 1.0).nonzero",
+          "line": 1236
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1237
+        },
+        {
+          "function": "tb.flatten",
+          "line": 1240
+        },
+        {
+          "function": "np.hstack",
+          "line": 1245
+        },
+        {
+          "function": "np.copy",
+          "line": 1248
+        },
+        {
+          "function": "sim.D_env_weight.ravel",
+          "line": 1248
+        },
+        {
+          "function": "Dw.reshape",
+          "line": 1254
+        },
+        {
+          "function": "enumerate",
+          "line": 1258
+        },
+        {
+          "function": "np.copy",
+          "line": 1259
+        },
+        {
+          "function": "self.init_profiles",
+          "line": 1280
+        },
+        {
+          "function": "cells.redo_gj",
+          "line": 1281
+        },
+        {
+          "function": "sim.fast_sim_init",
+          "line": 1285
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 921,
+      "last_line": 1285,
+      "name": "_cut_cells",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 1005,
+          "target": "hurt_cells[i]"
+        },
+        {
+          "line": 1008,
+          "target": "sim.hurt_mask"
+        },
+        {
+          "line": 1009,
+          "target": "sim.hurt_mask[hurt_inds]"
+        },
+        {
+          "line": 1126,
+          "target": "removal_flags[target_inds_cell]"
+        },
+        {
+          "line": 1133,
+          "target": "cells.cell_centres"
+        },
+        {
+          "line": 1134,
+          "target": "cells.ecm_verts"
+        },
+        {
+          "line": 1145,
+          "target": "cells.ecm_verts_unique"
+        },
+        {
+          "line": 1146,
+          "target": "cells.ecm_verts_unique"
+        },
+        {
+          "line": 1153,
+          "target": "self.targets_dec_edges"
+        },
+        {
+          "line": 1153,
+          "target": "self.targets_dec_tcells"
+        },
+        {
+          "line": 1155,
+          "target": "self.targets_dec_tverts"
+        },
+        {
+          "line": 1166,
+          "target": "cells.grid_len"
+        },
+        {
+          "line": 1169,
+          "target": "sim.mdl"
+        },
+        {
+          "line": 1170,
+          "target": "sim.cdl"
+        },
+        {
+          "line": 1173,
+          "target": "sim.edl"
+        },
+        {
+          "line": 1175,
+          "target": "sim.edl"
+        },
+        {
+          "line": 1200,
+          "target": "sim.target_inds_cell_o"
+        },
+        {
+          "line": 1201,
+          "target": "sim.target_inds_mem_o"
+        },
+        {
+          "line": 1206,
+          "target": "sim.conc_J_x"
+        },
+        {
+          "line": 1207,
+          "target": "sim.conc_J_y"
+        },
+        {
+          "line": 1216,
+          "target": "sim.cellso"
+        },
+        {
+          "line": 1232,
+          "target": "self.targets_vgWound"
+        },
+        {
+          "line": 1251,
+          "target": "Dw[ecmtarg]"
+        },
+        {
+          "line": 1254,
+          "target": "sim.D_env_weight"
+        },
+        {
+          "line": 1260,
+          "target": "Denv_o[ecmtarg]"
+        },
+        {
+          "line": 1263,
+          "target": "sim.D_env[i]"
+        }
+      ]
+    },
+    "TissueHandler._finalize_events_global": {
+      "AST_sha256": "809f13dd8a3ccd912d22f47c5019a679f655ce10cd171f083010834fb07f99d6",
+      "calls": [
+        {
+          "function": "int",
+          "line": 513
+        },
+        {
+          "function": "len",
+          "line": 523
+        },
+        {
+          "function": "int",
+          "line": 524
+        },
+        {
+          "function": "np.copy",
+          "line": 526
+        },
+        {
+          "function": "shuffle",
+          "line": 527
+        },
+        {
+          "function": "range",
+          "line": 529
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 469,
+      "last_line": 534,
+      "name": "_finalize_events_global",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 485,
+          "target": "self.t_on_Kenv"
+        },
+        {
+          "line": 486,
+          "target": "self.t_off_Kenv"
+        },
+        {
+          "line": 487,
+          "target": "self.t_change_Kenv"
+        },
+        {
+          "line": 488,
+          "target": "self.mem_mult_Kenv"
+        },
+        {
+          "line": 491,
+          "target": "self.t_on_Clenv"
+        },
+        {
+          "line": 492,
+          "target": "self.t_off_Clenv"
+        },
+        {
+          "line": 493,
+          "target": "self.t_change_Clenv"
+        },
+        {
+          "line": 494,
+          "target": "self.mem_mult_Clenv"
+        },
+        {
+          "line": 497,
+          "target": "self.t_on_Naenv"
+        },
+        {
+          "line": 498,
+          "target": "self.t_off_Naenv"
+        },
+        {
+          "line": 499,
+          "target": "self.t_change_Naenv"
+        },
+        {
+          "line": 500,
+          "target": "self.mem_mult_Naenv"
+        },
+        {
+          "line": 503,
+          "target": "self.tonT"
+        },
+        {
+          "line": 504,
+          "target": "self.toffT"
+        },
+        {
+          "line": 505,
+          "target": "self.trampT"
+        },
+        {
+          "line": 506,
+          "target": "self.multT"
+        },
+        {
+          "line": 509,
+          "target": "self.tonGJ"
+        },
+        {
+          "line": 510,
+          "target": "self.toffGJ"
+        },
+        {
+          "line": 511,
+          "target": "self.trampGJ"
+        },
+        {
+          "line": 528,
+          "target": "self.targets_gj_block"
+        },
+        {
+          "line": 532,
+          "target": "self.tonNK"
+        },
+        {
+          "line": 533,
+          "target": "self.toffNK"
+        },
+        {
+          "line": 534,
+          "target": "self.trampNK"
+        }
+      ]
+    },
+    "TissueHandler._finalize_events_tissue": {
+      "AST_sha256": "103e32681a275123708e7a1cb3f210ef5e6f139ff192a2a523ef167a6f50ad58",
+      "calls": [
+        {
+          "function": "self.targets_Namem.append",
+          "line": 565
+        },
+        {
+          "function": "getattr(mod, self.function_Namem)",
+          "line": 577
+        },
+        {
+          "function": "getattr",
+          "line": 577
+        },
+        {
+          "function": "self.targets_Kmem.append",
+          "line": 593
+        },
+        {
+          "function": "getattr(mod, self.function_Kmem)",
+          "line": 605
+        },
+        {
+          "function": "getattr",
+          "line": 605
+        },
+        {
+          "function": "self.targets_Clmem.append",
+          "line": 621
+        },
+        {
+          "function": "getattr(mod, self.function_Clmem)",
+          "line": 632
+        },
+        {
+          "function": "getattr",
+          "line": 632
+        },
+        {
+          "function": "self.targets_Camem.append",
+          "line": 648
+        },
+        {
+          "function": "getattr(mod, self.function_Camem)",
+          "line": 659
+        },
+        {
+          "function": "getattr",
+          "line": 659
+        },
+        {
+          "function": "self.targets_P.append",
+          "line": 676
+        },
+        {
+          "function": "getattr(mod, self.function_P)",
+          "line": 687
+        },
+        {
+          "function": "getattr",
+          "line": 687
+        },
+        {
+          "function": "self.targets_ecmJ.append",
+          "line": 702
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 538,
+      "last_line": 705,
+      "name": "_finalize_events_tissue",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 555,
+          "target": "self.t_on_Namem"
+        },
+        {
+          "line": 556,
+          "target": "self.t_off_Namem"
+        },
+        {
+          "line": 557,
+          "target": "self.t_change_Namem"
+        },
+        {
+          "line": 558,
+          "target": "self.mem_mult_Namem"
+        },
+        {
+          "line": 559,
+          "target": "self.apply_Namem"
+        },
+        {
+          "line": 560,
+          "target": "self.function_Namem"
+        },
+        {
+          "line": 562,
+          "target": "self.targets_Namem"
+        },
+        {
+          "line": 567,
+          "target": "self.targets_Namem"
+        },
+        {
+          "line": 570,
+          "target": "self.scalar_Namem"
+        },
+        {
+          "line": 571,
+          "target": "self.dyna_Namem"
+        },
+        {
+          "line": 577,
+          "target": "self.scalar_Namem"
+        },
+        {
+          "line": 577,
+          "target": "self.dyna_Namem"
+        },
+        {
+          "line": 583,
+          "target": "self.t_on_Kmem"
+        },
+        {
+          "line": 584,
+          "target": "self.t_off_Kmem"
+        },
+        {
+          "line": 585,
+          "target": "self.t_change_Kmem"
+        },
+        {
+          "line": 586,
+          "target": "self.mem_mult_Kmem"
+        },
+        {
+          "line": 587,
+          "target": "self.apply_Kmem"
+        },
+        {
+          "line": 588,
+          "target": "self.function_Kmem"
+        },
+        {
+          "line": 590,
+          "target": "self.targets_Kmem"
+        },
+        {
+          "line": 595,
+          "target": "self.targets_Kmem"
+        },
+        {
+          "line": 598,
+          "target": "self.scalar_Kmem"
+        },
+        {
+          "line": 599,
+          "target": "self.dyna_Kmem"
+        },
+        {
+          "line": 605,
+          "target": "self.scalar_Kmem"
+        },
+        {
+          "line": 605,
+          "target": "self.dyna_Kmem"
+        },
+        {
+          "line": 611,
+          "target": "self.t_on_Clmem"
+        },
+        {
+          "line": 612,
+          "target": "self.t_off_Clmem"
+        },
+        {
+          "line": 613,
+          "target": "self.t_change_Clmem"
+        },
+        {
+          "line": 614,
+          "target": "self.mem_mult_Clmem"
+        },
+        {
+          "line": 615,
+          "target": "self.apply_Clmem"
+        },
+        {
+          "line": 616,
+          "target": "self.function_Clmem"
+        },
+        {
+          "line": 618,
+          "target": "self.targets_Clmem"
+        },
+        {
+          "line": 623,
+          "target": "self.targets_Clmem"
+        },
+        {
+          "line": 626,
+          "target": "self.scalar_Clmem"
+        },
+        {
+          "line": 627,
+          "target": "self.dyna_Clmem"
+        },
+        {
+          "line": 632,
+          "target": "self.scalar_Clmem"
+        },
+        {
+          "line": 632,
+          "target": "self.dyna_Clmem"
+        },
+        {
+          "line": 638,
+          "target": "self.t_on_Camem"
+        },
+        {
+          "line": 639,
+          "target": "self.t_off_Camem"
+        },
+        {
+          "line": 640,
+          "target": "self.t_change_Camem"
+        },
+        {
+          "line": 641,
+          "target": "self.mem_mult_Camem"
+        },
+        {
+          "line": 642,
+          "target": "self.apply_Camem"
+        },
+        {
+          "line": 643,
+          "target": "self.function_Camem"
+        },
+        {
+          "line": 645,
+          "target": "self.targets_Camem"
+        },
+        {
+          "line": 650,
+          "target": "self.targets_Camem"
+        },
+        {
+          "line": 653,
+          "target": "self.scalar_Camem"
+        },
+        {
+          "line": 654,
+          "target": "self.dyna_Camem"
+        },
+        {
+          "line": 659,
+          "target": "self.scalar_Camem"
+        },
+        {
+          "line": 659,
+          "target": "self.dyna_Camem"
+        },
+        {
+          "line": 666,
+          "target": "self.t_onP"
+        },
+        {
+          "line": 667,
+          "target": "self.t_offP"
+        },
+        {
+          "line": 668,
+          "target": "self.t_changeP"
+        },
+        {
+          "line": 669,
+          "target": "self.rate_P"
+        },
+        {
+          "line": 670,
+          "target": "self.apply_P"
+        },
+        {
+          "line": 671,
+          "target": "self.function_P"
+        },
+        {
+          "line": 673,
+          "target": "self.targets_P"
+        },
+        {
+          "line": 678,
+          "target": "self.targets_P"
+        },
+        {
+          "line": 681,
+          "target": "self.scalar_P"
+        },
+        {
+          "line": 682,
+          "target": "self.dyna_P"
+        },
+        {
+          "line": 687,
+          "target": "self.scalar_P"
+        },
+        {
+          "line": 687,
+          "target": "self.dyna_P"
+        },
+        {
+          "line": 693,
+          "target": "self.t_on_ecmJ"
+        },
+        {
+          "line": 694,
+          "target": "self.t_off_ecmJ"
+        },
+        {
+          "line": 695,
+          "target": "self.t_change_ecmJ"
+        },
+        {
+          "line": 696,
+          "target": "self.apply_ecmJ"
+        },
+        {
+          "line": 697,
+          "target": "self.mult_ecmJ"
+        },
+        {
+          "line": 699,
+          "target": "self.targets_ecmJ"
+        },
+        {
+          "line": 704,
+          "target": "self.targets_ecmJ"
+        }
+      ]
+    },
+    "TissueHandler._fire_events_tissue": {
+      "AST_sha256": "77806a550a9daf3ab65dbb1d4898914827003e9d0f3edf6eb1ad51ae3f7d326a",
+      "calls": [
+        {
+          "function": "self.dyna_Namem",
+          "line": 815
+        },
+        {
+          "function": "tb.pulse",
+          "line": 816
+        },
+        {
+          "function": "self.dyna_Kmem",
+          "line": 822
+        },
+        {
+          "function": "tb.pulse",
+          "line": 823
+        },
+        {
+          "function": "self.dyna_Clmem",
+          "line": 829
+        },
+        {
+          "function": "tb.pulse",
+          "line": 830
+        },
+        {
+          "function": "self.dyna_Camem",
+          "line": 836
+        },
+        {
+          "function": "tb.pulse",
+          "line": 837
+        },
+        {
+          "function": "self.dyna_P",
+          "line": 844
+        },
+        {
+          "function": "tb.pulse",
+          "line": 844
+        },
+        {
+          "function": "enumerate",
+          "line": 849
+        },
+        {
+          "function": "tb.pulse",
+          "line": 850
+        },
+        {
+          "function": "sim.D_env_weight.ravel",
+          "line": 857
+        },
+        {
+          "function": "sim.D_env_weight_base.ravel",
+          "line": 858
+        },
+        {
+          "function": "sim.D_env_weight.reshape",
+          "line": 865
+        },
+        {
+          "function": "sim.D_env_weight_base.reshape",
+          "line": 866
+        },
+        {
+          "function": "tb.pulse",
+          "line": 869
+        },
+        {
+          "function": "sim.D_env_weight.ravel",
+          "line": 872
+        },
+        {
+          "function": "sim.D_env_weight_base.ravel",
+          "line": 873
+        },
+        {
+          "function": "sim.D_env_weight.reshape",
+          "line": 880
+        },
+        {
+          "function": "sim.D_env_weight_base.reshape",
+          "line": 881
+        },
+        {
+          "function": "logs.log_info",
+          "line": 894
+        },
+        {
+          "function": "self._cut_cells",
+          "line": 900
+        },
+        {
+          "function": "logs.log_info",
+          "line": 902
+        },
+        {
+          "function": "len",
+          "line": 906
+        },
+        {
+          "function": "self.init_profiles",
+          "line": 908
+        },
+        {
+          "function": "cells.redo_gj",
+          "line": 909
+        },
+        {
+          "function": "self.init_events",
+          "line": 910
+        },
+        {
+          "function": "self.event_cut.fire",
+          "line": 913
+        },
+        {
+          "function": "self._event_voltage.fire",
+          "line": 917
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 794,
+      "last_line": 917,
+      "name": "_fire_events_tissue",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 817,
+          "target": "sim.Dm_scheduled[sim.iNa][self.targets_Namem]"
+        },
+        {
+          "line": 824,
+          "target": "sim.Dm_scheduled[sim.iK][self.targets_Kmem]"
+        },
+        {
+          "line": 831,
+          "target": "sim.Dm_scheduled[sim.iCl][self.targets_Clmem]"
+        },
+        {
+          "line": 838,
+          "target": "sim.Dm_scheduled[sim.iCa][self.targets_Camem]"
+        },
+        {
+          "line": 843,
+          "target": "sim.P_mod[self.targets_P]"
+        },
+        {
+          "line": 853,
+          "target": "sim.D_env[i][self.targets_ecmJ]"
+        },
+        {
+          "line": 857,
+          "target": "sim.D_env_weight"
+        },
+        {
+          "line": 858,
+          "target": "sim.D_env_weight_base"
+        },
+        {
+          "line": 860,
+          "target": "sim.D_env_weight[self.targets_ecmJ]"
+        },
+        {
+          "line": 865,
+          "target": "sim.D_env_weight"
+        },
+        {
+          "line": 866,
+          "target": "sim.D_env_weight_base"
+        },
+        {
+          "line": 872,
+          "target": "sim.D_env_weight"
+        },
+        {
+          "line": 873,
+          "target": "sim.D_env_weight_base"
+        },
+        {
+          "line": 875,
+          "target": "sim.D_env_weight[self.targets_ecmJ]"
+        },
+        {
+          "line": 880,
+          "target": "sim.D_env_weight"
+        },
+        {
+          "line": 881,
+          "target": "sim.D_env_weight_base"
+        },
+        {
+          "line": 906,
+          "target": "self.data_length"
+        }
+      ]
+    },
+    "TissueHandler.fire_events": {
+      "AST_sha256": "545a50901b6b5419b52477a8302f66ca8b035fd2d65495d46b91fa2c6d9fc123",
+      "calls": [
+        {
+          "function": "self._fire_events_global",
+          "line": 722
+        },
+        {
+          "function": "self._fire_events_tissue",
+          "line": 723
+        },
+        {
+          "function": "self.makeAllChanges",
+          "line": 724
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 709,
+      "last_line": 724,
+      "name": "fire_events",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": []
+    },
+    "TissueHandler.init_events": {
+      "AST_sha256": "fdca421b511164c9e57733e60b4f1fd69f3c9389211a78bc2bc18da9f0fd6868",
+      "calls": [
+        {
+          "function": "self._finalize_events_global",
+          "line": 464
+        },
+        {
+          "function": "self._finalize_events_tissue",
+          "line": 465
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 454,
+      "last_line": 465,
+      "name": "init_events",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": []
+    },
+    "TissueHandler.init_profiles": {
+      "AST_sha256": "d19e6c50d26e9b6c5f9900f1123c43f246235a29c016b43675973fc80b06b085",
+      "calls": [
+        {
+          "function": "logs.log_debug",
+          "line": 383
+        },
+        {
+          "function": "self.tissue_name_to_profile.items",
+          "line": 402
+        },
+        {
+          "function": "tissue_profile.picker.pick_cells_and_mems",
+          "line": 406
+        },
+        {
+          "function": "len",
+          "line": 413
+        },
+        {
+          "function": "list",
+          "line": 416
+        }
+      ],
+      "cls": "TissueHandler",
+      "first_line": 363,
+      "last_line": 443,
+      "name": "init_profiles",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 394,
+          "target": "self.cell_target_inds"
+        },
+        {
+          "line": 395,
+          "target": "self.env_target_inds"
+        },
+        {
+          "line": 399,
+          "target": "self.tissue_target_inds"
+        },
+        {
+          "line": 409,
+          "target": "self.cell_target_inds[tissue_name]"
+        },
+        {
+          "line": 410,
+          "target": "self.tissue_target_inds[tissue_name]"
+        },
+        {
+          "line": 417,
+          "target": "self.env_target_inds[tissue_name]"
+        },
+        {
+          "line": 422,
+          "target": "sim.Dm_cells[sim.iNa][tissue_mems_index]"
+        },
+        {
+          "line": 426,
+          "target": "sim.Dm_cells[sim.iK][tissue_mems_index]"
+        },
+        {
+          "line": 430,
+          "target": "sim.Dm_cells[sim.iCl][tissue_mems_index]"
+        },
+        {
+          "line": 434,
+          "target": "sim.Dm_cells[sim.iCa][tissue_mems_index]"
+        },
+        {
+          "line": 438,
+          "target": "sim.Dm_cells[sim.iM][tissue_mems_index]"
+        },
+        {
+          "line": 442,
+          "target": "sim.Dm_cells[sim.iP][tissue_mems_index]"
+        }
+      ]
+    },
+    "TissueHandler.makeAllChanges": {
+      "AST_sha256": "169a98c6deba956f4134d9203b0ca9153fe791bccae3364ab9b99ff83a25d809",
+      "calls": [],
+      "cls": "TissueHandler",
+      "first_line": 1321,
+      "last_line": 1332,
+      "name": "makeAllChanges",
+      "path": "betse/science/tissue/tishandler.py",
+      "writes": [
+        {
+          "line": 1327,
+          "target": "sim.Dm_cells"
+        },
+        {
+          "line": 1332,
+          "target": "sim.P_cells"
+        }
+      ]
+    }
+  },
+  "numerical_runs": 0,
+  "original_source_sha256": {
+    "betse/__init__.py": "a3dce54aab848c36dfc4738f5dba889505adefad819d63d4c61a4310655cf200",
+    "betse/__main__.py": "567bbfc745cbdaaa96c3a0434919c880bb73eb81d1e0c18d6c3725cd3dbdb1ca",
+    "betse/appmeta.py": "5cf6789033f62889ca01cdb083495f608f6432f92aacfeb7fac1a077e4476d9b",
+    "betse/cli/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/cli/__main__.py": "6021cc030e55199423bba252e45d0cff0314f6e93c0a0dd18e67617f6955fa43",
+    "betse/cli/cliinfo.py": "a46c500841300590f0f4d957db5e83786eb0df9910013cb88be5b7292b206dd2",
+    "betse/cli/climain.py": "6dbaa372c92660d7ce06e0b65c431d3394d854d69b6d0f37662ff9e7e524e36b",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/gui/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/gui/interact.py": "0428ac526ed7ef568728482195024e7a3528189621674b7535ce1f0579b5d6cd",
+    "betse/lib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/libs.py": "67e541ba7faec5f425e3139310ab7199868d3f35e5071a81a390b2473d6ca1a9",
+    "betse/lib/matplotlib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/matplotlibs.py": "cc3553e81cbdae48ffd3968c8abb83e772a11268bceab6f71a95d5c68726ca3c",
+    "betse/lib/matplotlib/mplcolormap.py": "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820",
+    "betse/lib/matplotlib/mplfigure.py": "8f1d06ec5a8673d933756699974c34c213168614541fa91ac07c166ba5bfd405",
+    "betse/lib/matplotlib/mplutil.py": "c3aff56c540625720abb8889df2ee968966435f3bf4da4304ef3175cf192f1ec",
+    "betse/lib/matplotlib/mplzorder.py": "8386adcdc57d563243cdd63ad372b728e4e2f3a3c58d63ad5fb0c14154dbe2a0",
+    "betse/lib/matplotlib/writer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/writer/mplcls.py": "2521cf416c44a8fd94d45f86b2643379c38267d64527533d1458f67d5f881a93",
+    "betse/lib/matplotlib/writer/mplvideo.py": "773f643b33b9ac68c3cd75d7fee52058f2148623d5862bf59c86142313b458df",
+    "betse/lib/numpy/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npcsv.py": "7db280c870216d6597da8d845553a878b28eba9c531a05c398de8957bc169108",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/lib/numpy/nptest.py": "90bf1455a75473073c45fba84aa7b271944e5766e1319de69b1d7e937a936830",
+    "betse/lib/numpy/numpys.py": "f3fff48b63db53fc53b88f112fca21c7e378e2a1ae5c2eb2ef5e8d5a26445d3d",
+    "betse/lib/pickle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pickle/pickles.py": "10ebdbadabde32d85f310c532b463d5fddf53a0427a62af926af488d4b0b897b",
+    "betse/lib/pil/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pil/pilnumpy.py": "0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4",
+    "betse/lib/pil/pils.py": "60bfbe2643ba314e1d3d7e0c3225ae2fb4044ecc4085606674f496f3d224e10c",
+    "betse/lib/setuptools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/setuptools/setuptool.py": "121e5b7ab9cc9580911dd9a5c95fc5ca4c50e8a5e4ae9886eedfd972ae267c5c",
+    "betse/lib/setuptools/supresource.py": "83f9ad09c87b1150d16dfe42254e81a0a6c888c3b55ea71d091d616ef3a60d42",
+    "betse/lib/yaml/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/yamlabc.py": "73366a8a5b9c21d6743854e4ec965c6b5d31073f5145030842ccc12e72679e72",
+    "betse/lib/yaml/abc/yamlfileabc.py": "996cb5748cd6a1c975cfd6af9e0aa3b017810157dd9e3822538317c70a5ce4b1",
+    "betse/lib/yaml/abc/yamllistabc.py": "3facad0e3dc8f93a978595bb197145980f99bc8527ae15085486f92b2a357c1d",
+    "betse/lib/yaml/abc/yamlmixin.py": "fdfa4a4025378d0f8726ebd2309f5d35e2653d4a84bda5946064d8a49fd1448f",
+    "betse/lib/yaml/yamlalias.py": "cc87d9403c088a936a00187e33417b05ae2d26f64ee02b37d7857504cf3f0e37",
+    "betse/lib/yaml/yamlrepr.py": "e70d1b4b08052b42a112ed98665520301904724a31ba44b332198c33fa613907",
+    "betse/lib/yaml/yamls.py": "d159e016257ecc2c0268e8d7189cca430157bfee099b1bd02872d087e4d24091",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/metadeps.py": "854263fb4e2d3c4c5215cffafdb72cb0ee301cbb7295f83ee6445b9031d6afc2",
+    "betse/science/__init__.py": "1b505ba1b4b8f88950e2665b954feb099e81c77bbb9d9fad0d3a87b99e600859",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/channels/wound_channel.py": "a6a545e4e814e7e378d069f9ace425895b9a78c4bb44554a9513dd184e573035",
+    "betse/science/chemistry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/molecules.py": "69e50cbca8281d7ececc12d6136846244a0fe273e43b3d1dfaf793ea19cc2926",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/compat/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/compat/compatconf.py": "3aa5ac52e1235d12307b82b0e597c9f72761ab64d177b0176e76d2fc468ef49a",
+    "betse/science/compat/compatgrnconf.py": "d3180c1d42d7312e7d4d3df45bbd9843627ba944d041629eec4e4ac5d32da352",
+    "betse/science/compat/compatsim.py": "e3aa9072b18280972708b2884e933a4a660b389018096b2b04e2b3101cc2fe1e",
+    "betse/science/config/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/confexpabc.py": "8ce9cb6e5df7923b222a636089de0712ccb1eba7166fe1d5c3640a3cca66ede5",
+    "betse/science/config/export/confexpcsv.py": "30946d7b6196a4d074547c19514dbc6e522638724245372f2790a11fd1ddeb6f",
+    "betse/science/config/export/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/visual/confexpvisabc.py": "9ccb1bf7bfb30e3509656dbbf3b8cbf1fc7030c96eade8a1b8b01b0f816da5f8",
+    "betse/science/config/export/visual/confexpvisanim.py": "3ff2738c610f0cc3fc711764e009123a9f866536a39fbd1c86c6038ac08ef99d",
+    "betse/science/config/export/visual/confexpvisplot.py": "32593e272c553eb4b32c7aea27d9b4b9e64ac5b740ec753a800978fe01624628",
+    "betse/science/config/export/visual/confexpvisual.py": "2ce6c4e7e943842d432bb8bd2c59a1a4985f7dceaf14964662348c3df9c893f2",
+    "betse/science/config/grn/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/grn/confgrn.py": "5e2aea781fa57af25d2ade5e6f5710239f3188b8da0dac2f2841139719c0a55f",
+    "betse/science/config/model/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/model/confphase.py": "32abb2e83ba7d17b02c87e0436f191ffbcf2149d694884af837ac03498348c33",
+    "betse/science/config/model/conftis.py": "6842f6e7f8d586ec7ff94aacfd1ce2003622bd31278a8d378d4a747bb5145352",
+    "betse/science/enum/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/science/enum/enumion.py": "f5dfa5f6f8581c2164e25cc95911ae27b20644ddc9c3e195f98a637156032799",
+    "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+    "betse/science/filehandling.py": "194ecf36cdc4e10a81b953ddb1a515cdd206eeea6a14670967e6fcf75c4a20c4",
+    "betse/science/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/cacheabc.py": "0dbcc8d32758db0a9aa78834ae1ad3c178c702cb4ca0e9e03a798c19c1621549",
+    "betse/science/math/cache/cachelyrvec.py": "f47d6cfef01e36a5d91a123a2a573e78e118d26a95a704b23374aaf1a5bb98b7",
+    "betse/science/math/cache/cacheupscaled.py": "4ecc030236338007013479641c1cdcacfba26b4570df8e9ef69da346d25db940",
+    "betse/science/math/cache/cachevec.py": "ae9550c6fba5f7c8a863e0b1ae13609110c0b977915e81dffc579ddb07446b5c",
+    "betse/science/math/cache/cachevecfld.py": "c17acfd400c7eca94f3479909128be0b41146e4362680a199b5fc4bcf6f17aa9",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/math/mathunit.py": "34f8112b5f6af9ec43baba08ee0847ed54b89da2f8b37a6ef44cc2634ba5c86b",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/math/systems.py": "5463f401dac898502c463980d70caf977b2b2f4549be46981a6b71c08e46ca23",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/math/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/vector/veccls.py": "4303453d4f74b14811506f263deb82209456c7e4fdc6df536dd334749fb08314",
+    "betse/science/math/vector/vecfldcls.py": "6db978b38bab5f86eaa26373cdd92ea70405660ed6722054707ebc79774a5463",
+    "betse/science/math/waves.py": "d84a1acb4870881ffaa955db7e2c562a5bfbb29835dbf3e8449eeb349d2df61a",
+    "betse/science/math/werner.py": "08efa10146d50b26a4ec6116f247ea19f4fe133e96fe83e8347747fb69cee478",
+    "betse/science/organelles/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/organelles/mitochondria.py": "68c313b172813ed86398b26cc311835e98aaf9d3085a4f3169bc0d90def08607",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/phase/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/phasecallbacks.py": "5938685e17f94e1066c938ae080800e22e918e5457d6406820e37d847540ac2b",
+    "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+    "betse/science/phase/require/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/phasereqabc.py": "51ebf4dbd28de9961b3913fb1794295f17a64d338d61a26bebc82c5be265b5c6",
+    "betse/science/phase/require/abc/phasereqset.py": "718f4b1015af8427f86e6c3e43b1db8e14240746efa71b1fac40a966ca5e0490",
+    "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+    "betse/science/phase/require/phasereqsmake.py": "cc30ccf9b5c8db3a25a0e7dfb53049d9a9ebfe73c389a54d47f683bf7f31a905",
+    "betse/science/physics/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+    "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/physics/move_channels.py": "b857d8d125962ef50cc48a17c53044a20b09e2e0141f046521d7909d8df23ffb",
+    "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+    "betse/science/pipe/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/pipeexpabc.py": "1ad253c6ddc5f6a56c0520fafba8e100b7b98cecf7bd514e8b066c4d07634b14",
+    "betse/science/pipe/export/pipeexpanim.py": "c2d7380c95c87c49cee6b2b60966835ea17b26ee2267318455edce34c6bd330c",
+    "betse/science/pipe/export/pipeexpcsv.py": "ddedc91955309f459cd161ae0191fcbd466e3cc6f44c608e7b76ac6f1f0d3e1c",
+    "betse/science/pipe/export/pipeexpenum.py": "3aa14de3c2439a63022ad429519cd6a848496469cefe0c188876a922e68e6b28",
+    "betse/science/pipe/export/pipeexps.py": "cc41b7fd1acf35d7f11b26eac9dcbc50a9ca75564bdfdc79423d79d838be0dc2",
+    "betse/science/pipe/export/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/plot/pipeexpplotabc.py": "ee1f34490c8fb674b0fbb90b9ebf91fb546f43ca5288735f98f13eeb27642067",
+    "betse/science/pipe/export/plot/pipeexpplotcell.py": "230602b5fbc0ca47db361c23a2de608a6b4f2c6169ab9a2a308f0c4b7fd85290",
+    "betse/science/pipe/export/plot/pipeexpplotcells.py": "4246e2a2a9edce94b1b59d73e747b8ba9ed10754bf78cd0c9d58963bbe9d5097",
+    "betse/science/pipe/pipeabc.py": "8608bac4e1a565dc859a9e7478032fad5a532cd3b8d22fe164c0d03e9a35b9f4",
+    "betse/science/pipe/piperun.py": "04e82dcb038afabee1f7e9fc99936a3a5e1d18cd76328df4ec1ea12b0e76a1a9",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+    "betse/science/tissue/__init__.py": "7c3dbc1d832c967df5b90f071bfe313502237588cd4166a62c60a759c5abfc71",
+    "betse/science/tissue/channelpedia.py": "3b554b22dd1236f2dee7618be8b98fa1f33191f7f68a872df6f4b13ccf2b92a3",
+    "betse/science/tissue/channels_o.py": "ee6f9c538661f42d72e01afc6d01530dcfa1a9cbf1af9945d7227842827e7251",
+    "betse/science/tissue/event/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/event/tiseveabc.py": "490e9e10f3ff713878145bc332a79a3b11bf0d7650238d31d7ff1032e85205a6",
+    "betse/science/tissue/event/tisevecut.py": "95056b3486323f025b9a8ac2777073911b6303b930f23efaf12ec4937cf5c1a6",
+    "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+    "betse/science/tissue/picker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/picker/tispickcls.py": "c1c592ddc600479806da73c37ade7aecf19df0f49cd46706a74ad6bb9f1bc773",
+    "betse/science/tissue/picker/tispickimage.py": "75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/science/tissue/tisprofile.py": "9477385aea149803d1f7f8611ce6e61550056f0f2ba9e5f91ab967ff3344eb4d",
+    "betse/science/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/anim.py": "8eb19d783fc3409f98a75d073c80543a1abb97be290364cffcdc38e5549be85a",
+    "betse/science/visual/anim/animabc.py": "113f50cfa150e96438f5225a43b80d7c377b9cb2eed9d61418f095dcc6e92d49",
+    "betse/science/visual/anim/animafter.py": "8561cdc3024553acf83cfcded77cd15fc279cc87213865217a5a5f98c21ae48d",
+    "betse/science/visual/anim/animwhile.py": "2ff235af6d8c4f2635f66b1b7ce882bf684a2e944aad219be1eb1997371e7408",
+    "betse/science/visual/layer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/lyrabc.py": "f26411080790cc9121c5558f685b70d00fe00d02a2d965e961f4fd4085906047",
+    "betse/science/visual/layer/lyrtext.py": "0098cf584024a8f5dc03b5e3a67249b3498c4c6c62259998973f0630bda49315",
+    "betse/science/visual/layer/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vector/lyrvecabc.py": "e95765b115bbe5c43b842fba566be9a05429fad2e68e9834e958285626a06671",
+    "betse/science/visual/layer/vector/lyrvecdiscrete.py": "448c3aa86c7fdca28a6054eb39d65ecb3185a6b344610cb574c2779c38f3799f",
+    "betse/science/visual/layer/vector/lyrvecsmooth.py": "0765974ace7d6c0652c287007804ee0e26aa8ea0643a3c33d26063197593efd3",
+    "betse/science/visual/layer/vectorfield/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vectorfield/lyrvecfldabc.py": "fbb56eba1837ac4bd793df529cd0808169f6549d6e4a0410b1ba8cd0144e76ac",
+    "betse/science/visual/layer/vectorfield/lyrvecfldquiver.py": "4c87afe5cd259bbad77c295abd996a35b1aeba925d41487724c1ec8a339ff7eb",
+    "betse/science/visual/layer/vectorfield/lyrvecfldstream.py": "d0420faef5b1f9f709ebcfc7ba2d8afb0050f31655b90d5464122785e58d3220",
+    "betse/science/visual/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/plot/plotabc.py": "f31d57c1a588592fed6b4121f6a3d207d890a5569d64adace8c0250a954159fc",
+    "betse/science/visual/plot/plotutil.py": "52c058f48751d7ebf1d8472629b84aa39bf41b04294a018cd2a04eefd1a2b2eb",
+    "betse/science/visual/visabc.py": "31910c4188fa1e10c07e3a188243faba1ebc79b7778abe3dc189dce38faa4e51",
+    "betse/science/wrapper.py": "4f9faa20a1415e3e5e6aced0c4b9664fd723238800ccc8822a18260b9e0ac982",
+    "betse/util/__init__.py": "27ba859ab475847ac208aa581afc5c24053ae1b487e1cd3a73ab750a0c245d11",
+    "betse/util/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/apppath.py": "e52cff6d97ecdc27c5e551ff24df91364376f578b4970a1474d5c33488dc19c9",
+    "betse/util/app/meta/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/meta/appmetaabc.py": "73716c647565fc92a5fa9ab95038d035405e8d845b8b3f16ea717bb7d7103b4c",
+    "betse/util/app/meta/appmetamod.py": "1b0ff1358ee4b423712b0a556db3602f54575d1a9c8808e992c3a6adbc84e827",
+    "betse/util/app/meta/appmetaone.py": "61cf84869bc9691e31a5f96ab34be6e3f4eed9bf2cec35a88af4fdcd87e7d68e",
+    "betse/util/cli/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/cli/cliabc.py": "7e125a4eb0b3b70221aa661f04b308876624a82a9b1c29eb4e79ac22c7570cfd",
+    "betse/util/cli/cliarg.py": "3b63e06bcab23a9b1d40c6c583770783b79bc3580fc8e7400ad4a8433d275418",
+    "betse/util/cli/clicmd.py": "589e7e8ba58b2221347dd96ba59859a559375348cc410356f9883b4eb2d57b5e",
+    "betse/util/cli/clicmdabc.py": "9355398fa263e5e453957dd4d1e24a06c89976cc50161f5ab70ca02a3af9230c",
+    "betse/util/cli/cliopt.py": "9c025c7675d9a05769783e9b16ec78502da1febdab617ec9c6283cc02de35927",
+    "betse/util/cli/repl/__init__.py": "a195680f3dd78947fc8db9e244a4c6be548fff25434836b07a2ac34e7b9a7355",
+    "betse/util/cli/repl/replenv.py": "71db441f6edf7097d39c2d96398271c28ec8c11f41a6c31ea4f3a9f93572e8af",
+    "betse/util/cli/repl/repls.py": "fed099e7b26a6be45ca009086b1e74e880a6ddb6bce61f264118f07ccf8787af",
+    "betse/util/io/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/errexception.py": "89d76db13363c25af671443546ce125fe6c6a447ed2e47bdc97cfff6749ff830",
+    "betse/util/io/error/errfault.py": "4252d0d7a3c03bf793e02a358fcd2e0ca3df73c04452eed0a1e78439ea3d4abe",
+    "betse/util/io/error/errhaiku.py": "389692bebf25f036e156f58a8cd260396ed0e45a0547db6bdcab44016f1b10bb",
+    "betse/util/io/error/errwarning.py": "93bfcdfd06df3bd086e8494a27f93c807a72e6c89c45bcd428e8f308c3659c1b",
+    "betse/util/io/iofiles.py": "76d8ae28816192718dc4473381f97ea9550ba1e50800f76756f3839033ba91bf",
+    "betse/util/io/log/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/logconf.py": "23ea0cc8122eee4903b11bb1a501e3f0f4115cf3edbd47872ce2803748afa5f0",
+    "betse/util/io/log/conf/logconfcls.py": "5f92d67b906ef1f9a2f5490c51d042997367164ed8d327df1d0a76ae8cb3411e",
+    "betse/util/io/log/conf/logconfformat.py": "4c2fb0e558416240627c01eb074180f59b248be1c43134b47b678b8c0bc18613",
+    "betse/util/io/log/conf/logconfhandle.py": "b04f7fcb07dbe64b056acf4c58c2ac2e9226ca254f8e778ea12353aaa16f2042",
+    "betse/util/io/log/logenum.py": "b5030970ec3c8976de11c0ba65c3348a84b1e046e4b250ca89563e9f37840b83",
+    "betse/util/io/log/logfilter.py": "0252faf8367486f7554aef1f1c7fb6c7dc3550f70b6006836b419ff2f396019f",
+    "betse/util/io/log/logs.py": "73195e9d13a76ad5982be04e13847d2abc76819079d1caddc6122a23d89920f2",
+    "betse/util/io/stderrs.py": "be56e74d81754e980c40e6845e6273225ba23f9b22a1fd2b3649d1d10dfff38a",
+    "betse/util/io/stdouts.py": "748f9bf242712030165d560cbbcc789bffab7998387c3abb7ecaed48afc3d1b2",
+    "betse/util/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/math/geometry/polygon/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/os/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/linux.py": "eb4ca2ed55752603d85af421b2487756d11c9d7fb42cb5488da549c66e05d91e",
+    "betse/util/os/brand/macos.py": "810ba648d63c0f68b6c997e768eaf65731d85c367f1ccf1d1e3f32b164b53400",
+    "betse/util/os/brand/posix.py": "1f68b86f98dd1a73c8e43062cf885ac298b5e84d20e0ecfb8191eb789ef3ede0",
+    "betse/util/os/brand/windows.py": "39fb953ffb920d0e2dca2f28a3a3a4f37c5034e6f39d68ad82f524b3d7ec09a1",
+    "betse/util/os/command/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/command/cmdexit.py": "c56a20f2396f999d3c3d9a6dbdf5600db81e8852f6cdd76a7cb961645b35961f",
+    "betse/util/os/command/cmdpath.py": "3cf00f6d26ba7c8a5bbd155799d03fb8844fe718f42be260712b214e4f04f653",
+    "betse/util/os/command/cmdrun.py": "5af4ac5bf0cef111c07bb63c81f64f166366534737b0e9306635be39a3cce29f",
+    "betse/util/os/command/cmds.py": "46f67be4bc30bad0871795e09b7ed5f42a2b0fc114ae9637008c3019412a9aef",
+    "betse/util/os/displays.py": "2787c498c936cd7b561707c8db41bbffedbe07df81c7fec85c98905e018a4f99",
+    "betse/util/os/dlls.py": "66139d185595780b8603da3997102bcb49325c0609c71f614785148c83b598de",
+    "betse/util/os/kernels.py": "851cda286868360ad8b1c4fccac599fec1cae7c558f4f152031a37f67f42bca0",
+    "betse/util/os/oses.py": "0f725069755e36bb6b78049e2ec8ba51704d307dfa8c4af33d0bfa73cc981b88",
+    "betse/util/os/process/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/process/prctest.py": "320671fea230660da8941ffaec2457f8cbbbc3e918f2b4e7ea47c824fe398c1b",
+    "betse/util/os/shell/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/shell/shelldir.py": "30587a56b42063802bfe38ae17d43e1634d5d10bd417698ee8ce4f67ba0b8961",
+    "betse/util/os/shell/shellenv.py": "6917a95c35b1b4e21d7bc27547a5a4b49b571120c6c2a38e72e131f054c27403",
+    "betse/util/os/shell/shellstr.py": "10683f615a184461de498cfe934b827dcb2a5a904d498df478085b81df273f4f",
+    "betse/util/path/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/path/archives.py": "8b62a4877fc089a3459bd0853fd9c12b7d618269a7859d578b753ad028bfe554",
+    "betse/util/path/dirs.py": "c18337d0564727251cf5367cca094ad373148f159ca55317d3d64de8a2436d4a",
+    "betse/util/path/files.py": "5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66",
+    "betse/util/path/gits.py": "4a74f78beb4be9c048af321dd1703b4e499b90d38487347214af894e81a4d69a",
+    "betse/util/path/pathnames.py": "7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b",
+    "betse/util/path/paths.py": "4dd3c7aa0a9e9e973d556ecaea6b9dcf63ac9e248e1011560516d7f901521b4f",
+    "betse/util/path/temps.py": "28a742af5365bc39863a5c863feb1e89b48d8e0e9683f58cc9943d22f5b7c6f7",
+    "betse/util/py/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/pyimport.py": "c85beba1ff700bd5b665929e9b8208492e52524a5a2fea325fdc193c2135cdbd",
+    "betse/util/py/module/pymodname.py": "488e209a4dfd24d29b77d77453ede7d897694eb298dbf6b49ee973ac31aac634",
+    "betse/util/py/module/pymodule.py": "5022e9a1991a594b8ffa08eff5cb9b087ad8933defde72c190d05595364eaf4e",
+    "betse/util/py/module/pypackage.py": "cb8ab223386f7019a7acf5dc11933dde78e3c97a3a560c60af36d8a558b4dc19",
+    "betse/util/py/pyfreeze.py": "2737d5f0ee7fbaf0bc54bcfd771d31427b0c474dc4cee0456005874e6cbe4780",
+    "betse/util/py/pyident.py": "9c3573288519eed2cbc0ce9cde0acff523a50dc71a467acffac2a293ff05f692",
+    "betse/util/py/pyimpl.py": "516ce9913bc4728f965431a86b791c9b907248054bd4c970ddf3f44f74d807be",
+    "betse/util/py/pyprofile.py": "639c428a9a80d8c6d561df066bb74cbe89a8d0d09513971f0d76bbf14cc97aa8",
+    "betse/util/py/pyref.py": "acc3d4169b1bd2cc3b21766b6305fde6bcfeb90288da6e5f3ba5983e5e85ec29",
+    "betse/util/py/pys.py": "90f8aa6d4c83ec552b2f0ecd748ff8b5d86496e286dd6e47d7d49d8a1c9ebf09",
+    "betse/util/py/pythread.py": "8b72c5f181c4aaa566693803d75ba81f905240616ea1b2186b6510289a396788",
+    "betse/util/py/pyvenv.py": "219007a2753db42fec9580886a812c85d81b8111fc664536ad9757a4f0490a11",
+    "betse/util/test/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/pytfixture.py": "54fed051128c422cafd3177cecb6f1408850582a24a2ae1d62f6a0a8c684b1ff",
+    "betse/util/test/pytest/mark/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/mark/pytfail.py": "69285d8282aea27ff41fe99cce33af2aa0678d064faf2395245fa96f077a5ca3",
+    "betse/util/test/pytest/mark/pytmark.py": "16bf121ef7e97a1e6cb78c54b76d23f7f23f1dc5603fa0bc3b0436e755ed1471",
+    "betse/util/test/pytest/mark/pytparam.py": "8758dce94d17d0f660aede61648e00284e19300fb58243c72fcd0e42895406cc",
+    "betse/util/test/pytest/mark/pytskip.py": "35c5001bdc372f14940bfa88d4ee934458ceb3e9f8cff0e8eaa920f86b9b51f0",
+    "betse/util/test/pytest/pytabc.py": "c1a72752a833ea5d27e5ecdc532c3d60ee66d009b31918693c77f77b2fd40d76",
+    "betse/util/test/pytest/pytests.py": "fae1b4c1f8c6541dfb3f7cea6c5325ca41d3b2be066142b5dc5acf6af2e6b816",
+    "betse/util/test/pytest/pytrequest.py": "373f5c64a7f43f82c9ccef10e7da037d194983ed34d9bd2e48c71893a3f14792",
+    "betse/util/test/tstci.py": "2068a54c9260e5823028feb1c3c1dcaacdaad9f4c34d49a030dada97c77bfca0",
+    "betse/util/test/tsttest.py": "3e6843aa386e717d38e5640ffe30587435f3e22bc35629878243c18ba4fdf2c7",
+    "betse/util/type/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/callables.py": "0579a3d547c6752cb1387bbaa537a62bab762d388ddf1fbebf22cab868fa8ca7",
+    "betse/util/type/call/callbacks.py": "3d1bfd3a77c4f84dbad8392757edbb254f8f79e95bd1e528d0d5a40cf3693f83",
+    "betse/util/type/call/callers.py": "f8e6c2b1cf6f946be7c6192fa39fab695110a9f3bf590ac88230cc3f0f314771",
+    "betse/util/type/cls/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/cls/classes.py": "518cf58a45b621fae925595c3e3ed48dcba8c1f71df6718b10ffbe253710aab4",
+    "betse/util/type/contexts.py": "66fad70e4b3458f3d24e66c93c741628112be7ba591d745e034529caaa8da8ef",
+    "betse/util/type/decorator/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/decorator/deccls.py": "a294b66d7dda74a1c059046fc83776c386f24e94cb1cde8e325592c81b882f27",
+    "betse/util/type/decorator/decmemo.py": "04ba224b0b3f89a7b01e81daabc1e090c569534ccaf680118308c897fe0b96fd",
+    "betse/util/type/decorator/decorators.py": "34928e23f814b433fa5dc88bd45ec94d7d54ed0145a1c789e96f5995704bb84e",
+    "betse/util/type/decorator/decprof.py": "1e6e67c99ee56e423e14c988e93f0b27a42ba5161306a4bc8422ffaea2e4ded8",
+    "betse/util/type/descriptor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/descriptor/datadescs.py": "738468044761a2a36b2c4cde12213a3d7c910ca321eac3204e63fceb7da3a9c3",
+    "betse/util/type/descriptor/descs.py": "ddbd20c4cc4ffb3cbda95d632108ba3387936e6e70f2fe9e8ce9174701a4ba45",
+    "betse/util/type/descriptor/expralias.py": "96f5095f544894dd880a63cbdcb6333dbd178e0d64ed173b6afec384878a1986",
+    "betse/util/type/enums.py": "61924f3d1f3be6245a6696a77d90b9bfe34b5214683919b127ca46d3372d4c18",
+    "betse/util/type/iterable/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/iterators.py": "e7a534602fc73e64aaad768cb4072c0548a9562671eb309c779fbb7d15d262c7",
+    "betse/util/type/iterable/iterget.py": "0507d60daf5dbf1f3facadc0b0b80c7165e7ae0425cc930ff9a57660388522bd",
+    "betse/util/type/iterable/iteriter.py": "069329248e2a9578e0a1284d84268d65402c8052c25ceac1f6920630058ec7b3",
+    "betse/util/type/iterable/itersort.py": "acbff05481ff7e4e6283efab444de3ff48b5759fd8255aa3cc1be7435f8ddce8",
+    "betse/util/type/iterable/itertest.py": "b52190a6589231f4055e018fd9de36291e4c26fe277b7db738f1122eca51be2d",
+    "betse/util/type/iterable/mapping/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58",
+    "betse/util/type/iterable/mapping/mapmerge.py": "e49ec4d4fb4dbe84732f57294b406793cba2e01287081c066be2455c9678fbc0",
+    "betse/util/type/iterable/mapping/mappings.py": "37be12540d4f51b0ec62d17a7f321d6b61e2fdbaf030b7528c192099a42a57cf",
+    "betse/util/type/iterable/mapping/maptest.py": "9bbd2f2bd5e6007f5cb5f94a951ae676ca38940d8b544ba844341d411e16c488",
+    "betse/util/type/iterable/queues.py": "0477a235a70219d602abb4ede2a725c810e39cd4bd6cb4f06f52b796c626b404",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/util/type/iterable/set/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/set/setcls.py": "e53cd54b698ef7457280fc8a4c201f096d5f7ebb29c26309a79f2546dc1bc46a",
+    "betse/util/type/iterable/set/sets.py": "930bbb8e7fae15d1568ccf1d6b0e714ce5da4fac60e02c9414e34471bc8678a5",
+    "betse/util/type/iterable/tuples.py": "af9f097ed1983c88a3a278da8d5f80102a64c0ff39e1d05477459dd60d243bbf",
+    "betse/util/type/numeric/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/numeric/bits.py": "0e1d425a5e291e6742ffe37505c157db0a39168917016e8d908b47792368395f",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/util/type/numeric/ints.py": "cadf886fe9a34b04a89ade6fccac244116abeac9e9391782e31e50078dc3e011",
+    "betse/util/type/numeric/numerics.py": "4a948ec077371d3db6f1017d827112cbcc9a17329e91716c3a44c2ca37b27557",
+    "betse/util/type/numeric/versions.py": "f297a745a1c2f632c7700d1f3c666932934d368fadf8414ca7091fe91a7df774",
+    "betse/util/type/obj/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/obj/objects.py": "2f61869278221ea2640c6b6a0d69938e6407d29fcb91d8f2be286ec3f84a4945",
+    "betse/util/type/obj/objiter.py": "5efba02633c6d3cc6673dff7bc45ed18b0d301c1030610a834315ab89aa2f89b",
+    "betse/util/type/obj/objsize.py": "4b52f82bfe3b20f879f5f73f5196ee7bc4e08eb71f156b344cfc9defbb170cef",
+    "betse/util/type/obj/objtest.py": "22589d50c66ab6c0cdd3590ff2c5928fd901397aeafd56cac29add9c8017c837",
+    "betse/util/type/obj/sentinels.py": "cef85d8726d4bebb106eb3d3a72082971968497156aa9713f546d3925961e679",
+    "betse/util/type/text/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/chars.py": "5abae6a46e06d9ecceebf75b50f534f717f078a90b7690403219d0209fedd920",
+    "betse/util/type/text/mls.py": "52ec27d5ac0644cc37d1b78d77756cb41f2d60cb52bc1809fe2d49f7372ad622",
+    "betse/util/type/text/regexes.py": "85c5b1470bb773b82a99b2300cefa529710aefd3442d0942f1412e67ca43a700",
+    "betse/util/type/text/string/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/string/strjoin.py": "ba85964d929a9080d7ca06e713042c07858c2dd8747e3e1206fbfa8ff2a852e7",
+    "betse/util/type/text/string/strs.py": "351a1a8cd61d7942c83cf8c7bffcbf918de9dffab9d58764ffd38e88d88c841c",
+    "betse/util/type/typehints.py": "fd1ac6d86cae62d2d4ea22afa2a7f87b91a35aa0763b2e8fba89a567c8ebfc39",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089"
+  },
+  "outer_order": [
+    "for each named cut: native _cut_cells",
+    "data_length refresh",
+    "init_profiles again",
+    "redo_gj again",
+    "init_events/global+tissue finalization",
+    "event_cut.fire only after all successful",
+    "voltage event",
+    "outer makeAllChanges"
+  ],
+  "owner_semantics": {
+    "Cells": "Existing betse_tissue_cut explicit owner-domain/axis/stable-ID maps are a separate conservative policy, not native deletion equivalence.",
+    "aliases": "Lists mutate in place and then retain only data[index]; data2 may be stale/unbound for unmatched nested rows. Capture full available parent/partial and original exception.",
+    "empty": "Original call still rebuilds mesh/profiles/diffusion for an empty typed selection; cannot treat native no-op as stable CutPlan.changed False.",
+    "native": "Hardcoded nested-name set and cell-first length heuristics; np.delete defaults to flattening without axis; arbitrary simulator attributes and histories are scanned.",
+    "sequential": "Multiple cut profiles select against each newly changed world; no pre-union of initial indices."
+  },
+  "prefix_boundary": {
+    "first_unowned_capability": "DEC_mesh_cut_and_core_rebuild",
+    "line": 1153,
+    "preceding_statement_count": 32,
+    "prefix_AST_sha256": "eee6fddc10aa1cb26f4afea3b743bea0a203441842623744aa119495790a8731",
+    "statement": "self.targets_dec_edges, self.targets_dec_tcells = cells.mesh.cut_mesh(target_inds_cell)",
+    "statement_index": 32
+  },
+  "profile_reinitialization": "Each molecule.remove_cells invokes init_profiles before its own init_growth; inner _cut_cells invokes it again; outer cut dispatch invokes it again after all cuts. Repeated pickers and RNG sites remain separate actual calls.",
+  "pytest_collection_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0
+}

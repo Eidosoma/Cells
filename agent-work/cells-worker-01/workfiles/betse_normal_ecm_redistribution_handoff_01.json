@@ -1,0 +1,29 @@
+{
+  "kind": "cells.compact_redistribution_source_handoff@1",
+  "status": "source_correspondence_complete_no_enabled_movement_seam",
+  "package": "/mnt/workspaces/Cells/betse-normal-ecm-redistribution-source-audit-20261031-01",
+  "manifest_sha256": "22f6dc369ae84118123acda0861cdb1e2a668973695e6d966f3007763fe10b77",
+  "receipt_sha256": "b3bcad76d528a325287370c5a52bac2a76e39b18cf60b0d241345976e6597bcc",
+  "artifact_members_excluding_manifest": 3,
+  "static_checks": 382,
+  "native_python_files_installed_exact": 332,
+  "tracked_explicit_writers": 11,
+  "tracked_attribute_occurrences": 34,
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "fixture_model_reference_evaluations": 0,
+  "numerical_runs": 0,
+  "new_scientific_passes": 0,
+  "active_job_queries": 0,
+  "arbitrary_rho_activation": false,
+  "product_modules_added": false,
+  "remaining_supported_integration": "Configured general-owner transporters with ordinary ECM and optional distinct GRN owner; assigned separately under betse_normal_ecm_molecule_transport.",
+  "conditional_nonordinary_gap": "Nonunit ECM CaATP multiplies its rate proxy once and applied flux twice; the existing explicit unit-weight packet does not qualify this hypothetical branch.",
+  "obstructions_preserved": [
+    "sim_eosmosis hard-set False",
+    "MoveChannel import, construction and dispatch absent/commented",
+    "D_membrane, z_channel and z_pump loaders commented",
+    "sim_toolbox.single_cell_div_free absent",
+    "sim.Ec has no update beyond zero initialization"
+  ]
+}

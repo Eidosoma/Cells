@@ -1,0 +1,165 @@
+{
+  "kind": "cells.betse_ecm_requested_increment_protocol@1",
+  "status": "static_unexecuted_prospective_diagnostic",
+  "diagnostic_id": "cells.betse_ecm_requested_outward_junction_increment@1",
+  "original_transport_law_id": "betse_ecm_transport_material_source_v1_5_0@1",
+  "scope": {
+    "new_read_only_diagnostic": "junction_requested_outward_increment_mol_m3",
+    "shape": "ion x cell",
+    "quantity": "Signed requested outward junction concentration increment before binary64 addition and clipping",
+    "production_expression": "-(dt * (owner_sum @ (-fg * membrane_area) / cell_volume))",
+    "independent_expression": "dt * scalar_sum_owner(fg[j] * area[j]) / cell_volume",
+    "stationary_or_uncommitted_increment_zero": true,
+    "clipping_does_not_redefine_operand": true,
+    "legacy_buffers_and_ledgers_unchanged": true,
+    "raw_endpoint_lag_unchanged": true,
+    "old_raw_lag_gate_preserved_and_original_panel_failed": true,
+    "binding_and_candidate_state_identity_unchanged": true,
+    "trial_identity_may_change_due_to_added_diagnostic": true,
+    "physical_conservation_claim": false,
+    "material_or_energy_parity": false,
+    "paired_path_geometry_averaged": false
+  },
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+    }
+  },
+  "original_failed_panel": {
+    "checks": 40,
+    "passed": 39,
+    "failed": 1,
+    "status": "failed",
+    "case": "signed_environment",
+    "field": "ledger.membrane_bulk_difference_mol_m3",
+    "error_over_original_fixed_budget": 5.816019768552954,
+    "original_assertion_unchanged": true,
+    "not_reclassified": true,
+    "original_run": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+    "diagnosis": "/mnt/workspaces/Cells/betse-ecm-material-retained-diagnosis-20261031-02/result.json",
+    "diagnosis_sha256": "def100bc323d6a324853895fde8a5e5e8c3aa38d46425cc7ff46123785bd9e22"
+  },
+  "cases": [
+    "signed_environment",
+    "slow",
+    "bulk_clipping",
+    "stationary",
+    "stationary_pump_role",
+    "moving_reversed",
+    "membrane_lag",
+    "fast_duplicate",
+    "permuted",
+    "zero_transport"
+  ],
+  "corruption_cases": [
+    "wrong-sign",
+    "wrong-cell-axis",
+    "stationary-nonzero",
+    "clipped-raw-lag",
+    "rounded-state-difference"
+  ],
+  "original_input_calls": 26,
+  "retained_corpus_manifest_sha256": "e26b81460c4841edcf3c3e1ff35aa34d0a0ce0c7ff1345bc57108fd074d6cb45",
+  "fixed_budget": {
+    "absolute_floor_mol_m3": 3e-13,
+    "relative": 6e-12,
+    "reference_resolution_fraction": 0.1,
+    "carried_or_propagated_allowance": false,
+    "native_shape_dtype_and_binary64_bytes": "exact including signed zero",
+    "legacy_actual_and_reference_baselines": "exact shape/dtype/bytes for every old column"
+  },
+  "reference": {
+    "decimal_context_digits": [
+      100,
+      160
+    ],
+    "complete_raw_before_projection": true,
+    "original_observer_optional_default_none": true,
+    "observer_deep_copy_isolated": true,
+    "typed_decimal_strings_preserve_all_coefficient_digits_exponent_and_signed_zero": true,
+    "genuine_source_binary64_nodes_preserve_all_bits": true,
+    "separate_binary64_projections": true,
+    "exact_Decimal_from_float_inputs_can_have_more_digits_than_context": true,
+    "fresh_raw_and_projection_identity": true,
+    "no_production_or_native_calls": true
+  },
+  "independence": {
+    "native": "Fresh process denies Cells/BETSE/JAX/Torch; unchanged authenticated source capture",
+    "reference": "Fresh process denies Cells/BETSE/NumPy/SciPy/JAX/Torch/Pillow; independent Decimal scalar equations",
+    "original_baselines": "Bounded stdlib ZIP/NPY reader preserves shape/dtype/binary64 bits",
+    "conditional_semantics": "Exact Fraction sum of saved flux/area divided by saved cell volume; not an independent flux-law oracle"
+  },
+  "evidence": {
+    "prefix": "betse-ecm-requested-increment",
+    "original_inputs_unchanged": true,
+    "complete_returned_and_failed_trials_before_assertions": true,
+    "complete_native_and_typed_NPZ_before_assertions": true,
+    "complete_raw_and_projected_references_before_assertions": true,
+    "sidecar_limit_bytes": 16777216,
+    "no_payload_truncation_or_metadata_limit_widening": true,
+    "distinct_unit_declaration": "betse-ecm-requested-increment-declared-units.json"
+  },
+  "legacy_task_start_source_sha256": {
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+    "tests/unit/test_betse_ecm_transport.py": "aad1bca7e19f81830222eee1315aa07e69f5505ebbc049110aa726935b2a8304",
+    "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+  },
+  "original_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3"
+  },
+  "normalized_legacy_equations": {
+    "src/cells/processes/betse_ecm_transport.py": {
+      "normalized_ast_equals_original": true,
+      "normalized_ast_sha256": "6adf09098d5e3dab94b793f8b5fe4d12c416879403b8a77d03d4e4186eb31dc6",
+      "original_source_sha256": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+      "modified_source_sha256": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "removed_only": {
+        "assignments": 2,
+        "diagnostic_keywords": 1,
+        "observer_guards": 0,
+        "finish_functions": 0,
+        "observer_arguments": 0,
+        "finish_calls": 0
+      }
+    },
+    "validation/betse/betse_ecm_transport_reference.py": {
+      "normalized_ast_equals_original": true,
+      "normalized_ast_sha256": "51b0fcae696a0bdb2146dd89a9ae98dd3ab052bb2246c90510964c3aaed1bd88",
+      "original_source_sha256": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+      "modified_source_sha256": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "removed_only": {
+        "assignments": 2,
+        "diagnostic_keywords": 1,
+        "observer_guards": 1,
+        "finish_functions": 1,
+        "observer_arguments": 1,
+        "finish_calls": 1
+      }
+    }
+  },
+  "expected_checks": 17,
+  "fresh_worker_units": 26,
+  "proposed_guarded_units": 44,
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "scientific_imports": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "automatic_followup": false,
+  "automatic_polling": false
+}

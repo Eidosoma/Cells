@@ -1,0 +1,463 @@
+{
+  "automatic_launch": false,
+  "capture_arithmetic": "19*(1 setup + 3 dispatch) + 4*(1 setup + 1 failed dispatch) = 84 conditional captures.",
+  "execution_hold": true,
+  "form_arithmetic": "Each positive case: 2 bootstrap + 2 per enabled cold owner + 3*(8 prefix/CaATP/commit/field forms + 4 per enabled channel/network owner); total 942.",
+  "groups": {
+    "dependency-FAST": {
+      "accepted_calls": 0,
+      "case": "FAST",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[FAST]"
+      ]
+    },
+    "dependency-GRN_flag_missing": {
+      "accepted_calls": 0,
+      "case": "GRN_flag_missing",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[GRN_flag_missing]"
+      ]
+    },
+    "dependency-GRN_flag_not_bool": {
+      "accepted_calls": 0,
+      "case": "GRN_flag_not_bool",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[GRN_flag_not_bool]"
+      ]
+    },
+    "dependency-absent_general_network": {
+      "accepted_calls": 0,
+      "case": "absent_general_network",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[absent_general_network]"
+      ]
+    },
+    "dependency-changed_Ca_cache": {
+      "accepted_calls": 0,
+      "case": "changed_Ca_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[changed_Ca_cache]"
+      ]
+    },
+    "dependency-changed_field_owner": {
+      "accepted_calls": 0,
+      "case": "changed_field_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[changed_field_owner]"
+      ]
+    },
+    "dependency-changed_publication_projection": {
+      "accepted_calls": 0,
+      "case": "changed_publication_projection",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[changed_publication_projection]"
+      ]
+    },
+    "dependency-changed_shared_epoch": {
+      "accepted_calls": 0,
+      "case": "changed_shared_epoch",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[changed_shared_epoch]"
+      ]
+    },
+    "dependency-enabled_ER": {
+      "accepted_calls": 0,
+      "case": "enabled_ER",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[enabled_ER]"
+      ]
+    },
+    "dependency-enabled_flow": {
+      "accepted_calls": 0,
+      "case": "enabled_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[enabled_flow]"
+      ]
+    },
+    "dependency-fabricated_disabled_owner": {
+      "accepted_calls": 0,
+      "case": "fabricated_disabled_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[fabricated_disabled_owner]"
+      ]
+    },
+    "dependency-foreign_general_cache_role": {
+      "accepted_calls": 0,
+      "case": "foreign_general_cache_role",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[foreign_general_cache_role]"
+      ]
+    },
+    "dependency-foreign_general_config": {
+      "accepted_calls": 0,
+      "case": "foreign_general_config",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[foreign_general_config]"
+      ]
+    },
+    "dependency-foreign_implement_flag": {
+      "accepted_calls": 0,
+      "case": "foreign_implement_flag",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[foreign_implement_flag]"
+      ]
+    },
+    "dependency-foreign_profile_owner": {
+      "accepted_calls": 0,
+      "case": "foreign_profile_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[foreign_profile_owner]"
+      ]
+    },
+    "dependency-missing_general_cache": {
+      "accepted_calls": 0,
+      "case": "missing_general_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[missing_general_cache]"
+      ]
+    },
+    "dependency-missing_implement_flag": {
+      "accepted_calls": 0,
+      "case": "missing_implement_flag",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[missing_implement_flag]"
+      ]
+    },
+    "dependency-missing_shared_charge": {
+      "accepted_calls": 0,
+      "case": "missing_shared_charge",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[missing_shared_charge]"
+      ]
+    },
+    "dependency-noise_requires_owner": {
+      "accepted_calls": 0,
+      "case": "noise_requires_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[noise_requires_owner]"
+      ]
+    },
+    "dependency-osmotic_requires_both_owners": {
+      "accepted_calls": 0,
+      "case": "osmotic_requires_both_owners",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[osmotic_requires_both_owners]"
+      ]
+    },
+    "dependency-swapped_handler_caches": {
+      "accepted_calls": 0,
+      "case": "swapped_handler_caches",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_dependency[swapped_handler_caches]"
+      ]
+    },
+    "positive-GRN_channels": {
+      "accepted_calls": 3,
+      "case": "GRN_channels",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[GRN_channels]"
+      ]
+    },
+    "positive-GRN_only": {
+      "accepted_calls": 3,
+      "case": "GRN_only",
+      "category": "positive",
+      "independent_forms": 40,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[GRN_only]"
+      ]
+    },
+    "positive-both_channels": {
+      "accepted_calls": 3,
+      "case": "both_channels",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[both_channels]"
+      ]
+    },
+    "positive-both_disabled": {
+      "accepted_calls": 3,
+      "case": "both_disabled",
+      "category": "positive",
+      "independent_forms": 26,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[both_disabled]"
+      ]
+    },
+    "positive-both_enabled": {
+      "accepted_calls": 3,
+      "case": "both_enabled",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[both_enabled]"
+      ]
+    },
+    "positive-disabled_shared_carry": {
+      "accepted_calls": 3,
+      "case": "disabled_shared_carry",
+      "category": "positive",
+      "independent_forms": 26,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[disabled_shared_carry]"
+      ]
+    },
+    "positive-empty_general_channels": {
+      "accepted_calls": 3,
+      "case": "empty_general_channels",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[empty_general_channels]"
+      ]
+    },
+    "positive-fast_duplicate": {
+      "accepted_calls": 3,
+      "case": "fast_duplicate",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[fast_duplicate]"
+      ]
+    },
+    "positive-general_channels": {
+      "accepted_calls": 3,
+      "case": "general_channels",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[general_channels]"
+      ]
+    },
+    "positive-general_only": {
+      "accepted_calls": 3,
+      "case": "general_only",
+      "category": "positive",
+      "independent_forms": 40,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[general_only]"
+      ]
+    },
+    "positive-neutral_products": {
+      "accepted_calls": 3,
+      "case": "neutral_products",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[neutral_products]"
+      ]
+    },
+    "positive-no_CaATP": {
+      "accepted_calls": 3,
+      "case": "no_CaATP",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[no_CaATP]"
+      ]
+    },
+    "positive-no_modulators": {
+      "accepted_calls": 3,
+      "case": "no_modulators",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[no_modulators]"
+      ]
+    },
+    "positive-no_molecular_transport": {
+      "accepted_calls": 3,
+      "case": "no_molecular_transport",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[no_molecular_transport]"
+      ]
+    },
+    "positive-publication_carry": {
+      "accepted_calls": 3,
+      "case": "publication_carry",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[publication_carry]"
+      ]
+    },
+    "positive-rectangular": {
+      "accepted_calls": 3,
+      "case": "rectangular",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[rectangular]"
+      ]
+    },
+    "positive-smoothed": {
+      "accepted_calls": 3,
+      "case": "smoothed",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[smoothed]"
+      ]
+    },
+    "positive-temperature_split": {
+      "accepted_calls": 3,
+      "case": "temperature_split",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[temperature_split]"
+      ]
+    },
+    "positive-time_dilation": {
+      "accepted_calls": 3,
+      "case": "time_dilation",
+      "category": "positive",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_two_owner_history[time_dilation]"
+      ]
+    },
+    "raw-first_GRN_negative": {
+      "accepted_calls": 0,
+      "case": "first_GRN_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_original_molecule_failure[first_GRN_negative]"
+      ]
+    },
+    "raw-first_general_negative": {
+      "accepted_calls": 0,
+      "case": "first_general_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_original_molecule_failure[first_general_negative]"
+      ]
+    },
+    "raw-second_GRN_negative": {
+      "accepted_calls": 0,
+      "case": "second_GRN_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_original_molecule_failure[second_GRN_negative]"
+      ]
+    },
+    "raw-second_general_negative": {
+      "accepted_calls": 0,
+      "case": "second_general_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py::test_original_molecule_failure[second_general_negative]"
+      ]
+    }
+  },
+  "kind": "cells.held_general_molecule_workqueue@1",
+  "planned": {
+    "accepted_calls": 57,
+    "biological_cases": 0,
+    "checks": 44,
+    "dependency_controls": 21,
+    "independent_reference_forms": 942,
+    "independently_carried_trajectories": 0,
+    "native_captures": 84,
+    "positive_cases": 19,
+    "raw_cases": 4
+  },
+  "pytest_collection": false,
+  "scientific_evaluations": 0,
+  "status": "unrun"
+}

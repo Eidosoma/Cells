@@ -1,0 +1,338 @@
+{
+  "accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "cold_compensation": "Counterion removal is an explicit material sink. Cold boundary scalars are not inventory. Formal gene charge uses scale_factor but raw gene amounts do not. Cell-negative admission uses bulk M mean while refusal uses stale membrane M mean; the gap can publish rho and set balanced True without removing M. Ordinary moving-ion updates and stale stationary M are preserved.",
+    "cold_environment": "Full E grid is distinct from M membranes. Source-effective environment amounts use uniform cell_height*delta^2; native true_environment_volume is a separate diagnostic. No single-bath volume reinterpretation or global conservation claim.",
+    "energetic_conservation_credit": false,
+    "physical_global_conservation_credit": false,
+    "retained_failure": "Original signed_environment diagnostic and39/40 panel remain failed; no rerun, reconstruction or budget relaxation",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained"
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "accepted_charged_grn_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "1ea37286674ebfa9a56ddc0e52dfbaf5fcb10b6c55781638ed2c91f00d9055e0"
+    },
+    "accepted_feedback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-prepared-20261030-02/inputs.json",
+      "sha256": "eaa1a1376c228a50c46e2c8aca2c0e8c826b16e5db808b8cd32d55cf9699d97e"
+    },
+    "accepted_feedback_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-network-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "ba8182630f163b6b6728f037d5b38d4b451f44396f48838871b4fdf04610c943"
+    },
+    "accepted_molecule02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-02/inputs.json",
+      "sha256": "ef09e28ed9b72b093eb3f310027e7763d2f2172716e0f3b486944ec40ed531bc"
+    },
+    "accepted_molecule02_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "747b98ca85f05ce444999cd752c575d83bd54da4e6844fcfa1deb3f71f6217b5"
+    },
+    "accepted_neutral_grn_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-tests-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "6cccb0a9c1c759f00de3bfb725f99ce97eb05f1904d4a7a6e4ccc37620bbff31"
+    },
+    "accepted_prepared_ER_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-prepared-20261030-02/inputs.json",
+      "sha256": "25070ece836bfbfda59d81323e1d0207d17126ea4b1d5b8d194de66e08fe7896"
+    },
+    "accepted_prepared_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "authorized_nonimported_transporter03_pin_source": {
+      "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03/inputs.json",
+      "sha256": "8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd"
+    },
+    "charged_capture03_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_capture_witness_03.json",
+      "sha256": "7dcf86c98016fe4a9845c816406a13ca8374ccf517402c7a1165d6dc3597dd69"
+    },
+    "charged_ecm_error_capture_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_error_capture_witness_02.json",
+      "sha256": "e54f16edd5cffd3ed7331e0a23fe4e7f8d0ed5dd09532fffc535124b5f65ad7a"
+    },
+    "charged_grn_key_schema01": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_key_schema_witness_01.json",
+      "sha256": "d2aa47647994ee7beada381fade09a7e98ce4f18a20ef1d44485ef8fc6a7806f"
+    },
+    "charged_reference_fixed_budget_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_budget_witness_02.json",
+      "sha256": "dd962d3e8366f1d9e2c5e485f06d8731b0f1023ce54e5c9e52dad106e6cf86ed"
+    },
+    "ecm_charged_grn_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_reachability_01.json",
+      "sha256": "9c64cab5d024cf04b177c18109b9bba3cfadf0fc110538f34295d3135255c94a"
+    },
+    "ecm_error_capture_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_error_capture_witness_02.json",
+      "sha256": "627c8fd7c109bb7d4655f2f259b8d85a18ed7210765980b9978ca1a6f854a37d"
+    },
+    "failed_ecm01_sealed_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "51cb27e8b0acbc65842d61826e22ddbdfd7c6f8a3475be33e9148a32e7fea881"
+    },
+    "frozen_ecm01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-01/inputs.json",
+      "sha256": "df6acbe3b1f2cd3bcb61cf7c8d33ceadf1a26599ac230014cf61c3d7c6653f44"
+    },
+    "frozen_ecm01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_01.json",
+      "sha256": "28e4903f06bd150c2987d3212575a6d9ab5c68b501f3b86959e2f134f269d8af"
+    },
+    "held_charged01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-01/inputs.json",
+      "sha256": "078333d66671b1688495368b85c7638a9a8a6f93c7f2c03285d7ec7f0f823ab0"
+    },
+    "held_charged01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_01.json",
+      "sha256": "a0002ce8ffebb3486f8a7bf7e69f1eea52bc57532318f1a9af3f17e15462ddd1"
+    },
+    "held_charged02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-02/inputs.json",
+      "sha256": "6cbe75f4456194e81fe0f6dafef57a4292261aa3dd03614cad7c5b4159d4d767"
+    },
+    "held_charged02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_static_receipt_02.json",
+      "sha256": "9fdbc76e556b6a1f8dcc50a2e22cd64f8ef71e180513f1c854387b89319d8fa5"
+    },
+    "held_charged02_sealed_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-charged-grn-preflight-20261031-01/REVIEW.json",
+      "sha256": "a8e8bd059bb2dc28cdae66a4f080bd24f65db2dfa8e1139a3d3ca1f291e5fcb5"
+    },
+    "held_ecm_charged01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-01/inputs.json",
+      "sha256": "27462eb8c8fae10d694e34ac642f28f6f9ce1f1e00d9925818300a928b6e6df7"
+    },
+    "held_ecm_charged01_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_static_receipt_01.json",
+      "sha256": "2c84fd0796b0f059873d1eb40694140c5ecc698496fe488e87526f5ce086c559"
+    },
+    "held_grn01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-01/inputs.json",
+      "sha256": "2c7d6c2b835fae9f7deb68c931da51463e5c9b22ae3ce12b9a62f9b51d2d0ad8"
+    },
+    "held_grn01_preflight": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-preflight-20261030-01/REVIEW.json",
+      "sha256": "d12086bd12fc34ee0f1c87fff4f2b597cd954f5eab3409e0dbb976dc9886b223"
+    },
+    "molecule02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_join_static_receipt_02.json",
+      "sha256": "3dc2e85b918ae048cbe80f49a509dc25875b72cda903c1bacb5c5c327ad90a73"
+    },
+    "molecule_adapter_after_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_after_02.json",
+      "sha256": "32c0d819fbc664470f4359d5a06b3ec13b88678ab533718596e4a0f8c36cfe66"
+    },
+    "molecule_adapter_before_witness": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_molecule_adapter_attributes_before_02_complete.json",
+      "sha256": "2c60375e33b3c92022d9b0d01143c84e7b535386dce62778ee1cda74e84ba503"
+    },
+    "native_key_schema_witness02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_key_schema_witness_02.json",
+      "sha256": "dbf77c9f32c920417057ab2b6be7616a0b34d9e39dfa09b84df7c6e975907634"
+    },
+    "neutral_grn02_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-grn-prepared-20261030-02/inputs.json",
+      "sha256": "8f4eb95501b5dfa7defbb32912b8cd26454b95ffb4ab744a1ebd52cc061d04f2"
+    },
+    "neutral_grn02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_grn_join_static_receipt_02.json",
+      "sha256": "e11bdb1e2588bb920cba1918c76a39b9392db2e3ed13f3a998548927bc5fcd08"
+    },
+    "prior_molecule_failed_static_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-molecule-prepared-20261030-01/inputs.json",
+      "sha256": "9873a68dfdc9d2596b75c3ced3304a438f4414377d93937f68b5a87dda14e9b8"
+    },
+    "protected_charged02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-charged-grn-prepared-20261030-02/inputs.json",
+      "sha256": "fb485491ad4f5c319df210100de71b6a4ad9e3b1c756abab99a960227c918500"
+    },
+    "protected_charged02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_charged_grn_join_static_receipt_02.json",
+      "sha256": "f9a0e728640cb4377ddc7d37fcb3bc301dc41e915791125302fe96dd54613f33"
+    },
+    "protected_standalone_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-sim-grn-prepared-20261030-01/inputs.json",
+      "sha256": "4e33d8c2fa4997255852c862e6de7aa84ce88a6ebf35bb941426793d847a9c07"
+    },
+    "protected_standalone_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_sim_grn_static_receipt_01.json",
+      "sha256": "799ea195df62eea58772d4b028c9ba343fabd82a4d45c7d092cae845fd3cf102"
+    },
+    "repaired_ecm02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "repaired_ecm02_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "retained_ecm_failed_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    },
+    "retained_ecm_qualification_plan": {
+      "path": "/home/robert/Cells/agent-work/cells-specialist/betse_ecm_transport_qualification_plan.json",
+      "sha256": "d6f3e0f629a12f520587f33edd60933e31cad898f5f47b1ad7ef9c144f71e054"
+    }
+  },
+  "binding_evidence_copies": 42,
+  "capture_repair_03": {
+    "full_test_AST_inverse_exact": true,
+    "held02_is_not_numerical_failure": true,
+    "no_physics_case_budget_changes": true,
+    "numerical_runs": 0,
+    "only_two_capture_sites": true,
+    "other_six_scientific_Python_files_byte_exact": true,
+    "sha256": "7dcf86c98016fe4a9845c816406a13ca8374ccf517402c7a1165d6dc3597dd69",
+    "witness": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_capture_witness_03.json"
+  },
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "6586f18825b513a48b4f988b0880544922ec096cf71667fe5e2a2337087e32d9",
+  "error_capture_repair_02": {
+    "automatic_retry": false,
+    "controlled_nonimported_ECM02_pin_refresh": {
+      "src/cells/processes/betse_ecm_grn_join.py": {
+        "after": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+        "before": "0bfdbd38f0e438824063ef743f9b4e747c79a702ec79972e6cb50ffc2151f0ac"
+      },
+      "tests/unit/test_betse_ecm_grn_join.py": {
+        "after": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+        "before": "5fb5f59334c3469e164f1a9ea9930dfa5c87ddaa077d7bf43a086015695d2142"
+      },
+      "validation/betse/betse_ecm_grn_protocol.json": {
+        "after": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+        "before": "22788f212d829883ca1e931638ddca0704e7d138e2064679a0c01160a6b81075"
+      },
+      "validation/betse/betse_ecm_grn_source_map.json": {
+        "after": "f15588f7abe0ec565a9141c262fc9789ea14f8e877dd761f8469966f9fa114f4",
+        "before": "d5f8eb642183fe711dac1f6772a5e75efc89d39fa3f96148cce64593b7682048"
+      }
+    },
+    "final_static_audit": {
+      "all_other_test_AST_exact": true,
+      "cache_capture_guarded_by_actual_owner_core_and_try": true,
+      "final_sha256": {
+        "src/cells/processes/betse_ecm_charged_grn_join.py": "8744d00529bce1f509bb071a2a5951745683ae257adfe10ee021410fd74574fd",
+        "tests/unit/test_betse_ecm_charged_grn_join.py": "b74f8df7113858a2f3fe89584b32e5b09b4aba68c238b17ccddcad7bcfd8ff5a"
+      },
+      "five_other_scientific_Python_files_byte_exact": true,
+      "helper_AST_equal_to_reviewed_ECM02": true,
+      "join_inverse_AST_exact": true,
+      "no_valid_cache_claim_for_absent_owner": true,
+      "original_exception_explicit_raise_from": true,
+      "scientific_execution": false,
+      "supplied_malformed_parent_archived_before_invocation": true
+    },
+    "five_other_scientific_Python_files_byte_exact": true,
+    "held01_not_executed": true,
+    "join_inverse_AST_exact": true,
+    "sha256": "e54f16edd5cffd3ed7331e0a23fe4e7f8d0ed5dd09532fffc535124b5f65ad7a",
+    "witness": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_error_capture_witness_02.json"
+  },
+  "inputs": "/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-03/inputs.json",
+  "inputs_sha256": "a44648b1d636632f1cfd1655d3fa65fce950ebb99e84422c019e66d714443f97",
+  "kind": "cells.native_ecm_charged_grn_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 44,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 9,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_pre_network_points": 54,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 35,
+    "completed_positive_mover_invocations_per_implementation": 108,
+    "component_control_histories": 4,
+    "dependency_controls": 13,
+    "fresh_Decimal_reference_forms": 152,
+    "fresh_cold_Decimal_forms": 44,
+    "fresh_warm_Decimal_forms": 108,
+    "independent_cold_points": 22,
+    "native_captures": 22,
+    "new_ecm_charged_grn_histories": 14,
+    "positive_three_call_histories": 18,
+    "raw_cold_failures": 4,
+    "raw_ecm_runtime_failures": 0,
+    "raw_partial_capacity_failures": 4
+  },
+  "planned_groups": {
+    "context": 9,
+    "controls": 4,
+    "core": 5,
+    "dependencies": 13,
+    "raw": 4
+  },
+  "protected_files": 285,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_ecm_charged_grn_reference.py": "cd3c878b47bbd5375aca83f50874257ee0bc0daaf8ee4a99e3d902f0fec8a331",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2504,
+  "static_checks": {
+    "absent_owner_error_capture_does_not_mask_original_exception": true,
+    "actual_normal_GRN_guards": true,
+    "all16_native_regulator_keys": true,
+    "cold_charge_budget_independent_predicted_gross": true,
+    "cold_compensated_boundary_carry_and_explicit_override": true,
+    "cold_mutable_copies_hot_live_aliases": true,
+    "compensated_material_parent_handoff": true,
+    "compile_without_import": "passed",
+    "complete_common_cache_bridge_AST": true,
+    "disabled_ion_aliases_skipped": true,
+    "exact_pytest_ID_validator_unchanged": true,
+    "exactly_four_nonimported_ECM02_dependency_pins_refreshed": true,
+    "failure_capture_helper_AST_equal_to_ECM02": true,
+    "frozen_ECM_fixture_dependency": true,
+    "global_name_resolution": "passed",
+    "immediate_cold_parent_and_unexpected_success_archives": true,
+    "literal_original_scientific_bodies": 48,
+    "malformed_inputs_durable_before_failure": true,
+    "native_network_before_deferred_commit": true,
+    "numerical_runs": 0,
+    "old_ECM_warm_reference_AST_unchanged": true,
+    "original_ECM_FD_NernstPlanck": true,
+    "original_radius_weight_TJ_context": true,
+    "pending_transporter_standalone_import_dependency": false,
+    "post_output_terminal_failure_capture": "passed",
+    "pytest_collection_runs": 0,
+    "reference_closure_stdlib": true,
+    "reference_fixed_gradient_flux_current_budgets": true,
+    "retained_ECM_panel_accepted": false,
+    "retained_ECM_panel_checks": [
+      39,
+      40
+    ],
+    "retained_material_inverse_AST_equal": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_ConfException_and_partial_capacity_capture": true,
+    "source_effective_true_volume_and_conservative_scatter_books_separate": true
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

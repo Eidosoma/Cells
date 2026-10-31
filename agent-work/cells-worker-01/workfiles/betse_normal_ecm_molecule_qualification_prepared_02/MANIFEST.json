@@ -1,0 +1,18 @@
+{
+  "files": {
+    ".execution_hold": "acbcde0839b6c6902536ea73e11b192ece5d8eb271fdbe1e498a62ec6327dca3",
+    "HANDOFF.json": "279d51807be9d110c9aa4e376029fbb12cf7253d5f406f9823a6a8f3360d5129",
+    "ROOT_VERIFICATION.json": "5444298f8cc22fd2d4bab9791c4b1a9e202f6200a90c692f0f935f2bafe67655",
+    "betse_normal_ecm_molecule_qualification_contract.py": "3c11a95b6fcccda590dbf29d86f646d93e4fe97d847d157ef132d80d5743a4a6",
+    "betse_normal_ecm_molecule_qualification_implementation.md": "724d90c52d8a627fc05f9a14ddc196e979342104661020363155d3fffa223d2c",
+    "betse_normal_ecm_molecule_qualification_metadata_check.py": "7c705d0d5c0b9655595b762882af7c7654dfadbb385063a80bd5b996b7ed7b93",
+    "betse_normal_ecm_molecule_qualification_plugin.py": "a7351d3a5a27de4f188c1bc1026a48295aad1bde1ce52ad662a5280242b0ccd4",
+    "betse_normal_ecm_molecule_qualification_reader.py": "b41c50052fcafb95a0de42e08601fb0e21a18ea67241ecdda77da6a12574e2e8",
+    "betse_normal_ecm_molecule_qualification_resources.py": "f51232f64c0765a03519b13cb73515cc155583de98e12c8904e42dc55e67677e",
+    "betse_normal_ecm_molecule_qualification_runner.py": "1bb948f5d0cd1cb5c596ecd5a68a417d48a1c86eec230533c48ab0b369aab3da",
+    "finalize_betse_normal_ecm_molecule_qualification.py": "85a5e591e2247479ee0f8613057512b1e744d945fe606ef3ea99290dffeb3543",
+    "inputs.json": "b06fb547e4e776334e7f6bb35460419df002fee460ee0813269efa20f191a267",
+    "prepare_betse_normal_ecm_molecule_qualification.py": "f18b27a439372bae7d27629db7c4b9edabb8f55efa80e6165d54cb3a265d42a5"
+  },
+  "status": "held_unrun"
+}

@@ -409,6 +409,7 @@ def step(binding, parent, forcing):
         clip = np.zeros(s)
         clamp, collocated, smoothing = np.zeros(s), np.zeros(s), np.zeros(s)
         environment_exchange = np.zeros(s)
+        requested_gap_outward_increment = np.zeros_like(cell)
 
         def observe(stage, i=None):
             frames.append(
@@ -564,6 +565,7 @@ def step(binding, parent, forcing):
                 environment_exchange[i] = np.sum(de * forcing.dt_s * volume)
                 observe("membrane_commit", i)
                 dg = np.dot(ck.owner_sum, -fg[i] * ck.membrane_area_m2) / cell_volume
+                requested_gap_outward_increment[i] = -(forcing.dt_s * dg)
                 cell[i] += forcing.dt_s * dg
                 observe("junction_commit", i)
                 negative, nan = cell[i] < 0, np.isnan(cell[i])
@@ -607,6 +609,7 @@ def step(binding, parent, forcing):
                 environment_accounting_residual_mol=env_change
                 - (clamp + collocated + smoothing + environment_exchange),
                 membrane_bulk_difference_mol_m3=membrane - cell[:, ck.owner],
+                junction_requested_outward_increment_mol_m3=requested_gap_outward_increment,
                 source_voltage_nonce_delta_V=vm - parent.values.voltage_V,
                 negative_environment_retained=bool(np.any(env < 0)),
                 negative_membrane_retained=bool(np.any(membrane < 0)),

@@ -1,0 +1,288 @@
+{
+  "active_ECM_manifest_sha256": "929db847219d12c636fade8ee6f43ff0e8fd5bfdf8ea46fc8b8c747bc4ac0400",
+  "active_partition_dependency": {
+    "ast_sha256": "13f86111d0b2df27be981b908a01807cd5bcc1e977d5ff570f985bfd42806ac7",
+    "first_line": 644,
+    "last_line": 720,
+    "source": "src/cells/core/active_ecm_polygon_preparation.py"
+  },
+  "existing_contract_blockers": {
+    "A physical cell cannot meet the sealed domain boundary": {
+      "ast_sha256": "9a43cb91ddb8bee7c2e63e17db5c004ae6cb81761ef9160edd080aaf7db7c9f7",
+      "first_line": 257,
+      "last_line": 257,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Bath centroid link is not exactly orthogonal to its shared face": {
+      "ast_sha256": "0e62faf2abb542f5d5f2e97f30ded6e3bef258ae46075a2e6d7a5237b13e6504",
+      "first_line": 298,
+      "last_line": 300,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Direct cell-cell interfaces have no declared finite cleft geometry": {
+      "ast_sha256": "43ba25ee2ac8d98a64eddfea92cad61fe0e590038b170ceeb0cb763c67e4eb13",
+      "first_line": 271,
+      "last_line": 273,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Region area must exactly exhaust the declared domain": {
+      "ast_sha256": "57bbfde028758955a799b12548c11e5481aa5939ee8da75ec7a63ebe33c99e5a",
+      "first_line": 195,
+      "last_line": 195,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Require membrane ownership for every cell and at least one bath-bath face": {
+      "ast_sha256": "c18713248b918b7576bb749bd0fb3418c16c965f9bf37be1004705acb6ea7d5e",
+      "first_line": 365,
+      "last_line": 367,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    }
+  },
+  "existing_core_files_changed": false,
+  "fallback_scope": "source ownership correspondence and exact obstruction only; finite-ECM adaptation unavailable",
+  "finite_ECM_adapted": false,
+  "finite_ECM_manifest_sha256": "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f",
+  "independent_integer_grid_witness": {
+    "ast_sha256": "9c0283f8ec2ec4838ce269e3daf2450dd9a25ca48a1ec21cd17760e6406365e0",
+    "first_line": 323,
+    "last_line": 535,
+    "source": "validation/geometry/stable_seed_control_volume_environment_reference.py"
+  },
+  "inventory": {
+    "Root_finalizer": 1,
+    "check_ids": [
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[held-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-two-baths]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_explicit_caller_domain_baths_boundaries_and_cache_refusals",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_positive_physical_bridge_evidence_is_required",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_resealed_output_controls_need_same_worker_baseline",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_failed_correspondence_baseline_cannot_credit_controls",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_missing_ECM_geometry_and_old_operator_gates_remain_closed"
+    ],
+    "collection": false,
+    "completed_tests": 0,
+    "duplicate_child_replays": 0,
+    "numerical_execution": false,
+    "panels": {
+      "CORRUPTIONS": [
+        "coordinate",
+        "bath-index",
+        "cell-ring",
+        "drop-membrane",
+        "partner",
+        "direct-cell-owner",
+        "boundary-owner-role",
+        "positive-leftover",
+        "drop-cleft-prerequisite",
+        "empty-witnesses",
+        "invented-bath-face",
+        "finite-promotion",
+        "cached-operator-promotion",
+        "extra-field"
+      ],
+      "EVIDENCE_REFUSALS": [
+        "missing-acceptance",
+        "wrong-identity",
+        "negative-control-report",
+        "geometry-only-report",
+        "truncated-physical-scalars",
+        "empty-owner-truth",
+        "runtime-source-missing",
+        "runtime-imports"
+      ],
+      "REFUSALS": [
+        "missing-domain",
+        "enlarged-domain",
+        "native-domain",
+        "new-bath-role",
+        "changed-bath-volume",
+        "missing-bath",
+        "duplicate-membrane",
+        "wrong-membrane-bath",
+        "missing-boundary",
+        "reversed-boundary",
+        "open-boundary",
+        "old-cache",
+        "empty-cache",
+        "finite-admission-scope"
+      ]
+    },
+    "positive_cases": [
+      {
+        "case": "manufactured-irregular-square",
+        "id": "held-one-bath",
+        "physical_profile": "held-compartments"
+      },
+      {
+        "case": "manufactured-irregular-square",
+        "id": "finite-one-bath",
+        "physical_profile": "finite-compartments"
+      },
+      {
+        "case": "manufactured-seed17-rectangle",
+        "id": "finite-two-baths",
+        "physical_profile": "finite-compartments"
+      }
+    ],
+    "positive_scope": "ownership_and_obstruction_correspondence_only_not_finite_ECM_adaptation",
+    "potential_actual_bridge_children": 8,
+    "potential_actual_constructor_children": 8,
+    "potential_actual_environment_children": 8,
+    "potential_actual_nested_children": 24,
+    "scheduled_units": 9,
+    "top_level_pytest_trees": 8,
+    "total_process_units": 33
+  },
+  "kind": "cells.fixed_seed_environment_prerequisite_static_correspondence@1",
+  "passive_partition_dependency": {
+    "ast_sha256": "ceb6121b74074334f2fa6233e41ea5e984b038cc12acb16b53393027fb89b0df",
+    "first_line": 261,
+    "last_line": 325,
+    "source": "src/cells/core/finite_ecm_polygon_preparation.py"
+  },
+  "physical_bridge02_manifest_sha256": "93431682e3dcae1ca06a311582227f8c0d58c31ac3a64a7b811efd5c0ad25938",
+  "preparation": {
+    "GPU_jobs": 0,
+    "collection": 0,
+    "fixture_executions": 0,
+    "geometry_evaluations": 0,
+    "numerical_jobs": 0,
+    "polls": 0,
+    "reference_evaluations": 0,
+    "scientific_imports": 0,
+    "shared_status_edited": false,
+    "test_runs": 0
+  },
+  "production_witness": {
+    "ast_sha256": "cad071516ac0cffad1bd8e97f11c21f87c35ef0e191fa7987b727d3001f0668a",
+    "first_line": 353,
+    "last_line": 556,
+    "source": "src/cells/processes/stable_seed_control_volume_environment.py"
+  },
+  "reference_closure": {
+    "executed": false,
+    "modules": [
+      {
+        "imports": [
+          "argparse",
+          "hashlib",
+          "json",
+          "os",
+          "pathlib.Path",
+          "traceback",
+          "validation.geometry.stable_seed_control_volume_physical_bridge_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+        ],
+        "sha256": "c6da2a976ac456fc30f579060938ca57a2b9e3c38b541fa7bdb2786280594436",
+        "source": "validation/geometry/stable_seed_control_volume_environment_reference.py"
+      },
+      {
+        "imports": [
+          "argparse",
+          "decimal.Decimal",
+          "hashlib",
+          "json",
+          "math",
+          "os",
+          "pathlib.Path",
+          "traceback",
+          "validation.geometry.conservative_polygon_geometry_reference",
+          "validation.geometry.stable_seed_control_volumes_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/conservative_polygon_geometry_reference.py",
+          "validation/geometry/stable_seed_control_volumes_reference.py"
+        ],
+        "sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+        "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+      },
+      {
+        "imports": [
+          "argparse",
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "fractions.Fraction",
+          "functools.cmp_to_key",
+          "hashlib",
+          "importlib.abc",
+          "json",
+          "math",
+          "os",
+          "pathlib.Path",
+          "sys",
+          "traceback",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "643ea598f74c4a5d56753b5712d528937683cc35b57e6c904bc113bed1ac7813",
+        "source": "validation/geometry/stable_seed_control_volumes_reference.py"
+      },
+      {
+        "imports": [
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "math",
+          "struct"
+        ],
+        "local_dependencies": [],
+        "sha256": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569",
+        "source": "validation/geometry/stable_geometry_primitives_reference.py"
+      },
+      {
+        "imports": [
+          "collections.Counter",
+          "collections.defaultdict",
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "hashlib",
+          "json",
+          "math",
+          "struct",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8",
+        "source": "validation/geometry/conservative_polygon_geometry_reference.py"
+      }
+    ],
+    "production_and_scientific_imports": [],
+    "upstream_geometry_derivations_replayed": 0
+  },
+  "repaired_upstream_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+  "source_and_output_dictionary_inventories_match": true,
+  "source_only": true,
+  "source_origins": {
+    "src/cells/core/active_ecm_polygon_preparation.py": {
+      "bundle": "/mnt/workspaces/Cells/active-ecm-polygon-prepared-20261031-02",
+      "sha256": "58786f33f5e6910adf1b37e4ab6b7f098c04733bfcd81c3c31be749d82af2884"
+    },
+    "src/cells/core/finite_ecm_polygon_preparation.py": {
+      "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+      "sha256": "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+    },
+    "src/cells/processes/finite_ecm_polygon_geometry.py": {
+      "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+      "sha256": "9769a8ec6e2816fa3b4d939c6b0f4d0518b01a7ec6679e9090442d984534c925"
+    },
+    "src/cells/processes/stable_seed_control_volume_physical_bridge.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-control-volume-physical-bridge-prepared-20261031-02",
+      "sha256": "be08b8953ff81107d12f39e19e3a870b2f1dd1604199d318fb823bd061842156"
+    }
+  },
+  "upstream_schema_completeness_guard": {
+    "ast_sha256": "a7a15a32f188548e4ae11721d266b3c3287b427b7c116d48402137ff2c0a7ed7",
+    "first_line": 43,
+    "last_line": 73,
+    "source": "validation/geometry/stable_seed_control_volume_environment_reference.py"
+  },
+  "upstream_schema_promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",
+  "upstream_schema_repair_review_sha256": "46e8976ca62fde81dfab720672bcfdfe38cf67694e3574559c889fcaf7b51fda",
+  "upstream_schema_repair_status": "source_review_clear_pending_fresh_qualification"
+}

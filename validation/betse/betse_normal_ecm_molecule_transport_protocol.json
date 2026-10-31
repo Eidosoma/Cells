@@ -1,0 +1,112 @@
+{
+  "AST_proofs": 26,
+  "accounting": "Separate per-species bulk/environment changes, requested exchange, fast collocation defect, membrane-buffer discrepancy, source-weighted charge and current. Continue complete material/field/owner books. Compare original residuals to independent predictions rather than forcing zero.",
+  "active_job_queries": 0,
+  "amounts": "Separate namespaced source-effective molecular books, native true-volume diagnostics, all deferred primary candidate buffers and original primary amount ledgers. Old signed_environment 39/40 failure remains failed; no global conservation credit.",
+  "configuration_obstruction": {
+    "exact_obstruction": "Absent general network leaves molecules_enabled unwritten; the else sets only mol_mit_enabled=False. No automatic false default is admitted.",
+    "explicit_present_configuration": "implement network is the independent general-handler flag; explicit True and False supported",
+    "lines": [
+      779,
+      796
+    ],
+    "missing_branch_attribute": "molecules_enabled",
+    "native_expression": "self.network_config = self._conf.get('general network', None)",
+    "path": "betse/science/parameters.py"
+  },
+  "declaration": "Separate actual general-network and GRN configurations, independent flags, role-labelled nonempty X/Y owners, common qualified primary/field geometry and explicit shared initial publications.",
+  "exclusions": [
+    "whole native parser/physical initializer/seed/load/pickle/storage/display",
+    "phase transition or latent disabled owner",
+    "configured transporters in GRN owner and subset/expression transporter targets",
+    "Molecule.pump and Molecule.gating active branches",
+    "mitochondria/ER/flow/electroosmosis/dynamic deformation/osmotic mechanics/noise/events/FAST/GPU",
+    "physical global conservation, energy/ATP/heat closure or biological calibration"
+  ],
+  "fixture_model_reference_evaluations": 0,
+  "general_schema_bridge": "Keep owner=molecules in actual declarations/cache identities; reuse existing core validation predicates with a temporary validation-only owner label. This does not construct a GRN or infer a source flag.",
+  "implementation_audit": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit_03.json",
+  "implementation_audit_sha256": "2b13b036833930ba4c9a1ce8cce79a8a40a07596372f887018abbbbd1bdc8aae",
+  "independent_reference_scope": "Fresh Decimal100/160 configured rate/ordered ECM commits from actual pre-transporter input plus unchanged independently conditioned primary/CaATP, per-owner channels/chemistry/molecular ECM transport, deferred commit and complete field references. No carried reference trajectory.",
+  "inherited_oracle_limits": "Nav and other channel reference domains remain unchanged. KLeak/CaLeak guards still precede constant branches. Catalog05 no_CaATP Nav reference refusal and all 11 unrun cases remain uncredited; no fixture/domain tuning.",
+  "kind": "cells.held_ordinary_ECM_general_transporter_protocol@1",
+  "law_id": "betse_supplied_FULL_ECM_general_transport_then_GRN_v1_5_0@1",
+  "native_files_installed_exact": 332,
+  "native_methods_audited": 14,
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_scope": "Original setup and adjacent FULL two-handler dispatch slices on complete actual incoming buffers, including source refusals before runtime inventory.",
+  "numerical_runs": 0,
+  "obstruction_scope": "Local Parameters.load missing-section branch has no molecules_enabled writer; no native file parser or complete configuration run has been executed.",
+  "ordinary_pump_weight": "rho_pump remains scalar identity 1; cached activation is refused. No dormant movement, projector replacement or hypothetical ECM CaATP nonunit branch.",
+  "original_partials": "Explicit raw first/second missing-max-rate declarations reach original KeyError during cold read_transporters. A structural validation witness fills that single field only in a private validator copy, never in executed/native inputs. Inherited first/second general/GRN negative-molecule declarations retain all earlier transporter writes and original refusals.",
+  "osmotic_limit": "Native osmotic_P sums both active molecular owners independently; this first composition keeps its source guard false and does not claim enabled osmotic/mechanical coupling.",
+  "parent": {
+    "manifest_sha256": "e51f7eead8d6bfe3a0e4f669005386e6f4271632f0531084754320025b1ed922",
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01"
+  },
+  "planned": {
+    "accepted_calls": 69,
+    "biological_cases": 0,
+    "checks": 60,
+    "component_controls": 5,
+    "dependency_controls": 31,
+    "independent_reference_forms": 1306,
+    "independently_carried_trajectories": 0,
+    "native_captures": 102,
+    "positive_cases": 23,
+    "raw_cases": 4,
+    "raw_setup_cases": 2
+  },
+  "publication": "Native direct assignment: general writes first and GRN replaces it when both enabled and publication is true. Publication false retains the previous shared epoch. Field projections bind that exact shared epoch; publications are never summed.",
+  "purpose": "Resolve the new reachable ECM configured-transporter update, complete object-cache and pre-channel conditional-input risks while retaining literal source defects.",
+  "pytest_collections": 0,
+  "release": {
+    "execution_hold": true,
+    "metadata_only_driver": true,
+    "separately_requested_Chief_review_and_release_controller_required": true
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_ER": "Parameters.load sets Ca_dyn=False; handler flags cannot enable ER. No forced enabled branch.",
+  "source_boundary_sha256": "7f3f2214725861fecc6e8a672a9a3a9ec6bb775e118db5936304cb3ad7c4e5b5",
+  "source_call_order": [
+    "ordinary primary refresh",
+    "CaATP with source-disabled ER",
+    "supplied qualified late flux seam",
+    "general clear/transporters/channels/modulators/chemistry+ECM transport",
+    "GRN clear/transporters/channels/modulators/chemistry+ECM transport",
+    "noise/mechanics guards explicitly false",
+    "deferred primary commit",
+    "full current/environment/voltage fields"
+  ],
+  "source_flags": "Present general network implements an explicit True/False flag; GRN is selected independently. No active GRN object is constructed in the GRN-disabled path.",
+  "source_scope": "All-target cell-zone general-owner configured transporters on supplied ordinary FULL ECM input, optional independent existing GRN owner. None and empty-list configurations retain distinct native flags.",
+  "source_setup": "Native general handler constructor/read or retained reinitializer before GRN; this first fresh supplied entry admits absent disabled owners, not latent disabled caches or a phase transition.",
+  "status": "source_static_only_unrun",
+  "transporter_cache": "Complete public Transporter fields, generated strings, original cold metadata, ordered names/targets and flux presence are owned by molecules. Static fields cannot change; flux None is cold-only. Disabled owners remain absent.",
+  "transporter_component": {
+    "common_files_byte_exact_to_parent": true,
+    "inputs_sha256": "8f0f502049d62344c36df591da920314c54f26b78a1ea6f36f34ea9936af45cd",
+    "path": "/mnt/workspaces/Cells/betse-normal-transporter-prepared-20261030-03",
+    "scientific_passes_inherited": 0
+  },
+  "transporter_source_defects": [
+    "Current increment precedes all material commits; no transaction rollback or retry.",
+    "Internal membrane-sample updates omit the stoichiometric coefficient; report the predicted discrepancy.",
+    "ECM fast projection uses duplicate-site indexed last writes with total site membrane area; slow projection uses the original area map.",
+    "Environment commits use the original target indexing after div_env; no ideal conservative scatter substitutes.",
+    "ignore ECM is stored but unused in the native builder/executor; first scope explicitly declares False.",
+    "Product Km is absent from the final executable rate; conversion factor 1e-3 lies outside each concentration power.",
+    "Native transporter current uses bare valence while molecular charge publication retains scale_factor; no forced electrical closure."
+  ],
+  "unchanged_budgets": {
+    "channels_and_CaATP": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+    "configured_transporter_commits": "Original ion FLOORS plus the existing 128*eps operation-count rule extended by the ECM site count; declared before any evaluation.",
+    "configured_transporter_rates": "validation/transport/betse_network_transport_protocol.json",
+    "fields": "tests/unit/test_betse_normal_ecm_field_join.py",
+    "material": "validation/betse/betse_ecm_transport_checks.py",
+    "max_normalized_error": 1.0,
+    "max_self_resolution": 0.1,
+    "molecular_amount_charge_current": "tests/unit/test_betse_ecm_grn_join.py"
+  }
+}

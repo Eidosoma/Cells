@@ -1,0 +1,406 @@
+{
+  "accepted_inherited_material_baseline_sha256": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+  "complete_native_field_function_count": 10,
+  "complete_native_field_functions": {
+    "FiniteDiffSolver.cell_grid": "d6f31f7d47008b321b4f2b2709f50f3b4ba864b95900f9c15d94ab528999c8f3",
+    "FiniteDiffSolver.makeLaplacian": "08e7ed5bb313325884049f69e237daa83665d517db53b45518455431f83d2de0",
+    "HH_Decomp": "91d42d8824c058ee0b3c5b4d621fd42d9d1032ec058a4a35bdadcd694133cf66",
+    "check_v": "10cd76d9870074b9e68af20653b837750515c28def7c16fdf26790c234286380",
+    "diff": "d0c1b692199747f0a7df6f5cc2303ad17bc0c522dadf5c09b63f3860030265c6",
+    "divergence": "2aeebe45691dfa75a8538c9de06e927a12a9afa283f9aee5ba0ca9073b532ecf",
+    "get_current": "cf2539a4f127759ccb8f9d17915a9cd8acea5866696ec1ef4bdc5a26092702c1",
+    "gradient": "5d729cc369ebec9e8e9ed00414bfdedc84e0d3e08b4bf6e15d5d0ac7bb30c9c8",
+    "smooth_flux": "38138d35377660385495d14007b509fb19fa1b155c168cea7db9b43094d7d25c",
+    "update_V": "555dffb27f1a0c803c47af3fab58c92c88a52bf893fb0859658d7cba9753e574"
+  },
+  "copied_dispatch_inverse_AST_equal_except_E_and_capture": true,
+  "full_raw_material_locals_preserved": true,
+  "geometry_cache_source_blocks": {
+    "caches": 2,
+    "environment": 16,
+    "grid": 8,
+    "inverses": 4,
+    "owner_matrices": 5,
+    "sharpness": 1,
+    "weights": 3
+  },
+  "independent_current_voltage_equations_no_intermediate_float": true,
+  "inherited_network_literal_scientific_bodies": 47,
+  "inherited_network_proof": {
+    "actual_normal_init_and_dispatch_guards": true,
+    "bridge_AST_sha256": {
+      "attach": "93c850e8da5e354e947e2e068ee9db26bd55b647661b5e07719d9cc3ebefb483",
+      "augment": "7ac47f4a273abc73a839db89795100174d58bc58fa4692d781db5b8243cd7030",
+      "before": "67a71f8433aaf7a971ac18ff5a93721e9bb8012936f8e0e78fddfa6e8fcafb3e",
+      "cache": "67cb25b9c11953f1dd43d96cd798289246fd2cbc54fde83953109d30edcc064d",
+      "cold": "fc316fb5dcd54499533f045f503aa7e8bd7baba96b420cf4d6b30b4e8a9a3d47",
+      "material_values": "65e98a0b030f5649cc3cae97b842cd6903a6ed2d931003e1fc1fa28f7358923c",
+      "new_trace": "f272d57e777979fba2e6fb67fcda5dab220cd6188d3665311846a27852904782",
+      "owner_evidence": "d049e2c94ada042d15ec6e1f7eab4f8162b4d9b5283443280e0b8c2761ea9ff5",
+      "restore": "76344a6f3b3641c910a7b38d693feebad68016878818b14fadc9782c42387a96",
+      "run_dispatch": "7caa467d2f4c6daad4b7a4d24e8753b51dc49cd64b1d9489ca0062f3055110b3",
+      "validate_definition": "d700875f312f23f6946c433484e578da03324f1aa64afe5f5079bc2ce40bb1d2"
+    },
+    "cold_reader_not_rerun_on_hot_restore": true,
+    "current_packet_ionic_boundary_authoritative": true,
+    "disabled_ion_aliases_not_fabricated": true,
+    "ecm_fd_and_nernst_planck_bodies_original": true,
+    "full_public_cache_and_E_site_buffers": true,
+    "independent_Hill_reference_unchanged": true,
+    "literal_numeric_bodies": {
+      "DynamicValue.__init__": {
+        "numeric_AST_sha256": "8a58e7954547ae3b2a87a965644052000631ec97e5533fa844548a602ff64650",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__delitem__": {
+        "numeric_AST_sha256": "3fb9f1dc67a8442241666f385b5c5dda0244980156c0be05fd33ede70be05a2e",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__getitem__": {
+        "numeric_AST_sha256": "01d550685f2e43084ab220d0d72e9ce557af4169b1e8a797364d73c48499b854",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__init__": {
+        "numeric_AST_sha256": "b9d15f5f1d750f7209d31bf044e187c37d7d8abce99a9d980f83adc99ce657f0",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__iter__": {
+        "numeric_AST_sha256": "04dd3f5642ff059a8df8590516c9b7b0a34ae459a1c93b1dfcb34182a4fe59b5",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__len__": {
+        "numeric_AST_sha256": "bbf5f222a2f001d19540eace674ac1e5aa2ea276f6eff3e1646e4d9e4ae4e2e2",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "DynamicValueDict.__setitem__": {
+        "numeric_AST_sha256": "7e12ced096a33519f5b3c5d13cba1048bf579a3313727b18c49ed9640f685d80",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfGenes.__init__": {
+        "numeric_AST_sha256": "7d346a78720b8d26ddb0d9c6cc5819fb0374961814b58e25d138cbf2a231a3b1",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfGenes.read_gene_config": {
+        "numeric_AST_sha256": "f029494a632f7deb285d197b77657f99d2a7c27d087dca9feccb5765e90747f7",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfGenes.reinitialize": {
+        "numeric_AST_sha256": "3463e3709f7b133234a4087df2ac023c03e7ccf556927a66767d1a156fced0a3",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.__init__": {
+        "numeric_AST_sha256": "c4b666de15cc086cb0db34caaeffcf0b19a986902379849a80176258f7699839",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.bal_charge": {
+        "numeric_AST_sha256": "42db3f814eea5002840cc3e0f7ba73fa5d2632f707e2c9f06dc11e3e3d52679e",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.clear_run_loop": {
+        "numeric_AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.create_reaction_matrix": {
+        "numeric_AST_sha256": "f483aa568c2c67ceee4f05fd35574b7f2ac3cd472f1695784508c9ee6d723637",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.create_reaction_matrix_env": {
+        "numeric_AST_sha256": "af7cd6b63fdb537ea1cf0a7f51c8d6e42ff9d8a36bbafb9fb96a120357650c6a",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.default_zones": {
+        "numeric_AST_sha256": "844298847a625fce940e6580abf0b613501f0b6948e977d161b87d87be66fcd0",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.energy_charge": {
+        "numeric_AST_sha256": "2e5f7c63a8f35d660b97ee59e695b8e85a63f0f67a5d46ad83851afdc418fd21",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.get_influencers": {
+        "numeric_AST_sha256": "177d03102e838564b8cefdcb9f29a320069c1b9cdf8f7c0e975b365e50f6472c",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.read_modulators": {
+        "numeric_AST_sha256": "75e95cffc9b7165953699d5c4ee917b43721a56151b6c4bf43f155d371935bd4",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.read_reactions": {
+        "numeric_AST_sha256": "3e08c2753f7ef2330ae637459859858dda28a3f0702f9f997cddb998156a20d6",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.read_substances": {
+        "numeric_AST_sha256": "33c54b4dec27b6b8598259c8d3a63f2b6e08bc8081834892a15efd2a64978bb4",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.run_loop": {
+        "numeric_AST_sha256": "a54a72fcd2ccd2e9c6ad8cf74ea8b0d2ed866579e441ff9cbd48373cdc495b2b",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.run_loop_modulators": {
+        "numeric_AST_sha256": "4bb9a1a16912bfde9ec3de8c89a38b44b790b95054120558d338be737abb3083",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.tissue_init": {
+        "numeric_AST_sha256": "53c4c7250639c0ca69de9c2d3309e7d33ca703dcd1439a6c75c53a28f7326c47",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.write_growth_and_decay": {
+        "numeric_AST_sha256": "164f1be2e65891453555026d7d7e230a01f85a1a74f698e371ad60928f5fea2b",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.write_reactions": {
+        "numeric_AST_sha256": "5e85cf5f0e661a3f3794f717468863ec326a1b7ff112346d59b86f751bfc9897",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "MasterOfNetworks.write_reactions_env": {
+        "numeric_AST_sha256": "581e7a2b961dd7b6501a17aba689c2cf2d991d5b1708867d312368dd126614bd",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Modulator.__init__": {
+        "numeric_AST_sha256": "60d0ad04d5ccfe38e7398b5596ad5bf5c7fc23c435e397a18b9036b874faa5c4",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Modulator.init_modulator": {
+        "numeric_AST_sha256": "2d4a50a5fbe71a87969a22bdb82761e021c73d2bd9a5f1df9ad520d6e1ef39c5",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Molecule.__init__": {
+        "numeric_AST_sha256": "fb9554a42460b1a370129b9f150efd4709588220e8a302de05854f98fffcde60",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Molecule.init_growth": {
+        "numeric_AST_sha256": "b5ae0409c46bd3d77311221930362b547eb8be43f13c20a2d7e499c02b7496a5",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Molecule.transport": {
+        "numeric_AST_sha256": "09cb573693bf2dfd2a76d62292ff84a4513893c26cfab60fc23b6e0aba6c61f2",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Molecule.update_intra": {
+        "numeric_AST_sha256": "53195e760fc1e22d04e9374c988cfaf70d281e8e89766c3e7b567d0de297a11b",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "Reaction.__init__": {
+        "numeric_AST_sha256": "1615b34794b013bc2ee1944534bc92d1ce0e3e35d1f66874e5cea26f4d9bc99a",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "diff": {
+        "numeric_AST_sha256": "d0c1b692199747f0a7df6f5cc2303ad17bc0c522dadf5c09b63f3860030265c6",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "dispatch": {
+        "first_line": 1306,
+        "last_line": 1319,
+        "original_guarded_block_equal": true
+      },
+      "div_env": {
+        "numeric_AST_sha256": "1197006c49a1e72f010849feedc609b13c4672c87000974710e2f80e22e0c46f",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "divergence": {
+        "numeric_AST_sha256": "2aeebe45691dfa75a8538c9de06e927a12a9afa283f9aee5ba0ca9073b532ecf",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "electroflux": {
+        "numeric_AST_sha256": "e0f2c84a0df780122f6b25ea641d854d85468411c08e92a36adc613ac56717de",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "gradient": {
+        "numeric_AST_sha256": "5d729cc369ebec9e8e9ed00414bfdedc84e0d3e08b4bf6e15d5d0ac7bb30c9c8",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "initialize_owner": {
+        "first_line": 884,
+        "last_line": 899,
+        "original_guarded_block_equal": true
+      },
+      "integrator": {
+        "numeric_AST_sha256": "c2fa841c57966f15f0fa5933c288f3d10cee752e906f27442f65dbf40ac1d881",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "molecule_mover": {
+        "numeric_AST_sha256": "240d1d4628e09ebd74cbc593f30020422a648b9007111aa345a697c7e9cb9aa5",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "nernst_planck_flux": {
+        "numeric_AST_sha256": "4b82cb3568a4a9549590cf82baf660d6f5a5ae27810b7bce7da6feef8fb81a8d",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "no_negs": {
+        "numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "set_net_opts": {
+        "numeric_AST_sha256": "242355411306072a0df0dae047c9209a9ead43ce7cc33b7cb3f77538bc740f33",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      },
+      "update_Co": {
+        "numeric_AST_sha256": "305af54d6215c25d63d18486f125410657123cf3ae4510f2c0e937185e548620",
+        "observational_AST_equal": true,
+        "original_AST_equal": true
+      }
+    },
+    "literal_scientific_body_count": 47,
+    "native_network_before_deferred_commit": true,
+    "original_radial_weight_and_TJ_context_statements": true,
+    "retained_material_accuracy_accepted": false,
+    "retained_material_panel": {
+      "original_failed_case": "signed_environment",
+      "passed": 39,
+      "total": 40
+    },
+    "retained_material_step_inverse_AST_equal": true,
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0
+  },
+  "initializer_cache_fixed_from_declared_pre_state": true,
+  "kind": "cells.normal_ecm_field_join_source_map@1",
+  "law_id": "betse_normal_ecm_field_material_network_v1_5_0@1",
+  "native_source_sha256": {
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "normal_check_v_only_NaN_vm": true,
+  "post_material_cache_captured_separately": true,
+  "prior_field_exclusively_supplies_next_E": true,
+  "retained_material_accuracy_accepted": false,
+  "retained_material_panel": [
+    39,
+    40
+  ],
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "cache": "Original configured-temperature sigma/ko initialized from explicitly declared pre-state, held fixed. update_V sigma_cell independently recomputed per call using species mean and F^2/(R*T)*0.1; this differs from cached q*F/(kb*T) sum",
+    "exclusions": [
+      "Full native initialization/normal solver and sampling/persistence",
+      "Charged cold ion compensation, mitochondria, separate transporters/channels and intracellular molecular field branch",
+      "Physical global material/charge/energy conservation, biological calibration, independent carried trajectories, JAX/GPU qualification"
+    ],
+    "external": "Explicit pump and late membrane flux, channel multiplier, fixed-gap control, ionic bath and applied R/L/T/B voltage; fluid/noise/forces/deformation/events disabled or excluded. Original geometry inputs remain explicit preparation",
+    "field_state": "Complete intracellular current, environment rho/surface/Gaussian/voltage/E/HH/B/current and cell conductivity/voltage/mean/E/normal/dvm outputs retained. Previous reconstructed E_env alone supplies next ordinary and molecular transport. Vm updates after each field, earlier GJ caches stay stale",
+    "initial_preparation": "Original geometry/owner/normal/measure declarations plus initializer material and D_free; derive actual Cartesian grid, maps, source operators/inverses, smoothing weights, sigma/ko, radius and diviterm. Full seed/phase/diffusion-mask/dynamic initialization excluded",
+    "owner": "Original nonempty configured X/Y MasterOfGenes/Core with native GAD/reaction/modulator/ECM transport, real cold readers, full public cache and coefficient carry; charged cold compensation excluded",
+    "source_order": "Explicit prepared phase; original run_sim_core1041 bootstrap update_V; normal resets/ordinary ion transport; guarded GRN1306-1319; update_all_concs1357; update_V1360; NaN-only check_v1363"
+  },
+  "source_GRN_before_commit_before_fields": true,
+  "source_bootstrap_without_check_v": true,
+  "source_get_current_never_substituted": true,
+  "source_suffix_blocks": {
+    "bootstrap_field": {
+      "ast_sha256": "61aa837c7320342dbabfe91c45c20e0717a9437d333dcd61acae708b9506905c",
+      "lines": [
+        [
+          1041,
+          1041
+        ]
+      ]
+    },
+    "check_v": {
+      "ast_sha256": "5ec39d03dbc7d2cdea16f8f5aa494b0ef56075b041a9cb8b28733da5027027aa",
+      "lines": [
+        [
+          332,
+          344
+        ]
+      ]
+    },
+    "diviterm": {
+      "ast_sha256": "bdf84a1b3f485c474b7f48474caf19a13b7228f54e4a84488d1a5b91a45dbf93",
+      "lines": [
+        [
+          1390,
+          1390
+        ]
+      ]
+    },
+    "normal_field": {
+      "ast_sha256": "2c6d585984725be349975b199b8965adff30af4bbbebd6fcd0a49628089ee5b9",
+      "lines": [
+        [
+          1360,
+          1360
+        ],
+        [
+          1363,
+          1363
+        ]
+      ]
+    },
+    "update_V": {
+      "ast_sha256": "d74f626c7587509c3c1eb1897aa38e823e17a7b8223a808efd9d9f99b3a36c71",
+      "lines": [
+        [
+          2007,
+          2083
+        ]
+      ]
+    }
+  },
+  "stale_gap_caches_preserved_after_voltage": true,
+  "voltage_operator_geometry_derived": true
+}

@@ -1,0 +1,69 @@
+{
+  "all_numerical_cases_and_forms_unrun": true,
+  "capture_all_cases_fit_claim": false,
+  "capture_case_maximum_claim": false,
+  "capture_format_member_limit": 310689,
+  "capture_profile": "ordinary_ecm_molecule_lifecycle_01",
+  "classified_reads": 191,
+  "event_loop_or_physical_initializer_claim": false,
+  "explicit_parent_union_exact_except_reviewed_reference_overrides": true,
+  "fixture_model_reference_evaluations": 0,
+  "historical_transition02_unchanged": true,
+  "inherited_oracle_domains_and_failures_preserved": true,
+  "inherited_scientific_passes": 0,
+  "inputs_sha256": "759e7086daea07005921cee61c7f84baf62ff3617087dfeeda876d5a0e99996e",
+  "kind": "cells.held_molecule_lifecycle_author_receipt@1",
+  "metadata": {
+    "controls_passed": 10,
+    "large_archive_constructed": false,
+    "measured_process_VmHWM_bytes": 22773760,
+    "path": "metadata-01/result.json",
+    "sha256": "61cd3556c4d5751856c3389c9ccc90fa8f312871752e453c4d4a142f7efa29d1"
+  },
+  "no_scientific_qualification_or_launch": true,
+  "numerical_runs": 0,
+  "pending_reads": 0,
+  "previous_static_sources_and_logs_preserved": true,
+  "prospective": {
+    "biological_cases": 0,
+    "checks": 54,
+    "dependency_controls": 19,
+    "independent_reference_forms": 3006,
+    "independently_carried_reference_trajectories": 0,
+    "native_captures": 177,
+    "observer_cases": 4,
+    "positive_INIT_calls": 61,
+    "positive_SIM_calls": 66,
+    "positive_cases": 22,
+    "prefix_refusals": 3,
+    "raw_INIT_cases": 4,
+    "raw_SIM_cases": 2
+  },
+  "pytest_collections": 0,
+  "raw_partial_owner_fields_and_original_exception_chains_retained": true,
+  "reference_modules": 31,
+  "resource_files": 29,
+  "runtime_modules": 156,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "shared_frozen_or_PROGRESS_edits": false,
+  "source_audit": {
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_implementation_audit_03.json",
+    "proofs": 70,
+    "sha256": "d7397c2ae8f7f72de61e66b59568731feec38530e6ac9e5e39ac50f32cf44615"
+  },
+  "source_boundary": {
+    "methods": 27,
+    "native_files_installed_exact": 332,
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_boundary_01.json",
+    "sha256": "66e5f37f06d3a0f71d3037a6b4d34160e8f5f688fedb2e8b94759b4ae040b9f6"
+  },
+  "source_files": 2847,
+  "static_checks": {
+    "AST_proofs": 70,
+    "Ruff_without_cache": true,
+    "compile_without_execution": true
+  },
+  "status": "held_unrun",
+  "strict_metadata_only_driver": true
+}

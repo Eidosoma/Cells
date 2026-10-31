@@ -1,0 +1,66 @@
+{
+  "active_job_queries": 0,
+  "blockers": [],
+  "current_manifest_authoritative": true,
+  "dependency_review": {
+    "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/DEPENDENCY_REVIEW.json",
+    "sha256": "61725332404df4f9803a629e32147c21048a478a4e9f17e7a227a8244ef3e0de"
+  },
+  "expected_archives": 1296,
+  "inherited_preparation_manifest_historical": true,
+  "initial_preparation_refusal": {
+    "cause": "Metadata code compared source node IDs with group keys rather than the exact declared per-group node-ID values; corrected with full group-to-node mapping equality. No output packet existed and no scientific work ran at that refusal.",
+    "evidence": {
+      "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/preparation-failure.json",
+      "sha256": "bec0c230a9934e535820ccd2d9a7eb83c19b4a8a1689056e707c92fc28a1f009"
+    }
+  },
+  "inputs": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04/inputs.json",
+    "sha256": "c2a9c280de04448e71f768546be6f57b423f5b2a876198e2dbaebe8cb0c2396f"
+  },
+  "manifest": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04/MANIFEST.json",
+    "sha256": "a6495a39ff5af284a0dce6df146d949f0f772f605bcdd8d998409a84a026f017"
+  },
+  "metadata_tests": 0,
+  "no_runner_or_launch": true,
+  "numerical_tests": 0,
+  "other_scientific_sources_byte_identical": true,
+  "packet": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04",
+  "packet_files": 3687,
+  "parent_packet_and_failure_preserved": true,
+  "planned": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "preparer": {
+    "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/prepare.py",
+    "sha256": "b8269f5b42efa75aefee679f4aae1aeadc6e4ec3fd618024c3e550109e13cacc"
+  },
+  "resources": {
+    "VmHWM_bytes": 38092800,
+    "address_space_limit_bytes": 536870912,
+    "cpu": 2,
+    "elapsed_seconds": 3.245838057016954,
+    "host_available_after_bytes": 22722605056,
+    "host_available_before_bytes": 22231633920,
+    "required_host_reserve_bytes": 8589934592
+  },
+  "scientific_evaluations": 0,
+  "source_delta_paths": [
+    "validation/betse/betse_normal_ecm_event_join_reference.py"
+  ],
+  "source_files": 2718,
+  "source_review": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04/SOURCE_STATIC_REVIEW.json",
+    "sha256": "e369c075d28c5b7f577735c5fe768caa4a16791a1fe11f25afcaa619d035368a"
+  },
+  "status": "explicit_INIT04_source_frozen_held"
+}

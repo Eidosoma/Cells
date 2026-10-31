@@ -1,0 +1,46 @@
+{
+  "cell_flow_written": false,
+  "configuration_readers": [
+    {
+      "ast_sha256": "442ce3dfd07ab8b1407af5d4df20a768c4ac9db12909bf942b455cecb65e97dc",
+      "first_line": 68,
+      "last_line": 68,
+      "method": "reinitialize",
+      "source": "betse/science/chemistry/gene.py",
+      "source_expression": "self.recalc_fluid = config_dic.get('recalculate fluid flow', False)"
+    },
+    {
+      "ast_sha256": "7018c7adc7bcba8ab98b769642496553de9eb863e82d474c5b25bd514986ea66",
+      "first_line": 150,
+      "last_line": 150,
+      "method": "read_gene_config",
+      "source": "betse/science/chemistry/gene.py",
+      "source_expression": "self.recalc_fluid = config_dic.get('recalculate fluid', False)"
+    }
+  ],
+  "denominator_floor": false,
+  "effects": [
+    "p.fluid_flow=True",
+    "u_env_x/y=-J_env_x/y/(F*mean(cc_env)*mean(zs))"
+  ],
+  "exact_source_fragment": "if self.recalc_fluid:\n    logs.log_info('Calculating fluid in terms of endogenous currents...')\n    p.fluid_flow = True\n    cc = sim.cc_env.mean(axis=0).reshape(cells.X.shape)\n    zz = sim.zs.mean()\n    sim.u_env_x = -sim.J_env_x / (p.F * cc * zz)\n    sim.u_env_y = -sim.J_env_y / (p.F * cc * zz)",
+  "future_composition_implemented": false,
+  "getFlow_called": false,
+  "kind": "standalone_GRN_flow_activation_future_composition@1",
+  "ordinary_dispatch_reachable": false,
+  "prerequisites": [
+    "Standalone GRN reinitialize phase before its loop",
+    "Actual environment current J_env_x/y on complete grid owners",
+    "All current cc_env species and zs valences plus F and cells.X.shape",
+    "Source flag self.recalc_fluid; no substituted ordinary YAML switch"
+  ],
+  "source_executed": false,
+  "source_method": "MasterOfGenes.run_core_sim",
+  "source_site": {
+    "ast_sha256": "3a45066cee873544bb7ecece9453384ab2916a72eae5476ea5917ceed620b447",
+    "first_line": 281,
+    "last_line": 291,
+    "source": "betse/science/chemistry/gene.py"
+  },
+  "zero_mean_concentration_or_valence_may_be_nonfinite": true
+}

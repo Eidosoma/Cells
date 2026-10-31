@@ -1,0 +1,51 @@
+{
+  "actual_cold_config_flag": true,
+  "actual_pre_channel_and_post_channel_checkpoints": true,
+  "common_cache_capture_plumbing_functions": 14,
+  "complete_private_channel_cache": true,
+  "enabled_ER_calls": 0,
+  "inherited_complete_CaATP_functions": 3,
+  "inherited_complete_field_functions": 10,
+  "inherited_network_bodies": 47,
+  "kind": "cells.normal_ecm_catalog_static_AST_audit@1",
+  "literal_channel_bodies": {
+    "Channel.__init__": {
+      "first_line": 6546,
+      "last_line": 6548,
+      "original_AST_sha256": "eb1b77876ec3b0f484fa4b684dedf04c5bd524bf850a6502b32aa3572228d057",
+      "port_AST_sha256": "eb1b77876ec3b0f484fa4b684dedf04c5bd524bf850a6502b32aa3572228d057"
+    },
+    "Channel.init_channel": {
+      "first_line": 6550,
+      "last_line": 6629,
+      "original_AST_sha256": "6ce636376ebf06fe735d2f1c5b876b49f120d79ed9f9811221adbabcdff98e66",
+      "port_AST_sha256": "6ce636376ebf06fe735d2f1c5b876b49f120d79ed9f9811221adbabcdff98e66"
+    },
+    "MasterOfNetworks.read_channels": {
+      "first_line": 1015,
+      "last_line": 1110,
+      "original_AST_sha256": "04f055d398a080eb5c95630cc3ab9e22696e6395dc883318cee83b5af24a7475",
+      "port_AST_sha256": "aff95497bf78127aecc22e6752a3164cde12c50b34edae67fde0b4c8fd756191"
+    },
+    "MasterOfNetworks.run_loop_channels": {
+      "first_line": 3115,
+      "last_line": 3213,
+      "original_AST_sha256": "c30a2d546d602ebe54bf4fb8f5ef759635fcd85e0571f844e9942dde5538f817",
+      "port_AST_sha256": "12cf13f67b81e8f4385dc8a413b9eb5a8b2b3035b82888f9d100023ccb875c81"
+    }
+  },
+  "modern_Ca_routing_classes": 23,
+  "modern_classes": 55,
+  "modern_numeric_methods": 110,
+  "native_trace_ion_names_not_shadowed": true,
+  "new_literal_channel_bodies": 4,
+  "numerical_runs": 0,
+  "old_Cav_G_failed_panel_reclassified": false,
+  "pytest_collection_runs": 0,
+  "scalar_ECM_channel_reference_inside_material": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_clock_N3_prefix": true,
+  "source_modern_ion_CaATP_GeRN_commit_field_order": true,
+  "unchanged_CaATP_and_field_components": true
+}

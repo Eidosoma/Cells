@@ -1,0 +1,839 @@
+{
+  "kind": "cells.betse_ecm_requested_increment_static_plan@1",
+  "status": "static_preparation_pending_Chief_preflight",
+  "prepared_utc": "2026-10-31T01:25:11.898682+00:00",
+  "prepared_bundle": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01",
+  "source_bundle": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01",
+  "prepared_bundle_manifest_sha256": "93662e8d87ed04d61b97e93912c44743282b253d240ccb1e815892f4c0494bf1",
+  "authorized_bundle_manifest_sha256": null,
+  "static_preparer": "/mnt/workspaces/Cells/specialist-runners/betse-ecm-requested-increment-20261031-01-prepare.py",
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-ecm-requested-increment-preparation-20261031-01.json",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_ecm_requested_increment_checks.py": "3e50699e0effe169e9be617dca732011b9cff63b644776bfd53f8ca3550ff003",
+    "validation/betse/betse_ecm_requested_increment_fixtures.py": "0bd221714b4b1a0b384b49037042c06fe857f7fe489a3b601b9df146f07fb54a",
+    "validation/betse/betse_ecm_requested_increment_reference.py": "3a80fbabd83d65b06e9382cd1ff05981a59a07d69faacc871e9bc36bcaed95a0",
+    "validation/betse/betse_ecm_requested_increment_runtime.py": "6016b65a0a107021f4955b97753d69f2101300d5c3d41a50d2f538691b70ba6f",
+    "validation/betse/betse_ecm_requested_increment_replay.py": "9a25a8bcc397b1bf0bf1f79d12342baed97e693cc01a55919bcd7da9a94388ef",
+    "tests/unit/test_betse_ecm_requested_increment.py": "50ec32ca6374b068627df7d9c2a9ab6786ede6fcfe899bfabf465eb9f72a440e",
+    "validation/betse/betse_ecm_requested_increment_corpus.json": "e26b81460c4841edcf3c3e1ff35aa34d0a0ce0c7ff1345bc57108fd074d6cb45",
+    "validation/betse/betse_ecm_requested_increment_protocol.json": "60725c5ff44f3eba880ca70697a97da5ca1425d597ec564ff13fb5f14bca937a",
+    "validation/betse/betse_ecm_requested_increment_source_map.json": "b0fc7a224831216c84947e93026308ec1dd6d10612ff5f6b8de35aff12859c7c",
+    "agent-work/cells-specialist/BETSE_ECM_REQUESTED_INCREMENT.md": "decc8bf06dd0526d5704e77b8bb5bbe7d64e7f81db5df79bfd7fe251e7b7bd87"
+  },
+  "dependency_source_sha256": {
+    "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+    "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+    "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc",
+    "AGENTS.md": "d406ea88597b79a335c320e90726f0a91f7743deb9e1edd10945c62034e62c61",
+    "pyproject.toml": "b39bc96e1f2c808be83c088a414070ce0cd5c8b3701233a89e9b413618dc2a73",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+    "tests/unit/test_betse_ecm_transport.py": "aad1bca7e19f81830222eee1315aa07e69f5505ebbc049110aa726935b2a8304",
+    "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+    "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+    "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233"
+  },
+  "original_source_sha256": {
+    "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+    "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170",
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3"
+  },
+  "legacy_task_start_source_sha256": {
+    "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+    "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+    "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+    "tests/unit/test_betse_ecm_transport.py": "aad1bca7e19f81830222eee1315aa07e69f5505ebbc049110aa726935b2a8304",
+    "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+  },
+  "original_failed_panel": {
+    "checks": 40,
+    "passed": 39,
+    "failed": 1,
+    "status": "failed",
+    "case": "signed_environment",
+    "field": "ledger.membrane_bulk_difference_mol_m3",
+    "error_over_original_fixed_budget": 5.816019768552954,
+    "original_assertion_unchanged": true,
+    "not_reclassified": true,
+    "original_run": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+    "diagnosis": "/mnt/workspaces/Cells/betse-ecm-material-retained-diagnosis-20261031-02/result.json",
+    "diagnosis_sha256": "def100bc323d6a324853895fde8a5e5e8c3aa38d46425cc7ff46123785bd9e22"
+  },
+  "diagnostic_scope": {
+    "new_read_only_diagnostic": "junction_requested_outward_increment_mol_m3",
+    "shape": "ion x cell",
+    "quantity": "Signed requested outward junction concentration increment before binary64 addition and clipping",
+    "production_expression": "-(dt * (owner_sum @ (-fg * membrane_area) / cell_volume))",
+    "independent_expression": "dt * scalar_sum_owner(fg[j] * area[j]) / cell_volume",
+    "stationary_or_uncommitted_increment_zero": true,
+    "clipping_does_not_redefine_operand": true,
+    "legacy_buffers_and_ledgers_unchanged": true,
+    "raw_endpoint_lag_unchanged": true,
+    "old_raw_lag_gate_preserved_and_original_panel_failed": true,
+    "binding_and_candidate_state_identity_unchanged": true,
+    "trial_identity_may_change_due_to_added_diagnostic": true,
+    "physical_conservation_claim": false,
+    "material_or_energy_parity": false,
+    "paired_path_geometry_averaged": false
+  },
+  "expected_checks": 17,
+  "fresh_worker_units": 26,
+  "fresh_reference_records": 26,
+  "proposed_guarded_units": 44,
+  "check_units": [
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "signed_environment",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[signed_environment]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[signed_environment]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "slow",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[slow]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[slow]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "bulk_clipping",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[bulk_clipping]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[bulk_clipping]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "stationary",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "stationary_pump_role",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary_pump_role]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary_pump_role]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "moving_reversed",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[moving_reversed]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[moving_reversed]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "membrane_lag",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[membrane_lag]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[membrane_lag]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "fast_duplicate",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[fast_duplicate]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[fast_duplicate]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "permuted",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[permuted]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[permuted]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_requested_increment_and_unchanged_legacy_history",
+      "case": "zero_transport",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[zero_transport]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[zero_transport]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_requested_increment_checker_rejects_corruption",
+      "case": "wrong-sign",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-sign]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-sign]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_requested_increment_checker_rejects_corruption",
+      "case": "wrong-cell-axis",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-cell-axis]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-cell-axis]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_requested_increment_checker_rejects_corruption",
+      "case": "stationary-nonzero",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[stationary-nonzero]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[stationary-nonzero]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_requested_increment_checker_rejects_corruption",
+      "case": "clipped-raw-lag",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[clipped-raw-lag]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[clipped-raw-lag]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_requested_increment_checker_rejects_corruption",
+      "case": "rounded-state-difference",
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[rounded-state-difference]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[rounded-state-difference]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_decimal_codec_preserves_digits_types_and_binary64_bits",
+      "case": null,
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_decimal_codec_preserves_digits_types_and_binary64_bits",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_complete_decimal_codec_preserves_digits_types_and_binary64_bits"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_raw_decimal_callback_cannot_mutate_the_returned_reference",
+      "case": null,
+      "pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_raw_decimal_callback_cannot_mutate_the_returned_reference",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_ecm_requested_increment_runtime",
+        "tests/unit/test_betse_ecm_requested_increment.py::test_raw_decimal_callback_cannot_mutate_the_returned_reference"
+      ]
+    }
+  ],
+  "replay_units": [
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "signed_environment",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[signed_environment]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "signed_environment",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "slow",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[slow]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "slow",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "bulk_clipping",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[bulk_clipping]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "bulk_clipping",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "stationary",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "stationary",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "stationary_pump_role",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary_pump_role]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "stationary_pump_role",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "moving_reversed",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[moving_reversed]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "moving_reversed",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "membrane_lag",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[membrane_lag]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "membrane_lag",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "fast_duplicate",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[fast_duplicate]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "fast_duplicate",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "permuted",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[permuted]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "permuted",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "zero_transport",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[zero_transport]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "native",
+        "--case",
+        "zero_transport",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "signed_environment",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[signed_environment]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "signed_environment",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "slow",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[slow]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "slow",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "bulk_clipping",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[bulk_clipping]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "bulk_clipping",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "stationary",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "stationary",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "stationary_pump_role",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary_pump_role]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "stationary_pump_role",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "moving_reversed",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[moving_reversed]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "moving_reversed",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "membrane_lag",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[membrane_lag]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "membrane_lag",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "fast_duplicate",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[fast_duplicate]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "fast_duplicate",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "permuted",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[permuted]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "permuted",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "zero_transport",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[zero_transport]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "zero_transport",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "wrong-sign",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-sign]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "wrong-sign",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "wrong-cell-axis",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-cell-axis]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "wrong-cell-axis",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "stationary-nonzero",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[stationary-nonzero]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "stationary-nonzero",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "clipped-raw-lag",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[clipped-raw-lag]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "clipped-raw-lag",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "rounded-state-difference",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[rounded-state-difference]",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "rounded-state-difference",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "callback",
+      "case": "callback",
+      "producer_pytest_id": "tests/unit/test_betse_ecm_requested_increment.py::test_raw_decimal_callback_cannot_mutate_the_returned_reference",
+      "command": [
+        "-m",
+        "validation.betse.betse_ecm_requested_increment_replay",
+        "--mode",
+        "callback",
+        "--case",
+        "callback",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    }
+  ],
+  "expected_pytest_ids": [
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[signed_environment]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[slow]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[bulk_clipping]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[stationary_pump_role]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[moving_reversed]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[membrane_lag]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[fast_duplicate]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[permuted]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_requested_increment_and_unchanged_legacy_history[zero_transport]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-sign]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[wrong-cell-axis]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[stationary-nonzero]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[clipped-raw-lag]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_requested_increment_checker_rejects_corruption[rounded-state-difference]",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_complete_decimal_codec_preserves_digits_types_and_binary64_bits",
+    "tests/unit/test_betse_ecm_requested_increment.py::test_raw_decimal_callback_cannot_mutate_the_returned_reference"
+  ],
+  "distinct_unit_declaration": "betse-ecm-requested-increment-declared-units.json",
+  "runner_environment": {
+    "CELLS_ECM_REQUESTED_INCREMENT_CORPUS_ROOT": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/retained_corpus",
+    "CELLS_BETSE_SOURCE": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/native",
+    "required_PYTHONPATH": [
+      "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/source/src",
+      "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/source",
+      "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/dependencies/pillow"
+    ],
+    "cwd": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01/source",
+    "pytest_confcutdir": "tests/unit",
+    "evidence": "Unique durable per-unit CELLS_COMPONENT_EVIDENCE path set by Root"
+  },
+  "resource_envelope": {
+    "reuse_frozen_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "worker_max_summed_RSS_bytes": 1073741824,
+    "worker_wall_seconds": 480,
+    "outer_max_summed_RSS_bytes": 2147483648,
+    "outer_wall_seconds": 7200,
+    "minimum_available_bytes": 8589934592,
+    "threads": 1,
+    "gpu": false,
+    "external_startup_failure_wrapper_required": true,
+    "jobs_expected_10_minutes_or_more_detached_with_durable_logs": true
+  },
+  "packaging_seed": {
+    "path": "/mnt/workspaces/Cells/active-ecm-polygon-prepared-20261031-01",
+    "manifest_sha256": "c6adb8b1c04be361d4f78136ead1d8570228879746aced9745414eea83067db3",
+    "use": "Frozen resource guard and Pillow only",
+    "qualification_inherited": false
+  },
+  "finalizer_unit": {
+    "owner": "Root",
+    "prepared": false,
+    "required": true,
+    "full_payloads_separate_from_bounded_summary": true
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "scientific_imports": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "numerical_launcher_prepared": false,
+  "qualification_finalizer_prepared": false,
+  "Chief_static_preflight_accepted": false,
+  "Chief_static_preflight_receipt": null,
+  "Chief_static_preflight_sha256": null,
+  "authorization": null,
+  "declared_units_file": "betse-ecm-requested-increment-declared-units.json",
+  "declared_units_sha256": "051cae42847ab5e19e940cc24bf05016607ce2a5e40d2da4d682a82d0e44f78d"
+}

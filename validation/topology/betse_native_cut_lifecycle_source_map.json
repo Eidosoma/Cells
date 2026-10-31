@@ -1,0 +1,74 @@
+{
+  "full_lifecycle_numeric_credit": false,
+  "installed_exact_python_files": 332,
+  "kind": "cells.native_cut_lifecycle_source_map@1",
+  "native_source_sha256": {
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/tissue/picker/tispickcls.py": "c1c592ddc600479806da73c37ade7aecf19df0f49cd46706a74ad6bb9f1bc773",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+  },
+  "scope": {
+    "exclusions": [
+      "DEC/geometric/Poisson regeneration, full native cut or complete handler numeric execution",
+      "Cell-content/ATP release, native conservation or energy closure",
+      "Native RNG/picker/constructor history, original warm-clock or gate-cache preservation inferred by remapping",
+      "Whole-loop, physical-mesh, biological or JAX/GPU qualification"
+    ],
+    "lifecycle": [
+      "for each named cut: native _cut_cells",
+      "data_length refresh",
+      "init_profiles again",
+      "redo_gj again",
+      "init_events/global+tissue finalization",
+      "event_cut.fire only after all successful",
+      "voltage event",
+      "outer makeAllChanges"
+    ],
+    "owner": "Qualified existing explicit stable CutPlan/OwnedField removal/quantity sink ledger runs separately from native length heuristics. Its after-topology is a conservative owner target, never inferred regenerated native geometry.",
+    "prefix": "Literal first32 original _cut_cells statements including its docstring, normalized doc/type decorators only, plus return-locals observation. Stop before line1153 DEC cut. Actual ordinary is_ecmTrue/Ca_dynFalse prerequisites; never force source flags.",
+    "raw": "Preserve list mutation/errors, stale/unbound data2, scalar len failure and species/cell global-grid collision. A completed raw prefix can still be an invalid ownership/world result; no positive full-cut credit.",
+    "rebind": "Every actual call including typed empty selection invalidates changing geometry/operators, diffusion/profile/RNG/GRN/gates/fields/bindings/checkpoint owners. Supplied post-cut declarations are recorded in a Cells dependency order, distinct from the original native call trace. No metadata-only record can unlock a runnable checkpoint.",
+    "reference": "Independent original-AST native prefix plus fresh stdlib hurt and stable-owner oracle. Existing80-digit quantity reductions and existing budgets retained. No independently carried trajectory.",
+    "refusal": "Ordinary continuation always refuses at the currently unqualified changing-mesh boundary. Requires future qualified geometry and actual typed post-cut checkpoint integration, not reinitialization at fabricated defaults, stale caches or forged old binding IDs.",
+    "selection": "Both supplied picker target arrays and cell-to-membrane occurrence map are explicit. Preserve selected-cell and membrane occurrence order. Typed empty arrays are a supplied source conditional; no empty-picker constructor/RNG equivalence.",
+    "snapshots": "Full supplied field inventories before/after and available source/helper-frame partial locals; dictionary traversal order, shared container identities and typed numeric/object arrays retained. Distinct ndarray-view buffer ownership is not a general checkpoint contract; source prefix does not mutate existing numeric buffers."
+  },
+  "source_AST_proof": {
+    "appended_observation": "return locals() only",
+    "compile_global_names": true,
+    "compiled_python_files": 11,
+    "complete_available_phase_and_source_frame_failure_evidence": true,
+    "empty_selection_invalidates_native_lifecycle": true,
+    "first_unowned_line": 1153,
+    "fixture_evaluations": 0,
+    "generic_capture_records_not_scientific_equations_shared": true,
+    "independent_native_original_prefix_AST_equal": true,
+    "kind": "cells.native_cut_prefix_capability_AST_proof@1",
+    "literal_flatten_equal": true,
+    "literal_original_prefix_statements_including_docstring": 32,
+    "numeric_view_buffer_alias_not_checkpointed": true,
+    "numerical_runs": 0,
+    "original_normalized_prefix_AST_sha256": "393c941e1a87ca8b3f7f1cfe12ede557e4e8413c4c4b5a6d3354548d0525a9e2",
+    "owner_metadata_never_unlocks_checkpoint_or_mesh": true,
+    "parent_graph_isolated_dictionary_order_and_container_aliases_retained": true,
+    "pytest_collection_runs": 0,
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_and_conservative_removal_policies_separate": true,
+    "supplied_picker_occurrence_order_preserved": true
+  },
+  "source_boundary": {
+    "first_unowned_capability": "DEC_mesh_cut_and_core_rebuild",
+    "line": 1153,
+    "preceding_statement_count": 32,
+    "prefix_AST_sha256": "eee6fddc10aa1cb26f4afea3b743bea0a203441842623744aa119495790a8731",
+    "statement": "self.targets_dec_edges, self.targets_dec_tcells = cells.mesh.cut_mesh(target_inds_cell)",
+    "statement_index": 32
+  },
+  "whole_lifecycle_method_count": 32
+}

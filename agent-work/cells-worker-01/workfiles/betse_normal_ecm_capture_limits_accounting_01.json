@@ -1,0 +1,1202 @@
+{
+  "active_job_queries": 0,
+  "all_other_type_shape_hash_CRC_byte_depth_and_owner_guards_unchanged": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "capacity_derivation": {
+    "alignment": 64,
+    "filename_copies": 2,
+    "formula": "floor((67108864 - 22) / (128 + 30 + 46 + 2*6))",
+    "ignored_positive_overhead": [
+      "numeric payload bytes",
+      "longer owner names",
+      "ZIP64 extra fields",
+      "ZIP64 end records",
+      "longer shapes/dtypes/headers",
+      "growth padding"
+    ],
+    "minimum_NPY_member_bytes": 128,
+    "minimum_NPY_prefix_and_newline_bytes": 11,
+    "minimum_accepted_plain_dtype_string_length": 3,
+    "minimum_canonical_filename_bytes": 6,
+    "minimum_central_ZIP_header_bytes": 46,
+    "minimum_end_record_bytes": 22,
+    "minimum_header_text_characters": 54,
+    "minimum_local_ZIP_header_bytes": 30,
+    "minimum_total_archive_bytes_per_member": 216,
+    "new_fixed_member_limit": 310689,
+    "unchanged_archive_file_bytes": 67108864,
+    "unchanged_expanded_and_JSON_bytes": 67108864
+  },
+  "catalogue_profile_may_not_select_this_tool": true,
+  "external_worker_memory_time_and_host_reserve_limits_still_required": true,
+  "fixture_evaluations": 0,
+  "kind": "cells.complete_ECM_capture_member_capacity_source_accounting@1",
+  "method": "Charge every array occurrence at the actual uncompressed writer, including all repeated state/observer/failure paths; apply unchanged total archive bytes",
+  "new_or_retained_qualification_passes": 0,
+  "no_semantic_case_maximum_or_physical_model_bound_claim": true,
+  "numeric_header_source": {
+    "header_function": {
+      "AST_sha256": "76550a87320475b78403576e073269a324b11e348f00ac4b8166b931c8c458b1",
+      "end_line": 478,
+      "line": 445,
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py"
+    },
+    "minimal_header_scalar_metadata_cases": [
+      {
+        "NPY_header_bytes": 128,
+        "before_alignment_bytes": 65,
+        "fortran_order": true,
+        "header_characters": 54,
+        "prefix_bytes": 10
+      },
+      {
+        "NPY_header_bytes": 128,
+        "before_alignment_bytes": 66,
+        "fortran_order": false,
+        "header_characters": 55,
+        "prefix_bytes": 10
+      }
+    ],
+    "padding_function": {
+      "AST_sha256": "26482299cd403500134b8858f33455a2bb009d51238f4db193e40d0673485c8e",
+      "end_line": 418,
+      "line": 397,
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py"
+    },
+    "source": {
+      "path": "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py",
+      "sha256": "5d7fd66e8c78d0bd9fab82e8893609ba88f7fcd3569eaebb0748f40768e85c16"
+    }
+  },
+  "numerical_runs": 0,
+  "original_catalog_allowance_remains_catalog_only": true,
+  "original_catalog_limit": 32768,
+  "original_catalog_schema_allowance": 31726,
+  "producer_policy": "Only pinned plain-numeric np.savez/ZIP_STORED capture writers; changed writer/format/compression requires a new review",
+  "pytest_collection_runs": 0,
+  "python": {
+    "executable": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+    "version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]"
+  },
+  "reference_evaluations": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope_profiles": {
+    "event04": {
+      "actual_capture_archive_call_sites": [
+        {
+          "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+          "callee": "native.archives.write_archive",
+          "end_line": 32,
+          "function": "archive",
+          "line": 32,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "ions.data(value)"
+        },
+        {
+          "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+          "callee": "archive",
+          "end_line": 98,
+          "function": "check",
+          "line": 98,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(fields=rows, physical_global_conservation_credit=False)"
+        },
+        {
+          "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+          "callee": "archive",
+          "end_line": 508,
+          "function": "test_ecm_event_raw_partial",
+          "line": 508,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "inputs"
+        },
+        {
+          "AST_sha256": "1c161264d6e4f596e1aebd433425e917d8e0c4b3a9b2b26b8507be9d69a9c504",
+          "callee": "archive",
+          "end_line": 622,
+          "function": "test_ecm_event_dependencies",
+          "line": 622,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "inputs"
+        },
+        {
+          "AST_sha256": "cfd6590fd121f61b739d1c2487a2785a15cefb526bc36a38bede9e3a2a1bea50",
+          "callee": "archive",
+          "end_line": 627,
+          "function": "test_ecm_event_dependencies",
+          "line": 627,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(binding=binding, parent=parent)"
+        },
+        {
+          "AST_sha256": "d36eb0e34f40d17b753aec180deeae10fb13e05ba1000ef2f1d9e0876d712745",
+          "callee": "archive",
+          "end_line": 735,
+          "function": "test_ecm_event_dependencies",
+          "line": 735,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "getattr(leaf, 'partial', None)"
+        },
+        {
+          "AST_sha256": "6faf8bb53ed9592ead3906e55cd5488463f3388acb471b9656742ee9097ae7d4",
+          "callee": "archive",
+          "end_line": 738,
+          "function": "test_ecm_event_dependencies",
+          "line": 738,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(type=type(leaf).__name__, message=str(leaf))"
+        },
+        {
+          "AST_sha256": "1676b473669f9e36736e6547a5eb9facd9dfdfb0f8c90760a9ba6d8c167c0dc2",
+          "callee": "archive",
+          "end_line": 269,
+          "function": "after_cold",
+          "line": 269,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "9dbad4b0ad431592e6083f24e968cce95e6609ddbd59d137e049b153644686dd",
+          "callee": "archive",
+          "end_line": 278,
+          "function": "test_ecm_event_history",
+          "line": 278,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "parent"
+        },
+        {
+          "AST_sha256": "4ad5fd5fc457898f9fb1240763a9cfa70039c1a67cfe87ae7dcdcb875f37a632",
+          "callee": "archive",
+          "end_line": 612,
+          "function": "test_ecm_event_raw_partial",
+          "line": 608,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(parent=parent, completed_calls=completed)"
+        },
+        {
+          "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+          "callee": "archive",
+          "end_line": 685,
+          "function": "test_ecm_event_dependencies",
+          "line": 685,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "malformed"
+        },
+        {
+          "AST_sha256": "463f6db667ed054697338d43ef8fee892b168426ec8ac0612ca2fac4defd97fb",
+          "callee": "archive",
+          "end_line": 288,
+          "function": "test_ecm_event_history",
+          "line": 280,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(error=str(error), traceback=traceback.format_exc(), partial=getattr(error, 'partial', None))"
+        },
+        {
+          "AST_sha256": "257c29662bf7085735442d22bf57779804be6f1c4fec2697aa1a4233895d7c59",
+          "callee": "archive",
+          "end_line": 344,
+          "function": "after_material",
+          "line": 334,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(candidate=candidate, trial=trial, feedback=feedback, calcium=calcium, noise=noise)"
+        },
+        {
+          "AST_sha256": "86a7e085423bde964fa28c11407a9c24ceeb319555745ac542342f2bd8700cc3",
+          "callee": "archive",
+          "end_line": 378,
+          "function": "test_ecm_event_history",
+          "line": 366,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(parent=parent, candidate=candidate, trial=trial, network=feedback, calcium=calcium, noise=noise, context=context)"
+        },
+        {
+          "AST_sha256": "2efeeba37c7c39cc34ab8eed86d6b029e2ee9b6c3dab9595cb0d4130f40fa6df",
+          "callee": "archive",
+          "end_line": 539,
+          "function": "test_ecm_event_raw_partial",
+          "line": 539,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "returned"
+        },
+        {
+          "AST_sha256": "41f000e2f964abc50b87eb851cc29d9238757653def8c0929da20fe68de983cd",
+          "callee": "archive",
+          "end_line": 550,
+          "function": "test_ecm_event_raw_partial",
+          "line": 544,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(parent=parent, partial=partial, error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "e7012eefbec35ec2487c9d47c13b9247f6d76fc05ccad415b44e1366c7612a23",
+          "callee": "archive",
+          "end_line": 605,
+          "function": "test_ecm_event_raw_partial",
+          "line": 596,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(parent=parent, error=str(error), traceback=traceback.format_exc(), partial=getattr(error, 'partial', None))"
+        },
+        {
+          "AST_sha256": "fa459fccc8cc79a74a7d6c95fe010214d090a1c91f437704f748cbd146a6df83",
+          "callee": "archive",
+          "end_line": 731,
+          "function": "test_ecm_event_dependencies",
+          "line": 731,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "changed"
+        },
+        {
+          "AST_sha256": "edffaef3ff455251443ac2fe208465d79376336d66bc34ce1d93e9bf64c1107b",
+          "callee": "archive",
+          "end_line": 327,
+          "function": "callback",
+          "line": 327,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "incoming"
+        },
+        {
+          "AST_sha256": "e54a08d63e94a7181ea9c9193b4834e09bbe54c884b08353e2555928c39c35cd",
+          "callee": "archive",
+          "end_line": 389,
+          "function": "test_ecm_event_history",
+          "line": 380,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "dict(parent=parent, error=str(error), traceback=traceback.format_exc(), partial=getattr(error, 'partial', None))"
+        },
+        {
+          "AST_sha256": "08a163a23bf168b689d675185894ca520e0103c154bf0addf30b0efd10f26c74",
+          "callee": "archive",
+          "end_line": 625,
+          "function": "test_ecm_event_dependencies",
+          "line": 625,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "2ce8194b37968c828ee542f1b33eb92e16c7045dae98d929b914cab59930997b",
+          "callee": "archive",
+          "end_line": 514,
+          "function": "test_ecm_event_raw_partial",
+          "line": 514,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "015ae9185a24b33ed226afcc47252a55f0bf8f968d26751ce29ccbcfcace8c4d",
+          "callee": "archive",
+          "end_line": 360,
+          "function": "test_ecm_event_history",
+          "line": 358,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "306b168a35a94b6e5ff565573b5ad9dad1a0fc05dd527f3a00674736fbe0404c",
+          "callee": "archive",
+          "end_line": 363,
+          "function": "test_ecm_event_history",
+          "line": 361,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "9ed7588a953e99db219b871392512f7368da9d34e5a36830cb0d5be08189361e",
+          "callee": "archive",
+          "end_line": 522,
+          "function": "test_ecm_event_raw_partial",
+          "line": 520,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "f2d463fc0a064e1b398a7498d1e242b3f351dddde34079b02a02849f7b97adf8",
+          "callee": "archive",
+          "end_line": 525,
+          "function": "test_ecm_event_raw_partial",
+          "line": 523,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "b5af1c2c19c3a4351cd9c8abcdeec69442712cbd5a9b0bd74da291f8ebfc2dd0",
+          "callee": "archive",
+          "end_line": 528,
+          "function": "test_ecm_event_raw_partial",
+          "line": 526,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "2b7b702d592d9d33841e16f018d2355746aedd81e8635e632e87e4e8926d82e7",
+          "callee": "archive",
+          "end_line": 531,
+          "function": "test_ecm_event_raw_partial",
+          "line": 529,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "1469b7b29fd97bc321eaac1d59c3f3527ce2bc38cada609a6bd3af9da15c40e7",
+          "callee": "archive",
+          "end_line": 534,
+          "function": "test_ecm_event_raw_partial",
+          "line": 532,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "3105e8942f164c4bdd8ed2d23d4ae3325a424687c4a7f295139687cdb3ec0dff",
+          "callee": "archive",
+          "end_line": 537,
+          "function": "test_ecm_event_raw_partial",
+          "line": 535,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+          "callee": "archives.write_archive",
+          "end_line": 1159,
+          "function": "main",
+          "line": 1159,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_normal_ecm_event_join_native.py",
+          "payload_AST": "result"
+        }
+      ],
+      "actual_case_member_counts_measured": false,
+      "all_captures_fit_64MiB_claim": false,
+      "archive_call_sites": 31,
+      "complete_writer_definition_sites": [
+        {
+          "AST_sha256": "061e6f82ba906c0b4c4e1589f4ddc117b7778cd300976e882069ffaf5ef65d60",
+          "end_line": 437,
+          "line": 384,
+          "module": "validation/betse/betse_fast_solver_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_fast_solver_native.py",
+          "terminal_writer": "np.savez"
+        },
+        {
+          "AST_sha256": "51ac39a21b068aaa399c43b9fd697482fe2aaf662b609146fa82f2ea2cccbfde",
+          "end_line": 286,
+          "line": 235,
+          "module": "validation/betse/betse_normal_current_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_normal_current_native.py",
+          "terminal_writer": "np.savez"
+        }
+      ],
+      "count_scope": "Per emitted archive, never summed across a run or deduplicated across snapshots",
+      "coverage": {
+        "actual_pre_and_post_component_callbacks": true,
+        "clock_only_INIT_SIM_labels": false,
+        "dependency_corruption_and_unexpected_failures": true,
+        "mechanics_trials_frames_and_native_partials": false,
+        "native_complete_and_partial_capture": true,
+        "native_failed_reached_clock_component_exception_archive": false,
+        "observer_callbacks_and_failed_last_accepted_run": false,
+        "raw_case_specific_native_capture_plus_component_partial": false,
+        "repeated_state_context_cache_and_array_owners_charged_separately": true,
+        "supplied_cold_bootstrap_and_typed_parents": true,
+        "window_completed_transitions_caller_attempt_and_returned_candidate": false
+      },
+      "evidence_subdirectory": "normal-ecm-event-join",
+      "maximum_member_count_implied_by_unchanged_writer_and_64MiB": 310689,
+      "new_fixed_limit": 310689,
+      "packet_inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/inputs.json",
+        "sha256": "d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c"
+      },
+      "prefix": "betse_normal_ecm_event_join",
+      "qualification_or_release_credit": 0
+    },
+    "event_mechanics03": {
+      "actual_capture_archive_call_sites": [
+        {
+          "AST_sha256": "ff1876d23cf15e5c90bdf3f86bd119e578098143fbe160dbc6a95a693543eb4f",
+          "callee": "native.archives.write_archive",
+          "end_line": 36,
+          "function": "archive",
+          "line": 36,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "ions.data(value)"
+        },
+        {
+          "AST_sha256": "38a91e7e21a6bab5ead78a54e37fea28711a4a0bdc96b9290addfa516bc10738",
+          "callee": "archive",
+          "end_line": 108,
+          "function": "check",
+          "line": 108,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(fields=rows, physical_global_conservation_credit=False)"
+        },
+        {
+          "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+          "callee": "archive",
+          "end_line": 444,
+          "function": "test_event_mechanics_raw",
+          "line": 444,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "inputs"
+        },
+        {
+          "AST_sha256": "1c161264d6e4f596e1aebd433425e917d8e0c4b3a9b2b26b8507be9d69a9c504",
+          "callee": "archive",
+          "end_line": 569,
+          "function": "test_event_mechanics_dependencies",
+          "line": 569,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "inputs"
+        },
+        {
+          "AST_sha256": "fa459fccc8cc79a74a7d6c95fe010214d090a1c91f437704f748cbd146a6df83",
+          "callee": "archive",
+          "end_line": 747,
+          "function": "test_event_mechanics_dependencies",
+          "line": 747,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "changed"
+        },
+        {
+          "AST_sha256": "7c6d0c8de9b26b15a9ec696fb342c39528c775430725dc829b564e15c6444e2c",
+          "callee": "archive",
+          "end_line": 756,
+          "function": "test_event_mechanics_dependencies",
+          "line": 752,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error))"
+        },
+        {
+          "AST_sha256": "1676b473669f9e36736e6547a5eb9facd9dfdfb0f8c90760a9ba6d8c167c0dc2",
+          "callee": "archive",
+          "end_line": 194,
+          "function": "after_cold",
+          "line": 194,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "9dbad4b0ad431592e6083f24e968cce95e6609ddbd59d137e049b153644686dd",
+          "callee": "archive",
+          "end_line": 204,
+          "function": "run_history",
+          "line": 204,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "parent"
+        },
+        {
+          "AST_sha256": "e52167c057b334a58c9761d93828fef744948d2c33fd56574741c2d04da26ebb",
+          "callee": "archive",
+          "end_line": 560,
+          "function": "test_event_mechanics_raw",
+          "line": 560,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, completed=completed)"
+        },
+        {
+          "AST_sha256": "c9fd378e646df4bffae90a72d0f05e85342426a39eab9426b5e69f67edf082a1",
+          "callee": "archive",
+          "end_line": 574,
+          "function": "test_event_mechanics_dependencies",
+          "line": 574,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "parent"
+        },
+        {
+          "AST_sha256": "75da2934b289f4def4716db9858d5be1191f24b84af9fc20858d0c978e866e56",
+          "callee": "archive",
+          "end_line": 812,
+          "function": "test_event_mechanics_corruptions",
+          "line": 808,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(actual=actual, target=expected, maximum_error_over_budget=max(fractions))"
+        },
+        {
+          "AST_sha256": "e58b4429e2e7b1d5d5ee57a68ca68b560907cf0a308f9f147ac2322d1726cdbd",
+          "callee": "archive",
+          "end_line": 823,
+          "function": "test_event_mechanics_corruptions",
+          "line": 823,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "incoming"
+        },
+        {
+          "AST_sha256": "970f51b325c6cb860f49250ebcace987fca0371f948823a5dba8d2a17a25e248",
+          "callee": "archive",
+          "end_line": 216,
+          "function": "run_history",
+          "line": 206,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, inputs=inputs, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "4f4ab263d61fd3db35abad49fd762e68a3bcba09f6846f3741c7a76c57b4b21c",
+          "callee": "archive",
+          "end_line": 297,
+          "function": "run_history",
+          "line": 293,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, candidate=candidate, context=context)"
+        },
+        {
+          "AST_sha256": "d25476117d061defb77a3aec323d98020ae5e415a407b7ea142a120078a58dd8",
+          "callee": "archive",
+          "end_line": 478,
+          "function": "test_event_mechanics_raw",
+          "line": 474,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, candidate=candidate, context=context)"
+        },
+        {
+          "AST_sha256": "f5d21bec6ab901c63583ab84562c7d11194c9d4c553a34251cffc38e0546ca3b",
+          "callee": "archive",
+          "end_line": 489,
+          "function": "test_event_mechanics_raw",
+          "line": 483,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=partial, error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "2f0430aee1f5cf07e24103ed7d9369f1475f448577ade2a982b8d214aea90a22",
+          "callee": "archive",
+          "end_line": 557,
+          "function": "test_event_mechanics_raw",
+          "line": 548,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "8a5cf64b74f2a6e4cd0ff148ca3ec9ca53158b979c1ae2418037fb43249df68c",
+          "callee": "archive",
+          "end_line": 585,
+          "function": "test_event_mechanics_dependencies",
+          "line": 576,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "edffaef3ff455251443ac2fe208465d79376336d66bc34ce1d93e9bf64c1107b",
+          "callee": "archive",
+          "end_line": 262,
+          "function": "callback",
+          "line": 262,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "incoming"
+        },
+        {
+          "AST_sha256": "1c6a3235fe69095bbb6770dd157ff6c058f4d2bb88f4f270602e0167d2031646",
+          "callee": "archive",
+          "end_line": 270,
+          "function": "callback",
+          "line": 270,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "values"
+        },
+        {
+          "AST_sha256": "eb6a502a7e0e130ac9eb4cad3695e4f12e3c1005638a3b584df058415ea88cfe",
+          "callee": "archive",
+          "end_line": 308,
+          "function": "run_history",
+          "line": 299,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "2ce8194b37968c828ee542f1b33eb92e16c7045dae98d929b914cab59930997b",
+          "callee": "archive",
+          "end_line": 451,
+          "function": "test_event_mechanics_raw",
+          "line": 451,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "bdff827e78c80d42a3c437d832f983dfb86a7f2788e8794d00e60494072cecd6",
+          "callee": "archive",
+          "end_line": 461,
+          "function": "test_event_mechanics_raw",
+          "line": 459,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "7f29792fa2100a8ac8819d32e50e31f5bcb4a14e5886c05930879c979986ced0",
+          "callee": "archive",
+          "end_line": 464,
+          "function": "test_event_mechanics_raw",
+          "line": 462,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "ea3730954e438fdd9fed0a7ddfa422ff9da856bedde495722e807c4e72885bc1",
+          "callee": "archive",
+          "end_line": 467,
+          "function": "test_event_mechanics_raw",
+          "line": 465,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "c9f49b104c5e818aec7971f1b495f435b69baffffce587637708e121b9a88c2a",
+          "callee": "archive",
+          "end_line": 470,
+          "function": "test_event_mechanics_raw",
+          "line": 468,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "405203f1c7472132bfc81d41061619a0370326e4af6716ead1700bdfa831d669",
+          "callee": "archive",
+          "end_line": 655,
+          "function": "test_event_mechanics_dependencies",
+          "line": 655,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "malformed_binding"
+        },
+        {
+          "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+          "callee": "archive",
+          "end_line": 668,
+          "function": "test_event_mechanics_dependencies",
+          "line": 668,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "malformed"
+        },
+        {
+          "AST_sha256": "72e05a5696ddeb1366200305426e39512486ba479c766d937e7976f7eb0e6268",
+          "callee": "archive",
+          "end_line": 714,
+          "function": "test_event_mechanics_dependencies",
+          "line": 714,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "malformed"
+        },
+        {
+          "AST_sha256": "abdfd04bde4364edd212fc55510777f1ac28b4020ac5952343e717ad065d0131",
+          "callee": "archive",
+          "end_line": 740,
+          "function": "test_event_mechanics_dependencies",
+          "line": 736,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, context=context)"
+        },
+        {
+          "AST_sha256": "1625db432d302232fb0fb429218df248c70a022054606a5987f5988525af2854",
+          "callee": "archive",
+          "end_line": 734,
+          "function": "test_event_mechanics_dependencies",
+          "line": 725,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "78beacc60489c5a2c38b8101d4d0bdf9b8f27b5a8e23eb06eeb2996cd8acf38a",
+          "callee": "archives.write_archive",
+          "end_line": 985,
+          "function": "main",
+          "line": 985,
+          "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_mechanics_native.py",
+          "payload_AST": "result"
+        }
+      ],
+      "actual_case_member_counts_measured": false,
+      "all_captures_fit_64MiB_claim": false,
+      "archive_call_sites": 32,
+      "complete_writer_definition_sites": [
+        {
+          "AST_sha256": "061e6f82ba906c0b4c4e1589f4ddc117b7778cd300976e882069ffaf5ef65d60",
+          "end_line": 437,
+          "line": 384,
+          "module": "validation/betse/betse_fast_solver_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_fast_solver_native.py",
+          "terminal_writer": "np.savez"
+        },
+        {
+          "AST_sha256": "51ac39a21b068aaa399c43b9fd697482fe2aaf662b609146fa82f2ea2cccbfde",
+          "end_line": 286,
+          "line": 235,
+          "module": "validation/betse/betse_normal_current_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_normal_current_native.py",
+          "terminal_writer": "np.savez"
+        }
+      ],
+      "count_scope": "Per emitted archive, never summed across a run or deduplicated across snapshots",
+      "coverage": {
+        "actual_pre_and_post_component_callbacks": true,
+        "clock_only_INIT_SIM_labels": false,
+        "dependency_corruption_and_unexpected_failures": true,
+        "mechanics_trials_frames_and_native_partials": true,
+        "native_complete_and_partial_capture": true,
+        "native_failed_reached_clock_component_exception_archive": false,
+        "observer_callbacks_and_failed_last_accepted_run": false,
+        "raw_case_specific_native_capture_plus_component_partial": false,
+        "repeated_state_context_cache_and_array_owners_charged_separately": true,
+        "supplied_cold_bootstrap_and_typed_parents": true,
+        "window_completed_transitions_caller_attempt_and_returned_candidate": false
+      },
+      "evidence_subdirectory": "normal-ecm-event-mechanics",
+      "maximum_member_count_implied_by_unchanged_writer_and_64MiB": 310689,
+      "new_fixed_limit": 310689,
+      "packet_inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/inputs.json",
+        "sha256": "e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a"
+      },
+      "prefix": "betse_normal_ecm_event_mechanics",
+      "qualification_or_release_credit": 0
+    },
+    "lifecycle02": {
+      "actual_capture_archive_call_sites": [
+        {
+          "AST_sha256": "6eb7a9d8680e2fedea9e7e2449f025bff99b4184307ecb41f76e2681ce732942",
+          "callee": "native.component.archives.write_archive",
+          "end_line": 33,
+          "function": "archive",
+          "line": 33,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "ions.data(value)"
+        },
+        {
+          "AST_sha256": "d3164a9ffb8738880bfee24d90eb0371d5816e272673d1e4cdc188a65ca6c779",
+          "callee": "archive",
+          "end_line": 103,
+          "function": "check",
+          "line": 103,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(fields=rows, physical_global_conservation_credit=False)"
+        },
+        {
+          "AST_sha256": "cbcbc7618f657f115c71f67530e7d4283efd38360b06979d1e92db5f35e79015",
+          "callee": "archive",
+          "end_line": 181,
+          "function": "test_headless_history",
+          "line": 181,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "parent"
+        },
+        {
+          "AST_sha256": "bd2f59cfb29284899b989d7e2d140f1e7cc7b109aab115a371bd393cabeba6ef",
+          "callee": "archive",
+          "end_line": 370,
+          "function": "test_headless_raw",
+          "line": 370,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "inputs"
+        },
+        {
+          "AST_sha256": "490e637d89498ae3c7371ba42de3faa91bef883358c38ccbbcb09ec0760b5466",
+          "callee": "archive",
+          "end_line": 548,
+          "function": "test_headless_observer_failure",
+          "line": 548,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "partial"
+        },
+        {
+          "AST_sha256": "d5fefaef6d87c4639b19874fe00031c80b92165c6c14bb368ad2a066a89014f0",
+          "callee": "archive",
+          "end_line": 596,
+          "function": "test_headless_dependencies",
+          "line": 592,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(binding=binding, entry=entry, parent=parent, receipt=receipt)"
+        },
+        {
+          "AST_sha256": "fa459fccc8cc79a74a7d6c95fe010214d090a1c91f437704f748cbd146a6df83",
+          "callee": "archive",
+          "end_line": 757,
+          "function": "test_headless_dependencies",
+          "line": 757,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "changed"
+        },
+        {
+          "AST_sha256": "603eac52f365a92c333d1289edb21d203912506c51f03b082bd748be74a2efbb",
+          "callee": "archive",
+          "end_line": 764,
+          "function": "test_headless_dependencies",
+          "line": 760,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(error=str(caught.value), partial=getattr(caught.value, 'partial', None))"
+        },
+        {
+          "AST_sha256": "c7e223e308b4dc1fef16a3df6ff51d74af39db217de32074543d0dbf183e9ce5",
+          "callee": "archive",
+          "end_line": 836,
+          "function": "test_headless_display_refusal",
+          "line": 836,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=parent, contexts=contexts)"
+        },
+        {
+          "AST_sha256": "56d290b167f748f8e35963c905096779800bf416fd154d948abf43554390c552",
+          "callee": "archive",
+          "end_line": 840,
+          "function": "test_headless_display_refusal",
+          "line": 840,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "caught.value.partial"
+        },
+        {
+          "AST_sha256": "678e2ece298d9d6d23f268054b4fc2b72524fcb987ea4c9721bba9dbbd010bd3",
+          "callee": "archive",
+          "end_line": 126,
+          "function": "supplied_entry",
+          "line": 126,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "entry"
+        },
+        {
+          "AST_sha256": "2cca78ff00a19f417e5feb1909aed22a1995d26df7b080681399a1f7bb5b4323",
+          "callee": "archive",
+          "end_line": 132,
+          "function": "supplied_entry",
+          "line": 132,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "receipt"
+        },
+        {
+          "AST_sha256": "f1a8dfdcd80456f402b6895696dd6f9f4c483a83303972ee08988000f101a1d8",
+          "callee": "archive",
+          "end_line": 170,
+          "function": "after_cold",
+          "line": 170,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "7c6262c9974d64eb0ca1ce98f061a5634a7883354ea7f359218b6089a9ebfdc8",
+          "callee": "archive",
+          "end_line": 237,
+          "function": "observer",
+          "line": 237,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "d50c495a720f76e51a4b08b3a233c3b1f462b3b5e7dc951b0380903327630c8c",
+          "callee": "archive",
+          "end_line": 334,
+          "function": "test_headless_history",
+          "line": 330,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(candidate=direct, context=context)"
+        },
+        {
+          "AST_sha256": "a13f7d05f8690bcce6dbb1bff0d2484ad9abd0b6d2d7d3bafa422414c3635600",
+          "callee": "archive",
+          "end_line": 541,
+          "function": "fail",
+          "line": 541,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "fa6bbb8ac3b98036b8de877bf3c3e465d3a5a7c8a1d8f3ce1f7ce8955073a96f",
+          "callee": "archive",
+          "end_line": 146,
+          "function": "supplied_entry",
+          "line": 135,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(binding=binding, entry=entry, inputs=inputs, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "44b36abb05c218e18772084d64295f25ccbe811e00e3fd5f12087d07a0d03a3b",
+          "callee": "archive",
+          "end_line": 266,
+          "function": "callback",
+          "line": 266,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "03327af4b952e3a5acb3982aea26c47fcf2cebf09da347c4e087e1d41e9d5b3d",
+          "callee": "archive",
+          "end_line": 291,
+          "function": "test_headless_history",
+          "line": 287,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=parent, contexts=contexts)"
+        },
+        {
+          "AST_sha256": "e2e7bc46f43c52c5de729a670137563c6c43db5f261f9886d53354852efe5259",
+          "callee": "archive",
+          "end_line": 304,
+          "function": "test_headless_history",
+          "line": 295,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=parent, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "75938e0938d718b453cd39b5ce02285e973384e44f70a1f1aaab7d1112a5d99a",
+          "callee": "archive",
+          "end_line": 398,
+          "function": "test_headless_raw",
+          "line": 398,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "partial"
+        },
+        {
+          "AST_sha256": "eb8bb9b17d0c1dd9f45a654b24ff48f5ed6f7acbd95dcda4b01b0ca609bd8bb2",
+          "callee": "archive",
+          "end_line": 499,
+          "function": "test_headless_raw",
+          "line": 489,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(component_partial=component_partial, native_capture=source, named_cause_type=type(leaf).__name__, named_cause_message=str(leaf), witness=witness)"
+        },
+        {
+          "AST_sha256": "acdfa6937a05520a43b8f9bcc9709a0e2206b0488af6de7c7ae82b4634ee00f7",
+          "callee": "archive",
+          "end_line": 328,
+          "function": "test_headless_history",
+          "line": 319,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=direct, partial=getattr(error, 'partial', None), error=str(error), traceback=traceback.format_exc())"
+        },
+        {
+          "AST_sha256": "78500477592af7a0b4d440255daed1bf3efcf12eaae048ac6da9cfc1aa23b93c",
+          "callee": "archive",
+          "end_line": 394,
+          "function": "test_headless_raw",
+          "line": 380,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "value"
+        },
+        {
+          "AST_sha256": "78acc93b42b2dd715bec4c3671aadae6899016086041d33cc59152b861a78a4f",
+          "callee": "archive",
+          "end_line": 650,
+          "function": "test_headless_dependencies",
+          "line": 650,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(candidate=advanced, context=context)"
+        },
+        {
+          "AST_sha256": "468050340ba3e9b24f890982f4c32ccd25a283e5bc440ac77b1544efc3cdfe94",
+          "callee": "archive",
+          "end_line": 689,
+          "function": "test_headless_dependencies",
+          "line": 689,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "malformed"
+        },
+        {
+          "AST_sha256": "f50f9a53f67ff8eaeaed685907a2d80aa33f317650e64bfd44ea182492c0efb8",
+          "callee": "archive",
+          "end_line": 712,
+          "function": "test_headless_dependencies",
+          "line": 712,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=reached, contexts=contexts)"
+        },
+        {
+          "AST_sha256": "f50f9a53f67ff8eaeaed685907a2d80aa33f317650e64bfd44ea182492c0efb8",
+          "callee": "archive",
+          "end_line": 736,
+          "function": "test_headless_dependencies",
+          "line": 736,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=reached, contexts=contexts)"
+        },
+        {
+          "AST_sha256": "f50f9a53f67ff8eaeaed685907a2d80aa33f317650e64bfd44ea182492c0efb8",
+          "callee": "archive",
+          "end_line": 751,
+          "function": "test_headless_dependencies",
+          "line": 751,
+          "module": "tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+          "payload_AST": "dict(parent=reached, contexts=contexts)"
+        },
+        {
+          "AST_sha256": "d6e7c3ec0090bcf3ce7f5ace48142f20c7aa917ec6c3566c00587176dff2a272",
+          "callee": "component.archives.write_archive",
+          "end_line": 206,
+          "function": "main",
+          "line": 206,
+          "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "payload_AST": "result"
+        },
+        {
+          "AST_sha256": "df9d7733255cd78da8fc15128779cd91bb86838b06fdaac1cd7b6e0109febec4",
+          "callee": "component.archives.write_archive",
+          "end_line": 224,
+          "function": "main",
+          "line": 210,
+          "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "payload_AST": "dict(reached_capture=reached, failure=dict(type=type(error).__name__, message=str(error), traceback=traceback.format_exc()), failed_after_capture_return=True, native_full_phase_completed=False, physical_initialization_claim=False, qualification_credit=False)"
+        }
+      ],
+      "actual_case_member_counts_measured": false,
+      "all_captures_fit_64MiB_claim": false,
+      "archive_call_sites": 31,
+      "complete_writer_definition_sites": [
+        {
+          "AST_sha256": "061e6f82ba906c0b4c4e1589f4ddc117b7778cd300976e882069ffaf5ef65d60",
+          "end_line": 437,
+          "line": 384,
+          "module": "validation/betse/betse_fast_solver_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_fast_solver_native.py",
+          "terminal_writer": "np.savez"
+        },
+        {
+          "AST_sha256": "51ac39a21b068aaa399c43b9fd697482fe2aaf662b609146fa82f2ea2cccbfde",
+          "end_line": 286,
+          "line": 235,
+          "module": "validation/betse/betse_normal_current_native.py",
+          "no_identity_deduplication": true,
+          "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_normal_current_native.py",
+          "terminal_writer": "np.savez"
+        }
+      ],
+      "count_scope": "Per emitted archive, never summed across a run or deduplicated across snapshots",
+      "coverage": {
+        "actual_pre_and_post_component_callbacks": true,
+        "clock_only_INIT_SIM_labels": true,
+        "dependency_corruption_and_unexpected_failures": true,
+        "mechanics_trials_frames_and_native_partials": true,
+        "native_complete_and_partial_capture": true,
+        "native_failed_reached_clock_component_exception_archive": true,
+        "observer_callbacks_and_failed_last_accepted_run": true,
+        "raw_case_specific_native_capture_plus_component_partial": true,
+        "repeated_state_context_cache_and_array_owners_charged_separately": true,
+        "supplied_cold_bootstrap_and_typed_parents": true,
+        "window_completed_transitions_caller_attempt_and_returned_candidate": true
+      },
+      "evidence_subdirectory": "normal-ecm-run-lifecycle",
+      "maximum_member_count_implied_by_unchanged_writer_and_64MiB": 310689,
+      "new_fixed_limit": 310689,
+      "packet_inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+        "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+      },
+      "prefix": "betse_normal_ecm_run_lifecycle",
+      "qualification_or_release_credit": 0
+    }
+  },
+  "source_sha256": {
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/inputs.json": "d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/tests/unit/test_betse_normal_ecm_event_join.py": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/source/validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/inputs.json": "e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/tests/unit/test_betse_normal_ecm_event_mechanics.py": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_mechanics_native.py": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4",
+    "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4",
+    "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py": "ab6755d5eabca61bcff7451b64a5d66ab7bb1ea1f57cad48989ff0435b62c4ca",
+    "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+    "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+    "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/source/validation/betse/betse_normal_ecm_run_lifecycle_native.py": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/__init__.py": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_format_impl.py": "5d7fd66e8c78d0bd9fab82e8893609ba88f7fcd3569eaebb0748f40768e85c16",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/_npyio_impl.py": "51eb4572baad1e8198f71b3488a3cbcdb81ac85aa3c15cc2708cd907198a1fb5",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/format.py": "9e9274789853eee28d2b96b49423067e226ff91e23c8d86220f7996c970d5c1b",
+    "/mnt/workspaces/Cells/venv-cpu/lib/python3.13/site-packages/numpy/lib/npyio.py": "79a3ef7c7192cd413bd132471cb3823c85fd1b98a132e0447b1cbafcf36127d4",
+    "/usr/lib/python3.13/zipfile/__init__.py": "9f026f5b6aadb80224e187f703a2f7667f37418b8b6f0dfaed7a6ce194461dbd"
+  },
+  "status": "source_format_capacity_bound_ready_for_independent_review"
+}

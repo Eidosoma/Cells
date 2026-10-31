@@ -1,0 +1,24 @@
+{
+  "actual_bootstrap_after_dynamics_and_storage": true,
+  "complete_ECM_get_current_before_sigma_and_vm": true,
+  "existing_material_global_accuracy_limit": "failed39/40 preserved; new local composition gains no inherited global material acceptance",
+  "explicit_derived_geometry_operator_and_fixed_initializer_cache_boundary": true,
+  "kind": "cells.normal_ecm_field_join_reachability@1",
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec"
+  },
+  "no_new_caller_enable_flag_required": true,
+  "old_voltage_native_adapter_not_complete_environment_execution": true,
+  "original_grn_before_deferred_commit": true,
+  "original_suffix_lines": [
+    1357,
+    1363
+  ],
+  "reachable": true,
+  "scientific_execution": false
+}

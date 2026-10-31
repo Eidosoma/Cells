@@ -1,0 +1,445 @@
+{
+  "automatic_launch": false,
+  "execution_hold": true,
+  "groups": {
+    "dependency-arbitrary_late_flux": {
+      "SIM_accepted_calls": 0,
+      "case": "arbitrary_late_flux",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[arbitrary_late_flux]"
+      ]
+    },
+    "dependency-arbitrary_supplied_pump": {
+      "SIM_accepted_calls": 0,
+      "case": "arbitrary_supplied_pump",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[arbitrary_supplied_pump]"
+      ]
+    },
+    "dependency-changed_Ca_rate_presence": {
+      "SIM_accepted_calls": 0,
+      "case": "changed_Ca_rate_presence",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[changed_Ca_rate_presence]"
+      ]
+    },
+    "dependency-changed_old_clock": {
+      "SIM_accepted_calls": 0,
+      "case": "changed_old_clock",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[changed_old_clock]"
+      ]
+    },
+    "dependency-changed_phase_receipt": {
+      "SIM_accepted_calls": 0,
+      "case": "changed_phase_receipt",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[changed_phase_receipt]"
+      ]
+    },
+    "dependency-dynamic_deformation": {
+      "SIM_accepted_calls": 0,
+      "case": "dynamic_deformation",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[dynamic_deformation]"
+      ]
+    },
+    "dependency-enabled_ER": {
+      "SIM_accepted_calls": 0,
+      "case": "enabled_ER",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[enabled_ER]"
+      ]
+    },
+    "dependency-enabled_flow": {
+      "SIM_accepted_calls": 0,
+      "case": "enabled_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[enabled_flow]"
+      ]
+    },
+    "dependency-foreign_INIT_binding": {
+      "SIM_accepted_calls": 0,
+      "case": "foreign_INIT_binding",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[foreign_INIT_binding]"
+      ]
+    },
+    "dependency-foreign_ion_axis": {
+      "SIM_accepted_calls": 0,
+      "case": "foreign_ion_axis",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[foreign_ion_axis]"
+      ]
+    },
+    "dependency-foreign_profile_targets": {
+      "SIM_accepted_calls": 0,
+      "case": "foreign_profile_targets",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[foreign_profile_targets]"
+      ]
+    },
+    "dependency-foreign_world": {
+      "SIM_accepted_calls": 0,
+      "case": "foreign_world",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[foreign_world]"
+      ]
+    },
+    "dependency-inferred_pickle_rng": {
+      "SIM_accepted_calls": 0,
+      "case": "inferred_pickle_rng",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[inferred_pickle_rng]"
+      ]
+    },
+    "dependency-legacy_flag_false": {
+      "SIM_accepted_calls": 0,
+      "case": "legacy_flag_false",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[legacy_flag_false]"
+      ]
+    },
+    "dependency-missing_rng_provenance": {
+      "SIM_accepted_calls": 0,
+      "case": "missing_rng_provenance",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[missing_rng_provenance]"
+      ]
+    },
+    "dependency-native_load_claim": {
+      "SIM_accepted_calls": 0,
+      "case": "native_load_claim",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[native_load_claim]"
+      ]
+    },
+    "dependency-wrong_SIM_clock": {
+      "SIM_accepted_calls": 0,
+      "case": "wrong_SIM_clock",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[wrong_SIM_clock]"
+      ]
+    },
+    "dependency-wrong_continuity_stream": {
+      "SIM_accepted_calls": 0,
+      "case": "wrong_continuity_stream",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_dependency[wrong_continuity_stream]"
+      ]
+    },
+    "observer-accepted_call": {
+      "SIM_accepted_calls": 1,
+      "case": "accepted_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_observer_failure[accepted_call]"
+      ]
+    },
+    "observer-before_call": {
+      "SIM_accepted_calls": 0,
+      "case": "before_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_observer_failure[before_call]"
+      ]
+    },
+    "observer-headless_observation": {
+      "SIM_accepted_calls": 2,
+      "case": "headless_observation",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_transition_observer_failure[headless_observation]"
+      ]
+    },
+    "positive-CaATP_disabled_retains_rate": {
+      "SIM_accepted_calls": 3,
+      "case": "CaATP_disabled_retains_rate",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[CaATP_disabled_retains_rate]"
+      ]
+    },
+    "positive-NaK_disabled_resets_on_call": {
+      "SIM_accepted_calls": 3,
+      "case": "NaK_disabled_resets_on_call",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[NaK_disabled_resets_on_call]"
+      ]
+    },
+    "positive-SIM_f_sweep": {
+      "SIM_accepted_calls": 3,
+      "case": "SIM_f_sweep",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[SIM_f_sweep]"
+      ]
+    },
+    "positive-SIM_shuffle": {
+      "SIM_accepted_calls": 3,
+      "case": "SIM_shuffle",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[SIM_shuffle]"
+      ]
+    },
+    "positive-all_INIT_inactive": {
+      "SIM_accepted_calls": 3,
+      "case": "all_INIT_inactive",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[all_INIT_inactive]"
+      ]
+    },
+    "positive-default_INIT_active": {
+      "SIM_accepted_calls": 3,
+      "case": "default_INIT_active",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[default_INIT_active]"
+      ]
+    },
+    "positive-different_SIM_dt": {
+      "SIM_accepted_calls": 3,
+      "case": "different_SIM_dt",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[different_SIM_dt]"
+      ]
+    },
+    "positive-empty_SIM_channels": {
+      "SIM_accepted_calls": 3,
+      "case": "empty_SIM_channels",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[empty_SIM_channels]"
+      ]
+    },
+    "positive-mixed_INIT_inactive": {
+      "SIM_accepted_calls": 3,
+      "case": "mixed_INIT_inactive",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[mixed_INIT_inactive]"
+      ]
+    },
+    "positive-no_INIT_samples": {
+      "SIM_accepted_calls": 3,
+      "case": "no_INIT_samples",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[no_INIT_samples]"
+      ]
+    },
+    "positive-no_channels_both_phases": {
+      "SIM_accepted_calls": 3,
+      "case": "no_channels_both_phases",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[no_channels_both_phases]"
+      ]
+    },
+    "positive-one_INIT_call": {
+      "SIM_accepted_calls": 3,
+      "case": "one_INIT_call",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[one_INIT_call]"
+      ]
+    },
+    "positive-ordinary": {
+      "SIM_accepted_calls": 3,
+      "case": "ordinary",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[ordinary]"
+      ]
+    },
+    "positive-static_redraw": {
+      "SIM_accepted_calls": 3,
+      "case": "static_redraw",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[static_redraw]"
+      ]
+    },
+    "positive-supplied_new_process_rng": {
+      "SIM_accepted_calls": 3,
+      "case": "supplied_new_process_rng",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[supplied_new_process_rng]"
+      ]
+    },
+    "positive-zero_INIT_calls": {
+      "SIM_accepted_calls": 3,
+      "case": "zero_INIT_calls",
+      "category": "positive",
+      "independent_forms": 58,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_retained_transition[zero_INIT_calls]"
+      ]
+    },
+    "prefix-capped_INIT": {
+      "SIM_accepted_calls": 0,
+      "case": "capped_INIT",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_prefix_refusal[capped_INIT]"
+      ]
+    },
+    "prefix-failed_material_prefix": {
+      "SIM_accepted_calls": 0,
+      "case": "failed_material_prefix",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_prefix_refusal[failed_material_prefix]"
+      ]
+    },
+    "prefix-failed_setup_prefix": {
+      "SIM_accepted_calls": 0,
+      "case": "failed_setup_prefix",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_prefix_refusal[failed_setup_prefix]"
+      ]
+    },
+    "prefix-latent_None_channels": {
+      "SIM_accepted_calls": 0,
+      "case": "latent_None_channels",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_prefix_refusal[latent_None_channels]"
+      ]
+    },
+    "prefix-paused_INIT": {
+      "SIM_accepted_calls": 0,
+      "case": "paused_INIT",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_sim_transition.py::test_prefix_refusal[paused_INIT]"
+      ]
+    }
+  },
+  "kind": "cells.held_INIT_SIM_transition_workqueue@1",
+  "native_capture_arithmetic": "16 retained reinitialize + 16 supplied-entry SIM + 1 latent-None raw = 33",
+  "no_fixture_reference_model_evaluation": true,
+  "planned": {
+    "SIM_accepted_calls": 51,
+    "biological_cases": 0,
+    "checks": 42,
+    "dependency_controls": 18,
+    "independent_complete_INIT_SIM_trajectories": 0,
+    "independent_reference_forms": 928,
+    "native_captures": 33,
+    "observer_controls": 3,
+    "positive_SIM_accepted_calls": 48,
+    "positive_cases": 16,
+    "prefix_refusals": 5
+  },
+  "positive_form_arithmetic": "16 * (2 phase rules + 2 bootstrap + 3 * 18 nine-mode forms) = 928",
+  "pytest_collection": false,
+  "status": "unrun"
+}

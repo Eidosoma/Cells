@@ -43,9 +43,17 @@ def smooth(image, sharpness):
     return result
 
 
-def evaluate(inputs, *, refinement=1):
+def evaluate(inputs, *, refinement=1, retain_decimal=None):
     if refinement not in (1, 2):
         raise ValueError("Require the declared independent precision settings")
+    if retain_decimal is not None and not callable(retain_decimal):
+        raise ValueError("Decimal retention requires an explicit callable")
+
+    def finish(result):
+        if retain_decimal is not None:
+            retain_decimal(deepcopy(result))
+        return serial(result)
+
     with localcontext() as context:
         context.prec = 100 if refinement == 1 else 160
         raw = inputs["definition"]
@@ -98,6 +106,7 @@ def evaluate(inputs, *, refinement=1):
             old = deepcopy(v)
             frames, environment_records, conservative_exchange = [], [], []
             clamp, collocated, smoothing, exchange, clip = ([zero] * s for _ in range(5))
+            requested_gap_outward_increment = [[zero] * n for _ in range(s)]
 
             def observe(stage, i=None, destination=frames):
                 destination.append(
@@ -299,6 +308,9 @@ def evaluate(inputs, *, refinement=1):
                 exchange[i] = dt * sum(rates) * site_volume
                 observe("membrane_commit", i)
                 for a in range(n):
+                    requested_gap_outward_increment[i][a] = (
+                        dt * sum(fg[j] * area[j] for j in range(m) if owner[j] == a) / volume[a]
+                    )
                     v["cell_mol_m3"][i][a] -= (
                         dt * sum(fg[j] * area[j] for j in range(m) if owner[j] == a) / volume[a]
                     )
@@ -360,6 +372,7 @@ def evaluate(inputs, *, refinement=1):
                     [c - v["cell_mol_m3"][i][a] for c, a in zip(row, owner, strict=True)]
                     for i, row in enumerate(v["membrane_mol_m3"])
                 ],
+                junction_requested_outward_increment_mol_m3=requested_gap_outward_increment,
                 source_voltage_nonce_delta_V=[
                     a - b for a, b in zip(v["voltage_V"], old["voltage_V"], strict=True)
                 ],
@@ -373,7 +386,7 @@ def evaluate(inputs, *, refinement=1):
                     conservative_exchange=conservative_exchange,
                 )
             )
-        return serial(
+        return finish(
             dict(
                 geometry=g,
                 history=history,

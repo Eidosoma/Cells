@@ -1,0 +1,11 @@
+{
+  "files": {
+    "betse_normal_ecm_redistribution_audit.py": "58968248f5ed285fef46b47f04766a6dab570a14fffba15714bb3375ce1af7d8",
+    "betse_normal_ecm_redistribution_audit_01.json": "b3bcad76d528a325287370c5a52bac2a76e39b18cf60b0d241345976e6597bcc",
+    "betse_normal_ecm_redistribution_correspondence.md": "7d52a84a890a54f601279fc9d98e993b16ec9cc101da458bbea55f1f311d01de"
+  },
+  "frozen_scientific_packets_changed": false,
+  "kind": "cells.compact_redistribution_source_correspondence_manifest@1",
+  "scientific_runs": 0,
+  "source_only": true
+}

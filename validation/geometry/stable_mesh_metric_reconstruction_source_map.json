@@ -1,0 +1,178 @@
+{
+  "dependency_source_sha256": {
+    "conservative_polygon_geometry": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+    "stable_geometry_primitives": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+    "stable_mesh_physical_reconstruction": "b0633f93978dba2db684e23ee1e3e348c0f3edde624b3069c57b115e3d7ab582"
+  },
+  "existing_exact_helpers": {
+    "_complex": {
+      "ast_sha256": "148b1fb6ef90499b2ee5659f08d74b0078164e896db705a71604f8e86b411aec",
+      "first_line": 394,
+      "last_line": 462,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    },
+    "_inside": {
+      "ast_sha256": "14facbbfd5d2791789fad34818f48869b030c5988f89509c9e8e7e216e29e43b",
+      "first_line": 351,
+      "last_line": 360,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    },
+    "_moments": {
+      "ast_sha256": "55115ce3f5d7f8071a9e695fc2c4ba0f1c76167c724f175fc3f78f37d1f88779",
+      "first_line": 375,
+      "last_line": 391,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    },
+    "_platform": {
+      "ast_sha256": "d20e6aeef753c1a3fcea75880f7929f5af2c96d5016add65cb8043f0a29c5678",
+      "first_line": 565,
+      "last_line": 582,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    },
+    "_root": {
+      "ast_sha256": "3e94af20474fb7d4919e4125fbdb9fd1d22a7e59c56bfc04c06a7199d0b535d7",
+      "first_line": 526,
+      "last_line": 532,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    },
+    "_rounded": {
+      "ast_sha256": "c9275552231391af777ddb8a23e5d675a696c4bcfa5b8590890f37b5c2ecf5c3",
+      "first_line": 520,
+      "last_line": 523,
+      "source": "src/cells/processes/conservative_polygon_geometry.py"
+    }
+  },
+  "independent": {
+    "Decimal_precision_forms": [
+      4096,
+      4608
+    ],
+    "actual_outgoing_metric_values_supplied_to_reference": false,
+    "arithmetic_certificate_checks": true,
+    "existing_exact_polygon_reference": true,
+    "existing_metric_floors_unchanged": true,
+    "original_ring_edge_union_checked": true,
+    "store_coefficients": "exact independently projected binary64; no new numeric floor"
+  },
+  "kind": "cells.stable_mesh_metric_reconstruction_static_correspondence@1",
+  "native_dual_vertex_reference_area_scatter": {
+    "ast_sha256": "c72870e17d2f6c90642451af8606ad0798fd484e35acb33a6a06ee22448e33c5",
+    "first_line": 845,
+    "last_line": 845,
+    "source": "betse/science/math/mesh.py"
+  },
+  "native_graph_mesh_reads": [
+    "delta_tri_0",
+    "delta_tri_0_inv",
+    "tri_edge_len",
+    "vor_edge_len",
+    "vor_sa"
+  ],
+  "native_graph_metric_coefficients": {
+    "star_a": {
+      "ast_sha256": "276402b79304fa053b92cf153736436e01fe74ac576f5e63860508be88d31069",
+      "first_line": 1871,
+      "last_line": 1871,
+      "source": "betse/science/cells.py"
+    },
+    "star_a_inv": {
+      "ast_sha256": "9605fd4f123d8eef83a3b1c5e9ed288cd403b383a495d1d0bda30a19f53e7e4d",
+      "first_line": 1882,
+      "last_line": 1882,
+      "source": "betse/science/cells.py"
+    },
+    "star_eij": {
+      "ast_sha256": "68f4868d52b7709db3cec5163e56091168ce7e7b7d0803c8d4a0093276f68448",
+      "first_line": 1866,
+      "last_line": 1866,
+      "source": "betse/science/cells.py"
+    },
+    "star_eij_inv": {
+      "ast_sha256": "94bd4f5e29d56b381ce8836887f8b30e7cf35a2d44442ddcc55ee48c406d198b",
+      "first_line": 1877,
+      "last_line": 1877,
+      "source": "betse/science/cells.py"
+    }
+  },
+  "native_methods": {
+    "create_aux_operators": {
+      "ast_sha256": "bbf9e4a5c97d3940617ed00418b323ccf0e98fad3aed48aa0af001551f281c49",
+      "body": "def create_aux_operators(self):\n    \"\"\"\n        Creates auxiliary operators required for curl, vector laplacians, etc. Note these are\n        needed for the main mesh, but not for the 'mu-mesh' that is required for tensor work...\n        \"\"\"\n    logs.log_info('Creating auxiliary operators...')\n    delta_tri_1 = np.zeros((self.n_tcell, self.n_tedges))\n    tedge_tree = cKDTree(self.tri_edges)\n    for ic, vertis_o in enumerate(self.tri_cells):\n        vertis_1 = np.roll(vertis_o, -1)\n        for vi, vj in zip(vertis_o, vertis_1):\n            disttea, ea = tedge_tree.query([vi, vj])\n            distteb, eb = tedge_tree.query([vj, vi])\n            if disttea == 0.0 and distteb != 0.0:\n                delta_tri_1[ic, ea] = 1\n            elif distteb == 0.0 and disttea != 0.0:\n                delta_tri_1[ic, eb] = -1\n    self.delta_tri_1 = np.asarray(delta_tri_1)\n    self.delta_tri_1_inv = np.linalg.pinv(self.delta_tri_1)\n    delta_vor_0 = np.zeros((self.n_vedges, self.n_vverts))\n    for ei, (vi, vj) in enumerate(self.vor_edges):\n        delta_vor_0[ei, vj] = 1.0\n        delta_vor_0[ei, vi] = -1.0\n    self.delta_vor_0 = np.asarray(delta_vor_0)\n    self.delta_vor_0_inv = np.linalg.pinv(self.delta_vor_0)\n    delta_vor_1 = np.zeros((len(self.inner_tvert_i), self.n_vedges))\n    vedge_tree = cKDTree(self.vor_edges)\n    for ic, cell_verts in enumerate(self.vor_cells[self.inner_tvert_i]):\n        cell_verts_roll = np.roll(cell_verts, 1)\n        for vi, vj in zip(cell_verts, cell_verts_roll):\n            distvea, ea = vedge_tree.query([vi, vj])\n            distveb, eb = vedge_tree.query([vj, vi])\n            if distvea == 0.0 and distveb != 0.0:\n                delta_vor_1[ic, ea] = 1\n            elif distveb == 0.0 and distvea != 0.0:\n                delta_vor_1[ic, eb] = -1\n    self.delta_vor_1 = np.asarray(delta_vor_1)\n    self.delta_vor_1_inv = np.linalg.pinv(self.delta_vor_1)",
+      "first_line": 1190,
+      "last_line": 1258,
+      "source": "betse/science/math/mesh.py"
+    },
+    "create_core_operators": {
+      "ast_sha256": "8efd40922b84fb222db394f6d1d7ac939cd04737d0085e8e420777c0321fd675",
+      "body": "def create_core_operators(self):\n    \"\"\"\n\n        Creates the exterior derivative operators 'delta_0' and 'delta_1'.\n        Note that the transpose of these matrices are equal to the\n        boundary operators, where bount_1 = (delta_0).T and bound_2 = (delta_1).T.\n\n        \"\"\"\n    logs.log_info('Creating core operators...')\n    delta_tri_0 = np.zeros((self.n_tedges, self.n_tverts))\n    for ei, (vi, vj) in enumerate(self.tri_edges):\n        delta_tri_0[ei, vj] = 1.0\n        delta_tri_0[ei, vi] = -1.0\n    self.delta_tri_0 = np.asarray(delta_tri_0)\n    self.delta_tri_0_inv = np.linalg.pinv(self.delta_tri_0)",
+      "first_line": 1166,
+      "last_line": 1187,
+      "source": "betse/science/math/mesh.py"
+    },
+    "define_vorverts": {
+      "ast_sha256": "7c7fc289221deb330ff6f49c9b35efd176c36ab6d266c10eb48652bf9faef7f8",
+      "body": "def define_vorverts(self):\n    \"\"\"\n        Add perpendicular bisectors into the vor mesh.\n\n        When constructing a voronoi diagram, the vor mesh edges intersecting\n        the incredible hull of the tri mesh must be defined by a new set of vor\n        mesh vertices added outside the tri mesh hull. This method adds these\n        perpendicular bisectors into the vor mesh.\n        \"\"\"\n    logs.log_info('Calculating Voronoi cells...')\n    vcell_verts = []\n    vor_verts = []\n    vor_sa = []\n    vor_cents = []\n    vor_edge_verts = []\n    tri_sa_o = []\n    for ti, tc_indso in enumerate(self._tverts_to_tcell):\n        tc_inds = np.unique(tc_indso)\n        assert len(tc_indso) != 0, 'Tri-vert belongs to no simplices!'\n        if self.use_centroids:\n            vvertso = self.tri_cents[tc_inds]\n        else:\n            vvertso = self.tri_ccents[tc_inds]\n        trisai = self.tri_sa[tc_inds]\n        if ti in self.bflags_tverts:\n            tedge_inds = np.unique(self.tverts_to_tedges[ti])\n            for tei in tedge_inds:\n                if tei in self.bflags_tedges:\n                    bedge_verts = self.tri_verts[self.tri_edges[tei]]\n                    bedge_mid = np.mean(bedge_verts, axis=0)\n                    simp_i = self.tedges_to_tcell[tei]\n                    if self.use_centroids:\n                        pt_o = self.tri_cents[simp_i[0]]\n                    else:\n                        pt_o = self.tri_ccents[simp_i[0]]\n                    dist_diff = bedge_mid - pt_o\n                    intpt = bedge_mid + dist_diff\n                    bsa = self.tri_sa[simp_i[0]]\n                    vvertso = np.vstack((vvertso, intpt))\n                    trisai = np.hstack((trisai, bsa))\n        inds_vsort = self.cc_sort_inds(vvertso)\n        vverts = vvertso[inds_vsort]\n        trisaj = trisai[inds_vsort]\n        vor_verts.extend(vverts)\n        tri_sa_o.extend(trisaj)\n        vcell_verts.append(vverts)\n        vor_sa.append(self.area(vverts))\n        vor_cents.append(self.poly_centroid(vverts))\n        vedge_verts = np.asarray([[vi, vj] for vi, vj in zip(vverts, np.roll(vverts, -1, axis=0))])\n        vor_edge_verts.extend(vedge_verts)\n    self.vcell_verts = np.asarray(vcell_verts, dtype=object)\n    self.vor_verts_duplicates = vor_verts * 1\n    self.vor_verts = np.unique(np.asarray(vor_verts), axis=0)\n    self.vor_sa = np.asarray(vor_sa)\n    self.vor_cents = np.asarray(vor_cents)\n    self.vor_edge_verts = np.unique(np.asarray(vor_edge_verts), axis=0)\n    tri_sa_o = np.asarray(tri_sa_o)\n    vord_tree = cKDTree(self.vor_verts_duplicates)\n    _, vi = vord_tree.query(self.vor_verts)\n    self.tri_sa_o = tri_sa_o[vi]",
+      "first_line": 746,
+      "last_line": 845,
+      "source": "betse/science/math/mesh.py"
+    },
+    "process_primary_edges": {
+      "ast_sha256": "a368f0be24710d5206118aaeb0e7660e1b09a4a135950f5aa4ce115a105ce637",
+      "body": "def process_primary_edges(self):\n    \"\"\"\n        Process the edges and boundary of the primary mesh.\n        \"\"\"\n    logs.log_info('Defining edges of tri mesh...')\n    all_edges = set()\n    unique_edges = set()\n    hull_points = []\n    hull_edges = []\n    tri_mids = []\n    tri_edge_len = []\n    tri_tang = []\n    for verti_o in self.tri_cells:\n        verti_i = np.roll(verti_o, -1)\n        for vi, vj in zip(verti_o, verti_i):\n            all_edges.add((vi, vj))\n    for va, vb in all_edges:\n        if (va, vb) in all_edges and (vb, va) not in all_edges:\n            hull_points.append(va)\n            hull_points.append(vb)\n            hull_edges.append([va, vb])\n        if (vb, va) not in unique_edges:\n            unique_edges.add((va, vb))\n    self.bflags_tverts = np.unique(hull_points)\n    self.tri_edges = np.asarray(list(unique_edges))\n    self.n_tedges = len(self.tri_edges)\n    tri_edges = self.tri_edges.tolist()\n    bflags_tedges = []\n    for vi, vj in hull_edges:\n        if [vi, vj] in tri_edges:\n            kk = tri_edges.index([vi, vj])\n        elif [vj, vi] in tri_edges:\n            kk = tri_edges.index([vj, vi])\n        bflags_tedges.append(kk)\n    self.bflags_tedges = np.asarray(bflags_tedges)\n    self.tri_edge_i = np.linspace(0, self.n_tedges - 1, self.n_tedges, dtype=int)\n    self.inner_tedge_i = np.delete(self.tri_edge_i, self.bflags_tedges)\n    for ei, (vi, vj) in enumerate(self.tri_edges):\n        tpi = self.tri_verts[vi]\n        tpj = self.tri_verts[vj]\n        tan_t = tpj - tpi\n        tri_len = np.linalg.norm(tan_t)\n        tan_ti = tan_t / tri_len\n        assert np.round(tri_len, 15) != 0.0, 'Tri-edge length equal to zero! Duplicate seed points exist!'\n        pptm = (tpi + tpj) / 2\n        tri_mids.append(pptm)\n        tri_edge_len.append(tri_len)\n        tri_tang.append(tan_ti)\n    self.tri_mids = np.asarray(tri_mids)\n    self.tri_edge_len = np.asarray(tri_edge_len)\n    self.tri_tang = np.asarray(tri_tang)\n    self.inner_tvert_i = np.delete(self.tri_vert_i, self.bflags_tverts)\n    self.centroid = np.mean(self.tri_verts, axis=0)",
+      "first_line": 581,
+      "last_line": 674,
+      "source": "betse/science/math/mesh.py"
+    },
+    "process_voredges": {
+      "ast_sha256": "49b1218cc039c5ed24c5ef7f6fb9b3260b7e62406239def65bae9acaeba2f274",
+      "body": "def process_voredges(self):\n    logs.log_info('Calculating Voronoi edges...')\n    all_edges = set()\n    vedge_set = set()\n    hull_points = []\n    hull_edges = []\n    vor_mids = []\n    vor_tang = []\n    vor_edge_len = []\n    vor_cells = []\n    vor_tree = cKDTree(self.vor_verts)\n    if self.use_centroids:\n        _, self.inner_vvert_i = vor_tree.query(self.tri_cents)\n    else:\n        _, self.inner_vvert_i = vor_tree.query(self.tri_ccents)\n    for vpts in self.vcell_verts:\n        di, vi = vor_tree.query(vpts)\n        vor_cells.append(vi)\n    for vedge in self.vor_edge_verts:\n        di, vi = vor_tree.query(vedge)\n        all_edges.add((vi[0], vi[1]))\n    for va, vb in all_edges:\n        if (va, vb) in all_edges and (vb, va) not in all_edges:\n            hull_points.append(va)\n            hull_points.append(vb)\n            hull_edges.append([va, vb])\n        if (vb, va) not in vedge_set:\n            vedge_set.add((va, vb))\n    self.bflags_vverts = np.unique(hull_points)\n    vor_edges = np.asarray(list(vedge_set))\n    vedge_tree = cKDTree(vor_edges)\n    bflags_vedges = []\n    for vi, vj in hull_edges:\n        dedgea, ea = vedge_tree.query([vi, vj])\n        dedgeb, eb = vedge_tree.query([vj, vi])\n        if dedgea == 0.0:\n            kk = ea\n        elif dedgeb == 0.0:\n            kk = eb\n        bflags_vedges.append(kk)\n    self.bflags_vedges = np.asarray(bflags_vedges)\n    for ei, (vi, vj) in enumerate(vor_edges):\n        vpi = self.vor_verts[vi]\n        vpj = self.vor_verts[vj]\n        tan_v = vpj - vpi\n        vor_len = np.linalg.norm(tan_v)\n        tan_vi = tan_v / vor_len\n        assert np.round(vor_len, 15) != 0.0, 'Tri-edge length equal to zero! Duplicate seed points exist!'\n        ppvm = (vpi + vpj) / 2\n        vor_mids.append(ppvm)\n        vor_edge_len.append(vor_len)\n        vor_tang.append(tan_vi)\n    vor_mids = np.asarray(vor_mids)\n    vor_edge_len = np.asarray(vor_edge_len)\n    vor_tang = np.asarray(vor_tang)\n    self.vor_cells = np.asarray(vor_cells, dtype=object)\n    vor_tree = cKDTree(vor_mids)\n    di, map_vedge_to_tedge = vor_tree.query(self.tri_mids)\n    vor_edges = np.asarray(vor_edges)\n    self.vor_edges = vor_edges[map_vedge_to_tedge]\n    self.vor_mids = vor_mids[map_vedge_to_tedge]\n    self.vor_edge_len = vor_edge_len[map_vedge_to_tedge]\n    self.vor_tang = vor_tang[map_vedge_to_tedge]\n    for ei, (vti, tti) in enumerate(zip(self.vor_tang, self.tri_tang)):\n        sign = np.sign(det1d(tti, vti))\n        if sign == 1.0:\n            self.vor_tang[ei] = -vti\n            va, vb = self.vor_edges[ei]\n            self.vor_edges[ei] = [vb, va]\n    self.n_vedges = len(self.vor_edges)\n    self.vor_edge_i = np.linspace(0, self.n_vedges - 1, self.n_vedges, dtype=int)\n    self.n_vverts = len(self.vor_verts)\n    self.n_vcells = len(self.vor_cells)\n    self.vor_vert_i = np.linspace(0, self.n_vverts - 1, self.n_vverts, dtype=int)\n    self.vor_cell_i = np.linspace(0, self.n_vcells - 1, self.n_vcells, dtype=int)\n    xmin = self.vor_verts[:, 0].min()\n    xmax = self.vor_verts[:, 0].max()\n    ymin = self.vor_verts[:, 1].min()\n    ymax = self.vor_verts[:, 1].max()\n    self.xyaxis = [xmin * 1.1, xmax * 1.1, ymin * 1.1, ymax * 1.1]",
+      "first_line": 848,
+      "last_line": 1007,
+      "source": "betse/science/math/mesh.py"
+    }
+  },
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38"
+  },
+  "new_roles": {
+    "coordinates": "original topology coordinates retained bitwise",
+    "directions": "source axes; clockwise dual orientation; no orthogonality claim",
+    "dual_vertex_reference_area": "explicit owners; coalesce equal areas without summing",
+    "edge_lengths": "correctly rounded dyadic-root target on actual endpoint coordinates",
+    "geometric_length_ratios": "sqrt of exact squared-length ratio; separate diagnostic",
+    "inverse_area": "reciprocal of the reconstructed binary64 dual area store",
+    "metric_centroids": "exact rational targets; original layout anchors remain fixed",
+    "native_length_ratios": "ratio of independently reconstructed binary64 length stores",
+    "source_anchor_admission": "existing floor1e-27 +6e-12 relative; centroid also32ulp",
+    "unqualified": "inverse operators, graph, physical cells/environment and initialized loop",
+    "unsupported": "circumcenter layout, unresolved owners, geometry or rounding"
+  },
+  "original_evidence": {
+    "original_complete_mesh_passes": 0,
+    "original_failures_reclassified": false,
+    "path": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+    "sha256": "b88ae9a987a03481c1e95c3e320dc004ceb2eef64213f131aef38c9236d75539"
+  },
+  "scope": {
+    "PROGRESS_edited": false,
+    "collection": false,
+    "fixtures_constructed": false,
+    "jobs": false,
+    "metric_candidate_evaluated": false,
+    "physical_admission": false,
+    "polling": false,
+    "reference_evaluated": false,
+    "scientific_imports": false,
+    "shared_deformation_or_mechanics_checker_edited": false,
+    "topology_candidate_evaluated": false
+  },
+  "topology02": {
+    "candidate_core_unchanged": true,
+    "manifest_sha256": "86867136cb973d47bb2765039090254eb403e7ac2037789177aea5879fcb0b39",
+    "path": "/mnt/workspaces/Cells/stable-mesh-physical-reconstruction-prepared-20261031-02",
+    "qualification_inherited": false,
+    "receipt": "/mnt/workspaces/Cells/stable-mesh-physical-reconstruction-preparation-20261031-02.json",
+    "receipt_sha256": "66efd4333eff97162a46432547bb7b50a49e5fb64049286dc3fce2f8bc3a2116"
+  }
+}

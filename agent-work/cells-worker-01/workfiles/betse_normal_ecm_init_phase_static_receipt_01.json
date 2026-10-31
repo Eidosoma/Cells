@@ -1,0 +1,11 @@
+{
+  "all_copy_hashes_verified": true,
+  "copied_files": 25,
+  "kind": "cells.ordinary_ECM_INIT_source_design_copy_receipt@1",
+  "manifest": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-design-prepared-20261031-01/MANIFEST.json",
+    "sha256": "a0ab291fff3e384b783157713a33e54712a329c5625f48535867480952c53885"
+  },
+  "qualification_credit": 0,
+  "science_imports_or_execution": 0
+}

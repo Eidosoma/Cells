@@ -1,0 +1,575 @@
+{
+  "automatic_launch": false,
+  "execution_hold": true,
+  "groups": {
+    "dependency-FAST_solver": {
+      "accepted_calls": 0,
+      "case": "FAST_solver",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[FAST_solver]"
+      ]
+    },
+    "dependency-GRN_off_unqualified": {
+      "accepted_calls": 0,
+      "case": "GRN_off_unqualified",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[GRN_off_unqualified]"
+      ]
+    },
+    "dependency-SIM_phase": {
+      "accepted_calls": 0,
+      "case": "SIM_phase",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[SIM_phase]"
+      ]
+    },
+    "dependency-changed_clock": {
+      "accepted_calls": 0,
+      "case": "changed_clock",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_clock]"
+      ]
+    },
+    "dependency-changed_mechanics_parent": {
+      "accepted_calls": 0,
+      "case": "changed_mechanics_parent",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_mechanics_parent]"
+      ]
+    },
+    "dependency-changed_phase_receipt": {
+      "accepted_calls": 0,
+      "case": "changed_phase_receipt",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_phase_receipt]"
+      ]
+    },
+    "dependency-changed_previous_field": {
+      "accepted_calls": 0,
+      "case": "changed_previous_field",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_previous_field]"
+      ]
+    },
+    "dependency-changed_rate_presence": {
+      "accepted_calls": 0,
+      "case": "changed_rate_presence",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_rate_presence]"
+      ]
+    },
+    "dependency-changed_setup_store": {
+      "accepted_calls": 0,
+      "case": "changed_setup_store",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[changed_setup_store]"
+      ]
+    },
+    "dependency-cut_requested": {
+      "accepted_calls": 0,
+      "case": "cut_requested",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[cut_requested]"
+      ]
+    },
+    "dependency-display_enabled": {
+      "accepted_calls": 0,
+      "case": "display_enabled",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[display_enabled]"
+      ]
+    },
+    "dependency-dynamic_deformation": {
+      "accepted_calls": 0,
+      "case": "dynamic_deformation",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[dynamic_deformation]"
+      ]
+    },
+    "dependency-electroosmosis": {
+      "accepted_calls": 0,
+      "case": "electroosmosis",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[electroosmosis]"
+      ]
+    },
+    "dependency-enabled_ER": {
+      "accepted_calls": 0,
+      "case": "enabled_ER",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[enabled_ER]"
+      ]
+    },
+    "dependency-enabled_flow": {
+      "accepted_calls": 0,
+      "case": "enabled_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[enabled_flow]"
+      ]
+    },
+    "dependency-foreign_parent": {
+      "accepted_calls": 0,
+      "case": "foreign_parent",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[foreign_parent]"
+      ]
+    },
+    "dependency-foreign_tissue_map": {
+      "accepted_calls": 0,
+      "case": "foreign_tissue_map",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[foreign_tissue_map]"
+      ]
+    },
+    "dependency-general_molecules": {
+      "accepted_calls": 0,
+      "case": "general_molecules",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[general_molecules]"
+      ]
+    },
+    "dependency-inactive_cold_gate_forgery": {
+      "accepted_calls": 0,
+      "case": "inactive_cold_gate_forgery",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[inactive_cold_gate_forgery]"
+      ]
+    },
+    "dependency-inactive_count_forgery": {
+      "accepted_calls": 0,
+      "case": "inactive_count_forgery",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[inactive_count_forgery]"
+      ]
+    },
+    "dependency-legacy_run_sim": {
+      "accepted_calls": 0,
+      "case": "legacy_run_sim",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[legacy_run_sim]"
+      ]
+    },
+    "dependency-missing_numpy_Gaussian_cache": {
+      "accepted_calls": 0,
+      "case": "missing_numpy_Gaussian_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[missing_numpy_Gaussian_cache]"
+      ]
+    },
+    "dependency-missing_setup_receipt": {
+      "accepted_calls": 0,
+      "case": "missing_setup_receipt",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[missing_setup_receipt]"
+      ]
+    },
+    "dependency-native_sample_refusal": {
+      "accepted_calls": 0,
+      "case": "native_sample_refusal",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[native_sample_refusal]"
+      ]
+    },
+    "dependency-nonprogressing_sampling": {
+      "accepted_calls": 0,
+      "case": "nonprogressing_sampling",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[nonprogressing_sampling]"
+      ]
+    },
+    "dependency-nonzero_flow": {
+      "accepted_calls": 0,
+      "case": "nonzero_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[nonzero_flow]"
+      ]
+    },
+    "dependency-nonzero_late_flux": {
+      "accepted_calls": 0,
+      "case": "nonzero_late_flux",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[nonzero_late_flux]"
+      ]
+    },
+    "dependency-nonzero_supplied_pump": {
+      "accepted_calls": 0,
+      "case": "nonzero_supplied_pump",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[nonzero_supplied_pump]"
+      ]
+    },
+    "dependency-physical_initializer": {
+      "accepted_calls": 0,
+      "case": "physical_initializer",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[physical_initializer]"
+      ]
+    },
+    "dependency-rebound_count": {
+      "accepted_calls": 0,
+      "case": "rebound_count",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[rebound_count]"
+      ]
+    },
+    "dependency-wrong_dt": {
+      "accepted_calls": 0,
+      "case": "wrong_dt",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[wrong_dt]"
+      ]
+    },
+    "dependency-wrong_numpy_version": {
+      "accepted_calls": 0,
+      "case": "wrong_numpy_version",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[wrong_numpy_version]"
+      ]
+    },
+    "dependency-wrong_python_version": {
+      "accepted_calls": 0,
+      "case": "wrong_python_version",
+      "category": "dependency",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_dependency_refusal[wrong_python_version]"
+      ]
+    },
+    "observer-after_call": {
+      "accepted_calls": 0,
+      "case": "after_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_observer_retention[after_call]"
+      ]
+    },
+    "observer-before_call": {
+      "accepted_calls": 0,
+      "case": "before_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_observer_retention[before_call]"
+      ]
+    },
+    "positive-active": {
+      "accepted_calls": 3,
+      "case": "active",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[active]"
+      ]
+    },
+    "positive-all_inactive": {
+      "accepted_calls": 3,
+      "case": "all_inactive",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[all_inactive]"
+      ]
+    },
+    "positive-default_init_active": {
+      "accepted_calls": 3,
+      "case": "default_init_active",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[default_init_active]"
+      ]
+    },
+    "positive-different_init_dt": {
+      "accepted_calls": 3,
+      "case": "different_init_dt",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[different_init_dt]"
+      ]
+    },
+    "positive-dormant_globals": {
+      "accepted_calls": 3,
+      "case": "dormant_globals",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[dormant_globals]"
+      ]
+    },
+    "positive-dormant_sweep": {
+      "accepted_calls": 3,
+      "case": "dormant_sweep",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[dormant_sweep]"
+      ]
+    },
+    "positive-empty_channels": {
+      "accepted_calls": 3,
+      "case": "empty_channels",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[empty_channels]"
+      ]
+    },
+    "positive-fractional_sampling": {
+      "accepted_calls": 3,
+      "case": "fractional_sampling",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[fractional_sampling]"
+      ]
+    },
+    "positive-inactive_dynamic_gate": {
+      "accepted_calls": 3,
+      "case": "inactive_dynamic_gate",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[inactive_dynamic_gate]"
+      ]
+    },
+    "positive-long_calendar_prefix": {
+      "accepted_calls": 3,
+      "case": "long_calendar_prefix",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[long_calendar_prefix]"
+      ]
+    },
+    "positive-mechanics_disabled": {
+      "accepted_calls": 3,
+      "case": "mechanics_disabled",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[mechanics_disabled]"
+      ]
+    },
+    "positive-mixed_inactive": {
+      "accepted_calls": 3,
+      "case": "mixed_inactive",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[mixed_inactive]"
+      ]
+    },
+    "positive-no_CaATP": {
+      "accepted_calls": 3,
+      "case": "no_CaATP",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[no_CaATP]"
+      ]
+    },
+    "positive-no_NaK": {
+      "accepted_calls": 3,
+      "case": "no_NaK",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[no_NaK]"
+      ]
+    },
+    "positive-no_channels": {
+      "accepted_calls": 3,
+      "case": "no_channels",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[no_channels]"
+      ]
+    },
+    "positive-no_samples": {
+      "accepted_calls": 3,
+      "case": "no_samples",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[no_samples]"
+      ]
+    },
+    "positive-one_call": {
+      "accepted_calls": 1,
+      "case": "one_call",
+      "category": "positive",
+      "independent_forms": 20,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[one_call]"
+      ]
+    },
+    "positive-osmotic_only": {
+      "accepted_calls": 3,
+      "case": "osmotic_only",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[osmotic_only]"
+      ]
+    },
+    "positive-setup_shuffle": {
+      "accepted_calls": 3,
+      "case": "setup_shuffle",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[setup_shuffle]"
+      ]
+    },
+    "positive-static_noise": {
+      "accepted_calls": 3,
+      "case": "static_noise",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[static_noise]"
+      ]
+    },
+    "positive-zero_calls": {
+      "accepted_calls": 0,
+      "case": "zero_calls",
+      "category": "positive",
+      "independent_forms": 6,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[zero_calls]"
+      ]
+    },
+    "positive-zero_static_noise": {
+      "accepted_calls": 3,
+      "case": "zero_static_noise",
+      "category": "positive",
+      "independent_forms": 48,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_history[zero_static_noise]"
+      ]
+    },
+    "raw-CaATP_nonfinite": {
+      "accepted_calls": 0,
+      "case": "CaATP_nonfinite",
+      "category": "raw",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_raw_refusal[CaATP_nonfinite]"
+      ]
+    },
+    "raw-GRN_negative": {
+      "accepted_calls": 0,
+      "case": "GRN_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_raw_refusal[GRN_negative]"
+      ]
+    },
+    "raw-NaK_nonfinite": {
+      "accepted_calls": 0,
+      "case": "NaK_nonfinite",
+      "category": "raw",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_raw_refusal[NaK_nonfinite]"
+      ]
+    },
+    "raw-mechanics_nonfinite": {
+      "accepted_calls": 0,
+      "case": "mechanics_nonfinite",
+      "category": "raw",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_raw_refusal[mechanics_nonfinite]"
+      ]
+    },
+    "raw-negative_static_Dm": {
+      "accepted_calls": 0,
+      "case": "negative_static_Dm",
+      "category": "raw",
+      "independent_forms": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_init_phase.py::test_init_raw_refusal[negative_static_Dm]"
+      ]
+    }
+  },
+  "kind": "cells.held_INIT_workqueue@1",
+  "planned": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  }
+}

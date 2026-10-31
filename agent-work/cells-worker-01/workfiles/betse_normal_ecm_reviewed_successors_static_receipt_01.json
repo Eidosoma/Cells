@@ -1,0 +1,161 @@
+{
+  "active_job_queries": 0,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "copy_hash_compile_names_Ruff_and_AST_checks_only": true,
+  "fixture_evaluations": 0,
+  "kind": "cells.explicit_ECM_successor_batch_static_receipt@1",
+  "new_or_retained_qualification_passes": 0,
+  "numerical_runs": 0,
+  "old_frozen_failed_held_results_and_shared_helpers_unchanged": true,
+  "packets": {
+    "catalog05": {
+      "actual_source_tree_files": 2594,
+      "additional_lint_cache_sha256": {
+        ".ruff_cache/.gitignore": "9e3a60f1e6ec4ae60215c11d54b171392745ec25e9dded433d5bd921363af316",
+        ".ruff_cache/0.16.6/16020783508763541614": "474d280cfffd76c90ee2312c1d708cd97e00ba3464d66ba4086304661461d2e6",
+        ".ruff_cache/0.16.6/3580598241911411093": "0dd2d94239e9ff01b380cf8068b3a2f7b03f0c43245db17372bd9a60ef1c329d",
+        ".ruff_cache/CACHEDIR.TAG": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+      },
+      "all_hashes_and_rosters_and_budgets_verified": true,
+      "all_native_and_binding_copy_files": 123,
+      "binding_evidence_copies": 69,
+      "current_binding_records": 40,
+      "declared_source_files": 2590,
+      "execution_hold": true,
+      "execution_hold_reasons": [
+        "Independent review of this explicit frozen successor is required; no numerical release granted"
+      ],
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-05/inputs.json",
+        "sha256": "513b3a4030f79eb027db8eea664e4acd0854b314634f0bbb97c2c2b86d77bc33"
+      },
+      "manual_reads_reviewed": 146,
+      "native_source_copies": 54,
+      "no_other_unmanifested_source_resource_or_config_files": true,
+      "no_production_source_delta": true,
+      "numerical_runs": 0,
+      "packaged_resource_files": 25,
+      "planned_checks": 94,
+      "planned_fresh_Decimal_forms": 1314,
+      "planned_native_captures": 78,
+      "source_delta_files": 4
+    },
+    "event04": {
+      "actual_source_tree_files": 2612,
+      "additional_lint_cache_sha256": {
+        ".ruff_cache/.gitignore": "9e3a60f1e6ec4ae60215c11d54b171392745ec25e9dded433d5bd921363af316",
+        ".ruff_cache/0.16.6/1021069347854004881": "4f37ed1595707c2754aee82b7b37424b89b0228349487f80f524ed080147fa6a",
+        ".ruff_cache/0.16.6/8409587998500917332": "32e80c4eb85f2bb478e6bd88967d2c5c7afc546a748019ab19e9a7c21f6ee186",
+        ".ruff_cache/CACHEDIR.TAG": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+      },
+      "all_hashes_and_rosters_and_budgets_verified": true,
+      "all_native_and_binding_copy_files": 172,
+      "binding_evidence_copies": 100,
+      "current_binding_records": 62,
+      "declared_source_files": 2608,
+      "execution_hold": true,
+      "execution_hold_reasons": [
+        "Independent review of this explicit frozen successor is required; no numerical release granted",
+        "Exact event NaLeak-only branch proposal requires independent review",
+        "The catalog31726-member engineering envelope does not account for event/mechanics/lifecycle capture overhead"
+      ],
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/inputs.json",
+        "sha256": "d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c"
+      },
+      "manual_reads_reviewed": 164,
+      "native_source_copies": 60,
+      "no_other_unmanifested_source_resource_or_config_files": true,
+      "no_production_source_delta": true,
+      "numerical_runs": 0,
+      "packaged_resource_files": 26,
+      "planned_checks": 42,
+      "planned_fresh_Decimal_forms": 920,
+      "planned_native_captures": 26,
+      "source_delta_files": 7
+    },
+    "event_mechanics03": {
+      "actual_source_tree_files": 2654,
+      "additional_lint_cache_sha256": {
+        ".ruff_cache/.gitignore": "9e3a60f1e6ec4ae60215c11d54b171392745ec25e9dded433d5bd921363af316",
+        ".ruff_cache/0.16.6/5254419966417612614": "6240d758703dd75a726088277a124a23d954c0268f05de562987025aeb8489b4",
+        ".ruff_cache/0.16.6/9548368284952854036": "56eadf248d1a323e3f4926df49de0a425d3b78250a3b4f6164dde357ced8fe70",
+        ".ruff_cache/CACHEDIR.TAG": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+      },
+      "all_hashes_and_rosters_and_budgets_verified": true,
+      "all_native_and_binding_copy_files": 207,
+      "binding_evidence_copies": 127,
+      "current_binding_records": 76,
+      "declared_source_files": 2650,
+      "execution_hold": true,
+      "execution_hold_reasons": [
+        "Independent review of this explicit frozen successor is required; no numerical release granted",
+        "Exact event NaLeak-only branch proposal requires independent review",
+        "The catalog31726-member engineering envelope does not account for event/mechanics/lifecycle capture overhead"
+      ],
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/inputs.json",
+        "sha256": "e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a"
+      },
+      "manual_reads_reviewed": 171,
+      "native_source_copies": 68,
+      "no_other_unmanifested_source_resource_or_config_files": true,
+      "no_production_source_delta": true,
+      "numerical_runs": 0,
+      "packaged_resource_files": 27,
+      "planned_checks": 62,
+      "planned_fresh_Decimal_forms": 1508,
+      "planned_native_captures": 36,
+      "source_delta_files": 9
+    },
+    "lifecycle02": {
+      "actual_source_tree_files": 2681,
+      "additional_lint_cache_sha256": {
+        ".ruff_cache/.gitignore": "9e3a60f1e6ec4ae60215c11d54b171392745ec25e9dded433d5bd921363af316",
+        ".ruff_cache/0.16.6/11689606777738829301": "7eab6aa4feda93a0aac38a0c1b28f2d03c5c0bc6aa10e961d1e21033e2467bcd",
+        ".ruff_cache/0.16.6/18185140864691275184": "5ac5f9cd1ce4086a873411fd6b41e9f2801320288b3f1f76e2fc782797328844",
+        ".ruff_cache/0.16.6/4345306184794141535": "a16e04c0c94081208e9fe3627670d6df64757b7f3f08fce8521330f7094ab9bb",
+        ".ruff_cache/CACHEDIR.TAG": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+      },
+      "all_hashes_and_rosters_and_budgets_verified": true,
+      "all_native_and_binding_copy_files": 228,
+      "binding_evidence_copies": 156,
+      "current_binding_records": 85,
+      "declared_source_files": 2676,
+      "execution_hold": true,
+      "execution_hold_reasons": [
+        "Independent review of this explicit frozen successor is required; no numerical release granted",
+        "Exact event NaLeak-only branch proposal requires independent review",
+        "The catalog31726-member engineering envelope does not account for event/mechanics/lifecycle capture overhead",
+        "Observer paths, named raw boundaries and completed-capture retention repairs require independent review"
+      ],
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+        "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+      },
+      "manual_reads_reviewed": 174,
+      "native_source_copies": 72,
+      "no_other_unmanifested_source_resource_or_config_files": true,
+      "no_production_source_delta": true,
+      "numerical_runs": 0,
+      "packaged_resource_files": 28,
+      "planned_checks": 48,
+      "planned_fresh_Decimal_forms": 624,
+      "planned_native_captures": 22,
+      "source_delta_files": 13
+    }
+  },
+  "preparation_receipt": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_preparation_receipt_01.json",
+    "sha256": "40adacc377df70a4f4fb77e1da2bd898cde692655e50bdda3505e99132e1c5f3"
+  },
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_imports_and_arrays_not_evaluated": true,
+  "status": "four_frozen_held_successors_verified_source_only",
+  "unique_changed_Python_path_hash_pairs": 5
+}

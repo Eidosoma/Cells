@@ -1,0 +1,14 @@
+{
+  "kind": "cells.general_molecule_static_development_evidence@1",
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "fixture_model_reference_evaluations": 0,
+  "pytest_collection": 0,
+  "numerical_runs": 0,
+  "corrections": [
+    "Initial native audit looked for get_current on Simulator; it is the physics/ion_current.py function called by update_V. The corrected 22-method source audit passed.",
+    "General metadata lowering must replace p.grn.conf with p.network_config rather than p.molecules.conf, and must lower getattr(ctx.sim, 'grn', None) to the molecules role as well as attribute access. Fixed in owned/native helpers and generator; complete inverse and explicit getter proofs pass.",
+    "Unevaluated inherited fixture spellings were corrected by reading their literal rosters: neutral_genes and mixed_forward replace invalid names. Disabled-modulator/transport declarations are explicit component controls; no fixture was executed.",
+    "Removed a draft partial cold comparison that substituted native voltage. The final test compares full actual saved cold buffers before bootstrap and complete per-owner native caches. No source test was run before this correction."
+  ]
+}

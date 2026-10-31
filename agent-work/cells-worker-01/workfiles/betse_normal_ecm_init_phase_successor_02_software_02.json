@@ -1,0 +1,262 @@
+{
+  "controls": [
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original setup_owner",
+            "stage": "setup_owner",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original setup_owner\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_setup_owner",
+      "passed": true
+    },
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original mechanics_entry",
+            "stage": "mechanics_entry",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original mechanics_entry\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_mechanics_entry",
+      "passed": true
+    },
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original event_finalization",
+            "stage": "event_finalization",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original event_finalization\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_event_finalization",
+      "passed": true
+    },
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original clock",
+            "stage": "clock",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original clock\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_clock",
+      "passed": true
+    },
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original bootstrap",
+            "stage": "bootstrap",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original bootstrap\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_bootstrap",
+      "passed": true
+    },
+    {
+      "evidence": [
+        {
+          "available": {
+            "RNG": {
+              "algorithm": "synthetic scalar state",
+              "position": 9
+            },
+            "parent": {
+              "buffers": [
+                1.0,
+                2.0
+              ],
+              "epoch": 0
+            },
+            "reset_return": null
+          },
+          "capture_errors": [],
+          "failure": {
+            "message": "injected original reset",
+            "stage": "reset",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_successor_02_check.py\", line 108, in main\n    raise error\nRuntimeError: injected original reset\n",
+            "type": "RuntimeError"
+          },
+          "status": "unexpected_source_failure"
+        }
+      ],
+      "name": "original_exception_and_available_reset",
+      "passed": true
+    },
+    {
+      "name": "reader_error_does_not_mask_original",
+      "passed": true
+    },
+    {
+      "name": "writer_error_retains_original_exception",
+      "passed": true
+    },
+    {
+      "name": "metadata_sampling_N0",
+      "passed": true
+    },
+    {
+      "name": "metadata_sampling_N1",
+      "passed": true
+    },
+    {
+      "name": "metadata_sampling_N3",
+      "passed": true
+    },
+    {
+      "name": "metadata_sampling_long_prefix",
+      "passed": true
+    },
+    {
+      "name": "metadata_sampling_no_samples",
+      "passed": true
+    },
+    {
+      "cause": "Independent sample indices differ from native source recurrence",
+      "name": "sampling_corruption_independent_indices",
+      "passed": true
+    },
+    {
+      "cause": "Native per-call eligibility differs from independent indices",
+      "name": "sampling_corruption_native_eligibility",
+      "passed": true
+    },
+    {
+      "cause": "Owned per-call eligibility differs from native/independent indices",
+      "name": "sampling_corruption_owned_eligibility",
+      "passed": true
+    },
+    {
+      "cause": "Emitted selected observations differ from native/independent prefix",
+      "name": "sampling_corruption_selected_indices",
+      "passed": true
+    },
+    {
+      "cause": "Sample record original source label differs",
+      "name": "sampling_corruption_source_label",
+      "passed": true
+    }
+  ],
+  "elapsed_s": 0.16602193098515272,
+  "existing_62_ids_cases_fixtures_budgets_preserved": true,
+  "kind": "cells.INIT02_evidence_software_controls@1",
+  "max_rss_bytes": 27369472,
+  "model_fixture_reference_evaluations": 0,
+  "numerical_runs": 0,
+  "proposed_native_sha256": "385b09a73f7f361c91deb1da586f0592df957a7565a7d51d0d08ed43f1b4d4c5",
+  "proposed_test_sha256": "63fcf14e66c78cf3e9c4bb762fcd07ddc893b34a53341cb1bbd863fd9503ef7e",
+  "pytest_collections": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "software_helper_sha256": "b74d088d80688189b4d947119bfabd051d9b344a23c5c117c2da12e0a34c38c2",
+  "status": "passed",
+  "unchanged_other_test_functions": true,
+  "unchanged_scientific_native_function_bodies": [
+    "values",
+    "observe",
+    "trace",
+    "field_call",
+    "calcium_call",
+    "rate_cache",
+    "clock",
+    "source_sampling",
+    "run_dispatch"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "capture_profile": "ordinary_ecm_init_phase_01 retained; all producers/tools byte-identical",
+  "changed_source": {
+    "validation/betse/betse_normal_ecm_event_join_reference.py": {
+      "after": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf",
+      "before": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+    }
+  },
+  "execution_hold": true,
+  "existing_adapter_metadata_checks": 42,
+  "expected_archives": 1296,
+  "expected_reference_points": 493,
+  "explicit_scalar_reference_adapter_domain_extension": true,
+  "independent_adapter_review": {
+    "path": "/mnt/workspaces/Cells/ecm-event-reference-dispatch-repair-20261031-01/root-review-01/REVIEW.json",
+    "sha256": "4dc0698f7fa9e380c21067df5a5d4f61e7bc1a8799d6327b2a277f5f55e8b39e"
+  },
+  "inherited_qualification": false,
+  "inherited_reference_attempt_failure_capture_preserved": true,
+  "inputs_sha256": "c2a9c280de04448e71f768546be6f57b423f5b2a876198e2dbaebe8cb0c2396f",
+  "new_metadata_tests": 0,
+  "numerical_launch_authorized": false,
+  "original_failed_runner_unchanged": true,
+  "original_native_source_fixture_equations_tolerances_clocks_resources_unchanged": true,
+  "parent_manifest": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/MANIFEST.json",
+    "sha256": "4b3923b455ce6e41bd56953ccd2e4690c79e38af25243faa4c678695cfbb3a45"
+  },
+  "pending_reads": 0,
+  "prospective": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "reference_import_closure_files": 24,
+  "remaining_runner_requirements": [
+    "The draft driver is held before imports/output creation, verifies exact unique JUnit IDs and start/end source/native/tool hashes, and retains fixed resource bounds. A later release controller must bind each saved runtime inventory to frozen origins/hashes rather than relying only on production_imports_denied booleans.",
+    "Draft read_evidence skips a manifest when arrays.npz or data.json is absent. A release finalizer should require all expected declared native/reference/owned archives complete and authenticate inventory counts, not accept the existence of any one complete archive."
+  ],
+  "resource_files": 28,
+  "reviewed_unresolved_reads": 182,
+  "runner_namespace_fix_and_release_not_part_of_this_source_packet": true,
+  "scientific_evaluations": 0,
+  "scientific_import_closure_files": 124,
+  "sodium_and_other_voltage_domains_unchanged": true,
+  "source_dependency_review": {
+    "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/DEPENDENCY_REVIEW.json",
+    "sha256": "61725332404df4f9803a629e32147c21048a478a4e9f17e7a227a8244ef3e0de"
+  },
+  "source_proof": {
+    "INIT_specific_channel_dispatch_unchanged": true,
+    "added_function": "conditioned_network",
+    "all_other_functions_and_imports_unchanged": true,
+    "candidate": {
+      "path": "/mnt/workspaces/Cells/ecm-event-reference-dispatch-repair-20261031-01/proposal/validation/betse/betse_normal_ecm_event_join_reference.py",
+      "sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf"
+    },
+    "changed_function": "evaluate",
+    "complete_inverse_AST_and_bytes_exact": true,
+    "original": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_join_reference.py",
+      "sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+    },
+    "shared_equations_and_all_voltage_domains_unchanged": true,
+    "source_supported_scalar_adapter_domain_extension_explicit": true
+  },
+  "status": "source04_held_explicit_event_scalar_reference_dependency"
+}

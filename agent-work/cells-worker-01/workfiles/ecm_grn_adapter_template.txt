@@ -1,0 +1,153 @@
+
+MATERIAL_PAIRS=(
+    ("cell_mol_m3","cc_cells"),("membrane_mol_m3","cc_at_mem"),
+    ("environment_mol_m3","cc_env"),("voltage_V","vm"),
+    ("membrane_flux_mol_m2_s","fluxes_mem"),("junction_flux_mol_m2_s","fluxes_gj"),
+    ("environment_flux_x_mol_m2_s","fluxes_env_x"),("environment_flux_y_mol_m2_s","fluxes_env_y"),
+    ("junction_voltage_V","vgj"),("junction_field_source","Egj"),("gap_open","gjopen"),
+)
+PARAMETERS=("z","Dm","Do","Dgj","c_bound","TJ_factor","ignoreTJ","ignoreGJ","ignore_ECM_pump","update_intra_conc","transmem","modify_time_factor","Mu_mem","u_mt","scale_factor","active_pumping","ion_channel_gating","change_bounds","cell_clamp")
+
+
+def material_values(sim):
+    return {key:clone(getattr(sim,attr)) for key,attr in MATERIAL_PAIRS}|dict(junction_field_xy_source=np.column_stack((sim.E_gj_x,sim.E_gj_y)))
+
+
+def augment(sim,cells,p,definition,ion_ids):
+    p.ions_dict={name:1 for name in ion_ids}
+    p.ions_dict.setdefault("Ca",0)
+    p.grn=SimpleNamespace(conf=clone(definition["configuration"]))
+    p.grn_enabled,p.molecules_enabled,p.plot_network=True,False,False
+    sim.get_ion=lambda name:ion_ids.index(name)
+    sim.iNa,sim.iK=sim.get_ion("Na"),sim.get_ion("K")
+    sim.cdl=len(cells.cell_i)
+    p.fluid_flow=False
+    for key in ("all_bound_mem_inds","interior_bound_mem_inds","ecm_inds_bound_cell"):
+        setattr(cells,key,np.asarray(definition["grid_index_groups"][key],np.int64).copy())
+    science()["derive_context"](sim,cells)
+    return SimpleNamespace(sim=sim,cells=cells,p=p,definition=definition,ion_ids=ion_ids,
+        phase=SimpleNamespace(sim=sim,cells=cells,p=p,kind="SIM",dyna=SimpleNamespace()),
+        trace=dict(molecule_frames=[],mover_frames=[],rhs={},control_writes=[],dispatch_stages=[],source_completed=False))
+
+
+def cache(ctx):
+    return dict(kind="cells.ecm_grn_owner_cache@1",wire=wire(ctx.sim.grn,ctx.sim),
+        coefficient_fields={name:clone(getattr(ctx.sim,name)) for name in ("D_env_weight","D_env_weight_base","TJ_targets")})
+
+
+def cold(ctx):
+    ctx.sim.grn=None
+    ctx.phase.kind="INIT"
+    ctx.p.substances_affect_charge=ctx.definition["cold_publish"]
+    science()["initialize_owner"](ctx.sim,0.0,ctx.phase,ctx.cells,ctx.p)
+    return cache(ctx)
+
+
+def restore(ctx,incoming):
+    if incoming is None or incoming.get("kind")!="cells.ecm_grn_owner_cache@1":
+        raise ValueError("Require complete ECM GRN owner cache")
+    raw=incoming["wire"]
+    if set(raw)!={"owner_fields","core_fields","molecule_fields","reaction_fields","modulator_fields","ion_boundary_state","simulator_fields"}:
+        raise ValueError("Require every ECM owner/cache field")
+    if set(raw["molecule_fields"])!={"X","Y"}:
+        raise ValueError("Require both configured ECM gene products")
+    for values in raw["molecule_fields"].values():
+        if not set(PARAMETERS)|{"c_cells","cc_at_mem","c_env","flux_intra","gad_eval_string"} <= values.keys():
+            raise ValueError("Missing source-initialized ECM gene fields")
+        if values["ignore_ECM_pump"] is not True:
+            raise ValueError("Preserve actual source ignore_ECM_pump default")
+    api=science()
+    owner=object.__new__(api["MasterOfGenes"])
+    vars(owner).update(clone(raw["owner_fields"]))
+    net=object.__new__(api["MasterOfNetworks"])
+    vars(net).update(clone(raw["core_fields"]))
+    owner.core,ctx.sim.grn=net,owner
+    for attr,key,cls in (("molecules","molecule_fields","Molecule"),("reactions","reaction_fields","Reaction"),("modulators","modulator_fields","Modulator")):
+        objects=OrderedDict()
+        for name,fields in raw[key].items():
+            obj=object.__new__(api[cls]);vars(obj).update(clone(fields));objects[name]=obj
+        setattr(net,attr,objects)
+    net.reactions_env,net.reactions_mit,net.channels,net.mit=OrderedDict(),OrderedDict(),OrderedDict(),None
+    # The current packet's ionic boundary vector remains authoritative. Gene
+    # boundary scalars already travel with their complete molecule fields.
+    for key,value in raw["simulator_fields"].items():
+        setattr(ctx.sim,key,clone(value))
+    if set(incoming["coefficient_fields"])!={"D_env_weight","D_env_weight_base","TJ_targets"}:
+        raise ValueError("Require owned ECM molecular grid coefficients")
+    for key,value in incoming["coefficient_fields"].items():
+        setattr(ctx.sim,key,clone(value))
+    for attr,ionic,molecular in (("cell_concs","cc_cells","c_cells"),("mem_concs","cc_at_mem","cc_at_mem"),("env_concs","cc_env","c_env"),("bound_concs","c_env_bound","c_bound")):
+        mapping=OrderedDict()
+        for name,enabled in ctx.p.ions_dict.items():
+            if enabled!=1:continue
+            i=ctx.sim.get_ion(name)
+            mapping[name]=api["DynamicValue"](lambda i=i,a=ionic:getattr(ctx.sim,a)[i],lambda value,i=i,a=ionic:getattr(ctx.sim,a).__setitem__(i,value))
+        for name in net.molecules:
+            mapping[name]=api["DynamicValue"](lambda name=name,a=molecular:getattr(net.molecules[name],a),lambda value,name=name,a=molecular:setattr(net.molecules[name],a,value))
+        setattr(net,attr,api["DynamicValueDict"](mapping))
+    net.mit_concs=None
+    return net
+
+
+def owner_evidence(ctx):
+    return dict(owner_class=type(ctx.sim.grn).__name__,core_class=type(ctx.sim.grn.core).__name__,
+        actual_core_identity=ctx.sim.grn.core is ctx.net,grn_enabled=ctx.p.grn_enabled,
+        molecules_enabled=ctx.p.molecules_enabled,standalone_sim_grn=False)
+
+
+def before(ctx,material_declaration):
+    sim,p,cells,net=ctx.sim,ctx.p,ctx.cells,ctx.net
+    configured=[]
+    for name,obj in net.molecules.items():
+        g=dict(enabled=obj.simple_growth,production_rate_mM_s=0.0 if obj.r_production is None else obj.r_production,
+            decay_rate_per_s=0.0 if obj.r_decay is None else obj.r_decay,
+            decay_max_per_s=0.0 if not obj.simple_growth else obj.decay_max,scale_factor=obj.gad_scale_factor)
+        configured.append(dict(name=name,parameters={key:clone(getattr(obj,key)) for key in PARAMETERS},growth=g))
+    return dict(conditioned_before_model_network=True,ecm_normal_grn=True,
+        material_declaration=clone(material_declaration),definition=dict(molecules=configured,
+            grn_configuration=clone(p.grn.conf),reactions=clone(p.grn.conf["reactions"]),modulators=clone(p.grn.conf.get("modulators") or [])),
+        values_before=material_values(sim),molecule_states_before={name:{key:clone(getattr(obj,key)) for key in ("c_cells","cc_at_mem","c_env","flux_intra")} for name,obj in net.molecules.items()},
+        cache_before=cache(ctx),controls_before=dict(gj_block=clone(sim.gj_block),NaKATP_block=clone(sim.NaKATP_block)),
+        molecular_geometry=dict(owner=clone(cells.mem_to_cells),partner=clone(cells.nn_i),boundary=clone(cells.bflags_mems),membrane_area_m2=clone(cells.mem_sa),cell_volume_m3=clone(cells.cell_vol),gap_length_m=clone(cells.gj_len)),
+        dt_s=p.dt,F=p.F,R=p.R,q_C=p.q,kb_J_K=p.kb,
+        membrane_thickness_m=p.tm,runtime_temperature_K=sim.T,configured_temperature_K=p.T,
+        gap_open=clone(sim.gjopen),rho_channel=clone(sim.rho_channel),ion_ids=list(ctx.ion_ids),valence=clone(sim.zs),
+        electric_x_source=clone(sim.E_env_x),electric_y_source=clone(sim.E_env_y),
+        D_env=clone(sim.D_env),grid_index_groups=clone(ctx.definition["grid_index_groups"]),
+        substances_affect_charge=p.substances_affect_charge,sharpness=p.sharpness,
+        cluster_open=p.cluster_open,incoming_channel_current_A_m2=clone(net.extra_J_mem),
+        simulator_fields_before=wire(sim.grn,sim)["simulator_fields"],owner=owner_evidence(ctx))
+
+
+def attach(ctx,material_declaration,observer=None):
+    sim,p,net=ctx.sim,ctx.p,ctx.net
+    def chemistry(stage,species,actual):
+        ctx.trace["molecule_frames"].append(dict(stage=stage,species=species,values=material_values(sim),cache=cache(ctx)))
+    def mover(stage,name,local,actual):
+        fields=("cX_env_o","cX_cells","cX_mems","f_X_ED","fgj_X","fenvx","fenvy","cenv","gcx","gcy","fx","fy","div_fa","denv_multiplier")
+        ctx.trace["mover_frames"].append(dict(stage=stage,species=name,fields={key:clone(local.get(key)) for key in fields},vm=clone(actual.vm),vgj=clone(actual.vgj)))
+    def rhs(growth,reaction,all_rates):
+        ctx.trace["rhs"]=dict(growth_rates=clone(growth),reaction_rates=clone(reaction),all_rates=clone(all_rates))
+    def control(name,value,actual):
+        ctx.trace["control_writes"].append(dict(rule_id=name,target=net.modulators[name].target_label,value=clone(value),gj_block=clone(actual.gj_block),NaKATP_block=clone(actual.NaKATP_block)))
+    def dispatched(stage,actual,phase):
+        ctx.trace["dispatch_stages"].append(stage)
+        if stage=="clear_run_loop":
+            ctx.trace["before"]=before(ctx,material_declaration)
+            if observer is not None:observer(clone(ctx.trace["before"]))
+    net._observe_chem,net._observe_rhs,net._observe_control,net._observe_dispatch,p._mover_observe=chemistry,rhs,control,dispatched,mover
+
+
+def run_dispatch(ctx,material_declaration,publication,observer=None):
+    ctx.p.substances_affect_charge=publication
+    ctx.phase.kind="SIM"
+    ctx.net=ctx.sim.grn.core
+    attach(ctx,material_declaration,observer)
+    try:
+        science()["dispatch"](ctx.sim,0.0,ctx.phase,ctx.cells,ctx.p)
+        ctx.trace["source_completed"]=True
+    finally:
+        ctx.trace.update(cache_after=cache(ctx),values_after=material_values(ctx.sim),
+            controls_after=dict(gj_block=clone(ctx.sim.gj_block),NaKATP_block=clone(ctx.sim.NaKATP_block)),
+            owner_after=owner_evidence(ctx),completed_transports=sum(row["stage"]=="transport_after" for row in ctx.trace["molecule_frames"]))
+    return ctx.trace

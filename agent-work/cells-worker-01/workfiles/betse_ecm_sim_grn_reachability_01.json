@@ -1,0 +1,23 @@
+{
+  "charge_publication_forced_off": true,
+  "is_ecm_not_overridden": true,
+  "kind": "cells.ecm_sim_grn_reachability@1",
+  "new_owner_lines": [
+    427,
+    519
+  ],
+  "no_normal_clear_or_modulator_dispatch": true,
+  "original_run_core_sim_lines": [
+    220,
+    446
+  ],
+  "reachable": true,
+  "real_reinitialize_cache_sampling_call": true,
+  "scientific_execution": false,
+  "source_sha256": {
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a"
+  },
+  "supplied_phase_boundary": true
+}

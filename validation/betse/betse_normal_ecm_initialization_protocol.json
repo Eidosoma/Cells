@@ -1,0 +1,161 @@
+{
+  "acceptance": {
+    "cold_calls": 0,
+    "component_bootstrap_calls": 1,
+    "independent_accuracy_credit": false,
+    "native_dynamics_calls": 0,
+    "owner_values": "Exact axes/domain/binary64 contents; no numeric tolerance or shape broadcast",
+    "routing": "Exact existing-component parent identity and direct unchanged three-call loop entry",
+    "state_update_equations_added": false
+  },
+  "cases": [
+    "field",
+    "polarized",
+    "calcium",
+    "mechanics",
+    "warm-owner"
+  ],
+  "gates": {
+    "automatic_followup": false,
+    "automatic_polling": false,
+    "native_initialization_qualification": false,
+    "scientific_launch": false
+  },
+  "kind": "cells.normal_ecm_initialization_owner_handoff_protocol@1",
+  "missing_seams": [
+    {
+      "id": "complete-native-geometry",
+      "policy": "preserve failure; no inferred geometry",
+      "reason": "Stable initial mesh has 0/9 complete meshes; conditional lifecycle operators do not establish make_world"
+    },
+    {
+      "id": "actual-init-load-chain",
+      "policy": "native initialization claim refused",
+      "reason": "No complete seed, INIT trajectory, serialization/load and compatibility receipt is supplied"
+    },
+    {
+      "id": "fresh-Egj",
+      "policy": "retain absence and refuse complete material admission",
+      "reason": "init_core does not create Egj; update_gj first writes it"
+    },
+    {
+      "id": "hot-GRN",
+      "policy": "admit actual supplied complete X/Y cache; gates/transporters/mitochondria refused",
+      "reason": "SIM init_dynamics runs existing-owner reinitialize, including tissue and channel reader reconstruction"
+    },
+    {
+      "id": "CaATP-rate",
+      "policy": "refuse persisted rate; never delete or cold-reset it",
+      "reason": "INIT-written rate_CaATP persists across init_dynamics; existing calcium call-zero contract requires absence"
+    },
+    {
+      "id": "unwritten-mechanics",
+      "policy": "capture presence; complete mechanics only if every required store exists",
+      "reason": "Osmotic/pressure-gradient/PP stores are not all created in core/dynamics initialization"
+    },
+    {
+      "id": "disabled-flow-representation",
+      "policy": "no silent shape expansion",
+      "reason": "init_core stores u_env as scalar 0; the frozen composed mechanics input requires matching grid arrays"
+    },
+    {
+      "id": "scalar-control-representation",
+      "policy": "refuse incompatible scalar owners; no inferred broadcast",
+      "reason": "Native disabled blockers may be scalar 1; frozen drive schema requires complete membrane rows"
+    },
+    {
+      "id": "deformation-pickle-geometry",
+      "policy": "validate supplied centres/maps/operators; no geometry repair",
+      "reason": "_pickle_phase replaces saved cells with the display copy when deformation is enabled"
+    },
+    {
+      "id": "events-pumps-clock",
+      "policy": "explicit conditional input ownership only",
+      "reason": "The supplied loop drives and bounded phase clock do not establish tissue event or native pump histories"
+    }
+  ],
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/lib/yaml/yamlalias.py": "cc87d9403c088a936a00187e33417b05ae2d26f64ee02b37d7857504cf3f0e37",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/filehandling.py": "194ecf36cdc4e10a81b953ddb1a515cdd206eeea6a14670967e6fcf75c4a20c4",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/util/type/descriptor/expralias.py": "96f5095f544894dd880a63cbdcb6333dbd178e0d64ed173b6afec384878a1986"
+    }
+  },
+  "planned": {
+    "Root_finalizer": 1,
+    "checks": 30,
+    "declared_units": 31,
+    "fresh_independent_workers": 0,
+    "fresh_native_workers": 0
+  },
+  "refusals": [
+    "missing-Egj",
+    "missing-mechanical-PP",
+    "scalar-flow-store",
+    "foreign-centres",
+    "foreign-inverse",
+    "wrong-fixed-sigma",
+    "wrong-cache-boundary-epoch",
+    "wrong-control",
+    "scalar-control",
+    "wrong-publication",
+    "missing-GRN-cache",
+    "unsupported-channels",
+    "persisted-CaATP-rate",
+    "wrong-calcium-clock",
+    "missing-calcium-policy",
+    "wrong-molecular-axis",
+    "wrong-stage",
+    "native-chain-claim",
+    "changed-seal",
+    "integer-primary-dtype",
+    "wrong-ion-order",
+    "nonzero-declared-zero-pressure",
+    "namespace-is-not-native"
+  ],
+  "resources": {
+    "host_reserve_GiB": 8,
+    "outer_summed_RSS_GiB": 2,
+    "outer_timeout_s": 7200,
+    "policy": "Chief owns resource-aware launcher and finalizer; no automatic launch or follow-up",
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "worker_summed_RSS_GiB": 1,
+    "worker_timeout_s": 480
+  },
+  "retained_evidence": {
+    "native_mesh_lifecycle": {
+      "checks": 39,
+      "review": "/mnt/workspaces/Cells/betse-mesh-lifecycle-preparation-20261030-01/root-review-01/REVIEW.json",
+      "status": "separate reviewed conditional lifecycle"
+    },
+    "original_ecm_material": {
+      "checks": "39/40",
+      "status": "failed",
+      "tolerance_unchanged": true
+    },
+    "stable_initial_mesh": {
+      "checks": "23/32 plus 11/11 conditional source",
+      "complete_meshes": "0/9",
+      "review": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+      "status": "reviewed_failure"
+    }
+  },
+  "scope": "explicit compatible supplied-owner pre-bootstrap admission; native chain not established",
+  "source_audit": {
+    "path": "validation/betse/betse_normal_ecm_initialization_source_map.json",
+    "sha256": "64016d64a090ff6036ef2d0c0562b2dd01098d11bbe729fde3e6a588d7810ea5"
+  }
+}

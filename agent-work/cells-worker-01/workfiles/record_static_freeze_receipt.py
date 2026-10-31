@@ -14,7 +14,12 @@ def sha(path):
 
 
 def record(family, directory, number):
-    prefix = "betse_sim_grn" if family == "sim_grn" else "betse_normal_" + family + "_join"
+    prefix = {
+        "sim_grn": "betse_sim_grn",
+        "ecm_grn": "betse_ecm_grn",
+        "ecm_charged_grn": "betse_ecm_charged_grn",
+        "ecm_sim_grn": "betse_ecm_sim_grn",
+    }.get(family, "betse_normal_" + family + "_join")
     queue_path = WORK / (prefix + "_workqueue.json")
     queue = json.loads(queue_path.read_text())
     inputs = json.loads((directory / "inputs.json").read_text())
@@ -54,6 +59,8 @@ def record(family, directory, number):
         configuration_container_repair_03=queue.get("configuration_container_repair_03"),
         native_key_retention_repair02=queue.get("native_key_retention_repair02"),
         reference_fixed_cold_budget_repair02=queue.get("reference_fixed_cold_budget_repair02"),
+        error_capture_repair_02=queue.get("error_capture_repair_02"),
+        capture_repair_03=queue.get("capture_repair_03"),
         controlled_dependency_refresh=queue.get("controlled_molecule_adapter_refresh"),
         scientific_imports=0,
         scientific_AST_executions=0,
@@ -100,7 +107,18 @@ def record(family, directory, number):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "family", choices=("molecule", "transporter", "grn", "charged_grn", "sim_grn")
+        "family",
+        choices=(
+            "molecule",
+            "transporter",
+            "grn",
+            "charged_grn",
+            "sim_grn",
+            "ecm_grn",
+            "ecm_charged_grn",
+            "ecm_sim_grn",
+            "ecm_field",
+        ),
     )
     parser.add_argument("directory", type=Path)
     parser.add_argument("number")

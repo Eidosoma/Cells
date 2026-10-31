@@ -1,0 +1,19 @@
+{
+  "helper": {
+    "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/proposal/validation/betse/betse_normal_ecm_molecule_failure_checks.py",
+    "relative": "validation/betse/betse_normal_ecm_molecule_failure_checks.py",
+    "sha256": "95b303d2816379a719b045acf9c211b9dde2900ef19de3c9e81cb963410fca19"
+  },
+  "historical_dispatch01_transport01_unchanged": true,
+  "kind": "cells.explicit_lifecycle_failure_capture_dependency@1",
+  "old_transport01_comparison_helpers_unchanged": true,
+  "review": {
+    "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/REVIEW.json",
+    "sha256": "e46bf69108beb45ff4d312e06dacc205f2c26c02de3a29ffb1e6320145b3f1f1"
+  },
+  "scientific_evaluations": 0,
+  "use": [
+    "retained_call",
+    "exception_chain"
+  ]
+}

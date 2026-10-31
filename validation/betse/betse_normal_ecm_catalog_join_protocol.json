@@ -1,0 +1,755 @@
+{
+  "acceptance": {
+    "amount": "Factor times independent absolute old/new amounts, signed source mechanisms and native-true-volume gross, plus3e-13 concentration floors times input volume sums",
+    "calcium_arithmetic": "2e-14 named-unit floor +2e-11*abs(reference); zero-product branch uses original stored binary64 product and literal1e-16 replacement. Before/after material buffers use unchanged typed ECM budgets",
+    "calcium_flux": "Existing pump_loop_preflight2e-18 mol/m2/s +2e-11*abs(reference), including masked rate and applied density; no changed budget",
+    "carried_initial_condition": "Recorded actual initialized class cache, declared explicitly; no independent constructor-equation claim",
+    "channel_additional_observables": "Unchanged ECM material concentration3e-13+6e-12*abs(target), diffusion3e-20+6e-12*abs(target), amount3e-14+6e-12*abs(target); native Hill modulation uses3e-14+6e-12*abs(target)",
+    "channel_current": "Unchanged B23 32*eps*(ions+membranes+16)*local gross +1e-30 A/m2",
+    "channel_flux": "Unchanged B24 128*eps*(ions+membranes+4+32)*local flux gross +1e-30 mol/(m2*s)",
+    "channel_gates": "Per-class frozen catalog_budgets; original B28 four classes unchanged",
+    "clock": "Exact native/port N3 vector and step/cache timing; independent cold reference uses explicit binary64 end/delta store seams",
+    "field_factor": "128*eps*(ions+cells+membranes+grid_sites+64)",
+    "field_floors": "1e-30 current/charge;3e-14 V;3e-18 magnetic;3e-13 other source fields/HH. Add fixed factor*independent predicted gross; operator3e-13+6e-12*abs(reference), maps exact",
+    "field_gross": "Independent sum|F*z*c| and |F*z*flux|; absolute smoothing/area projection; absolute inverse times FD-neighbor gross; positive Gaussian of surface-charge gross; fixed cache/screen and derivative-neighbor sums. Independent voltage arithmetic propagates charge/current/conductivity cancellation. No actual outgoing array enters its allowance",
+    "independent": "Fresh Decimal100/160 actual cold/bootstrap/pre-material/pre-CaATP/pre-channels/post-channels-pre-GRN/end-field conditionals. Whole scalar channel sequence inserted before ordinary deferred commit in material reference; no independent carried trajectory or cold constructor-law claim",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+      "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+      "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+      "validation/betse/betse_normal_calcium_join_protocol.json": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+      "validation/betse/betse_normal_catalog_join_protocol.json": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "material": "Unchanged legacy ECM typed3e-14 mol/1e-40 V/1e-18 flux/1e-28 GJ-field/3e-20 D/3e-14 alpha-opening/3e-13 concentration floors +6e-12*abs(reference). Ordinary conditional comparisons omit only molecule-induced Vm/vgj nonces after dispatch and total voltage-nonce ledger; independent GRN and exact native validate those separately",
+    "native_ER_accuracy_claim": false,
+    "network": "3e-13 concentration or1e-18 flux floor +128*eps*(ions+2+cells+membranes+environment_sites+64)*independent local gross",
+    "no_outcome_tuning": true,
+    "no_tolerance_tuning": true,
+    "old_Cav_G_failure_reclassified": false,
+    "old_material_budget_unchanged": true,
+    "old_material_failure_reclassified": false,
+    "primary": "Exact native original source reader/factory/dispatch/gates, ordered route/ECM aliases/current/last-route caches, complete material/CaATP/GRN/field returns and every available raw partial",
+    "publication": "Same reference-fixed factor*independent F*z*scale-weighted concentration/flux gross +1e-25 C/m3 or1e-30 A/m2",
+    "rates": "Inherited2e-14 mM/s +5e-12*abs(reference); delta6e-14 +5e-12*independent gross",
+    "self_resolution_fraction": 0.1
+  },
+  "accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "calcium": "CaATP density adds to ordinary Ca membrane flux, committed only where Ca is moving. Stationary-Ca stored flux, directed GJ/deferred shell/cache, fast duplicate-last exchange and all legacy ledgers remain literal",
+    "channels": "Direct modern ion updates never add to ordinary membrane flux arrays. Core current -F*z*flux accumulates then shares molecular publications. Source-effective uniform-site, conservative area-sum and actual true-grid volume amount books remain separate; fast duplicate-last differences are retained",
+    "enabled_ER_conservation_claim": false,
+    "energetic_conservation_credit": false,
+    "field": "Full source currents, charge reconstruction and nonphysical HH/Gaussian/voltage outputs; no physical continuity, projector or field-energy identity is asserted",
+    "formal_ATP_consumption_claim": false,
+    "maintained_pools": "ATP/ADP/Pi are original fixed maintained parameters. No formal ATP use, finite shared fuel, ER reservoir, buffer or thermodynamic global closure is asserted",
+    "material_ledgers": "Legacy ledgers remain literal. Direct-channel amounts appear in ordinary accounting residuals rather than being silently erased. Full independent material predicts these source residuals with unchanged budgets",
+    "physical_global_conservation_credit": false,
+    "retained_failure": "Original signed_environment39/40 material panel remains failed, including raw membrane_bulk_difference at fixed old budget. Missing separately retained failed complete reference buffers are not reconstructed",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained",
+    "zero_weight": "CatLeak Ca weight0 still evaluates electroflux/update_Co, refreshes membrane from bulk, consumes voltage nonce and overwrites last-route cache. No skipped-route or boundary-mask substitute"
+  },
+  "admission": {
+    "ER_kinetics_or_pool_overrides_refused": true,
+    "boundary": "Stricter finite current/environment/voltage guards retain available raw trials; native bootstrap has no check_v and normal check_v only tests NaNs in vm",
+    "bounded_call_prefixes": [
+      1,
+      3
+    ],
+    "bounded_calls": 3,
+    "complete_private_channel_and_constructor_caches": true,
+    "explicit_named_profile_state": true,
+    "expression_or_legacy_or_forced_INIT_refused": true,
+    "native_rate_presence_bound_to_prior_positive_source_calls": true,
+    "no_prepared_operator_or_old_fields": true,
+    "original_channel_owner_flag_required": true,
+    "positive_capacitance": true,
+    "source_ER_disabled": true,
+    "source_clock_immutable_and_matched_to_step": true
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "Chief_finalized_field_calcium_repairs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json",
+      "sha256": "def122f63bdc407a49ecc74bb54c45ce3c27090fbe78d10205921d8ed6315b4f"
+    },
+    "accepted_ECM02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "accepted_ECM02_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json",
+      "sha256": "c47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb"
+    },
+    "accepted_ECM02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "actual_caller_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_reachability_01.json",
+      "sha256": "f971ddb207e536f15402e4d003a5e1f7d17d31f042b40c690d8a40cfd597f158"
+    },
+    "calcium01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_static_receipt_01.json",
+      "sha256": "008f94c21a1908ff790104b1533231486b0dd70edff86cd514ccf857e718e34e"
+    },
+    "calcium_and_clock_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_AST_witness_02.json",
+      "sha256": "83f388961651dff5cf90ebf748b906ac9d2be71597ca173eb3226ae463e1b4c9"
+    },
+    "catalog06_prepared_not_launched": {
+      "path": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+      "sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69"
+    },
+    "catalog_composition_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_AST_witness_01.json",
+      "sha256": "b25a4bc45800f1bd115b0db999e54d5478fda8f2dfb8dc42e2b862e0eaf28e76"
+    },
+    "coordinated_diagnostic_inputs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_dependency_witness_01.json",
+      "sha256": "9b003d19a2efad6d4c002f6a20777a07b132011f0921f848cb8aaa47fb1e19bf"
+    },
+    "explicit_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_dependency_witness_01.json",
+      "sha256": "8347f80962aa6d913047f930976ddbb6cd5dea8c85be5e1cc482a3c865a5ff9e"
+    },
+    "failed_literal_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "field01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_static_receipt_01.json",
+      "sha256": "c8ef54bc4437adc04d5d691724ca04b26a9fc548b3d947682d3719067f1d126a"
+    },
+    "frozen_calcium01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-01/inputs.json",
+      "sha256": "2e2ed97ee190d9495e3029fbe389a40039786fc9070f28a52f3b4e8ce3a226d8"
+    },
+    "frozen_field01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json",
+      "sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb"
+    },
+    "instantaneous_field_completion": {
+      "path": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+      "sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff"
+    },
+    "literal_source_and_composition": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_AST_witness_01.json",
+      "sha256": "b66f2fe1293f76eb6414d79af1ea5ebba1d7fa5e6a051c29808ad3169d6e9fd0"
+    },
+    "retained_CaATP20_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e"
+    },
+    "retained_calcium04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json",
+      "sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42"
+    },
+    "retained_calcium_raw4": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/worker-review-01/completion-verification.json",
+      "sha256": "dd1d0c1b9a9746e8e16686143a0c89cdaa1610a42094fd54272a1208de1fac8b"
+    },
+    "retained_failed_material_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    },
+    "separate_supplied_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "whole_modern_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reachability_01.json",
+      "sha256": "57d3520b0e041219bf92a78ac10e2f0e4aa99c4219cab6c1d39c8f926c54f192"
+    },
+    "whole_native_calcium_policy": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_reachability_01.json",
+      "sha256": "733da3737e98e189e33d6b5b140c9dea7b0f90e6930a8b2406f7995e98611b5c"
+    }
+  },
+  "catalog_budgets": {
+    "CaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Ca_L3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "CatLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "CatLeak2": {
+      "absolute": 1e-12,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "Cav1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav2p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav3p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_cav_protocol.json",
+      "source_sha256": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5"
+    },
+    "Cav_G": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/calcium_catalog_extra_protocol.json",
+      "source_sha256": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e"
+    },
+    "Cav_L_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_L_ML2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_N_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Cav_T_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "ClLeak": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/leak_channels_protocol.json",
+      "source_sha256": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247"
+    },
+    "HCN1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN2_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN2_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCN4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_hcn_protocol.json",
+      "source_sha256": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3"
+    },
+    "HCN4_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "HCN4_cAMP": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "HCNLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/hcn_extra_protocol.json",
+      "source_sha256": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5"
+    },
+    "KLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "K_Fast": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kir_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p1": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p2": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p3_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p4": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv1p5": {
+      "absolute": 3e-15,
+      "relative": 3e-14,
+      "source": "validation/tissue/surface_channel_protocol.json",
+      "source_sha256": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497"
+    },
+    "Kv1p5S_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p5_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv1p6": {
+      "absolute": 5e-15,
+      "relative": 5e-14,
+      "source": "validation/tissue/surface_calcium_kv1_protocol.json",
+      "source_sha256": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6"
+    },
+    "Kv2p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv2p1_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "Kv2p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p2": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv3p4": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/potassium_catalog_protocol.json",
+      "source_sha256": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53"
+    },
+    "Kv_ML1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    },
+    "NaLeak": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav1p6": {
+      "absolute": 5e-14,
+      "relative": 5e-12,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat1": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat2": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "NavRat3": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/sodium_catalog_protocol.json",
+      "source_sha256": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85"
+    },
+    "Nav_ML": {
+      "absolute": 1e-12,
+      "relative": 5e-11,
+      "source": "validation/channels/morris_lecar_channels_protocol.json",
+      "source_sha256": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8"
+    }
+  },
+  "coordinated_dependency_inputs": {
+    "Chief_owned_capture_test_repairs": {
+      "authority": "Chief directed water-owned test/capture-only repairs, original failed runs preserved",
+      "changes": {
+        "tests/unit/test_betse_normal_ecm_field_join.py": {
+          "actual_call3_network_refusal_after_two_completed_calls": true,
+          "changed_functions": [
+            "test_normal_ecm_field_raw_partial"
+          ],
+          "material_overflow_credit": false,
+          "new_sha256": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+          "old_sha256": "cad319c8891ed3c011c9df5daecca4b430e67649c9d92db6e237e0927268ec76",
+          "scientific_equations_or_order_changed": false
+        },
+        "validation/betse/betse_normal_ecm_calcium_join_native.py": {
+          "new_sha256": "1cbbc9791267387c882c73a97752b70faeb093710a86e52f7b3430c6e8b1908b",
+          "observation_map_inverse_AST_exact": true,
+          "old_sha256": "d1ef06f5a5392ca05bd95e4becfa0dbcb7be4bcc0a9f32b1a982a735b9122261",
+          "scientific_equations_or_order_changed": false
+        }
+      },
+      "kind": "cells.ECM_catalog_explicit_dependency_refresh@1",
+      "no_old_inputs_or_receipts_refreshed": true,
+      "numerical_runs": 0,
+      "pytest_collection_runs": 0,
+      "qualification_credit": false,
+      "scientific_AST_executions": 0,
+      "scientific_imports": 0
+    },
+    "changes": {
+      "src/cells/processes/betse_ecm_transport.py": {
+        "inverse_AST_original_material_updates_and_all_legacy_ledgers_equal": true,
+        "new_live_sha256": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+        "old_frozen_sha256": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5"
+      },
+      "validation/betse/betse_ecm_transport_reference.py": {
+        "inverse_AST_original_material_updates_and_all_legacy_ledgers_equal": true,
+        "new_live_sha256": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+        "old_frozen_sha256": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170"
+      }
+    },
+    "kind": "cells.normal_ecm_field_coordinated_input_audit@1",
+    "optional_decimal_retention_hook_unused_in_this_join": true,
+    "original39of40_material_failure_still_failed": true,
+    "original_inputs": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+    "original_inputs_sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317",
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "scope": "New packet explicitly pins current inputs; all prior prepared inputs stay unchanged",
+    "separately_requested_diagnostic_not_compared_or_credited_by_this_join": true
+  },
+  "declared_cases": {
+    "CaATP_configured_alpha": 1e-06,
+    "branches": [
+      "all55 unchanged modern factory classes with real cold constructors and one normal call",
+      "mixed/reversed populations, CatLeak zero-Ca route, publication carry",
+      "rectangular grid, fast duplicate-last scatter, prepared named duplicate targets and None target branch",
+      "live Ca membrane activator and mapped-grid inhibitor after direct Ca route",
+      "rho0, maxDm0, None/empty channels, alpha_Ca0 controls",
+      "init_activeFalse still initializes/runs in SIM; actual max conductivity branch",
+      "nonzero cell polarizability"
+    ],
+    "channel_maxDm_m2_s": 1e-07,
+    "conductivity_branch_maximum": 2e-07,
+    "fixed_capacitance_F_m2": 1.0,
+    "fixed_dt_s": 0.0001,
+    "fixed_formal_gene_charge_scale": 0.0001,
+    "initial_channel_voltage_recipe": "-0.031123+0.003317*j V, predeclared before any numerical evaluation; separate identity from old Cav_G nominal failure",
+    "no_CaATP_control": "Configured alpha0, actual rate-cache absence through all calls",
+    "reason": "Metre-scale manufactured geometry and bounded explicit transport; fixed before any execution, no observed outcome or tolerance tuning",
+    "recipe": "New Ca+2 row, declared Ca diffusion and nominally neutral P=Na+K+2Ca-Cl initial and external boundary recipes; fixed macro dt/cm/gene scale inherited before any execution",
+    "selected_from_observed_outcomes": false
+  },
+  "failures": {
+    "positive_credit": false,
+    "raw": [
+      "cold_Cav_G_literal_pole",
+      "second_constructor_literal_pole",
+      "empty_profile_indices",
+      "first_channel_overflow",
+      "second_channel_overflow",
+      "first_gene_after_channels",
+      "second_gene_after_channels"
+    ],
+    "retention": "Complete native cold returns/failures and raw gate/core/Channel caches, all initializer and route hooks, parents, clocks, CaATP phases, GRN/core/simulator buffers, material arrays/frames/ledgers, field trials and tracebacks before assertions. Strict port finite guard is separate from native exception or nonfinite return"
+  },
+  "kind": "cells.normal_ecm_catalog_CaATP_field_static_contract@1",
+  "law_id": "betse_normal_ecm_catalog_CaATP_field_join_v1_5_0@1",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "planned": {
+    "Ca_routing_modern_classes": 23,
+    "actual_bootstrap_field_points": 71,
+    "actual_end_field_points": 103,
+    "actual_post_channel_pre_GRN_points": 103,
+    "actual_pre_calcium_points": 103,
+    "actual_pre_channel_points": 103,
+    "actual_pre_material_points": 103,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 94,
+    "completed_positive_mover_invocations_per_implementation": 206,
+    "component_control_histories": 5,
+    "dependency_controls": 16,
+    "enabled_ER_calls": 0,
+    "fresh_Decimal_reference_forms": 1314,
+    "fresh_bootstrap_field_Decimal_forms": 142,
+    "fresh_calcium_Decimal_forms": 206,
+    "fresh_channel_Decimal_forms": 206,
+    "fresh_cold_Decimal_forms": 142,
+    "fresh_end_field_Decimal_forms": 206,
+    "fresh_material_Decimal_forms": 206,
+    "fresh_network_Decimal_forms": 206,
+    "independent_cold_points": 71,
+    "native_captures": 78,
+    "new_ECM_modern_histories": 66,
+    "one_call_class_prefixes": 55,
+    "positive_active_CaATP_helper_calls_per_implementation": 100,
+    "positive_histories": 71,
+    "positive_modern_population_updates_per_implementation": 178,
+    "positive_native_Ca_handler_calls_per_implementation": 103,
+    "raw_partial_limits": 7,
+    "reachable_factory_families": 7,
+    "reachable_modern_classes": 55,
+    "source_clock_N": 3,
+    "three_call_context_histories": 16
+  },
+  "purpose": "Separately owned genuine modern ECM GRN channel reader/factory/cache/dispatch with reachable CaATP and evolving complete fields; conditional source fidelity only",
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "No numerical launch in this static assignment; later explicit requested/CPU-coordinated round only",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "retained_ecm_limit": {
+    "known_failed_case": {
+      "absolute_floor": 3e-13,
+      "budgets_unchanged": true,
+      "case": "signed_environment",
+      "diagnosis": "Large nearly equal membrane/cell values from supplied pump5e5 lose accuracy when subtracted. Whole concentrations can satisfy relative tolerance while the small derived difference exceeds its fixed absolute floor. Diagnosis recorded from existing failure, no additional numerical audit.",
+      "field": "ledger.membrane_bulk_difference_mol_m3",
+      "fixed_budget_error_fraction": 5.816019768552954,
+      "independent_review_of_saved_evidence": "Pending next user instruction",
+      "maximum_absolute_error": 1.7448660538927198e-12,
+      "native_exact_assertion_passed_before_failed_independent_assertion": true,
+      "original_case_and_panel_remain_failed": true,
+      "relative_budget": 6e-12,
+      "status": "failed_independent_accuracy"
+    },
+    "new_package_reclassifies_old_panel": false,
+    "old_frozen_packets_refreshed": false,
+    "panel": {
+      "accepted": false,
+      "checks": 40,
+      "failed": 1,
+      "output": "/mnt/workspaces/Cells/betse-ecm-transport-20261030-02",
+      "passed": 39
+    }
+  },
+  "scope": {
+    "ER": "Whole332-file installed-exact audit: sole Ca_dyn writerFalse at Parameters771; all8 legacy ER kinetics lack producers. Native guarded constructor/update remain disabled. Existing prepared_ER is a separate externally supplied inventory/cache seam, never ordinary cold/restart parity",
+    "cache": "Original configured-temperature sigma/ko initialized from explicitly declared pre-state, held fixed. update_V sigma_cell independently recomputed per call using species mean and F^2/(R*T)*0.1; this differs from cached q*F/(kb*T) sum",
+    "calcium": "Real Ca+2 material/cache/diffusion role. Native CaATP_block ones, rho_pump1, met_concsNone, maintained ATP1.5/ADP0.1/Pi0.1, KmCa_Ca1e-3/KmCa_ATP0.5, deltaGATP-37000/F96485/R8.314 derive from actual original producers. Explicit configured alpha_Ca; no supplied pool/Km/block/rate defaults",
+    "channels": "All55 reachable modern classes/7 factory families use unchanged existing catalog primitives.23 route Ca; all gates read Vm/dt/cache, without implicit free-Ca gating. Explicit native Hill activators/inhibitors can sample membrane alias (native cell zone) or mapped E-grid. Max conductivity remains original maxDm-valued branch with no unit conversion",
+    "clocks": "Constant dt within three normal calls. Actual original SIM _plot_loop gives N3, linspace(0,N*dt,N); pass that t to original ordinary and GRN calls. Keep accumulated material dt separately, with configured p.T distinct from runtime sim.T. Event/sampling/persistence/whole phase clock lifecycle excluded",
+    "exclusions": [
+      "Full native initialization, hot reinitialize/restart, normal phase lifecycle and sampling/persistence",
+      "Mitochondria, ER activation, separate transporters, expression profiles, legacy cagPotassium/INIT channel dispatch and broader regulator labels",
+      "Physical global conservation, biological calibration, independent carried trajectories, JAX/GPU qualification"
+    ],
+    "external": "Explicit pump and late membrane flux, channel multiplier, fixed-gap control, ionic bath and applied R/L/T/B voltage; fluid/noise/forces/deformation/events disabled or excluded. Original geometry inputs remain explicit preparation",
+    "field_state": "Complete intracellular current, environment rho/surface/Gaussian/voltage/E/HH/B/current and cell conductivity/voltage/mean/E/normal/dvm outputs retained. Previous reconstructed E_env alone supplies next ordinary and molecular transport. Vm updates after each field, earlier GJ caches stay stale",
+    "initial_preparation": "Original geometry/owner/normal/measure declarations plus initializer material and D_free; derive actual Cartesian grid, maps, source operators/inverses, smoothing weights, sigma/ko, radius and diviterm. Full seed/phase/diffusion-mask/dynamic initialization excluded",
+    "limits": "55 one-call bounded class prefixes and16 three-call contextual histories. Actual N3 linspace clock retained for all. Cold gate equations have exact native comparison only; independent gate caches are explicit incoming conditions. No full initialization/restart/sim_grn, broad catalog physiology, trajectory or biological credit",
+    "owner": "Genuine X/Y MasterOfGenes/Core; source sets channels flag only after real reader. New distinct wire8 retains full Channel metadata, every private gate/core field, immutable initialized conditions and external call counters. Restore constructs actual owned classes and dynamic aliases, with no constructor rerun at current Vm",
+    "rate_cache": "Native rate_CaATP has no cold producer. Carry actual absence until a positive configured-alpha call writes masked post-first-rho handler flux, then carry immutable complete rate. Alpha0 keeps absence in this fixed-configuration normal phase; no fabricated zeros",
+    "read_times": "Each population runs once on latest shared Vm before routes; each route samples latest bulk concentration gathered by owner and current full E-grid mapped to membranes. Direct update_Co changes bulk/membrane/grid before next route/population. CaATP earlier sampled membrane Ca and deferred its ordinary commit. No invented immediate CaATP-to-bulk feedback",
+    "source_order": "Cold actual read_gene_config/read_channels initializes gates from prepared Vm; bootstrap update_V; actual normal N3 source-clock prefix: moving ions; CaATP; explicit late flux; GRN clear; channels; modulators; chemistry/molecular transport; deferred ordinary commit; full current/environment/voltage; NaN-only check_v",
+    "targets": "all/None derive cells.mem_i; named profile indices are explicit original prepared sim.dyna.tissue_target_inds, preserving source ordering/duplicates. Empty profile native float-index refusal preserved. Expression profiles, legacy cagPotassium, INIT dispatch and broader modifier labels require separate dependencies"
+  },
+  "source_defects_preserved": [
+    "HH Dirichlet inverse and AA magnetic assignment",
+    "source diff edge signs; HH L/R/B/T versus Phi R/L/T/B corners",
+    "Gaussian constant0 ECM and repeated-map mean area denominator",
+    "fast duplicate-last exchange, deferred shell/cache timing and source nonces",
+    "unweighted mean membrane voltage; direct boundary subtraction only at zero polarizability",
+    "NaN-only source check_v; stricter adapter finite guards labelled",
+    "ECM mapped environment fancy-index copy clips separately from live membrane view",
+    "rho_pump twice; rate aliases masked handler local after first density multiplication, distinct from original helper return array",
+    "No cold rate_CaATP writer; configured alpha0 never fabricates a cache",
+    "Maintained CaATP pools, denominator-zero replacement and unused backward arithmetic",
+    "Disabled ordinary native ER and missing kinetic producers; failed literal ER and external prepared_ER scope remain distinct",
+    "Normal np.linspace clock starts t0 while first material call advances dt",
+    "Modern channels bypass ordinary boundary masking; original targets/P/rho only",
+    "Current Vm sampled once per population; route Vm nonce occurs even at permeability0",
+    "Fresh bulk gather replaces stored membrane shell for direct route samples; direct update_Co ignores ignoreECM in ECM",
+    "Source last-route-only chan_flux/DChan cache and deferred ordinary flux commit",
+    "Empty named profile target np.asarray([]) retains float-index refusal",
+    "Init-activeFalse cold constructor and normal SIM calls retained; no forced INIT path",
+    "Literal Cav_G cold0/0 and prior failed nominal identity remain raw failures"
+  ],
+  "source_map": "validation/betse/betse_normal_ecm_catalog_join_source_map.json",
+  "status": "static_unqualified_no_numerics"
+}

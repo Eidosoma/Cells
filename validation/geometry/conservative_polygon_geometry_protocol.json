@@ -1,0 +1,122 @@
+{
+  "kind": "cells.conforming_polygon_physical_owners_contract@1",
+  "law_id": "cells_conforming_polygon_physical_owners@1",
+  "physical_bridge_id": "cells_polygon_physical_owners_passive_tissue@1",
+  "status": "bounded_static_candidate_implementation_checks_unrun",
+  "purpose": "Provide a new Cells polygon/physical-owner identity that derives interfaces and measures from admitted polygon boundaries, addresses native nearest-midpoint incidence and quad-metric limits without changing or claiming equivalence to native source, and preserves actual physical admission.",
+  "supported_domain": {
+    "source": "Explicit declared polygon complexes with complete generator/recipe provenance, or authenticated complete stable-initial-mesh dual polygons through the frozen owned Request/State factory. No clipping/lifecycle snapshots, partial meshes, raw B09 recipe promotion or constructor-only adapter route.",
+    "source_cells": [1, 32],
+    "vertices": [3, 256],
+    "source_ring_vertices": [3, 64],
+    "merged_ring_vertices": [3, 256],
+    "total_source_directed_half_edges_maximum": 512,
+    "baths": [1, 16],
+    "coordinates": "Finite Python binary64 coordinates, or literal integers with absolute value at most 2**53 converted exactly. No Boolean, ndarray or wider scalar coercion in the explicit polygon factory.",
+    "topology": "Distinct globally identified geometric vertices; every source vertex used. Each source/physical cell is one simple positive CCW ring. Exact conforming full shared edges, reciprocal opposite directions, disjoint interiors and manifold boundary vertices. Preserve forward collinear vertices; refuse T-junctions, snapping, partial shared edges, crossings, duplicate coordinates, backtracks and nonmanifold joins.",
+    "merging": "Explicit physical cell IDs and ordered source-cell groups partition every source cell exactly once. Remove only opposite internal half-edge pairs. Each merged region must form one simple ring, with exact source/merged area equality. Refuse disconnected or holed cell unions; do not fill holes or bridge disconnected groups.",
+    "global_shape": "Separate disconnected components and holes between distinct cells can be represented when their boundaries conform. No claim that an individual cell has a hole or that global bath space is tessellated.",
+    "extrusion": "One explicit finite positive height in metres, uniform across cells. Cell volume is exact polygon area times this height. Axial caps are explicitly sealed with no transport; only lateral polygon edges produce membrane surfaces.",
+    "thickness": "One explicit finite positive membrane constitutive path length in metres. Interfaces are geometric surfaces of zero volume; thickness is used for D/thickness, not subtracted from cell volumes or used to invent bath volume.",
+    "baths": "Finite positive physical volumes in m3, with exact per-edge bath assignment or an explicit single-bath rule. Both half membranes of a shared edge identify the same declared bath. Every declared bath is used. Bath spatial extent and finite cleft geometry are unresolved, and no native DEC/grid weight becomes a bath volume.",
+    "representation": "Every required output must be finite binary64; a nonzero measure or component rounding to zero is refused. Bounded metadata is at most 16 MiB; unresolved sqrt rounding is refused at the frozen 8192-bit cap."
+  },
+  "source_authentication": {
+    "stable_initial_mesh_bundle_sha256": "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e",
+    "stable_initial_mesh_source_sha256": "056cb2e47772a63416a9eebd89dd60a7019fcf217d3433403b9b053a209bedc4",
+    "generated_factory": "Require and revalidate the actual frozen bridge Request/State exact types and complete source/cache/RNG/event identities. Check vor_cells against vcell_verts and vor_verts before copying coordinates and source owner IDs. Serialized generated requests retain their provenance but require the owned upstream objects for admission; a digest alone never restores generation authority.",
+    "coordinate_authority": "The actual supplied polygon coordinates define the new geometry. Native quad centres may have affected those coordinates; this law does not claim corrected Voronoi positions or native generator accuracy. Invalid resulting polygon complexes are refused.",
+    "native_cache_limits": "Reconstruct directed incidence, shared interfaces and physical measures under the new law. Native vor_edges nearest-midpoint selections, directed face/edge maps and quad area/centre/radius metrics do not supply physical owners or measures.",
+    "original_B09_guard": "Unchanged. merged-square-aux still refuses through the existing physical B09 adapter. New declared/generated polygon admission is separate, opt-in and independently checked, with no B09 admission or equivalence credit inherited.",
+    "upstream_qualification_inherited": false
+  },
+  "arithmetic": {
+    "predicates": "Exact Fraction orientation, intersection, containment and incidence tests on the original supplied binary64 coordinates.",
+    "polygon_measures": "Exact translated triangle-fan moments and exact source/merged area accounting, including concave polygons. Round area, centroid and extruded volume once; no radial-volume or native quad formula.",
+    "edge_measures": "Compute each undirected shared edge once. Exact squared endpoint distance and its height-scaled radicand supply length and area. Tangent components are signed square roots of exact dx**2/(dx**2+dy**2) and dy**2/(dx**2+dy**2); rotate for outward normal. Midpoints are exact rational endpoint averages. Opposite directed half membranes reuse identical area bits and exact floating sign reversal.",
+    "rounding_helpers": "Reuse only frozen stable_geometry_primitives _round/_sqrt_bounds/_irrational and their helper closure, without changing that package. New-law certificates retain exact ratios/radicands and bounded dyadic intervals. The new adapter probes nearest-even and gradual underflow itself.",
+    "helper_source_sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+    "helper_qualification_inherited": false
+  },
+  "physical_owner_contract": {
+    "axes": "Explicit physical cell groups, baths, one membrane per directed physical-cell boundary segment and one contact per shared edge. Derived route IDs seal the exact cell/edge/endpoints; physical owner and route IDs are globally unique.",
+    "correspondence": "Cell membrane IDs follow the actual directed boundary order. Each membrane has one exact cell owner, one explicit bath, one edge, one positive area and an exact reciprocal partner; boundary membranes partner themselves. A junction joins the two actual distinct cell owners across one exact shared edge.",
+    "incidence": "Integer cell/bath versus membrane and contact incidence matrices have one -1 sender/inside and one +1 receiver/outside per column. Independent edge/owner geometry must agree before zero column sums are accepted. Algebraic balance alone never repairs or excuses wrong physical correspondence.",
+    "conservation_scope": "Geometric interface/owner accounting only. No transport trajectory, charge/energy conservation, moving geometry, state remap, physical bath tessellation or biological calibration is claimed."
+  },
+  "physical_preparation": {
+    "target": "Existing resolved_tissue@1 initial passive physical model only.",
+    "admission": "Call the pinned existing surface_tissue_spec.parse with its complete check_definition/initial field admission. Do not substitute a successful flag for physical checks. Preserve all failures, including rejected closure, inventories, coefficients and controls. No solver trajectory is advanced by the new adapter.",
+    "explicit_owners": "All cell and bath inventories, charge anchors, fixed charges, membrane diffusivities/specific capacitances, every reciprocal junction permeability, species/valences, Kelvin temperature, closure and identified schedules/execution are supplied explicitly and matched by exact stable IDs.",
+    "volumes": "Cell pL values are rounded directly from exact polygon extrusion ratios times 10**15; bath pL values use the explicitly declared binary64 physical m3 times 10**15. Inventories and charge anchors are not rescaled.",
+    "constitutive_units": "C is the exact geometric edge area times declared F/m2, rounded once; P is explicit m2/s divided by explicit membrane thickness in m, rounded once. Junction area is one shared surface, never the sum of its two half membranes.",
+    "unsupported": "No area/volume overrides, native radial policy, exterior spatial faces, dynamic physiology, profiles, remapping, clipping or lifecycle integration in this identity."
+  },
+  "independent_reference": {
+    "module": "validation/geometry/conservative_polygon_geometry_reference.py",
+    "method": "Standard-library integer common-grid geometry and global Green moments, with a separate exact ear decomposition to check polygon areas/centroids. Reconstruct declared cell-union boundaries by oriented incidence coefficients, independently of the production Fraction boundary cancellation. No production imports or Fraction arithmetic.",
+    "checks": "Check supplied source and merged geometry, exact edge coordinate/ID correspondence, every reciprocal half-membrane and its normal/area, the single junction surface, explicit bath/owner maps and exact incidence matrices. Adversarial controls include wrong owners whose incidence columns still sum to zero.",
+    "rounding": "Independently verify exact ratio targets, squared dyadic endpoint bounds and binary64 nearest-rounding cells for radicals. Use the unchanged independent integer rounding helper for ratio targets. Check mathematical signed zero separately from exact reciprocal sign reversal.",
+    "precision": "Primary max(4096,6*input decimal span+160) Decimal digits and +512 refinement, capped at 16384. Physical conversions are independently recomputed at both levels. Retain both full targets and error records.",
+    "fresh_worker": "Prepared replay module denies Cells, BETSE, NumPy, SciPy, JAX, Torch and Pillow before reference provider import. Rebuild saved geometry/domain/physical comparisons; do not run the physical parser or field solver in the independent worker.",
+    "generation_claim": "The independent worker checks the supplied polygon/owner geometry; it does not authenticate upstream generator objects or claim a new native Voronoi/Delaunay generator."
+  },
+  "tolerances": {
+    "rational_outputs": "Correctly rounded exact targets; emitted bits must match the independent integer rounding result.",
+    "radical_outputs": "Correct binary64 nearest-rounding cell from exact squared targets, independently verified certificates and full precision comparison.",
+    "all_geometry_and_conversion_outputs": "Also require at most 32 ULPs and 6e-12 relative error. Absolute floors: lengths/centroids/midpoints 1e-27 m, areas 1e-26 m2, volumes 1e-30 m3, tangents 1e-14, derived physical pL/F/m-per-s values 1e-30 in their stated units.",
+    "reference_resolution": "At most 0.01 ULP and 0.1 of each fixed comparison budget.",
+    "topology_and_owners": "Exact integer/rational signs, IDs, incidence and equalities; no snapping, nearest-owner tolerance or conservation correction.",
+    "prior_budgets_or_failures_changed": false
+  },
+  "controls": {
+    "explicit_geometry_cases": 10,
+    "unsupported_geometry_cases": 20,
+    "request_result_authority_cases": 6,
+    "independent_checker_corruptions": 6,
+    "owned_generated_cases": 2,
+    "original_B09_refusal": 1,
+    "physical_preparation_cases": 3,
+    "physical_refusal_cases": 12,
+    "physical_preparation_ownership_cases": 4,
+    "expected_pytest_checks": 64,
+    "fresh_geometry_records": 12,
+    "fresh_domain_records": 20,
+    "fresh_physical_records": 3,
+    "proposed_guarded_units_including_Root_finalizer": 100,
+    "discriminating_cases": "Merged triangles to a quadrilateral, preserved split collinear boundaries across neighboring merged cells, concave L union, disconnected cells, two explicit baths including a contact cleft, thin triangle, cancellation-prone translated input, holed/disconnected merge refusal, underflow/overflow refusal and algebraically balanced incorrect owners."
+  },
+  "resources_proposal": {
+    "cpu": 6,
+    "threads": 1,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "whole_job_resources_proposal": {
+    "cpu": 6,
+    "max_wall_seconds": 7200,
+    "max_process_tree_rss_bytes": 2147483648,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss"
+  },
+  "artifact_policy": "Static source/tests/protocol and reference worker only. Save raw requests, owned actual geometry/physical outputs and refusals before comparisons. Root must independently review and prepare the bounded launcher/finalizer plus external startup-failure wrapper before any authorized detached qualification. No scientific execution, collection, active-job polling, automatic retry or follow-up in this preparation.",
+  "scope": {
+    "native_path_changed": false,
+    "B09_guard_changed": false,
+    "frozen_bridge_changed": false,
+    "frozen_primitives_changed": false,
+    "frozen_lifecycle_changed": false,
+    "source_equivalence_claimed": false,
+    "native_generation_accuracy_inherited": false,
+    "trajectory_conservation_claimed": false,
+    "original_19_of_22_limitation_closed": false
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "automatic_retry": false,
+  "automatic_followup": false
+}

@@ -1,0 +1,58 @@
+{
+  "capture_all_cases_fit_claim": false,
+  "capture_case_maximum_claim": false,
+  "capture_format_limit": 310689,
+  "capture_profile": "ordinary_ecm_molecule_dispatch_01",
+  "classified_reads": 154,
+  "fixture_model_reference_evaluations": 0,
+  "inherited_failure": "signed_environment 39/40 remains failed; catalog05 82 passed/1 reference refusal/11 unrun. No prior pass transferred.",
+  "inherited_oracle_domains_and_failures_preserved": true,
+  "inherited_scientific_passes": 0,
+  "initial_static_corrections_preserved_in_worker_evidence": true,
+  "inputs_sha256": "9c3a2c8c1ce17de9f121d2f9db887470ef97b8030d465ee7745ed4c36837352e",
+  "kind": "cells.held_general_molecule_author_static_receipt@1",
+  "metadata": {
+    "controls_passed": 10,
+    "max_rss_bytes": 22634496,
+    "no_large_archive_constructed": true,
+    "path": "metadata-01/result.json",
+    "sha256": "cb86e9f835898059bd2dbd9f6c5a1273f79301950a3ba1b182590c26e618a281"
+  },
+  "native_files_installed_exact": 332,
+  "native_methods_audited": 22,
+  "no_transition_dependency_adopted": true,
+  "numerical_runs": 0,
+  "parent_common_sources_unchanged": true,
+  "pending_reads": 0,
+  "prospective": {
+    "accepted_calls": 57,
+    "biological_cases": 0,
+    "checks": 44,
+    "dependency_controls": 21,
+    "independent_reference_forms": 942,
+    "independently_carried_trajectories": 0,
+    "native_captures": 84,
+    "positive_cases": 19,
+    "raw_cases": 4
+  },
+  "pytest_collection": 0,
+  "reference_modules": 25,
+  "resource_files": 25,
+  "runtime_modules": 96,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_audit": {
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_dispatch_implementation_audit_01.json",
+    "proofs": 26,
+    "sha256": "cf697e61a3d875b2db1ef62089a352acda24c30001b0e399aadd7a93a1526cb0"
+  },
+  "source_files": 2742,
+  "source_scope": "Supplied ordinary FULL/ECM general and GRN owners, original setup/dispatch and prefix/commit/field conditionals; explicit disabled paths, no whole initializer/trajectory/persistence",
+  "static_checks": {
+    "AST_proofs": 26,
+    "Ruff_without_cache": true,
+    "compile_without_execution": true
+  },
+  "status": "held_unrun",
+  "strict_metadata_only_driver": true
+}

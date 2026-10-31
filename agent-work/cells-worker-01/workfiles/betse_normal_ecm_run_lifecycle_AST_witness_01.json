@@ -1,0 +1,33 @@
+{
+  "clock_sampling_six_statement_slice_exact": true,
+  "commit_before_owned_observer": true,
+  "comparison_AST_sha256": "7e10fc8f825c087b0675253a9f10436c113cd0f219fb60fd64dcb0ee5e2fcec1",
+  "comparison_statement_count": 44,
+  "complete_phase_time_body_exact": true,
+  "full_candidate_context_and_component_failure_retained": true,
+  "inherited_scientific_comparison_AST_exact": true,
+  "kind": "cells.headless_ECM_lifecycle_AST_proof@1",
+  "local_source_phase_enum_members": {
+    "INIT": 2,
+    "SEED": 1,
+    "SIM": 3
+  },
+  "native_boundary_sha256": "f1c7527a65b34a106fd5ef254115d1cee53a57759df63f66b403c1b985dea41e",
+  "native_initializer_phase_reset_storage_display_pickle_calls": 0,
+  "numerical_runs": 0,
+  "one_component_advance_per_owned_call": true,
+  "one_component_native_capture_per_history": true,
+  "original_calendar_window_API_resolves": [
+    "bind",
+    "from_duration",
+    "record",
+    "validate",
+    "window"
+  ],
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_dt_label_sample_order_preserved": true,
+  "source_phase_enum_member_references_resolve": true,
+  "status": "passed_source_AST_only",
+  "time_count_statement_slice_exact": true
+}

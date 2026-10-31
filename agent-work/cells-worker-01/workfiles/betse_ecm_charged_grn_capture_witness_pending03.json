@@ -1,0 +1,21 @@
+{
+  "final03_freeze_pending_reviewer_blockers": true,
+  "frozen02_preserved": true,
+  "full_test_AST_inverse_exact": true,
+  "immediate_cold_parent_and_unexpected_success_archives": true,
+  "kind": "cells.ecm_charged_capture03_pending_review@1",
+  "not_a_numerical_failure": true,
+  "other_eight_owned_files_byte_exact": [
+    "src/cells/processes/betse_ecm_charged_grn_join.py",
+    "src/cells/processes/betse_ecm_charged_grn_source.py",
+    "validation/betse/betse_ecm_charged_grn_fixtures.py",
+    "validation/betse/betse_ecm_charged_grn_native.py",
+    "validation/betse/betse_ecm_charged_grn_native_network.py",
+    "validation/betse/betse_ecm_charged_grn_protocol.json",
+    "validation/betse/betse_ecm_charged_grn_reference.py",
+    "validation/betse/betse_ecm_charged_grn_source_map.json"
+  ],
+  "physics_cases_budgets_unchanged": true,
+  "scientific_execution": false,
+  "source_test_sha256": "607a8182c6b708d872d48e98457ccd171eceba2c3ed35c07275781132341a779"
+}

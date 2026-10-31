@@ -1,0 +1,148 @@
+{
+  "ECM_fancy_copy_not_written_back": true,
+  "actual_normal_SIM_source_clock": true,
+  "full_field_packet_byte_exact": true,
+  "inherited_complete_field_functions": 10,
+  "inherited_network_bodies": 47,
+  "kind": "cells.normal_ecm_CaATP_field_source_audit@1",
+  "legacy_ER_parameters_not_injected": true,
+  "material_inverse_AST_equal_except_actual_CaATP_callback": true,
+  "material_reference_inverse_AST_equal_except_CaATP": true,
+  "native_CaATP_source_blocks": {
+    "Ca_no_negs": {
+      "ast_sha256": "70dcf3e0e8fe212a03d8056e0e817900008cb4b3a003576ff1d4df919de88bb0",
+      "lines": [
+        [
+          475,
+          503
+        ]
+      ]
+    },
+    "ca_handler": {
+      "ast_sha256": "02821b92ddb363bb29ea699f2ba29bdd3980adfc73b3db8426a2859a193cafe3",
+      "lines": [
+        [
+          2126,
+          2159
+        ]
+      ]
+    },
+    "calcium_cold": {
+      "ast_sha256": "f9ca737f648976b9819de1fd71c47c94419a2e27b3b69e4dc4139c46c81daf16",
+      "lines": [
+        [
+          481,
+          481
+        ],
+        [
+          854,
+          854
+        ],
+        [
+          857,
+          860
+        ]
+      ]
+    },
+    "calcium_cold_after": {
+      "ast_sha256": "a0afb235706da31dadf081b39ba5f9524406e758df992a9e685dabd62d5d9e45",
+      "lines": [
+        [
+          964,
+          964
+        ]
+      ]
+    },
+    "calcium_defaults": {
+      "ast_sha256": "fe9cfae21942388f9066a22f10b936bce9584d16e5a101b51cd39dfed1167ffa",
+      "lines": [
+        [
+          771,
+          771
+        ],
+        [
+          1065,
+          1065
+        ],
+        [
+          1066,
+          1066
+        ],
+        [
+          1067,
+          1067
+        ],
+        [
+          1077,
+          1077
+        ],
+        [
+          1080,
+          1080
+        ],
+        [
+          1081,
+          1081
+        ],
+        [
+          1106,
+          1106
+        ],
+        [
+          1107,
+          1107
+        ],
+        [
+          1116,
+          1116
+        ]
+      ]
+    },
+    "pumpCaATP": {
+      "ast_sha256": "0e185f1ca2a9bb3554fc13f59c097aa14b8c74ccd2aaa8c3beb99f1850f9ad64",
+      "lines": [
+        [
+          124,
+          182
+        ]
+      ]
+    },
+    "source_clock": {
+      "ast_sha256": "a3fc0cc9a1117cb60ee40e4f73e80c3470569d073a2a505246dc20752bd72f29",
+      "lines": [
+        [
+          2447,
+          2447
+        ],
+        [
+          2448,
+          2448
+        ],
+        [
+          2449,
+          2449
+        ],
+        [
+          2452,
+          2452
+        ],
+        [
+          2455,
+          2455
+        ]
+      ]
+    }
+  },
+  "native_cold_owner_relative_order_preserved": true,
+  "native_ion_CaATP_GeRN_commit_fields_order": true,
+  "native_parameters_and_default_policy_derived": true,
+  "new_complete_native_CaATP_functions": 3,
+  "numerical_runs": 0,
+  "original_CaATP_helper_and_negative_clip_AST_equal": true,
+  "prior_field_inputs_sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb",
+  "pytest_collection_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_ER_disabled_without_forced_flags": true,
+  "source_rate_absence_then_actual_cache_carry": true
+}

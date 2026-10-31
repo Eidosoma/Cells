@@ -1,0 +1,28 @@
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/src/cells/processes/betse_normal_ecm_molecule_transport_source.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/src/cells/processes/betse_normal_ecm_molecule_transport.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/src/cells/processes/betse_normal_ecm_molecule_transport_runtime.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/validation/betse/betse_normal_ecm_molecule_transport_native_network.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/validation/betse/betse_normal_ecm_molecule_transport_native_source.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/validation/betse/betse_normal_ecm_molecule_transport_native.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/validation/betse/betse_normal_ecm_molecule_transport_equations.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/validation/betse/betse_normal_ecm_molecule_transport_reference.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_02/tests/unit/test_betse_normal_ecm_molecule_transport.py
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 286, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 206, in main
+    same(
+    ~~~~^
+        "independent_native_literal_method_and_observer_loader_only_ECM_parent_changed",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        literal,
+        ^^^^^^^^
+        common.fn(old_helpers, "literal_nodes"),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 67, in same
+    assert common.normalized(a) == common.normalized(b), label
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: independent_native_literal_method_and_observer_loader_only_ECM_parent_changed

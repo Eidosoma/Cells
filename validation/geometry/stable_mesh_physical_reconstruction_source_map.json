@@ -1,0 +1,844 @@
+{
+  "corrected_law": {
+    "axes": "full dual polygon edge IDs and primal-aligned selected dual IDs are separate",
+    "boundary_membrane_partner_policy": "explicitly unresolved, never defaulted to self",
+    "core_imports_scientific_packages": false,
+    "dual_pairing": "unique actual polygon owner pair; missing/ambiguous pairs refused",
+    "native_equivalence": false,
+    "operators": "integer incidence only; inverses/metrics/physical cache rebuild required",
+    "original_seed_primal_dual_coordinates_preserved": true,
+    "physical_admission": false,
+    "primal_mapping": "exact undirected pair with retained source edge orientation",
+    "vertex_mapping": "unique edge endpoint membership"
+  },
+  "downstream_native_owners": {
+    "Cells.cellMatrices": {
+      "ast_sha256": "0a138ebac00024b96fec201b11cb2281b1dcd5452b3239751d25f2e3686aa891",
+      "attribute_bindings": [
+        "M_sum_mems",
+        "M_sum_mems_inv",
+        "cell_number",
+        "gradTheta",
+        "mem_distance",
+        "num_mems",
+        "radial_len"
+      ],
+      "first_line": 1276,
+      "last_line": 1333,
+      "parameter_reads": [
+        "cell_space",
+        "tm"
+      ],
+      "self_attribute_occurrences": [
+        "M_sum_mems",
+        "M_sum_mems_inv",
+        "cell_centres",
+        "cell_i",
+        "cell_number",
+        "cell_to_mems",
+        "gradTheta",
+        "mem_distance",
+        "mem_i",
+        "mem_mids_flat",
+        "num_mems",
+        "radial_len"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.cellVerts": {
+      "ast_sha256": "b320e0bccbe0f05bb143eb1fdbd4e1447a9aef36ab59cc6c8f1ae2fd3de1fb51",
+      "attribute_bindings": [
+        "R_rads",
+        "cell_area",
+        "cell_i",
+        "cell_sa",
+        "cell_to_mems",
+        "cell_verts",
+        "gj_len",
+        "index_to_mem_verts",
+        "mem_edges_flat",
+        "mem_i",
+        "mem_mids",
+        "mem_mids_flat",
+        "mem_sa",
+        "mem_to_cells",
+        "mem_vects_flat",
+        "mem_verts",
+        "nx_rads",
+        "ny_rads",
+        "plot_xy",
+        "rads"
+      ],
+      "first_line": 978,
+      "last_line": 1175,
+      "parameter_reads": [
+        "cell_height",
+        "cell_space",
+        "scale_cell"
+      ],
+      "self_attribute_occurrences": [
+        "R_rads",
+        "cell_area",
+        "cell_centres",
+        "cell_i",
+        "cell_sa",
+        "cell_to_mems",
+        "cell_verts",
+        "ecm_verts",
+        "gj_len",
+        "index_to_mem_verts",
+        "mem_edges_flat",
+        "mem_i",
+        "mem_mids",
+        "mem_mids_flat",
+        "mem_sa",
+        "mem_to_cells",
+        "mem_vects_flat",
+        "mem_verts",
+        "nx_rads",
+        "ny_rads",
+        "plot_xy",
+        "rads"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.cell_index": {
+      "ast_sha256": "e8b10040895adc3875baaa9d67817e677290b585ef66866e7b59079491d0f369",
+      "attribute_bindings": [
+        "cell_centres",
+        "cell_vol"
+      ],
+      "first_line": 963,
+      "last_line": 976,
+      "parameter_reads": [
+        "cell_height"
+      ],
+      "self_attribute_occurrences": [
+        "cell_centres",
+        "cell_vol",
+        "mesh"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.cell_vols": {
+      "ast_sha256": "3bbe811383e5108d344b3b3b490a10ed5a4c78ae1e55ae24b0469f6328ea5e74",
+      "attribute_bindings": [
+        "R",
+        "cell_vol",
+        "diviterm",
+        "mem_vol"
+      ],
+      "first_line": 1358,
+      "last_line": 1390,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "M_sum_mems",
+        "R",
+        "R_rads",
+        "cell_sa",
+        "cell_vol",
+        "diviterm",
+        "mem_sa",
+        "mem_vol"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.environment": {
+      "ast_sha256": "819c5651ec400b949316adaa3820c58d7453431a182d62511b3d1c5b9bf1de12",
+      "attribute_bindings": [
+        "M_divmap_mem2ecm",
+        "all_bound_mem_inds",
+        "bBot_k",
+        "bL_k",
+        "bR_k",
+        "bTop_k",
+        "cell2env_corrF",
+        "ecm_allbound_k",
+        "ecm_bound_k",
+        "ecm_inds_bound_cell",
+        "ecm_sa",
+        "ecm_vol",
+        "envInds_inClust",
+        "inds_outmem",
+        "interior_bound_mem_inds",
+        "map_cell2ecm",
+        "map_ecm2mem",
+        "map_mem2ecm",
+        "memSa_per_envSquare",
+        "mems_per_envSquare",
+        "points_tree",
+        "ratio_cell2ecm",
+        "true_ecm_vol"
+      ],
+      "first_line": 1720,
+      "last_line": 1842,
+      "parameter_reads": [
+        "cell_height",
+        "cell_space"
+      ],
+      "self_attribute_occurrences": [
+        "M_divmap_mem2ecm",
+        "X",
+        "Y",
+        "all_bound_mem_inds",
+        "bBot_k",
+        "bL_k",
+        "bR_k",
+        "bTop_k",
+        "bflags_cells",
+        "bflags_mems",
+        "cell2env_corrF",
+        "cell_centres",
+        "cell_nn",
+        "cell_sa",
+        "cell_to_mems",
+        "cell_vol",
+        "delta",
+        "ecm_allbound_k",
+        "ecm_bound_k",
+        "ecm_inds_bound_cell",
+        "ecm_sa",
+        "ecm_vol",
+        "envInds_inClust",
+        "inds_outmem",
+        "interior_bound_mem_inds",
+        "map_cell2ecm",
+        "map_ecm2mem",
+        "map_mem2ecm",
+        "memSa_per_envSquare",
+        "mem_i",
+        "mem_mids_flat",
+        "mem_sa",
+        "mems_per_envSquare",
+        "points_tree",
+        "ratio_cell2ecm",
+        "true_ecm_vol",
+        "xypts"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.graphLaplacian": {
+      "ast_sha256": "c9bda6b98491dc8887701b7626ea1acc14e5e1941a3bab208a80c8725826eb90",
+      "attribute_bindings": [
+        "geom_weight",
+        "lapGJ",
+        "lapGJinv"
+      ],
+      "first_line": 1845,
+      "last_line": 1894,
+      "parameter_reads": [
+        "cell_height"
+      ],
+      "self_attribute_occurrences": [
+        "M_sum_mems",
+        "geom_weight",
+        "lapGJ",
+        "lapGJinv",
+        "mem_sa",
+        "mem_vol",
+        "mesh"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.makeECM": {
+      "ast_sha256": "902c5ad7c17116a497c7d8872051b69bd86f941a8ed1018b81e6d9586154b94f",
+      "attribute_bindings": [
+        "X",
+        "Y",
+        "adl",
+        "all_i",
+        "all_points",
+        "all_points_cell_i",
+        "all_points_ecm_i",
+        "all_points_imap",
+        "bflags_ecm",
+        "cell_to_ecm",
+        "delta",
+        "ecm_i",
+        "ecm_points",
+        "ecm_sa",
+        "ecm_to_cells",
+        "ecm_to_mems",
+        "ecm_vol",
+        "ecmdl",
+        "grid_obj",
+        "index_k",
+        "map_ij2k",
+        "mem_to_ecm",
+        "xypts"
+      ],
+      "first_line": 1576,
+      "last_line": 1718,
+      "parameter_reads": [
+        "cell_space",
+        "grid_size"
+      ],
+      "self_attribute_occurrences": [
+        "X",
+        "Y",
+        "adl",
+        "all_i",
+        "all_points",
+        "all_points_cell_i",
+        "all_points_ecm_i",
+        "all_points_imap",
+        "bflags_ecm",
+        "cell_centres",
+        "cell_i",
+        "cell_to_ecm",
+        "cell_to_mems",
+        "delta",
+        "ecm_i",
+        "ecm_points",
+        "ecm_sa",
+        "ecm_to_cells",
+        "ecm_to_mems",
+        "ecm_vol",
+        "ecmdl",
+        "grid_obj",
+        "index_k",
+        "map_ij2k",
+        "mem_mids_flat",
+        "mem_nn",
+        "mem_sa",
+        "mem_to_cells",
+        "mem_to_ecm",
+        "xmax",
+        "xmin",
+        "xypts",
+        "ymax",
+        "ymin"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.make_voronoi": {
+      "ast_sha256": "afe4ede5bcc08ce8582be735fbfbc5ffaa11b72df4b70fa35fb132d1762b4f0b",
+      "attribute_bindings": [
+        "cluster_mask",
+        "ecm_verts",
+        "ecm_verts_unique",
+        "mesh",
+        "msize"
+      ],
+      "first_line": 846,
+      "last_line": 961,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "centre",
+        "clust_xy",
+        "cluster_mask",
+        "ecm_verts",
+        "ecm_verts_unique",
+        "mesh",
+        "msize"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.make_world": {
+      "ast_sha256": "77edd4beb99ea8b788fd8c6fe92bb5316d21a9e4f0f7286934c1010be1b17d03",
+      "attribute_bindings": [
+        "M_sum_mem_to_ecm",
+        "cell_i",
+        "gj_default_weights",
+        "gradMem",
+        "grid_len",
+        "lapENV_P_inv",
+        "lapENVinv",
+        "lapGJ",
+        "lapGJinv"
+      ],
+      "first_line": 414,
+      "last_line": 526,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "M_sum_mem_to_ecm",
+        "_make_cell_lattice",
+        "cellMatrices",
+        "cellVerts",
+        "cell_i",
+        "cell_index",
+        "cell_vols",
+        "environment",
+        "gj_default_weights",
+        "gradMem",
+        "grid_len",
+        "grid_obj",
+        "lapENV_P_inv",
+        "lapENVinv",
+        "lapGJ",
+        "lapGJinv",
+        "makeECM",
+        "make_maskM",
+        "make_voronoi",
+        "mem_i",
+        "mem_processing",
+        "near_neigh",
+        "parse_svg",
+        "xypts"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.mem_processing": {
+      "ast_sha256": "f6fd3029cc8a6dd264b2b14152801140b241391b2039be5aa2bdd538c31cef2d",
+      "attribute_bindings": [
+        "bflags_cells",
+        "bflags_mems",
+        "ecm_mids",
+        "mem_nn"
+      ],
+      "first_line": 1392,
+      "last_line": 1475,
+      "parameter_reads": [
+        "cell_radius",
+        "scale_cell"
+      ],
+      "self_attribute_occurrences": [
+        "bflags_cells",
+        "bflags_mems",
+        "ecm_mids",
+        "ecm_verts",
+        "mem_i",
+        "mem_mids_flat",
+        "mem_nn",
+        "mem_to_cells",
+        "mem_vects_flat"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.near_neigh": {
+      "ast_sha256": "25e2317ff91ee3c9ca91e47b5dd51309b16135ec64a6f52bf64ca7a666eca52d",
+      "attribute_bindings": [
+        "average_nn",
+        "cell_nn",
+        "cell_nn_i",
+        "nn_bound",
+        "nn_i",
+        "num_nn"
+      ],
+      "first_line": 1477,
+      "last_line": 1573,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "average_nn",
+        "bflags_cells",
+        "cell_nn",
+        "cell_nn_i",
+        "cell_to_mems",
+        "mem_i",
+        "mem_nn",
+        "mem_to_cells",
+        "nn_bound",
+        "nn_i",
+        "num_nn"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "Cells.redo_gj": {
+      "ast_sha256": "b72ca08dcf484811c94806f130b445805b044ded09a4967200855de043800350",
+      "attribute_bindings": [
+        "average_nn",
+        "cell_nn_connected",
+        "gj_default_weights",
+        "num_nn"
+      ],
+      "first_line": 1941,
+      "last_line": 2015,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "average_nn",
+        "calc_gj_vects",
+        "cell_i",
+        "cell_nn",
+        "cell_nn_connected",
+        "cell_to_mems",
+        "gj_default_weights",
+        "mem_i",
+        "mem_to_cells",
+        "nn_i",
+        "num_nn"
+      ],
+      "source": "betse/science/cells.py"
+    },
+    "DECMesh.create_aux_operators": {
+      "ast_sha256": "bbf9e4a5c97d3940617ed00418b323ccf0e98fad3aed48aa0af001551f281c49",
+      "attribute_bindings": [
+        "delta_tri_1",
+        "delta_tri_1_inv",
+        "delta_vor_0",
+        "delta_vor_0_inv",
+        "delta_vor_1",
+        "delta_vor_1_inv"
+      ],
+      "first_line": 1190,
+      "last_line": 1258,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "delta_tri_1",
+        "delta_tri_1_inv",
+        "delta_vor_0",
+        "delta_vor_0_inv",
+        "delta_vor_1",
+        "delta_vor_1_inv",
+        "inner_tvert_i",
+        "n_tcell",
+        "n_tedges",
+        "n_vedges",
+        "n_vverts",
+        "tri_cells",
+        "tri_edges",
+        "vor_cells",
+        "vor_edges"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.create_core_operators": {
+      "ast_sha256": "8efd40922b84fb222db394f6d1d7ac939cd04737d0085e8e420777c0321fd675",
+      "attribute_bindings": [
+        "delta_tri_0",
+        "delta_tri_0_inv"
+      ],
+      "first_line": 1166,
+      "last_line": 1187,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "delta_tri_0",
+        "delta_tri_0_inv",
+        "n_tedges",
+        "n_tverts",
+        "tri_edges"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.create_mappings": {
+      "ast_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82",
+      "attribute_bindings": [
+        "bflags_tcells",
+        "tcell_to_tedges",
+        "tedges_to_tcell",
+        "tverts_to_tedges"
+      ],
+      "first_line": 699,
+      "last_line": 743,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "bflags_tcells",
+        "bflags_tedges",
+        "n_tcell",
+        "tcell_to_tedges",
+        "tedges_to_tcell",
+        "tri_cells",
+        "tri_edges",
+        "tri_verts",
+        "tverts_to_tedges"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.define_vorverts": {
+      "ast_sha256": "7c7fc289221deb330ff6f49c9b35efd176c36ab6d266c10eb48652bf9faef7f8",
+      "attribute_bindings": [
+        "tri_sa_o",
+        "vcell_verts",
+        "vor_cents",
+        "vor_edge_verts",
+        "vor_sa",
+        "vor_verts",
+        "vor_verts_duplicates"
+      ],
+      "first_line": 746,
+      "last_line": 845,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "_tverts_to_tcell",
+        "area",
+        "bflags_tedges",
+        "bflags_tverts",
+        "cc_sort_inds",
+        "poly_centroid",
+        "tedges_to_tcell",
+        "tri_ccents",
+        "tri_cents",
+        "tri_edges",
+        "tri_sa",
+        "tri_sa_o",
+        "tri_verts",
+        "tverts_to_tedges",
+        "use_centroids",
+        "vcell_verts",
+        "vor_cents",
+        "vor_edge_verts",
+        "vor_sa",
+        "vor_verts",
+        "vor_verts_duplicates"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.pre_mesh": {
+      "ast_sha256": "669fb0d34d67aac95b533c85c4d94be193b7dc99efe3db7dfccf17193f4edb08",
+      "attribute_bindings": [],
+      "first_line": 156,
+      "last_line": 164,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "create_mappings",
+        "create_tri_mesh",
+        "define_vorverts",
+        "process_voredges"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.process_primary_edges": {
+      "ast_sha256": "a368f0be24710d5206118aaeb0e7660e1b09a4a135950f5aa4ce115a105ce637",
+      "attribute_bindings": [
+        "bflags_tedges",
+        "bflags_tverts",
+        "centroid",
+        "inner_tedge_i",
+        "inner_tvert_i",
+        "n_tedges",
+        "tri_edge_i",
+        "tri_edge_len",
+        "tri_edges",
+        "tri_mids",
+        "tri_tang"
+      ],
+      "first_line": 581,
+      "last_line": 674,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "bflags_tedges",
+        "bflags_tverts",
+        "centroid",
+        "inner_tedge_i",
+        "inner_tvert_i",
+        "n_tedges",
+        "tri_cells",
+        "tri_edge_i",
+        "tri_edge_len",
+        "tri_edges",
+        "tri_mids",
+        "tri_tang",
+        "tri_vert_i",
+        "tri_verts"
+      ],
+      "source": "betse/science/math/mesh.py"
+    },
+    "DECMesh.process_voredges": {
+      "ast_sha256": "49b1218cc039c5ed24c5ef7f6fb9b3260b7e62406239def65bae9acaeba2f274",
+      "attribute_bindings": [
+        "bflags_vedges",
+        "bflags_vverts",
+        "inner_vvert_i",
+        "n_vcells",
+        "n_vedges",
+        "n_vverts",
+        "vor_cell_i",
+        "vor_cells",
+        "vor_edge_i",
+        "vor_edge_len",
+        "vor_edges",
+        "vor_mids",
+        "vor_tang",
+        "vor_vert_i",
+        "xyaxis"
+      ],
+      "first_line": 848,
+      "last_line": 1007,
+      "parameter_reads": [],
+      "self_attribute_occurrences": [
+        "bflags_vedges",
+        "bflags_vverts",
+        "inner_vvert_i",
+        "n_vcells",
+        "n_vedges",
+        "n_vverts",
+        "tri_ccents",
+        "tri_cents",
+        "tri_mids",
+        "tri_tang",
+        "use_centroids",
+        "vcell_verts",
+        "vor_cell_i",
+        "vor_cells",
+        "vor_edge_i",
+        "vor_edge_len",
+        "vor_edge_verts",
+        "vor_edges",
+        "vor_mids",
+        "vor_tang",
+        "vor_vert_i",
+        "vor_verts",
+        "xyaxis"
+      ],
+      "source": "betse/science/math/mesh.py"
+    }
+  },
+  "downstream_source_bodies": {
+    "Cells.cellMatrices": "def cellMatrices(self, p) -> None:\n    \"\"\"\n        Create the main matrices used in routine calculations on the Cell Grid.\n        \"\"\"\n    logs.log_info('Creating computational matrices for cell-cell transfers...')\n    self.M_sum_mems = np.zeros((len(self.cell_i), len(self.mem_i)))\n    self.num_mems = []\n    for i, inds in enumerate(self.cell_to_mems):\n        n = 0\n        for j in inds:\n            self.M_sum_mems[i, j] = 1\n            n = n + 1\n        self.num_mems.append(n)\n    self.M_sum_mems_inv = np.linalg.pinv(self.M_sum_mems)\n    self.num_mems = np.asarray(self.num_mems)\n    self.mem_distance = p.cell_space + 2 * p.tm\n    self.cell_number = self.cell_centres.shape[0]\n    self.gradTheta = np.zeros((len(self.mem_i), len(self.mem_i)))\n    self.radial_len = np.zeros(len(self.mem_i))\n    for cell_i, mem_i in enumerate(self.cell_to_mems):\n        mem_io = np.roll(mem_i, 1)\n        li = self.mem_mids_flat[mem_i] - self.mem_mids_flat[mem_io]\n        lm = np.sqrt(li[:, 0] ** 2 + li[:, 1] ** 2)\n        self.radial_len[mem_i] = np.abs(lm)\n        self.gradTheta[mem_i, mem_i] = 1 / lm\n        self.gradTheta[mem_i, mem_io] = -1 / lm",
+    "Cells.cellVerts": "def cellVerts(self, p):\n    \"\"\"\n        Calculate the true vertices of each individual cell from the extracellular matrix (ecm) vertices\n        of the closed & clipped Voronoi diagram.\n\n        The BETSE cell grid has each cell defined by unique vertices, which are scaled in from the ecm points.\n\n        Creates\n        -------\n        self.cell_verts      A nested python list of the [x,y] point pairs defining vertices of each individual cell\n                            polygon. The points of each polygon are arranged in a counterclockwise manner.\n        self.mem_verts          Flat list of self.cell_verts\n        self.cell_vol       Volume of each cell [m3]\n        self.cell_sa        Whole cell surface area\n\n        self.mem_edges_flat          membrane edge points [x,y] coordinates\n        self.mem_length         membrane surface area values [m2]\n        self.mem_mids_flat      unraveled list of membrane edge midpoints [x,y] arranged to self.mem_i\n        self.mem_vects_flat     list of normal and tangent vectors (non nested) arranged to self.mem_i\n\n        Notes\n        -------\n        The Voronoi diagram returns a connected graph. For this simulation, each cell needs unique vertices and edges.\n        This method takes the vertices of the original diagram and scales them in to make unique cells.\n        \"\"\"\n    self.gj_len = p.cell_space\n    self.cell_verts = []\n    for centre, poly in zip(self.cell_centres, self.ecm_verts):\n        pt_scale = []\n        for vert in poly:\n            pt_zero = vert - centre\n            pt_scale.append(p.scale_cell * pt_zero + centre)\n        self.cell_verts.append(np.asarray(pt_scale))\n    self.cell_verts = np.asarray(self.cell_verts, dtype=object)\n    self.cell_sa = []\n    self.cell_area = []\n    mem_edges = []\n    mem_length = []\n    mem_mids = []\n    cv_x = []\n    cv_y = []\n    cv_nx = []\n    cv_ny = []\n    cv_tx = []\n    cv_ty = []\n    for polyc in self.cell_verts:\n        edge = []\n        mps = []\n        surfa = []\n        for i in range(0, len(polyc)):\n            pt1 = polyc[i - 1]\n            pt2 = polyc[i]\n            pt1 = np.asarray(pt1)\n            pt2 = np.asarray(pt2)\n            edge.append([pt1, pt2])\n            mid = (pt1 + pt2) / 2\n            mps.append(mid.tolist())\n            lgth = np.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2)\n            surfa.append(lgth)\n            tang_a = pt2 - pt1\n            tang = tang_a / np.linalg.norm(tang_a)\n            normal = np.array([tang[1], -tang[0]])\n            cv_x.append(mid[0])\n            cv_y.append(mid[1])\n            cv_nx.append(normal[0])\n            cv_ny.append(normal[1])\n            cv_tx.append(tang[0])\n            cv_ty.append(tang[1])\n        mem_edges.append(edge)\n        mem_mids.append(mps)\n        mem_length.append(surfa)\n    self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T\n    self.mem_mids = np.asarray(mem_mids, dtype=object)\n    self.mem_mids_flat, indmap_mem, _ = tb.flatten(mem_mids)\n    self.mem_mids_flat = np.asarray(self.mem_mids_flat)\n    self.cell_i = [x for x in range(0, len(self.cell_centres))]\n    self.mem_i = [x for x in range(0, len(self.mem_mids_flat))]\n    mem_length, _, _ = tb.flatten(mem_length)\n    mem_length = np.asarray(mem_length)\n    self.mem_sa = mem_length * p.cell_height\n    self.mem_edges_flat, _, _ = tb.flatten(mem_edges)\n    self.mem_edges_flat = np.asarray(self.mem_edges_flat)\n    self.mem_verts, _, _ = tb.flatten(self.cell_verts)\n    self.mem_verts = np.asarray(self.mem_verts)\n    self.plot_xy = np.vstack((self.mem_mids_flat, self.mem_verts))\n    indmap_mem = np.asarray(indmap_mem)\n    self.mem_to_cells = indmap_mem[:, 0]\n    self.cell_to_mems = []\n    for cell_index in self.cell_i:\n        mems_index = (self.mem_to_cells == cell_index).nonzero()[0]\n        self.cell_to_mems.append(mems_index)\n    self.cell_to_mems = np.asarray(self.cell_to_mems, dtype=object)\n    self.cell_sa = []\n    for grp in self.cell_to_mems:\n        cell_sa = sum(self.mem_sa[grp])\n        self.cell_sa.append(cell_sa)\n    self.cell_sa = np.asarray(self.cell_sa)\n    cellVertTree = cKDTree(self.mem_verts)\n    self.index_to_mem_verts = []\n    for cell_nest in mem_edges:\n        for mem_points in cell_nest:\n            _, pt_ind1 = cellVertTree.query(mem_points[0])\n            _, pt_ind2 = cellVertTree.query(mem_points[1])\n            self.index_to_mem_verts.append([pt_ind1, pt_ind2])\n    self.index_to_mem_verts = np.asarray(self.index_to_mem_verts)\n    self.rads = self.mem_mids_flat - self.cell_centres[self.mem_to_cells]\n    self.R_rads = np.sqrt(self.rads[:, 0] ** 2 + self.rads[:, 1] ** 2)\n    self.nx_rads = self.rads[:, 0] / self.R_rads\n    self.ny_rads = self.rads[:, 1] / self.R_rads",
+    "Cells.cell_index": "def cell_index(self, p) -> None:\n    \"\"\"\n        (Re)define the array of all cell centres (i.e., :attr:`cell_centres`)\n        from every corresponding Voronoi polygon.\n\n        This method is typically called *after* creating, closing, and clipping\n        the Voronoi diagram for this cell cluster. Doing so creates an ordering\n        of cells consistent with all Voronoi polygons, membrane domains, and\n        extracellular matrix (ECM)-driven polygons and segments.\n        \"\"\"\n    self.cell_centres = self.mesh.vor_cents\n    self.cell_vol = self.mesh.vor_sa * p.cell_height",
+    "Cells.cell_vols": "def cell_vols(self, p) -> None:\n    \"\"\"\n        Divide each cell into a spider-web like volume with an outer \"pie-box\"\n        region volume associated with each membrane, and a region around the\n        central point (centroid region).\n\n        This function calculates the volumes of cells, membrane \"pie-boxes\" and\n        centroids, and associated parameters of **cell chords** (i.e., the\n        distance between the cell center and each membrane midpoint).\n        \"\"\"\n    self.mem_vol = 1 / 2 * self.R_rads * self.mem_sa\n    self.cell_vol = np.dot(self.M_sum_mems, self.mem_vol)\n    self.R = (3 / 4 * (self.cell_vol / math.pi)) ** (1 / 3)\n    self.diviterm = self.cell_vol / self.cell_sa",
+    "Cells.environment": "def environment(self, p):\n    \"\"\"\n        Defines conditions for points in contact with the global environment at the outer boundary\n        of the square world.\n\n        Notes\n        -------\n\n        This is how to access all elements in a main-grid format from the k-vector:\n        Z[cells.map_ij2k[:,0],cells.map_ij2k[:,1]]\n\n        or access elements in a main-grid format to a subset of the k-vector:\n\n        accessing bottom boundary:\n        Z[cells.map_ij2k[bBot_k][:,0],cells.map_ij2k[bBot_k][:,1]]\n\n        accessing all cells:\n        Z[cells.map_ij2k[map_cell2ecm][:,0],cells.map_ij2k[map_cell2ecm][:,1]] = 10.0\n\n        \"\"\"\n    self.ecm_sa = 4 * self.delta * p.cell_height\n    self.ecm_vol = p.cell_height * self.delta ** 2\n    self.ratio_cell2ecm = self.ecm_vol / self.cell_vol.mean()\n    self.points_tree = cKDTree(self.xypts)\n    _, self.map_cell2ecm = self.points_tree.query(self.cell_centres)\n    _, self.map_mem2ecm = self.points_tree.query(self.mem_mids_flat, k=1)\n    all_bound_mem_inds = self.cell_to_mems[self.bflags_cells]\n    all_bound_mem_inds, _, _ = tb.flatten(all_bound_mem_inds)\n    self.ecm_bound_k = self.map_mem2ecm[self.bflags_mems]\n    self.ecm_allbound_k = self.map_mem2ecm[all_bound_mem_inds]\n    bBot_x = self.X[0, :]\n    bTop_x = self.X[-1, :]\n    bL_x = self.X[:, 0]\n    bR_x = self.X[:, -1]\n    bBot_y = self.Y[0, :]\n    bTop_y = self.Y[-1, :]\n    bL_y = self.Y[:, 0]\n    bR_y = self.Y[:, -1]\n    bBot_pts = np.column_stack((bBot_x, bBot_y))\n    bTop_pts = np.column_stack((bTop_x, bTop_y))\n    bL_pts = np.column_stack((bL_x, bL_y))\n    bR_pts = np.column_stack((bR_x, bR_y))\n    _, self.bBot_k = self.points_tree.query(bBot_pts)\n    _, self.bTop_k = self.points_tree.query(bTop_pts)\n    _, self.bL_k = self.points_tree.query(bL_pts)\n    _, self.bR_k = self.points_tree.query(bR_pts)\n    self.map_ecm2mem = [[] for ind in self.xypts]\n    for ind_mem, ind_ecm in enumerate(self.map_mem2ecm):\n        self.map_ecm2mem[ind_ecm].append(ind_mem)\n    self.envInds_inClust = []\n    self.memSa_per_envSquare = np.zeros(len(self.xypts))\n    self.mems_per_envSquare = np.zeros(len(self.xypts))\n    self.true_ecm_vol = np.ones(len(self.xypts)) * self.ecm_vol\n    for ind_ecm, lst in enumerate(self.map_ecm2mem):\n        if len(lst) > 0:\n            self.envInds_inClust.append(ind_ecm)\n            sas = np.sum(self.mem_sa[lst])\n            self.memSa_per_envSquare[ind_ecm] = sas\n            self.mems_per_envSquare[ind_ecm] = len(lst)\n            self.true_ecm_vol[ind_ecm] = sas * p.cell_space * (1 / 2)\n    self.envInds_inClust = np.asarray(self.envInds_inClust)\n    self.cell2env_corrF = self.cell_vol / self.true_ecm_vol[self.map_cell2ecm] * (self.ecm_sa / self.cell_sa)\n    neigh_to_bcells, _, _ = tb.flatten(self.cell_nn[self.bflags_cells])\n    all_bound_mem_inds_o = self.cell_to_mems[self.bflags_cells]\n    interior_bound_mem_inds_o = self.cell_to_mems[neigh_to_bcells]\n    interior_bound_mem_inds_o, _, _ = tb.flatten(interior_bound_mem_inds_o)\n    all_bound_mem_inds_o, _, _ = tb.flatten(all_bound_mem_inds_o)\n    self.all_bound_mem_inds = self.map_mem2ecm[all_bound_mem_inds_o]\n    self.interior_bound_mem_inds = self.map_mem2ecm[interior_bound_mem_inds_o]\n    self.inds_outmem = self.map_mem2ecm[self.bflags_mems]\n    self.ecm_inds_bound_cell = self.map_cell2ecm[self.bflags_cells]\n    self.M_divmap_mem2ecm = np.zeros((len(self.xypts), len(self.mem_i)))\n    for mem_i, ecm_i in enumerate(self.map_mem2ecm):\n        mem_sa = self.mem_sa[mem_i]\n        self.M_divmap_mem2ecm[ecm_i, mem_i] += mem_sa",
+    "Cells.graphLaplacian": "def graphLaplacian(self, p) -> None:\n    \"\"\"\n        Define an abstract inverse Laplacian used to solve Poisson's equation\n        on the irregular Voronoi grid of this cell cluster.\n\n        Parameters\n        ----------\n        p : Parameters\n            Current simulation configuration.\n\n        Creates\n        ----------\n        self.lapGJinv          Solver for Poisson equation with Neumann (zero gradient) boundary\n        \"\"\"\n    logs.log_debug('Creating cell network Poisson solver...')\n    star_eij = np.diag(self.mesh.vor_edge_len / self.mesh.tri_edge_len)\n    L1 = np.dot(star_eij, self.mesh.delta_tri_0)\n    star_a = np.diag(1 / self.mesh.vor_sa)\n    L2 = np.dot(star_a, -self.mesh.delta_tri_0.T)\n    star_eij_inv = np.diag(self.mesh.tri_edge_len / self.mesh.vor_edge_len)\n    L1_inv = np.dot(self.mesh.delta_tri_0_inv, star_eij_inv)\n    star_a_inv = np.diag(self.mesh.vor_sa)\n    L2_inv = np.dot(-self.mesh.delta_tri_0_inv.T, star_a_inv)\n    self.lapGJinv = np.dot(L1_inv, L2_inv)\n    self.lapGJ = np.dot(L2, L1)\n    self.geom_weight = np.dot(self.M_sum_mems, self.mem_sa / self.mem_vol) * p.cell_height",
+    "Cells.makeECM": "def makeECM(self, p):\n    \"\"\"\n        makeECM returns an regular scatter\n        of points defined on the world space\n        with dimensions wsx, wsy in [m].\n\n\n        Creates\n        -------\n        self.delta          spacing between points of square environmental grid\n        self.grid_obj       an instance of FiniteDiffSolver, with MACs grid defined within\n        self.X, self.Y      major X and Y grid (cell centre points) of MACs grid\n        self.map_ij2k       mapping between (i,j) indices of 2D grids and the k indice of the unravelled grid\n                            (for grid-cell centres)\n        self.index_k        unravelled grid k-index\n        self.ecm_sa         surface area of the extracellular space grid-cell face\n        self.ecm_vol        volume of the extracellular space grid-cell\n        self.xypts          numpy array listing [x,y] of world seed points\n\n        self.xmin, self.xmax      dimensions of world grid\n        self.ymin, self.ymax\n\n        self.centre     [x,y] coordinate of world centre\n\n        Notes\n        -------\n        Uses Numpy arrays\n        \"\"\"\n    self.delta = (self.xmax - self.xmin) / p.grid_size\n    self.grid_obj = fd.FiniteDiffSolver()\n    self.grid_obj.cell_grid(self.delta, self.xmin, self.xmax, self.ymin, self.ymax)\n    self.X = self.grid_obj.cents_X\n    self.Y = self.grid_obj.cents_Y\n    self.xypts = self.grid_obj.xy_cents\n    self.map_ij2k = self.grid_obj.map_ij2k_cents\n    self.index_k = [x for x in range(0, len(self.xypts))]\n    bflags_ecm_o = []\n    ecm_points_o = []\n    for i, (mem_i, mem_j) in enumerate(self.mem_nn):\n        xmem = self.mem_mids_flat[:, 0]\n        ymem = self.mem_mids_flat[:, 1]\n        xi = (xmem[mem_i] + xmem[mem_j]) / 2\n        yi = (ymem[mem_i] + ymem[mem_j]) / 2\n        ecm_points_o.append([xi, yi])\n        if mem_i == mem_j:\n            bflags_ecm_o.append([xi, yi])\n    ecm_points_unique = np.unique(ecm_points_o, axis=0)\n    bflags_ecm_unique = np.unique(bflags_ecm_o, axis=0)\n    ecm_list = ecm_points_unique.tolist()\n    bflags_list = bflags_ecm_unique.tolist()\n    bflags_ecm = []\n    for bf in bflags_list:\n        bflags_ecm.append(ecm_list.index(bf))\n    self.ecm_points = np.asarray(ecm_points_unique)\n    self.bflags_ecm = np.asarray(bflags_ecm)\n    self.ecm_i = np.asarray([ii for ii in range(len(self.ecm_points))])\n    xmem_mids = (self.mem_mids_flat[self.mem_nn[:, 0]] + self.mem_mids_flat[self.mem_nn[:, 1]]) / 2\n    points_tree_ecm = cKDTree(self.ecm_points)\n    mem_to_ecm = []\n    for xm in xmem_mids:\n        _, ei = points_tree_ecm.query(xm)\n        mem_to_ecm.append(ei)\n    self.mem_to_ecm = np.asarray(mem_to_ecm)\n    cell_to_ecm = []\n    for ci, mem_is in enumerate(self.cell_to_mems):\n        mem_pts = xmem_mids[mem_is]\n        _, eci = points_tree_ecm.query(mem_pts)\n        cell_to_ecm.append(eci.tolist())\n    self.cell_to_ecm = np.asarray(cell_to_ecm, dtype=object)\n    self.all_points = np.vstack((self.cell_centres, self.ecm_points))\n    self.all_points_imap = np.hstack((self.cell_i, self.ecm_i))\n    self.all_i = np.asarray([ii for ii in range(len(self.all_points))])\n    self.all_points_ecm_i = len(self.cell_i) + self.ecm_i\n    self.all_points_cell_i = self.cell_i\n    self.adl = len(self.all_points)\n    points_tree_mems = cKDTree(self.mem_mids_flat)\n    ecm_to_mems_o = points_tree_mems.query_ball_point(self.ecm_points, r=10 * p.cell_space)\n    ecm_to_mems = []\n    ecm_to_cells = []\n    for i, ecm_is in enumerate(ecm_to_mems_o):\n        ecm_to_mems.append(ecm_is)\n        ecm_to_cells.append(self.mem_to_cells[ecm_is])\n    self.ecm_to_mems = np.asarray(ecm_to_mems, dtype=object)\n    self.ecm_to_cells = np.asarray(ecm_to_cells, dtype=object)\n    self.ecm_vol = []\n    self.ecm_sa = []\n    for mis in self.ecm_to_mems:\n        esa = self.mem_sa[mis[0]]\n        self.ecm_vol.append(esa * p.cell_space)\n        self.ecm_sa.append(esa * 1)\n    self.ecm_vol = np.asarray(self.ecm_vol)\n    self.ecm_sa = np.asarray(self.ecm_sa)\n    self.ecmdl = len(self.ecm_points)",
+    "Cells.make_voronoi": "@type_check\ndef make_voronoi(self, phase: SimPhase) -> None:\n    \"\"\"\n        Calculate, close, and clip the Voronoi diagram from the cell lattice\n        previously created by the :func:`_make_cell_lattice` method.\n\n        Specifically, this method (in order):\n\n        #. Calculates this diagram.\n        #. Closes this diagram at the square boundaries of the global\n           environment.\n        #. Removes all cells from this diagram to define a cluster shape.\n\n        Parameters\n        --------\n        phase : SimPhase\n            Current simulation phase.\n\n        Creates\n        ---------\n        self.ecm_verts              x,y points of Voronoi cell vertices (nulled at world creation endpoint)\n        self.ecm_verts_unique       x,y points of unique Voronoi cell vertices (nulled at world creation endpoint)\n        self.ecm_polyinds           indices into self.ecm_verts_unique list defining each Voronoi polygon\n                                    (nulled at world creation endpoint)\n        self.cluster_mask           Matrix of booleans defining masked shape of cell cluster\n        self.msize                  Size of bitmap (side pixel number)\n        \"\"\"\n    logs.log_info('Creating Voronoi geometry... ')\n    from betse.science.tissue.picker.tispickimage import TissuePickerImage\n    image_picker = TissuePickerImage(filename=phase.p.tissue_default.picker_image_filename, dirname=phase.p.conf_dirname)\n    image_mask = image_picker.get_image_mask(cells=self)\n    lattice_to_mesh_type = {CellLatticeType.HEX: 'tri', CellLatticeType.SQUARE: 'rect'}\n    if phase.p.single_cell:\n        self.mesh = DECMesh(cell_radius=phase.p.cell_radius, seed_points=None, use_alpha_shape=False, allow_merging=False, single_cell_noise=0.1, single_cell_sides=6, image_mask=None, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type], center=self.centre)\n        self.mesh.init_mesh()\n    elif phase.p.svg_override:\n        self.mesh = DECMesh(cell_radius=None, seed_points=self.clust_xy, alpha_shape=phase.p.alpha_shape, use_centroids=phase.p.use_centroids, use_alpha_shape=True, single_cell_noise=0.5, single_cell_sides=6, image_mask=None, allow_merging=True, merge_thresh=0.2, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type])\n        self.mesh.init_mesh()\n    else:\n        self.mesh = DECMesh(cell_radius=phase.p.cell_radius, seed_points=self.clust_xy, alpha_shape=phase.p.alpha_shape, use_centroids=phase.p.use_centroids, use_alpha_shape=True, single_cell_noise=0.5, single_cell_sides=6, image_mask=None, allow_merging=True, merge_thresh=0.1, close_thresh=0.1, make_all_operators=False, mesh_type=lattice_to_mesh_type[phase.p.cell_lattice_type])\n        self.mesh.clip_and_refine(image_mask, smoothing=None, refinement=phase.p.refine_mesh, max_steps=phase.p.maximum_voronoi_steps, convergence=phase.p.voronoi_convergence, fix_bounds=True)\n    self.ecm_verts = self.mesh.vcell_verts\n    self.cluster_mask = image_mask.clipping_matrix\n    self.msize = image_mask.msize\n    self.ecm_verts_unique = self.mesh.vor_verts",
+    "Cells.make_world": "@type_check\ndef make_world(self, phase: SimPhase) -> None:\n    \"\"\"\n        Construct the entire world (including both the cell cluster and\n        extracellular environment) to be simulated for the passed seed\n        simulation phase.\n\n        Parameters\n        --------\n        phase : SimPhase\n            Current simulation phase.\n        \"\"\"\n    phase.callbacks.progress_stated('Creating pseudo-random cell cluster...')\n    phase.die_unless_kind_seed()\n    if phase.p.svg_override is True:\n        self.parse_svg(phase.p)\n    else:\n        self._make_cell_lattice(phase.p)\n    self.make_voronoi(phase)\n    self.cell_index(phase.p)\n    phase.callbacks.progressed_next(status='Calculating geometric cell properties...')\n    self.cellVerts(phase.p)\n    self.cellMatrices(phase.p)\n    phase.callbacks.progressed_next(status='Calculating geometric cell volumes...')\n    self.cell_vols(phase.p)\n    self.mem_processing(phase.p)\n    self.near_neigh(phase.p)\n    phase.callbacks.progressed_next(status='Creating extracellular matrix (ECM) grid...')\n    self.makeECM(phase.p)\n    self.environment(phase.p)\n    self.grid_len = len(self.xypts)\n    self.make_maskM(phase.p)\n    phase.callbacks.progressed_next(status='Creating environmental voltage Poisson solver...')\n    bdic = {'N': 'value', 'S': 'value', 'E': 'value', 'W': 'value'}\n    _, self.lapENVinv = self.grid_obj.makeLaplacian(bound=bdic)\n    phase.callbacks.progressed_next(status='Creating environmental current Poisson solver...')\n    bdic = {'N': 'flux', 'S': 'flux', 'E': 'flux', 'W': 'flux'}\n    _, self.lapENV_P_inv = self.grid_obj.makeLaplacian(bound=bdic)\n    self.lapGJinv = None\n    self.lapGJ = None\n    self.M_sum_mem_to_ecm = None\n    self.gradMem = None\n    self.cell_i = np.asarray(self.cell_i)\n    self.gj_default_weights = np.ones(len(self.mem_i))",
+    "Cells.mem_processing": "def mem_processing(self, p) -> None:\n    \"\"\"\n        Calculate the membrane-specific nearest neighbour pairs, interaction\n        with the extracellular data points of the Voronoi grid lattice, and\n        membranes on the boundary.\n        \"\"\"\n    logs.log_info('Creating gap junctions... ')\n    sc = 3.0 * (1 - p.scale_cell) * p.cell_radius\n    memTree = cKDTree(self.mem_mids_flat)\n    mem_nn_o = memTree.query_ball_point(self.mem_mids_flat, sc)\n    mem_nn = [[] for x in self.mem_i]\n    mem_bound = []\n    for i, ind_pair in enumerate(mem_nn_o):\n        if len(ind_pair) == 1:\n            mem_bound.append(i)\n            mem_nn[i].append(i)\n            mem_nn[i].append(i)\n        elif len(ind_pair) == 2:\n            mem_nn[i].append(ind_pair[0])\n            mem_nn[i].append(ind_pair[1])\n        elif len(ind_pair) > 2:\n            i_n = [self.mem_vects_flat[i, 2], self.mem_vects_flat[i, 3]]\n            for j in ind_pair:\n                a = [self.mem_vects_flat[j, 2], self.mem_vects_flat[j, 3]]\n                ia = round(np.dot(i_n, a), 1)\n                if ia == -1.0:\n                    mem_nn[i] = []\n                    mem_nn[i].append(i)\n                    mem_nn[i].append(j)\n                else:\n                    mem_nn[i] = []\n                    mem_nn[i].append(i)\n                    mem_nn[i].append(i)\n    self.mem_nn = np.asarray(mem_nn)\n    self.bflags_mems = np.asarray(mem_bound)\n    self.bflags_cells = []\n    for mem_i in self.bflags_mems:\n        cell_i = self.mem_to_cells[mem_i]\n        self.bflags_cells.append(cell_i)\n    self.bflags_cells = np.asarray(self.bflags_cells)\n    ecm_mids = set()\n    for verts in self.ecm_verts:\n        for i in range(0, len(verts)):\n            pt1 = verts[i - 1]\n            pt2 = verts[i]\n            pt1 = np.asarray(pt1)\n            pt2 = np.asarray(pt2)\n            mid = (pt1 + pt2) / 2\n            mx = mid[0]\n            my = mid[1]\n            ecm_mids.add((mx, my))\n    ecm_mids = list(ecm_mids)\n    self.ecm_mids = np.asarray(ecm_mids)",
+    "Cells.near_neigh": "def near_neigh(self, p):\n    \"\"\"\n        Calculate the nearest neighbours for each cell centre in the cluster and return a numpy\n        array of nn indices with an index consistent with all other data lists for the cluster.\n\n        Creates\n        -------\n        self.cell_nn            Indices of all nearest neighbours to each cell (ordered to self.cell_i)\n        self.num_nn             Number of nearest neighbours for each cell (ordered to self.cell_i)\n        self.average_nn         Average number of nearest neighbours for entire cluster\n        self.nn_i                           Non-unique list of index pairs to cells, each pair defining a cell-cell GJ\n        self.gj_len                         Length of each GJ [m]\n        self.nn_tx, self.nn_ty              Tangent vector coordinates to each gj\n\n        Notes\n        -------\n        Uses numpy arrays\n        Uses scipy spatial KDTree search algorithm\n        \"\"\"\n    self.nn_i = []\n    self.cell_nn_i = [[] for x in self.mem_i]\n    for i, (mem_i, mem_j) in enumerate(self.mem_nn):\n        if mem_i == mem_j:\n            self.nn_i.append(i)\n            cell_i = self.mem_to_cells[i]\n            self.cell_nn_i[mem_i].append(cell_i)\n            self.cell_nn_i[mem_i].append(cell_i)\n        elif i == mem_i and i != mem_j:\n            self.nn_i.append(mem_j)\n            cell_i = self.mem_to_cells[mem_i]\n            cell_j = self.mem_to_cells[mem_j]\n            self.cell_nn_i[i].append(cell_i)\n            self.cell_nn_i[i].append(cell_j)\n        elif i == mem_j and i != mem_i:\n            self.nn_i.append(mem_i)\n            cell_i = self.mem_to_cells[mem_j]\n            cell_j = self.mem_to_cells[mem_i]\n            self.cell_nn_i[i].append(cell_i)\n            self.cell_nn_i[i].append(cell_j)\n        else:\n            logs.log_info('WARNING: entry not placed in seed nearest neighbour construction. Results may not be accurate.')\n    self.nn_i = np.asarray(self.nn_i)\n    self.cell_nn_i = np.asarray(self.cell_nn_i)\n    self.cell_nn = []\n    for cell_i, mem_i_set in enumerate(self.cell_to_mems):\n        cell_neigh_set = []\n        for mem_i in mem_i_set:\n            mem_j = self.nn_i[mem_i]\n            if mem_j == mem_i:\n                pass\n            else:\n                cell_j = self.mem_to_cells[mem_j]\n                if cell_i != cell_j:\n                    cell_neigh_set.append(cell_j)\n        self.cell_nn.append(cell_neigh_set)\n    self.num_nn = []\n    for indices in self.cell_nn:\n        self.num_nn.append(len(indices))\n    self.average_nn = sum(self.num_nn) / len(self.num_nn)\n    self.num_nn = np.asarray(self.num_nn)\n    self.cell_nn = np.asarray(self.cell_nn, dtype=object)\n    nn_bound = self.cell_nn[self.bflags_cells]\n    nn_bound, _, _ = tb.flatten(nn_bound)\n    self.nn_bound = []\n    for ind in nn_bound:\n        if ind not in self.bflags_cells:\n            self.nn_bound.append(ind)",
+    "Cells.redo_gj": "@type_check\ndef redo_gj(self, phase: SimPhase) -> None:\n    \"\"\"\n        (Re)create the gap junction connection network after assessing tissue\n        profile requests for the passed simulation phase.\n\n        Parameters\n        ----------\n        phase : SimPhase\n            Current simulation phase.\n        \"\"\"\n    dyna = phase.dyna\n    p = phase.p\n    flag_cell_nn = [[] for x in range(0, len(self.cell_i))]\n    for tissue_name, tissue_profile in dyna.tissue_name_to_profile.items():\n        if tissue_profile.is_gj_insular:\n            cell_targets = dyna.cell_target_inds[tissue_name]\n            for i, inds in enumerate(self.cell_nn):\n                check_a = int(i in cell_targets)\n                for ind_b in inds:\n                    check_b = int(ind_b in cell_targets)\n                    if check_a != check_b:\n                        flag_cell_nn[i].append(ind_b)\n    new_cell_nn = [[] for x in range(0, len(self.cell_i))]\n    for i, flags in enumerate(flag_cell_nn):\n        neighs = self.cell_nn[i]\n        for cell in neighs:\n            if cell not in flags:\n                new_cell_nn[i].append(cell)\n    self.cell_nn_connected = np.asarray(new_cell_nn, dtype=object)\n    self.num_nn = []\n    for indices in self.cell_nn:\n        self.num_nn.append(len(indices))\n    self.average_nn = sum(self.num_nn) / len(self.num_nn)\n    self.num_nn = np.asarray(self.num_nn)\n    self.gj_default_weights = np.ones(len(self.mem_i))\n    for cell_i, nn_cell_i_set in enumerate(self.cell_nn_connected):\n        mem_i_set = self.cell_to_mems[cell_i]\n        for mem_i in mem_i_set:\n            mem_j = self.nn_i[mem_i]\n            if mem_j != mem_i:\n                cell_j = self.mem_to_cells[mem_j]\n                if cell_j not in nn_cell_i_set:\n                    self.gj_default_weights[mem_i] = 0.0\n    self.calc_gj_vects(p)",
+    "DECMesh.create_aux_operators": "def create_aux_operators(self):\n    \"\"\"\n        Creates auxiliary operators required for curl, vector laplacians, etc. Note these are\n        needed for the main mesh, but not for the 'mu-mesh' that is required for tensor work...\n        \"\"\"\n    logs.log_info('Creating auxiliary operators...')\n    delta_tri_1 = np.zeros((self.n_tcell, self.n_tedges))\n    tedge_tree = cKDTree(self.tri_edges)\n    for ic, vertis_o in enumerate(self.tri_cells):\n        vertis_1 = np.roll(vertis_o, -1)\n        for vi, vj in zip(vertis_o, vertis_1):\n            disttea, ea = tedge_tree.query([vi, vj])\n            distteb, eb = tedge_tree.query([vj, vi])\n            if disttea == 0.0 and distteb != 0.0:\n                delta_tri_1[ic, ea] = 1\n            elif distteb == 0.0 and disttea != 0.0:\n                delta_tri_1[ic, eb] = -1\n    self.delta_tri_1 = np.asarray(delta_tri_1)\n    self.delta_tri_1_inv = np.linalg.pinv(self.delta_tri_1)\n    delta_vor_0 = np.zeros((self.n_vedges, self.n_vverts))\n    for ei, (vi, vj) in enumerate(self.vor_edges):\n        delta_vor_0[ei, vj] = 1.0\n        delta_vor_0[ei, vi] = -1.0\n    self.delta_vor_0 = np.asarray(delta_vor_0)\n    self.delta_vor_0_inv = np.linalg.pinv(self.delta_vor_0)\n    delta_vor_1 = np.zeros((len(self.inner_tvert_i), self.n_vedges))\n    vedge_tree = cKDTree(self.vor_edges)\n    for ic, cell_verts in enumerate(self.vor_cells[self.inner_tvert_i]):\n        cell_verts_roll = np.roll(cell_verts, 1)\n        for vi, vj in zip(cell_verts, cell_verts_roll):\n            distvea, ea = vedge_tree.query([vi, vj])\n            distveb, eb = vedge_tree.query([vj, vi])\n            if distvea == 0.0 and distveb != 0.0:\n                delta_vor_1[ic, ea] = 1\n            elif distveb == 0.0 and distvea != 0.0:\n                delta_vor_1[ic, eb] = -1\n    self.delta_vor_1 = np.asarray(delta_vor_1)\n    self.delta_vor_1_inv = np.linalg.pinv(self.delta_vor_1)",
+    "DECMesh.create_core_operators": "def create_core_operators(self):\n    \"\"\"\n\n        Creates the exterior derivative operators 'delta_0' and 'delta_1'.\n        Note that the transpose of these matrices are equal to the\n        boundary operators, where bount_1 = (delta_0).T and bound_2 = (delta_1).T.\n\n        \"\"\"\n    logs.log_info('Creating core operators...')\n    delta_tri_0 = np.zeros((self.n_tedges, self.n_tverts))\n    for ei, (vi, vj) in enumerate(self.tri_edges):\n        delta_tri_0[ei, vj] = 1.0\n        delta_tri_0[ei, vi] = -1.0\n    self.delta_tri_0 = np.asarray(delta_tri_0)\n    self.delta_tri_0_inv = np.linalg.pinv(self.delta_tri_0)",
+    "DECMesh.create_mappings": "def create_mappings(self, ignoreb=False):\n    \"\"\"\n        Make various mappings for the tri-mesh.\n        \"\"\"\n    face_to_edges = [[] for ii in range(self.n_tcell)]\n    verts_to_edges = [[] for i in range(len(self.tri_verts))]\n    edge_tree = cKDTree(self.tri_edges)\n    for ci, vertsi_o in enumerate(self.tri_cells):\n        vertsi_i = np.roll(vertsi_o, -1)\n        for vi, vj in zip(vertsi_o, vertsi_i):\n            dist_e, ea = edge_tree.query([vi, vj])\n            if dist_e == 0.0:\n                face_to_edges[ci].append(ea)\n                verts_to_edges[vi].append(ea)\n                verts_to_edges[vj].append(ea)\n    self.tcell_to_tedges = np.asarray(face_to_edges, dtype=object)\n    self.tverts_to_tedges = np.asarray(verts_to_edges, dtype=object)\n    tedges_to_tcell = [[] for xi in self.tri_edges]\n    for tcell_i, edge_inds in enumerate(self.tcell_to_tedges):\n        for ei in edge_inds:\n            tedges_to_tcell[ei].append(tcell_i)\n    self.tedges_to_tcell = np.asarray(tedges_to_tcell, dtype=object)\n    if ignoreb is False:\n        bcellso = self.tedges_to_tcell[self.bflags_tedges]\n        self.bflags_tcells = np.asarray([b[0] for b in bcellso])",
+    "DECMesh.define_vorverts": "def define_vorverts(self):\n    \"\"\"\n        Add perpendicular bisectors into the vor mesh.\n\n        When constructing a voronoi diagram, the vor mesh edges intersecting\n        the incredible hull of the tri mesh must be defined by a new set of vor\n        mesh vertices added outside the tri mesh hull. This method adds these\n        perpendicular bisectors into the vor mesh.\n        \"\"\"\n    logs.log_info('Calculating Voronoi cells...')\n    vcell_verts = []\n    vor_verts = []\n    vor_sa = []\n    vor_cents = []\n    vor_edge_verts = []\n    tri_sa_o = []\n    for ti, tc_indso in enumerate(self._tverts_to_tcell):\n        tc_inds = np.unique(tc_indso)\n        assert len(tc_indso) != 0, 'Tri-vert belongs to no simplices!'\n        if self.use_centroids:\n            vvertso = self.tri_cents[tc_inds]\n        else:\n            vvertso = self.tri_ccents[tc_inds]\n        trisai = self.tri_sa[tc_inds]\n        if ti in self.bflags_tverts:\n            tedge_inds = np.unique(self.tverts_to_tedges[ti])\n            for tei in tedge_inds:\n                if tei in self.bflags_tedges:\n                    bedge_verts = self.tri_verts[self.tri_edges[tei]]\n                    bedge_mid = np.mean(bedge_verts, axis=0)\n                    simp_i = self.tedges_to_tcell[tei]\n                    if self.use_centroids:\n                        pt_o = self.tri_cents[simp_i[0]]\n                    else:\n                        pt_o = self.tri_ccents[simp_i[0]]\n                    dist_diff = bedge_mid - pt_o\n                    intpt = bedge_mid + dist_diff\n                    bsa = self.tri_sa[simp_i[0]]\n                    vvertso = np.vstack((vvertso, intpt))\n                    trisai = np.hstack((trisai, bsa))\n        inds_vsort = self.cc_sort_inds(vvertso)\n        vverts = vvertso[inds_vsort]\n        trisaj = trisai[inds_vsort]\n        vor_verts.extend(vverts)\n        tri_sa_o.extend(trisaj)\n        vcell_verts.append(vverts)\n        vor_sa.append(self.area(vverts))\n        vor_cents.append(self.poly_centroid(vverts))\n        vedge_verts = np.asarray([[vi, vj] for vi, vj in zip(vverts, np.roll(vverts, -1, axis=0))])\n        vor_edge_verts.extend(vedge_verts)\n    self.vcell_verts = np.asarray(vcell_verts, dtype=object)\n    self.vor_verts_duplicates = vor_verts * 1\n    self.vor_verts = np.unique(np.asarray(vor_verts), axis=0)\n    self.vor_sa = np.asarray(vor_sa)\n    self.vor_cents = np.asarray(vor_cents)\n    self.vor_edge_verts = np.unique(np.asarray(vor_edge_verts), axis=0)\n    tri_sa_o = np.asarray(tri_sa_o)\n    vord_tree = cKDTree(self.vor_verts_duplicates)\n    _, vi = vord_tree.query(self.vor_verts)\n    self.tri_sa_o = tri_sa_o[vi]",
+    "DECMesh.pre_mesh": "def pre_mesh(self):\n    \"\"\"\n        Create only the tri and vor meshes without creating operators.\n\n        \"\"\"\n    self.create_tri_mesh()\n    self.create_mappings()\n    self.define_vorverts()\n    self.process_voredges()",
+    "DECMesh.process_primary_edges": "def process_primary_edges(self):\n    \"\"\"\n        Process the edges and boundary of the primary mesh.\n        \"\"\"\n    logs.log_info('Defining edges of tri mesh...')\n    all_edges = set()\n    unique_edges = set()\n    hull_points = []\n    hull_edges = []\n    tri_mids = []\n    tri_edge_len = []\n    tri_tang = []\n    for verti_o in self.tri_cells:\n        verti_i = np.roll(verti_o, -1)\n        for vi, vj in zip(verti_o, verti_i):\n            all_edges.add((vi, vj))\n    for va, vb in all_edges:\n        if (va, vb) in all_edges and (vb, va) not in all_edges:\n            hull_points.append(va)\n            hull_points.append(vb)\n            hull_edges.append([va, vb])\n        if (vb, va) not in unique_edges:\n            unique_edges.add((va, vb))\n    self.bflags_tverts = np.unique(hull_points)\n    self.tri_edges = np.asarray(list(unique_edges))\n    self.n_tedges = len(self.tri_edges)\n    tri_edges = self.tri_edges.tolist()\n    bflags_tedges = []\n    for vi, vj in hull_edges:\n        if [vi, vj] in tri_edges:\n            kk = tri_edges.index([vi, vj])\n        elif [vj, vi] in tri_edges:\n            kk = tri_edges.index([vj, vi])\n        bflags_tedges.append(kk)\n    self.bflags_tedges = np.asarray(bflags_tedges)\n    self.tri_edge_i = np.linspace(0, self.n_tedges - 1, self.n_tedges, dtype=int)\n    self.inner_tedge_i = np.delete(self.tri_edge_i, self.bflags_tedges)\n    for ei, (vi, vj) in enumerate(self.tri_edges):\n        tpi = self.tri_verts[vi]\n        tpj = self.tri_verts[vj]\n        tan_t = tpj - tpi\n        tri_len = np.linalg.norm(tan_t)\n        tan_ti = tan_t / tri_len\n        assert np.round(tri_len, 15) != 0.0, 'Tri-edge length equal to zero! Duplicate seed points exist!'\n        pptm = (tpi + tpj) / 2\n        tri_mids.append(pptm)\n        tri_edge_len.append(tri_len)\n        tri_tang.append(tan_ti)\n    self.tri_mids = np.asarray(tri_mids)\n    self.tri_edge_len = np.asarray(tri_edge_len)\n    self.tri_tang = np.asarray(tri_tang)\n    self.inner_tvert_i = np.delete(self.tri_vert_i, self.bflags_tverts)\n    self.centroid = np.mean(self.tri_verts, axis=0)",
+    "DECMesh.process_voredges": "def process_voredges(self):\n    logs.log_info('Calculating Voronoi edges...')\n    all_edges = set()\n    vedge_set = set()\n    hull_points = []\n    hull_edges = []\n    vor_mids = []\n    vor_tang = []\n    vor_edge_len = []\n    vor_cells = []\n    vor_tree = cKDTree(self.vor_verts)\n    if self.use_centroids:\n        _, self.inner_vvert_i = vor_tree.query(self.tri_cents)\n    else:\n        _, self.inner_vvert_i = vor_tree.query(self.tri_ccents)\n    for vpts in self.vcell_verts:\n        di, vi = vor_tree.query(vpts)\n        vor_cells.append(vi)\n    for vedge in self.vor_edge_verts:\n        di, vi = vor_tree.query(vedge)\n        all_edges.add((vi[0], vi[1]))\n    for va, vb in all_edges:\n        if (va, vb) in all_edges and (vb, va) not in all_edges:\n            hull_points.append(va)\n            hull_points.append(vb)\n            hull_edges.append([va, vb])\n        if (vb, va) not in vedge_set:\n            vedge_set.add((va, vb))\n    self.bflags_vverts = np.unique(hull_points)\n    vor_edges = np.asarray(list(vedge_set))\n    vedge_tree = cKDTree(vor_edges)\n    bflags_vedges = []\n    for vi, vj in hull_edges:\n        dedgea, ea = vedge_tree.query([vi, vj])\n        dedgeb, eb = vedge_tree.query([vj, vi])\n        if dedgea == 0.0:\n            kk = ea\n        elif dedgeb == 0.0:\n            kk = eb\n        bflags_vedges.append(kk)\n    self.bflags_vedges = np.asarray(bflags_vedges)\n    for ei, (vi, vj) in enumerate(vor_edges):\n        vpi = self.vor_verts[vi]\n        vpj = self.vor_verts[vj]\n        tan_v = vpj - vpi\n        vor_len = np.linalg.norm(tan_v)\n        tan_vi = tan_v / vor_len\n        assert np.round(vor_len, 15) != 0.0, 'Tri-edge length equal to zero! Duplicate seed points exist!'\n        ppvm = (vpi + vpj) / 2\n        vor_mids.append(ppvm)\n        vor_edge_len.append(vor_len)\n        vor_tang.append(tan_vi)\n    vor_mids = np.asarray(vor_mids)\n    vor_edge_len = np.asarray(vor_edge_len)\n    vor_tang = np.asarray(vor_tang)\n    self.vor_cells = np.asarray(vor_cells, dtype=object)\n    vor_tree = cKDTree(vor_mids)\n    di, map_vedge_to_tedge = vor_tree.query(self.tri_mids)\n    vor_edges = np.asarray(vor_edges)\n    self.vor_edges = vor_edges[map_vedge_to_tedge]\n    self.vor_mids = vor_mids[map_vedge_to_tedge]\n    self.vor_edge_len = vor_edge_len[map_vedge_to_tedge]\n    self.vor_tang = vor_tang[map_vedge_to_tedge]\n    for ei, (vti, tti) in enumerate(zip(self.vor_tang, self.tri_tang)):\n        sign = np.sign(det1d(tti, vti))\n        if sign == 1.0:\n            self.vor_tang[ei] = -vti\n            va, vb = self.vor_edges[ei]\n            self.vor_edges[ei] = [vb, va]\n    self.n_vedges = len(self.vor_edges)\n    self.vor_edge_i = np.linspace(0, self.n_vedges - 1, self.n_vedges, dtype=int)\n    self.n_vverts = len(self.vor_verts)\n    self.n_vcells = len(self.vor_cells)\n    self.vor_vert_i = np.linspace(0, self.n_vverts - 1, self.n_vverts, dtype=int)\n    self.vor_cell_i = np.linspace(0, self.n_vcells - 1, self.n_vcells, dtype=int)\n    xmin = self.vor_verts[:, 0].min()\n    xmax = self.vor_verts[:, 0].max()\n    ymin = self.vor_verts[:, 1].min()\n    ymax = self.vor_verts[:, 1].max()\n    self.xyaxis = [xmin * 1.1, xmax * 1.1, ymin * 1.1, ymax * 1.1]"
+  },
+  "kind": "cells.stable_mesh_physical_reconstruction_source_correspondence@1",
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+  },
+  "original_aux_operator": {
+    "already_checks_both_directions": true,
+    "distinction": "mapping cache defect is separate from already signed native auxiliary incidence",
+    "method": {
+      "ast_sha256": "bbf9e4a5c97d3940617ed00418b323ccf0e98fad3aed48aa0af001551f281c49",
+      "first_line": 1190,
+      "last_line": 1258,
+      "source": "betse/science/math/mesh.py"
+    }
+  },
+  "original_directed_mapping": {
+    "exact_directed_guard": {
+      "ast_sha256": "8d5e2555cf7d0b4e4a746bc337acfc46f21752f9ddcaf840ecbfd87de8cc59a8",
+      "first_line": 721,
+      "last_line": 724,
+      "source": "betse/science/math/mesh.py"
+    },
+    "native_method": {
+      "ast_sha256": "8cf760b3b0b6a800c85f77eb44085e9ca7842bfbea443d74ae4d2316bee0ed82",
+      "first_line": 699,
+      "last_line": 743,
+      "source": "betse/science/math/mesh.py"
+    },
+    "preserved_owned_method": {
+      "ast_sha256": "7b00a5304dd13fa58f99939fadae3db892b65425848b1bab267b254e88ce91e1",
+      "first_line": 538,
+      "last_line": 562,
+      "source": "src/cells/processes/betse_initial_mesh_preparation_kernel.py"
+    },
+    "query": {
+      "ast_sha256": "5b7faf96149e81e43c990330ebc411919c9f218338b34474a511e055c0e9e705",
+      "first_line": 719,
+      "last_line": 719,
+      "source": "betse/science/math/mesh.py"
+    }
+  },
+  "original_dual_axis_defect": {
+    "boundary_flags_reindexed_after_selection": false,
+    "flag_read_by_audited_mesh_or_cells_code": false,
+    "full_boundary_flag_store": {
+      "ast_sha256": "9f150b012b0443cf5e769be114fdaa9b20bb35b175c1dff9ff2e720dcd657718",
+      "first_line": 922,
+      "last_line": 922,
+      "source": "betse/science/math/mesh.py"
+    },
+    "nearest_midpoint_selection": {
+      "ast_sha256": "665ee73a8d09a0e02885f2616ccb878c6082e489be2a4ecd5ae29d45e4e32c0c",
+      "first_line": 958,
+      "last_line": 958,
+      "source": "betse/science/math/mesh.py"
+    },
+    "overwritten_selected_axis": {
+      "ast_sha256": "05f2cde60ebc9b1ff04288050cb87301a2d5fd1e662439ab55c3d9ce09f0e0d1",
+      "first_line": 963,
+      "last_line": 963,
+      "source": "betse/science/math/mesh.py"
+    }
+  },
+  "original_mapping_kernel_sha256": "7102de6bae1f5da0ecb5c99064ffa03b26e20b2b7b8855b72f5066fd20a0089c",
+  "physical_order": [
+    "cell_index",
+    "cellVerts",
+    "cellMatrices",
+    "cell_vols",
+    "mem_processing",
+    "near_neigh",
+    "makeECM",
+    "environment"
+  ],
+  "reused_evidence": {
+    "mesh_lifecycle_review": {
+      "path": "/mnt/workspaces/Cells/betse-mesh-lifecycle-preparation-20261030-01/root-review-01/REVIEW.json",
+      "use": "separate conditional lifecycle/operator evidence, not a completed physical seed"
+    },
+    "original_failed_review": {
+      "path": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/root-review-01/REVIEW.json",
+      "sha256": "b88ae9a987a03481c1e95c3e320dc004ceb2eef64213f131aef38c9236d75539"
+    },
+    "stable_primitive_bundle": {
+      "path": "/mnt/workspaces/Cells/stable-geometry-primitives-prepared-20261030-02/manifest.json",
+      "sha256": "71add3636c486e9a2ec2f6690ed1b48a51c4011f6ded3d3da4e49e8f1dbb55b8",
+      "use": "separate prior law; prospective metrics may reuse it without inheriting whole mesh qualification"
+    }
+  },
+  "scope": {
+    "corrected_adapter_evaluated": false,
+    "fixtures_constructed": false,
+    "geometry_recomputed": false,
+    "original_failures_reclassified": false,
+    "reference_evaluated": false,
+    "source_bodies_evaluated": false
+  },
+  "source_metric_roles": {
+    "drawing_only_comment_is_not_used_to_override_reached_physical_operations": true,
+    "final_physical_pie_volume": {
+      "ast_sha256": "fa1701516aa6a4836ce1d685840144b8c3f2914ad5b0b9a687e692ad12458579",
+      "first_line": 1385,
+      "last_line": 1385,
+      "source": "betse/science/cells.py"
+    },
+    "initial_mesh_area_volume": {
+      "ast_sha256": "851318e0b594c24795d220696b31098090d400b67dc961ef01da5d26ecf93142",
+      "first_line": 976,
+      "last_line": 976,
+      "source": "betse/science/cells.py"
+    },
+    "membrane_current_endpoint": {
+      "ast_sha256": "0af2605858ea57cfe57e753e2555e0e1158f21691d19c500c60425771b154193",
+      "first_line": 1046,
+      "last_line": 1046,
+      "source": "betse/science/cells.py"
+    },
+    "membrane_previous_endpoint": {
+      "ast_sha256": "29ec50f7595edd7b4275b012069a73cd7bdf2edc7ded927c37352b09bdb6ee56",
+      "first_line": 1045,
+      "last_line": 1045,
+      "source": "betse/science/cells.py"
+    },
+    "native_membrane_vector_columns": [
+      "mid_x",
+      "mid_y",
+      "normal_x",
+      "normal_y",
+      "tangent_x",
+      "tangent_y"
+    ],
+    "native_membrane_vector_store": {
+      "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+      "first_line": 1089,
+      "last_line": 1089,
+      "source": "betse/science/cells.py"
+    },
+    "scale_cell_producer": {
+      "ast_sha256": "7ed6e4a84c8548d1e8011be1843ed27033bda464d44e538eb9e820460e891041",
+      "first_line": 1119,
+      "last_line": 1119,
+      "source": "betse/science/parameters.py"
+    },
+    "scale_cell_statement": "self.scale_cell = 0.99",
+    "separate_unshrunk_DEC_area_and_scaled_physical_volume": true
+  }
+}

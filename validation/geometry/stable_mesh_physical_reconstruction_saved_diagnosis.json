@@ -1,0 +1,3626 @@
+{
+  "cases": [
+    {
+      "case": "irregular-centroid-aux",
+      "json_sha256": "068ae1e568dd2af7a0c7cb49c9e6c0f1e300946660d223098be97b15f0971d4e",
+      "npz_sha256": "40d01f67854a2f5515d53f4f1e64a12def6588916585076aeefc3c10fed3978d",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-000/stable-initial-mesh/irregular-centroid-aux-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [
+          "dual_pair_11_0_1",
+          "dual_pair_11_1_0",
+          "dual_pair_14_0_0",
+          "dual_pair_14_1_1"
+        ],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 333333333308.1085,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "seed-r0-c0",
+        "seed-r0-c1",
+        "seed-r0-c2",
+        "seed-r1-c0",
+        "seed-r1-c1",
+        "seed-r1-c2",
+        "seed-r2-c0",
+        "seed-r2-c1",
+        "seed-r2-c2"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          17,
+          18
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 17
+        },
+        "dual_polygon_edges": 24,
+        "dual_polygon_outer_boundary_edges": 7,
+        "expected_face_edge_occurrences": 27,
+        "faces": 9,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              6,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              4,
+              6
+            ],
+            "original": [
+              6
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              6,
+              8
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 8,
+            "incident_faces": [
+              0,
+              2
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 10,
+            "incident_faces": [
+              0,
+              3
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              1,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 13,
+            "incident_faces": [
+              2,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 14,
+            "incident_faces": [
+              1,
+              8
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 16,
+            "incident_faces": [
+              3,
+              4
+            ],
+            "original": [
+              3
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 2,
+            "missing_edge_ids": [
+              13,
+              8
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              10
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              16,
+              4
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              6
+            ]
+          },
+          {
+            "face": 6,
+            "missing_edge_ids": [
+              7,
+              1
+            ]
+          },
+          {
+            "face": 8,
+            "missing_edge_ids": [
+              14
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 10,
+        "original_dual_boundary_flags": [
+          6,
+          7,
+          11,
+          13,
+          14,
+          17,
+          18
+        ],
+        "original_face_edge_occurrences": 17,
+        "owner_pairing_mismatches": [
+          {
+            "dual_complex_owner_candidates": [
+              [
+                1,
+                3
+              ]
+            ],
+            "native_selected_dual_edge": [
+              2,
+              0
+            ],
+            "primal_edge": 11,
+            "primal_owners": [
+              3,
+              0
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                1,
+                4
+              ]
+            ],
+            "native_selected_dual_edge": [
+              0,
+              5
+            ],
+            "primal_edge": 14,
+            "primal_owners": [
+              3,
+              6
+            ]
+          }
+        ],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 17,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 17,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 9
+      },
+      "unit": "check-000"
+    },
+    {
+      "case": "irregular-circumcenter-aux",
+      "json_sha256": "ab9cfa6389cb0425c5e9b021b7501f7b8ae2ec5c1760531fb8e2e2c238d2884f",
+      "npz_sha256": "518762213890e5b9cee6d65fdb7389d4e9afdf23cef4001dbf9171865d8b6bd3",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-001/stable-initial-mesh/irregular-circumcenter-aux-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [
+          {
+            "incoming": 2,
+            "kind": "boundary_degree",
+            "outgoing": 2,
+            "vertex": [
+              -9007199254740990,
+              15600926743107924
+            ]
+          },
+          {
+            "containment": true,
+            "crossing": false,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              0,
+              3
+            ],
+            "same_side_shared_segment": false
+          },
+          {
+            "containment": true,
+            "crossing": false,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              3,
+              6
+            ],
+            "same_side_shared_segment": false
+          }
+        ],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [
+          "dual_pair_11_1_0",
+          "dual_pair_14_1_1"
+        ],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 333333333318.7698,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "seed-r0-c0",
+        "seed-r0-c1",
+        "seed-r0-c2",
+        "seed-r1-c0",
+        "seed-r1-c1",
+        "seed-r1-c2",
+        "seed-r2-c0",
+        "seed-r2-c1",
+        "seed-r2-c2"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          17,
+          18,
+          24,
+          25
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "0": 2,
+          "1": 15
+        },
+        "dual_polygon_edges": 26,
+        "dual_polygon_outer_boundary_edges": 11,
+        "expected_face_edge_occurrences": 27,
+        "faces": 9,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              6,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              4,
+              6
+            ],
+            "original": [
+              6
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              6,
+              8
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 8,
+            "incident_faces": [
+              0,
+              2
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 10,
+            "incident_faces": [
+              0,
+              3
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              1,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 13,
+            "incident_faces": [
+              2,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 14,
+            "incident_faces": [
+              1,
+              8
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 16,
+            "incident_faces": [
+              3,
+              4
+            ],
+            "original": [
+              3
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 2,
+            "missing_edge_ids": [
+              13,
+              8
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              10
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              16,
+              4
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              6
+            ]
+          },
+          {
+            "face": 6,
+            "missing_edge_ids": [
+              7,
+              1
+            ]
+          },
+          {
+            "face": 8,
+            "missing_edge_ids": [
+              14
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 10,
+        "original_dual_boundary_flags": [
+          0,
+          1,
+          6,
+          8,
+          10,
+          12,
+          14,
+          17,
+          18,
+          24,
+          25
+        ],
+        "original_face_edge_occurrences": 17,
+        "owner_pairing_mismatches": [
+          {
+            "dual_complex_owner_candidates": [],
+            "native_selected_dual_edge": [
+              3,
+              1
+            ],
+            "primal_edge": 11,
+            "primal_owners": [
+              3,
+              0
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [],
+            "native_selected_dual_edge": [
+              0,
+              5
+            ],
+            "primal_edge": 14,
+            "primal_owners": [
+              3,
+              6
+            ]
+          }
+        ],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 17,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 17,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 9
+      },
+      "unit": "check-001"
+    },
+    {
+      "case": "native-single-preset-seed17",
+      "json_sha256": "e4d56abeb9e6cdc72f3d882f162f18586879801d7ab8d3f9107ac6bd0ce32dfb",
+      "npz_sha256": "214f2a79395aa8f8568bc820f548518430b8aaf1037e79e3def9dbd1313281d1",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-002/stable-initial-mesh/native-single-preset-seed17-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 0.00011596572068668293,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "native-seed17:0",
+        "native-seed17:1",
+        "native-seed17:2",
+        "native-seed17:3",
+        "native-seed17:4",
+        "native-seed17:5",
+        "native-seed17:6"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          12
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 12
+        },
+        "dual_polygon_edges": 18,
+        "dual_polygon_outer_boundary_edges": 6,
+        "expected_face_edge_occurrences": 18,
+        "faces": 6,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              1,
+              5
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              2,
+              3
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              0,
+              3
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 10,
+            "incident_faces": [
+              0,
+              1
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              2,
+              4
+            ],
+            "original": [
+              4
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              10
+            ]
+          },
+          {
+            "face": 2,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              4,
+              6
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              5
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              1
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 6,
+        "original_dual_boundary_flags": [
+          1,
+          0,
+          2,
+          5,
+          8,
+          12
+        ],
+        "original_face_edge_occurrences": 12,
+        "owner_pairing_mismatches": [],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 12,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 12,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 7
+      },
+      "unit": "check-002"
+    },
+    {
+      "case": "native-single-preset-seed23",
+      "json_sha256": "9925e064e00bf0339f1f6b4838a3b1b1409f0fa1e58495294b4647cf50f1bd78",
+      "npz_sha256": "7ab9451c7d23605c21a0751c2dcbc64413818563ea1e06ed037bc68af2967644",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-003/stable-initial-mesh/native-single-preset-seed23-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 5.7253366891120595e-05,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "native-seed23:0",
+        "native-seed23:1",
+        "native-seed23:2",
+        "native-seed23:3",
+        "native-seed23:4",
+        "native-seed23:5",
+        "native-seed23:6"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          13,
+          15
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 12
+        },
+        "dual_polygon_edges": 18,
+        "dual_polygon_outer_boundary_edges": 6,
+        "expected_face_edge_occurrences": 18,
+        "faces": 6,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              2,
+              3
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              1,
+              5
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              0,
+              3
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              0,
+              1
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              2,
+              4
+            ],
+            "original": [
+              2
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              5,
+              7
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              1
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              4,
+              6
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 6,
+        "original_dual_boundary_flags": [
+          9,
+          13,
+          15,
+          2,
+          0,
+          1
+        ],
+        "original_face_edge_occurrences": 12,
+        "owner_pairing_mismatches": [],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 12,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 12,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 7
+      },
+      "unit": "check-003"
+    },
+    {
+      "case": "caller-square-zero",
+      "json_sha256": "5f072ed560dd96118f8d7ce813e43957fdc6f57a35c5bc8174a7ddfa7154c49b",
+      "npz_sha256": "10c2aef03ce66763164db2695e22c2e9e43d930d690f0cf78b62ecb465510d65",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-004/stable-initial-mesh/caller-square-zero-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 7.700299520260296e-05,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "40931b48dc67692e-square-r0-c1",
+        "40931b48dc67692e-square-r0-c2",
+        "40931b48dc67692e-square-r1-c0",
+        "40931b48dc67692e-square-r1-c1",
+        "40931b48dc67692e-square-r1-c2",
+        "40931b48dc67692e-square-r1-c3",
+        "40931b48dc67692e-square-r2-c0",
+        "40931b48dc67692e-square-r2-c1",
+        "40931b48dc67692e-square-r2-c2",
+        "40931b48dc67692e-square-r2-c3",
+        "40931b48dc67692e-square-r3-c1",
+        "40931b48dc67692e-square-r3-c2",
+        "40931b48dc67692e-bbox-TL"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          22,
+          24,
+          28,
+          29
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 21
+        },
+        "dual_polygon_edges": 30,
+        "dual_polygon_outer_boundary_edges": 9,
+        "expected_face_edge_occurrences": 33,
+        "faces": 9,
+        "inverse_mismatches": [
+          {
+            "edge": 0,
+            "incident_faces": [
+              6,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 1,
+            "incident_faces": [
+              7,
+              8
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 2,
+            "incident_faces": [
+              0,
+              3
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 3,
+            "incident_faces": [
+              1,
+              3
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              1,
+              5
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 8,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 9,
+            "incident_faces": [
+              2,
+              6
+            ],
+            "original": [
+              6
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              3,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 16,
+            "incident_faces": [
+              4,
+              8
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 17,
+            "incident_faces": [
+              2,
+              8
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 18,
+            "incident_faces": [
+              0,
+              6
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 19,
+            "incident_faces": [
+              5,
+              7
+            ],
+            "original": [
+              7
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 2,
+            "missing_edge_ids": [
+              9
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              2,
+              3,
+              11
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              19,
+              5,
+              8
+            ]
+          },
+          {
+            "face": 6,
+            "missing_edge_ids": [
+              18,
+              0
+            ]
+          },
+          {
+            "face": 7,
+            "missing_edge_ids": [
+              1
+            ]
+          },
+          {
+            "face": 8,
+            "missing_edge_ids": [
+              17,
+              16
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 12,
+        "original_dual_boundary_flags": [
+          2,
+          4,
+          9,
+          11,
+          14,
+          22,
+          24,
+          28,
+          29
+        ],
+        "original_face_edge_occurrences": 21,
+        "owner_pairing_mismatches": [],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 21,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 21,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 13
+      },
+      "unit": "check-004"
+    },
+    {
+      "case": "caller-square-disordered",
+      "json_sha256": "7bbcc99ca6c2852234527bfcc19318e0251eaf4391b89bc32824063774b0c7f6",
+      "npz_sha256": "b531910aaf5c511c8042670153708d362ad96479765aa5bfc87d620e4a88a2ca",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-005/stable-initial-mesh/caller-square-disordered-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [
+          {
+            "edge": [
+              [
+                -33434434637284372,
+                244647002819648896
+              ],
+              [
+                221009304263893632,
+                -5971974178598453
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              0,
+              15
+            ]
+          },
+          {
+            "incoming": 2,
+            "kind": "boundary_degree",
+            "outgoing": 0,
+            "vertex": [
+              -33434434637284372,
+              244647002819648896
+            ]
+          },
+          {
+            "incoming": 0,
+            "kind": "boundary_degree",
+            "outgoing": 2,
+            "vertex": [
+              221009304263893632,
+              -5971974178598453
+            ]
+          },
+          {
+            "containment": true,
+            "crossing": false,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              0,
+              15
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": true,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              1,
+              15
+            ],
+            "same_side_shared_segment": false
+          },
+          {
+            "containment": true,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              4,
+              15
+            ],
+            "same_side_shared_segment": false
+          },
+          {
+            "kind": "oriented_boundary_area_mismatch"
+          }
+        ],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [
+          "tri_cell_8_area",
+          "tri_cell_8_circumcenter_0",
+          "tri_cell_8_circumcenter_1",
+          "tri_cell_8_circumradius",
+          "tri_quad_8_fourth_vertex_circle",
+          "tri_cell_18_area",
+          "tri_cell_18_circumcenter_0",
+          "tri_cell_18_circumcenter_1",
+          "tri_cell_18_circumradius",
+          "tri_quad_18_fourth_vertex_circle",
+          "dual_pair_0_1_0",
+          "dual_pair_0_1_1",
+          "dual_pair_2_1_0",
+          "dual_pair_2_1_1",
+          "dual_pair_13_0_0",
+          "dual_pair_13_0_1",
+          "dual_pair_15_0_0",
+          "dual_pair_15_0_1",
+          "dual_pair_22_0_0",
+          "dual_pair_22_0_1",
+          "dual_pair_28_0_0",
+          "dual_pair_28_0_1",
+          "dual_pair_28_1_0",
+          "dual_pair_28_1_1",
+          "tri_cached_area_sum_vs_independent_boundary",
+          "vor_cached_area_sum_vs_independent_boundary"
+        ],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence",
+          "selected_dual_edges_not_duplicated"
+        ],
+        "maximum_error_fraction": 525250474243.89215,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "232498f13c47e48d-square-r0-c0",
+        "232498f13c47e48d-square-r0-c1",
+        "232498f13c47e48d-square-r0-c2",
+        "232498f13c47e48d-square-r0-c3",
+        "232498f13c47e48d-square-r1-c0",
+        "232498f13c47e48d-square-r1-c1",
+        "232498f13c47e48d-square-r1-c2",
+        "232498f13c47e48d-square-r1-c3",
+        "232498f13c47e48d-square-r2-c0",
+        "232498f13c47e48d-square-r2-c1",
+        "232498f13c47e48d-square-r2-c2",
+        "232498f13c47e48d-square-r2-c3",
+        "232498f13c47e48d-square-r3-c0",
+        "232498f13c47e48d-square-r3-c1",
+        "232498f13c47e48d-square-r3-c2",
+        "232498f13c47e48d-bbox-BL",
+        "232498f13c47e48d-bbox-BR",
+        "232498f13c47e48d-bbox-TL"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          41,
+          50,
+          49,
+          45
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "0": 2,
+          "1": 36
+        },
+        "dual_polygon_edges": 51,
+        "dual_polygon_outer_boundary_edges": 15,
+        "expected_face_edge_occurrences": 65,
+        "faces": 21,
+        "inverse_mismatches": [
+          {
+            "edge": 0,
+            "incident_faces": [
+              1,
+              4
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 1,
+            "incident_faces": [
+              11,
+              12
+            ],
+            "original": [
+              11
+            ]
+          },
+          {
+            "edge": 2,
+            "incident_faces": [
+              19,
+              20
+            ],
+            "original": [
+              20
+            ]
+          },
+          {
+            "edge": 3,
+            "incident_faces": [
+              5,
+              12
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              3,
+              5
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              13,
+              15
+            ],
+            "original": [
+              13
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              0,
+              1
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 8,
+            "incident_faces": [
+              8,
+              12
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 10,
+            "incident_faces": [
+              9,
+              11
+            ],
+            "original": [
+              9
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              8,
+              18
+            ],
+            "original": [
+              18
+            ]
+          },
+          {
+            "edge": 12,
+            "incident_faces": [
+              14,
+              15
+            ],
+            "original": [
+              14
+            ]
+          },
+          {
+            "edge": 13,
+            "incident_faces": [
+              2,
+              9
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 14,
+            "incident_faces": [
+              8,
+              15
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 15,
+            "incident_faces": [
+              4,
+              6
+            ],
+            "original": [
+              6
+            ]
+          },
+          {
+            "edge": 17,
+            "incident_faces": [
+              3,
+              16
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 21,
+            "incident_faces": [
+              16,
+              17
+            ],
+            "original": [
+              17
+            ]
+          },
+          {
+            "edge": 22,
+            "incident_faces": [
+              6,
+              7
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 23,
+            "incident_faces": [
+              8,
+              16
+            ],
+            "original": [
+              16
+            ]
+          },
+          {
+            "edge": 24,
+            "incident_faces": [
+              9,
+              10
+            ],
+            "original": [
+              10
+            ]
+          },
+          {
+            "edge": 25,
+            "incident_faces": [
+              0,
+              11
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 26,
+            "incident_faces": [
+              17,
+              20
+            ],
+            "original": [
+              17
+            ]
+          },
+          {
+            "edge": 28,
+            "incident_faces": [
+              3,
+              7
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 29,
+            "incident_faces": [
+              10,
+              14
+            ],
+            "original": [
+              10
+            ]
+          },
+          {
+            "edge": 30,
+            "incident_faces": [
+              13,
+              18
+            ],
+            "original": [
+              13
+            ]
+          },
+          {
+            "edge": 31,
+            "incident_faces": [
+              18,
+              20
+            ],
+            "original": [
+              18
+            ]
+          },
+          {
+            "edge": 32,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 35,
+            "incident_faces": [
+              1,
+              6
+            ],
+            "original": [
+              1
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              7
+            ]
+          },
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              0
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              32,
+              15
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              4
+            ]
+          },
+          {
+            "face": 6,
+            "missing_edge_ids": [
+              22,
+              35
+            ]
+          },
+          {
+            "face": 7,
+            "missing_edge_ids": [
+              28
+            ]
+          },
+          {
+            "face": 8,
+            "missing_edge_ids": [
+              23,
+              11
+            ]
+          },
+          {
+            "face": 9,
+            "missing_edge_ids": [
+              24,
+              13
+            ]
+          },
+          {
+            "face": 11,
+            "missing_edge_ids": [
+              10,
+              25
+            ]
+          },
+          {
+            "face": 12,
+            "missing_edge_ids": [
+              1,
+              3,
+              8
+            ]
+          },
+          {
+            "face": 14,
+            "missing_edge_ids": [
+              29
+            ]
+          },
+          {
+            "face": 15,
+            "missing_edge_ids": [
+              12,
+              14,
+              5
+            ]
+          },
+          {
+            "face": 16,
+            "missing_edge_ids": [
+              21,
+              17
+            ]
+          },
+          {
+            "face": 18,
+            "missing_edge_ids": [
+              30
+            ]
+          },
+          {
+            "face": 19,
+            "missing_edge_ids": [
+              2
+            ]
+          },
+          {
+            "face": 20,
+            "missing_edge_ids": [
+              31,
+              26
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 27,
+        "original_dual_boundary_flags": [
+          13,
+          32,
+          41,
+          50,
+          15,
+          26,
+          49,
+          2,
+          6,
+          10,
+          23,
+          33,
+          45,
+          0,
+          24,
+          30
+        ],
+        "original_face_edge_occurrences": 38,
+        "owner_pairing_mismatches": [
+          {
+            "dual_complex_owner_candidates": [
+              [
+                4,
+                9
+              ]
+            ],
+            "native_selected_dual_edge": [
+              4,
+              2
+            ],
+            "primal_edge": 0,
+            "primal_owners": [
+              4,
+              0
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                27,
+                29
+              ]
+            ],
+            "native_selected_dual_edge": [
+              29,
+              30
+            ],
+            "primal_edge": 2,
+            "primal_owners": [
+              3,
+              7
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [],
+            "native_selected_dual_edge": [
+              4,
+              2
+            ],
+            "primal_edge": 7,
+            "primal_owners": [
+              4,
+              15
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                3,
+                8
+              ]
+            ],
+            "native_selected_dual_edge": [
+              0,
+              3
+            ],
+            "primal_edge": 13,
+            "primal_owners": [
+              8,
+              12
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                6,
+                9
+              ]
+            ],
+            "native_selected_dual_edge": [
+              14,
+              6
+            ],
+            "primal_edge": 15,
+            "primal_owners": [
+              1,
+              0
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [],
+            "native_selected_dual_edge": [
+              14,
+              6
+            ],
+            "primal_edge": 22,
+            "primal_owners": [
+              1,
+              15
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                15,
+                17
+              ]
+            ],
+            "native_selected_dual_edge": [
+              14,
+              25
+            ],
+            "primal_edge": 28,
+            "primal_owners": [
+              1,
+              2
+            ]
+          }
+        ],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 38,
+        "repeated_selected_dual_edges": [
+          {
+            "edge": [
+              2,
+              4
+            ],
+            "occurrences": 2
+          },
+          {
+            "edge": [
+              29,
+              30
+            ],
+            "occurrences": 2
+          },
+          {
+            "edge": [
+              0,
+              3
+            ],
+            "occurrences": 2
+          },
+          {
+            "edge": [
+              6,
+              14
+            ],
+            "occurrences": 2
+          }
+        ],
+        "selected_dual_edges": 38,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 18
+      },
+      "unit": "check-005"
+    },
+    {
+      "case": "caller-hex-disordered",
+      "json_sha256": "8495418af391cc2973929df3bb42e29e84a3ef7d30d704971735eee4f59ae3ca",
+      "npz_sha256": "5b3bfb79da6cced9984f685ed0fb0e9d75ae0074e945e72ae3b41b2006477390",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-006/stable-initial-mesh/caller-hex-disordered-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [
+          {
+            "edge": [
+              [
+                -93998251081381280,
+                1092340409756296192
+              ],
+              [
+                406502516293352064,
+                228702210040297120
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              0,
+              27
+            ]
+          },
+          {
+            "edge": [
+              [
+                8486712152945562624,
+                225876741752530080
+              ],
+              [
+                8836492117135058944,
+                981726545149664000
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              2,
+              28
+            ]
+          },
+          {
+            "edge": [
+              [
+                -197145440215753568,
+                1611523034821562880
+              ],
+              [
+                -93998251081381280,
+                1092340409756296192
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              3,
+              27
+            ]
+          },
+          {
+            "edge": [
+              [
+                8836492117135058944,
+                981726545149664000
+              ],
+              [
+                8843426899513391104,
+                1346865657604025088
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              5,
+              28
+            ]
+          },
+          {
+            "edge": [
+              [
+                8840358801406135296,
+                7684310549699440640
+              ],
+              [
+                8944182973782676480,
+                7189101679543500800
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              11,
+              29
+            ]
+          },
+          {
+            "edge": [
+              [
+                8381041298758134784,
+                8634829763593422848
+              ],
+              [
+                8840358801406135296,
+                7684310549699440640
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              14,
+              29
+            ]
+          },
+          {
+            "edge": [
+              [
+                406502516293352064,
+                228702210040297120
+              ],
+              [
+                803856094533713024,
+                -115753364610435424
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              15,
+              27
+            ]
+          },
+          {
+            "edge": [
+              [
+                8143866971134399488,
+                -164833949190242912
+              ],
+              [
+                8486712152945562624,
+                225876741752530080
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              16,
+              28
+            ]
+          },
+          {
+            "edge": [
+              [
+                8025547968486675456,
+                9090140107331465216
+              ],
+              [
+                8381041298758134784,
+                8634829763593422848
+              ]
+            ],
+            "kind": "nonmanifold_or_same_direction_edge",
+            "owners": [
+              26,
+              29
+            ]
+          },
+          {
+            "incoming": 0,
+            "kind": "boundary_degree",
+            "outgoing": 2,
+            "vertex": [
+              8025547968486675456,
+              9090140107331465216
+            ]
+          },
+          {
+            "incoming": 0,
+            "kind": "boundary_degree",
+            "outgoing": 2,
+            "vertex": [
+              803856094533713024,
+              -115753364610435424
+            ]
+          },
+          {
+            "incoming": 2,
+            "kind": "boundary_degree",
+            "outgoing": 0,
+            "vertex": [
+              -197145440215753568,
+              1611523034821562880
+            ]
+          },
+          {
+            "incoming": 2,
+            "kind": "boundary_degree",
+            "outgoing": 0,
+            "vertex": [
+              8143866971134399488,
+              -164833949190242912
+            ]
+          },
+          {
+            "incoming": 2,
+            "kind": "boundary_degree",
+            "outgoing": 0,
+            "vertex": [
+              8944182973782676480,
+              7189101679543500800
+            ]
+          },
+          {
+            "incoming": 0,
+            "kind": "boundary_degree",
+            "outgoing": 2,
+            "vertex": [
+              8843426899513391104,
+              1346865657604025088
+            ]
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              0,
+              27
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              2,
+              28
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              3,
+              27
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              5,
+              28
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              11,
+              29
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              14,
+              29
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              15,
+              27
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              16,
+              28
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "containment": false,
+            "crossing": true,
+            "duplicate": false,
+            "kind": "interior_overlap",
+            "owners": [
+              26,
+              29
+            ],
+            "same_side_shared_segment": true
+          },
+          {
+            "kind": "oriented_boundary_area_mismatch"
+          }
+        ],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [
+          "tri_cell_22_area",
+          "tri_cell_22_circumcenter_0",
+          "tri_cell_22_circumcenter_1",
+          "tri_cell_22_circumradius",
+          "tri_quad_22_fourth_vertex_circle",
+          "dual_pair_16_0_0",
+          "dual_pair_16_0_1",
+          "dual_pair_16_1_0",
+          "dual_pair_16_1_1",
+          "dual_pair_24_0_0",
+          "dual_pair_24_0_1",
+          "dual_pair_24_1_0",
+          "dual_pair_24_1_1",
+          "dual_pair_38_0_0",
+          "dual_pair_38_0_1",
+          "dual_pair_38_1_0",
+          "dual_pair_38_1_1",
+          "dual_pair_45_0_0",
+          "dual_pair_45_0_1",
+          "dual_pair_45_1_0",
+          "dual_pair_45_1_1",
+          "dual_pair_61_0_0",
+          "dual_pair_61_0_1",
+          "tri_cached_area_sum_vs_independent_boundary",
+          "vor_cached_area_sum_vs_independent_boundary"
+        ],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence",
+          "selected_dual_edges_not_duplicated"
+        ],
+        "maximum_error_fraction": 5515661829895.606,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "4dcdfe6c53b0abb8-blue-r0-c0",
+        "4dcdfe6c53b0abb8-blue-r0-c1",
+        "4dcdfe6c53b0abb8-blue-r0-c2",
+        "4dcdfe6c53b0abb8-blue-r1-c0",
+        "4dcdfe6c53b0abb8-blue-r1-c1",
+        "4dcdfe6c53b0abb8-blue-r1-c2",
+        "4dcdfe6c53b0abb8-blue-r2-c0",
+        "4dcdfe6c53b0abb8-blue-r2-c1",
+        "4dcdfe6c53b0abb8-blue-r2-c2",
+        "4dcdfe6c53b0abb8-blue-r3-c0",
+        "4dcdfe6c53b0abb8-blue-r3-c1",
+        "4dcdfe6c53b0abb8-blue-r3-c2",
+        "4dcdfe6c53b0abb8-blue-r4-c0",
+        "4dcdfe6c53b0abb8-blue-r4-c1",
+        "4dcdfe6c53b0abb8-blue-r4-c2",
+        "4dcdfe6c53b0abb8-red-r0-c0",
+        "4dcdfe6c53b0abb8-red-r0-c1",
+        "4dcdfe6c53b0abb8-red-r1-c0",
+        "4dcdfe6c53b0abb8-red-r1-c1",
+        "4dcdfe6c53b0abb8-red-r2-c0",
+        "4dcdfe6c53b0abb8-red-r2-c1",
+        "4dcdfe6c53b0abb8-red-r3-c0",
+        "4dcdfe6c53b0abb8-red-r3-c1",
+        "4dcdfe6c53b0abb8-red-r4-c0",
+        "4dcdfe6c53b0abb8-red-r4-c1",
+        "4dcdfe6c53b0abb8-red-r5-c0",
+        "4dcdfe6c53b0abb8-red-r5-c1",
+        "4dcdfe6c53b0abb8-bbox-BL",
+        "4dcdfe6c53b0abb8-bbox-BR",
+        "4dcdfe6c53b0abb8-bbox-TR",
+        "4dcdfe6c53b0abb8-bbox-TL"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          76,
+          80,
+          81,
+          82,
+          85,
+          86,
+          87,
+          88
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 75
+        },
+        "dual_polygon_edges": 89,
+        "dual_polygon_outer_boundary_edges": 14,
+        "expected_face_edge_occurrences": 136,
+        "faces": 45,
+        "inverse_mismatches": [
+          {
+            "edge": 0,
+            "incident_faces": [
+              6,
+              19
+            ],
+            "original": [
+              6
+            ]
+          },
+          {
+            "edge": 1,
+            "incident_faces": [
+              39,
+              43
+            ],
+            "original": [
+              43
+            ]
+          },
+          {
+            "edge": 2,
+            "incident_faces": [
+              2,
+              27
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 3,
+            "incident_faces": [
+              5,
+              6
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              4,
+              38
+            ],
+            "original": [
+              38
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              40,
+              44
+            ],
+            "original": [
+              44
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              25,
+              26
+            ],
+            "original": [
+              26
+            ]
+          },
+          {
+            "edge": 8,
+            "incident_faces": [
+              0,
+              1
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 9,
+            "incident_faces": [
+              43,
+              44
+            ],
+            "original": [
+              43
+            ]
+          },
+          {
+            "edge": 10,
+            "incident_faces": [
+              24,
+              25
+            ],
+            "original": [
+              25
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              0,
+              8
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 12,
+            "incident_faces": [
+              8,
+              24
+            ],
+            "original": [
+              8
+            ]
+          },
+          {
+            "edge": 14,
+            "incident_faces": [
+              16,
+              17
+            ],
+            "original": [
+              16
+            ]
+          },
+          {
+            "edge": 15,
+            "incident_faces": [
+              32,
+              39
+            ],
+            "original": [
+              32
+            ]
+          },
+          {
+            "edge": 16,
+            "incident_faces": [
+              22,
+              26
+            ],
+            "original": [
+              22
+            ]
+          },
+          {
+            "edge": 17,
+            "incident_faces": [
+              2,
+              37
+            ],
+            "original": [
+              37
+            ]
+          },
+          {
+            "edge": 18,
+            "incident_faces": [
+              37,
+              38
+            ],
+            "original": [
+              37
+            ]
+          },
+          {
+            "edge": 19,
+            "incident_faces": [
+              9,
+              18
+            ],
+            "original": [
+              9
+            ]
+          },
+          {
+            "edge": 20,
+            "incident_faces": [
+              10,
+              11
+            ],
+            "original": [
+              10
+            ]
+          },
+          {
+            "edge": 21,
+            "incident_faces": [
+              30,
+              40
+            ],
+            "original": [
+              30
+            ]
+          },
+          {
+            "edge": 22,
+            "incident_faces": [
+              28,
+              43
+            ],
+            "original": [
+              28
+            ]
+          },
+          {
+            "edge": 23,
+            "incident_faces": [
+              17,
+              18
+            ],
+            "original": [
+              18
+            ]
+          },
+          {
+            "edge": 24,
+            "incident_faces": [
+              9,
+              22
+            ],
+            "original": [
+              9
+            ]
+          },
+          {
+            "edge": 25,
+            "incident_faces": [
+              27,
+              36
+            ],
+            "original": [
+              27
+            ]
+          },
+          {
+            "edge": 26,
+            "incident_faces": [
+              41,
+              42
+            ],
+            "original": [
+              42
+            ]
+          },
+          {
+            "edge": 28,
+            "incident_faces": [
+              29,
+              30
+            ],
+            "original": [
+              30
+            ]
+          },
+          {
+            "edge": 29,
+            "incident_faces": [
+              7,
+              41
+            ],
+            "original": [
+              7
+            ]
+          },
+          {
+            "edge": 30,
+            "incident_faces": [
+              28,
+              33
+            ],
+            "original": [
+              28
+            ]
+          },
+          {
+            "edge": 31,
+            "incident_faces": [
+              33,
+              36
+            ],
+            "original": [
+              33
+            ]
+          },
+          {
+            "edge": 32,
+            "incident_faces": [
+              18,
+              20
+            ],
+            "original": [
+              20
+            ]
+          },
+          {
+            "edge": 33,
+            "incident_faces": [
+              1,
+              11
+            ],
+            "original": [
+              11
+            ]
+          },
+          {
+            "edge": 35,
+            "incident_faces": [
+              3,
+              29
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 36,
+            "incident_faces": [
+              3,
+              10
+            ],
+            "original": [
+              10
+            ]
+          },
+          {
+            "edge": 37,
+            "incident_faces": [
+              0,
+              7
+            ],
+            "original": [
+              0
+            ]
+          },
+          {
+            "edge": 38,
+            "incident_faces": [
+              14,
+              25
+            ],
+            "original": [
+              25
+            ]
+          },
+          {
+            "edge": 39,
+            "incident_faces": [
+              29,
+              34
+            ],
+            "original": [
+              29
+            ]
+          },
+          {
+            "edge": 40,
+            "incident_faces": [
+              12,
+              13
+            ],
+            "original": [
+              12
+            ]
+          },
+          {
+            "edge": 41,
+            "incident_faces": [
+              39,
+              42
+            ],
+            "original": [
+              42
+            ]
+          },
+          {
+            "edge": 43,
+            "incident_faces": [
+              3,
+              5
+            ],
+            "original": [
+              3
+            ]
+          },
+          {
+            "edge": 44,
+            "incident_faces": [
+              40,
+              41
+            ],
+            "original": [
+              40
+            ]
+          },
+          {
+            "edge": 45,
+            "incident_faces": [
+              31,
+              32
+            ],
+            "original": [
+              31
+            ]
+          },
+          {
+            "edge": 47,
+            "incident_faces": [
+              10,
+              16
+            ],
+            "original": [
+              10
+            ]
+          },
+          {
+            "edge": 48,
+            "incident_faces": [
+              36,
+              37
+            ],
+            "original": [
+              37
+            ]
+          },
+          {
+            "edge": 51,
+            "incident_faces": [
+              23,
+              24
+            ],
+            "original": [
+              23
+            ]
+          },
+          {
+            "edge": 52,
+            "incident_faces": [
+              34,
+              35
+            ],
+            "original": [
+              34
+            ]
+          },
+          {
+            "edge": 53,
+            "incident_faces": [
+              35,
+              44
+            ],
+            "original": [
+              35
+            ]
+          },
+          {
+            "edge": 55,
+            "incident_faces": [
+              34,
+              38
+            ],
+            "original": [
+              38
+            ]
+          },
+          {
+            "edge": 57,
+            "incident_faces": [
+              1,
+              30
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 58,
+            "incident_faces": [
+              16,
+              19
+            ],
+            "original": [
+              19
+            ]
+          },
+          {
+            "edge": 59,
+            "incident_faces": [
+              17,
+              22
+            ],
+            "original": [
+              17
+            ]
+          },
+          {
+            "edge": 61,
+            "incident_faces": [
+              13,
+              21
+            ],
+            "original": [
+              13
+            ]
+          },
+          {
+            "edge": 62,
+            "incident_faces": [
+              22,
+              23
+            ],
+            "original": [
+              23
+            ]
+          },
+          {
+            "edge": 63,
+            "incident_faces": [
+              11,
+              23
+            ],
+            "original": [
+              11
+            ]
+          },
+          {
+            "edge": 66,
+            "incident_faces": [
+              31,
+              42
+            ],
+            "original": [
+              31
+            ]
+          },
+          {
+            "edge": 67,
+            "incident_faces": [
+              12,
+              20
+            ],
+            "original": [
+              20
+            ]
+          },
+          {
+            "edge": 68,
+            "incident_faces": [
+              15,
+              26
+            ],
+            "original": [
+              15
+            ]
+          },
+          {
+            "edge": 69,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 70,
+            "incident_faces": [
+              20,
+              21
+            ],
+            "original": [
+              21
+            ]
+          },
+          {
+            "edge": 71,
+            "incident_faces": [
+              19,
+              21
+            ],
+            "original": [
+              19
+            ]
+          },
+          {
+            "edge": 73,
+            "incident_faces": [
+              14,
+              15
+            ],
+            "original": [
+              15
+            ]
+          },
+          {
+            "edge": 74,
+            "incident_faces": [
+              33,
+              35
+            ],
+            "original": [
+              33
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              8,
+              11
+            ]
+          },
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              33
+            ]
+          },
+          {
+            "face": 2,
+            "missing_edge_ids": [
+              17
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              36
+            ]
+          },
+          {
+            "face": 4,
+            "missing_edge_ids": [
+              69,
+              4
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              43
+            ]
+          },
+          {
+            "face": 6,
+            "missing_edge_ids": [
+              3
+            ]
+          },
+          {
+            "face": 7,
+            "missing_edge_ids": [
+              37
+            ]
+          },
+          {
+            "face": 11,
+            "missing_edge_ids": [
+              20
+            ]
+          },
+          {
+            "face": 12,
+            "missing_edge_ids": [
+              67
+            ]
+          },
+          {
+            "face": 13,
+            "missing_edge_ids": [
+              40
+            ]
+          },
+          {
+            "face": 14,
+            "missing_edge_ids": [
+              38,
+              73
+            ]
+          },
+          {
+            "face": 16,
+            "missing_edge_ids": [
+              58,
+              47
+            ]
+          },
+          {
+            "face": 17,
+            "missing_edge_ids": [
+              14,
+              23
+            ]
+          },
+          {
+            "face": 18,
+            "missing_edge_ids": [
+              19,
+              32
+            ]
+          },
+          {
+            "face": 19,
+            "missing_edge_ids": [
+              0
+            ]
+          },
+          {
+            "face": 20,
+            "missing_edge_ids": [
+              70
+            ]
+          },
+          {
+            "face": 21,
+            "missing_edge_ids": [
+              61,
+              71
+            ]
+          },
+          {
+            "face": 22,
+            "missing_edge_ids": [
+              24,
+              59,
+              62
+            ]
+          },
+          {
+            "face": 23,
+            "missing_edge_ids": [
+              63
+            ]
+          },
+          {
+            "face": 24,
+            "missing_edge_ids": [
+              10,
+              51,
+              12
+            ]
+          },
+          {
+            "face": 25,
+            "missing_edge_ids": [
+              6
+            ]
+          },
+          {
+            "face": 26,
+            "missing_edge_ids": [
+              68,
+              16
+            ]
+          },
+          {
+            "face": 27,
+            "missing_edge_ids": [
+              2
+            ]
+          },
+          {
+            "face": 29,
+            "missing_edge_ids": [
+              28,
+              35
+            ]
+          },
+          {
+            "face": 30,
+            "missing_edge_ids": [
+              57
+            ]
+          },
+          {
+            "face": 32,
+            "missing_edge_ids": [
+              45
+            ]
+          },
+          {
+            "face": 33,
+            "missing_edge_ids": [
+              30
+            ]
+          },
+          {
+            "face": 34,
+            "missing_edge_ids": [
+              39,
+              55
+            ]
+          },
+          {
+            "face": 35,
+            "missing_edge_ids": [
+              52,
+              74
+            ]
+          },
+          {
+            "face": 36,
+            "missing_edge_ids": [
+              31,
+              48,
+              25
+            ]
+          },
+          {
+            "face": 38,
+            "missing_edge_ids": [
+              18
+            ]
+          },
+          {
+            "face": 39,
+            "missing_edge_ids": [
+              41,
+              1,
+              15
+            ]
+          },
+          {
+            "face": 40,
+            "missing_edge_ids": [
+              5,
+              21
+            ]
+          },
+          {
+            "face": 41,
+            "missing_edge_ids": [
+              26,
+              29,
+              44
+            ]
+          },
+          {
+            "face": 42,
+            "missing_edge_ids": [
+              66
+            ]
+          },
+          {
+            "face": 43,
+            "missing_edge_ids": [
+              22
+            ]
+          },
+          {
+            "face": 44,
+            "missing_edge_ids": [
+              53,
+              9
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 61,
+        "original_dual_boundary_flags": [
+          5,
+          6,
+          15,
+          22,
+          24,
+          30,
+          44,
+          51,
+          61,
+          62,
+          63,
+          64,
+          72,
+          73,
+          74,
+          76,
+          80,
+          81,
+          82,
+          85,
+          86,
+          87,
+          88
+        ],
+        "original_face_edge_occurrences": 75,
+        "owner_pairing_mismatches": [
+          {
+            "dual_complex_owner_candidates": [
+              [
+                17,
+                23
+              ]
+            ],
+            "native_selected_dual_edge": [
+              17,
+              11
+            ],
+            "primal_edge": 16,
+            "primal_owners": [
+              17,
+              15
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                23,
+                30
+              ]
+            ],
+            "native_selected_dual_edge": [
+              29,
+              18
+            ],
+            "primal_edge": 24,
+            "primal_owners": [
+              1,
+              15
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                4,
+                7
+              ]
+            ],
+            "native_selected_dual_edge": [
+              4,
+              3
+            ],
+            "primal_edge": 38,
+            "primal_owners": [
+              3,
+              0
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                5,
+                8
+              ]
+            ],
+            "native_selected_dual_edge": [
+              2,
+              12
+            ],
+            "primal_edge": 45,
+            "primal_owners": [
+              12,
+              30
+            ]
+          },
+          {
+            "dual_complex_owner_candidates": [
+              [
+                48,
+                53
+              ]
+            ],
+            "native_selected_dual_edge": [
+              55,
+              53
+            ],
+            "primal_edge": 61,
+            "primal_owners": [
+              5,
+              2
+            ]
+          }
+        ],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 75,
+        "repeated_selected_dual_edges": [
+          {
+            "edge": [
+              11,
+              17
+            ],
+            "occurrences": 2
+          },
+          {
+            "edge": [
+              3,
+              4
+            ],
+            "occurrences": 2
+          },
+          {
+            "edge": [
+              53,
+              55
+            ],
+            "occurrences": 2
+          }
+        ],
+        "selected_dual_edges": 75,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 31
+      },
+      "unit": "check-006"
+    },
+    {
+      "case": "caller-single-square-cache",
+      "json_sha256": "753b9b694db1ee3c81fd5415ed85880028f667ed2ac744d40410275ed0533c26",
+      "npz_sha256": "2a143a7ed3dd677fc90b0dcd203158d7ae8f3fc5ccfd5d4768b4e6718214b375",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-007/stable-initial-mesh/caller-single-square-cache-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 5.642114072160986e-05,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "28043ebe708cae39-ring-and-centre-0",
+        "28043ebe708cae39-ring-and-centre-1",
+        "28043ebe708cae39-ring-and-centre-2",
+        "28043ebe708cae39-ring-and-centre-3",
+        "28043ebe708cae39-ring-and-centre-4",
+        "28043ebe708cae39-ring-and-centre-5",
+        "28043ebe708cae39-ring-and-centre-6"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          13
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 12
+        },
+        "dual_polygon_edges": 18,
+        "dual_polygon_outer_boundary_edges": 6,
+        "expected_face_edge_occurrences": 18,
+        "faces": 6,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              2,
+              3
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              0,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              1,
+              3
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              0,
+              2
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              1,
+              4
+            ],
+            "original": [
+              4
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              5,
+              7
+            ]
+          },
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              4,
+              6
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              1
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 6,
+        "original_dual_boundary_flags": [
+          13,
+          3,
+          0,
+          2,
+          4,
+          1
+        ],
+        "original_face_edge_occurrences": 12,
+        "owner_pairing_mismatches": [],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 12,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 12,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 7
+      },
+      "unit": "check-007"
+    },
+    {
+      "case": "caller-single-hex-cache",
+      "json_sha256": "dc5f021891d0246e96b7c24eb154382f6b9e9ce42141d4caec1bb3f6f82d8833",
+      "npz_sha256": "dc590b4a7faee6e319f6cee726bb686c4bdd6c3d6a49fafbe2762b498df41463",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-008/stable-initial-mesh/caller-single-hex-cache-actual.json",
+      "original_status": "stable_mesh_completed_unqualified",
+      "previous_geometry_verdict": {
+        "complete_mesh_checked": true,
+        "dual_issues": [],
+        "exact_native_arithmetic_equivalence": false,
+        "failed_geometry_quantities": [],
+        "failed_ownership_checks": [
+          "face_to_edge_geometric_incidence",
+          "edge_to_face_geometric_incidence"
+        ],
+        "maximum_error_fraction": 2.893979779481856e-05,
+        "maximum_reference_resolution_fraction": 0.0,
+        "physical_geometry_admitted": false,
+        "primal_issues": [],
+        "primitive_domain_failures": [],
+        "topology_qualified": false,
+        "whole_mesh_passed": false
+      },
+      "retained_point_ids": [
+        "ffab09a00baf0f67-ring-and-centre-0",
+        "ffab09a00baf0f67-ring-and-centre-1",
+        "ffab09a00baf0f67-ring-and-centre-2",
+        "ffab09a00baf0f67-ring-and-centre-3",
+        "ffab09a00baf0f67-ring-and-centre-4",
+        "ffab09a00baf0f67-ring-and-centre-5",
+        "ffab09a00baf0f67-ring-and-centre-6"
+      ],
+      "saved_integer_observations": {
+        "all_primal_edges_have_one_or_two_face_owners": true,
+        "boundary_flag_indices_outside_selected_axis": [
+          14,
+          15
+        ],
+        "directed_only_source_rule_matches": true,
+        "dual_owner_candidate_count_histogram": {
+          "1": 12
+        },
+        "dual_polygon_edges": 18,
+        "dual_polygon_outer_boundary_edges": 6,
+        "expected_face_edge_occurrences": 18,
+        "faces": 6,
+        "inverse_mismatches": [
+          {
+            "edge": 1,
+            "incident_faces": [
+              4,
+              5
+            ],
+            "original": [
+              4
+            ]
+          },
+          {
+            "edge": 4,
+            "incident_faces": [
+              2,
+              3
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 5,
+            "incident_faces": [
+              0,
+              5
+            ],
+            "original": [
+              5
+            ]
+          },
+          {
+            "edge": 6,
+            "incident_faces": [
+              1,
+              3
+            ],
+            "original": [
+              1
+            ]
+          },
+          {
+            "edge": 7,
+            "incident_faces": [
+              0,
+              2
+            ],
+            "original": [
+              2
+            ]
+          },
+          {
+            "edge": 11,
+            "incident_faces": [
+              1,
+              4
+            ],
+            "original": [
+              4
+            ]
+          }
+        ],
+        "new_candidate_adapter_evaluated": false,
+        "omitted": [
+          {
+            "face": 0,
+            "missing_edge_ids": [
+              5,
+              7
+            ]
+          },
+          {
+            "face": 1,
+            "missing_edge_ids": [
+              11
+            ]
+          },
+          {
+            "face": 3,
+            "missing_edge_ids": [
+              4,
+              6
+            ]
+          },
+          {
+            "face": 5,
+            "missing_edge_ids": [
+              1
+            ]
+          }
+        ],
+        "omitted_reverse_occurrences": 6,
+        "original_dual_boundary_flags": [
+          14,
+          6,
+          11,
+          0,
+          1,
+          15
+        ],
+        "original_face_edge_occurrences": 12,
+        "owner_pairing_mismatches": [],
+        "physical_coordinates_recomputed": false,
+        "primal_edges": 12,
+        "repeated_selected_dual_edges": [],
+        "selected_dual_edges": 12,
+        "unique_endpoint_incidence_matches_original": true,
+        "vertices": 7
+      },
+      "unit": "check-008"
+    },
+    {
+      "case": "caller-single-point-lattice",
+      "failure_stage": "pre_mesh",
+      "failure_type": "ValueError",
+      "json_sha256": "79a6b5d524684aedb756020dc4f021d95eeece3aec47eb2da7245e608faf38ab",
+      "npz_sha256": "56fb3ad18489739665d28b5dca230481c48dd75231c55539322b6edd29f76e43",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-009/stable-initial-mesh/caller-single-point-lattice-actual.json",
+      "original_status": "retained_stable_mesh_failure",
+      "physical_candidate": false,
+      "raw_failure_preserved": true,
+      "unit": "check-009"
+    },
+    {
+      "case": "caller-alpha-removes-all",
+      "failure_stage": "pre_mesh",
+      "failure_type": "ValueError",
+      "json_sha256": "79445c48be7ce697dd6d1563201dfc4a6e66002dc028782006c045735005b5b3",
+      "npz_sha256": "038800a4acf0819bae270b0f86256b85402fee2bc00a8a92f9c0fd5233aed89c",
+      "original_record": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01/evidence/check-010/stable-initial-mesh/caller-alpha-removes-all-actual.json",
+      "original_status": "retained_stable_mesh_failure",
+      "physical_candidate": false,
+      "raw_failure_preserved": true,
+      "unit": "check-010"
+    }
+  ],
+  "kind": "cells.stable_mesh_physical_reconstruction_saved_diagnosis@1",
+  "original_complete_geometry_passes": 0,
+  "original_complete_meshes": 9,
+  "original_failure_reclassified": false,
+  "original_raw_failures": 2,
+  "original_result_sha256": "1f6955e64096f6c1ffabce9325c34d148bd64da41104e8da73b97cb603977ba8",
+  "original_review_sha256": "b88ae9a987a03481c1e95c3e320dc004ceb2eef64213f131aef38c9236d75539",
+  "original_run": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-20261030-01",
+  "saved_artifact_sha256": {
+    "evidence/check-000/stable-initial-mesh/irregular-centroid-aux-actual.json": "068ae1e568dd2af7a0c7cb49c9e6c0f1e300946660d223098be97b15f0971d4e",
+    "evidence/check-000/stable-initial-mesh/irregular-centroid-aux-actual.npz": "40d01f67854a2f5515d53f4f1e64a12def6588916585076aeefc3c10fed3978d",
+    "evidence/check-001/stable-initial-mesh/irregular-circumcenter-aux-actual.json": "ab9cfa6389cb0425c5e9b021b7501f7b8ae2ec5c1760531fb8e2e2c238d2884f",
+    "evidence/check-001/stable-initial-mesh/irregular-circumcenter-aux-actual.npz": "518762213890e5b9cee6d65fdb7389d4e9afdf23cef4001dbf9171865d8b6bd3",
+    "evidence/check-002/stable-initial-mesh/native-single-preset-seed17-actual.json": "e4d56abeb9e6cdc72f3d882f162f18586879801d7ab8d3f9107ac6bd0ce32dfb",
+    "evidence/check-002/stable-initial-mesh/native-single-preset-seed17-actual.npz": "214f2a79395aa8f8568bc820f548518430b8aaf1037e79e3def9dbd1313281d1",
+    "evidence/check-003/stable-initial-mesh/native-single-preset-seed23-actual.json": "9925e064e00bf0339f1f6b4838a3b1b1409f0fa1e58495294b4647cf50f1bd78",
+    "evidence/check-003/stable-initial-mesh/native-single-preset-seed23-actual.npz": "7ab9451c7d23605c21a0751c2dcbc64413818563ea1e06ed037bc68af2967644",
+    "evidence/check-004/stable-initial-mesh/caller-square-zero-actual.json": "5f072ed560dd96118f8d7ce813e43957fdc6f57a35c5bc8174a7ddfa7154c49b",
+    "evidence/check-004/stable-initial-mesh/caller-square-zero-actual.npz": "10c2aef03ce66763164db2695e22c2e9e43d930d690f0cf78b62ecb465510d65",
+    "evidence/check-005/stable-initial-mesh/caller-square-disordered-actual.json": "7bbcc99ca6c2852234527bfcc19318e0251eaf4391b89bc32824063774b0c7f6",
+    "evidence/check-005/stable-initial-mesh/caller-square-disordered-actual.npz": "b531910aaf5c511c8042670153708d362ad96479765aa5bfc87d620e4a88a2ca",
+    "evidence/check-006/stable-initial-mesh/caller-hex-disordered-actual.json": "8495418af391cc2973929df3bb42e29e84a3ef7d30d704971735eee4f59ae3ca",
+    "evidence/check-006/stable-initial-mesh/caller-hex-disordered-actual.npz": "5b3bfb79da6cced9984f685ed0fb0e9d75ae0074e945e72ae3b41b2006477390",
+    "evidence/check-007/stable-initial-mesh/caller-single-square-cache-actual.json": "753b9b694db1ee3c81fd5415ed85880028f667ed2ac744d40410275ed0533c26",
+    "evidence/check-007/stable-initial-mesh/caller-single-square-cache-actual.npz": "2a143a7ed3dd677fc90b0dcd203158d7ae8f3fc5ccfd5d4768b4e6718214b375",
+    "evidence/check-008/stable-initial-mesh/caller-single-hex-cache-actual.json": "dc5f021891d0246e96b7c24eb154382f6b9e9ce42141d4caec1bb3f6f82d8833",
+    "evidence/check-008/stable-initial-mesh/caller-single-hex-cache-actual.npz": "dc590b4a7faee6e319f6cee726bb686c4bdd6c3d6a49fafbe2762b498df41463",
+    "evidence/check-009/stable-initial-mesh/caller-single-point-lattice-actual.json": "79a6b5d524684aedb756020dc4f021d95eeece3aec47eb2da7245e608faf38ab",
+    "evidence/check-009/stable-initial-mesh/caller-single-point-lattice-actual.npz": "56fb3ad18489739665d28b5dca230481c48dd75231c55539322b6edd29f76e43",
+    "evidence/check-010/stable-initial-mesh/caller-alpha-removes-all-actual.json": "79445c48be7ce697dd6d1563201dfc4a6e66002dc028782006c045735005b5b3",
+    "evidence/check-010/stable-initial-mesh/caller-alpha-removes-all-actual.npz": "038800a4acf0819bae270b0f86256b85402fee2bc00a8a92f9c0fd5233aed89c"
+  },
+  "scope": {
+    "candidate_adapter_evaluated": false,
+    "coordinates_areas_lengths_operators_recomputed": false,
+    "fixtures_constructed": false,
+    "geometric_verdicts": "quoted original independent review",
+    "jobs_launched": false,
+    "jobs_polled": false,
+    "saved_integer_topology_only": true,
+    "scientific_imports": false,
+    "source_or_reference_routines_evaluated": false
+  }
+}

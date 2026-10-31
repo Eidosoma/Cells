@@ -1,0 +1,161 @@
+{
+  "ast_delta": [
+    {
+      "all_nonraw_refusal_assertions_unchanged": true,
+      "all_test_names_arguments_decorators_unchanged": true,
+      "candidate": {
+        "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/proposal/tests/unit/test_betse_normal_ecm_molecule_dispatch.py",
+        "sha256": "f6bf85c2bc14814c90db21033fbb2e4b9d1b44cb458ccfef2eb290378e2b4473"
+      },
+      "changed_functions": [
+        "test_original_molecule_failure",
+        "test_two_owner_dependency"
+      ],
+      "original": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01/source/tests/unit/test_betse_normal_ecm_molecule_dispatch.py",
+        "sha256": "e7af4d2fa087d04f947c31b5102ea3dc1a3e9a78562db676f68b7491fc85bd1d"
+      },
+      "original_module_declarations_unchanged": true,
+      "package": "dispatch",
+      "unchanged_functions": 10
+    },
+    {
+      "all_nonraw_refusal_assertions_unchanged": true,
+      "all_test_names_arguments_decorators_unchanged": true,
+      "candidate": {
+        "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/proposal/tests/unit/test_betse_normal_ecm_molecule_transport.py",
+        "sha256": "bd1192dc3fc0e46fa0e3f7642addf4ff29a0c5da14d12064b13358077d6cb063"
+      },
+      "changed_functions": [
+        "test_original_molecule_failure",
+        "test_original_transporter_setup_failure",
+        "test_transporter_dependency",
+        "test_two_owner_dependency"
+      ],
+      "original": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-01/source/tests/unit/test_betse_normal_ecm_molecule_transport.py",
+        "sha256": "a83e3fe3058e1fc2b1a6fd445f3300f473ee916fd87de97a6ddf1bc89c6434e3"
+      },
+      "original_module_declarations_unchanged": true,
+      "package": "transport",
+      "unchanged_functions": 11
+    }
+  ],
+  "blockers": [],
+  "bound_evidence": [
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/expected-refusal-source-review.json",
+      "sha256": "b2f9e34857e2b9b48e5eab3c512ed3c9833cf466cb311e8662f99eac9ac37f52"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/proposal-inputs.json",
+      "sha256": "527b91721eae5b9e30c585112cb81eddc6c4671e7e4a2a3c0a7840445a0d1390"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/dispatch.patch",
+      "sha256": "d8d5bfa802b6df685d0e8b151c2b32d791d4c07c1c07ca7a06a317aaf5e9258f"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/transport.patch",
+      "sha256": "9e56c896805107aac589dacafeb4fb71fd0e25b5e01672761df187af73a9c081"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-03/result.json",
+      "sha256": "4cd8fa5eb4beba6735584511be016a9d729646263acef02445780651a8ac180e"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-03/metadata_checks.py",
+      "sha256": "32c72bb0f5d0a4305030f257393b526bc7deedbec30a1d7b7281e29dcad917d3"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-03/betse_normal_ecm_init_phase_capture.py",
+      "sha256": "b74d088d80688189b4d947119bfabd051d9b344a23c5c117c2da12e0a34c38c2"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-03/betse_normal_ecm_molecule_failure_checks.py",
+      "sha256": "95b303d2816379a719b045acf9c211b9dde2900ef19de3c9e81cb963410fca19"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-01/result.json",
+      "sha256": "f3941ce1cd4d1cd8a1760e4f3815ba6b05c2aaa76cfbcf0511ab22012247ecdb"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-02/result.json",
+      "sha256": "06d0287b2db7f336c3a684c0d97b4d258dff90bbf13954b9cc3468834425758c"
+    },
+    {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/verify_review.py",
+      "sha256": "954c36fd35a144ef096cee053de04e0c8f7775d86da0880fa68ba8e35f6cc866"
+    }
+  ],
+  "findings": [
+    "Raw and warm-dependency setup return values are archived before subsequent assertions or mutation; initialize/advance exceptions retain original partial, wrapped causes, stage and traceback before pytest classifies them.",
+    "Unexpected successes retain the returned state and still fail the surrounding expected-exception assertion. Reader/writer problems do not replace the original scientific exception.",
+    "The required chain is DispatchRejected -> ECMTransportRejected -> BetseSimUnstableException, with literal cell-negativity message, correct X/Y role, source stage and unchanged first-call parent/cursor.",
+    "The positional (stage, ion_id, values) Frame schema matches ions.freeze. Exact common native/owned material, caches, shared publications, traces and completed transport prefix are compared; failed owner does not publish an accepted successor.",
+    "Full chemistry prefix follows declared active-ion insertion order then X/Y. General Na import has one reactant and one product and exactly six declared transporter stages. Both checks reject synchronized trace omissions beyond cross-lane equality.",
+    "The source model, native extraction, independent equations, fixtures, clocks, rates, tolerances and positive test functions are unchanged. The new helper changes evidence and refusal specificity only."
+  ],
+  "job_queries": 0,
+  "kind": "cells.molecule_capture_repair_independent_review@1",
+  "limitations": [
+    "All 44 dispatch and 60 transporter scientific checks remain prospective; this review adds no native, reference, trajectory, biological or GPU pass credit.",
+    "The expected negative sign remains a numerical predicate to observe in the future run. An earlier/different native or owned failure is retained and rejected, not relabeled.",
+    "Initial fixture/bind failures occur before an evolved parent exists; inputs are archived once produced. The new helper specifically protects initialize/advance outputs and partials.",
+    "On archival failure the original exception is preserved with a note. A future completion reader must require the new outcome records and reject missing/incomplete evidence; this review does not establish that full failure archives fit the existing caps.",
+    "Exact numeric-tree equality uses the inherited comparator semantics, including NumPy scalar/zero-dimensional-array equivalence; this is not exact Python object-category equality.",
+    "Independent voltage domains, source defects and all original failed evidence remain unchanged; no event/INIT dependency refresh or widened physical domain is included."
+  ],
+  "pytest_collection": 0,
+  "repo_or_proposal_edits": 0,
+  "retained_originals": [
+    "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-01",
+    "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-02",
+    "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/early-proposal-descriptors",
+    "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01",
+    "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-01"
+  ],
+  "review_resources": {
+    "address_space_cap_bytes": 536870912,
+    "cpu_affinity": [
+      2
+    ],
+    "elapsed_s": 0.1045885409694165,
+    "host_reserve_bytes": 8589934592,
+    "measured_process_VmHWM_bytes": 25640960,
+    "mem_available_after_bytes": 19967016960,
+    "mem_available_before_bytes": 19774775296
+  },
+  "reviewed_files": {
+    "tests/unit/test_betse_normal_ecm_molecule_dispatch.py": "f6bf85c2bc14814c90db21033fbb2e4b9d1b44cb458ccfef2eb290378e2b4473",
+    "tests/unit/test_betse_normal_ecm_molecule_transport.py": "bd1192dc3fc0e46fa0e3f7642addf4ff29a0c5da14d12064b13358077d6cb063",
+    "validation/betse/betse_normal_ecm_molecule_failure_checks.py": "95b303d2816379a719b045acf9c211b9dde2900ef19de3c9e81cb963410fca19"
+  },
+  "saved_software": {
+    "address_space_limit_bytes": 536870912,
+    "cpu_affinity": [
+      4
+    ],
+    "earlier_software01_02_overlap_not_added": true,
+    "elapsed_s": 0.04659530892968178,
+    "errors": 0,
+    "failures": 0,
+    "inherited_getrusage_maxrss_is_not_this_process_measurement": true,
+    "initial_host_available_bytes": 22748168192,
+    "measured_process_VmHWM_bytes": 22794240,
+    "no_scientific_imports_or_evaluations": true,
+    "result": {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/software-03/result.json",
+      "sha256": "4cd8fa5eb4beba6735584511be016a9d729646263acef02445780651a8ac180e"
+    },
+    "runtime_scope": "Saved stdlib harness/source pins and explicit forbidden-module inventory; not a scientific runtime qualification",
+    "skipped": 0,
+    "unique_checks": 39
+  },
+  "scientific_evaluations": 0,
+  "scientific_imports": [],
+  "source_binding_count": 32,
+  "source_bindings_unchanged": true,
+  "status": "clear_for_explicit_source_successor_preparation",
+  "tests_reexecuted": 0
+}

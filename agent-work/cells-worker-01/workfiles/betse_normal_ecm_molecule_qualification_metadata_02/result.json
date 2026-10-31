@@ -1,0 +1,343 @@
+{
+  "active_job_queries": 0,
+  "address_space_cap_bytes": 536870912,
+  "controls": [
+    {
+      "name": "separate_44_60_exact_rosters",
+      "passed": true
+    },
+    {
+      "message": "Held: separate Chief release contract required",
+      "name": "held_start_without_release",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Held: explicit requested round required",
+      "name": "held_worker_without_requested_round",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "held_CLI_refuses_before_run_directory",
+      "passed": true
+    },
+    {
+      "name": "unique_pytest_ID_accept",
+      "passed": true
+    },
+    {
+      "message": "Pytest IDs differ from the exact unique prepared set",
+      "name": "duplicate_pytest_ID_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "A prepared pytest check failed, errored or skipped",
+      "name": "failure_pytest_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "A prepared pytest check failed, errored or skipped",
+      "name": "error_pytest_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "A prepared pytest check failed, errored or skipped",
+      "name": "skipped_pytest_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "original_metric_endpoints",
+      "passed": true
+    },
+    {
+      "message": "Original error/resolution budget failed",
+      "name": "raised_budget",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original error/resolution budget failed",
+      "name": "raised_resolution",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original error/resolution budget failed",
+      "name": "NaN_metric",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "bound_runtime_metadata_accept",
+      "passed": true
+    },
+    {
+      "message": "Actual child affinity differs",
+      "name": "actual_child_wrong_CPU",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Actual child interpreter differs",
+      "name": "actual_child_wrong_interpreter",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Unbound actual child file: json /usr/lib/python3.13/json/__init__.py",
+      "name": "actual_loaded_file_changed",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Unbound actual child file: json /tmp/foreign-source.py",
+      "name": "actual_loaded_file_unbound",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Forbidden actual child module",
+      "name": "forbidden_reference_module",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "synthetic_full_partial/first_general_negative/False",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/first_general_negative/True",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/second_general_negative/False",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/second_general_negative/True",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/first_GRN_negative/False",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/first_GRN_negative/True",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/second_GRN_negative/False",
+      "passed": true
+    },
+    {
+      "name": "synthetic_full_partial/second_GRN_negative/True",
+      "passed": true
+    },
+    {
+      "message": "Complete original partial/cause chain required",
+      "name": "missing_outcome_partial",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Missing original cause chain",
+      "name": "lost_cause_chain",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original molecular refusal types required",
+      "name": "wrong_original_type",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original failure boundary differs",
+      "name": "wrong_source_stage",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "No completed material trial allowed after raw refusal",
+      "name": "accepted_trial_after_failure",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Native literal source refusal differs",
+      "name": "wrong_native_failure",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Synthetic exact-tree mismatch",
+      "name": "wrong_native_cache",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Synthetic exact-tree mismatch",
+      "name": "wrong_shared_fields",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Complete original positional Frame prefix required",
+      "name": "wrong_original_Frame",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Complete actual chemistry insertion-order prefix required",
+      "name": "synchronized_chemistry_omission",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Complete configured transporter prefix required",
+      "name": "synchronized_transporter_omission",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Actual negative source buffer required",
+      "name": "synchronized_nonnegative_cells",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "complete_baseline_outcome",
+      "passed": true
+    },
+    {
+      "message": "Outcome status differs from actual expected result",
+      "name": "unexpected_success_not_raw_failure",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "dispatch_profile02_scalar",
+      "passed": true
+    },
+    {
+      "name": "dispatch_signed_zero_original_equality",
+      "passed": true
+    },
+    {
+      "name": "dispatch_zero_dimension_scalar_equivalence",
+      "passed": true
+    },
+    {
+      "message": "Select an explicit non-catalog capture profile",
+      "name": "dispatch_profile01_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Select an explicit non-catalog capture profile",
+      "name": "dispatch_other_family_profile_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Typed descriptor/header mismatch",
+      "name": "dispatch_descriptor_shape_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original uncompressed profile policy required",
+      "name": "dispatch_compressed_profile_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "transport_profile02_scalar",
+      "passed": true
+    },
+    {
+      "name": "transport_signed_zero_original_equality",
+      "passed": true
+    },
+    {
+      "name": "transport_zero_dimension_scalar_equivalence",
+      "passed": true
+    },
+    {
+      "message": "Select an explicit non-catalog capture profile",
+      "name": "transport_profile01_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Select an explicit non-catalog capture profile",
+      "name": "transport_other_family_profile_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Typed descriptor/header mismatch",
+      "name": "transport_descriptor_shape_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "message": "Original uncompressed profile policy required",
+      "name": "transport_compressed_profile_refusal",
+      "passed": true,
+      "refusal": "ValueError"
+    },
+    {
+      "name": "actual_synthetic_subprocess_identity_and_exit",
+      "passed": true
+    },
+    {
+      "name": "existing_guard_actual_metadata_child",
+      "passed": true
+    },
+    {
+      "name": "sealed_preparation_unchanged",
+      "passed": true
+    }
+  ],
+  "cpu_affinity": [
+    0
+  ],
+  "elapsed_seconds": 0.5585942880716175,
+  "fixture_reference_model_evaluations": 0,
+  "host_reserve_bytes": 8589934592,
+  "measured_process_VmHWM_bytes": 40108032,
+  "pytest_collections": 0,
+  "reviewed_synthetic_metadata_helpers_only": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": [],
+  "scientific_launches": 0,
+  "source_proofs": [
+    "literal_process_guard/ProcessBudgetExceeded",
+    "literal_process_guard/same_live_process",
+    "literal_process_guard/memory_metric",
+    "literal_process_guard/proportional_memory",
+    "literal_process_guard/kcmp_vm",
+    "literal_process_guard/address_space_comparison",
+    "literal_process_guard/proportional_tree_memory",
+    "literal_process_guard/run_bounded",
+    "literal_descendant_sampler/memory_available",
+    "literal_descendant_sampler/process_sample",
+    "literal_descendant_sampler/process_tree",
+    "literal_exact_pytest_ID_reader",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_runner.py",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_contract.py",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_metadata_check.py",
+    "compile_without_execution/prepare_betse_normal_ecm_molecule_qualification.py",
+    "compile_without_execution/finalize_betse_normal_ecm_molecule_qualification.py",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_resources.py",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_plugin.py",
+    "compile_without_execution/betse_normal_ecm_molecule_qualification_reader.py"
+  ],
+  "status": "passed"
+}

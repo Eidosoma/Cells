@@ -1,0 +1,122 @@
+{
+  "INIT_dependency": {
+    "manifest_sha256": "528a1c7d1df0be152919b9dd446f3247676856585652f2c2924d82840c27d36f",
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-02"
+  },
+  "RNG_contract": "Explicit supplied SIM process stream or actual same-process post-INIT stream with no unowned draws; never inferred from pickle.",
+  "acceptance": {
+    "exact_native_owner_buffer_correspondence_required": true,
+    "field_normalized_error_max": 1.0,
+    "full_selected_observation_and_native_sampling_checks_required": true,
+    "self_resolution_max": 0.1
+  },
+  "active_job_queries": 0,
+  "carried_reference_forms": 0,
+  "exclusions": [
+    "native seed/load/pickle",
+    "whole physical init_core/init_dynamics/run_sim_core",
+    "native profile selection",
+    "enabled general molecules",
+    "GRN-disabled run",
+    "ER/Ca_dyn",
+    "enabled flow/electroosmosis/dynamic deformation",
+    "FAST solver",
+    "native storage/display",
+    "GPU",
+    "global material/energy conservation",
+    "biological realism",
+    "active Nav outside unchanged oracle domain"
+  ],
+  "fixture_reference_model_evaluations": 0,
+  "form_modes": [
+    "phase_rules",
+    "bootstrap",
+    "nak",
+    "events",
+    "material",
+    "calcium",
+    "channels",
+    "network",
+    "noise",
+    "mechanics",
+    "field"
+  ],
+  "independent_INIT02_source_gate_review": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-preflight-20261031-02/REVIEW.json",
+    "scientific_acceptance": false,
+    "sha256": "09ddb3c75ddef1492744932e16ae7c40890dc1df6ba2c077b3553717190a9fd2"
+  },
+  "independent_precision": [
+    100,
+    160
+  ],
+  "inherited_failure": "signed_environment remains failed 39/40; catalog05 remains 82 passed/1 Nav reference refusal/11 unrun. No prior pass inherited.",
+  "kind": "cells.held_supplied_INIT_SIM_transition_protocol@1",
+  "latent_None_channels": "Capture actual retained latent gate cache then refuse; empty list reconstructs an empty enabled dictionary.",
+  "law_id": "betse_supplied_retained_INIT_to_SIM_v1_5_0@1",
+  "native_capture_scope": "Independent native conditionals from actual incoming reinitialize and pre-bootstrap SIM buffers; no independently carried INIT trajectory.",
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "numerical_runs": 0,
+  "oracle_limit": {
+    "Root_owns_prospective_domain_qualification": true,
+    "catalog05_no_CaATP_observed_V": [
+      0.162,
+      0.38
+    ],
+    "class_name": "Nav1p2",
+    "constant_NaLeak_exception_applies": false,
+    "domain_V": [
+      -0.12,
+      0.06
+    ],
+    "fixture_tuning": false,
+    "oracle_domain_widening": false,
+    "status": "inherited_reference_refusal_not_tolerance_failure"
+  },
+  "other_oracle_limits": "INIT-ORACLE-DOMAIN-03: KLeak/CaLeak still guard [-0.120,+0.060] V before constant branches. No domain changes or fixture tuning.",
+  "planned": {
+    "SIM_accepted_calls": 51,
+    "biological_cases": 0,
+    "checks": 42,
+    "dependency_controls": 18,
+    "independent_complete_INIT_SIM_trajectories": 0,
+    "independent_reference_forms": 928,
+    "native_captures": 33,
+    "observer_controls": 3,
+    "positive_SIM_accepted_calls": 48,
+    "positive_cases": 16,
+    "prefix_refusals": 5
+  },
+  "prepared_artifacts": {
+    "SIM": "SimPhase retains CompleteInit and separate fresh lifecycle journal",
+    "complete": "CompleteInit, only exhausted full original INIT calendar",
+    "failed": "FailedInitPrefix with actual InitRejected and accepted parent/declaration",
+    "paused_or_capped": "Refused by normal preparation; original calendar preserved"
+  },
+  "pytest_collections": 0,
+  "release": {
+    "driver_metadata_only": true,
+    "execution_hold": true,
+    "new_explicit_Chief_release_controller_required": true,
+    "no_automatic_followup": true,
+    "no_scientific_launch": true
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_audit_sha256": "88d67cfbd21bca3ad34ab9f78e7a426ce0945803f468a5dd805902a78c85e57d",
+  "source_order": [
+    "Retain simulator/cell/core/molecule owners; associate explicit equal general/world subsets and identical geometry/ion owners.",
+    "Restore actual INIT cache, select new SIM flag/dt/total and explicit process RNG; execute initDenv and supplied ordered profile assignments.",
+    "Execute unconditional static K draw, base/scheduled pressure/diffusion and block setup; reinitialize actual retained GRN, reconstruct non-None channels at carried Vm.",
+    "Apply source mechanical entry writes, rho defaults and event finalizers, screening/conductivity and clear_storage/GRN history clearing; retain CaATP/NaK rates.",
+    "Run source bootstrap update_V without normal check_v, create new SIM cursor/journal; then events, real NaK, material/CaATP/GRN/noise/mechanics/deferred commit/field checks in source order."
+  ],
+  "source_persistence_caveat": "Native _pickle_phase saves before final sampled report; N0/N1 headless completion and failed prefixes do not attest native pickle/load/whole phase completion.",
+  "status": "source_static_only_unrun",
+  "unchanged_component_budget_sources": [
+    "tests/unit/test_betse_normal_ecm_init_phase.py",
+    "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+    "tests/unit/test_betse_normal_ecm_event_join.py",
+    "validation/betse/betse_mechanics_join_checks.py"
+  ]
+}

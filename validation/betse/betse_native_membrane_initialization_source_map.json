@@ -1,0 +1,200 @@
+{
+  "explicit_projection": {
+    "ast_sha256": "28592d90404e19244bc8322e93fc2db8acdd282aa465716f4b2361ec88edbec5",
+    "expression": "def _project(pair, declaration):\n    if type(pair) is not CapturedPair:\n        raise ValueError('Require the complete paired original native stores')\n    bound = layout.bind_layout(pair.native_layout)\n    _shared_stores(pair, bound)\n    view = layout.midpoint_normal_view(bound, opted_in_conversion=declaration['conversion_law'])\n    layout.validate_view(view)\n    buffer = view.values\n    array = np.frombuffer(buffer.raw, dtype=np.dtype(buffer.dtype)).reshape(buffer.shape)\n    owners = dict(pair.boundary.owners)\n    cells = dict(owners['cells'])\n    cells['mem_vects_flat'] = ions.freeze(dict(present=True, captured=True, value=array))\n    owners['cells'] = ions.freeze(cells)\n    boundary_declaration = dict(pair.boundary.declaration, geometry_classification='unqualified_native_layout')\n    source_objects = ions.freeze(dict(law=LAW_ID, original_observation=pair.boundary.observation_kind, original_source_objects=pair.boundary.source_objects, original_boundary_identity=pair.boundary.identity, original_pair_identity=pair.identity, native_layout_identity=pair.native_layout.identity, conversion_law=view.conversion_law, explicit_view_identity=view.identity, replaced_store='cells.mem_vects_flat', projected_capture_is_native=False))\n    projected = replace(pair.boundary, declaration=ions.freeze(boundary_declaration), observation_kind='supplied_owner_boundary', owners=ions.freeze(owners), source_objects=source_objects, identity='')\n    projected = replace(projected, identity=ions.digest(initial.boundary_record(projected)))\n    initial.validate_boundary(projected)\n    return (bound, view, projected)",
+    "first_line": 265,
+    "last_line": 305,
+    "source": "src/cells/processes/betse_native_membrane_initialization.py"
+  },
+  "initial02_manifest_sha256": "f423016aedf458d416b51e2b56640e64f5d36716b84d77efb953d7b2be371909",
+  "kind": "cells.betse_native_membrane_initialization_static_correspondence@1",
+  "layout01_manifest_sha256": "b645dc11765fca88111514496392a6b65d89cf70aec13228ef699c89d96ba451",
+  "native_Egj_writer": [
+    {
+      "ast_sha256": "03dd278d08ce36010ecdad78cc4453e998903885a449b2df39fa3073017be163",
+      "expression": "self.Egj = -self.vgj / cells.gj_len",
+      "first_line": 2173,
+      "last_line": 2173,
+      "method": "update_gj",
+      "source": "betse/science/sim.py"
+    }
+  ],
+  "native_load": {
+    "ast_sha256": "5237d06172e437bcdd8af4b5b2e7af465b5bd33093373a3b9e369eeaa866c409",
+    "expression": "@log_time_seconds(noun='simulation')\ndef sim(self) -> SimPhase:\n    \"\"\"\n        Simulate this simulation with the cell cluster initialized by a prior\n        call to the :meth:`init` method and cache this simulation to an output\n        file, specified by the current configuration file.\n\n        This method *must* be called prior to the :meth:`:meth:`plot_sim`\n        method, which consumes this output as input.\n\n        Returns\n        ----------\n        SimPhase\n            High-level simulation phase instance encapsulating all objects\n            internally created by this method to run this phase.\n        \"\"\"\n    logs.log_info('Running simulation...')\n    phase_kind = SimPhaseKind.SIM\n    if not files.is_file(self._p.init_pickle_filename):\n        if not self._p.autoInit:\n            raise BetseSimException('Simulation halted due to missing initialization. Please run \"betse init\" and try again.')\n        logs.log_info('Automatically initializing cell cluster...')\n        self.init()\n        logs.log_info('Now using initialization to run simulation.')\n    sim, cells, p_old = fh.loadSim(self._p.init_pickle_filename)\n    self._die_if_seed_differs(p_old, self._p)\n    phase = SimPhase(kind=phase_kind, cells=cells, p=self._p, sim=sim, callbacks=self._callbacks)\n    sim.sim_info_report(phase)\n    sim.run_sim_core(phase)\n    return phase",
+    "first_line": 244,
+    "last_line": 296,
+    "source": "betse/science/simrunner.py"
+  },
+  "native_prebootstrap_calls": [
+    {
+      "ast_sha256": "3ebcbe13e978e17a45e17622b5b1fbb2e66b6b91d9ff861d4aa32e633311a035",
+      "expression": "self.init_dynamics(phase)",
+      "first_line": 1034,
+      "last_line": 1034,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "42189ea2f9807c3c0cbcdea73beb0d97ff9a9ccfffa58c54636bbebded3c1114",
+      "expression": "self.clear_storage(phase.cells, phase.p)",
+      "first_line": 1037,
+      "last_line": 1037,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "923a2a2f0abece3147ab2464faa7c6baf9df70fe6377fde1ad38da6188f76ae4",
+      "expression": "self.update_V(phase.cells, phase.p)",
+      "first_line": 1041,
+      "last_line": 1041,
+      "source": "betse/science/sim.py"
+    }
+  ],
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a"
+  },
+  "new_ordinary_loop_gate": {
+    "ast_sha256": "f906c781852503d45aa71e2a209c9ca6c2d7056d1712587a250234363ff6b4ea",
+    "expression": "def require_ordinary_loop(entry):\n    raise EntryRejected('The explicit component bridge does not establish physical geometry, tangent qualification or the native seed/init/load chain', stage='ordinary_loop_admission', original=entry)",
+    "first_line": 458,
+    "last_line": 464,
+    "source": "src/cells/processes/betse_native_membrane_initialization.py"
+  },
+  "new_pair_shared_store_check": {
+    "ast_sha256": "e1e7674e5e1f911b8bc9266c0c7d1c18b99c16abb28d67ca49e9f601aaf74ebb",
+    "expression": "def _shared_stores(pair, bound):\n    initial.validate_boundary(pair.boundary)\n    if pair.identity != digest(pair_record(pair)):\n        raise ValueError('Changed original paired boundary/layout capture')\n    kinds = {'paired_supplied': ('supplied_owner_boundary', 'supplied_owner_stores'), 'paired_pinned_native': ('pinned_native_objects_at_declared_boundary', 'pinned_native_Cells_stores')}\n    if pair.observation not in kinds or kinds[pair.observation] != (pair.boundary.observation_kind, pair.native_layout.observation):\n        raise ValueError('Mixed or changed native/supplied capture origins')\n    for key in ('cell_i', 'mem_i', 'mem_to_cells', 'mem_mids_flat', 'mem_vects_flat'):\n        value = initial._required(pair.boundary, 'cells', key)\n        retained = bound.snapshot.entries[key]['value']\n        if key in ('cell_i', 'mem_i') and retained['kind'] != 'array_indices':\n            indices = layout._index_values(retained)\n            actual = np.asarray(value)\n            if actual.dtype.kind not in 'iu' or actual.shape != (len(indices),) or tuple(actual) != indices:\n                raise ValueError('Shared original index sequence differs: ' + key)\n            continue\n        buffer = retained['buffer'] if key in ('cell_i', 'mem_i') else retained\n        actual = np.asarray(value)\n        if (actual.dtype.str, actual.shape, actual.tobytes(order='C')) != (buffer.dtype, buffer.shape, buffer.raw):\n            raise ValueError('Paired original owner stores differ in dtype/shape/bits: ' + key)",
+    "first_line": 226,
+    "last_line": 262,
+    "source": "src/cells/processes/betse_native_membrane_initialization.py"
+  },
+  "new_readiness_and_entry": {
+    "_validate_request": {
+      "ast_sha256": "1b6ca25573b7d6f3ff2ce357e808dfb82062fa8fb0de3194d711a7919f212ed8",
+      "expression": "def _validate_request(request):\n    _verify_sources()\n    if type(request) is not PreparedEntry or request.identity != digest(request_record(request)):\n        raise ValueError('Changed or unsealed component entry request')\n    rebuilt = prepare(request.binding, request.original, request.declaration)\n    if digest(request_record(rebuilt)) != digest(request_record(request)):\n        raise ValueError('Resealed request changes original projection, readiness or closed gates')",
+      "first_line": 376,
+      "last_line": 382,
+      "source": "src/cells/processes/betse_native_membrane_initialization.py"
+    },
+    "bootstrap_component": {
+      "ast_sha256": "58981408d28a62f7034efff7fcd197d9ad28182c5474e83f6ab10d7c77b4c1b8",
+      "expression": "def bootstrap_component(request, *, observer=None, before_field=None):\n    partial = dict(component_handoff=None, field_requests=[])\n    stage = 'request_authentication'\n    try:\n        _validate_request(request)\n        _notify(observer, 'before-held-component-handoff', request)\n\n        def field_observer(raw):\n            partial['field_requests'].append(raw)\n            _notify(observer, 'before-component-field', raw)\n            if before_field is not None:\n                before_field(raw)\n        stage = 'held_component_handoff'\n        result = initial.handoff(request.binding, request.projected_boundary, before_field=field_observer)\n        partial['component_handoff'] = result\n        _notify(observer, 'held-component-handoff-return', result)\n        stage = 'component_receipt'\n        if len(partial['field_requests']) != 1 or result.boundary_identity != request.projected_boundary.identity or result.binding_identity != request.binding.identity or (result.provenance['bootstrap_calls'] != 1) or (result.provenance['cold_owner_calls'] != 0) or (result.provenance['native_init_dynamics_calls'] != 0) or (result.provenance['native_seed_init_load_chain_established'] is not False) or (result.provenance['geometry_classification'] != 'unqualified_native_layout'):\n            raise ValueError('The existing component bootstrap crossed its declared scope')\n        cache = result.parent.network.network_cache\n        if ions.digest(cache) != ions.digest(request.original.boundary.network_cache['value']):\n            raise ValueError('Component bootstrap changed the retained hot GRN cache')\n        provenance = ions.freeze(dict(law=LAW_ID, original_boundary_identity=request.original.boundary.identity, original_native_layout_identity=request.original.native_layout.identity, original_pair_identity=request.original.identity, conversion_law=request.explicit_view.conversion_law, explicit_view_identity=request.explicit_view.identity, projected_boundary_identity=request.projected_boundary.identity, component_handoff_identity=result.identity, component_bootstrap_calls=1, original_hot_cache_digest=ions.digest(cache), native_bootstrap_executed=False, native_seed_init_chain_established=False, full_six_column_parent_retained=True, tangent_columns_geometry_qualified=False))\n        entry = ComponentEntry(request, result, provenance, ions.freeze(dict.fromkeys(GATE_NAMES, False)), '')\n        return replace(entry, identity=digest(entry_record(entry)))\n    except Exception as error:\n        raise EntryRejected(error, stage=stage, original=request, partial=dict(partial, source=getattr(error, 'partial', None), rejected_boundary=getattr(error, 'boundary', None))) from error",
+      "first_line": 389,
+      "last_line": 455,
+      "source": "src/cells/processes/betse_native_membrane_initialization.py"
+    },
+    "prepare": {
+      "ast_sha256": "eb793be782d1b1af0b9e001e8fa0a00116cfce9fdabdd95ad7979fe2359ef4cb",
+      "expression": "def prepare(binding, pair, declaration, *, observer=None):\n    stage, partial = ('declaration', {})\n    try:\n        _verify_sources()\n        declared = _declaration(declaration)\n        _notify(observer, 'entry-request', dict(binding=binding, original=pair, declaration=declared))\n        stage = 'explicit_projection'\n        bound, view, projected = _project(pair, declared)\n        partial.update(six_column_layout=bound, explicit_view=view, projected_boundary=projected)\n        _notify(observer, 'explicit-projection', partial.copy())\n        stage = 'common_owner_and_hot_cache_readiness'\n        missing = initial.missing_stores(projected)\n        partial['presence_inventory'] = missing\n        _notify(observer, 'owner-presence-inventory', missing)\n        state, controls, cached = initial._check_owners(binding, projected)\n        partial.update(common_state=state, controls=controls, hot_cache=cached)\n        _notify(observer, 'common-owner-readiness-return', partial.copy())\n        readiness = ions.freeze(dict(common_owner_checks_complete=True, common_state_identity=state.identity, controls_digest=ions.digest(controls), hot_cache_digest=ions.digest(cached), presence_inventory=missing, native_cache_defaults_filled=False, optional_calcium_admission_pending=type(binding) is initial.calcium.Binding, serializer_roundtrip_pending=True, component_bootstrap_performed=False, tangent_columns_consumed=False))\n        result = PreparedEntry(binding, pair, declared, bound, view, projected, readiness, ions.freeze(dict.fromkeys(GATE_NAMES, False)), '')\n        return replace(result, identity=digest(request_record(result)))\n    except Exception as error:\n        raise EntryRejected(error, stage=stage, original=dict(binding=binding, pair=pair, declaration=declaration), partial=dict(partial, source=getattr(error, 'partial', None))) from error",
+      "first_line": 322,
+      "last_line": 373,
+      "source": "src/cells/processes/betse_native_membrane_initialization.py"
+    }
+  },
+  "old_component_calls": {
+    "_check_owners": {
+      "ast_sha256": "eebf4a46502c39028e0e7d10b5a69d07f10274671a8cd077e968304cd51bbd90",
+      "expression": "_check_owners(binding, boundary)",
+      "first_line": 732,
+      "last_line": 732,
+      "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+    },
+    "field.reconstruct": {
+      "ast_sha256": "fc2d7138114aae5e234a51762823ad38bd38fcd71935d3b6acdff03f978c3f27",
+      "expression": "field.reconstruct(binding, parent, boot['dt_s'], boot['boundary_V'], 'bootstrap', before_field)",
+      "first_line": 765,
+      "last_line": 767,
+      "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+    },
+    "source.cache": {
+      "ast_sha256": "2e81ce5a59ee27cd90b2997dc8b48126ccfb3c7342cb52daccd62ca92de3cc8f",
+      "expression": "source.cache(ctx)",
+      "first_line": 758,
+      "last_line": 758,
+      "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+    },
+    "source.restore": {
+      "ast_sha256": "80ce09b9d44a77d5ec16a5c7ec55b2c8be9e9410fe8e4b6685ee9aff917db1b5",
+      "expression": "source.restore(ctx, cached)",
+      "first_line": 757,
+      "last_line": 757,
+      "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+    }
+  },
+  "old_native_capture": {
+    "ast_sha256": "562e98c4669e9eb32ab5c06715c3693559716a6e1bf58913b9d9b8f7963ca089",
+    "expression": "def capture_native(phase, declaration):\n    \"\"\"Read pinned native objects at a caller-declared seam, without advancing.\"\"\"\n    owners = dict(sim=phase.sim, cells=phase.cells, parameters=phase.p)\n    pins = {}\n    for name, owner in owners.items():\n        cls = type(owner)\n        qualified = cls.__module__ + '.' + cls.__qualname__\n        expected_type, expected_sha = NATIVE_TYPES[name]\n        if qualified != expected_type:\n            raise ValueError('Require the pinned native owner class: ' + name)\n        path = Path(inspect.getfile(cls))\n        actual_sha = hashlib.sha256(path.read_bytes()).hexdigest()\n        if actual_sha != expected_sha:\n            raise ValueError('Require the pinned native owner class/source: ' + name)\n        pins[name] = dict(type=qualified, source=str(path), sha256=actual_sha)\n    kind = getattr(phase.kind, 'name', None)\n    if kind != 'SIM':\n        raise ValueError('This boundary is the ordinary SIM phase, after dynamics reinitialization')\n    n, m, e = (vars(phase.sim)[key] for key in ('cdl', 'mdl', 'edl'))\n    if not 1 <= n <= 16 or not 1 <= m <= 128 or (not 1 <= e <= 49):\n        raise ValueError('Do not widen the frozen native owner capture domain')\n    native_root = Path(pins['parameters']['source']).parents[2]\n    for relative, expected_sha in NATIVE_DESCRIPTOR_SOURCES.items():\n        actual_sha = hashlib.sha256((native_root / relative).read_bytes()).hexdigest()\n        if actual_sha != expected_sha:\n            raise ValueError('Changed native YAML descriptor source: ' + relative)\n        pins[relative] = dict(source=str(native_root / relative), sha256=actual_sha)\n    owner = vars(phase.sim).get('grn')\n    core = None if owner is None else vars(owner).get('core')\n    if core is None:\n        raise ValueError('No complete existing GRN owner to capture')\n    core_fields = vars(core)\n    excluded = dict(channels=bool(core_fields['channels']), transporters=bool(core_fields['transporters']), mitochondria=core_fields['mit'] is not None, standalone_molecules=vars(phase.sim)['molecules'] is not None)\n    groups = owners | dict(mesh=vars(phase.cells).get('mesh'), display=vars(phase.sim).get('cellso'))\n    try:\n        cached = source.cache(SimpleNamespace(sim=phase.sim))\n    except Exception as error:\n        result = capture_supplied(groups, None, excluded, declaration)\n        cache_entry = _copy(dict(present=True, captured=False, error=str(error), type=type(error).__name__))\n        result = replace(result, network_cache=cache_entry)\n    else:\n        result = capture_supplied(groups, cached, excluded, declaration)\n    parameters = dict(result.owners['parameters'])\n    for key in NATIVE_PARAMETER_ALIASES:\n        try:\n            parameters[key] = _entry({key: getattr(phase.p, key)}, key)\n        except Exception as error:\n            parameters[key] = dict(present=True, captured=False, error=str(error), type='native_yaml_alias')\n    updated = dict(result.owners, parameters=_copy(parameters))\n    result = replace(result, owners=_copy(updated))\n    pins['phase_kind'] = kind\n    pins['excluded_owners'] = 'presence_only; private state is unsupported and cannot enter handoff'\n    result = replace(result, observation_kind='pinned_native_objects_at_declared_boundary', source_objects=_copy(pins))\n    return replace(result, identity=ions.digest(boundary_record(result)))",
+    "first_line": 390,
+    "last_line": 464,
+    "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+  },
+  "old_owner_admission": {
+    "ast_sha256": "08af424be76616d926d1f144ec1bc75f80f8bf4d5697aa86966f9a9fc95d1451",
+    "expression": "def _check_owners(binding, boundary):\n    _binding(binding)\n    validate_boundary(boundary)\n    if any(boundary.excluded_owner_state.values()):\n        raise ValueError('Channel/private gate, transporter, mitochondrial or separate molecule owners are unsupported')\n\n    def p(key):\n        return _required(boundary, 'parameters', key)\n\n    def c(key):\n        return _required(boundary, 'cells', key)\n\n    def s(key):\n        return _required(boundary, 'sim', key)\n    if p('solver_type') != 'FULL' or any((p(key) is not False for key in ('fluid_flow', 'td_deform', 'v_sensitive_gj', 'molecules_enabled', 'Ca_dyn'))):\n        raise ValueError('Require ordinary FULL, disabled flow/dynamic/voltage-gates/ER/separate molecules')\n    if p('is_ecm') is not True or p('grn_enabled') is not True:\n        raise ValueError('Require the actual ECM GRN branch')\n    mb = binding.material_binding\n    gb, k = (mb.geometry_binding, mb.kernel)\n    cb, g = (gb.current_binding, gb.geometry)\n    n, m, e = (len(cb.cell_ids), len(cb.membrane_ids), math.prod(g.shape))\n    if not 1 <= n <= 16 or not 1 <= m <= 128 or (not 1 <= len(cb.ion_ids) <= 32) or (e > 49):\n        raise ValueError('Do not widen the frozen source capture domain')\n    active = tuple((name for name, enabled in p('ions_dict').items() if enabled == 1))\n    if active != cb.ion_ids:\n        raise ValueError('Actual native ion roles/order differ from the bound rows')\n    geometry = gb.definition['geometry']\n    cell_pairs = dict(cell_i=np.arange(n), mem_i=np.arange(m), mem_to_cells=cb.kernel.owner, nn_i=k.partner, bflags_mems=k.boundary, gj_len=k.gap_length_m, gj_default_weights=k.gap_weights, mem_sa=cb.kernel.membrane_area_m2, cell_sa=cb.kernel.cell_area_m2, cell_vol=geometry['cell_volume_m3'], cell_centres=geometry['cell_centres_m'], mem_mids_flat=geometry['membrane_midpoints_m'], M_sum_mems=cb.kernel.owner_sum, num_mems=np.bincount(cb.kernel.owner, minlength=n), R_rads=binding.voltage_binding.kernel.radius_m, diviterm=binding.voltage_binding.kernel.diviterm_m, X=g.X_m, Y=g.Y_m, xypts=g.grid_points_m, delta=float(g.delta_m), map_ij2k=g.index_ij, map_cell2ecm=g.cell_to_grid, map_mem2ecm=g.membrane_to_grid, memSa_per_envSquare=g.membrane_area_per_site_m2, mems_per_envSquare=g.membranes_per_site, true_ecm_vol=g.true_environment_volume_m3, M_divmap_mem2ecm=g.membrane_divergence_map_m2, cell2env_corrF=g.cell_to_environment_correction, lapENVinv=g.dirichlet_inverse_m2, lapENV_P_inv=g.neumann_inverse_m2)\n    for key, expected in cell_pairs.items():\n        _same(c(key), expected, 'cells.' + key)\n    vectors = np.asarray(c('mem_vects_flat'))\n    if vectors.shape != (m, 4):\n        raise ValueError('Require original four-column native membrane vectors')\n    _same(vectors[:, 2:], cb.kernel.normal_xy, 'cells.mem_vects_flat normal columns')\n    for key, expected in dict(cdl=n, mdl=m, edl=e, zs=cb.kernel.valence, movingIons=k.moving, Dm_cells=k.membrane_diffusion_m2_s, D_gj=k.gap_diffusion_m2_s, D_env=k.environment_diffusion_m2_s, TJ_modulator=k.tight_junction_modulator, smooth_weight_mem=cb.kernel.membrane_weight, smooth_weight_o=cb.kernel.other_weight, sigma=gb.cache.sigma_S_m, ko_env=gb.cache.ko_environment_per_m).items():\n        _same(s(key), expected, 'sim.' + key)\n    cache = gb.definition['cache_initial_state']\n    for key, expected in dict(D_free=cache['free_diffusion_m2_s'], cc_cells=cache['cell_mol_m3'], cc_env=cache['environment_mol_m3']).items():\n        _same(s(key), expected, 'cache source sim.' + key)\n    ep = gb.definition['parameters']\n    expected_p = dict(F=cb.kernel.F_C_mol, R=k.R_J_mol_K, T=ep['configured_temperature_K'], q=ep['q_C'], kb=ep['kb_J_K'], NAv=ep['NAv_per_mol'], er=ep['relative_permittivity'], eo=ep['vacuum_permittivity_F_m'], mu=ep['magnetic_permeability_H_m'], cell_height=ep['cell_height_m'], cell_space=ep['cell_space_m'], cell_radius=ep['cell_radius_m'], true_cell_size=ep['true_cell_size_m'], tm=k.membrane_thickness_m, gj_surface=k.gap_surface_fraction, sharpness=k.sharpness, smooth_cells=cb.kernel.source_smooth_cells, cm=binding.inputs['field_parameters']['capacitance_F_m2'], cell_polarizability=binding.inputs['field_parameters']['polarizability'], dt=binding.inputs['bootstrap']['dt_s'])\n    for key, expected in expected_p.items():\n        _same(p(key), expected, 'parameters.' + key)\n    for key, expected in dict(cluster_open=k.cluster_open, fast_update_ecm=k.fast_update_ecm).items():\n        if p(key) is not expected:\n            raise ValueError('Changed source branch: ' + key)\n    for key in ('xmin', 'xmax', 'ymin', 'ymax'):\n        _same(c(key), float(gb.definition['world'][key + '_m']), 'cells.' + key)\n    initial = {key: s(attr) for key, attr in source.MATERIAL_PAIRS}\n    initial['junction_field_xy_source'] = np.column_stack((s('E_gj_x'), s('E_gj_y')))\n    for key, expected in binding.inputs['initial'].items():\n        _same(initial[key], expected, 'initial.' + key)\n    state = material.state(mb, initial)\n    controls = {key: s(key) for key in ('gj_block', 'NaKATP_block')}\n    definition = binding.inputs['network']\n    for key, expected in definition['initial_controls'].items():\n        _same(controls[key], expected, 'controls.' + key)\n    _same(s('c_env_bound'), definition['initial_ion_boundary'], 'sim.c_env_bound')\n    if set(s('bound_V')) != set(binding.inputs['bootstrap']['boundary_V']):\n        raise ValueError('Use actual boundary voltage values at bootstrap')\n    for key, expected in binding.inputs['bootstrap']['boundary_V'].items():\n        _same(s('bound_V')[key], expected, 'bootstrap boundary ' + key)\n    entry = boundary.network_cache\n    if not entry['present'] or not entry.get('captured', False) or entry['value'] is None:\n        raise ValueError('Missing/unreadable hot GRN owner cache')\n    cached = entry['value']\n    if set(cached['wire']['molecule_fields']) != {'X', 'Y'}:\n        raise ValueError('Require the complete bounded X/Y owner cache')\n    for name, values in cached['wire']['molecule_fields'].items():\n        for key, size in (('c_cells', n), ('cc_at_mem', m), ('c_env', e)):\n            a = np.asarray(values[key])\n            if a.dtype != np.float64 or a.shape != (size,) or (not np.isfinite(a).all()) or np.any(a < 0):\n                raise ValueError('Invalid hot molecular owner axis/domain: ' + name + '.' + key)\n    _same(cached['wire']['ion_boundary_state'], s('c_env_bound'), 'owner ionic boundary epoch')\n    for key, expected in cached['wire']['simulator_fields'].items():\n        _same(s(key), expected, 'publication sim.' + key)\n    if set(cached['wire']['simulator_fields']) != {'extra_rho_cells', 'extra_rho_env', 'extra_J_mem', 'extra_Jenv_x', 'extra_Jenv_y'}:\n        raise ValueError('Require every source publication store')\n    for key, expected in cached['coefficient_fields'].items():\n        _same(s(key), expected, 'molecular coefficients sim.' + key)\n    for key, expected in definition['grid_index_groups'].items():\n        _same(c(key), expected, 'cells.' + key)\n    return (state, controls, cached)",
+    "first_line": 549,
+    "last_line": 725,
+    "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+  },
+  "old_single_field_reconstruct": {
+    "ast_sha256": "537046146113da90c8566a58303d34e705f4ff49ce95a5b699ecdab80be1117e",
+    "expression": "def reconstruct(binding, parent, dt, bounds, phase, before_field=None):\n    before = field_inputs(binding, parent, dt, bounds, phase)\n    prefix = environment = vm = None\n    if before_field is not None:\n        before_field(source.clone(before))\n    try:\n        gb = binding.material_binding.geometry_binding\n        prefix = current.evaluate(gb.current_binding, current.inputs(gb.current_binding, **before['current']))\n        environment = field.evaluate(gb, prefix, ions.data(before['environment']))\n        vm = voltage.evaluate(binding.voltage_binding, prefix, old_voltage_V=before['environment']['old_voltage_V'], dt_s=dt, boundary_V=bounds)\n        np.testing.assert_array_equal(vm.values.boundary_potential_V, environment.values.boundary_potential_V)\n        result = FieldStage(binding.identity, freeze(before), prefix, environment, vm, '')\n        result = FieldStage(binding.identity, result.before, prefix, environment, vm, ions.digest(field_record(result)))\n        raw = ions.data(parent.material.values._asdict())\n        raw['voltage_V'] = vm.values.voltage_V\n        material_parent = material.state(binding.material_binding, raw, step_index=parent.material.step_index)\n        return (_state(binding, material_parent, parent.network_cache, parent.controls), result)\n    except Exception as error:\n        raise FieldJoinRejected(error, dict(stage=phase, parent=parent, before=before, current=prefix, environment=environment, voltage=vm, rejected_trial=getattr(error, 'trial', None), rejected_source=getattr(error, 'source', None))) from error",
+    "first_line": 202,
+    "last_line": 251,
+    "source": "src/cells/processes/betse_normal_ecm_field_join.py"
+  },
+  "readiness_scope": {
+    "Egj": "observe actual loaded epoch; update_gj writes it; no zero filling",
+    "calcium": "persisted rate, pool, pump and clock admission remains before hydration",
+    "common": "unchanged owner/operator/state/publication/coefficient and cache epoch checks",
+    "missing_stores": "retained and refused; optional inventory does not become a default",
+    "physical_geometry": "supplied operators do not establish native mesh origin",
+    "serializer": "complete source restore/cache roundtrip remains inside unchanged handoff",
+    "source_history": "pinned instances do not prove seed/init/load execution",
+    "tangent": "retained unused columns4/5; no tangent geometry qualification"
+  },
+  "runtime_source_sha256": {
+    "betse_ecm_grn_join": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+    "betse_ecm_grn_source": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+    "betse_ecm_transport": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+    "betse_native_membrane_layout": "e93597511e882b5c4dd046fec40e4df32d0eda438fb7cb21531e020b445bd6f1",
+    "betse_normal_ecm_calcium_join": "80ccf03ce5b758274930e94c89f3411531aed5eeef924f6b2334b3ab8e6ea184",
+    "betse_normal_ecm_field_join": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+    "betse_normal_ecm_initialization": "780ffb431383b1ba5b8f2e05d98d1159755cd5b5b6c2504aaf0f205838e896af",
+    "betse_normal_ion_join": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d"
+  },
+  "scope": {
+    "PROGRESS_edited": false,
+    "candidate_evaluation": false,
+    "fixture_construction": false,
+    "held_packets_changed": false,
+    "jobs": false,
+    "native_seed_init_chain_closed": false,
+    "ordinary_ECM_loop_ready": false,
+    "physics_or_numeric_budgets_changed": false,
+    "science_imports": false,
+    "test_collection": false
+  },
+  "source_cache": {
+    "cache": {
+      "ast_sha256": "67cb25b9c11953f1dd43d96cd798289246fd2cbc54fde83953109d30edcc064d",
+      "expression": "def cache(ctx):\n    return dict(kind='cells.ecm_grn_owner_cache@1', wire=wire(ctx.sim.grn, ctx.sim), coefficient_fields={name: clone(getattr(ctx.sim, name)) for name in ('D_env_weight', 'D_env_weight_base', 'TJ_targets')})",
+      "first_line": 1344,
+      "last_line": 1352,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    },
+    "restore": {
+      "ast_sha256": "76344a6f3b3641c910a7b38d693feebad68016878818b14fadc9782c42387a96",
+      "expression": "def restore(ctx, incoming):\n    if incoming is None or incoming.get('kind') != 'cells.ecm_grn_owner_cache@1':\n        raise ValueError('Require complete ECM GRN owner cache')\n    raw = incoming['wire']\n    if set(raw) != {'owner_fields', 'core_fields', 'molecule_fields', 'reaction_fields', 'modulator_fields', 'ion_boundary_state', 'simulator_fields'}:\n        raise ValueError('Require every ECM owner/cache field')\n    if set(raw['molecule_fields']) != {'X', 'Y'}:\n        raise ValueError('Require both configured ECM gene products')\n    for values in raw['molecule_fields'].values():\n        if not set(PARAMETERS) | {'c_cells', 'cc_at_mem', 'c_env', 'flux_intra', 'gad_eval_string'} <= values.keys():\n            raise ValueError('Missing source-initialized ECM gene fields')\n        if values['ignore_ECM_pump'] is not True:\n            raise ValueError('Preserve actual source ignore_ECM_pump default')\n    api = science()\n    owner = object.__new__(api['MasterOfGenes'])\n    vars(owner).update(clone(raw['owner_fields']))\n    net = object.__new__(api['MasterOfNetworks'])\n    vars(net).update(clone(raw['core_fields']))\n    owner.core, ctx.sim.grn = (net, owner)\n    for attr, key, cls in (('molecules', 'molecule_fields', 'Molecule'), ('reactions', 'reaction_fields', 'Reaction'), ('modulators', 'modulator_fields', 'Modulator')):\n        objects = OrderedDict()\n        for name, fields in raw[key].items():\n            obj = object.__new__(api[cls])\n            vars(obj).update(clone(fields))\n            objects[name] = obj\n        setattr(net, attr, objects)\n    net.reactions_env, net.reactions_mit, net.channels, net.mit = (OrderedDict(), OrderedDict(), OrderedDict(), None)\n    for key, value in raw['simulator_fields'].items():\n        setattr(ctx.sim, key, clone(value))\n    if set(incoming['coefficient_fields']) != {'D_env_weight', 'D_env_weight_base', 'TJ_targets'}:\n        raise ValueError('Require owned ECM molecular grid coefficients')\n    for key, value in incoming['coefficient_fields'].items():\n        setattr(ctx.sim, key, clone(value))\n    for attr, ionic, molecular in (('cell_concs', 'cc_cells', 'c_cells'), ('mem_concs', 'cc_at_mem', 'cc_at_mem'), ('env_concs', 'cc_env', 'c_env'), ('bound_concs', 'c_env_bound', 'c_bound')):\n        mapping = OrderedDict()\n        for name, enabled in ctx.p.ions_dict.items():\n            if enabled != 1:\n                continue\n            i = ctx.sim.get_ion(name)\n            mapping[name] = api['DynamicValue'](lambda i=i, a=ionic: getattr(ctx.sim, a)[i], lambda value, i=i, a=ionic: getattr(ctx.sim, a).__setitem__(i, value))\n        for name in net.molecules:\n            mapping[name] = api['DynamicValue'](lambda name=name, a=molecular: getattr(net.molecules[name], a), lambda value, name=name, a=molecular: setattr(net.molecules[name], a, value))\n        setattr(net, attr, api['DynamicValueDict'](mapping))\n    net.mit_concs = None\n    return net",
+      "first_line": 1363,
+      "last_line": 1440,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    }
+  },
+  "unchanged_four_column_gate": {
+    "ast_sha256": "913bb2328de384d0fbd47fe9f97e0800a227f0d86a38a75ba60ac7c3bbf3f900",
+    "expression": "vectors.shape != (m, 4)",
+    "first_line": 621,
+    "last_line": 621,
+    "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+  }
+}

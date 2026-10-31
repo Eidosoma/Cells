@@ -1,6 +1,6 @@
 {
   "kind": "cells.stable_initial_mesh_prepared_plan@1",
-  "status": "static_frozen_candidate_pending_Chief_review",
+  "status": "accepted_static_diagnostic_qualification_authorized_launch_pending",
   "prepared_utc": "2026-10-30T23:31:05.500599+00:00",
   "law_id": "cells_stable_initial_constructor_pre_mesh@1",
   "owned_source_sha256": {
@@ -3990,7 +3990,7 @@
   "isolated_pillow_overlay": "/mnt/workspaces/Cells/pillow-overlay-12.3.0-20261030-01",
   "prepared_bundle": "/mnt/workspaces/Cells/stable-initial-mesh-preparation-prepared-20261030-01",
   "prepared_bundle_manifest_sha256": "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e",
-  "authorized_bundle_manifest_sha256": null,
+  "authorized_bundle_manifest_sha256": "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e",
   "runner": "/mnt/workspaces/Cells/specialist-runners/stable-initial-mesh-preparation-20261030-01-checks.py",
   "runner_sha256": "e4731553b0504b48a5200a77a6bcfb4f5f51ebce2227f493745564cc77779315",
   "whole_job_supervisor": "/mnt/workspaces/Cells/specialist-runners/stable-initial-mesh-preparation-20261030-01-supervise.py",
@@ -4009,11 +4009,19 @@
     "--guard-output",
     "/mnt/workspaces/Cells/stable-initial-mesh-whole-job-20261030-01"
   ],
-  "Chief_static_preflight_accepted": false,
-  "Chief_static_preflight_receipt": null,
-  "Chief_static_preflight_sha256": null,
-  "authorization": null,
-  "numerical_launch_authorized": false,
+  "Chief_static_preflight_accepted": true,
+  "Chief_static_preflight_receipt": "/mnt/workspaces/Cells/stable-initial-mesh-preflight-20261030-01/REVIEW.json",
+  "Chief_static_preflight_sha256": "b5b53ece09f2e924232155a3fdf701c187e9144a93be1d51b81d4fc9b660600d",
+  "authorization": {
+    "coordinator": "Chief",
+    "basis": "Current user lets go authorizes initial bounded diagnostic qualification after bridge static review and reviewed primitive results. Keep original cases/budgets/failed evidence; remaining whole-mesh defects are failed/open candidates. Mandatory pinned Root external startup wrapper; no retries or automatic polling.",
+    "authorized_utc": "2026-10-30T23:50:40.548094+00:00",
+    "mandatory_external_wrapper": "/mnt/workspaces/Cells/stable-initial-mesh-launch-20261030-01/supervise.py",
+    "mandatory_external_wrapper_sha256": "9ac2420dc7c63725a55c188b2176dc7507fb81224fc746d2b5df2ab84a5b0c7e",
+    "primitive_review": "/mnt/workspaces/Cells/stable-geometry-primitives-qualification-20261030-01/root-review-01/REVIEW.json",
+    "primitive_review_sha256": "10767af4ff0c50969306b4dc2abd24f41a707fc25264e798af0697bc40c9aae4"
+  },
+  "numerical_launch_authorized": true,
   "numerical_execution": false,
   "fixture_materialization": false,
   "pytest_collection": false,
@@ -4025,5 +4033,5 @@
   "topology_qualified": false,
   "original_19_of_22_limitation_open": true,
   "primitive_qualification_inherited": false,
-  "next_action": "Chief independently reviews the bounded static candidate and unchanged source/mapping risks. Root owns any authorized detached launch and mandatory external startup-failure wrapper. No automatic follow-up or job polling."
+  "next_action": "Root launches once through external startup wrapper. Diagnostic numerical result remains pending, not physical geometry admission. No automatic polling, retries or followup."
 }

@@ -1,0 +1,58 @@
+{
+  "actual_reset_before_event_and_post_event_material": true,
+  "compile_and_global_names_pass": true,
+  "fixed_geometry_identity_checked": true,
+  "fixture_evaluations": 0,
+  "kind": "cells.normal_ecm_event_owned_adapter_AST_audit@1",
+  "legitimate_runtime_material_binding_lowering": true,
+  "literal_event_firer_and_voltage_bodies": 5,
+  "material_inverse_exact": true,
+  "noise_draw_interface_replacements": 1,
+  "numerical_runs": 0,
+  "opaque_contexts_excluded_from_failure_serialization": true,
+  "original_noise_guard_body_equal_except_explicit_draw_interface": true,
+  "original_pulse_equal": true,
+  "original_reset_and_SIM_guard_equal": true,
+  "post_GRN_noise_hook_before_commit": true,
+  "prior_cache_restored_before_reapplying_earlier_event_writes": true,
+  "pytest_collection_runs": 0,
+  "relocated_reset_buffer_effects": 4,
+  "relocated_reset_statements": 3,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_bodies": {
+    "SimEventPulseVoltage.fire": {
+      "first_line": 76,
+      "last_line": 88,
+      "original_AST_sha256": "f89d16fcf52b0a7921f08dba59cb3a529d338a979873648c7c0da50f879df00a",
+      "port_AST_sha256": "f97f149c6e7cc5f72c7449bed285a9c959bfb25447378ec012f157fdd721a94a"
+    },
+    "TissueHandler._fire_events_global": {
+      "first_line": 728,
+      "last_line": 790,
+      "original_AST_sha256": "7ddbc0fa0fa90355159e40721299c990d818579d8c7a8e1a5c61ce613996856f",
+      "port_AST_sha256": "3a973dc5ef4798edd1940d5a8b72d5a69229732c2f5fe22de24e1ca8f074a6c8"
+    },
+    "TissueHandler._fire_events_tissue": {
+      "first_line": 794,
+      "last_line": 917,
+      "original_AST_sha256": "77806a550a9daf3ab65dbb1d4898914827003e9d0f3edf6eb1ad51ae3f7d326a",
+      "port_AST_sha256": "311d4e3403346bec2a9f9f38283e8d0dd176c6f1ef5cccbc112981f635fdfa41"
+    },
+    "TissueHandler.fire_events": {
+      "first_line": 709,
+      "last_line": 724,
+      "original_AST_sha256": "545a50901b6b5419b52477a8302f66ca8b035fd2d65495d46b91fa2c6d9fc123",
+      "port_AST_sha256": "e531f52b93e1b2b179c6d70b98289ef058e751f0f476afb23d0be628315b1dcf"
+    },
+    "TissueHandler.makeAllChanges": {
+      "first_line": 1321,
+      "last_line": 1332,
+      "original_AST_sha256": "169a98c6deba956f4134d9203b0ca9153fe791bccae3364ab9b99ff83a25d809",
+      "port_AST_sha256": "2b6e7ef14d769bf0d373d14130dc9adc730d922d0da039016452d3115620d0f6"
+    }
+  },
+  "status": "draft_adapter_audit_only_validation_packet_not_complete",
+  "temporal_helper_keyword_interfaces_valid": true,
+  "uncommitted_noise_preview_separate_from_actual_draw": true
+}

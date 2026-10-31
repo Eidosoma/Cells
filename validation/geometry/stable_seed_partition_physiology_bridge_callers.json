@@ -1,0 +1,301 @@
+{
+  "authority": "Cells Specialist explicitly manufactured time-zero passive caller declarations",
+  "cases": [
+    {
+      "bath_concentration_by_slot_y_mM": [
+        {
+          "A": 100,
+          "C": 100
+        },
+        {
+          "A": 100,
+          "C": 100
+        },
+        {
+          "A": 100,
+          "C": 100
+        }
+      ],
+      "capacities": {
+        "capacity": 1,
+        "extracellular_capacity": 8,
+        "face_capacity": 8,
+        "membrane_capacity": 4
+      },
+      "cell_concentration_mM": {
+        "A": 100,
+        "C": 100
+      },
+      "face_diffusivity_m2_per_s": {
+        "A": 2e-09,
+        "C": 1e-09
+      },
+      "geometry_case": "one-cell",
+      "id": "uniform-two-species",
+      "membrane_diffusivity_m2_per_s": {
+        "A": 2.384185791015625e-15,
+        "C": 4.76837158203125e-15
+      },
+      "membrane_permeability_m_per_s": {
+        "A": 4.76837158203125e-07,
+        "C": 9.5367431640625e-07
+      },
+      "purpose": "Explicit uniform equilibrium declaration; no predicted numerical result stored",
+      "species": [
+        {
+          "id": "C",
+          "valence": 1
+        },
+        {
+          "id": "A",
+          "valence": -1
+        }
+      ],
+      "temperature_K": 310
+    },
+    {
+      "bath_concentration_by_slot_y_mM": [
+        {
+          "A": 0.2,
+          "C": 0.2
+        },
+        {
+          "A": 0.3,
+          "C": 0.3
+        },
+        {
+          "A": 0.4,
+          "C": 0.4
+        }
+      ],
+      "capacities": {
+        "capacity": 1,
+        "extracellular_capacity": 8,
+        "face_capacity": 8,
+        "membrane_capacity": 4
+      },
+      "cell_concentration_mM": {
+        "A": 0.1,
+        "C": 0.1
+      },
+      "face_diffusivity_m2_per_s": {
+        "A": 2e-09,
+        "C": 1e-09
+      },
+      "geometry_case": "unequal-clefts",
+      "id": "unequal-clefts-readback-defects",
+      "membrane_diffusivity_m2_per_s": {
+        "A": 2.384185791015625e-15,
+        "C": 4.76837158203125e-15
+      },
+      "membrane_permeability_m_per_s": {
+        "A": 4.76837158203125e-07,
+        "C": 9.5367431640625e-07
+      },
+      "purpose": "Explicit non-dyadic concentrations and spatial bath gradients; readback defects must be retained rather than repaired",
+      "species": [
+        {
+          "id": "C",
+          "valence": 1
+        },
+        {
+          "id": "A",
+          "valence": -1
+        }
+      ],
+      "temperature_K": 300
+    },
+    {
+      "bath_concentration_by_slot_y_mM": [
+        {
+          "A": 0.25,
+          "C": 0.25,
+          "D": 0.03125,
+          "E": 0.03125
+        },
+        {
+          "A": 0.5,
+          "C": 0.5,
+          "D": 0.0625,
+          "E": 0.0625
+        },
+        {
+          "A": 0.75,
+          "C": 0.75,
+          "D": 0.09375,
+          "E": 0.09375
+        }
+      ],
+      "capacities": {
+        "capacity": 2,
+        "extracellular_capacity": 13,
+        "face_capacity": 14,
+        "membrane_capacity": 8
+      },
+      "cell_concentration_mM": {
+        "A": 0.125,
+        "C": 0.125,
+        "D": 0.0625,
+        "E": 0.0625
+      },
+      "face_diffusivity_m2_per_s": {
+        "A": 2e-09,
+        "C": 1e-09,
+        "D": 5e-10,
+        "E": 7.5e-10
+      },
+      "geometry_case": "two-cells",
+      "id": "two-cell-four-species",
+      "membrane_diffusivity_m2_per_s": {
+        "A": 2.384185791015625e-15,
+        "C": 4.76837158203125e-15,
+        "D": 1.1920928955078125e-15,
+        "E": 5.960464477539063e-16
+      },
+      "membrane_permeability_m_per_s": {
+        "A": 4.76837158203125e-07,
+        "C": 9.5367431640625e-07,
+        "D": 2.384185791015625e-07,
+        "E": 1.1920928955078125e-07
+      },
+      "purpose": "Explicit multiple cell owners and paired divalent species; no native or biological calibration",
+      "species": [
+        {
+          "id": "C",
+          "valence": 1
+        },
+        {
+          "id": "A",
+          "valence": -1
+        },
+        {
+          "id": "D",
+          "valence": 2
+        },
+        {
+          "id": "E",
+          "valence": -2
+        }
+      ],
+      "temperature_K": 295.15
+    },
+    {
+      "bath_concentration_by_slot_y_mM": [
+        {
+          "A": 0.3,
+          "C": 0.3
+        },
+        {
+          "A": 0.6,
+          "C": 0.6
+        },
+        {
+          "A": 0.9,
+          "C": 0.9
+        },
+        {
+          "A": 1.2,
+          "C": 1.2
+        },
+        {
+          "A": 1.5,
+          "C": 1.5
+        }
+      ],
+      "capacities": {
+        "capacity": 4,
+        "extracellular_capacity": 21,
+        "face_capacity": 24,
+        "membrane_capacity": 16
+      },
+      "cell_concentration_mM": {
+        "A": 0.3,
+        "C": 0.3
+      },
+      "face_diffusivity_m2_per_s": {
+        "A": 2e-09,
+        "C": 1e-09
+      },
+      "geometry_case": "four-cells",
+      "id": "four-cell-reordered-gradient",
+      "membrane_diffusivity_m2_per_s": {
+        "A": 2.384185791015625e-15,
+        "C": 4.76837158203125e-15
+      },
+      "membrane_permeability_m_per_s": {
+        "A": 4.76837158203125e-07,
+        "C": 9.5367431640625e-07
+      },
+      "purpose": "Explicit reordered seed owners and nonuniform finite bath concentrations; every actual generated route receives caller-declared values",
+      "species": [
+        {
+          "id": "C",
+          "valence": 1
+        },
+        {
+          "id": "A",
+          "valence": -1
+        }
+      ],
+      "temperature_K": 315
+    }
+  ],
+  "expansion_law": "caller_quantifies_all_admitted_owners_and_routes_with_explicit_values_no_parameter_inference@1",
+  "geometry": {
+    "accepted_source_review_sha256": "a8c09e4245079f55784e62d79e62d05e616dc5a665de5fb62b5235365b6078c7",
+    "caller_document": "validation/geometry/stable_seed_explicit_ecm_partition_callers.json",
+    "caller_document_sha256": "db8a03812c9005770b16f5259295b59ee164e1282d54c176e92f98ab7e6c04f6",
+    "manifest_sha256": "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406",
+    "source_review_gate": "accepted_source_review_only_numerical_qualification_unrun"
+  },
+  "kind": "cells.partition_initial_physiology_prospective_caller_declarations@1",
+  "qualification": {
+    "biological_cases": 0,
+    "checks_executed": 0,
+    "controls_count_as_cases": false,
+    "evaluated_cases": 0,
+    "materialized_cases": 0,
+    "native_equivalence": false,
+    "solver_trajectories": 0
+  },
+  "shared": {
+    "availability": 1,
+    "concentration_policy": "mM_times_admitted_binary64_pL_round_once_readback_defects_retained@1",
+    "constitutive_policy": "caller_D_and_P_agree_with_existing_D_over_geometry_path@1",
+    "electrical_policy": {
+      "closure_law": "resolved_capacitor_components_current_continuity@1",
+      "every_bath_boundary_potential_V": 0,
+      "every_bath_fixed_charge_equivalent_fmol": 0,
+      "every_bath_initial_charge_C": 0,
+      "every_cell_fixed_charge_equivalent_fmol": 0,
+      "every_cell_initial_charge_C": 0,
+      "gauge_reference": "caller-bath-0-0",
+      "kind": "explicit_charge_anchors_fixed_backgrounds_and_finite_bath_gauge@1"
+    },
+    "execution": {
+      "backend": "cpu",
+      "dt": 1e-06,
+      "edge_capacity": 0,
+      "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+      "jit": false,
+      "material_balance_atol_fmol_each_species": 1e-12,
+      "max_steps": 1,
+      "max_trace_bytes": 1048576,
+      "precision": "float64",
+      "solver": "rk4"
+    },
+    "experiment": {
+      "end_time": 1e-06,
+      "junction_controls": [],
+      "observation_times": [
+        0
+      ]
+    },
+    "prior_state_policy": {
+      "kind": "fresh_time_zero_no_cached_state_or_operator_adoption@1",
+      "provided_prior_state_or_operators": null
+    },
+    "specific_capacitance_F_per_m2": 0.01
+  },
+  "status": "literal_source_declarations_only_not_materialized_or_evaluated"
+}

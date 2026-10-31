@@ -1,0 +1,396 @@
+{
+  "E_grid_and_M_membrane_buffers_distinct": true,
+  "actual_ECM_grid_molecular_mover_and_FD_bodies": true,
+  "actual_entire_run_core_sim": true,
+  "common_adapter_AST_sha256": {
+    "active": "9871e7955a55f3c4dd64ef645513f786077bb3bf9ae7ac80c24e2b7305d81025",
+    "attach": "0271849fd0fafff6b94bf65a9f4d81f6209e9fa5d4572d0ec570e703635f7a14",
+    "capture_open": "c95637171b46628bce3c1727dbafabadd824daa40ababf47348bc083aabf6cc8",
+    "configure_call": "8312e19d200c137063c55b64ae73360a00f06c7abb76b5f5b0ba9e0b4cc85523",
+    "created": "3b0e12c389f7b8dac3afa52c64372f15d601b36ba1b45ea8b8bb455624caa468",
+    "directory_boundary": "b894f4ff5e40a3f9cd362d7e8c2e005d2161359285dff5122f94ea6919849adf",
+    "local_inputs": "b5408d6be603a2c57493145489e49c17b391ba99471609968816d0db8593d3e7",
+    "make_context": "c79e6a9229bdcf6b5a58732eaec8fcc29a5a6796183488333bf7ee9d20cbd751",
+    "new_trace": "b6de3d7931fd6ee3ba89b1e21ad037d5a328adb4728e94e62e02e96a40c7ab3a",
+    "observe": "574465c5a740156a5d2d734e6da8912e48d173f7898e4933b5c2d73b971f44d6",
+    "restore": "220ec8685af74e346e2b3cb078c09ebb6915b614e5e2756b468288ca3af0d6c6",
+    "save_boundary": "168df91042efac465ffb55b01cc434403e6f4269a53becfbe46fc1bc3dd03717",
+    "snapshot": "623f2833392d4487204aaf1e05e72cde2cc5311253ded0536e8386829332aac6"
+  },
+  "complete_public_owner_ionic_boundary_cache": true,
+  "coordinated_nonimported_charged03_capture_pin_refresh": {
+    "authority": "Chief sealed sole capture hold and authorized immutable03 then standalone continuation",
+    "other_pins_exact": 291,
+    "paths": {
+      "tests/unit/test_betse_ecm_charged_grn_join.py": {
+        "after": "607a8182c6b708d872d48e98457ccd171eceba2c3ed35c07275781132341a779",
+        "before": "b74f8df7113858a2f3fe89584b32e5b09b4aba68c238b17ccddcad7bcfd8ff5a"
+      },
+      "validation/betse/betse_ecm_charged_grn_protocol.json": {
+        "after": "8eb3d0fc480b45730e5b2613bdfee95479932fcdbd520fa1201d4991b4e14e75",
+        "before": "1e21dd682075f9e7572493f0e4f3aaed8beb742de51906e7ab74e13ca8e3dc75"
+      },
+      "validation/betse/betse_ecm_charged_grn_source_map.json": {
+        "after": "559aae0551771f98c16234dadcfda11ff5b46e45ae65f51cd5c480e31f526e68",
+        "before": "0f78b7a1bdaf778f07e6e08e1ddaffdeb1b86345b0a245c0f85e60acc5e2625d"
+      }
+    }
+  },
+  "full_five_publication_fields_persist_without_creation_of_core_rho": true,
+  "in_memory_IO_boundary": true,
+  "independent_warm_equations_only_modulator_dispatch_removed": true,
+  "kind": "cells.ecm_standalone_source_map@1",
+  "law_id": "betse_standalone_ecm_sim_grn_v1_5_0@1",
+  "literal_numeric_bodies": {
+    "DynamicValue.__init__": {
+      "numeric_AST_sha256": "8a58e7954547ae3b2a87a965644052000631ec97e5533fa844548a602ff64650",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__delitem__": {
+      "numeric_AST_sha256": "3fb9f1dc67a8442241666f385b5c5dda0244980156c0be05fd33ede70be05a2e",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__getitem__": {
+      "numeric_AST_sha256": "01d550685f2e43084ab220d0d72e9ce557af4169b1e8a797364d73c48499b854",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__init__": {
+      "numeric_AST_sha256": "b9d15f5f1d750f7209d31bf044e187c37d7d8abce99a9d980f83adc99ce657f0",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__iter__": {
+      "numeric_AST_sha256": "04dd3f5642ff059a8df8590516c9b7b0a34ae459a1c93b1dfcb34182a4fe59b5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__len__": {
+      "numeric_AST_sha256": "bbf5f222a2f001d19540eace674ac1e5aa2ea276f6eff3e1646e4d9e4ae4e2e2",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__setitem__": {
+      "numeric_AST_sha256": "7e12ced096a33519f5b3c5d13cba1048bf579a3313727b18c49ed9640f685d80",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.__init__": {
+      "numeric_AST_sha256": "7d346a78720b8d26ddb0d9c6cc5819fb0374961814b58e25d138cbf2a231a3b1",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.read_gene_config": {
+      "numeric_AST_sha256": "f029494a632f7deb285d197b77657f99d2a7c27d087dca9feccb5765e90747f7",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.reinitialize": {
+      "numeric_AST_sha256": "3463e3709f7b133234a4087df2ac023c03e7ccf556927a66767d1a156fced0a3",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.run_core_sim": {
+      "numeric_AST_sha256": "707d3302b7cde681afe94f3b27ed729dfec85eba038c5cdea39137c884a2c14e",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.__init__": {
+      "numeric_AST_sha256": "c4b666de15cc086cb0db34caaeffcf0b19a986902379849a80176258f7699839",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.bal_charge": {
+      "numeric_AST_sha256": "42db3f814eea5002840cc3e0f7ba73fa5d2632f707e2c9f06dc11e3e3d52679e",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.clear_cache": {
+      "numeric_AST_sha256": "03bb4986e3eb2845aa0ae9e16de5f7642da8d9c81895ea07d6b81386151cd58f",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.clear_run_loop": {
+      "numeric_AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.create_reaction_matrix": {
+      "numeric_AST_sha256": "f483aa568c2c67ceee4f05fd35574b7f2ac3cd472f1695784508c9ee6d723637",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.create_reaction_matrix_env": {
+      "numeric_AST_sha256": "af7cd6b63fdb537ea1cf0a7f51c8d6e42ff9d8a36bbafb9fb96a120357650c6a",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.default_zones": {
+      "numeric_AST_sha256": "844298847a625fce940e6580abf0b613501f0b6948e977d161b87d87be66fcd0",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.energy_charge": {
+      "numeric_AST_sha256": "2e5f7c63a8f35d660b97ee59e695b8e85a63f0f67a5d46ad83851afdc418fd21",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.export_equations": {
+      "numeric_AST_sha256": "6a04c15333efa432915df00c232b8438356e0b2fede3f4228daafd454004e1d6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.export_eval_strings": {
+      "numeric_AST_sha256": "7e0f608ac5c29d07c39099e4cbe567f116a9126caeec9d8081b00db491a56f97",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.get_influencers": {
+      "numeric_AST_sha256": "177d03102e838564b8cefdcb9f29a320069c1b9cdf8f7c0e975b365e50f6472c",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.init_saving": {
+      "numeric_AST_sha256": "dffa34433a9c526f5e135599d7d13aead20e99cda207673297d7be73045f3458",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_modulators": {
+      "numeric_AST_sha256": "75e95cffc9b7165953699d5c4ee917b43721a56151b6c4bf43f155d371935bd4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_reactions": {
+      "numeric_AST_sha256": "3e08c2753f7ef2330ae637459859858dda28a3f0702f9f997cddb998156a20d6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_substances": {
+      "numeric_AST_sha256": "33c54b4dec27b6b8598259c8d3a63f2b6e08bc8081834892a15efd2a64978bb4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.report": {
+      "numeric_AST_sha256": "f1d4cca2e17b9c8760aa663504fd739c28b04507cc4170811ce8f955ae041ee6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.run_loop": {
+      "numeric_AST_sha256": "a54a72fcd2ccd2e9c6ad8cf74ea8b0d2ed866579e441ff9cbd48373cdc495b2b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.run_loop_modulators": {
+      "numeric_AST_sha256": "4bb9a1a16912bfde9ec3de8c89a38b44b790b95054120558d338be737abb3083",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.tissue_init": {
+      "numeric_AST_sha256": "53c4c7250639c0ca69de9c2d3309e7d33ca703dcd1439a6c75c53a28f7326c47",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_data": {
+      "numeric_AST_sha256": "7da141353412afa4b18f46979f1850010a0e009e546d9b6749addd9e4b7fc6e4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_growth_and_decay": {
+      "numeric_AST_sha256": "164f1be2e65891453555026d7d7e230a01f85a1a74f698e371ad60928f5fea2b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_reactions": {
+      "numeric_AST_sha256": "5e85cf5f0e661a3f3794f717468863ec326a1b7ff112346d59b86f751bfc9897",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_reactions_env": {
+      "numeric_AST_sha256": "581e7a2b961dd7b6501a17aba689c2cf2d991d5b1708867d312368dd126614bd",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Modulator.__init__": {
+      "numeric_AST_sha256": "60d0ad04d5ccfe38e7398b5596ad5bf5c7fc23c435e397a18b9036b874faa5c4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Modulator.init_modulator": {
+      "numeric_AST_sha256": "2d4a50a5fbe71a87969a22bdb82761e021c73d2bd9a5f1df9ad520d6e1ef39c5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.__init__": {
+      "numeric_AST_sha256": "fb9554a42460b1a370129b9f150efd4709588220e8a302de05854f98fffcde60",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.init_growth": {
+      "numeric_AST_sha256": "b5ae0409c46bd3d77311221930362b547eb8be43f13c20a2d7e499c02b7496a5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.transport": {
+      "numeric_AST_sha256": "09cb573693bf2dfd2a76d62292ff84a4513893c26cfab60fc23b6e0aba6c61f2",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.update_intra": {
+      "numeric_AST_sha256": "53195e760fc1e22d04e9374c988cfaf70d281e8e89766c3e7b567d0de297a11b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Reaction.__init__": {
+      "numeric_AST_sha256": "1615b34794b013bc2ee1944534bc92d1ce0e3e35d1f66874e5cea26f4d9bc99a",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "diff": {
+      "numeric_AST_sha256": "d0c1b692199747f0a7df6f5cc2303ad17bc0c522dadf5c09b63f3860030265c6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "div_env": {
+      "numeric_AST_sha256": "1197006c49a1e72f010849feedc609b13c4672c87000974710e2f80e22e0c46f",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "divergence": {
+      "numeric_AST_sha256": "2aeebe45691dfa75a8538c9de06e927a12a9afa283f9aee5ba0ca9073b532ecf",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "electroflux": {
+      "numeric_AST_sha256": "e0f2c84a0df780122f6b25ea641d854d85468411c08e92a36adc613ac56717de",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "gradient": {
+      "numeric_AST_sha256": "5d729cc369ebec9e8e9ed00414bfdedc84e0d3e08b4bf6e15d5d0ac7bb30c9c8",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "integrator": {
+      "numeric_AST_sha256": "c2fa841c57966f15f0fa5933c288f3d10cee752e906f27442f65dbf40ac1d881",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "molecule_mover": {
+      "numeric_AST_sha256": "240d1d4628e09ebd74cbc593f30020422a648b9007111aa345a697c7e9cb9aa5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "nernst_planck_flux": {
+      "numeric_AST_sha256": "4b82cb3568a4a9549590cf82baf660d6f5a5ae27810b7bce7da6feef8fb81a8d",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "no_negs": {
+      "numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "set_net_opts": {
+      "numeric_AST_sha256": "242355411306072a0df0dae047c9209a9ead43ce7cc33b7cb3f77538bc740f33",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "update_Co": {
+      "numeric_AST_sha256": "305af54d6215c25d63d18486f125410657123cf3ae4510f2c0e937185e548620",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    }
+  },
+  "literal_scientific_body_count": 52,
+  "native_source_sha256": {
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "no_normal_guard_or_dispatch_substitution": true,
+  "original_clock_and_sampling": true,
+  "original_new_owner_branch": {
+    "body_AST_equal": true,
+    "first_line": 427,
+    "last_line": 519
+  },
+  "original_radial_weight_and_TJ_context_statements": true,
+  "original_reinitialize_clear_sample_report_exports": true,
+  "physical_file_persistence_credit": false,
+  "scalar_clock_reference_only_precision_changed": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "ECM": "Actual full E-grid versus M-membrane arrays, original membrane/GJ mover, Na-normalized diffusion weights/TJ indices, collocated FD/electrodiffusion, fast duplicate-last versus area-sum exchange, boundary clamp and smoothing. External old electric fields/rho_channel/gap controls stay held; no normal material or field advance.",
+    "IO": "Original init_saving and CSV exporter bodies execute against explicit in-memory directory/file sinks; saveSim records argument identities and complete scientific state. No pickle/filesystem-persistence credit",
+    "clock": "N=int(total/dt), linspace(0,N*dt,N); first t0 advances dt. Timestamp spacing is N*dt/(N-1), except N1 only t0. Sampling repeatedly truncates i+t_resample; owner time/cache resets while sim.time appends across invocations",
+    "cold": "Original SimRunner new-owner true branch and actual local MasterOfGenes.read_gene_config. Charged cold publication disabled; a neutral cold-publication control writes source zero rho. Charged compensation and externally preenabled mitochondria remain outside this boundary.",
+    "distinctions": "Actual run_core_sim forces publication False, skips clear_run_loop and configured modulator/channel dispatch, and keeps all five incoming simulator charge/current fields. Original core constructor supplies three zero current fields; absent core rho fields are preserved as absent. Charged product electrodiffusion still executes. No new charge/current publication is credited.",
+    "exclusions": [
+      "SEED/INIT/SIM file loading, automatic seeding/initialization, actual pickle restart or file persistence",
+      "Mitochondrial state, fluid/cut/event dynamics, optimizers, transporters/channels, charged cold counterion initialization",
+      "Normal material/pump/gate/current/voltage solver dispatch",
+      "Physical global or energetic conservation, finite/shared fuel, biological calibration or independently carried trajectory accuracy"
+    ],
+    "run": "Entire original MasterOfGenes.run_core_sim, actual reinitialize, clear_cache, Core/Molecule scientific bodies, write_data/report, init_saving and CSV export bodies",
+    "source_order": "Force charge publication False; overwrite standalone clocks; construct linspace/sampling; reinitialize without resetting concentrations; clear sampled caches; reset owner time; actual Core loop; sample/report; save boundary; init_saving; export_eval_strings; export_equations",
+    "state": "Entire public owner/core/molecule/reaction/modulator state, complete simulator/parameters/boundaries, all active grid fields and Na-derived coefficients, sampled caches and captured output text persist. Native owner and grid objects remain live; port hydrates fields and rebuilds enabled concentration aliases, skipping disabled Ca.",
+    "supplied_phase": "Explicit native-derived ECM three-cell/nine-membrane/four-ion phase with E9 or E12 grid. Original field grid/owner/environment AST constructs native geometry; port derives the same from original declarations. No phase pickle/world loading, full init_dynamics/profile/diffusion-mask lifecycle or field solve is performed."
+  },
+  "standalone_cache_container_providers": {
+    "hot_restore_providers": [
+      "channels",
+      "mit",
+      "modulators",
+      "molecules",
+      "reactions",
+      "reactions_env",
+      "reactions_mit",
+      "transporters"
+    ],
+    "missing": [],
+    "original_cold_providers": [
+      "channels",
+      "mit",
+      "modulators",
+      "molecules",
+      "reactions",
+      "reactions_env",
+      "reactions_mit",
+      "transporters"
+    ],
+    "required": [
+      "channels",
+      "mit",
+      "modulators",
+      "molecules",
+      "reactions",
+      "reactions_env",
+      "reactions_mit",
+      "transporters"
+    ]
+  },
+  "unsupported_mitochondria_fluid_cut_restart_explicit": true
+}

@@ -1,0 +1,72 @@
+{
+  "status": "verified_exact_reviewed_capture02_source_deltas_held",
+  "handoff": {
+    "path": "/mnt/workspaces/Cells/ecm-molecule-capture-successors-20261031-01/HANDOFF.json",
+    "sha256": "279d51807be9d110c9aa4e376029fbb12cf7253d5f406f9823a6a8f3360d5129"
+  },
+  "packets": [
+    {
+      "family": "dispatch",
+      "packet_files": 3633,
+      "source_files": 2743,
+      "exact_original_sources": 2741,
+      "changed_sources": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py"
+      ],
+      "added_sources": [
+        "validation/betse/betse_normal_ecm_molecule_failure_checks.py"
+      ],
+      "prospective": {
+        "accepted_calls": 57,
+        "biological_cases": 0,
+        "checks": 44,
+        "dependency_controls": 21,
+        "independent_reference_forms": 942,
+        "independently_carried_trajectories": 0,
+        "native_captures": 84,
+        "positive_cases": 19,
+        "raw_cases": 4
+      },
+      "manifest": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-02/MANIFEST.json",
+        "sha256": "9b16ca0b52590269c7c3ad450485c8d24fbfa882bc5032cbf24d3ba64322427e"
+      }
+    },
+    {
+      "family": "transport",
+      "packet_files": 3689,
+      "source_files": 2773,
+      "exact_original_sources": 2771,
+      "changed_sources": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py"
+      ],
+      "added_sources": [
+        "validation/betse/betse_normal_ecm_molecule_failure_checks.py"
+      ],
+      "prospective": {
+        "accepted_calls": 69,
+        "biological_cases": 0,
+        "checks": 60,
+        "component_controls": 5,
+        "dependency_controls": 31,
+        "independent_reference_forms": 1306,
+        "independently_carried_trajectories": 0,
+        "native_captures": 102,
+        "positive_cases": 23,
+        "raw_cases": 4,
+        "raw_setup_cases": 2
+      },
+      "manifest": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-02/MANIFEST.json",
+        "sha256": "ccbf083ece28a970ead618ef7264cfb7247f5cbd39d6efed971da2a54332e76b"
+      }
+    }
+  ],
+  "scientific_imports": [],
+  "scientific_evaluations": 0,
+  "pytest_collection": 0,
+  "launches": 0,
+  "remaining": "Fresh guarded runners must use02profiles and require all new complete outcome records; capacity remains unqualified.",
+  "elapsed_s": 2.33205201709643,
+  "process_VmHWM_bytes": 24690688
+}

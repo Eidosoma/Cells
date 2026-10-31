@@ -1,0 +1,57 @@
+{
+  "kind": "cells.fixed_seed_manufactured_physical_bridge_test_domains@1",
+  "authority": "Cells Specialist explicit prospective manufactured test declaration",
+  "purpose": "Two new computational domains for bridge tests; no native tissue or bath boundary claim",
+  "constructor_proposal_domains_automatically_selected": false,
+  "missing_lattice_caller_envelopes_resolved": false,
+  "source_scope": {
+    "five_failed_layout_owners": 37,
+    "five_failed_layout_outside_owners": 20,
+    "earlier_six_layout_panel_owners": 50,
+    "earlier_passing_square_zero_owners": 13,
+    "missing_envelope_origin": "lattice_seeded_ring_and_centre_caller_caches",
+    "original_mesh_outcome": "0/9 unchanged"
+  },
+  "cases": [
+    {
+      "id": "manufactured-irregular-square",
+      "retained_source_case": "irregular-centroid-aux",
+      "domain_id": "bridge-manufactured-square",
+      "vertices_m": [
+        [-0.000030517578125, -0.000030517578125],
+        [0.000030517578125, -0.000030517578125],
+        [0.000030517578125, 0.000030517578125],
+        [-0.000030517578125, 0.000030517578125]
+      ],
+      "height_m": 0.000001,
+      "thickness_m": 0.000000005,
+      "baths": [{"id": "manufactured-bath", "volume_m3": 2e-15}],
+      "bath_assignment_policy": "one_explicit_bath@1"
+    },
+    {
+      "id": "manufactured-seed17-rectangle",
+      "retained_source_case": "native-single-preset-seed17",
+      "domain_id": "bridge-manufactured-rectangle",
+      "vertices_m": [
+        [-0.000030517578125, -0.0000152587890625],
+        [0.000030517578125, -0.0000152587890625],
+        [0.000030517578125, 0.0000457763671875],
+        [-0.000030517578125, 0.0000457763671875]
+      ],
+      "height_m": 0.0000015,
+      "thickness_m": 0.000000006,
+      "baths": [
+        {"id": "manufactured-bath-even", "volume_m3": 2e-15},
+        {"id": "manufactured-bath-odd", "volume_m3": 3e-15}
+      ],
+      "bath_assignment_policy": "explicit_alternating_constructor_edge_indices_test_only@1"
+    }
+  ],
+  "qualification": {
+    "executed": false,
+    "oblique_domain_admission_qualified": false,
+    "maximum_seed_or_corner_resource_limits_qualified": false,
+    "native_equivalence": false,
+    "biological_calibration": false
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "cells.explicit_cell_bath_partition_manufactured_callers@1",
+  "authority": "Cells Specialist explicit new manufactured cell/bath geometry test declarations",
+  "physical_scope": "Fresh manufactured seed owners, explicit offsets/clefts/domain; no prior full-domain cells reclassified",
+  "bath_slot_policy": "Caller assigns caller-bath-X-Y to every non-cell tensor slot before binding",
+  "height_m_hex": "0x1p-20",
+  "membrane_thickness_m": 5e-9,
+  "cases": [
+    {
+      "id": "one-cell",
+      "domain_vertices_hex": [["0x0p+0", "0x0p+0"], ["0x1p-18", "0x0p+0"], ["0x1p-18", "0x1p-18"], ["0x0p+0", "0x1p-18"]],
+      "layout_hex": {"x_centres_m": ["0x1p-19"], "y_centres_m": ["0x1p-19"], "cell_half_width_x_m": ["0x1p-20"], "cell_half_width_y_m": ["0x1p-20"], "cleft_width_x_m": ["0x1p-20", "0x1p-20"], "cleft_width_y_m": ["0x1p-20", "0x1p-20"]},
+      "seeds": [{"id": "manufactured-cell-A", "slot": [0, 0]}]
+    },
+    {
+      "id": "unequal-clefts",
+      "domain_vertices_hex": [["-0x1.8p-19", "-0x1.4p-18"], ["0x1.4p-18", "-0x1.4p-18"], ["0x1.4p-18", "0x1.cp-18"], ["-0x1.8p-19", "0x1.cp-18"]],
+      "layout_hex": {"x_centres_m": ["0x0p+0"], "y_centres_m": ["0x1p-20"], "cell_half_width_x_m": ["0x1p-19"], "cell_half_width_y_m": ["0x1.8p-19"], "cleft_width_x_m": ["0x1p-20", "0x1.8p-19"], "cleft_width_y_m": ["0x1.8p-19", "0x1.8p-19"]},
+      "seeds": [{"id": "manufactured-cell-offset", "slot": [0, 0]}]
+    },
+    {
+      "id": "two-cells",
+      "domain_vertices_hex": [["0x0p+0", "0x0p+0"], ["0x1.8p-17", "0x0p+0"], ["0x1.8p-17", "0x1.8p-18"], ["0x0p+0", "0x1.8p-18"]],
+      "layout_hex": {"x_centres_m": ["0x1p-19", "0x1p-17"], "y_centres_m": ["0x1.8p-19"], "cell_half_width_x_m": ["0x1p-20", "0x1p-19"], "cell_half_width_y_m": ["0x1p-20"], "cleft_width_x_m": ["0x1p-20", "0x1.8p-19", "0x1p-19"], "cleft_width_y_m": ["0x1p-19", "0x1p-19"]},
+      "seeds": [{"id": "manufactured-cell-left", "slot": [0, 0]}, {"id": "manufactured-cell-right", "slot": [1, 0]}]
+    },
+    {
+      "id": "four-cells",
+      "domain_vertices_hex": [["0x0p+0", "0x0p+0"], ["0x1p-17", "0x0p+0"], ["0x1p-17", "0x1p-17"], ["0x0p+0", "0x1p-17"]],
+      "layout_hex": {"x_centres_m": ["0x1p-19", "0x1.8p-18"], "y_centres_m": ["0x1p-19", "0x1.8p-18"], "cell_half_width_x_m": ["0x1p-20", "0x1p-20"], "cell_half_width_y_m": ["0x1p-20", "0x1p-20"], "cleft_width_x_m": ["0x1p-20", "0x1p-19", "0x1p-20"], "cleft_width_y_m": ["0x1p-20", "0x1p-19", "0x1p-20"]},
+      "seeds": [{"id": "manufactured-cell-11", "slot": [1, 1]}, {"id": "manufactured-cell-00", "slot": [0, 0]}, {"id": "manufactured-cell-01", "slot": [0, 1]}, {"id": "manufactured-cell-10", "slot": [1, 0]}]
+    },
+    {
+      "id": "translated-cell",
+      "domain_vertices_hex": [["0x1p+10", "-0x1p+11"], ["0x1.000002p+10", "-0x1p+11"], ["0x1.000002p+10", "-0x1.fffffep+10"], ["0x1p+10", "-0x1.fffffep+10"]],
+      "layout_hex": {"x_centres_m": ["0x1.000001p+10"], "y_centres_m": ["-0x1.ffffffp+10"], "cell_half_width_x_m": ["0x1p-15"], "cell_half_width_y_m": ["0x1p-15"], "cleft_width_x_m": ["0x1p-15", "0x1p-15"], "cleft_width_y_m": ["0x1p-15", "0x1p-15"]},
+      "seeds": [{"id": "manufactured-cell-translated", "slot": [0, 0]}]
+    }
+  ],
+  "qualification": {"executed": false, "new_biological_cases": 0, "native_equivalence": false, "physical_model_prepared": false}
+}

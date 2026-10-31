@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_dispatch_prepared_01/driver.py", line 42, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_dispatch_prepared_01/driver.py", line 18, in main
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: General-molecule source handoff is held; this metadata-only driver cannot launch a scientific round. Chief owns a separately requested release controller.

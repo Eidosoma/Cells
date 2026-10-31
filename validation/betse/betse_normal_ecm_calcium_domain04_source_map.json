@@ -1,0 +1,82 @@
+{
+  "actual_legacy_science_changed": false,
+  "exact_pre_GHK_chemistry_equations": true,
+  "independent_transport_prediction": false,
+  "inherited_scientific_owned_sha256": {
+    "src/cells/processes/betse_normal_ecm_calcium_join.py": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
+    "tests/unit/test_betse_normal_ecm_calcium_join.py": "aaedd7954f3b630e17b6546cbc4c500c7f4d4baba2a7de7222643a67a824d418",
+    "validation/betse/betse_normal_ecm_calcium_join_fixtures.py": "1e6ab500e82cc193021a44c9bff24d079cedb07ff6d0d6f56f55883a57907aa6",
+    "validation/betse/betse_normal_ecm_calcium_join_native.py": "1cbbc9791267387c882c73a97752b70faeb093710a86e52f7b3430c6e8b1908b",
+    "validation/betse/betse_normal_ecm_calcium_join_protocol.json": "f8a93fe452897eeda73bbf00aa64610da3eb5fd2a8a1be54878248556c1644b6",
+    "validation/betse/betse_normal_ecm_calcium_join_reference.py": "40294fa9f35574f22d19c140d0b8db73b983ea4075d7cebaecf95f014f7f660a",
+    "validation/betse/betse_normal_ecm_calcium_join_source_map.json": "e76bb1f222bcb4e3c442af3e78302bb385bc234d86bb308dd738e3b7cfe5a451"
+  },
+  "inherited_source_map_sha256": {
+    "path": "/home/robert/Cells/validation/betse/betse_normal_ecm_calcium_join_source_map.json",
+    "sha256": "e76bb1f222bcb4e3c442af3e78302bb385bc234d86bb308dd738e3b7cfe5a451"
+  },
+  "kind": "cells.calcium_domain04_source_map@1",
+  "numerical_runs": 0,
+  "original_failed_campaign_pass": false,
+  "original_native_first_nonfinite_is_ordinary_Na_GJ": true,
+  "raw_third_only_common_prefix_and_helper_correspond": true,
+  "scientific_imports": 0,
+  "scope": {
+    "ER": "Whole332-file installed-exact audit: sole Ca_dyn writerFalse at Parameters771; all8 legacy ER kinetics lack producers. Native guarded constructor/update remain disabled. Existing prepared_ER is a separate externally supplied inventory/cache seam, never ordinary cold/restart parity",
+    "cache": "Original configured-temperature sigma/ko initialized from explicitly declared pre-state, held fixed. update_V sigma_cell independently recomputed per call using species mean and F^2/(R*T)*0.1; this differs from cached q*F/(kb*T) sum",
+    "calcium": "Real Ca+2 material/cache/diffusion role. Native CaATP_block ones, rho_pump1, met_concsNone, maintained ATP1.5/ADP0.1/Pi0.1, KmCa_Ca1e-3/KmCa_ATP0.5, deltaGATP-37000/F96485/R8.314 derive from actual original producers. Explicit configured alpha_Ca; no supplied pool/Km/block/rate defaults",
+    "clocks": "Constant dt within three normal calls. Actual original SIM _plot_loop gives N3, linspace(0,N*dt,N); pass that t to original ordinary and GRN calls. Keep accumulated material dt separately, with configured p.T distinct from runtime sim.T. Event/sampling/persistence/whole phase clock lifecycle excluded",
+    "exclusions": [
+      "Full native initialization/normal solver and sampling/persistence",
+      "Charged cold ion compensation, mitochondria, separate transporters/channels and intracellular molecular field branch",
+      "Physical global material/charge/energy conservation, biological calibration, independent carried trajectories, JAX/GPU qualification"
+    ],
+    "external": "Explicit pump and late membrane flux, channel multiplier, fixed-gap control, ionic bath and applied R/L/T/B voltage; fluid/noise/forces/deformation/events disabled or excluded. Original geometry inputs remain explicit preparation",
+    "field_state": "Complete intracellular current, environment rho/surface/Gaussian/voltage/E/HH/B/current and cell conductivity/voltage/mean/E/normal/dvm outputs retained. Previous reconstructed E_env alone supplies next ordinary and molecular transport. Vm updates after each field, earlier GJ caches stay stale",
+    "initial_preparation": "Original geometry/owner/normal/measure declarations plus initializer material and D_free; derive actual Cartesian grid, maps, source operators/inverses, smoothing weights, sigma/ko, radius and diviterm. Full seed/phase/diffusion-mask/dynamic initialization excluded",
+    "observed_raw_domain": "Exact saved negative_genes input (z=-1 products) retains native2 complete calls and partial third. First nonfinite ordinary Na GJ frame4 occurrences7/8 precedes later CaATP/GRN NaNs. Owned third stops at existing helper finite guard; native later stops at X transport/no_negs. Shared prefix and raw helper only; no whole-history/causal claim.",
+    "owner": "Original nonempty configured X/Y MasterOfGenes/Core with native GAD/reaction/modulator/ECM transport, real cold readers, full public cache and coefficient carry; charged cold compensation excluded",
+    "rate_cache": "Native rate_CaATP has no cold producer. Carry actual absence until a positive configured-alpha call writes masked post-first-rho handler flux, then carry immutable complete rate. Alpha0 keeps absence in this fixed-configuration normal phase; no fabricated zeros",
+    "raw_native_chemistry_reference": "Original stdlib warm RHS/delta and chemical X commit equations at Decimal100/160, conditional on actual native third pre-GRN read projection. Full packet separately archived. No consumed value replaced; no transport prediction, owned network invocation or full return predicted.",
+    "source_order": "Actual prepared normal SIM source clock; bootstrap update_V; ordinary ion refresh; guarded ca_handler(CaATP, Ca_dynFalse); explicit late-flux seam; GRN; deferred ordinary commit; full fields/update_V; NaN-only check_v"
+  },
+  "source_ER_disabled": true,
+  "source_classification_AST_proof": {
+    "actual_native_input_read_projection_no_replacement": true,
+    "all_legacy_science_fixtures_native_reference_tests_byte_unchanged": true,
+    "chemical_commit_and_gross_existing_equations_exact": true,
+    "chemistry_prefix_existing_RHS_delta_inverse_exact": true,
+    "compiled_python_files": 5,
+    "dependency_controls": 12,
+    "distinct_native_and_strict_owned_endpoints": true,
+    "earlier_ordinary_Na_junction_nonfinite_context_retained": true,
+    "exact_original_input_metadata_and_coefficients_preserved": true,
+    "existing_raw_cases": 6,
+    "fixture_evaluations": 0,
+    "full_roster": 34,
+    "historical_owned_hot_credit_for_case": 0,
+    "historical_uncompared_constructor_forms": 4,
+    "kind": "cells.calcium_domain04_source_classification_AST_proof@1",
+    "no_calcium_specific_cause_or_negative_concentration_claim": true,
+    "numerical_runs": 0,
+    "observed_raw_domain_histories": 1,
+    "original_campaign_still_failed": true,
+    "original_input_sha256": "41d5da23526aac015a219e2c7d535998c7181fc40520d5ef1a967034af808606",
+    "original_native_manifest_sha256": "e403f3788689969bdcbf75d282b89247c6b912ccffca01b5396b9c2ccf6ddea9",
+    "planned_fresh_reference_forms": 442,
+    "planned_native_captures": 22,
+    "positive_histories": 15,
+    "pytest_collection_runs": 0,
+    "raw_common_prefix_and_helper_only_comparison": true,
+    "reference_evaluations": 0,
+    "retained_new_qualification_passes": 0,
+    "saved_failure_review": {
+      "path": "/mnt/workspaces/Cells/ecm-calcium-catalog-failure-review-20261031-01/calcium/REVIEW.json",
+      "sha256": "e055aff4ddd73ce47e9977db139812f19b54a7bee110b146432d45c2675d91a2"
+    },
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "unchanged_legacy_owned_files": 7,
+    "unchanged_legacy_positive_raw_dependency_tests_called": true
+  }
+}

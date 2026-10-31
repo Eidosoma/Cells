@@ -1,0 +1,13 @@
+{
+  "case": "caller-square-zero",
+  "kind": "cells.operator_reviewed_square_metric_parent@1",
+  "metric03_companion_manifest_sha256": "9b6bc90a7ff788e8ee8615a755128c2f71014c0fc916233037caebb1a7e944df",
+  "metric03_manifest_sha256": "39c7dae39a44409cd83cf352d60f98ae5a96133537b51549296d611ff66522f9",
+  "metric_payload_sha256": "d0d5bc61fa436ab7a5c8059c9fd86c143748523f01102781a535e2cab60326fe",
+  "original_cache_sha256": "fd15567d2440bb582a04d1994f4503d7857bbb6b8786fbf3fca50ea47d00c8f9",
+  "probe_result_sha256": "8837bad80325d5c4290124f3bec0a06064905f88ad617c8ece75a19d79eedf0f",
+  "probe_review_sha256": "4bff37c48e8701b07f7fb7bac773e1afb2d4c8fbd134a3d96dea0a942d47e185",
+  "retained_point_ids_sha256": "59bba66a9495936e1807d631256a2308869df9b37fcdc446a38e8eb02eb32e1f",
+  "source_evidence_sha256": "56ffadac715d8555a6a055975fbdf782d17f33b7d5b467f8b1f268dd3399fee3",
+  "topology_payload_sha256": "f6ed747505c33d26a885508d38f386e3ce6a04e69ac198f5a3a3842240f74229"
+}

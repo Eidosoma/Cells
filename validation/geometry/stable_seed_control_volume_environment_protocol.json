@@ -1,0 +1,205 @@
+{
+  "active_ECM_manifest_sha256": "929db847219d12c636fade8ee6f43ff0e8fd5bfdf8ea46fc8b8c747bc4ac0400",
+  "all_checks_unrun": true,
+  "conservation": "exact cell/domain area exhaustion, positive requested bath area shortfall and rebuilt owner incidence; no simulated conservation claim",
+  "domain_or_bath_automatically_chosen": false,
+  "effective_upstream_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+  "environment_grid_bound": false,
+  "explicit_reference_pin_AST_proof": "preparation/explicit-reference-pin-ast-proof.json",
+  "fallback_authority": "Chief explicitly permits narrow source correspondence when a concrete finite-ECM prerequisite blocks implementation",
+  "finalizer_prepared": false,
+  "finite_ECM_adapted": false,
+  "finite_ECM_manifest_sha256": "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f",
+  "future_finalizer_requirements": [
+    "all eight exact pytest IDs and complete named batched assertion panels",
+    "all three independent positive correspondence baselines before generic refusal/control credit",
+    "failed baseline yields no control credit; output controls share unchanged baseline and one derived truth",
+    "three actual nested children per tree: constructor, bridge, environment; authenticate PID/parent/source/input/runtime files, never replay",
+    "full exact index/witness/provenance arrays, original failures, startup/timeout/import/resource failures retained",
+    "bind physical-bridge02 repaired source/review pins and require fresh complete positive bridge evidence; no inherited numerical qualification",
+    "finite-ECM adaptation, native environment and old operator gates remain closed"
+  ],
+  "future_launch_and_release_owner": "Chief/Root",
+  "inventory": {
+    "Root_finalizer": 1,
+    "check_ids": [
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[held-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-two-baths]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_explicit_caller_domain_baths_boundaries_and_cache_refusals",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_positive_physical_bridge_evidence_is_required",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_resealed_output_controls_need_same_worker_baseline",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_failed_correspondence_baseline_cannot_credit_controls",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_missing_ECM_geometry_and_old_operator_gates_remain_closed"
+    ],
+    "collection": false,
+    "completed_tests": 0,
+    "duplicate_child_replays": 0,
+    "numerical_execution": false,
+    "panels": {
+      "CORRUPTIONS": [
+        "coordinate",
+        "bath-index",
+        "cell-ring",
+        "drop-membrane",
+        "partner",
+        "direct-cell-owner",
+        "boundary-owner-role",
+        "positive-leftover",
+        "drop-cleft-prerequisite",
+        "empty-witnesses",
+        "invented-bath-face",
+        "finite-promotion",
+        "cached-operator-promotion",
+        "extra-field"
+      ],
+      "EVIDENCE_REFUSALS": [
+        "missing-acceptance",
+        "wrong-identity",
+        "negative-control-report",
+        "geometry-only-report",
+        "truncated-physical-scalars",
+        "empty-owner-truth",
+        "runtime-source-missing",
+        "runtime-imports"
+      ],
+      "REFUSALS": [
+        "missing-domain",
+        "enlarged-domain",
+        "native-domain",
+        "new-bath-role",
+        "changed-bath-volume",
+        "missing-bath",
+        "duplicate-membrane",
+        "wrong-membrane-bath",
+        "missing-boundary",
+        "reversed-boundary",
+        "open-boundary",
+        "old-cache",
+        "empty-cache",
+        "finite-admission-scope"
+      ]
+    },
+    "positive_cases": [
+      {
+        "case": "manufactured-irregular-square",
+        "id": "held-one-bath",
+        "physical_profile": "held-compartments"
+      },
+      {
+        "case": "manufactured-irregular-square",
+        "id": "finite-one-bath",
+        "physical_profile": "finite-compartments"
+      },
+      {
+        "case": "manufactured-seed17-rectangle",
+        "id": "finite-two-baths",
+        "physical_profile": "finite-compartments"
+      }
+    ],
+    "positive_scope": "ownership_and_obstruction_correspondence_only_not_finite_ECM_adaptation",
+    "potential_actual_bridge_children": 8,
+    "potential_actual_constructor_children": 8,
+    "potential_actual_environment_children": 8,
+    "potential_actual_nested_children": 24,
+    "scheduled_units": 9,
+    "top_level_pytest_trees": 8,
+    "total_process_units": 33
+  },
+  "kind": "cells.fixed_seed_environment_prerequisite_correspondence_protocol@1",
+  "launch_gate": false,
+  "launcher_prepared": false,
+  "law": "cells_fixed_seed_environment_prerequisite_correspondence@1",
+  "local_guard_scope": "retained exact vector/species guard, now explicitly against repaired physical-bridge02 reference; no geometry or qualification promotion",
+  "missing_lattice_caller_envelopes_resolved": false,
+  "native_equivalence": false,
+  "numerical_launch_authorized": false,
+  "old_operators_admitted": false,
+  "ordinary_ECM_loop_ready": false,
+  "original_failed_evidence_preserved": true,
+  "physical_bridge01_historical_manifest_sha256": "87674b0578a1291ea89d027a9cd830fc0fc1769a018bdfd0b1f57892cee36a7f",
+  "physical_bridge02_manifest_sha256": "93431682e3dcae1ca06a311582227f8c0d58c31ac3a64a7b811efd5c0ad25938",
+  "physical_model_changed": false,
+  "positive_scope": "correspondence and obstruction only",
+  "predecessor_manifest_sha256": "590499ec0fe07328749ebcef250ac7695952b8f3ef5c15106e9c0ce72e520a2f",
+  "preparation_activity": {
+    "GPU_jobs": 0,
+    "collection": 0,
+    "fixtures": 0,
+    "geometry_evaluations": 0,
+    "numerical_jobs": 0,
+    "polls": 0,
+    "reference_evaluations": 0,
+    "science_imports": 0,
+    "source_AST_only": true,
+    "tests": 0
+  },
+  "remaining_prerequisite": "explicit independently qualified cell/ECM geometry law resolving positive bath polygons, clefts, domain and face distances",
+  "required_inputs": "complete accepted physical bridge and original positive independent bytes plus caller acceptance; explicit domain, complete bath and boundary rows",
+  "resources": {
+    "MKL_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1,
+    "cpu_affinity_count": 2,
+    "includes_actual_nested_children": true,
+    "minimum_host_available_GiB": 8,
+    "outer_summed_RSS_GiB": 2,
+    "outer_wall_seconds": 7200,
+    "per_pytest_tree_summed_RSS_GiB": 1,
+    "per_pytest_tree_wall_seconds": 480,
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "resource_sufficiency_measured": false
+  },
+  "result_scope": "complete rebuilt source ownership indices and exact obstruction; never finite-ECM adaptation",
+  "schema_review_binding": {
+    "baseline_gate_AST_unchanged": true,
+    "complete_inverse_reference_and_test_AST_reviewed": true,
+    "effective_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+    "effective_test_sha256": "306657230727f680dc85db5b426d0e642b0f7ccd19be3c13ac12bb6d00077be2",
+    "numerical_admission_or_launch_authority": false,
+    "promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",
+    "review_scope": "exact array/species inventories and five coherent resealed controls; no formula/value/budget change",
+    "review_sha256": "46e8976ca62fde81dfab720672bcfdfe38cf67694e3574559c889fcaf7b51fda",
+    "source_review_only": true
+  },
+  "source_contract_blockers": {
+    "A physical cell cannot meet the sealed domain boundary": {
+      "ast_sha256": "9a43cb91ddb8bee7c2e63e17db5c004ae6cb81761ef9160edd080aaf7db7c9f7",
+      "first_line": 257,
+      "last_line": 257,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Bath centroid link is not exactly orthogonal to its shared face": {
+      "ast_sha256": "0e62faf2abb542f5d5f2e97f30ded6e3bef258ae46075a2e6d7a5237b13e6504",
+      "first_line": 298,
+      "last_line": 300,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Direct cell-cell interfaces have no declared finite cleft geometry": {
+      "ast_sha256": "43ba25ee2ac8d98a64eddfea92cad61fe0e590038b170ceeb0cb763c67e4eb13",
+      "first_line": 271,
+      "last_line": 273,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Region area must exactly exhaust the declared domain": {
+      "ast_sha256": "57bbfde028758955a799b12548c11e5481aa5939ee8da75ec7a63ebe33c99e5a",
+      "first_line": 195,
+      "last_line": 195,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    },
+    "Require membrane ownership for every cell and at least one bath-bath face": {
+      "ast_sha256": "c18713248b918b7576bb749bd0fb3418c16c965f9bf37be1004705acb6ea7d5e",
+      "first_line": 365,
+      "last_line": 367,
+      "source": "src/cells/processes/finite_ecm_polygon_geometry.py"
+    }
+  },
+  "source_revision": "environment02",
+  "status": "source02_repaired_upstream_static_correspondence_only_finite_ECM_prerequisite_missing",
+  "trajectory_executed": false,
+  "upstream_schema_repair": {
+    "promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",
+    "review_sha256": "46e8976ca62fde81dfab720672bcfdfe38cf67694e3574559c889fcaf7b51fda",
+    "status": "source_review_clear_pending_fresh_qualification"
+  }
+}

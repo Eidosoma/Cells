@@ -1,0 +1,276 @@
+{
+  "accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "calcium": "CaATP density adds to ordinary Ca membrane flux, committed only where Ca is moving. Stationary-Ca stored flux, directed GJ/deferred shell/cache, fast duplicate-last exchange and all legacy ledgers remain literal",
+    "channels": "Direct modern ion updates never add to ordinary membrane flux arrays. Core current -F*z*flux accumulates then shares molecular publications. Source-effective uniform-site, conservative area-sum and actual true-grid volume amount books remain separate; fast duplicate-last differences are retained",
+    "enabled_ER_conservation_claim": false,
+    "energetic_conservation_credit": false,
+    "field": "Full source currents, charge reconstruction and nonphysical HH/Gaussian/voltage outputs; no physical continuity, projector or field-energy identity is asserted",
+    "formal_ATP_consumption_claim": false,
+    "maintained_pools": "ATP/ADP/Pi are original fixed maintained parameters. No formal ATP use, finite shared fuel, ER reservoir, buffer or thermodynamic global closure is asserted",
+    "material_ledgers": "Legacy ledgers remain literal. Direct-channel amounts appear in ordinary accounting residuals rather than being silently erased. Full independent material predicts these source residuals with unchanged budgets",
+    "physical_global_conservation_credit": false,
+    "retained_failure": "Original signed_environment39/40 material panel remains failed, including raw membrane_bulk_difference at fixed old budget. Missing separately retained failed complete reference buffers are not reconstructed",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained",
+    "zero_weight": "CatLeak Ca weight0 still evaluates electroflux/update_Co, refreshes membrane from bulk, consumes voltage nonce and overwrites last-route cache. No skipped-route or boundary-mask substitute"
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "Chief_catalog01_final_preflight_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-preflight-20261031-01/REVIEW.json",
+      "sha256": "fc24a488b881d81fa221160ce312e3a8ffcd963c3e9d799ed1e6080d1666e814"
+    },
+    "Chief_finalized_field_calcium_repairs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json",
+      "sha256": "def122f63bdc407a49ecc74bb54c45ce3c27090fbe78d10205921d8ed6315b4f"
+    },
+    "accepted_ECM02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "accepted_ECM02_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json",
+      "sha256": "c47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb"
+    },
+    "accepted_ECM02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "actual_caller_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_reachability_01.json",
+      "sha256": "f971ddb207e536f15402e4d003a5e1f7d17d31f042b40c690d8a40cfd597f158"
+    },
+    "calcium01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_static_receipt_01.json",
+      "sha256": "008f94c21a1908ff790104b1533231486b0dd70edff86cd514ccf857e718e34e"
+    },
+    "calcium_and_clock_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_AST_witness_02.json",
+      "sha256": "83f388961651dff5cf90ebf748b906ac9d2be71597ca173eb3226ae463e1b4c9"
+    },
+    "catalog06_prepared_not_launched": {
+      "path": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+      "sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69"
+    },
+    "catalog_composition_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_AST_witness_01.json",
+      "sha256": "b25a4bc45800f1bd115b0db999e54d5478fda8f2dfb8dc42e2b862e0eaf28e76"
+    },
+    "coordinated_diagnostic_inputs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_dependency_witness_01.json",
+      "sha256": "9b003d19a2efad6d4c002f6a20777a07b132011f0921f848cb8aaa47fb1e19bf"
+    },
+    "explicit_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_dependency_witness_01.json",
+      "sha256": "8347f80962aa6d913047f930976ddbb6cd5dea8c85be5e1cc482a3c865a5ff9e"
+    },
+    "failed_literal_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "field01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_static_receipt_01.json",
+      "sha256": "c8ef54bc4437adc04d5d691724ca04b26a9fc548b3d947682d3719067f1d126a"
+    },
+    "frozen_calcium01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-01/inputs.json",
+      "sha256": "2e2ed97ee190d9495e3029fbe389a40039786fc9070f28a52f3b4e8ce3a226d8"
+    },
+    "frozen_catalog01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-01/inputs.json",
+      "sha256": "f5ffaf4f9f9d39973525f9f39a88e8d78ea2567277106e97505c43bb8279ac36"
+    },
+    "frozen_field01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json",
+      "sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb"
+    },
+    "instantaneous_field_completion": {
+      "path": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+      "sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff"
+    },
+    "literal_source_and_composition": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_AST_witness_01.json",
+      "sha256": "b66f2fe1293f76eb6414d79af1ea5ebba1d7fa5e6a051c29808ad3169d6e9fd0"
+    },
+    "reporting_final_static02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_final_witness_02.json",
+      "sha256": "8be6e3ecb09662aa208ecfd00ee7f7645ad3829c5ba3f9ea2dac299b0116f3ad"
+    },
+    "reporting_key_inverse02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_witness_02.json",
+      "sha256": "9559496328a13cc010dbaa462cee1495a231315d986176dbce474c02c32638ae"
+    },
+    "reporting_synthetic_metadata02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_metadata_check_02.json",
+      "sha256": "a5b64fe56892c7b0edccdceb1dde9fba36f101115e585e763596b614a9546d89"
+    },
+    "retained_CaATP20_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e"
+    },
+    "retained_calcium04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json",
+      "sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42"
+    },
+    "retained_calcium_raw4": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/worker-review-01/completion-verification.json",
+      "sha256": "dd1d0c1b9a9746e8e16686143a0c89cdaa1610a42094fd54272a1208de1fac8b"
+    },
+    "retained_failed_material_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    },
+    "separate_supplied_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "whole_modern_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reachability_01.json",
+      "sha256": "57d3520b0e041219bf92a78ac10e2f0e4aa99c4219cab6c1d39c8f926c54f192"
+    },
+    "whole_native_calcium_policy": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_reachability_01.json",
+      "sha256": "733da3737e98e189e33d6b5b140c9dea7b0f90e6930a8b2406f7995e98611b5c"
+    }
+  },
+  "binding_evidence_copies": 29,
+  "capture_repair_03": null,
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "895dc66de971a67aae1fad4d565bcef2b082dd8f3a633d61f0ae121bcc08b237",
+  "error_capture_repair_02": null,
+  "inputs": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-02/inputs.json",
+  "inputs_sha256": "2683f32049555429139bff971fcc443aa30fe021c3bc6f94baff879915b70420",
+  "kind": "cells.native_ecm_catalog_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 44,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 9,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "Ca_routing_modern_classes": 23,
+    "actual_bootstrap_field_points": 71,
+    "actual_end_field_points": 103,
+    "actual_post_channel_pre_GRN_points": 103,
+    "actual_pre_calcium_points": 103,
+    "actual_pre_channel_points": 103,
+    "actual_pre_material_points": 103,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 94,
+    "completed_positive_mover_invocations_per_implementation": 206,
+    "component_control_histories": 5,
+    "dependency_controls": 16,
+    "enabled_ER_calls": 0,
+    "fresh_Decimal_reference_forms": 1314,
+    "fresh_bootstrap_field_Decimal_forms": 142,
+    "fresh_calcium_Decimal_forms": 206,
+    "fresh_channel_Decimal_forms": 206,
+    "fresh_cold_Decimal_forms": 142,
+    "fresh_end_field_Decimal_forms": 206,
+    "fresh_material_Decimal_forms": 206,
+    "fresh_network_Decimal_forms": 206,
+    "independent_cold_points": 71,
+    "native_captures": 78,
+    "new_ECM_modern_histories": 66,
+    "one_call_class_prefixes": 55,
+    "positive_active_CaATP_helper_calls_per_implementation": 100,
+    "positive_histories": 71,
+    "positive_modern_population_updates_per_implementation": 178,
+    "positive_native_Ca_handler_calls_per_implementation": 103,
+    "raw_partial_limits": 7,
+    "reachable_factory_families": 7,
+    "reachable_modern_classes": 55,
+    "source_clock_N": 3,
+    "three_call_context_histories": 16
+  },
+  "planned_groups": {
+    "catalog_Ca": 11,
+    "catalog_Cat": 2,
+    "catalog_Cl": 1,
+    "catalog_Fun": 6,
+    "catalog_K": 15,
+    "catalog_ML": 13,
+    "catalog_Na": 7,
+    "context": 6,
+    "controls": 5,
+    "core": 5,
+    "dependencies": 16,
+    "raw": 7
+  },
+  "protected_files": 120,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_catalog_join_reference.py": "94edbb16ce0209fe936317707a705c4394634aff4b490004b85f7bed4d0c2efa",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2588,
+  "static_checks": {
+    "Chief_final_source_review_bound": true,
+    "absent_cold_CaATP_cache_and_source_written_carry": true,
+    "actual_clock_N3_bounded_prefix": true,
+    "actual_cold_reader_owner_flag": true,
+    "actual_pre_and_post_channel_conditionals": true,
+    "actual_producer_synthetic_metadata_cases": 2,
+    "all55_modern_class_methods_and_routes_unchanged": true,
+    "all94_IDs_and_scientific_assertions_protocols_budgets_retained": true,
+    "compile_without_import": "passed",
+    "complete_Channel_and_private_core_caches": true,
+    "complete_raw_native_and_port_partials": true,
+    "complete_returns_before_checks": true,
+    "constructor_and_mutable_hot_epochs_distinct": true,
+    "exact_pytest_ID_validator_unchanged": true,
+    "explicit_Chief_test_capture_dependency_refresh": true,
+    "global_name_resolution": "passed",
+    "independent_reference_closure_stdlib": true,
+    "inherited_complete_CaATP_functions": 3,
+    "inherited_complete_field_functions": 10,
+    "inherited_network_bodies": 47,
+    "named_profiles_original_order_duplicates_and_dtype": true,
+    "no_channel_ordinary_flux_storage": true,
+    "no_implicit_Ca_gate_or_catalog_biology_credit": true,
+    "numerical_runs": 0,
+    "original_literal_channel_bodies": 4,
+    "original_old_Cav_G_and_ECM_failures_preserved": true,
+    "post_output_terminal_failure_capture": true,
+    "pytest_collection_runs": 0,
+    "report_key_inverse_AST_exact": true,
+    "report_mapping_channels_to_channel": true,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scalar_channel_reference_inside_material": true,
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_ER_calls": 0,
+    "source_bulk_gather_and_grid_update_Co": true,
+    "synthetic_metadata_old_KeyError_reproduced": true,
+    "unchanged_gate_flux_current_material_CaATP_GRN_field_budgets": true,
+    "zero_weight_route_nonce_and_last_route_cache": true
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

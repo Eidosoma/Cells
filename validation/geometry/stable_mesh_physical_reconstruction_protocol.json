@@ -1,0 +1,103 @@
+{
+  "acceptance": {
+    "boundary_maps": "Exact original primal boundary vertices/face owners and full-dual boundary vertices.",
+    "full_dual_inventory": "Exact independently enumerated original-ring first-occurrence edge axis; no candidate-supplied full-edge inventory used to derive expected incidence.",
+    "geometry": "existing independent exact integer complex_geometry on actual supplied polygons; no new triangulation",
+    "handedness": "exact rational determinant with original native clockwise nonpositive criterion",
+    "inverse_operator_admission": false,
+    "metrics": "not recomputed; all downstream caches invalidated; no tolerance changed",
+    "native_equivalence": false,
+    "new_biological_cases": 0,
+    "new_incidence_and_owner_checks": "exact integers and original binary64 coordinate identity",
+    "physical_admission": false
+  },
+  "checker_correction": {
+    "candidate_equations_and_admission_unchanged": true,
+    "extra_control": "coherent-unused-full-dual-edge",
+    "finding": "G1_full_dual_axis_is_candidate_conditioned",
+    "original_geometry_passes_unchanged": "0/9",
+    "prior_static_review_sha256": "6d63473eb3af92922582a7f6542da6e3275437169c7505db8d3820f798b07e06"
+  },
+  "evidence_policy": "Persist declaration before loading; full originals, candidates, independent inputs/outputs and exception partials precede gates; summaries link full sidecars",
+  "gates": {
+    "adapter_evaluated": false,
+    "automatic_followup": false,
+    "automatic_polling": false,
+    "launch": false,
+    "ordinary_ECM_loop_ready": false,
+    "physical_geometry_admitted": false,
+    "reference_evaluated": false
+  },
+  "kind": "cells.stable_mesh_physical_reconstruction_protocol@1",
+  "law_id": "cells_stable_mesh_incidence_physical_reconstruction_candidate@1",
+  "mutation_controls": [
+    "missing-field",
+    "wrong-law",
+    "wrong-revision",
+    "raw-status",
+    "missing-occurrence-ID",
+    "duplicate-primal-edge",
+    "missing-primal-edge",
+    "duplicate-primal-vertex",
+    "reversed-primal-face",
+    "reversed-dual-face",
+    "missing-dual-owner",
+    "changed-seal"
+  ],
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+  },
+  "original_failed_manifest_sha256": "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e",
+  "original_failed_review_sha256": "b88ae9a987a03481c1e95c3e320dc004ceb2eef64213f131aef38c9236d75539",
+  "original_failures_reclassified": false,
+  "original_geometry_passes": "0/9",
+  "original_scientific_sources_changed": false,
+  "output_controls": [
+    "missing-reverse-incidence",
+    "duplicated-vertex-incidence",
+    "wrong-primal-delta1",
+    "wrong-dual-boundary-axis",
+    "wrong-selected-pair",
+    "wrong-selected-axis-map",
+    "default-boundary-partner",
+    "wrong-physical-owner",
+    "coherent-unused-full-dual-edge"
+  ],
+  "planned": {
+    "Root_finalizer": 1,
+    "checks": 33,
+    "declared_units": 49,
+    "fresh_independent_workers": 15,
+    "fresh_native_workers": 0
+  },
+  "prospective_candidates": [
+    "irregular-centroid-aux",
+    "native-single-preset-seed17",
+    "native-single-preset-seed23",
+    "caller-square-zero",
+    "caller-single-square-cache",
+    "caller-single-hex-cache"
+  ],
+  "prospective_unresolved_complexes": [
+    "irregular-circumcenter-aux",
+    "caller-square-disordered",
+    "caller-hex-disordered"
+  ],
+  "raw_failures_preserved": 2,
+  "resources": {
+    "host_reserve_GiB": 8,
+    "outer_summed_RSS_GiB": 2,
+    "outer_timeout_s": 7200,
+    "owner": "Chief/Root",
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "worker_summed_RSS_GiB": 1,
+    "worker_timeout_s": 480
+  },
+  "saved_integer_diagnosis_sha256": "749c6031a663ae038f9c182a73b7e18a953d3d0e23cc34c98613864f29c70276",
+  "scope": "unexecuted corrected integer incidence/owner candidate on unchanged retained geometry",
+  "source_audit_sha256": "5a64655d72ee032b2742b01932cbe3ac430092f71631884cfbe65ed8373b699b",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2"
+}

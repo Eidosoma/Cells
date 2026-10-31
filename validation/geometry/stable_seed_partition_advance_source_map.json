@@ -1,0 +1,313 @@
+{
+  "acceptance": {
+    "charge_increment_from_actual_state": true,
+    "clipping_or_repair": false,
+    "every_state_ledger_carried": true,
+    "existing_Cells_model_check_values_on_two_boundary_history": true,
+    "existing_dissipation_monotonicity_pJ": 1e-12,
+    "existing_energy_budget_pJ": 2e-08,
+    "finite_node_capacitor_constraints": true,
+    "local_and_global_material": true,
+    "new_physical_law": false,
+    "reservoir_electrode_work_ledgers_carried": true
+  },
+  "activity": {
+    "PROGRESS_edited": false,
+    "collection": 0,
+    "fixtures": 0,
+    "initial_packet_or_sources_edited": false,
+    "jobs": 0,
+    "model_or_reference_evaluations": 0,
+    "polls": 0,
+    "scientific_imports": 0,
+    "tests": 0
+  },
+  "core_sha256": "2a92b3f55ee0a3c7b4374dcd5da4f48aa8234e3ad947712fdc7fc4d53c3d580c",
+  "field_order": {
+    "RHS_recomputes_own_field": true,
+    "existing_Cells_control_aware_guard_then_RHS": true,
+    "guard_recomputes_own_field": true,
+    "held_control_at_all_RK_stages": true,
+    "no_field_cache_adopted": true,
+    "production_RHS_composition_preserved": true,
+    "right_continuous_endpoint_readout_after_existing_integrated_checks": true,
+    "time_zero_only_accounting_helper_reused_after_advancement": false,
+    "unmasked_endpoint_captured_before_kernel_old_state_fallback": true
+  },
+  "gate": {
+    "DRAFT_ONLY": true,
+    "final_source_freeze": false,
+    "initial_numerical_qualification": null,
+    "initial_source_review": null,
+    "numerical_execution_permitted": false
+  },
+  "initial_packet": {
+    "manifest_sha256": "92caecd20cba1973336f14a005492a144393740fae3d6cd3be32a2636a8fcf26",
+    "original_live_owned_files_unchanged": 12,
+    "path": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+    "verified_files": 503
+  },
+  "kind": "cells.partition_first_interval_unfrozen_source_audit@1",
+  "limits": {
+    "GPU": false,
+    "continuation": false,
+    "first_original_interval_only": true,
+    "inferred_parameters": false,
+    "moving_geometry": false,
+    "native_BETSE_equivalence": false
+  },
+  "prospective_tests": {
+    "collected": false,
+    "exact_ids": [
+      "tests/unit/test_stable_seed_partition_advance.py::test_first_interval_preserves_units_layout_and_matches_existing_cells_driver[uniform-two-species]",
+      "tests/unit/test_stable_seed_partition_advance.py::test_first_interval_preserves_units_layout_and_matches_existing_cells_driver[unequal-clefts-readback-defects]",
+      "tests/unit/test_stable_seed_partition_advance.py::test_first_interval_preserves_units_layout_and_matches_existing_cells_driver[two-cell-four-species]",
+      "tests/unit/test_stable_seed_partition_advance.py::test_first_interval_preserves_units_layout_and_matches_existing_cells_driver[four-cell-reordered-gradient]",
+      "tests/unit/test_stable_seed_partition_advance.py::test_pending_numerical_qualification_blocks_all_scientific_work",
+      "tests/unit/test_stable_seed_partition_advance.py::test_first_interval_declaration_cannot_supply_new_physics_or_cached_state",
+      "tests/unit/test_stable_seed_partition_advance.py::test_endpoint_metadata_requires_explicit_finite_binary64",
+      "tests/unit/test_stable_seed_partition_advance.py::test_continuation_is_outside_first_interval_scope",
+      "tests/unit/test_stable_seed_partition_advance.py::test_rejected_cells_stage_retains_unmasked_trials_without_accepting_old_state",
+      "tests/unit/test_stable_seed_partition_advance.py::test_observer_failure_keeps_completed_field_and_rhs_before_later_work"
+    ],
+    "executed": 0,
+    "failure_capture_controls": 2,
+    "functions": 7,
+    "independent_reference_children_prepared": 0,
+    "metadata_trees": 4,
+    "new_scientific_cases": 0,
+    "pytest_trees": 10,
+    "requires_existing_qualified_input_index": true,
+    "same_existing_initial_case_driver_comparisons": 4
+  },
+  "refinement": {
+    "common_endpoint_required": true,
+    "existing_family_reference_protocol": {
+      "sha256": "2f708a1a8e05716357d62ce1e354a1ac5dcbdac4e2f7aae256486e28a8f565c0",
+      "source": "validation/tissue/surface_dynamics_protocol.json",
+      "tolerances": {
+        "charge_atol_C": 3e-25,
+        "charge_rtol": 2e-12,
+        "cpu_gpu_amount_energy_atol": 3e-13,
+        "cpu_gpu_charge_atol_C": 3e-25,
+        "cpu_gpu_current_atol_A": 3e-23,
+        "cpu_gpu_rtol": 3e-10,
+        "cpu_gpu_voltage_atol_V": 3e-11,
+        "dissipation_monotonicity_atol_pJ": 1e-12,
+        "energy_atol_pJ": 2e-08,
+        "field_current_atol_A": 1e-23,
+        "field_current_rtol": 2e-12,
+        "field_newton_target_fraction": 0.01,
+        "independent_amount_energy_atol": 2e-14,
+        "independent_dop853_rtol": 2e-11,
+        "independent_electrode_charge_atol_C": 1e-29,
+        "initial_amount_energy_rate_atol": 3e-12,
+        "initial_charge_rate_atol_A": 3e-23,
+        "initial_rate_rtol": 3e-10,
+        "material_atol_fmol": 2e-11,
+        "reference_amount_energy_atol": 2e-11,
+        "reference_electrode_charge_atol_C": 3e-25,
+        "reference_state_rtol": 3e-09,
+        "reference_voltage_atol_V": 2e-08,
+        "refinement_amount_energy_roundoff_floor": 3e-13,
+        "refinement_dt_s": [
+          0.0001,
+          5e-05,
+          2.5e-05
+        ],
+        "refinement_electrode_charge_roundoff_floor_C": 3e-27,
+        "refinement_final_to_initial_error_limit": 0.2,
+        "same_backend_complete_replay": "bitwise through production lax.map",
+        "source_work_atol_pJ": 3e-12
+      }
+    },
+    "existing_independent_dynamics_source": {
+      "imported_or_executed": false,
+      "sha256": "b55ff84dcf83f282f9dd6d695cf73510b1cdb99d863d42e7c16ef9d8ca5d0fcd",
+      "source": "validation/tissue/surface_dynamics_reference.py"
+    },
+    "initial_worker_currently_binds_four_fixed_dt_declarations": true,
+    "no_qualification_inherited_across_clock_change": true,
+    "original_dt_s": 1e-06,
+    "original_endpoint_s": 1e-06,
+    "separate_caller_definitions_required": true,
+    "silent_subdivision_or_retry_permitted": false,
+    "status": "blocked_at_explicit_initial_caller_scope",
+    "unresolved_choice": "Reviewed initial caller/worker successor or explicitly reviewed clock-metadata equivalence"
+  },
+  "source_only": true,
+  "source_pins": {
+    "src/cells/core/devices.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "3ec3d787e0c554382ff2eea1612db667412b9ad529930fd69dbc68d8a9b65d9d"
+    },
+    "src/cells/core/grid.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "3a34c0307205069ccd05d199a374e2d5fc01e65311e9bb7e5f3066f4c1a28139"
+    },
+    "src/cells/core/runner.py": {
+      "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+      "sha256": "b58db4c695141ad04c32a4b1f49091fbc0a57c8820a5321002403fe01c544a95"
+    },
+    "src/cells/core/schedule.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "889eba6db8fcec06a290bc367eb1ddaaabbccec4a5b591ee35b5bc8a4e6082be"
+    },
+    "src/cells/core/state.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "367d3bdcb4093203280a96697a9d7eaf25b11f8a3799c0e5582ce57fb0c12dd1"
+    },
+    "src/cells/core/surface_tissue_spec.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa"
+    },
+    "src/cells/models/surface_tissue.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29"
+    },
+    "src/cells/numerics/extracellular_field.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf"
+    },
+    "src/cells/numerics/fixed_step.py": {
+      "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+      "sha256": "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6"
+    },
+    "src/cells/numerics/surface_field.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378"
+    },
+    "src/cells/numerics/surface_transport.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9"
+    },
+    "src/cells/processes/electrochemistry.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2"
+    },
+    "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
+      "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+      "sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+    }
+  },
+  "source_sites": {
+    "actual_control_domain": {
+      "ast_sha256": "43088d335478797f968df997c508219144e5fd038d1b99c55a5f692a01157887",
+      "first_line": 316,
+      "last_line": 327,
+      "source": "src/cells/models/surface_tissue.py"
+    },
+    "exact_original_clock": {
+      "ast_sha256": "bf0b8668cf7e86c06bd8b58a640027e161f9e35fc9865d18e1af95e8ff2a7b61",
+      "first_line": 57,
+      "last_line": 90,
+      "source": "src/cells/core/grid.py"
+    },
+    "existing_Cells_checked_RK4": {
+      "ast_sha256": "efc8ecefc382642fba7382e295610c07a0c7af00b0b18136f0defcbe1ce82ecd",
+      "first_line": 25,
+      "last_line": 71,
+      "source": "src/cells/numerics/fixed_step.py"
+    },
+    "existing_Cells_eager_driver": {
+      "ast_sha256": "c27ba86536e3956e798c0cf2e8deb2c3063c62393dc50e9253f17ffaec776290",
+      "first_line": 221,
+      "last_line": 234,
+      "source": "src/cells/core/runner.py"
+    },
+    "existing_acceptance": {
+      "ast_sha256": "1d38e63b01d82aafde4dd80a3615f7a474be0f5a4e0b3d9976ad0aa71a7d7e31",
+      "first_line": 468,
+      "last_line": 525,
+      "source": "src/cells/models/surface_tissue.py"
+    },
+    "existing_step_limits": {
+      "ast_sha256": "d1a068d83ac661866687d4980ca55595a4d8872854e29a69fd24107221680990",
+      "first_line": 376,
+      "last_line": 388,
+      "source": "src/cells/models/surface_tissue.py"
+    },
+    "field_and_RHS": {
+      "ast_sha256": "4ee5a3fd8ddaac12b24bff2c3b14a9b46b8c733050770b326261419f0a41b60d",
+      "first_line": 250,
+      "last_line": 252,
+      "source": "src/cells/models/surface_tissue.py"
+    },
+    "integrated_balances": {
+      "ast_sha256": "f063068fa71d9b3ecab6015813d45fc5847c51028581379f0560aca664e860e9",
+      "first_line": 391,
+      "last_line": 465,
+      "source": "src/cells/models/surface_tissue.py"
+    },
+    "right_continuous_controls": {
+      "ast_sha256": "41e0922faa0086ccfde870d6a0220f450855917cc49f32e1da4dbd4ef19879e1",
+      "first_line": 195,
+      "last_line": 698,
+      "source": "src/cells/core/schedule.py"
+    }
+  },
+  "status": "source_candidate_existing_Cells_stepping_initial_qualification_pending",
+  "units": {
+    "RHS_amount": "fmol/s",
+    "RHS_charge": "C/s",
+    "RHS_energy": "pJ/s",
+    "layout": {
+      "active": "1",
+      "amount_reference": "fmol",
+      "boundary_V": "V",
+      "cell_active": "1",
+      "extracellular_amount_reference": "fmol",
+      "extracellular_volume": "pL",
+      "face_active": "1",
+      "face_factor": "m3/s",
+      "face_receiver": "1",
+      "face_sender": "1",
+      "field_active": "1",
+      "field_capacitor_matrix": "F",
+      "field_capacitor_scale": "F",
+      "field_capacitor_solve_matrix": "1",
+      "field_face_incidence": "1",
+      "field_fixed": "1",
+      "field_floating_basis": "1",
+      "field_gauge_mask": "1",
+      "field_junction_incidence": "1",
+      "field_offset_free": "1",
+      "ids": "1",
+      "initial_cell_charge_C": "C",
+      "initial_membrane_voltage_V": "V",
+      "initial_outside_charge_C": "C",
+      "junction_active": "1",
+      "junction_area": "m2",
+      "junction_permeability": "m/s",
+      "junction_receiver": "1",
+      "junction_sender": "1",
+      "membrane_active": "1",
+      "membrane_area": "m2",
+      "membrane_capacitance": "F",
+      "membrane_cell": "1",
+      "membrane_outside": "1",
+      "membrane_permeability": "m/s",
+      "outside_active": "1",
+      "reservoir": "1",
+      "temperature": "K",
+      "valence": "1",
+      "volume": "pL"
+    },
+    "physical_values_and_typed_layout_carried_bitwise": true,
+    "state": {
+      "amount_increment": "fmol",
+      "electrode_charge_transferred_C": "C",
+      "electrode_work_pJ": "pJ",
+      "extracellular_amount_increment": "fmol",
+      "face_dissipated_energy_pJ": "pJ",
+      "face_transferred": "fmol",
+      "junction_dissipated_energy_pJ": "pJ",
+      "junction_transferred": "fmol",
+      "membrane_dissipated_energy_pJ": "pJ",
+      "membrane_transferred": "fmol",
+      "reservoir_supplied": "fmol",
+      "reservoir_work_pJ": "pJ"
+    },
+    "step": "s"
+  }
+}

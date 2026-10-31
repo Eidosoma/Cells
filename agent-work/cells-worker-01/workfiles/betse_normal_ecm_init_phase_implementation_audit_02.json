@@ -1,0 +1,168 @@
+{
+  "kind": "cells.INIT_implementation_static_audit@1",
+  "status": "passed",
+  "proofs": {
+    "material_exact_inverse": "Only post-network callback/receipt and its keyword/name added; all physics/guards exact",
+    "owned_dispatch_exact_inverse": true,
+    "independent_native_dispatch_exact_inverse": true,
+    "complete_both_event_finalizers_exact_bodies": true,
+    "complete_source_f_sweep_legacy_guard_retained": true,
+    "channel_reference_active_guard_only_exact_inverse": true,
+    "material_reference_function_exact_AST": true,
+    "native_full_NaK_helper_exact_AST": true,
+    "native_NaK_call_and_masks_exact_slices": true,
+    "native_static_setup_and_blocks_exact_inverse": "Only local RNG injection",
+    "native_full_material_CaATP_field_trace_functions_exact_AST": true,
+    "separate_INIT_no_SIM_event_or_noise_execution": true
+  },
+  "files": [
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase.py",
+      "sha256": "919c0b870c3778ff0cde28b643e508bb6e8da5a972b7e4963b83909aa02b0da7",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase_material.py",
+      "sha256": "1ac0918177b590c091e4915afbe87247b96a2ce283a282b6d4dcf72efc7212f1",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase_mechanics.py",
+      "sha256": "b8b58fb964679baf2c1279823d7aebe3a1adc259043eb472df07c9f8c09a54fa",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase_pump.py",
+      "sha256": "40a44ece79523048e72dfe883171af79abb4892acdffbfb69fb55b1e103e6f6b",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase_setup.py",
+      "sha256": "5b0ff822879fa4939e83e76a6691add777f07034a7cf4c0a527b9d5a2684d7d0",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "src/cells/processes/betse_normal_ecm_init_phase_source.py",
+      "sha256": "361c1ff18eed3cc4bd67a64c807c211b4636f7d48b6d548fd9935ebbc391aa59",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "validation/betse/betse_normal_ecm_init_phase_fixtures.py",
+      "sha256": "609cac0c222dde94260ef77034c8e77417713f98b3f40fef7676827a4fb7b656",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "validation/betse/betse_normal_ecm_init_phase_native.py",
+      "sha256": "7e99cd94e1266e43e1501d5e7c4a8c8a745c665f36fba4540c83193605fb6f90",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "validation/betse/betse_normal_ecm_init_phase_native_setup.py",
+      "sha256": "b223d76835536fff0d03d7cecf88f0c8b5285b8686ad4f101a734df6d5f130cb",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "validation/betse/betse_normal_ecm_init_phase_reference.py",
+      "sha256": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "validation/betse/betse_normal_ecm_init_phase_reference_models.py",
+      "sha256": "bba92372125bc4f87839002027c027c253593f235ddc64b319aa01ac28519b52",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "tests/unit/test_betse_normal_ecm_init_phase.py",
+      "sha256": "3cbfe48604c6f0c7f2cc88aca1526c98bcc5aa4b0c07baa84a480576a46acb61",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_driver.py",
+      "sha256": "fb4184539224b3c8b636d119794e2a46ca38ed6ee5b156bdfc5e8c771faabf59",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_implementation_audit.py",
+      "sha256": "2d6bf77de8a1da1eab14951767e965f73d1cdc6ee5a59551bf194be244868d44",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_contract.py",
+      "sha256": "66efc4376960df369876ed74de04380683bd6b1cbe3094d582f2f3aa43cf59d8",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_material.py",
+      "sha256": "0a72f760c5118c33282eba2c1d9903e8ac86c2934822c01d97f03a62ec1a0f87",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_mechanics.py",
+      "sha256": "560dce87296cc8138c274a54df079321be59b32d43e1b94c5f4c06840182eb29",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_native.py",
+      "sha256": "aeab51e81bb951a9bc560f875d8a4b890ecf4837fecf1b21305776c09d748bc0",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_native_setup.py",
+      "sha256": "12e5750441ff101cf7769addc69d7ceca180a1d78dff81714b10112850c31b2d",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_package.py",
+      "sha256": "597c60a69e7faf9cf23fb37b3769678579c3499342ecec50961a065cff7e5f71",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_reference.py",
+      "sha256": "b5fc4d15107014c236d980dfd8b704f83ec57c348228721b487c4398ae6f6663",
+      "compile": true,
+      "unresolved_global_names": []
+    },
+    {
+      "path": "agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_init_phase_source.py",
+      "sha256": "1da203e03b56bc5308cd05fd72704f363098682cef5ded9b51524c19c1816208",
+      "compile": true,
+      "unresolved_global_names": []
+    }
+  ],
+  "AST_normalization": "Ignore source locations and leading documentation strings only; copied method docstrings were dedented by Ruff",
+  "prospective": {
+    "positive_cases": 22,
+    "raw_cases": 5,
+    "dependency_cases": 33,
+    "observer_cases": 2,
+    "accepted_calls": 61,
+    "fresh_reference_forms": 986,
+    "native_captures": 29,
+    "total_tests": 62
+  },
+  "scientific_imports": 0,
+  "scientific_AST_executions": 0,
+  "model_fixture_reference_evaluations": 0,
+  "pytest_collections": 0,
+  "numerical_runs": 0
+}

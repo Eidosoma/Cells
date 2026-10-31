@@ -1,0 +1,198 @@
+{
+  "kind": "cells.betse_ecm_material_repair_test_proposal@1",
+  "status": "diagnosis_and_unapplied_proposal_ready_for_Chief",
+  "diagnosis_result": "/mnt/workspaces/Cells/betse-ecm-material-retained-diagnosis-20261031-02/result.json",
+  "diagnosis_result_sha256": "def100bc323d6a324853895fde8a5e5e8c3aa38d46425cc7ff46123785bd9e22",
+  "original_case_and_panel_remain_failed": true,
+  "shared_or_frozen_source_edited": false,
+  "simulations_or_reference_runs": false,
+  "tests_collected": false,
+  "active_jobs_polled": false,
+  "PROGRESS_edited": false,
+  "conclusions": {
+    "comparator_index_units_or_branch_error_found": false,
+    "literal_native_correspondence": {
+      "numeric_columns": 381,
+      "bitwise_columns": 381
+    },
+    "independent_fields_audited": 396,
+    "only_failed_field": "ledger.membrane_bulk_difference_mol_m3",
+    "worst": {
+      "ion": "Cl",
+      "cell_id": "cell-1",
+      "membrane_ids": [
+        "mem-3",
+        "mem-4",
+        "mem-5",
+        "mem-6"
+      ],
+      "indices": {
+        "ion": 2,
+        "cell": 1,
+        "membranes": [
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "source_frames": {
+        "membrane_commit": 25,
+        "junction_commit": 26,
+        "clip_bulk": 27
+      },
+      "actual_membrane": 16693.66666080432,
+      "actual_bulk": 16693.6666590814,
+      "actual_difference": 1.7229212971869856e-06,
+      "reference_membrane_projected": 16693.666660804323,
+      "reference_bulk_projected": 16693.6666590814,
+      "reference_difference": 1.7229230420530395e-06,
+      "exact_reference_difference_from_saved_projected_operands": 1.7229249351657927e-06,
+      "difference_error": -1.7448660538927198e-12,
+      "fixed_budget": 3.000103375382523e-13,
+      "error_over_budget": 5.816019768552954,
+      "operand_spacing": 3.637978807091713e-12,
+      "difference_to_nearest_lattice": 1.7448660538927198e-12,
+      "nearest_lattice_value": 1.7229212971869856e-06,
+      "actual_is_nearest_possible_stored_difference": true,
+      "even_perfect_reference_increment_rounds_to_actual_bulk": true,
+      "target_projection_uncertainty": 1.0587911840678754e-22,
+      "irreducible_error_lower_bound_including_target_projection": 1.7448660537868407e-12,
+      "original_budget_unattainable_by_any_same_binade_operand_pair": true,
+      "exact_error_decomposition": {
+        "actual_operand_deviation_from_projected_reference": -3.637978807091713e-12,
+        "reference_operand_projection_vs_stored_reference_diagnostic": 1.893112753198993e-12,
+        "identity_verified": true
+      },
+      "saved_flux_recomposition": {
+        "method": "Exact rational dt * sum(saved junction flux * supplied area for actual owner) / supplied volume; no flux/rate/model evaluation",
+        "value": 1.7229230420530382e-06,
+        "exact_ratio": {
+          "numerator": "54963781009915451082841039260925",
+          "denominator": "31901471898837980949691369446728269824"
+        },
+        "error_over_original_difference_budget": 3.92724806357957e-09,
+        "quantized_raw_difference_minus_saved_flux_recomposition": -1.7448660527145048e-12,
+        "saved_flux_recomposition_minus_reference_difference": -1.1782150171509545e-21
+      },
+      "exact_operands": {
+        "membrane": {
+          "numerator": "4588720150942725",
+          "denominator": "274877906944"
+        },
+        "bulk": {
+          "numerator": "1147180037617283",
+          "denominator": "68719476736"
+        },
+        "difference": {
+          "numerator": "473593",
+          "denominator": "274877906944"
+        },
+        "target": {
+          "numerator": "4068137013177541",
+          "denominator": "2361183241434822606848"
+        }
+      }
+    },
+    "requested_update_from_saved_fluxes_only": {
+      "maximum_error_over_original_budget": 3.92724806357957e-09,
+      "new_equations_evaluated": false
+    },
+    "physical_gap_nonconservation": {
+      "cause": "Supplied reciprocal faces have equal area/D/weight but different directed path lengths; source computes separate directed fluxes. Scaled f*length antisymmetry holds to roundoff, while unscaled pair mol transfers do not cancel.",
+      "per_ion": [
+        {
+          "ion": "Na",
+          "gap_outward_mol": -4.2559533825480874e-10,
+          "membrane_exchange_residual_mol": 0.0,
+          "accounting_residual_after_explicit_nongap_and_gap_terms_mol": 7.858874635516247e-15
+        },
+        {
+          "ion": "K",
+          "gap_outward_mol": -6.831475982587278e-10,
+          "membrane_exchange_residual_mol": 0.0,
+          "accounting_residual_after_explicit_nongap_and_gap_terms_mol": -1.436397024318274e-15
+        },
+        {
+          "ion": "Cl",
+          "gap_outward_mol": 7.103573827248926e-10,
+          "membrane_exchange_residual_mol": 0.0,
+          "accounting_residual_after_explicit_nongap_and_gap_terms_mol": -4.3428823659913936e-16
+        }
+      ],
+      "same_discrepancy_present_in_independent_reference": true,
+      "fast_update_ecm": false,
+      "physical_material_parity_claimed": false
+    }
+  },
+  "constraints": {
+    "original_inputs_and_buffers_immutable": true,
+    "checker_floor": 3e-13,
+    "checker_relative": 6e-12,
+    "no_tolerance_widening": true,
+    "no_raw_diagnostic_redefinition": true,
+    "no_post_gap_membrane_refresh": true,
+    "no_symmetrizing_supplied_paths_or_fluxes": true,
+    "no_xfail_or_expected_limitation_conversion": true
+  },
+  "repair_proposal": {
+    "recommendation": "No comparator repair exists for the original raw stored-state difference under unchanged native buffers. Prospectively add a separately named requested junction operator-increment diagnostic; keep the original field and failing accuracy test untouched.",
+    "new_quantity": "junction_requested_outward_increment_mol_m3",
+    "meaning": "Signed requested outward junction concentration increment per ion/cell, before binary64 bulk addition and before clipping; stationary/uncommitted ions zero.",
+    "actual_expression": "-(dt_s * dg), using the existing directed-gap divergence already computed for the actual update",
+    "independent_expression": "dt * sum(owned saved-or-independent fg[j]*area[j]) / volume[cell]",
+    "shape": [
+      "ion",
+      "cell"
+    ],
+    "raw_lag_relationship": "For a moving ion with no clipping and a refreshed pre-gap membrane cache, the exact-arithmetic requested lag equals the new outward increment indexed by owner. It is not generally the subtraction of the final rounded concentration buffers.",
+    "original_equations_update_order_and_raw_diagnostic_unchanged": true,
+    "patch": "/home/robert/Cells/agent-work/cells-specialist/workfiles/betse_ecm_requested_increment_PROPOSAL.patch",
+    "patch_sha256": "482fa0c6636a1f596bc057e9ea616ab95ac501d6238073eec033008516760d22",
+    "patch_applied": false,
+    "patch_base_source_sha256": {
+      "src/cells/processes/betse_ecm_transport.py": "78f1f3d750903a75657ddbb2f4354352cf9ab37f726e22eb3ec69b165928cbb5",
+      "validation/betse/betse_ecm_transport_reference.py": "16f1519421196c7533558276174807a208f8e6e1f354766d8caa9084428c8170"
+    },
+    "exact_original_AST_after_removing_only_new_diagnostic_statements": true
+  },
+  "test_proposal": {
+    "candidate_source": "/home/robert/Cells/agent-work/cells-specialist/workfiles/betse_ecm_requested_increment_candidate_tests.py",
+    "candidate_sha256": "0521ac7e726d645ecd51b3cc21ba06d921215c67c868a5ae1d697f358e310228",
+    "compiled_without_execution": true,
+    "collected_or_run": false,
+    "new_tests": [
+      "test_all_original_state_and_legacy_ledger_bytes_remain_unchanged",
+      "test_requested_operator_increment_against_both_complete_references"
+    ],
+    "input_archive": "/mnt/workspaces/Cells/betse-ecm-failure-capture-20261030-01/original-case.json",
+    "input_sha256": "27be2d6d59bd3cab9196a5ee64054b667702a549f81a0e6546dcfefcc27459b8",
+    "required_before_any_new_launch": [
+      "Chief chooses the prospective diagnostic contract and approves applying the patch; the original raw-lag failure remains open",
+      "Archive all original396 columns plus requested increment and both complete100/160-digit references before assertions",
+      "Use the unchanged concentration budget for the new named field; retain original canonical failing test without edits or xfail",
+      "Require exact original actual/native state and all legacy ledger bytes",
+      "Add a fresh production/native-denied reference worker for the new named field; retain existing bounded worker and artifact policies",
+      "Treat clipped and stationary behavior explicitly before broader qualification; no automatic regression or full-panel rerun"
+    ],
+    "canonical_original_test_untouched": true
+  },
+  "physical_repair_boundary": {
+    "shared_conservative_gap_operator_requires": "An explicitly supplied undirected interface conductance or matching reciprocal area*D*opening/path, computed once and applied with opposite signs",
+    "missing_information": "Two unequal supplied directed path lengths do not uniquely declare one physical junction conductance",
+    "no_inferred_mean_or_silent_input_change": true,
+    "native_compatibility_and_physical_conservation_scopes_remain_separate": true
+  },
+  "resources": {
+    "current_pid_VmHWM_bytes": 26050560,
+    "address_space_cap_bytes": 536870912,
+    "cpu_cap_seconds": 60,
+    "scientific_imports": [],
+    "metadata_note": "01 used process-history ru_maxrss as current audit RSS.02 retains the same saved-data comparisons and adds current-PID VmHWM plus directed path attribution;01 is preserved"
+  },
+  "artifacts": {
+    "/home/robert/Cells/agent-work/cells-specialist/workfiles/betse_ecm_material_retained_diagnosis.py": "ba93901807cbbde7466dcadd33ea4abbaa72b3d0ce3a2c98d684e84a708e4d32",
+    "/home/robert/Cells/agent-work/cells-specialist/workfiles/betse_ecm_requested_increment_candidate_tests.py": "0521ac7e726d645ecd51b3cc21ba06d921215c67c868a5ae1d697f358e310228",
+    "/home/robert/Cells/agent-work/cells-specialist/workfiles/betse_ecm_requested_increment_PROPOSAL.patch": "482fa0c6636a1f596bc057e9ea616ab95ac501d6238073eec033008516760d22"
+  }
+}

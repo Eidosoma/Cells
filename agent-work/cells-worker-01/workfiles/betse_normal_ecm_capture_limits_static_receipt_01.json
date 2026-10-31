@@ -1,0 +1,14 @@
+{
+  "all_copied_file_hashes_verified": true,
+  "copied_files": 43,
+  "kind": "cells.capture_capacity_static_copy_receipt@1",
+  "manifest": {
+    "path": "/mnt/workspaces/Cells/ecm-event-mechanics-lifecycle-capture-capacity-prepared-20261031-01/MANIFEST.json",
+    "sha256": "36f9688dc664b9c2a196cb8282bb4d89dd97fb699d549c7e94efac31341c53d3"
+  },
+  "member_limit": 310689,
+  "numerical_runs": 0,
+  "qualification_credit": 0,
+  "scientific_imports": 0,
+  "software_metadata_checks": 13
+}

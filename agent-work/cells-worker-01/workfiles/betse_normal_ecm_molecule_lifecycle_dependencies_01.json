@@ -1,0 +1,60 @@
+{
+  "INIT04_dependency_review": {
+    "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/DEPENDENCY_REVIEW.json",
+    "sha256": "61725332404df4f9803a629e32147c21048a478a4e9f17e7a227a8244ef3e0de"
+  },
+  "INIT04_handoff": {
+    "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/HANDOFF.json",
+    "sha256": "2825a1310b1dc8f6426406cf36fe5e2012b1ad3ed514a7784c7eb94e75a9b58f"
+  },
+  "historical_transition02_INIT02_unchanged": true,
+  "inherited_scientific_passes": 0,
+  "kind": "cells.explicit_molecule_lifecycle_dependencies@1",
+  "numerical_launches": 0,
+  "parents": {
+    "INIT04": {
+      "inputs_sha256": "c2a9c280de04448e71f768546be6f57b423f5b2a876198e2dbaebe8cb0c2396f",
+      "manifest_sha256": "a6495a39ff5af284a0dce6df146d949f0f772f605bcdd8d998409a84a026f017",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04"
+    },
+    "dispatch01": {
+      "inputs_sha256": "9c3a2c8c1ce17de9f121d2f9db887470ef97b8030d465ee7745ed4c36837352e",
+      "manifest_sha256": "e51f7eead8d6bfe3a0e4f669005386e6f4271632f0531084754320025b1ed922",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01"
+    },
+    "transition02": {
+      "inputs_sha256": "404bf6f9d9868ad8a35b1757df55f6a212035f09fc1cce9addde68b58f9dbb76",
+      "manifest_sha256": "fab41871bfaf8e457141bd76a491926577f1a84d16a6052aee2538e0e5eec312",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-sim-transition-prepared-20261031-02"
+    },
+    "transport01": {
+      "inputs_sha256": "4a00be2ef81abd7e393de593ce861a6482d81133dc5816d6f170c44d2c770f4e",
+      "manifest_sha256": "166e53330a63866f42897029daafde64b3b957bb1ec1771191e46b8c458b5ba6",
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-01"
+    }
+  },
+  "resolution_policy": "New lifecycle source uses explicit transport01 and copied transition02 bodies; only the two exact INIT04 reference members override older references in the new proposal. Old packets and their lineage are unchanged. No whole transition02 requalification or silent historical rebase is claimed.",
+  "reviewed_reference_overrides": {
+    "validation/betse/betse_normal_ecm_event_join_reference.py": {
+      "INIT04_sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf",
+      "adopted_for_new_lifecycle_only": true,
+      "changed_top_level_ASTs": [
+        "conditioned_network",
+        "evaluate"
+      ],
+      "historical_INIT02_sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+    },
+    "validation/betse/betse_normal_ecm_init_phase_reference.py": {
+      "INIT04_sha256": "e30cb52520f18f3a9b6dfb52b7842149aa66ed1809c05360a0d185b56410f3b6",
+      "adopted_for_new_lifecycle_only": true,
+      "changed_top_level_ASTs": [
+        "main"
+      ],
+      "historical_INIT02_sha256": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a"
+    }
+  },
+  "scientific_AST_executions": 0,
+  "scientific_evaluations": 0,
+  "scientific_imports": 0,
+  "status": "source_dependencies_authenticated"
+}

@@ -1,0 +1,729 @@
+{
+  "automatic_launch": false,
+  "capture_arithmetic": "Positive: 1 cold + INIT_calls dispatch + 1 retained warm + 3 SIM dispatch; six raw controls each retain one actual failure conditional. Other controls have no accuracy forms/captures or accepted-call credit; their actual source-prefix preparation remains uncredited.",
+  "execution_hold": true,
+  "form_arithmetic": "Each positive: 12 setup/bootstrap/clock/phase-reset forms + 2 per enabled cold owner + (INIT_calls+3)*(12 NaK/material/CaATP/disabled-mechanics/commit/field forms + 4 per enabled channels/network owner + 2 if general transporters is non-null). Empty configurations retain the source flag.",
+  "groups": {
+    "dependency-active_osmotic": {
+      "biological_case": false,
+      "case": "active_osmotic",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[active_osmotic]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-arbitrary_late_flux": {
+      "biological_case": false,
+      "case": "arbitrary_late_flux",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[arbitrary_late_flux]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-changed_gate_epoch": {
+      "biological_case": false,
+      "case": "changed_gate_epoch",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[changed_gate_epoch]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-changed_owner_flags": {
+      "biological_case": false,
+      "case": "changed_owner_flags",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[changed_owner_flags]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-changed_phase_receipt": {
+      "biological_case": false,
+      "case": "changed_phase_receipt",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[changed_phase_receipt]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-changed_publication_policy": {
+      "biological_case": false,
+      "case": "changed_publication_policy",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[changed_publication_policy]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-changed_transporter_cache": {
+      "biological_case": false,
+      "case": "changed_transporter_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[changed_transporter_cache]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-enabled_ER": {
+      "biological_case": false,
+      "case": "enabled_ER",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[enabled_ER]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-enabled_flow": {
+      "biological_case": false,
+      "case": "enabled_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[enabled_flow]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-foreign_INIT_binding": {
+      "biological_case": false,
+      "case": "foreign_INIT_binding",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[foreign_INIT_binding]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-foreign_ion_axis": {
+      "biological_case": false,
+      "case": "foreign_ion_axis",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[foreign_ion_axis]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-foreign_profile_targets": {
+      "biological_case": false,
+      "case": "foreign_profile_targets",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[foreign_profile_targets]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-foreign_world": {
+      "biological_case": false,
+      "case": "foreign_world",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[foreign_world]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-latent_null_transporters": {
+      "biological_case": false,
+      "case": "latent_null_transporters",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[latent_null_transporters]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-legacy_flag_false": {
+      "biological_case": false,
+      "case": "legacy_flag_false",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[legacy_flag_false]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-missing_rng_provenance": {
+      "biological_case": false,
+      "case": "missing_rng_provenance",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[missing_rng_provenance]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-native_load_claim": {
+      "biological_case": false,
+      "case": "native_load_claim",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[native_load_claim]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-wrong_SIM_clock": {
+      "biological_case": false,
+      "case": "wrong_SIM_clock",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[wrong_SIM_clock]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "dependency-wrong_continuity_stream": {
+      "biological_case": false,
+      "case": "wrong_continuity_stream",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_lifecycle_dependency_refusal[wrong_continuity_stream]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "observer-after_call": {
+      "biological_case": false,
+      "case": "after_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_observer_partial_retention[after_call]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "observer-before_call": {
+      "biological_case": false,
+      "case": "before_call",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_observer_partial_retention[before_call]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "observer-headless_sample": {
+      "biological_case": false,
+      "case": "headless_sample",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_observer_partial_retention[headless_sample]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "observer-warm_before_reinitialize": {
+      "biological_case": false,
+      "case": "warm_before_reinitialize",
+      "category": "observer",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_observer_partial_retention[warm_before_reinitialize]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "positive-CaATP_disabled_retains_rate": {
+      "biological_case": false,
+      "case": "CaATP_disabled_retains_rate",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[CaATP_disabled_retains_rate]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-GRN_only": {
+      "biological_case": false,
+      "case": "GRN_only",
+      "category": "positive",
+      "independent_forms": 110,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[GRN_only]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-NaK_disabled_resets_on_call": {
+      "biological_case": false,
+      "case": "NaK_disabled_resets_on_call",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[NaK_disabled_resets_on_call]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-all_INIT_inactive": {
+      "biological_case": false,
+      "case": "all_INIT_inactive",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[all_INIT_inactive]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-both_disabled": {
+      "biological_case": false,
+      "case": "both_disabled",
+      "category": "positive",
+      "independent_forms": 84,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[both_disabled]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-both_enabled": {
+      "biological_case": false,
+      "case": "both_enabled",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[both_enabled]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-default_INIT_active": {
+      "biological_case": false,
+      "case": "default_INIT_active",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[default_INIT_active]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-different_SIM_dt": {
+      "biological_case": false,
+      "case": "different_SIM_dt",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[different_SIM_dt]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-empty_channels": {
+      "biological_case": false,
+      "case": "empty_channels",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[empty_channels]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-empty_transporters": {
+      "biological_case": false,
+      "case": "empty_transporters",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[empty_transporters]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-general_only": {
+      "biological_case": false,
+      "case": "general_only",
+      "category": "positive",
+      "independent_forms": 122,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[general_only]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-mixed_INIT_inactive": {
+      "biological_case": false,
+      "case": "mixed_INIT_inactive",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[mixed_INIT_inactive]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-no_INIT_samples": {
+      "biological_case": false,
+      "case": "no_INIT_samples",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[no_INIT_samples]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-no_channels": {
+      "biological_case": false,
+      "case": "no_channels",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[no_channels]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-null_transporters": {
+      "biological_case": false,
+      "case": "null_transporters",
+      "category": "positive",
+      "independent_forms": 136,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[null_transporters]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-one_INIT_call": {
+      "biological_case": false,
+      "case": "one_INIT_call",
+      "category": "positive",
+      "independent_forms": 104,
+      "native_captures": 6,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[one_INIT_call]"
+      ],
+      "positive_INIT_calls": 1,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-ordered_transporters": {
+      "biological_case": false,
+      "case": "ordered_transporters",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[ordered_transporters]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-pause_resume": {
+      "biological_case": false,
+      "case": "pause_resume",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[pause_resume]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-publication_off": {
+      "biological_case": false,
+      "case": "publication_off",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[publication_off]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-reverse_transporters": {
+      "biological_case": false,
+      "case": "reverse_transporters",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[reverse_transporters]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-zero_INIT_calls": {
+      "biological_case": false,
+      "case": "zero_INIT_calls",
+      "category": "positive",
+      "independent_forms": 82,
+      "native_captures": 5,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[zero_INIT_calls]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "positive-zero_capacity": {
+      "biological_case": false,
+      "case": "zero_capacity",
+      "category": "positive",
+      "independent_forms": 148,
+      "native_captures": 8,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_actual_lifecycle[zero_capacity]"
+      ],
+      "positive_INIT_calls": 3,
+      "positive_SIM_calls": 3,
+      "source_status": "unrun"
+    },
+    "prefix-capped_INIT": {
+      "biological_case": false,
+      "case": "capped_INIT",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_incomplete_INIT_refusal[capped_INIT]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "prefix-failed_INIT": {
+      "biological_case": false,
+      "case": "failed_INIT",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_incomplete_INIT_refusal[failed_INIT]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "prefix-paused_INIT": {
+      "biological_case": false,
+      "case": "paused_INIT",
+      "category": "prefix",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_incomplete_INIT_refusal[paused_INIT]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_INIT-cold_missing_max_rate_0": {
+      "biological_case": false,
+      "case": "cold_missing_max_rate_0",
+      "category": "raw_INIT",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_INIT_failure[cold_missing_max_rate_0]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_INIT-cold_missing_max_rate_1": {
+      "biological_case": false,
+      "case": "cold_missing_max_rate_1",
+      "category": "raw_INIT",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_INIT_failure[cold_missing_max_rate_1]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_INIT-first_GRN_negative": {
+      "biological_case": false,
+      "case": "first_GRN_negative",
+      "category": "raw_INIT",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_INIT_failure[first_GRN_negative]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_INIT-first_general_negative": {
+      "biological_case": false,
+      "case": "first_general_negative",
+      "category": "raw_INIT",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_INIT_failure[first_general_negative]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_SIM-warm_missing_max_rate_0": {
+      "biological_case": false,
+      "case": "warm_missing_max_rate_0",
+      "category": "raw_SIM",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_warm_failure[warm_missing_max_rate_0]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    },
+    "raw_SIM-warm_missing_max_rate_1": {
+      "biological_case": false,
+      "case": "warm_missing_max_rate_1",
+      "category": "raw_SIM",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_lifecycle.py::test_original_warm_failure[warm_missing_max_rate_1]"
+      ],
+      "positive_INIT_calls": 0,
+      "positive_SIM_calls": 0,
+      "source_status": "unrun"
+    }
+  },
+  "kind": "cells.held_molecule_lifecycle_workqueue@1",
+  "planned": {
+    "biological_cases": 0,
+    "checks": 54,
+    "dependency_controls": 19,
+    "independent_reference_forms": 3006,
+    "independently_carried_reference_trajectories": 0,
+    "native_captures": 177,
+    "observer_cases": 4,
+    "positive_INIT_calls": 61,
+    "positive_SIM_calls": 66,
+    "positive_cases": 22,
+    "prefix_refusals": 3,
+    "raw_INIT_cases": 4,
+    "raw_SIM_cases": 2
+  },
+  "pytest_collections": 0,
+  "scientific_evaluations": 0,
+  "status": "unrun"
+}

@@ -1,0 +1,92 @@
+{
+  "AST_proofs": 26,
+  "active_job_queries": 0,
+  "amounts": "Separate namespaced source-effective molecular books, native true-volume diagnostics, all deferred primary candidate buffers and original primary amount ledgers. Old signed_environment 39/40 failure remains failed; no global conservation credit.",
+  "configuration_obstruction": {
+    "exact_obstruction": "Absent general network leaves molecules_enabled unwritten; the else sets only mol_mit_enabled=False. No automatic false default is admitted.",
+    "explicit_present_configuration": "implement network is the independent general-handler flag; explicit True and False supported",
+    "lines": [
+      779,
+      796
+    ],
+    "missing_branch_attribute": "molecules_enabled",
+    "native_expression": "self.network_config = self._conf.get('general network', None)",
+    "path": "betse/science/parameters.py"
+  },
+  "declaration": "Separate actual general-network and GRN configurations, independent flags, role-labelled nonempty X/Y owners, common qualified primary/field geometry and explicit shared initial publications.",
+  "exclusions": [
+    "whole physical initializer/phase",
+    "seed/load/pickle/native storage/display",
+    "INIT-to-SIM transition",
+    "latent disabled owner carry",
+    "enabled extra transporters",
+    "mitochondria",
+    "flow/electroosmosis/dynamic deformation",
+    "enabled osmotic/mechanics",
+    "dynamic noise/scheduled events",
+    "FAST",
+    "GPU",
+    "biological realism/global conservation"
+  ],
+  "fixture_model_reference_evaluations": 0,
+  "general_schema_bridge": "Keep owner=molecules in actual declarations/cache identities; reuse existing core validation predicates with a temporary validation-only owner label. This does not construct a GRN or infer a source flag.",
+  "implementation_audit_sha256": "cf697e61a3d875b2db1ef62089a352acda24c30001b0e399aadd7a93a1526cb0",
+  "independent_reference_scope": "Fresh Decimal100/160 primary/CaATP prefix, each enabled channels/chemistry/ECM-transport boundary, actual pre-deferred-commit and full-field conditionals. No independently carried trajectory or accumulated allowance.",
+  "inherited_oracle_limits": "Nav and other channel reference domains remain unchanged. KLeak/CaLeak guards still precede constant branches. Catalog05 no_CaATP Nav reference refusal and all 11 unrun cases remain uncredited; no fixture/domain tuning.",
+  "kind": "cells.held_ordinary_ECM_general_molecule_protocol@1",
+  "law_id": "betse_supplied_FULL_ECM_general_then_GRN_v1_5_0@1",
+  "native_files_installed_exact": 332,
+  "native_methods_audited": 22,
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "native_scope": "Original setup and adjacent FULL two-handler dispatch slices on complete actual incoming buffers, including source refusals before runtime inventory.",
+  "numerical_runs": 0,
+  "obstruction_scope": "Local Parameters.load missing-section branch has no molecules_enabled writer; no native file parser or complete configuration run has been executed.",
+  "osmotic_limit": "Native osmotic_P sums both active molecular owners independently; this first composition keeps its source guard false and does not claim enabled osmotic/mechanical coupling.",
+  "parent": {
+    "manifest_sha256": "528a1c7d1df0be152919b9dd446f3247676856585652f2c2924d82840c27d36f",
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-02"
+  },
+  "planned": {
+    "accepted_calls": 57,
+    "biological_cases": 0,
+    "checks": 44,
+    "dependency_controls": 21,
+    "independent_reference_forms": 942,
+    "independently_carried_trajectories": 0,
+    "native_captures": 84,
+    "positive_cases": 19,
+    "raw_cases": 4
+  },
+  "publication": "Native direct assignment: general writes first and GRN replaces it when both enabled and publication is true. Publication false retains the previous shared epoch. Field projections bind that exact shared epoch; publications are never summed.",
+  "pytest_collections": 0,
+  "release": {
+    "execution_hold": true,
+    "metadata_only_driver": true,
+    "separately_requested_Chief_review_and_release_controller_required": true
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_ER": "Parameters.load sets Ca_dyn=False; handler flags cannot enable ER. No forced enabled branch.",
+  "source_boundary_sha256": "8d145a6fb46a09d19ba4e25bcffbdda55d9a10401d7857d63c4beb2cefbf5523",
+  "source_call_order": [
+    "ordinary primary refresh",
+    "CaATP with source-disabled ER",
+    "supplied qualified late flux seam",
+    "general clear/transporters/channels/modulators/chemistry+ECM transport",
+    "GRN clear/transporters/channels/modulators/chemistry+ECM transport",
+    "noise/mechanics guards explicitly false",
+    "deferred primary commit",
+    "full current/environment/voltage fields"
+  ],
+  "source_flags": "Present general network implements an explicit True/False flag; GRN is selected independently. No active GRN object is constructed in the GRN-disabled path.",
+  "source_setup": "Native general handler constructor/read or retained reinitializer before GRN; this first fresh supplied entry admits absent disabled owners, not latent disabled caches or a phase transition.",
+  "status": "source_static_only_unrun",
+  "unchanged_budgets": {
+    "channels_and_CaATP": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+    "fields": "tests/unit/test_betse_normal_ecm_field_join.py",
+    "material": "validation/betse/betse_ecm_transport_checks.py",
+    "max_normalized_error": 1.0,
+    "max_self_resolution": 0.1,
+    "molecular_amount_charge_current": "tests/unit/test_betse_ecm_grn_join.py"
+  }
+}

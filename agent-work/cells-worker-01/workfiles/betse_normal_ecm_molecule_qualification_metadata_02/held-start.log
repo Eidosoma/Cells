@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_prepared_03/betse_normal_ecm_molecule_qualification_runner.py", line 307, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_prepared_03/betse_normal_ecm_molecule_qualification_runner.py", line 303, in main
+    print(json.dumps(start(bundle, request), sort_keys=True))
+                     ~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_prepared_03/betse_normal_ecm_molecule_qualification_runner.py", line 74, in start
+    inputs = verify_release(bundle, request)
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_prepared_03/betse_normal_ecm_molecule_qualification_contract.py", line 110, in verify_release
+    require(
+    ~~~~~~~^
+        isinstance(release_path, str) and release_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "Held: separate Chief release contract required",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_prepared_03/betse_normal_ecm_molecule_qualification_contract.py", line 18, in require
+    raise ValueError(reason)
+ValueError: Held: separate Chief release contract required

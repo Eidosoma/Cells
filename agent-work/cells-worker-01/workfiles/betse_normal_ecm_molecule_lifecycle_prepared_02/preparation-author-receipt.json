@@ -1,0 +1,41 @@
+{
+  "classified_reads": 191,
+  "explicit_parent_union_exact_except_reviewed_reference_overrides": true,
+  "fixture_model_reference_evaluations": 0,
+  "historical_transition02_unchanged": true,
+  "inherited_oracle_domains_and_failures_preserved": true,
+  "inherited_scientific_passes": 0,
+  "inputs_sha256": "759e7086daea07005921cee61c7f84baf62ff3617087dfeeda876d5a0e99996e",
+  "kind": "cells.held_molecule_lifecycle_author_receipt@1",
+  "numerical_runs": 0,
+  "pending_reads": 0,
+  "prospective": {
+    "biological_cases": 0,
+    "checks": 54,
+    "dependency_controls": 19,
+    "independent_reference_forms": 3006,
+    "independently_carried_reference_trajectories": 0,
+    "native_captures": 177,
+    "observer_cases": 4,
+    "positive_INIT_calls": 61,
+    "positive_SIM_calls": 66,
+    "positive_cases": 22,
+    "prefix_refusals": 3,
+    "raw_INIT_cases": 4,
+    "raw_SIM_cases": 2
+  },
+  "pytest_collections": 0,
+  "reference_modules": 31,
+  "resource_files": 29,
+  "runtime_modules": 156,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_audit": {
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_implementation_audit_03.json",
+    "proofs": 70,
+    "sha256": "d7397c2ae8f7f72de61e66b59568731feec38530e6ac9e5e39ac50f32cf44615"
+  },
+  "source_files": 2847,
+  "status": "held_unrun",
+  "strict_metadata_only_driver": true
+}

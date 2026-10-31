@@ -1,0 +1,579 @@
+{
+  "accounting": {
+    "chemical_capacitor_dissipation_energy": true,
+    "every_finite_node_capacitor_charge": true,
+    "every_floating_component_including_gauge": true,
+    "executed": false,
+    "global_charge_rate": true,
+    "local_and_global_material_rates": true,
+    "local_capacitor_charge_rate": true,
+    "original_field_tolerances_unchanged": true
+  },
+  "caller_declarations": {
+    "evaluated_cases": 0,
+    "every_caller_parameter_bound": true,
+    "ids": [
+      "uniform-two-species",
+      "unequal-clefts-readback-defects",
+      "two-cell-four-species",
+      "four-cell-reordered-gradient"
+    ],
+    "materialized_cases": 0,
+    "numeric_literal_policy": "explicit physical numeric literals decode to binary64; valences/counts remain integers",
+    "original_geometry_case_body_bound": true,
+    "scientific_cases_generated": 0,
+    "sha256": "4be058c5f6211a9a489c709ee95f371d3dd7bf0ba03c8834e789c0be3554c09f",
+    "source": "validation/geometry/stable_seed_partition_physiology_bridge_callers.json",
+    "source_literals_only": true
+  },
+  "caller_required": {
+    "complete_existing_execution_and_provenance": true,
+    "every_cell_bath_concentration_mM": true,
+    "every_face_diffusivity": true,
+    "every_initial_availability": true,
+    "every_initial_charge_anchor_and_fixed_background": true,
+    "every_membrane_permeability_and_diffusivity": true,
+    "every_specific_membrane_capacitance": true,
+    "one_explicit_finite_bath_gauge": true,
+    "species_and_valences": true,
+    "temperature": true
+  },
+  "controls": {
+    "controls_count_as_cases": false,
+    "executed_control_assertions": 0,
+    "generic_exception_or_wrong_stage_credit": false,
+    "input_ids": [
+      "missing-species",
+      "missing-concentration",
+      "zero-concentration",
+      "negative-permeability",
+      "missing-diffusivity",
+      "P-D-disagreement",
+      "missing-capacitance",
+      "wrong-membrane-owner",
+      "wrong-face-owner",
+      "reservoir-adoption",
+      "missing-charge-anchor",
+      "incompatible-charge-anchor",
+      "missing-gauge",
+      "old-state-adoption",
+      "nonzero-observation-time",
+      "wrong-caller-document"
+    ],
+    "materialized_controls": 0,
+    "metadata_ids": [
+      "failed-baseline-suppresses-controls",
+      "root-return-before-gate-failure",
+      "wrong-refusal-contract-uncredited"
+    ],
+    "output_ids": [
+      "missing-field",
+      "extra-field",
+      "extra-potential-axis",
+      "wrong-array-dtype",
+      "wrong-potential",
+      "wrong-membrane-flux",
+      "wrong-face-flux",
+      "wrong-rhs",
+      "missing-state-ledger",
+      "missing-rhs-ledger",
+      "wrong-node-charge",
+      "wrong-component-current",
+      "missing-gauge-component",
+      "wrong-charge-rate",
+      "wrong-chemical-power",
+      "wrong-capacitor-power",
+      "wrong-dissipation",
+      "wrong-energy-balance",
+      "wrong-layout-owner",
+      "wrong-material-inventory",
+      "missing-concentration-defect",
+      "coherent-concentration-defect",
+      "changed-temperature",
+      "species-key-loss",
+      "native-promotion",
+      "advancing-promotion"
+    ],
+    "same_worker_positive_baseline_required": true,
+    "sha256": "762fbb40bd9121b21167cd1ab325d65beafe79542fb2e03af6dcd8b2960e5f83",
+    "source": "validation/geometry/stable_seed_partition_physiology_bridge_controls.json"
+  },
+  "conversion_policy": {
+    "concentration": "mM_times_admitted_binary64_pL_round_once_readback_defects_retained@1",
+    "concentrations_or_charge_repaired": false,
+    "constitutive": "caller_D_and_P_agree_with_existing_D_over_geometry_path@1",
+    "exact_concentration_readback_claimed": false,
+    "infer_D_or_P": false,
+    "inputs_before_rounding_and_returns_before_gates": true
+  },
+  "core": "src/cells/processes/stable_seed_partition_physiology_bridge.py",
+  "finalizer_prepared": false,
+  "frozen_source_only": true,
+  "future_resources": {
+    "existing_field_budget_sha256": "8dfaaf2390941700d2b5de6f7fc221fdeaa0fd6390af717ae1d3b88dff2109c5",
+    "existing_field_budget_source": "validation/tissue/surface_field_protocol.json",
+    "qualification_roster_and_resource_guard_prepared": false,
+    "resource_sufficiency_measured": false
+  },
+  "independent_physical_lane": {
+    "executed": false,
+    "existing_scalar_helper_module_contains_unused_nested_Cells_import": true,
+    "full_node_scalar_laws_required": true,
+    "future_helper_requires_pinned_decimal_flux_function_AST_extraction": false,
+    "geometry_worker_must_remain_separate_stdlib_only": true,
+    "implementation_prepared": true,
+    "implementation_source_only_unrun": true,
+    "integration_permitted": false,
+    "pinned_decimal_flux_function_AST_extraction_completed": true,
+    "production_model_calls_permitted": false,
+    "references": {
+      "validation/betse/junction_transport/check.py": {
+        "sha256": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de",
+        "source_only_inspected": true
+      },
+      "validation/tissue/reference.py": {
+        "sha256": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e",
+        "source_only_inspected": true
+      },
+      "validation/tissue/surface_field_reference.py": {
+        "sha256": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93",
+        "source_only_inspected": true
+      },
+      "validation/tissue/surface_reference.py": {
+        "sha256": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3",
+        "source_only_inspected": true
+      }
+    },
+    "source_implementation": {
+      "accepted_review_binding_scope": {
+        "numerical_helpers_declarations_controls_unchanged": {
+          "validation/geometry/stable_seed_partition_physiology_bridge_controls.json": "762fbb40bd9121b21167cd1ab325d65beafe79542fb2e03af6dcd8b2960e5f83",
+          "validation/geometry/stable_seed_partition_physiology_bridge_declarations.py": "337426949e4d8fd82f23b81c1a82830458919c34a0ef1298beda15283ed9f3b7",
+          "validation/geometry/stable_seed_partition_physiology_bridge_field_reference.py": "84f638bd719dcf6e275a4d16da8faf80d6e8088f5c72f99a61226008f962b36b",
+          "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py": "8260ceae5bea6d9a1052679845e6baffa6084f81dc2e1c1d1c497cac69da85cf",
+          "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py": "72ee58f17248dfa7592a4ff61bc564de1e769b08542648da577376400b837e75"
+        },
+        "original_draft02_receipt_sha256": "65d07354254eef6521b796749214b3aa6ec6190173b40cb5552a216c916eeda6",
+        "original_source_files_preserved": 12,
+        "physical_caller_parameters_unchanged": true,
+        "production_numeric_AST_unchanged_outside_exact_review_gate": true,
+        "science_or_tests_executed": false
+      },
+      "all_controls_unmaterialized_unrun": true,
+      "caller_parameters_inferred": false,
+      "complete_named_field_counts": {
+        "control": 2,
+        "field": 21,
+        "layout": 40,
+        "rates": 19,
+        "rhs": 12,
+        "state": 12
+      },
+      "controls_count_as_cases": false,
+      "evaluated_physical_cases": 0,
+      "final_source_only_freeze_permitted": true,
+      "full_node_solve_inserted_partial_assignments": [
+        "partial['topology'] = dict(matrix=matrix, active=active, reservoir=reservoir, fixed=fixed, floating=floating, current_rows=[dict(row=i, members=m) for i, m in rows.items()])",
+        "partial['stage'] = 'independent_full_node_root'",
+        "partial['root_return'] = dict(answer)",
+        "partial['stage'] = 'independent_full_node_charge_gate'",
+        "partial['completed_potential_and_capacitor_charge'] = dict(potential_V=phi, capacitor_node_charge_C=cap_charge)",
+        "partial['completed_component_currents'] = dict(residual_A=residual, divergence_A=divergence, current_scale_A=current_scale)",
+        "partial['stage'] = 'independent_full_node_root_complete'"
+      ],
+      "full_node_solve_inverse_AST_equal_after_removing_partial_assignments": true,
+      "helper_closure": {
+        "validation/geometry/conservative_polygon_geometry_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "collections.Counter",
+            "collections.defaultdict",
+            "decimal.Decimal",
+            "decimal.localcontext",
+            "hashlib",
+            "json",
+            "math",
+            "struct",
+            "validation.geometry.stable_geometry_primitives_reference"
+          ],
+          "local_dependencies": [
+            "validation/geometry/stable_geometry_primitives_reference.py"
+          ],
+          "sha256": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8"
+        },
+        "validation/geometry/stable_geometry_primitives_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "decimal.Decimal",
+            "decimal.localcontext",
+            "math",
+            "struct"
+          ],
+          "local_dependencies": [],
+          "sha256": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569"
+        },
+        "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "collections.defaultdict",
+            "decimal.localcontext",
+            "hashlib",
+            "json",
+            "math",
+            "validation.geometry.conservative_polygon_geometry_reference",
+            "validation.geometry.stable_geometry_primitives_reference"
+          ],
+          "local_dependencies": [
+            "validation/geometry/conservative_polygon_geometry_reference.py",
+            "validation/geometry/stable_geometry_primitives_reference.py"
+          ],
+          "sha256": "91e6d01931bb5856b2604c4b7348b3cf6d70e2737a75784b008495e6b025d251"
+        },
+        "validation/geometry/stable_seed_partition_physiology_bridge_declarations.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "copy.deepcopy",
+            "hashlib",
+            "json",
+            "pathlib.Path",
+            "struct"
+          ],
+          "local_dependencies": [],
+          "sha256": "337426949e4d8fd82f23b81c1a82830458919c34a0ef1298beda15283ed9f3b7"
+        },
+        "validation/geometry/stable_seed_partition_physiology_bridge_field_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "math",
+            "numpy",
+            "scipy.optimize.root",
+            "scipy.sparse.csgraph.connected_components",
+            "validation.geometry.stable_seed_partition_physiology_bridge_scalar_reference",
+            "validation.geometry.stable_seed_partition_physiology_bridge_scalar_reference.bernoulli"
+          ],
+          "local_dependencies": [
+            "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py"
+          ],
+          "sha256": "84f638bd719dcf6e275a4d16da8faf80d6e8088f5c72f99a61226008f962b36b"
+        },
+        "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "json",
+            "math",
+            "numpy",
+            "types.SimpleNamespace",
+            "validation.geometry.stable_seed_explicit_ecm_partition_geometry_reference",
+            "validation.geometry.stable_seed_partition_physiology_bridge_field_reference",
+            "validation.geometry.stable_seed_partition_physiology_bridge_scalar_reference"
+          ],
+          "local_dependencies": [
+            "validation/geometry/stable_seed_explicit_ecm_partition_geometry_reference.py",
+            "validation/geometry/stable_seed_partition_physiology_bridge_field_reference.py",
+            "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py"
+          ],
+          "sha256": "8260ceae5bea6d9a1052679845e6baffa6084f81dc2e1c1d1c497cac69da85cf"
+        },
+        "validation/geometry/stable_seed_partition_physiology_bridge_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "argparse",
+            "ast",
+            "copy.deepcopy",
+            "decimal.localcontext",
+            "hashlib",
+            "importlib.abc",
+            "json",
+            "math",
+            "os",
+            "pathlib.Path",
+            "struct",
+            "sys",
+            "traceback",
+            "validation.geometry.stable_seed_partition_physiology_bridge_declarations",
+            "validation.geometry.stable_seed_partition_physiology_bridge_initial_reference"
+          ],
+          "local_dependencies": [
+            "validation/geometry/stable_seed_partition_physiology_bridge_declarations.py",
+            "validation/geometry/stable_seed_partition_physiology_bridge_initial_reference.py"
+          ],
+          "sha256": "554dd4db948070a9c3328e5a2af7ad8b457085b229e9ada260e4e2e26f289ed0"
+        },
+        "validation/geometry/stable_seed_partition_physiology_bridge_scalar_reference.py": {
+          "imported_or_executed": false,
+          "imports": [
+            "decimal.Decimal",
+            "decimal.localcontext",
+            "math",
+            "numpy"
+          ],
+          "local_dependencies": [],
+          "sha256": "72ee58f17248dfa7592a4ff61bc564de1e769b08542648da577376400b837e75"
+        }
+      },
+      "helper_functions_unchanged": 8,
+      "literal_case_declarations": 4,
+      "materialized_physical_cases": 0,
+      "metadata_control_ids": [
+        "failed-baseline-suppresses-controls",
+        "root-return-before-gate-failure",
+        "wrong-refusal-contract-uncredited"
+      ],
+      "normalized_residuals_bound_and_readback_checked": true,
+      "numerical_launch_authorized": false,
+      "original_geometry_caller_body_AST_equal_after_metadata_constant_substitution": true,
+      "parameter_values_numerically_evaluated": false,
+      "physical_case_declaration_ids": [
+        "uniform-two-species",
+        "unequal-clefts-readback-defects",
+        "two-cell-four-species",
+        "four-cell-reordered-gradient"
+      ],
+      "physical_input_control_ids": [
+        "missing-species",
+        "missing-concentration",
+        "zero-concentration",
+        "negative-permeability",
+        "missing-diffusivity",
+        "P-D-disagreement",
+        "missing-capacitance",
+        "wrong-membrane-owner",
+        "wrong-face-owner",
+        "reservoir-adoption",
+        "missing-charge-anchor",
+        "incompatible-charge-anchor",
+        "missing-gauge",
+        "old-state-adoption",
+        "nonzero-observation-time",
+        "wrong-caller-document"
+      ],
+      "physical_output_control_ids": [
+        "missing-field",
+        "extra-field",
+        "extra-potential-axis",
+        "wrong-array-dtype",
+        "wrong-potential",
+        "wrong-membrane-flux",
+        "wrong-face-flux",
+        "wrong-rhs",
+        "missing-state-ledger",
+        "missing-rhs-ledger",
+        "wrong-node-charge",
+        "wrong-component-current",
+        "missing-gauge-component",
+        "wrong-charge-rate",
+        "wrong-chemical-power",
+        "wrong-capacitor-power",
+        "wrong-dissipation",
+        "wrong-energy-balance",
+        "wrong-layout-owner",
+        "wrong-material-inventory",
+        "missing-concentration-defect",
+        "coherent-concentration-defect",
+        "changed-temperature",
+        "species-key-loss",
+        "native-promotion",
+        "advancing-promotion"
+      ],
+      "production_iteration_counter_domain_checked_independent_count_not_claimed": true,
+      "root_return_saved_immediately_before_gates": true,
+      "source_only": true,
+      "unchanged_frozen_function_ASTs": [
+        {
+          "function": "decimal_flux",
+          "source": "validation/betse/junction_transport/check.py",
+          "source_sha256": "2f2db50235a7a86d3eb1dca1028a627264b08e94fdedb5b2263652bff90073de"
+        },
+        {
+          "function": "bernoulli",
+          "source": "validation/tissue/reference.py",
+          "source_sha256": "949e3b90bce0ba1da7401b4325ad316b8f7869765f198f50665d73002b1e637e"
+        },
+        {
+          "function": "logarithmic_mean",
+          "source": "validation/tissue/surface_reference.py",
+          "source_sha256": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3"
+        },
+        {
+          "function": "transport",
+          "source": "validation/tissue/surface_reference.py",
+          "source_sha256": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3"
+        },
+        {
+          "function": "accounting",
+          "source": "validation/tissue/surface_reference.py",
+          "source_sha256": "2234185252843e34cd90269cab26f83aed3fcbd8c0f3ae82a0b7bcc5e5c7bef3"
+        },
+        {
+          "function": "topology",
+          "source": "validation/tissue/surface_field_reference.py",
+          "source_sha256": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93"
+        },
+        {
+          "function": "currents",
+          "source": "validation/tissue/surface_field_reference.py",
+          "source_sha256": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93"
+        },
+        {
+          "function": "check",
+          "source": "validation/tissue/surface_field_reference.py",
+          "source_sha256": "b5690eeeb929a39508636c20b524f49534832e7f5e73b2c496e420b4dc8d8a93"
+        }
+      ],
+      "upstream_source_review_bound": true,
+      "worker_source": "validation/geometry/stable_seed_partition_physiology_bridge_reference.py"
+    }
+  },
+  "initial_inventory": {
+    "complete_rhs_from_snapshot_field": true,
+    "every_array_dtype_shape_C_bytes": true,
+    "existing_parser_initial_field_validation_repeated": true,
+    "named_fields": {
+      "control": 2,
+      "field": 21,
+      "layout": 40,
+      "rates": 19,
+      "rhs": 12,
+      "state": 12
+    },
+    "solver_iteration_count": "existing production counter is bounded metadata, not an independent iteration-count target",
+    "total_field_solver_calls_claimed_single": false
+  },
+  "kind": "cells.partition_initial_physiology_unfrozen_draft_protocol@1",
+  "launch_gate": false,
+  "launcher_prepared": false,
+  "numerical_launch_authorized": false,
+  "original_drafts_preserved": {
+    "draft01_source_files": 5,
+    "draft02_source_files": 12
+  },
+  "pending_before_numerical_qualification": [
+    "Chief independent source review of this physiology packet",
+    "Separate explicit authorization for case/fixture evaluation or tests",
+    "Bounded launcher/finalizer with complete original-input/source/process capture",
+    "Measured resource sufficiency; preserve failures and existing budgets"
+  ],
+  "preparation": {
+    "case_materializations": 0,
+    "collection": 0,
+    "controls_materialized": 0,
+    "existing_core_or_shared_docs_edited": false,
+    "final_bundle_frozen": false,
+    "fixtures": 0,
+    "frozen_physiology_packet": true,
+    "geometry_or_physical_reference_evaluations": 0,
+    "independent_worker_source_prepared": true,
+    "jobs": 0,
+    "polls": 0,
+    "production_and_scientific_imports": 0,
+    "simulations": 0,
+    "source_AST_checked_only": true,
+    "source_AST_only": true,
+    "tests": 0
+  },
+  "qualification": {
+    "advancing_authorized": false,
+    "controls_count_as_cases": false,
+    "geometry_control_roster": null,
+    "independent_physical_cases": 0,
+    "literal_case_declarations": 4,
+    "native_equivalence": false,
+    "numerical_checks_executed": 0,
+    "numerical_launch_authorized": false,
+    "ordinary_ECM_loop_ready": false,
+    "physical_cases_generated": 0,
+    "physical_control_roster": {
+      "controls_count_as_cases": false,
+      "executed_control_assertions": 0,
+      "generic_exception_or_wrong_stage_credit": false,
+      "input_ids": [
+        "missing-species",
+        "missing-concentration",
+        "zero-concentration",
+        "negative-permeability",
+        "missing-diffusivity",
+        "P-D-disagreement",
+        "missing-capacitance",
+        "wrong-membrane-owner",
+        "wrong-face-owner",
+        "reservoir-adoption",
+        "missing-charge-anchor",
+        "incompatible-charge-anchor",
+        "missing-gauge",
+        "old-state-adoption",
+        "nonzero-observation-time",
+        "wrong-caller-document"
+      ],
+      "materialized_controls": 0,
+      "metadata_ids": [
+        "failed-baseline-suppresses-controls",
+        "root-return-before-gate-failure",
+        "wrong-refusal-contract-uncredited"
+      ],
+      "output_ids": [
+        "missing-field",
+        "extra-field",
+        "extra-potential-axis",
+        "wrong-array-dtype",
+        "wrong-potential",
+        "wrong-membrane-flux",
+        "wrong-face-flux",
+        "wrong-rhs",
+        "missing-state-ledger",
+        "missing-rhs-ledger",
+        "wrong-node-charge",
+        "wrong-component-current",
+        "missing-gauge-component",
+        "wrong-charge-rate",
+        "wrong-chemical-power",
+        "wrong-capacitor-power",
+        "wrong-dissipation",
+        "wrong-energy-balance",
+        "wrong-layout-owner",
+        "wrong-material-inventory",
+        "missing-concentration-defect",
+        "coherent-concentration-defect",
+        "changed-temperature",
+        "species-key-loss",
+        "native-promotion",
+        "advancing-promotion"
+      ],
+      "same_worker_positive_baseline_required": true,
+      "sha256": "762fbb40bd9121b21167cd1ab325d65beafe79542fb2e03af6dcd8b2960e5f83",
+      "source": "validation/geometry/stable_seed_partition_physiology_bridge_controls.json"
+    }
+  },
+  "qualification_owner": "Chief/Root",
+  "reuse": {
+    "face_law": "logmean_electrodiffusion@1",
+    "family": "resolved_tissue@1",
+    "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+    "finite_ECM_preparer": "cells.core.finite_ecm_polygon_preparation.prepare",
+    "implicit_physical_defaults": false,
+    "integration_called": false,
+    "membrane_law": "constant_field@1",
+    "old_state_or_operator_adoption": false,
+    "parser_metadata_solver": "rk4"
+  },
+  "scope": "Existing passive multispecies finite-ECM physiology at time zero only",
+  "source_auditor": "validation/geometry/stable_seed_partition_physiology_bridge_audit.py",
+  "source_map": "validation/geometry/stable_seed_partition_physiology_bridge_source_map.json",
+  "source_only_freeze_permitted": true,
+  "source_origin_audit": "validation/geometry/stable_seed_partition_physiology_bridge_source_map.json",
+  "status": "source_static_prepared_review_bound_physiology_unqualified_held",
+  "tests_or_collection_prepared": false,
+  "upstream": {
+    "accepted_source_review_bound": true,
+    "blockers": [],
+    "exact_review_required": true,
+    "manifest_sha256": "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406",
+    "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-preflight-20261031-02/REVIEW.json",
+    "qualification_inherited": false,
+    "review_schema_binding_pending": false,
+    "scientific_evaluation_permitted": false,
+    "sha256": "a8c09e4245079f55784e62d79e62d05e616dc5a665de5fb62b5235365b6078c7",
+    "source_preparation_permitted": true,
+    "verdict": "clear_for_prospective_guarded_qualification_preparation"
+  },
+  "upstream_complete_packet_preserved": 58
+}

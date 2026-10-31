@@ -1,0 +1,56 @@
+{
+  "capture_all_cases_fit_claim": false,
+  "capture_case_maximum_claim": false,
+  "capture_format_limit": 310689,
+  "capture_profile": "ordinary_ecm_init_sim_transition_01",
+  "classified_reads": 183,
+  "failed_static_attempts_preserved": true,
+  "fixture_model_reference_evaluations": 0,
+  "inherited_oracle_domains_and_failures_preserved": true,
+  "inherited_scientific_passes": 0,
+  "inputs_sha256": "2b1c1bff915ceb8574130a500097320ae1f7c47cf7651996fa4bc29085503a67",
+  "kind": "cells.held_transition_author_static_receipt@1",
+  "metadata": {
+    "controls_passed": 10,
+    "max_rss_bytes": 22614016,
+    "no_large_archive_constructed": true,
+    "path": "metadata-01/result.json",
+    "sha256": "7a8c0557905efad6a9fbc89ee1234d355eebc264a58c5b94a9d4a491056ca426"
+  },
+  "numerical_runs": 0,
+  "parent_common_sources_unchanged": true,
+  "pending_reads": 0,
+  "prospective": {
+    "SIM_accepted_calls": 51,
+    "biological_cases": 0,
+    "checks": 42,
+    "dependency_controls": 18,
+    "independent_complete_INIT_SIM_trajectories": 0,
+    "independent_reference_forms": 928,
+    "native_captures": 33,
+    "observer_controls": 3,
+    "positive_SIM_accepted_calls": 48,
+    "positive_cases": 16,
+    "prefix_refusals": 5
+  },
+  "pytest_collection": 0,
+  "reference_modules": 24,
+  "resource_files": 28,
+  "runtime_modules": 133,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_audit": {
+    "path": "source/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_sim_transition_implementation_audit_03.json",
+    "proofs": 29,
+    "sha256": "88d67cfbd21bca3ad34ab9f78e7a426ce0945803f468a5dd805902a78c85e57d"
+  },
+  "source_files": 2745,
+  "source_scope": "Supplied hydrated retained owners, native reinitialize and post-clear SIM conditionals; no independently carried INIT/SIM trajectory or native persistence",
+  "static_checks": {
+    "Ruff_without_cache": true,
+    "compile_without_execution": true,
+    "source_regeneration_and_inverse_AST_proofs": 29
+  },
+  "status": "held_unrun",
+  "strict_metadata_only_driver": true
+}

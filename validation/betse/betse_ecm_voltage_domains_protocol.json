@@ -1,0 +1,189 @@
+{
+  "all_other_budgets": "Keep original full material, flux, current, field, cache, source-accounting and reference-uncertainty comparators unchanged; no fitted floors",
+  "closure_note": "17 explicit project reference dependencies replace the previous 14. Loaded stdlib/runtime inventories remain required; these are not a substitute for the full runner inventory.",
+  "component_precision_budgets": {
+    "gate_atol": "5e-14",
+    "opening_atol": "8e-14",
+    "precision_difference_fraction": "0.1",
+    "relative": "5e-12",
+    "source": "unchanged standalone sodium/calcium-extra protocols",
+    "tau_atol_s": "3e-13"
+  },
+  "component_support_review": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-voltage-domain-completion-review-20261031-01/REVIEW.json",
+    "sha256": "50cda40a0c86f403b95f157c0c8919f027a4415a0cbd8f283ea8ee22b8e1f0d8"
+  },
+  "domain": {
+    "exact_lower_decimal": "-0.120",
+    "exact_upper_decimal": "0.40000000000000002220446049250313080847263336181640625",
+    "exact_upper_source_float_hex": "0x1.999999999999ap-2",
+    "inclusive": true,
+    "negative_controls": "Next binary64 values outside either endpoint refuse before exponentials",
+    "nominal_V": [
+      "-0.120",
+      "+0.400"
+    ],
+    "ordinary_domain_V": [
+      "-0.120",
+      "+0.060"
+    ],
+    "source_inputs": "ECM callback materializes binary64 voltage then Decimal.from_float; no arbitrary-precision uniform-neighborhood claim",
+    "upper_encoding": "Decimal.from_float(0.400), explicitly includes the original binary64 endpoint"
+  },
+  "domain_decisions": [
+    {
+      "classes": [
+        "Nav1p2",
+        "Nav1p3",
+        "NavRat2",
+        "NavRat1",
+        "NavRat3",
+        "Nav1p6"
+      ],
+      "exclusions": [
+        "NaLeak",
+        "all non-sodium classes"
+      ],
+      "id": "cells.ecm_sodium_reference_voltage_domain@1",
+      "module": "validation/betse/betse_ecm_sodium_reference.py"
+    },
+    {
+      "classes": [
+        "Ca_L2"
+      ],
+      "exclusions": [
+        "Ca_L3",
+        "Cav_G",
+        "CaLeak",
+        "all other calcium classes"
+      ],
+      "id": "cells.ecm_cal2_reference_voltage_domain@1",
+      "module": "validation/betse/betse_ecm_cal2_reference.py"
+    }
+  ],
+  "full_catalog_gate_budgets": {
+    "Ca_L2": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    },
+    "Nav1p2": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    },
+    "Nav1p3": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    },
+    "Nav1p6": {
+      "absolute": "5e-14",
+      "relative": "5e-12"
+    },
+    "NavRat1": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    },
+    "NavRat2": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    },
+    "NavRat3": {
+      "absolute": "1e-12",
+      "relative": "5e-11"
+    }
+  },
+  "kind": "cells.ecm_reference_computational_voltage_domains_proposal@1",
+  "live_reference_runtime_closure": {
+    "validation/betse/betse_ecm_cal2_reference.py": "6b268e87333e3d913ded8e25f14cf8d9d032b42c049ff046343f2890d2676d5f",
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_reference_failure.py": "9caea46ac99cfdad24e6a4284ecad2ca7915ed8270b9f5af167970146a24fce3",
+    "validation/betse/betse_ecm_sodium_reference.py": "d85a9050404713a64c0c89afeec88a1729e0d908eeb0eedac3d60b626d9c3a59",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_catalog_join_reference.py": "204e29b95cea4b26c92a6be2f33944121ec1ead809e72410e345abf6d60e5ac0",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "live_source_maintenance": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-voltage-domain-promotion-20261031-01/maintenance.json",
+    "sha256": "653d214c6439894d7f8d5fff0742aec646cc5db2d32c91b791aaedf2e0863ae1"
+  },
+  "native_component_budgets": {
+    "gate_atol": "1e-12",
+    "relative": "5e-11",
+    "source": "unchanged native component protocol limits",
+    "tau_atol_s": "4e-12"
+  },
+  "not_claimed": [
+    "new accepted trajectory",
+    "independent carried trajectory",
+    "biological calibration",
+    "all-finite-voltage safety",
+    "all55-channel domain extension",
+    "GPU qualification",
+    "full BETSE parity",
+    "native finite values at removable poles"
+  ],
+  "original_prospective_contract": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-voltage-domain-proposal-20261031-01/proposal/validation/betse/betse_ecm_voltage_domains_protocol.json",
+    "sha256": "4d0e2b1bd546214feacfccbfe295f3bad2415d4a8b51c91595b8328203616313"
+  },
+  "planned_reference_runtime_closure": {
+    "validation/betse/betse_ecm_cal2_reference.py": "6b268e87333e3d913ded8e25f14cf8d9d032b42c049ff046343f2890d2676d5f",
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_reference_failure.py": "0ffd3e21fe80a001b49e6a3b529794cca0a7056d0714fc2a9294b159cae748f1",
+    "validation/betse/betse_ecm_sodium_reference.py": "d85a9050404713a64c0c89afeec88a1729e0d908eeb0eedac3d60b626d9c3a59",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_catalog_join_reference.py": "f6bfc899599ff73339b6984f7fe19d1a31a481c069695f4c5612b703eab87d7e",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "precision_digits": [
+    100,
+    160
+  ],
+  "prior_reference_runtime_closure": {
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_catalog_join_reference.py": "6c51cdddbeb166ee33a9000143aad16f003cb9e6d4178cb3993aa62a1538ea70",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "purpose": "Independent reference extrapolation of pinned source equations for numerical source correspondence; not a biological voltage range",
+  "status": "component_support_verified_full_catalog_pending",
+  "unchanged": {
+    "NaLeak_constant_branch": true,
+    "every_existing_accuracy_and_physical_budget": true,
+    "fixture_state_controls_geometry_clocks": true,
+    "full_catalog_94_test_ids": true,
+    "gates_time_units_temperature_behavior": true,
+    "literal_native_and_owned_production_equations": true,
+    "original_campaign_failure": true,
+    "standalone_sodium_and_calcium_domains": true
+  }
+}

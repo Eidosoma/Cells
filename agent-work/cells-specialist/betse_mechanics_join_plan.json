@@ -1,0 +1,1613 @@
+{
+  "kind": "cells.betse_mechanics_join_static_plan@1",
+  "status": "static_preparation_pending_Chief_preflight",
+  "prepared_utc": "2026-10-31T03:10:43.982531+00:00",
+  "prepared_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+  "source_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+  "prepared_bundle_manifest_sha256": null,
+  "authorized_bundle_manifest_sha256": null,
+  "static_preparer": "/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-03/prepare_successor.py",
+  "static_preparation_receipt": "/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-03/REVIEW.json",
+  "owned_source_sha256": {
+    "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+    "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+    "validation/betse/betse_mechanics_join_fixtures.py": "ee45b6fb4346423b846f98fa9aa0fa46742c5448e07b83330ac5febb2ef96946",
+    "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+    "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+    "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
+    "validation/betse/betse_mechanics_join_replay.py": "8ababb151b75475e06643b9d3eb7efe3944e95076dea0783f9e0514236a75bbb",
+    "tests/unit/test_betse_mechanics_join.py": "8ed5c0f510eba4d98f6952f58fe9a202034922ba8fe59198bd0b2ac5de43bac3",
+    "validation/betse/betse_mechanics_join_protocol.json": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+    "validation/betse/betse_mechanics_join_source_map.json": "d9a5322aec9fcbe02cf3bd1c0ba0ced21391e70b2ecc7db49cbbaee63899796c",
+    "agent-work/cells-specialist/BETSE_MECHANICS_JOIN.md": "a1ffacc64a5e1bdc1eff9b0da11deb2168ff3f86a012ad00759f4c6717ba8249"
+  },
+  "dependency_source_sha256": {
+    "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+    "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+    "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+    "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+    "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+    "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+    "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+    "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc",
+    "validation/mechanics/betse_deformation_fixtures.py": "fd88f67b1c7754e546014a4a76422f2049b6523d817c9518d6867c13cb94d981",
+    "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+    "AGENTS.md": "d406ea88597b79a335c320e90726f0a91f7743deb9e1edd10945c62034e62c61",
+    "pyproject.toml": "b39bc96e1f2c808be83c088a414070ce0cd5c8b3701233a89e9b413618dc2a73",
+    "validation/mechanics/betse_deformation_native.py": "5d8f785c552a8997fa03b9b912e951a963cacf75230e38111b3994fba94d94dc",
+    "validation/mechanics/betse_deformation_protocol.json": "463685ce938810edeef2701890601c83fa85ba11488906a3a8299a0296b7d67e",
+    "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0",
+    "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+    "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+    "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+    "tests/unit/test_betse_deformation.py": "982d72c7470c7f882f9e4f8b31e14ece01926eefcab8ab2c13526b90b55092c2",
+    "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8"
+  },
+  "unchanged_existing_component_sha256": {
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+    "validation/mechanics/betse_deformation_native.py": "5d8f785c552a8997fa03b9b912e951a963cacf75230e38111b3994fba94d94dc",
+    "validation/mechanics/betse_deformation_fixtures.py": "fd88f67b1c7754e546014a4a76422f2049b6523d817c9518d6867c13cb94d981",
+    "validation/mechanics/betse_deformation_protocol.json": "463685ce938810edeef2701890601c83fa85ba11488906a3a8299a0296b7d67e",
+    "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0",
+    "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+    "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+    "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+    "tests/unit/test_betse_deformation.py": "982d72c7470c7f882f9e4f8b31e14ece01926eefcab8ab2c13526b90b55092c2",
+    "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8"
+  },
+  "scope": {
+    "law_id": "betse_ordinary_full_steady_mechanics_join_v1_5_0@1",
+    "ordinary_solver": "FULL",
+    "pressure_then_disabled_flow_gate_then_steady_deformation": true,
+    "caller_supplied_shared_field_stage": "normal_full_after_handlers_before_deferred_material_voltage",
+    "conditional_sample_stage": "normal_full_after_deferred_material_voltage_check_v",
+    "primary_molecule_GRN_inventory_owners_explicit": true,
+    "phase_dt_bound_and_separate_from_loop_clock": true,
+    "max_source_calls": 3,
+    "seeded_or_post_cut_layout_DEC_prerequisite": true,
+    "geometry_epoch_rebind_required": true,
+    "cache_operators_reauthenticated_without_physical_rebuild": true,
+    "sampled_display_global_quartic_only": true,
+    "display_refit_each_sample_from_current_centres": true,
+    "original_membrane_vertices_and_physical_geometry_unchanged": true,
+    "enabled_ordinary_flow_admitted": false,
+    "dynamic_deformation_admitted": false,
+    "FAST_admitted": false,
+    "conditional_recalc_fluid_qualified": false,
+    "flow_to_deformation_feedback": false,
+    "physical_force_energy_water_volume_or_material_closure": false,
+    "native_seed_cut_or_full_solver_executed": false,
+    "qualification_inherited": false
+  },
+  "prerequisite_gaps": [
+    {
+      "domain": "Enabled ordinary FULL getFlow",
+      "prerequisite_gap": "Loader forces False; sole True assignment belongs to isolated sim-grn, with a different current/mean-concentration fluid formula",
+      "disposition": "Public ordinary API refuses; dormant source body and conditional scope retained without execution/qualification"
+    },
+    {
+      "domain": "Dynamic deformation",
+      "prerequisite_gap": "Loader forces td_deform=False; existing isolated positive-clock recurrence is not an ordinary initial-value path",
+      "disposition": "Public API refuses; no repaired initialization or history invention"
+    },
+    {
+      "domain": "Physical geometry rebuild",
+      "prerequisite_gap": "Sampled source changes only cellso display and has no active deformWorld call",
+      "disposition": "Keep physical graph/areas/volumes fixed; no flow-to-deformation or geometric feedback"
+    },
+    {
+      "domain": "Shared fields/material/voltage barrier",
+      "prerequisite_gap": "Upstream transport/handlers/noise and deferred commit/update_V/check_v belong to separate integrations",
+      "disposition": "Require explicit caller field-stage/owner receipt and separate post-commit sample receipt; no equivalence beyond supplied boundary"
+    },
+    {
+      "domain": "Adaptive FITPACK",
+      "prerequisite_gap": "Existing display implementation supports only global quartic regime",
+      "disposition": "Explicit conditional regime; native knot records must confirm; adaptive mode refused"
+    },
+    {
+      "domain": "Native nonfinite output",
+      "prerequisite_gap": "Native steady deformation lacks a finite guard",
+      "disposition": "Save complete raw source and adapter witness; adapter rejects nonfinite result without clipping or reclassifying source acceptance"
+    }
+  ],
+  "review_repair_02": {
+    "base01_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-01",
+    "base01_manifest_sha256": "f2735e22ac9b41eb3f429dc2b8ee816be6d1a6af0d8ad2eafc85351f9484776c",
+    "independent_review": "/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-01/REVIEW.json",
+    "independent_review_sha256": "42ed395a5ab7593d0dad585f765602982a34ecaea5a6918143aadb67e5f99795",
+    "noECM_exact_native_membrane_axis_and_identity_map_required": true,
+    "noECM_independent_owner_average_derived_not_supplied": true,
+    "imported_display_vertices_hydrated_by_declared_owners": true,
+    "original_mem_verts_retained_for_sampling": true,
+    "noncanonical_imported_cache_positive_control": true,
+    "permuted_map_and_wrong_environment_size_refusal_controls": true,
+    "all_core_functions_and_classes_except_bind_AST_identical_to01": true,
+    "frozen01_verified_unchanged": true,
+    "numerical_execution": false
+  },
+  "source_correspondence": {
+    "normal_FULL_blocks": [
+      {
+        "source": "if p.deform_osmo:\n    osmotic_P(self, cells, p)",
+        "first_line": 1344,
+        "last_line": 1345,
+        "ast_sha256": "365b2106abe9a4d6d400f425a921507f1b389d6e81ef257ce53d31fac248d0fa",
+        "guard": "p.deform_osmo"
+      },
+      {
+        "source": "if p.fluid_flow:\n    getFlow(self, cells, p)",
+        "first_line": 1347,
+        "last_line": 1348,
+        "ast_sha256": "17bb201ceb01b013330c0670378392e5b1ffc9c6f021497230584a023c68cfa4",
+        "guard": "p.fluid_flow"
+      },
+      {
+        "source": "if p.deformation:\n    if p.td_deform:\n        timeDeform(self, cells, t, p)\n    else:\n        getDeformation(self, cells, t, p)",
+        "first_line": 1350,
+        "last_line": 1354,
+        "ast_sha256": "2135962a9d8e6be18bea22eb00e0fb8dd9cba42f3a970ed6f7fefbab066dd764",
+        "guard": "p.deformation"
+      }
+    ],
+    "normal_following_boundaries": {
+      "material_commit": {
+        "source": "betse/science/sim.py",
+        "first_line": 1357,
+        "last_line": 1357,
+        "ast_sha256": "2dff1dbd358f33a651e871423a6709151f8ecae0f1dba900e1f2952d7f390b70"
+      },
+      "voltage": {
+        "source": "betse/science/sim.py",
+        "first_line": 1360,
+        "last_line": 1360,
+        "ast_sha256": "e61a788a574ab55bb20c5910acd65716ac99ba180607cacbf4459bf75c520a00"
+      },
+      "voltage_guard": {
+        "source": "betse/science/sim.py",
+        "first_line": 1363,
+        "last_line": 1363,
+        "ast_sha256": "13027231319353c6a4c05c6ee0f408b37612a90734d3cb005cccd53c208e2980"
+      },
+      "sampled_storage": {
+        "source": "betse/science/sim.py",
+        "first_line": 1374,
+        "last_line": 1374,
+        "ast_sha256": "2ae9f82329bbe231791c50f46516242654516ab138874b9dc531d63939b225c2"
+      }
+    },
+    "fast_mechanics_calls": [],
+    "ordinary_loader_assignments": {
+      "self.fluid_flow": {
+        "source": "betse/science/parameters.py",
+        "first_line": 832,
+        "last_line": 832,
+        "ast_sha256": "02d658a016595c64176d2a956878db3704db2ead58e250589decc5f09b58d77b",
+        "value": false
+      },
+      "self.td_deform": {
+        "source": "betse/science/parameters.py",
+        "first_line": 845,
+        "last_line": 845,
+        "ast_sha256": "6a08be2bf9f6e4ae5dcaf3320d62cf634b213b24ff09bc5a512d8198af4d053a",
+        "value": false
+      },
+      "self.mu_water": {
+        "source": "betse/science/parameters.py",
+        "first_line": 833,
+        "last_line": 833,
+        "ast_sha256": "fdffc2b21457df8f6a215580549d6cb12dbf69882deaa05869798e61c92f9a38",
+        "value": 0.01
+      }
+    },
+    "seed_graph_build_unconditional": true,
+    "seed_graph_build": {
+      "source": "betse/science/simrunner.py",
+      "first_line": 156,
+      "last_line": 156,
+      "ast_sha256": "5220565a8be6e51e214989f143d67632b17d24856313c3572c5431a212614c02"
+    },
+    "seed_order": {
+      "redo_gj": 150,
+      "graphLaplacian": 156,
+      "save_cluster": 168
+    },
+    "init_only_graph_guards": [
+      "p.deformation",
+      "p.td_deform and cells.lapGJ is None"
+    ],
+    "post_cut_graph_build_sites": [
+      {
+        "source": "betse/science/tissue/tishandler.py",
+        "first_line": 1178,
+        "last_line": 1178,
+        "ast_sha256": "0618729d9217732c48b3d3cf06d8db3cd4fc75c04e0119cb63514b8837048e40",
+        "guards": []
+      },
+      {
+        "source": "betse/science/tissue/tishandler.py",
+        "first_line": 1221,
+        "last_line": 1221,
+        "ast_sha256": "0618729d9217732c48b3d3cf06d8db3cd4fc75c04e0119cb63514b8837048e40",
+        "guards": [
+          "p.fluid_flow or p.deformation",
+          "p.deformation",
+          "p.td_deform"
+        ]
+      }
+    ],
+    "older_init_only_claim_correction": "The old flow initialization fragment leaves an absent inverse absent while td_deform=False. That evidence remains valid for the isolated fragment. It does not establish a missing inverse in ordinary seeded execution: SimRunner.seed unconditionally builds graphLaplacian before saving; init/sim load the seeded/initialized cache, and cuts rebuild it.",
+    "sole_flow_enable_enclosing_method": "MasterOfGenes.run_core_sim",
+    "conditional_recalc_fluid_assignments": [
+      {
+        "source": "betse/science/chemistry/gene.py",
+        "first_line": 284,
+        "last_line": 284,
+        "ast_sha256": "7f837e6fbd61719fe6a5778f8acf82ef48126d816af0fc47654ec6f5c39080fd",
+        "enclosing": "MasterOfGenes.run_core_sim",
+        "guards": [
+          "self.recalc_fluid"
+        ]
+      }
+    ],
+    "conditional_recalc_fluid_scope": "Isolated sim-grn; not normal read/reinitialize, FULL loading or ordinary flow enablement",
+    "flow_to_steady_deformation_edge": false,
+    "physical_deformWorld_calls": [],
+    "sampled_display": "Persistent cellso copy; current display centres refit, original membrane vertices retained",
+    "physical_rebuild_qualified": false,
+    "source_sites": [
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 93,
+        "last_line": 178,
+        "ast_sha256": "440fc55da570c3948979ffde393cf6db78f15bbf0173696a3666160dc0822a67",
+        "name": "seed",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 182,
+        "last_line": 240,
+        "ast_sha256": "0e3444d3da1b82fc21f57b787c824cd5818a2a6f818818ee3409ae7ec1a2cd1f",
+        "name": "init",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 244,
+        "last_line": 296,
+        "ast_sha256": "5237d06172e437bcdd8af4b5b2e7af465b5bd33093373a3b9e369eeaa866c409",
+        "name": "sim",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/cells.py",
+        "first_line": 1845,
+        "last_line": 1894,
+        "ast_sha256": "c9bda6b98491dc8887701b7626ea1acc14e5e1941a3bab208a80c8725826eb90",
+        "name": "graphLaplacian",
+        "parent_class": "Cells"
+      },
+      {
+        "source": "betse/science/cells.py",
+        "first_line": 2550,
+        "last_line": 2612,
+        "ast_sha256": "1a0f575e0400dc2678e6ff4de4c39079425c749756424bcc76fe53c795b4a0a2",
+        "name": "HH_cells",
+        "parent_class": "Cells"
+      },
+      {
+        "source": "betse/science/physics/deform.py",
+        "first_line": 13,
+        "last_line": 82,
+        "ast_sha256": "83fba618f735bae90be060b25258969d8085ee44ba23da7a7b1f00915e256302",
+        "name": "getDeformation",
+        "parent_class": null
+      },
+      {
+        "source": "betse/science/physics/deform.py",
+        "first_line": 250,
+        "last_line": 314,
+        "ast_sha256": "ee159282b7cf3bb59bcdf91d541a4d0655d19803324fa913bf6c93a7647f37fc",
+        "name": "implement_deform_timestep",
+        "parent_class": null
+      },
+      {
+        "source": "betse/science/chemistry/gene.py",
+        "first_line": 220,
+        "last_line": 446,
+        "ast_sha256": "4c655cbbdd9579e798d5a4f4f3d9c7c1b58d59a214fad7c8b60fd6b9f6f81a03",
+        "name": "run_core_sim",
+        "parent_class": "MasterOfGenes"
+      }
+    ],
+    "source_execution": false
+  },
+  "expected_checks": 37,
+  "fresh_worker_units": 35,
+  "fresh_reference_records": 35,
+  "proposed_guarded_units": 73,
+  "check_units": [
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "ordinary-steady",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-steady]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-steady]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "ordinary-osmotic",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-osmotic]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-osmotic]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "no-deformation",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-deformation]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-deformation]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "all-controls-off",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[all-controls-off]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[all-controls-off]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "noecm-osmotic",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[noecm-osmotic]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[noecm-osmotic]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "molecule-grn-pressure",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[molecule-grn-pressure]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[molecule-grn-pressure]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "no-aquaporin",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-aquaporin]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-aquaporin]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "double-dt",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[double-dt]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[double-dt]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "free-boundary",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[free-boundary]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[free-boundary]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "zero-galvanotropism",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[zero-galvanotropism]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[zero-galvanotropism]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "sampled-display",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "sampled-display-once",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display-once]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display-once]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "post-cut-provenance",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[post-cut-provenance]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[post-cut-provenance]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_ordinary_mechanics_and_sampled_display",
+      "case": "imported-display-cache",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[imported-display-cache]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[imported-display-cache]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "enabled-flow",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[enabled-flow]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[enabled-flow]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "dynamic-deformation",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[dynamic-deformation]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[dynamic-deformation]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "fast-solver",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[fast-solver]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[fast-solver]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "missing-seed-provenance",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-seed-provenance]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-seed-provenance]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "wrong-environment-map",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-environment-map]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-environment-map]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "wrong-field-epoch",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-epoch]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-epoch]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "wrong-field-stage",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-stage]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-stage]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "wrong-dt",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-dt]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-dt]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "foreign-state",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[foreign-state]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[foreign-state]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "missing-electric-after-osmotic",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-electric-after-osmotic]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-electric-after-osmotic]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "nonfinite-pressure-after-osmotic",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[nonfinite-pressure-after-osmotic]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[nonfinite-pressure-after-osmotic]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "sample-without-barrier",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[sample-without-barrier]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[sample-without-barrier]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "duplicate-sample",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[duplicate-sample]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[duplicate-sample]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "adaptive-display",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[adaptive-display]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[adaptive-display]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "noecm-permuted-map",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-permuted-map]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-permuted-map]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_policy_prerequisite_and_raw_partial_refusals",
+      "case": "noecm-wrong-environment-size",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-wrong-environment-size]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-wrong-environment-size]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_independent_complete_output_rejects_corruption",
+      "case": "wrong-PP",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-PP]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-PP]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_independent_complete_output_rejects_corruption",
+      "case": "wrong-displacement-axis",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-displacement-axis]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-displacement-axis]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_independent_complete_output_rejects_corruption",
+      "case": "changed-disabled-flow",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[changed-disabled-flow]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[changed-disabled-flow]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_independent_complete_output_rejects_corruption",
+      "case": "stale-second-display-centres",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[stale-second-display-centres]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[stale-second-display-centres]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_independent_complete_output_rejects_corruption",
+      "case": "wrong-osmotic-dt",
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-osmotic-dt]",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-osmotic-dt]"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_complete_binding_cache_and_operator_owners_are_immutable",
+      "case": null,
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_binding_cache_and_operator_owners_are_immutable",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_complete_binding_cache_and_operator_owners_are_immutable"
+      ]
+    },
+    {
+      "kind": "pytest",
+      "function": "test_protocol_has_seeded_graph_and_disabled_ordinary_flow_provenance",
+      "case": null,
+      "pytest_id": "tests/unit/test_betse_mechanics_join.py::test_protocol_has_seeded_graph_and_disabled_ordinary_flow_provenance",
+      "command": [
+        "-m",
+        "pytest",
+        "-q",
+        "--confcutdir=tests/unit",
+        "-p",
+        "validation.betse.betse_mechanics_join_runtime",
+        "tests/unit/test_betse_mechanics_join.py::test_protocol_has_seeded_graph_and_disabled_ordinary_flow_provenance"
+      ]
+    }
+  ],
+  "replay_units": [
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "ordinary-steady",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-steady]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "ordinary-steady",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "ordinary-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "ordinary-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "no-deformation",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-deformation]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "no-deformation",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "all-controls-off",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[all-controls-off]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "all-controls-off",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "noecm-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[noecm-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "noecm-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "molecule-grn-pressure",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[molecule-grn-pressure]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "molecule-grn-pressure",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "no-aquaporin",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-aquaporin]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "no-aquaporin",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "double-dt",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[double-dt]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "double-dt",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "free-boundary",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[free-boundary]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "free-boundary",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "zero-galvanotropism",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[zero-galvanotropism]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "zero-galvanotropism",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "sampled-display",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "sampled-display",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "sampled-display-once",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display-once]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "sampled-display-once",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "post-cut-provenance",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[post-cut-provenance]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "post-cut-provenance",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "native",
+      "case": "imported-display-cache",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[imported-display-cache]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "native",
+        "--case",
+        "imported-display-cache",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "ordinary-steady",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-steady]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "ordinary-steady",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "ordinary-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "ordinary-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "no-deformation",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-deformation]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "no-deformation",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "all-controls-off",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[all-controls-off]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "all-controls-off",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "noecm-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[noecm-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "noecm-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "molecule-grn-pressure",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[molecule-grn-pressure]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "molecule-grn-pressure",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "no-aquaporin",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-aquaporin]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "no-aquaporin",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "double-dt",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[double-dt]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "double-dt",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "free-boundary",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[free-boundary]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "free-boundary",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "zero-galvanotropism",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[zero-galvanotropism]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "zero-galvanotropism",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "sampled-display",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "sampled-display",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "sampled-display-once",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display-once]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "sampled-display-once",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "post-cut-provenance",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[post-cut-provenance]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "post-cut-provenance",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "reference",
+      "case": "imported-display-cache",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[imported-display-cache]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "reference",
+        "--case",
+        "imported-display-cache",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "wrong-PP",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-PP]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "wrong-PP",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "wrong-displacement-axis",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-displacement-axis]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "wrong-displacement-axis",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "changed-disabled-flow",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[changed-disabled-flow]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "changed-disabled-flow",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "stale-second-display-centres",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[stale-second-display-centres]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "stale-second-display-centres",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "corruption",
+      "case": "wrong-osmotic-dt",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-osmotic-dt]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "corruption",
+        "--case",
+        "wrong-osmotic-dt",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "raw",
+      "case": "missing-electric-after-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-electric-after-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "raw",
+        "--case",
+        "missing-electric-after-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    },
+    {
+      "kind": "fresh_worker",
+      "mode": "raw",
+      "case": "nonfinite-pressure-after-osmotic",
+      "producer_pytest_id": "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[nonfinite-pressure-after-osmotic]",
+      "command": [
+        "-m",
+        "validation.betse.betse_mechanics_join_replay",
+        "--mode",
+        "raw",
+        "--case",
+        "nonfinite-pressure-after-osmotic",
+        "--source",
+        "{check_evidence_root}"
+      ]
+    }
+  ],
+  "expected_pytest_ids": [
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-steady]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[ordinary-osmotic]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-deformation]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[all-controls-off]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[noecm-osmotic]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[molecule-grn-pressure]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[no-aquaporin]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[double-dt]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[free-boundary]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[zero-galvanotropism]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[sampled-display-once]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[post-cut-provenance]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_ordinary_mechanics_and_sampled_display[imported-display-cache]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[enabled-flow]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[dynamic-deformation]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[fast-solver]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-seed-provenance]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-environment-map]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-epoch]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-field-stage]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[wrong-dt]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[foreign-state]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[missing-electric-after-osmotic]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[nonfinite-pressure-after-osmotic]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[sample-without-barrier]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[duplicate-sample]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[adaptive-display]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-permuted-map]",
+    "tests/unit/test_betse_mechanics_join.py::test_policy_prerequisite_and_raw_partial_refusals[noecm-wrong-environment-size]",
+    "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-PP]",
+    "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-displacement-axis]",
+    "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[changed-disabled-flow]",
+    "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[stale-second-display-centres]",
+    "tests/unit/test_betse_mechanics_join.py::test_independent_complete_output_rejects_corruption[wrong-osmotic-dt]",
+    "tests/unit/test_betse_mechanics_join.py::test_complete_binding_cache_and_operator_owners_are_immutable",
+    "tests/unit/test_betse_mechanics_join.py::test_protocol_has_seeded_graph_and_disabled_ordinary_flow_provenance"
+  ],
+  "runner_environment": {
+    "CELLS_BETSE_SOURCE": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03/native",
+    "required_PYTHONPATH": [
+      "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03/source/src",
+      "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03/source",
+      "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03/dependencies/pillow"
+    ],
+    "cwd": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03/source",
+    "pytest_confcutdir": "tests/unit",
+    "evidence": "Unique durable per-unit CELLS_COMPONENT_EVIDENCE path set by Root",
+    "production_CPU_JAX_imports_required": true,
+    "JAX_ENABLE_X64": "true",
+    "JAX_PLATFORMS": "cpu"
+  },
+  "resource_envelope": {
+    "reuse_frozen_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "worker_max_summed_RSS_bytes": 1073741824,
+    "worker_wall_seconds": 480,
+    "outer_max_summed_RSS_bytes": 2147483648,
+    "outer_wall_seconds": 7200,
+    "minimum_available_bytes": 8589934592,
+    "threads": 1,
+    "gpu": false,
+    "external_startup_failure_wrapper_required": true,
+    "long_jobs_detached_with_durable_logs": true
+  },
+  "packaging_seed": {
+    "path": "/mnt/workspaces/Cells/betse-ecm-requested-increment-prepared-20261031-01",
+    "manifest_sha256": "93662e8d87ed04d61b97e93912c44743282b253d240ccb1e815892f4c0494bf1",
+    "use": "Resource guard and Pillow only",
+    "qualification_inherited": false
+  },
+  "finalizer_unit": {
+    "owner": "Root",
+    "prepared": false,
+    "required": true,
+    "full_payloads_separate_from_bounded_summary": true
+  },
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "scientific_imports": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "numerical_launcher_prepared": false,
+  "qualification_finalizer_prepared": false,
+  "Chief_static_preflight_accepted": false,
+  "Chief_static_preflight_receipt": null,
+  "Chief_static_preflight_sha256": null,
+  "authorization": null,
+  "declared_units_file": "betse-mechanics-join-declared-units.json",
+  "declared_units_sha256": "7222a42123ccbd1e8be8e73928b0f02f90e15b1ea2e058007b55fec2cb419e17",
+  "authorized_component_repair03_sha256": {
+    "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+  },
+  "review_repair_03": {
+    "kind": "cells.mechanics_display_repair03@1",
+    "prior_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-02",
+    "prior_manifest_sha256": "71275556eb88251b0850edba47879c2a4573c06b995f9689c83755470926b954",
+    "original_failed_qualification": {
+      "path": "/mnt/workspaces/Cells/betse-mechanics-join-launch-preparation-20261031-01/qualification-01/result.json",
+      "sha256": "979243754cd237a58a8126fb2eb353830b1cfd4d255cd0cb32e3d4c0b2916146"
+    },
+    "prior_counts": {
+      "passed_checks": 10,
+      "failed_checks": 1,
+      "unrun_checks": 26,
+      "unrun_fresh_workers": 35
+    },
+    "production_delta": "Only quartic design and target matrices use scaled Legendre products in the same degree(4,4)space.",
+    "production_changed": {
+      "src/cells/processes/betse_deformation.py": {
+        "before": "88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2",
+        "after": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+      }
+    },
+    "comparator_changed": {
+      "validation/betse/betse_mechanics_join_checks.py": {
+        "before": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+        "after": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f"
+      }
+    },
+    "comparator_effective_absolute_change": {
+      "field": "divergence_numeric",
+      "before": 3e-20,
+      "after": 3e-14,
+      "factor": 1000000,
+      "category": "preexisting auxiliary_atol",
+      "relative_unchanged": 8e-12,
+      "resolution_fraction_unchanged": 0.1
+    },
+    "no_claim_all_effective_bounds_unchanged": true,
+    "inherited_protocol": {
+      "path": "source/validation/mechanics/betse_deformation_protocol.json",
+      "sha256": "463685ce938810edeef2701890601c83fa85ba11488906a3a8299a0296b7d67e"
+    },
+    "unchanged_full_suite_ids": 37,
+    "unchanged_fresh_workers": 35,
+    "full_suite_retained_passes": 0,
+    "focus_result": {
+      "path": "/mnt/workspaces/Cells/mechanics-display-repair-tests-20261031-01/result.json",
+      "sha256": "4be23430ce3057d251e6069eaf6331f51ac1735c02b5bf31787383d9d28fe36f",
+      "checks": 14,
+      "scope": "4exact rational maps,5domain refusals,5budget-category checks;not full37/35qualification"
+    },
+    "diagnostic": {
+      "path": "/mnt/workspaces/Cells/mechanics-display-diagnosis-20261031-01/result.json",
+      "sha256": "a72e1e6bbe76542da6ede5605d35c821929d6a6d5388b5693d51d1b3d2eb4893",
+      "scope": "Saved-parent interpolation diagnostic only;no new full mechanics trajectory"
+    },
+    "domain_limit": "Finite full-column-rank degree(4,4)least squares is mathematically invariant under this invertible basis change. Floating SVD rank classification near rcond1e-15 need not be identical;no all-input bitwise/domain-equivalence claim.",
+    "scope": "Display interpolation only;no adaptive FITPACK,physical mesh rebuild,flow,dynamic mechanics,energy orbiological qualification.",
+    "retained_predecessor_preparation_records": [
+      "preparer.py",
+      "ruff-0.json",
+      "ruff-1.json",
+      "static-audit.json"
+    ],
+    "original_evidence_unchanged": true,
+    "numerical_runs_here": 0,
+    "scientific_imports_here": 0
+  }
+}

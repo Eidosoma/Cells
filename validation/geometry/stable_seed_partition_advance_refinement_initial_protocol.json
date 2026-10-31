@@ -1,0 +1,997 @@
+{
+  "activity": {
+    "GPU": 0,
+    "PROGRESS_edited": false,
+    "collection": 0,
+    "fixtures": 0,
+    "jobs": 0,
+    "model_or_reference_evaluations": 0,
+    "polls": 0,
+    "science_imports": 0,
+    "tests": 0
+  },
+  "caller_document": "validation/geometry/stable_seed_partition_advance_refinement_callers.json",
+  "caller_document_sha256": "d5537d58ca38f022e30b9fb5b3471b54aa6914ac0a0f512fd4c9e9984eae3a8b",
+  "clock_dependencies": {
+    "admission": "Schema initial admission is distinct from unchanged runner.timeline trace/step admission",
+    "controls": "Original time-zero availability held on each interval; endpoint uses right-continuous readout",
+    "event_splitting": "No events after time zero; separate dt declarations, no refinement_times",
+    "function_sites": {
+      "src/cells/core/finite_ecm_polygon_preparation.py": {
+        "prepare": {
+          "ast_sha256": "ceb6121b74074334f2fa6233e41ea5e984b038cc12acb16b53393027fb89b0df",
+          "first_line": 261,
+          "last_line": 325,
+          "source": "src/cells/core/finite_ecm_polygon_preparation.py"
+        }
+      },
+      "src/cells/core/grid.py": {
+        "__getitem__": {
+          "ast_sha256": "28b6efc41d2ffd8973e402c868420f5ecbdf7ec540096d36d83f02637526102b",
+          "first_line": 95,
+          "last_line": 106,
+          "source": "src/cells/core/grid.py"
+        },
+        "__init__": {
+          "ast_sha256": "bf0b8668cf7e86c06bd8b58a640027e161f9e35fc9865d18e1af95e8ff2a7b61",
+          "first_line": 57,
+          "last_line": 90,
+          "source": "src/cells/core/grid.py"
+        },
+        "require_refinement_model": {
+          "ast_sha256": "2a57de535a126b30ebead85f6ff430eefeddc5ca3a05746a5839c78afeadde1e",
+          "first_line": 33,
+          "last_line": 38,
+          "source": "src/cells/core/grid.py"
+        }
+      },
+      "src/cells/core/resources.py": {
+        "trace_bytes": {
+          "ast_sha256": "f27c46464b72771836dba72a30937522cdb000cab19fada77d55cf6afc27d9ed",
+          "first_line": 6,
+          "last_line": 37,
+          "source": "src/cells/core/resources.py"
+        }
+      },
+      "src/cells/core/runner.py": {
+        "_checked_eager_rollout": {
+          "ast_sha256": "c27ba86536e3956e798c0cf2e8deb2c3063c62393dc50e9253f17ffaec776290",
+          "first_line": 221,
+          "last_line": 234,
+          "source": "src/cells/core/runner.py"
+        },
+        "_trace_budget": {
+          "ast_sha256": "05b9ba02cd2db29be98e3a7d0d15a98b286e89912c1c3b2dabc6154c52734d0c",
+          "first_line": 26,
+          "last_line": 29,
+          "source": "src/cells/core/runner.py"
+        },
+        "integration_steps": {
+          "ast_sha256": "782ba9866865b80a5581f92d8a4432932dff7c2da66e46e79371f5bcbc14c65c",
+          "first_line": 154,
+          "last_line": 157,
+          "source": "src/cells/core/runner.py"
+        },
+        "timeline": {
+          "ast_sha256": "5ee327259a0f062b4e678ed7748a843b7dc56c0ee105039ea8f7d871f2a33b84",
+          "first_line": 32,
+          "last_line": 39,
+          "source": "src/cells/core/runner.py"
+        },
+        "validate_checkpoint": {
+          "ast_sha256": "d90262be44a75b2b0fd78925fd504b18522485a1cb45dc5b4c47fca2acb389b9",
+          "first_line": 42,
+          "last_line": 85,
+          "source": "src/cells/core/runner.py"
+        }
+      },
+      "src/cells/core/schedule.py": {
+        "control_values": {
+          "ast_sha256": "41e0922faa0086ccfde870d6a0220f450855917cc49f32e1da4dbd4ef19879e1",
+          "first_line": 195,
+          "last_line": 698,
+          "source": "src/cells/core/schedule.py"
+        },
+        "event_index": {
+          "ast_sha256": "0895e79ce68e56d7f5b3bcd57d49f60d48b8a51ec0df7b5bd4820c7c62e54cd6",
+          "first_line": 191,
+          "last_line": 192,
+          "source": "src/cells/core/schedule.py"
+        }
+      },
+      "src/cells/core/specs.py": {},
+      "src/cells/core/state.py": {
+        "initialise": {
+          "ast_sha256": "097aa9dacbcb6cc48974886692813993154036e4a4ab77ff658f5f8911a23211",
+          "first_line": 442,
+          "last_line": 463,
+          "source": "src/cells/core/state.py"
+        }
+      },
+      "src/cells/core/surface_tissue_spec.py": {
+        "parse": {
+          "ast_sha256": "344d93dea6321f2cafa00239429ef365da662a904fa86ca506e4d4f1d5472b47",
+          "first_line": 139,
+          "last_line": 340,
+          "source": "src/cells/core/surface_tissue_spec.py"
+        },
+        "to_dict": {
+          "ast_sha256": "9c86bcf19ef7d96b5763fc5add920bcac04abfb9b2534b09e16aa1138b6a8f27",
+          "first_line": 98,
+          "last_line": 136,
+          "source": "src/cells/core/surface_tissue_spec.py"
+        }
+      },
+      "src/cells/models/surface_tissue.py": {
+        "check_steps": {
+          "ast_sha256": "d1a068d83ac661866687d4980ca55595a4d8872854e29a69fd24107221680990",
+          "first_line": 376,
+          "last_line": 388,
+          "source": "src/cells/models/surface_tissue.py"
+        },
+        "check_values": {
+          "ast_sha256": "1d38e63b01d82aafde4dd80a3615f7a474be0f5a4e0b3d9976ad0aa71a7d7e31",
+          "first_line": 468,
+          "last_line": 525,
+          "source": "src/cells/models/surface_tissue.py"
+        },
+        "control_domain_valid": {
+          "ast_sha256": "43088d335478797f968df997c508219144e5fd038d1b99c55a5f692a01157887",
+          "first_line": 316,
+          "last_line": 327,
+          "source": "src/cells/models/surface_tissue.py"
+        },
+        "initial_values": {
+          "ast_sha256": "8b7e354d8de7982c08c52a60e2bc8ade337d0c800537b43e133feb8507d2629d",
+          "first_line": 99,
+          "last_line": 212,
+          "source": "src/cells/models/surface_tissue.py"
+        },
+        "rhs": {
+          "ast_sha256": "4ee5a3fd8ddaac12b24bff2c3b14a9b46b8c733050770b326261419f0a41b60d",
+          "first_line": 250,
+          "last_line": 252,
+          "source": "src/cells/models/surface_tissue.py"
+        },
+        "working_size": {
+          "ast_sha256": "ec03f056f2c87fe7f2156f840d4c2fb555727c8b8b9e6d795f171d11f1cb17d0",
+          "first_line": 83,
+          "last_line": 89,
+          "source": "src/cells/models/surface_tissue.py"
+        }
+      },
+      "src/cells/numerics/fixed_step.py": {
+        "rk4_checked_step": {
+          "ast_sha256": "efc8ecefc382642fba7382e295610c07a0c7af00b0b18136f0defcbe1ce82ecd",
+          "first_line": 25,
+          "last_line": 71,
+          "source": "src/cells/numerics/fixed_step.py"
+        }
+      },
+      "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
+        "_declaration": {
+          "ast_sha256": "e33cf5e786e75ec08736a67a0d0694a0286c6efd752b2ccb7d29361f07c69be8",
+          "first_line": 307,
+          "last_line": 517,
+          "source": "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+        },
+        "_initial_snapshot": {
+          "ast_sha256": "16fd5988b6af99b8da870536c63066c2af47ada7f89ae2508c07b66ee89a6d6e",
+          "first_line": 855,
+          "last_line": 915,
+          "source": "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+        },
+        "_materialize": {
+          "ast_sha256": "052d1b61258bdb54ece0857c0aeede8df056359b935042447d0744d243ae8dec",
+          "first_line": 549,
+          "last_line": 730,
+          "source": "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+        },
+        "prepare": {
+          "ast_sha256": "df152c570b26a0d9108a961c273ca8da9030fa8dd2fd0e6814755b26f8b66046",
+          "first_line": 929,
+          "last_line": 999,
+          "source": "src/cells/processes/stable_seed_partition_physiology_bridge.py"
+        }
+      }
+    },
+    "grid": "Exact float i*dt labels plus original end; each width is adjacent-label subtraction",
+    "launcher_and_finalizer_prepared": false,
+    "observations": "Original [0.0] retained; independent comparison samples are not experiment observations",
+    "physical_state": "Fresh initial derive/field/RHS/accounting required separately for all 18 bindings",
+    "resource_guard_implementation_changed": false,
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "resource_sufficiency_measured": false,
+    "source_origins": {
+      "src/cells/core/finite_ecm_polygon_preparation.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [],
+        "sha256": "a4b94d721023b98e8acc4df935f6e7ce651ad4ad0a63a692b09d346c56fc1180"
+      },
+      "src/cells/core/grid.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          19,
+          26,
+          58,
+          60,
+          81,
+          106,
+          137,
+          139
+        ],
+        "sha256": "3a34c0307205069ccd05d199a374e2d5fc01e65311e9bb7e5f3066f4c1a28139"
+      },
+      "src/cells/core/resources.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          9
+        ],
+        "sha256": "410ff57effc1fe24f3004e6ea42374e88bc21503ea7ed177c5c4c8b008bf7954"
+      },
+      "src/cells/core/runner.py": {
+        "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          28,
+          52,
+          54,
+          56,
+          82,
+          287,
+          288,
+          427,
+          448
+        ],
+        "sha256": "b58db4c695141ad04c32a4b1f49091fbc0a57c8820a5321002403fe01c544a95"
+      },
+      "src/cells/core/schedule.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [],
+        "sha256": "889eba6db8fcec06a290bc367eb1ddaaabbccec4a5b591ee35b5bc8a4e6082be"
+      },
+      "src/cells/core/specs.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          1395,
+          1397,
+          1403,
+          1406,
+          1407
+        ],
+        "sha256": "193d7f814d422099c2ea0c661a58d08142fb07c43de6bad3eb59c3b2f132eb09"
+      },
+      "src/cells/core/state.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [],
+        "sha256": "367d3bdcb4093203280a96697a9d7eaf25b11f8a3799c0e5582ce57fb0c12dd1"
+      },
+      "src/cells/core/surface_tissue_spec.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          124
+        ],
+        "sha256": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa"
+      },
+      "src/cells/models/surface_tissue.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [
+          382
+        ],
+        "sha256": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29"
+      },
+      "src/cells/numerics/fixed_step.py": {
+        "bundle": "/mnt/workspaces/Cells/finite-ecm-polygon-prepared-20261031-01",
+        "clock_attribute_mentions": [],
+        "sha256": "a9821afc713c07b18c4d586ba7e991379eb011be54494a177aab13b8a39dd3b6"
+      },
+      "src/cells/processes/stable_seed_partition_physiology_bridge.py": {
+        "bundle": "/mnt/workspaces/Cells/stable-seed-partition-physiology-bridge-prepared-20261031-01",
+        "clock_attribute_mentions": [],
+        "sha256": "31959e49ec266092556dc67c755d28105e24bdf6789079fd766c7c5e4f3566ca"
+      }
+    },
+    "storage_formula": "8*(working_columns*(steps+1+observation_count)+4*(steps+1)); observation_count=1"
+  },
+  "clock_metadata_equivalence_shortcut": false,
+  "declarations": "validation/geometry/stable_seed_partition_advance_refinement_declarations.py",
+  "declarations_sha256": "909ffec06dacd701721cfa58c1d9643f1a2cdf1723c24720a9af82b3405d676e",
+  "finalizer_prepared": false,
+  "inherited_qualification": false,
+  "isolated_packet_excludes_common_endpoint_driver_reference_tests_and_dynamics": true,
+  "kind": "cells.partition_initial_clock_resource_successor_protocol@1",
+  "launcher_prepared": false,
+  "numerical_launch_authorized": false,
+  "original_first_advance_draft_receipt_sha256": "c4736118b594104d50e99c3c270dd8969e4fd5cd17604788f6da3c48c6cfdfd4",
+  "original_input_output_metadata_controls_unchanged": true,
+  "parent_initial_manifest_sha256": "92caecd20cba1973336f14a005492a144393740fae3d6cd3be32a2636a8fcf26",
+  "parent_initial_source_review_sha256": "e055f0ff664553e6c6fdf02fc777beb31e6206b3f99fead6835d088f8dd63249",
+  "pending": [
+    "Chief independent source review of isolated initial successor",
+    "Chief explicit numerical materialization/qualification authorization",
+    "Bounded launcher/finalizer and complete per-arm original input/source/process evidence",
+    "Fresh initial qualification of all 18 case-arm bindings; no inherited per-clock pass"
+  ],
+  "per_arm_fresh_initial_preparation_and_independent_field_RHS_accounting_required": true,
+  "resource_sufficiency_measured": false,
+  "scope": {
+    "added_storage_bindings": 6,
+    "bindings": [
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 283456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 377952,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 566944,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 283456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 377952,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 566944,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 774208,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 1032288,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 1548448,
+        "source_predicted_storage_admission": false
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 774208,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1032288,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1548448,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 1739584,
+        "source_predicted_storage_admission": false
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 2319456,
+        "source_predicted_storage_admission": false
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 3479200,
+        "source_predicted_storage_admission": false
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1739584,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 2319456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 3479200,
+        "source_predicted_storage_admission": true
+      }
+    ],
+    "budget_refusals_observed": false,
+    "clock_metadata_equivalence_shortcut": false,
+    "common_endpoint_comparison_arms": 12,
+    "comparison_bindings": [
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 283456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 377952,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "uniform-two-species",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 566944,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base",
+        "observation_count": 1,
+        "required_trace_bytes": 283456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half",
+        "observation_count": 1,
+        "required_trace_bytes": 377952,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "unequal-clefts-readback-defects",
+        "declared_max_trace_bytes": 1048576,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter",
+        "observation_count": 1,
+        "required_trace_bytes": 566944,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 774208,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1032288,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1548448,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-20"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          1e-06
+        ],
+        "max_steps": 1,
+        "nominal_dt_s": 1e-06,
+        "numerical_control_id": "base-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 1739584,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-21",
+          "0x1.0c6f7a0b5ed8dp-21"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          5e-07,
+          1e-06
+        ],
+        "max_steps": 2,
+        "nominal_dt_s": 5e-07,
+        "numerical_control_id": "dt-half-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 2319456,
+        "source_predicted_storage_admission": true
+      },
+      {
+        "actual_step_hex": [
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8dp-22",
+          "0x1.0c6f7a0b5ed8ep-22",
+          "0x1.0c6f7a0b5ed8cp-22"
+        ],
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 4194304,
+        "end_time_s": 1e-06,
+        "labels_s": [
+          0.0,
+          2.5e-07,
+          5e-07,
+          7.5e-07,
+          1e-06
+        ],
+        "max_steps": 4,
+        "nominal_dt_s": 2.5e-07,
+        "numerical_control_id": "dt-quarter-trace-4MiB",
+        "observation_count": 1,
+        "required_trace_bytes": 3479200,
+        "source_predicted_storage_admission": true
+      }
+    ],
+    "guards": {
+      "aggregate_GiB": 2,
+      "host_reserve_GiB": 8,
+      "worker_GiB": 1
+    },
+    "new_physical_cases": 0,
+    "numerical_clock_control_bindings": 8,
+    "observation_times_unchanged": [
+      0.0
+    ],
+    "original_budget_refusal_controls": [
+      {
+        "case_id": "two-cell-four-species",
+        "declared_max_trace_bytes": 1048576,
+        "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+        "numerical_control_id": "dt-quarter",
+        "required_trace_bytes": 1548448
+      },
+      {
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+        "numerical_control_id": "base",
+        "required_trace_bytes": 1739584
+      },
+      {
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+        "numerical_control_id": "dt-half",
+        "required_trace_bytes": 2319456
+      },
+      {
+        "case_id": "four-cell-reordered-gradient",
+        "declared_max_trace_bytes": 1048576,
+        "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+        "numerical_control_id": "dt-quarter",
+        "required_trace_bytes": 3479200
+      }
+    ],
+    "original_callers_unchanged": true,
+    "physical_cases": 4,
+    "resource_sufficiency_measured": false,
+    "total_initial_case_arm_bindings": 18
+  },
+  "source_auditor": "validation/geometry/stable_seed_partition_advance_refinement_initial_audit.py",
+  "source_map": "validation/geometry/stable_seed_partition_advance_refinement_initial_source_map.json",
+  "source_only": true,
+  "status": "source_only_prepared_independent_review_and_numeric_qualification_pending",
+  "upstream_geometry_positive_numerical_evidence_required_before_materialization": true,
+  "worker": "validation/geometry/stable_seed_partition_advance_refinement_initial_worker.py",
+  "worker_sha256": "27d2fc375bdb29aa78531ed70a312c71a5c6dfb4c5f0d485c000fe9a50720203"
+}

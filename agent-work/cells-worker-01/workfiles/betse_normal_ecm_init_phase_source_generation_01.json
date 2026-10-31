@@ -1,0 +1,10 @@
+{
+  "kind": "cells.init_source_generation@1",
+  "scientific_execution": false,
+  "source_sha256": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23",
+  "proofs": {
+    "run_dispatch": "phase literal SIM->INIT and explicit legacy flag only",
+    "_finalize_events_global": "whole function body unchanged; annotations/decorator removed; global shuffle injected",
+    "_finalize_events_tissue": "whole function body unchanged; annotations/decorator removed; global shuffle injected"
+  }
+}

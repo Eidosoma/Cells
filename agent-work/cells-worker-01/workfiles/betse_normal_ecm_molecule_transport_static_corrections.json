@@ -1,0 +1,13 @@
+{
+  "kind": "cells.general_ECM_transporter_static_development_corrections@1",
+  "scientific_evaluations": 0,
+  "corrections": [
+    "Initial new-file Ruff import ordering, metadata-string E501 and one duplicate native wire alias were corrected before sealing.",
+    "Source inspection found that the existing material-check module exports budget(), not FLOORS. The new prospective comparisons now import the unchanged original ion FLOORS; no tests or numerical comparisons were evaluated.",
+    "The prospective reference counter initially counted two transporter forms during cold setup, where no transporter reference is called. The counter now adds exactly two per enabled general transporter dispatch only.",
+    "Static audit01 stopped because native read_transporters contains a standalone documentation string after its first three assignments. The existing transporter lowering removes standalone documentation strings. Audit02 uses that established documentation/observation normalization on both sides; no executable source expression was changed. The original audit01 log and regenerated files are preserved.",
+    "Audit02 reached the independent native-loader inverse proof. Its inverse mistakenly renamed the native original class selector as well as the lowered ECM class selector. Audit03 restricts the inverse to the network binding. No product, reference, native capture or test expression changed; audit02 evidence is retained."
+  ],
+  "failed_static_log": "betse_normal_ecm_molecule_transport_static_audit_01.log",
+  "failed_regeneration": "betse_normal_ecm_molecule_transport_regenerated_01"
+}

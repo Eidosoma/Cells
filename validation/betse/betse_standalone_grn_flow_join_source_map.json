@@ -1,0 +1,238 @@
+{
+  "GPU": 0,
+  "PROGRESS_edited": false,
+  "collection": 0,
+  "existing_flow_component_receipt_sha256": "96c8ef38e86096f3713a5c97b2a7697bf2c945e9695bb4bf4f5f408b4d9a34bd",
+  "existing_flow_component_used_at_actual_activation_inputs": true,
+  "fixtures": 0,
+  "independent_reference": {
+    "carried_reference_forms": 0,
+    "complete_environment_function_AST_unchanged_except": {
+      "fx[i][j]": "(d(inputs['velocity_x_m_s'][i][j]) if inputs['fluid_flow'] else zero) * image[i][j]",
+      "fxg[i][j]": "abs(d(inputs['velocity_x_m_s'][i][j]) if inputs['fluid_flow'] else zero) * ig[i][j]",
+      "fy[i][j]": "(d(inputs['velocity_y_m_s'][i][j]) if inputs['fluid_flow'] else zero) * image[i][j]",
+      "fyg[i][j]": "abs(d(inputs['velocity_y_m_s'][i][j]) if inputs['fluid_flow'] else zero) * ig[i][j]"
+    },
+    "complete_raw_preprojection_and_partial_reference_retention": true,
+    "gross_advection_uses_only_actual_incoming_velocity_and_independent_concentration": true,
+    "independent_trajectory": false,
+    "old_budget_factors_floors_and_self_resolution_limits_unchanged": true,
+    "parent_reference_sha256": "b00752ff2f39f0fe933918288479dcc1518a29e0dc53334106ef5deb91b273da",
+    "precisions": [
+      100,
+      160
+    ],
+    "remaining_chemistry_clocks_stencils_and_books_inherited_verbatim": true,
+    "separate_Decimal_current_flow_readout": true
+  },
+  "jobs": 0,
+  "kind": "cells.betse_standalone_GRN_flow_advection_source_audit@1",
+  "model_or_reference_evaluations": 0,
+  "numerical_launch_authorized": false,
+  "prior_qualification_does_not_qualify_new_composition": true,
+  "prospective": {
+    "actual_recalculation_points": 6,
+    "clock_points": 8,
+    "cold_points": 4,
+    "collected": false,
+    "component_controls": 2,
+    "dependency_controls": 4,
+    "exact_source_predicted_test_ids": [
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-current-advection]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-rectangular]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[reinitialize-disables-flow]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_standalone_source_flow_and_held_molecular_advection[active-zero-current]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_source_flow_defects_keep_partial_writes_and_earn_no_accuracy_credit[zero-mean-concentration]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_source_flow_defects_keep_partial_writes_and_earn_no_accuracy_credit[missing-current-y-after-first-flow-write]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[missing-flow-owner]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[foreign-cell-owners]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[wrong-grid-shape]",
+      "tests/unit/test_betse_standalone_grn_flow_join.py::test_flow_requires_its_explicit_standalone_owner_state[ordinary-scope]"
+    ],
+    "fixture_materializations": 0,
+    "flow_decision_points": 8,
+    "fresh_reference_precision_forms": 96,
+    "functions": 3,
+    "invocations_per_positive_context": 2,
+    "nested_native_children": 6,
+    "nested_reference_children": 4,
+    "new_active_contexts": 2,
+    "positive_contexts": 4,
+    "pytest_trees": 10,
+    "raw_defect_controls": 2,
+    "tests_executed": 0,
+    "total_conditional_points": 48,
+    "warm_points": 28,
+    "warm_points_per_positive_context": 7
+  },
+  "runtime": {
+    "actual_activation_is_unchanged_parent_code": true,
+    "actual_source_mean_and_partial_velocity_locals_retained_read_only": true,
+    "admission_projection": {
+      "ast_sha256": "188620fe11708543419504ed6f8b36b2840eb2269353c8bda07b4025e24d4724",
+      "first_line": 49,
+      "last_line": 62,
+      "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+    },
+    "authenticated_parent_sha256": {
+      "native": [
+        "validation/betse/betse_ecm_sim_grn_native.py",
+        "24c2ced2f626b881fbf2e8378cb661bbce28f8defc84d47269f6facf679111bd"
+      ],
+      "production": [
+        "src/cells/processes/betse_ecm_sim_grn.py",
+        "2a4d93becc61379a3bb68c3a2aef6bb9ac674d3be67e55a972e9e4fde8294a3c"
+      ],
+      "reference": [
+        "validation/betse/betse_ecm_sim_grn_reference.py",
+        "b00752ff2f39f0fe933918288479dcc1518a29e0dc53334106ef5deb91b273da"
+      ]
+    },
+    "complete_current_pressure_electric_and_velocity_fields": [
+      "P_cells",
+      "PP",
+      "E_cell_x",
+      "E_cell_y",
+      "J_cell_x",
+      "J_cell_y",
+      "rho_cells",
+      "u_cells_x",
+      "u_cells_y",
+      "J_env_x",
+      "J_env_y",
+      "u_env_x",
+      "u_env_y"
+    ],
+    "existing_module_globals_edited": false,
+    "nonfinite_source_return_retained_before_candidate_gate": true,
+    "original_source_faults_not_repaired": true,
+    "parent_code_compiled_verbatim": true,
+    "plotting_inputs_captured_without_rendering_or_physics": true,
+    "private_namespace_registered_for_complete_runtime_inventory": true,
+    "private_replacements": [
+      "parent.validate",
+      "parent.make_context",
+      "parent.new_trace",
+      "parent.observe",
+      "parent.local_inputs",
+      "parent.attach",
+      "parent.configure_call",
+      "parent.plt",
+      "parent.viz"
+    ],
+    "source_sites": {
+      "install": {
+        "ast_sha256": "561e4b9048a468993b1f050c5ad08adb7a70d88baed6a64f4e00a2786f865fb7",
+        "first_line": 177,
+        "last_line": 382,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "load_parent": {
+        "ast_sha256": "1208ed844e34c4fdace118bc61f7edc82bed3ef37de791adab53ce696a1f3bc8",
+        "first_line": 144,
+        "last_line": 174,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "nonfinite_arrays": {
+        "ast_sha256": "975f82430e96a44f0e74d1101a4b0516fb86c633fbb80a74f690e4114ddf5825",
+        "first_line": 65,
+        "last_line": 89,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      },
+      "parent_view": {
+        "ast_sha256": "188620fe11708543419504ed6f8b36b2840eb2269353c8bda07b4025e24d4724",
+        "first_line": 49,
+        "last_line": 62,
+        "source": "validation/betse/betse_standalone_grn_flow_join_engine.py"
+      }
+    }
+  },
+  "scientific_imports": 0,
+  "source_only": true,
+  "source_order": {
+    "ECM_getFlow_output_imported_or_converted": false,
+    "activation": {
+      "ast_sha256": "3a45066cee873544bb7ecece9453384ab2916a72eae5476ea5917ceed620b447",
+      "first_line": 281,
+      "last_line": 291,
+      "source": "betse/science/chemistry/gene.py"
+    },
+    "advection_expression": {
+      "ast_sha256": "d12ce85243cd7bab6ca75abc9459ea26154bf8542699f1137599ba1eb674fe6a",
+      "first_line": 1118,
+      "last_line": 1144,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    },
+    "complete_inherited_native_runtime_pins": {
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "complete_parent_runner_normalized_AST_matches_native": true,
+    "exact_activation_source": "if self.recalc_fluid:\n    logs.log_info('Calculating fluid in terms of endogenous currents...')\n    p.fluid_flow = True\n    cc = sim.cc_env.mean(axis=0).reshape(cells.X.shape)\n    zz = sim.zs.mean()\n    sim.u_env_x = -sim.J_env_x / (p.F * cc * zz)\n    sim.u_env_y = -sim.J_env_y / (p.F * cc * zz)",
+    "molecular_velocity_consumer": {
+      "ast_sha256": "f5c2650b3aa9693a23a28ec8540c3de043c2867c2c17b5b90abe8b74ef0c4436",
+      "first_line": 1035,
+      "last_line": 1040,
+      "source": "src/cells/processes/betse_ecm_grn_source.py"
+    },
+    "no_flow_inverse_or_Poisson_solve_in_this_source_branch": true,
+    "once_per_invocation_after_reinitialize_and_clear_cache": true,
+    "ordinary_getFlow_called": false,
+    "pinned_native_sources": {
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43"
+    },
+    "pressure_electric_ionic_or_geometry_updates": false,
+    "source_loop": {
+      "ast_sha256": "de7d6696b8c747e1471b2a64b8b60391865899c574c867aa163a9853fdc7d5fd",
+      "first_line": 304,
+      "last_line": 360,
+      "source": "betse/science/chemistry/gene.py"
+    },
+    "standalone_velocity_units": "m/s"
+  },
+  "source_review_pending": true,
+  "tests": 0,
+  "unchanged_dependency_sha256": {
+    "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+    "src/cells/processes/betse_ecm_sim_grn.py": "2a4d93becc61379a3bb68c3a2aef6bb9ac674d3be67e55a972e9e4fde8294a3c",
+    "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+    "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+    "tests/unit/test_betse_ecm_sim_grn.py": "900ade0480903ee90e4defb756b5119f0112cfc70f787c9b3c51d2f2eb1d4a1c",
+    "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8",
+    "validation/betse/betse_ecm_grn_native_network.py": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+    "validation/betse/betse_ecm_sim_grn_fixtures.py": "260542c49cf77b524d876fc8827a5afc1fe2db98552bf3ce5e132e09505a0c51",
+    "validation/betse/betse_ecm_sim_grn_native.py": "24c2ced2f626b881fbf2e8378cb661bbce28f8defc84d47269f6facf679111bd",
+    "validation/betse/betse_ecm_sim_grn_protocol.json": "19c73a49b59d50e5666a579cf6afeca534137967eb3117b6975abd15fad92fbd",
+    "validation/betse/betse_ecm_sim_grn_reference.py": "b00752ff2f39f0fe933918288479dcc1518a29e0dc53334106ef5deb91b273da",
+    "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
+    "validation/betse/betse_normal_ecm_mechanics_join_boundaries.py": "61c05cc3fbc1bf399545995ae3eed84730c1cecb5e69d09cc8f115298e857d92",
+    "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+    "validation/geometry/stable_geometry_primitives_runtime.py": "0b6390012f5d94398e773ea4e2d11e9717750fa72c23fb4c390cd0cdd0ca7ccc"
+  }
+}

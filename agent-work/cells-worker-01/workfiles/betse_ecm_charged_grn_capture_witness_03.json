@@ -1,0 +1,24 @@
+{
+  "audit_script_sha256": "a1638c7527f0388b7f3dcb4c6bdddd23e94b69fb1c83955cef8aff0b9adc918e",
+  "frozen02_preserved": true,
+  "full_test_AST_inverse_exact": true,
+  "immediate_cold_parent_and_unexpected_success_archives": true,
+  "kind": "cells.ecm_charged_capture03_pending_review@1",
+  "not_a_numerical_failure": true,
+  "other_six_scientific_Python_files_byte_exact": [
+    "src/cells/processes/betse_ecm_charged_grn_join.py",
+    "src/cells/processes/betse_ecm_charged_grn_source.py",
+    "validation/betse/betse_ecm_charged_grn_fixtures.py",
+    "validation/betse/betse_ecm_charged_grn_native.py",
+    "validation/betse/betse_ecm_charged_grn_native_network.py",
+    "validation/betse/betse_ecm_charged_grn_reference.py"
+  ],
+  "physics_cases_budgets_unchanged": true,
+  "scientific_execution": false,
+  "sealed_held02_review": {
+    "path": "/mnt/workspaces/Cells/betse-ecm-charged-grn-preflight-20261031-01/REVIEW.json",
+    "sha256": "a8e8bd059bb2dc28cdae66a4f080bd24f65db2dfa8e1139a3d3ca1f291e5fcb5"
+  },
+  "sole_hold_was_two_capture_sites": true,
+  "source_test_sha256": "607a8182c6b708d872d48e98457ccd171eceba2c3ed35c07275781132341a779"
+}

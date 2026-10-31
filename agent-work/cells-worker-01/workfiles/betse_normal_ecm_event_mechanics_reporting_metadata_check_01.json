@@ -1,0 +1,30 @@
+{
+  "corruption_schema_cases": 1,
+  "dependency_schema_cases": 26,
+  "driver_sha256": "d825c856da16f15eee12e8380f8e3f1a3c62ad9299488ca48ddcc70d98733434",
+  "exact_ID_schema_cases": 62,
+  "fixture_evaluations": 0,
+  "kind": "cells.event_mechanics_reporting_metadata_check@1",
+  "malformed_cases_rejected": [
+    "conditional_mechanics_reference_forms",
+    "single_material_field_advance",
+    "display_completed",
+    "previous_field_epoch",
+    "complete_calls",
+    "missing_reference_runtime",
+    "missing_raw_Decimal_tree",
+    "unrejected_corruption",
+    "duplicate_test_ID",
+    "skipped_test_ID"
+  ],
+  "numerical_runs": 0,
+  "positive_schema_cases": 1,
+  "pytest_collection_runs": 0,
+  "raw_schema_cases": 7,
+  "reference_evaluations": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "status": "passed_synthetic_metadata_only",
+  "temporary_metadata_files": 119,
+  "test_sha256": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c"
+}

@@ -1,0 +1,156 @@
+{
+  "acceptance": {
+    "geometry": "not computed or qualified; nonunit schema specimen has no geometry credit",
+    "midpoints": "exact duplicate columns including signed zero and byte order",
+    "owners": "complete cell_i/mem_i and explicit mutually inverse cell-major/local owner rows",
+    "schema": "exact fields, shape, dtype, finite bytes, mixed units and seals",
+    "source_history": "native class/source observation does not prove producer, seed/init or load history",
+    "tolerance": "none; no numerical approximation or accuracy claim",
+    "views": "explicit named column map with full parent, exact bytes/units and closed gates"
+  },
+  "biological_cases_added": 0,
+  "column_units": [
+    "m",
+    "m",
+    "1",
+    "1",
+    "1",
+    "1"
+  ],
+  "columns": [
+    "mid_x",
+    "mid_y",
+    "nx",
+    "ny",
+    "tx",
+    "ty"
+  ],
+  "conversion_maps": {
+    "midpoint_normal": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "normal_tangent": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "copy_contract": "logical C row bytes plus original strides; no cast, reorder, normalization or alias reconstruction",
+  "evidence_policy": "Persist declaration/specification before construction; full original stores, immutable snapshot, conversion request/output, independent inputs/reports, failures and partials precede gates",
+  "existing_geometry_metric_and_initialization_qualification_inherited": false,
+  "gates": {
+    "adapter_evaluated": false,
+    "automatic_followup": false,
+    "automatic_polling": false,
+    "checker_evaluated": false,
+    "initialization_handoff_integrated": false,
+    "launch": false,
+    "native_seed_init_chain_closed": false,
+    "ordinary_ECM_loop_ready": false,
+    "physical_geometry_admitted": false,
+    "vector_geometry_qualified": false
+  },
+  "held_initialization02_changed": false,
+  "held_initialization02_manifest_sha256": "f423016aedf458d416b51e2b56640e64f5d36716b84d77efb953d7b2be371909",
+  "held_initialization02_receipt_sha256": "04dac75afa5afd6e587a5c3e56cbe96e3af0fa39c8c9ba53c573a4b472fe5a94",
+  "held_initialization_runner_edited": false,
+  "independent": {
+    "algorithm": "separate stdlib typed-byte decode, owner scans and column offsets",
+    "numerical_workers": 0,
+    "production_imports": false,
+    "scientific_imports": false
+  },
+  "kind": "cells.betse_native_membrane_layout_protocol@1",
+  "law_id": "betse_native_six_column_membrane_layout_v1_5_0@1",
+  "native_generation_cases_added": 0,
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/pipe/export/plot/pipeexpplotcell.py": "230602b5fbc0ca47db361c23a2de608a6b4f2c6169ab9a2a308f0c4b7fd85290",
+    "betse/science/pipe/export/plot/pipeexpplotcells.py": "4246e2a2a9edce94b1b59d73e747b8ba9ed10754bf78cd0c9d58963bbe9d5097",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/visual/plot/plotutil.py": "52c058f48751d7ebf1d8472629b84aa39bf41b04294a018cd2a04eefd1a2b2eb",
+    "betse/science/wrapper.py": "4f9faa20a1415e3e5e6aced0c4b9664fd723238800ccc8822a18260b9e0ac982"
+  },
+  "outgoing_controls": [
+    "native-parent-bytes",
+    "owner-cells",
+    "owner-local",
+    "view-law",
+    "view-column-map",
+    "view-bytes",
+    "view-units",
+    "physical-gate"
+  ],
+  "planned": {
+    "Root_finalizer": 1,
+    "checks": 43,
+    "declared_units": 58,
+    "fresh_independent_workers": 14,
+    "fresh_native_workers": 0
+  },
+  "refusal_controls": [
+    "missing-vectors",
+    "four-columns",
+    "float32",
+    "nonfinite",
+    "midpoint-bits",
+    "midpoint-dtype",
+    "owner-out-of-range",
+    "owner-order",
+    "duplicate-owner-index",
+    "missing-owner-row",
+    "cell-axis",
+    "membrane-axis",
+    "units",
+    "columns",
+    "law",
+    "geometry-claim",
+    "evidence",
+    "owner-order-declaration"
+  ],
+  "resealed_controls": [
+    "snapshot-units",
+    "layout-owner",
+    "layout-gates",
+    "view-columns"
+  ],
+  "resources": {
+    "host_reserve_GiB": 8,
+    "launch_finalizer_and_failure_capture_owner": "Chief/Root",
+    "outer_summed_RSS_GiB": 2,
+    "outer_timeout_s": 7200,
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "worker_summed_RSS_GiB": 1,
+    "worker_timeout_s": 480
+  },
+  "scope": "lossless native-store schema/owner snapshot and explicitly named column views",
+  "source_audit_sha256": "9b15ccd8e648b0fa2eb56ab2f0861d08e2f23003d80feb1beca22cfff5b3fe82",
+  "source_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "supplied_schema_cases": [
+    "little-endian-fortran",
+    "big-endian",
+    "strided",
+    "object-owner-rows",
+    "rectangular-object-owners",
+    "nonunit-schema-only"
+  ],
+  "supported": {
+    "geometry": "finite original binary64; preserve endian and bytes",
+    "integer_owners": "32/64-bit signed or unsigned buffers; original index lists",
+    "limits": {
+      "buffer_bytes": 65536,
+      "cells": 16,
+      "membranes": 128
+    },
+    "object_owner_rows": "original container/row headers and complete integer payload"
+  }
+}

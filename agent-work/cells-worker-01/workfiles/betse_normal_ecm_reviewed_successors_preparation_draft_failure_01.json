@@ -1,0 +1,16 @@
+{
+  "active_job_queries": 0,
+  "cause": "Reviewed helper introduces MAX_MEMBERS and substitutes the old literal comparison; original had no named constant",
+  "corrected_inverse": "Remove added MAX_MEMBERS line and replace comparison variable with original10000; exact bytes now match",
+  "exception_type": "AssertionError",
+  "failed_guard": "candidate.replace(MAX_MEMBERS=32768, MAX_MEMBERS=10000) == before",
+  "kind": "cells.static_preparation_draft_failure@1",
+  "numerical_runs": 0,
+  "old_packets_or_shared_helpers_modified": false,
+  "scientific_imports": 0,
+  "source_delta_evidence": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-archive-cardinality-repair-20261031-01/source-delta.json",
+    "sha256": "03733f1e44962620d12422e68ee3d1d46d1ecd378a7748e62df4578601dc835b"
+  },
+  "status": "retained_corrected_before_any_output_directory_created"
+}

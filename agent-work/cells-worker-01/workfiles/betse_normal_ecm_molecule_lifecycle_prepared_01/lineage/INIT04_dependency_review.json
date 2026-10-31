@@ -1,0 +1,150 @@
+{
+  "adopted_event_reference_review": {
+    "path": "/mnt/workspaces/Cells/ecm-event-reference-dispatch-repair-20261031-01/root-review-01/REVIEW.json",
+    "sha256": "4dc0698f7fa9e380c21067df5a5d4f61e7bc1a8799d6327b2a277f5f55e8b39e"
+  },
+  "blockers": [],
+  "conclusion": "True pre-network inputs can contain scalar controls and delegate to the old event adapter; the new source-supported scalar-owner adapter is required. INIT channels use their own explicit branch and do not have the event channel misdispatch.",
+  "existing_namespace_reader_failure": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-launch-preparation-20261031-02/qualification-01/result.json",
+    "sha256": "d40e666b5e331e0141489d6e4e20eeade299d03f070a3a3ddac9f342c6b4774d"
+  },
+  "kind": "cells.INIT_event_reference_dependency_source_review@1",
+  "namespace_repair_owned_by_Root_not_in_this_source_successor": true,
+  "numerical_success_claim": false,
+  "ordinary_lifecycle_dependency_retained_historical": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+    "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+  },
+  "parent_manifest": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/MANIFEST.json",
+    "sha256": "4b3923b455ce6e41bd56953ccd2e4690c79e38af25243faa4c678695cfbb3a45"
+  },
+  "scientific_evaluations": 0,
+  "source_citations": [
+    {
+      "lines": {
+        "225": "    controls = dict(",
+        "226": "        gj_block=np.ones(m) if raw[\"global_options\"][\"gj_block\"] != 0 else 1,",
+        "227": "        NaKATP_block=np.ones(m) if raw[\"global_options\"][\"NaKATP_block\"] != 0 else 1,"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/src/cells/processes/betse_normal_ecm_init_phase_setup.py",
+      "sha256": "01e915cfc4e1d0b655c001d48076dec5697c71052d155ac72c6af732b86c2431"
+    },
+    {
+      "lines": {
+        "33": "    if p.global_options[\"gj_block\"] != 0:",
+        "36": "        self.gj_block = 1",
+        "37": "    if p.global_options[\"NaKATP_block\"] != 0:",
+        "40": "        self.NaKATP_block = 1"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_init_phase_native_setup.py",
+      "sha256": "01f76f14dcc3c86920a0ea6673fbee1ffa3c230ad675a42110cf4c49d8601a65"
+    },
+    {
+      "lines": {
+        "154": "    glob = {key: 0 for key in setup.GLOBAL_KEYS}",
+        "156": "    if case == \"dormant_globals\":",
+        "158": "            K_env=[0.0, dt, 0.0, 0.1], T_change=[0.0, dt, 0.0, -3.0], NaKATP_block=[0.0, dt, 0.0]",
+        "160": "    if case == \"setup_shuffle\":",
+        "161": "        glob[\"gj_block\"] = [0.0, dt, 0.0, 60.0]"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_init_phase_fixtures.py",
+      "sha256": "609cac0c222dde94260ef77034c8e77417713f98b3f40fef7676827a4fb7b656"
+    },
+    {
+      "lines": {
+        "339": "        setup.install(ctx, receipt[\"stores\"])",
+        "373": "            entry_stores=setup.snapshot(ctx),",
+        "381": "        controls = {",
+        "382": "            key: source.clone(getattr(ctx.sim, key)) for key in (\"gj_block\", \"NaKATP_block\")",
+        "606": "        def on_network(arrays):",
+        "615": "            setup.install(ctx, stores)",
+        "622": "            source.run_dispatch(",
+        "627": "                before_network,"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/src/cells/processes/betse_normal_ecm_init_phase.py",
+      "sha256": "f60afbf1cac76bdce19e9d8cee80f764dfb2f0c29936cde5ce8a790116f526d6"
+    },
+    {
+      "lines": {
+        "1023": "        if stage == \"run_loop_channels\" or (stage == \"clear_run_loop\" and not ctx.sim.grn.channels):",
+        "1024": "            ctx.trace[\"before\"] = before(ctx, material_declaration)",
+        "1026": "                observer(clone(ctx.trace[\"before\"]))",
+        "913": "        conditioned_before_model_network=True,",
+        "931": "        controls_before=dict(gj_block=clone(sim.gj_block), NaKATP_block=clone(sim.NaKATP_block)),"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/src/cells/processes/betse_normal_ecm_catalog_join_source.py",
+      "sha256": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23"
+    },
+    {
+      "lines": {
+        "668": "        conditioned_before_model_network=True,",
+        "686": "        controls_before=dict(gj_block=clone(sim.gj_block), NaKATP_block=clone(sim.NaKATP_block)),",
+        "778": "        if stage == \"run_loop_channels\" or (stage == \"clear_run_loop\" and not ctx.sim.grn.channels):",
+        "779": "            ctx.trace[\"before\"] = before(ctx, material_declaration)",
+        "781": "                observer(clone(ctx.trace[\"before\"]))"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_catalog_join_native_network.py",
+      "sha256": "42adbcf69461d02060754cf3f3047bb97a6825c5f3c567d6190456297465de74"
+    },
+    {
+      "lines": {
+        "183": "        elif mode == \"channels\":",
+        "184": "            answer = models.channel_sequence(inputs, refinement=refinement)",
+        "209": "            result = network.evaluate(inputs, refinement=refinement)"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_init_phase_reference.py",
+      "sha256": "e30cb52520f18f3a9b6dfb52b7842149aa66ed1809c05360a0d185b56410f3b6"
+    },
+    {
+      "lines": {
+        "764": "    if inputs.get(\"conditioned_before_model_network\"):",
+        "765": "        # Preserve actual scalar snapshots; broadcast only at this equation consumer.",
+        "767": "        rho = adapted[\"rho_channel\"]",
+        "769": "            adapted[\"rho_channel\"] = [rho] * len(adapted[\"values_before\"][\"voltage_V\"])",
+        "770": "        return full.evaluate(adapted, refinement=refinement)"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_join_reference.py",
+      "sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+    },
+    {
+      "lines": {
+        "231": "def warm(inputs, *, refinement=1):",
+        "286": "        controls = {key: list(map(d, value)) for key, value in inputs[\"controls_before\"].items()}",
+        "288": "        for row in definition[\"modulators\"]:",
+        "290": "            key = \"gj_block\" if row[\"target\"] == \"GJ\" else \"NaKATP_block\"",
+        "297": "                    gj_block=controls[\"gj_block\"][:],",
+        "298": "                    NaKATP_block=controls[\"NaKATP_block\"][:],"
+      },
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_ecm_grn_reference.py",
+      "sha256": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40"
+    }
+  ],
+  "source_proof": {
+    "INIT_specific_channel_dispatch_unchanged": true,
+    "added_function": "conditioned_network",
+    "all_other_functions_and_imports_unchanged": true,
+    "candidate": {
+      "path": "/mnt/workspaces/Cells/ecm-event-reference-dispatch-repair-20261031-01/proposal/validation/betse/betse_normal_ecm_event_join_reference.py",
+      "sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf"
+    },
+    "changed_function": "evaluate",
+    "complete_inverse_AST_and_bytes_exact": true,
+    "original": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_join_reference.py",
+      "sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+    },
+    "shared_equations_and_all_voltage_domains_unchanged": true,
+    "source_supported_scalar_adapter_domain_extension_explicit": true
+  },
+  "status": "INIT03_requires_reviewed_event_scalar_control_adapter",
+  "trace": [
+    "Both owned and literal native INIT setup assign scalar1 when the corresponding global option is disabled.",
+    "The ordinary fixture disables both global options; dormant_globals and setup_shuffle create mixed scalar/vector controls. These declarations are read statically, never evaluated here.",
+    "Complete setup stores are installed before the call. The channel-to-network observer clones actual controls without broadcasting; only the material forcing uses a broadcast copy.",
+    "INIT reference handles channels through models.channel_sequence. Actual conditioned pre-network records fall through to event reference evaluate.",
+    "The old event conditioned branch broadcasts rho_channel only; downstream GRN warm iterates both control owners and therefore cannot consume the legitimate scalar records.",
+    "The reviewed adapter supplies a vector equation view and restores only original scalar owners not yet written. Production/native records and INIT channel equations remain unchanged."
+  ]
+}

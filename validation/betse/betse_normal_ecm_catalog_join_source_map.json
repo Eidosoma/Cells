@@ -1,0 +1,97 @@
+{
+  "actual_cold_config_flag": true,
+  "actual_pre_channel_and_post_channel_checkpoints": true,
+  "common_cache_capture_plumbing_functions": 14,
+  "complete_private_channel_cache": true,
+  "enabled_ER_calls": 0,
+  "inherited_complete_CaATP_functions": 3,
+  "inherited_complete_field_functions": 10,
+  "inherited_network_bodies": 47,
+  "kind": "cells.normal_ecm_catalog_source_map@1",
+  "law_id": "betse_normal_ecm_catalog_CaATP_field_join_v1_5_0@1",
+  "literal_channel_bodies": {
+    "Channel.__init__": {
+      "first_line": 6546,
+      "last_line": 6548,
+      "original_AST_sha256": "eb1b77876ec3b0f484fa4b684dedf04c5bd524bf850a6502b32aa3572228d057",
+      "port_AST_sha256": "eb1b77876ec3b0f484fa4b684dedf04c5bd524bf850a6502b32aa3572228d057"
+    },
+    "Channel.init_channel": {
+      "first_line": 6550,
+      "last_line": 6629,
+      "original_AST_sha256": "6ce636376ebf06fe735d2f1c5b876b49f120d79ed9f9811221adbabcdff98e66",
+      "port_AST_sha256": "6ce636376ebf06fe735d2f1c5b876b49f120d79ed9f9811221adbabcdff98e66"
+    },
+    "MasterOfNetworks.read_channels": {
+      "first_line": 1015,
+      "last_line": 1110,
+      "original_AST_sha256": "04f055d398a080eb5c95630cc3ab9e22696e6395dc883318cee83b5af24a7475",
+      "port_AST_sha256": "aff95497bf78127aecc22e6752a3164cde12c50b34edae67fde0b4c8fd756191"
+    },
+    "MasterOfNetworks.run_loop_channels": {
+      "first_line": 3115,
+      "last_line": 3213,
+      "original_AST_sha256": "c30a2d546d602ebe54bf4fb8f5ef759635fcd85e0571f844e9942dde5538f817",
+      "port_AST_sha256": "12cf13f67b81e8f4385dc8a413b9eb5a8b2b3035b82888f9d100023ccb875c81"
+    }
+  },
+  "modern_Ca_routing_classes": 23,
+  "modern_classes": 55,
+  "modern_numeric_methods": 110,
+  "native_source_sha256": {
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "native_trace_ion_names_not_shadowed": true,
+  "new_literal_channel_bodies": 4,
+  "numerical_runs": 0,
+  "old_Cav_G_failed_panel_reclassified": false,
+  "pytest_collection_runs": 0,
+  "scalar_ECM_channel_reference_inside_material": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "ER": "Whole332-file installed-exact audit: sole Ca_dyn writerFalse at Parameters771; all8 legacy ER kinetics lack producers. Native guarded constructor/update remain disabled. Existing prepared_ER is a separate externally supplied inventory/cache seam, never ordinary cold/restart parity",
+    "cache": "Original configured-temperature sigma/ko initialized from explicitly declared pre-state, held fixed. update_V sigma_cell independently recomputed per call using species mean and F^2/(R*T)*0.1; this differs from cached q*F/(kb*T) sum",
+    "calcium": "Real Ca+2 material/cache/diffusion role. Native CaATP_block ones, rho_pump1, met_concsNone, maintained ATP1.5/ADP0.1/Pi0.1, KmCa_Ca1e-3/KmCa_ATP0.5, deltaGATP-37000/F96485/R8.314 derive from actual original producers. Explicit configured alpha_Ca; no supplied pool/Km/block/rate defaults",
+    "channels": "All55 reachable modern classes/7 factory families use unchanged existing catalog primitives.23 route Ca; all gates read Vm/dt/cache, without implicit free-Ca gating. Explicit native Hill activators/inhibitors can sample membrane alias (native cell zone) or mapped E-grid. Max conductivity remains original maxDm-valued branch with no unit conversion",
+    "clocks": "Constant dt within three normal calls. Actual original SIM _plot_loop gives N3, linspace(0,N*dt,N); pass that t to original ordinary and GRN calls. Keep accumulated material dt separately, with configured p.T distinct from runtime sim.T. Event/sampling/persistence/whole phase clock lifecycle excluded",
+    "exclusions": [
+      "Full native initialization, hot reinitialize/restart, normal phase lifecycle and sampling/persistence",
+      "Mitochondria, ER activation, separate transporters, expression profiles, legacy cagPotassium/INIT channel dispatch and broader regulator labels",
+      "Physical global conservation, biological calibration, independent carried trajectories, JAX/GPU qualification"
+    ],
+    "external": "Explicit pump and late membrane flux, channel multiplier, fixed-gap control, ionic bath and applied R/L/T/B voltage; fluid/noise/forces/deformation/events disabled or excluded. Original geometry inputs remain explicit preparation",
+    "field_state": "Complete intracellular current, environment rho/surface/Gaussian/voltage/E/HH/B/current and cell conductivity/voltage/mean/E/normal/dvm outputs retained. Previous reconstructed E_env alone supplies next ordinary and molecular transport. Vm updates after each field, earlier GJ caches stay stale",
+    "initial_preparation": "Original geometry/owner/normal/measure declarations plus initializer material and D_free; derive actual Cartesian grid, maps, source operators/inverses, smoothing weights, sigma/ko, radius and diviterm. Full seed/phase/diffusion-mask/dynamic initialization excluded",
+    "limits": "55 one-call bounded class prefixes and16 three-call contextual histories. Actual N3 linspace clock retained for all. Cold gate equations have exact native comparison only; independent gate caches are explicit incoming conditions. No full initialization/restart/sim_grn, broad catalog physiology, trajectory or biological credit",
+    "owner": "Genuine X/Y MasterOfGenes/Core; source sets channels flag only after real reader. New distinct wire8 retains full Channel metadata, every private gate/core field, immutable initialized conditions and external call counters. Restore constructs actual owned classes and dynamic aliases, with no constructor rerun at current Vm",
+    "rate_cache": "Native rate_CaATP has no cold producer. Carry actual absence until a positive configured-alpha call writes masked post-first-rho handler flux, then carry immutable complete rate. Alpha0 keeps absence in this fixed-configuration normal phase; no fabricated zeros",
+    "read_times": "Each population runs once on latest shared Vm before routes; each route samples latest bulk concentration gathered by owner and current full E-grid mapped to membranes. Direct update_Co changes bulk/membrane/grid before next route/population. CaATP earlier sampled membrane Ca and deferred its ordinary commit. No invented immediate CaATP-to-bulk feedback",
+    "source_order": "Cold actual read_gene_config/read_channels initializes gates from prepared Vm; bootstrap update_V; actual normal N3 source-clock prefix: moving ions; CaATP; explicit late flux; GRN clear; channels; modulators; chemistry/molecular transport; deferred ordinary commit; full current/environment/voltage; NaN-only check_v",
+    "targets": "all/None derive cells.mem_i; named profile indices are explicit original prepared sim.dyna.tissue_target_inds, preserving source ordering/duplicates. Empty profile native float-index refusal preserved. Expression profiles, legacy cagPotassium, INIT dispatch and broader modifier labels require separate dependencies"
+  },
+  "source_clock_N3_prefix": true,
+  "source_modern_ion_CaATP_GeRN_commit_field_order": true,
+  "unchanged_CaATP_and_field_components": true
+}

@@ -1,0 +1,480 @@
+{
+  "kind": "cells.betse_mechanics_join_protocol@1",
+  "status": "static_unexecuted_candidate",
+  "law_id": "betse_ordinary_full_steady_mechanics_join_v1_5_0@1",
+  "scope": {
+    "law_id": "betse_ordinary_full_steady_mechanics_join_v1_5_0@1",
+    "ordinary_solver": "FULL",
+    "pressure_then_disabled_flow_gate_then_steady_deformation": true,
+    "caller_supplied_shared_field_stage": "normal_full_after_handlers_before_deferred_material_voltage",
+    "conditional_sample_stage": "normal_full_after_deferred_material_voltage_check_v",
+    "primary_molecule_GRN_inventory_owners_explicit": true,
+    "phase_dt_bound_and_separate_from_loop_clock": true,
+    "max_source_calls": 3,
+    "seeded_or_post_cut_layout_DEC_prerequisite": true,
+    "geometry_epoch_rebind_required": true,
+    "cache_operators_reauthenticated_without_physical_rebuild": true,
+    "sampled_display_global_quartic_only": true,
+    "display_refit_each_sample_from_current_centres": true,
+    "original_membrane_vertices_and_physical_geometry_unchanged": true,
+    "enabled_ordinary_flow_admitted": false,
+    "dynamic_deformation_admitted": false,
+    "FAST_admitted": false,
+    "conditional_recalc_fluid_qualified": false,
+    "flow_to_deformation_feedback": false,
+    "physical_force_energy_water_volume_or_material_closure": false,
+    "native_seed_cut_or_full_solver_executed": false,
+    "qualification_inherited": false
+  },
+  "native_source": {
+    "version": "1.5.0",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "source_sha256": {
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+      "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a"
+    },
+    "scope": "Static full seeded provenance plus isolated unchanged ordinary mechanics blocks on caller-supplied layout/fields; no full seeding/cut/solver, enabled flow or dynamic execution"
+  },
+  "source_correspondence": {
+    "normal_FULL_blocks": [
+      {
+        "source": "if p.deform_osmo:\n    osmotic_P(self, cells, p)",
+        "first_line": 1344,
+        "last_line": 1345,
+        "ast_sha256": "365b2106abe9a4d6d400f425a921507f1b389d6e81ef257ce53d31fac248d0fa",
+        "guard": "p.deform_osmo"
+      },
+      {
+        "source": "if p.fluid_flow:\n    getFlow(self, cells, p)",
+        "first_line": 1347,
+        "last_line": 1348,
+        "ast_sha256": "17bb201ceb01b013330c0670378392e5b1ffc9c6f021497230584a023c68cfa4",
+        "guard": "p.fluid_flow"
+      },
+      {
+        "source": "if p.deformation:\n    if p.td_deform:\n        timeDeform(self, cells, t, p)\n    else:\n        getDeformation(self, cells, t, p)",
+        "first_line": 1350,
+        "last_line": 1354,
+        "ast_sha256": "2135962a9d8e6be18bea22eb00e0fb8dd9cba42f3a970ed6f7fefbab066dd764",
+        "guard": "p.deformation"
+      }
+    ],
+    "normal_following_boundaries": {
+      "material_commit": {
+        "source": "betse/science/sim.py",
+        "first_line": 1357,
+        "last_line": 1357,
+        "ast_sha256": "2dff1dbd358f33a651e871423a6709151f8ecae0f1dba900e1f2952d7f390b70"
+      },
+      "voltage": {
+        "source": "betse/science/sim.py",
+        "first_line": 1360,
+        "last_line": 1360,
+        "ast_sha256": "e61a788a574ab55bb20c5910acd65716ac99ba180607cacbf4459bf75c520a00"
+      },
+      "voltage_guard": {
+        "source": "betse/science/sim.py",
+        "first_line": 1363,
+        "last_line": 1363,
+        "ast_sha256": "13027231319353c6a4c05c6ee0f408b37612a90734d3cb005cccd53c208e2980"
+      },
+      "sampled_storage": {
+        "source": "betse/science/sim.py",
+        "first_line": 1374,
+        "last_line": 1374,
+        "ast_sha256": "2ae9f82329bbe231791c50f46516242654516ab138874b9dc531d63939b225c2"
+      }
+    },
+    "fast_mechanics_calls": [],
+    "ordinary_loader_assignments": {
+      "self.fluid_flow": {
+        "source": "betse/science/parameters.py",
+        "first_line": 832,
+        "last_line": 832,
+        "ast_sha256": "02d658a016595c64176d2a956878db3704db2ead58e250589decc5f09b58d77b",
+        "value": false
+      },
+      "self.td_deform": {
+        "source": "betse/science/parameters.py",
+        "first_line": 845,
+        "last_line": 845,
+        "ast_sha256": "6a08be2bf9f6e4ae5dcaf3320d62cf634b213b24ff09bc5a512d8198af4d053a",
+        "value": false
+      },
+      "self.mu_water": {
+        "source": "betse/science/parameters.py",
+        "first_line": 833,
+        "last_line": 833,
+        "ast_sha256": "fdffc2b21457df8f6a215580549d6cb12dbf69882deaa05869798e61c92f9a38",
+        "value": 0.01
+      }
+    },
+    "seed_graph_build_unconditional": true,
+    "seed_graph_build": {
+      "source": "betse/science/simrunner.py",
+      "first_line": 156,
+      "last_line": 156,
+      "ast_sha256": "5220565a8be6e51e214989f143d67632b17d24856313c3572c5431a212614c02"
+    },
+    "seed_order": {
+      "redo_gj": 150,
+      "graphLaplacian": 156,
+      "save_cluster": 168
+    },
+    "init_only_graph_guards": [
+      "p.deformation",
+      "p.td_deform and cells.lapGJ is None"
+    ],
+    "post_cut_graph_build_sites": [
+      {
+        "source": "betse/science/tissue/tishandler.py",
+        "first_line": 1178,
+        "last_line": 1178,
+        "ast_sha256": "0618729d9217732c48b3d3cf06d8db3cd4fc75c04e0119cb63514b8837048e40",
+        "guards": []
+      },
+      {
+        "source": "betse/science/tissue/tishandler.py",
+        "first_line": 1221,
+        "last_line": 1221,
+        "ast_sha256": "0618729d9217732c48b3d3cf06d8db3cd4fc75c04e0119cb63514b8837048e40",
+        "guards": [
+          "p.fluid_flow or p.deformation",
+          "p.deformation",
+          "p.td_deform"
+        ]
+      }
+    ],
+    "older_init_only_claim_correction": "The old flow initialization fragment leaves an absent inverse absent while td_deform=False. That evidence remains valid for the isolated fragment. It does not establish a missing inverse in ordinary seeded execution: SimRunner.seed unconditionally builds graphLaplacian before saving; init/sim load the seeded/initialized cache, and cuts rebuild it.",
+    "sole_flow_enable_enclosing_method": "MasterOfGenes.run_core_sim",
+    "conditional_recalc_fluid_assignments": [
+      {
+        "source": "betse/science/chemistry/gene.py",
+        "first_line": 284,
+        "last_line": 284,
+        "ast_sha256": "7f837e6fbd61719fe6a5778f8acf82ef48126d816af0fc47654ec6f5c39080fd",
+        "enclosing": "MasterOfGenes.run_core_sim",
+        "guards": [
+          "self.recalc_fluid"
+        ]
+      }
+    ],
+    "conditional_recalc_fluid_scope": "Isolated sim-grn; not normal read/reinitialize, FULL loading or ordinary flow enablement",
+    "flow_to_steady_deformation_edge": false,
+    "physical_deformWorld_calls": [],
+    "sampled_display": "Persistent cellso copy; current display centres refit, original membrane vertices retained",
+    "physical_rebuild_qualified": false,
+    "source_sites": [
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 93,
+        "last_line": 178,
+        "ast_sha256": "440fc55da570c3948979ffde393cf6db78f15bbf0173696a3666160dc0822a67",
+        "name": "seed",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 182,
+        "last_line": 240,
+        "ast_sha256": "0e3444d3da1b82fc21f57b787c824cd5818a2a6f818818ee3409ae7ec1a2cd1f",
+        "name": "init",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/simrunner.py",
+        "first_line": 244,
+        "last_line": 296,
+        "ast_sha256": "5237d06172e437bcdd8af4b5b2e7af465b5bd33093373a3b9e369eeaa866c409",
+        "name": "sim",
+        "parent_class": "SimRunner"
+      },
+      {
+        "source": "betse/science/cells.py",
+        "first_line": 1845,
+        "last_line": 1894,
+        "ast_sha256": "c9bda6b98491dc8887701b7626ea1acc14e5e1941a3bab208a80c8725826eb90",
+        "name": "graphLaplacian",
+        "parent_class": "Cells"
+      },
+      {
+        "source": "betse/science/cells.py",
+        "first_line": 2550,
+        "last_line": 2612,
+        "ast_sha256": "1a0f575e0400dc2678e6ff4de4c39079425c749756424bcc76fe53c795b4a0a2",
+        "name": "HH_cells",
+        "parent_class": "Cells"
+      },
+      {
+        "source": "betse/science/physics/deform.py",
+        "first_line": 13,
+        "last_line": 82,
+        "ast_sha256": "83fba618f735bae90be060b25258969d8085ee44ba23da7a7b1f00915e256302",
+        "name": "getDeformation",
+        "parent_class": null
+      },
+      {
+        "source": "betse/science/physics/deform.py",
+        "first_line": 250,
+        "last_line": 314,
+        "ast_sha256": "ee159282b7cf3bb59bcdf91d541a4d0655d19803324fa913bf6c93a7647f37fc",
+        "name": "implement_deform_timestep",
+        "parent_class": null
+      },
+      {
+        "source": "betse/science/chemistry/gene.py",
+        "first_line": 220,
+        "last_line": 446,
+        "ast_sha256": "4c655cbbdd9579e798d5a4f4f3d9c7c1b58d59a214fad7c8b60fd6b9f6f81a03",
+        "name": "run_core_sim",
+        "parent_class": "MasterOfGenes"
+      }
+    ],
+    "source_execution": false
+  },
+  "ordinary_policy": {
+    "fluid_flow": false,
+    "td_deform": false,
+    "mu_water_Pa_s": 0.01
+  },
+  "review_repair_02": {
+    "base01_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-01",
+    "base01_manifest_sha256": "f2735e22ac9b41eb3f429dc2b8ee816be6d1a6af0d8ad2eafc85351f9484776c",
+    "independent_review": "/mnt/workspaces/Cells/betse-mechanics-join-preflight-20261031-01/REVIEW.json",
+    "independent_review_sha256": "42ed395a5ab7593d0dad585f765602982a34ecaea5a6918143aadb67e5f99795",
+    "noECM_exact_native_membrane_axis_and_identity_map_required": true,
+    "noECM_independent_owner_average_derived_not_supplied": true,
+    "imported_display_vertices_hydrated_by_declared_owners": true,
+    "original_mem_verts_retained_for_sampling": true,
+    "noncanonical_imported_cache_positive_control": true,
+    "permuted_map_and_wrong_environment_size_refusal_controls": true,
+    "all_core_functions_and_classes_except_bind_AST_identical_to01": true,
+    "frozen01_verified_unchanged": true,
+    "numerical_execution": false
+  },
+  "prerequisite_gaps": [
+    {
+      "domain": "Enabled ordinary FULL getFlow",
+      "prerequisite_gap": "Loader forces False; sole True assignment belongs to isolated sim-grn, with a different current/mean-concentration fluid formula",
+      "disposition": "Public ordinary API refuses; dormant source body and conditional scope retained without execution/qualification"
+    },
+    {
+      "domain": "Dynamic deformation",
+      "prerequisite_gap": "Loader forces td_deform=False; existing isolated positive-clock recurrence is not an ordinary initial-value path",
+      "disposition": "Public API refuses; no repaired initialization or history invention"
+    },
+    {
+      "domain": "Physical geometry rebuild",
+      "prerequisite_gap": "Sampled source changes only cellso display and has no active deformWorld call",
+      "disposition": "Keep physical graph/areas/volumes fixed; no flow-to-deformation or geometric feedback"
+    },
+    {
+      "domain": "Shared fields/material/voltage barrier",
+      "prerequisite_gap": "Upstream transport/handlers/noise and deferred commit/update_V/check_v belong to separate integrations",
+      "disposition": "Require explicit caller field-stage/owner receipt and separate post-commit sample receipt; no equivalence beyond supplied boundary"
+    },
+    {
+      "domain": "Adaptive FITPACK",
+      "prerequisite_gap": "Existing display implementation supports only global quartic regime",
+      "disposition": "Explicit conditional regime; native knot records must confirm; adaptive mode refused"
+    },
+    {
+      "domain": "Native nonfinite output",
+      "prerequisite_gap": "Native steady deformation lacks a finite guard",
+      "disposition": "Save complete raw source and adapter witness; adapter rejects nonfinite result without clipping or reclassifying source acceptance"
+    }
+  ],
+  "cases": [
+    "ordinary-steady",
+    "ordinary-osmotic",
+    "no-deformation",
+    "all-controls-off",
+    "noecm-osmotic",
+    "molecule-grn-pressure",
+    "no-aquaporin",
+    "double-dt",
+    "free-boundary",
+    "zero-galvanotropism",
+    "sampled-display",
+    "sampled-display-once",
+    "post-cut-provenance",
+    "imported-display-cache"
+  ],
+  "refusal_cases": [
+    "enabled-flow",
+    "dynamic-deformation",
+    "fast-solver",
+    "missing-seed-provenance",
+    "wrong-environment-map",
+    "wrong-field-epoch",
+    "wrong-field-stage",
+    "wrong-dt",
+    "foreign-state",
+    "missing-electric-after-osmotic",
+    "nonfinite-pressure-after-osmotic",
+    "sample-without-barrier",
+    "duplicate-sample",
+    "adaptive-display",
+    "noecm-permuted-map",
+    "noecm-wrong-environment-size"
+  ],
+  "corruption_cases": [
+    "wrong-PP",
+    "wrong-displacement-axis",
+    "changed-disabled-flow",
+    "stale-second-display-centres",
+    "wrong-osmotic-dt"
+  ],
+  "raw_failure_cases": [
+    "missing-electric-after-osmotic",
+    "nonfinite-pressure-after-osmotic"
+  ],
+  "tolerances": {
+    "relative": 8e-12,
+    "displacement_atol_m": 3e-20,
+    "display_atol_m": 3e-17,
+    "operator_atol": 2e-14,
+    "pressure_atol_Pa": 3e-09,
+    "auxiliary_atol": 3e-14
+  },
+  "reference_resolution_fraction": 0.1,
+  "carried_or_propagated_allowance": false,
+  "independent": {
+    "Decimal_context_digits": [
+      100,
+      160
+    ],
+    "complete_raw_before_projection": true,
+    "owner_DEC_pressure_HH_scalar_equations": true,
+    "conditional_display_pivoted_normal_equations": true,
+    "raw_and_projected_outputs_saved_and_reproduced_in_fresh_process": true,
+    "production_and_all_scientific_imports_denied": true
+  },
+  "native": {
+    "unchanged_original_blocks_and_functions": true,
+    "read_only_trace_and_return_copies": true,
+    "complete_source_objects_and_locals": true,
+    "typed_NPZ_and_object_array_dtype_shape_values": true,
+    "spline_knots_coefficients_inputs_retained": true,
+    "private_RNG_before_after_retained": true,
+    "getFlow_and_timeDeform_dormant_not_executed": true,
+    "display_material_voltage_barrier_supplied_not_executed": true
+  },
+  "evidence": {
+    "prefix": "betse-mechanics-join",
+    "complete_returned_and_failed_trials_before_assertions": true,
+    "complete_native_and_reference_before_assertions": true,
+    "payload_limit_bytes": 16777216,
+    "no_payload_truncation_or_bound_widening": true,
+    "raw_failure_source_continuation_retained": true,
+    "distinct_unit_declaration": "betse-mechanics-join-declared-units.json"
+  },
+  "unchanged_existing_component_sha256": {
+    "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+    "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+    "validation/mechanics/betse_deformation_native.py": "5d8f785c552a8997fa03b9b912e951a963cacf75230e38111b3994fba94d94dc",
+    "validation/mechanics/betse_deformation_fixtures.py": "fd88f67b1c7754e546014a4a76422f2049b6523d817c9518d6867c13cb94d981",
+    "validation/mechanics/betse_deformation_protocol.json": "463685ce938810edeef2701890601c83fa85ba11488906a3a8299a0296b7d67e",
+    "validation/flow/betse_fluid_flow_reference.py": "9c24294e39e50d5fdf5506568534493567295f2a2a68b831cde10a4196cc53a0",
+    "validation/flow/betse_fluid_flow_native.py": "4e3af6a4148d533ab5bd4729e4784b2281e24a9fba17ee64dfab7ac65ca86abe",
+    "validation/flow/betse_fluid_flow_fixtures.py": "fbdb8ac1c21896f71cff98200f08ec82bd3ad631bb45879ba35c7697d332b600",
+    "validation/flow/betse_fluid_flow_protocol.json": "4bfa55d2e52770e0f0cf3f65efaa06cc4ee4e15fa47c08886e0537e090d6efb0",
+    "tests/unit/test_betse_deformation.py": "982d72c7470c7f882f9e4f8b31e14ece01926eefcab8ab2c13526b90b55092c2",
+    "tests/unit/test_betse_fluid_flow.py": "89b0a9a77cae4f34f48d294e6d86643788b6f213502864aaea5b549ea6050ef8"
+  },
+  "expected_checks": 37,
+  "fresh_worker_units": 35,
+  "proposed_guarded_units": 73,
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "scientific_imports": false,
+  "fixture_materialization": false,
+  "pytest_collection": false,
+  "qualification_inherited": false,
+  "automatic_followup": false,
+  "automatic_polling": false,
+  "authorized_component_repair03_sha256": {
+    "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+  },
+  "review_repair_03": {
+    "kind": "cells.mechanics_display_repair03@1",
+    "prior_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-02",
+    "prior_manifest_sha256": "71275556eb88251b0850edba47879c2a4573c06b995f9689c83755470926b954",
+    "original_failed_qualification": {
+      "path": "/mnt/workspaces/Cells/betse-mechanics-join-launch-preparation-20261031-01/qualification-01/result.json",
+      "sha256": "979243754cd237a58a8126fb2eb353830b1cfd4d255cd0cb32e3d4c0b2916146"
+    },
+    "prior_counts": {
+      "passed_checks": 10,
+      "failed_checks": 1,
+      "unrun_checks": 26,
+      "unrun_fresh_workers": 35
+    },
+    "production_delta": "Only quartic design and target matrices use scaled Legendre products in the same degree(4,4)space.",
+    "production_changed": {
+      "src/cells/processes/betse_deformation.py": {
+        "before": "88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2",
+        "after": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+      }
+    },
+    "comparator_changed": {
+      "validation/betse/betse_mechanics_join_checks.py": {
+        "before": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+        "after": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f"
+      }
+    },
+    "comparator_effective_absolute_change": {
+      "field": "divergence_numeric",
+      "before": 3e-20,
+      "after": 3e-14,
+      "factor": 1000000,
+      "category": "preexisting auxiliary_atol",
+      "relative_unchanged": 8e-12,
+      "resolution_fraction_unchanged": 0.1
+    },
+    "no_claim_all_effective_bounds_unchanged": true,
+    "inherited_protocol": {
+      "path": "source/validation/mechanics/betse_deformation_protocol.json",
+      "sha256": "463685ce938810edeef2701890601c83fa85ba11488906a3a8299a0296b7d67e"
+    },
+    "unchanged_full_suite_ids": 37,
+    "unchanged_fresh_workers": 35,
+    "full_suite_retained_passes": 0,
+    "focus_result": {
+      "path": "/mnt/workspaces/Cells/mechanics-display-repair-tests-20261031-01/result.json",
+      "sha256": "4be23430ce3057d251e6069eaf6331f51ac1735c02b5bf31787383d9d28fe36f",
+      "checks": 14,
+      "scope": "4exact rational maps,5domain refusals,5budget-category checks;not full37/35qualification"
+    },
+    "diagnostic": {
+      "path": "/mnt/workspaces/Cells/mechanics-display-diagnosis-20261031-01/result.json",
+      "sha256": "a72e1e6bbe76542da6ede5605d35c821929d6a6d5388b5693d51d1b3d2eb4893",
+      "scope": "Saved-parent interpolation diagnostic only;no new full mechanics trajectory"
+    },
+    "domain_limit": "Finite full-column-rank degree(4,4)least squares is mathematically invariant under this invertible basis change. Floating SVD rank classification near rcond1e-15 need not be identical;no all-input bitwise/domain-equivalence claim.",
+    "scope": "Display interpolation only;no adaptive FITPACK,physical mesh rebuild,flow,dynamic mechanics,energy orbiological qualification.",
+    "retained_predecessor_preparation_records": [
+      "preparer.py",
+      "ruff-0.json",
+      "ruff-1.json",
+      "static-audit.json"
+    ],
+    "original_evidence_unchanged": true,
+    "numerical_runs_here": 0,
+    "scientific_imports_here": 0
+  }
+}

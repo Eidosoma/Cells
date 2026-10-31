@@ -1466,6 +1466,31 @@ No simulation time advances during preparation. Open-bath families are refused
 before compilation. CPU memory qualifications and the remaining backend/trajectory
 limits are recorded in Progress.
 
+Open-bath calcium and finite-fuel worlds have separate pure stages in
+[`physiology_active_temperature_open_arrays`](../src/cells/models/physiology_active_temperature_open_arrays.py).
+`world_stages(family, xp=...)` separates ionic physics, calcium/ER completion,
+optional finite-pool exchange and the final reservoir closure. The original
+state, layout and controls remain fixed across those calls. Actual reservoir
+flags reach the field solve; the final closure retains supplied material,
+electrode charge, chemical work and finite-fuel energy ownership. A world with
+no ideal reservoirs reduces exactly to its parent rates. Use these stages with
+the same unjitted `evaluate_batch_staged` orchestrator. The separate
+`compiled_world_stages` factory creates lazy five/six-stage JAX candidates;
+compiled memory and backend qualification remain distinct from the NumPy
+checks recorded in Progress. The closed-family CPU warmup interface continues
+to refuse open families. None of these stages advances time or temperature.
+
+The separate host entry point
+[`compile_open_cpu_stages`](../src/cells/core/physiology_active_temperature_open_compilation.py)
+prepares these open-bath families for CPU execution. It validates the complete
+trusted cohort and proposal shapes, then retains five calcium or six finite-fuel
+executables. Reservoir closure follows complete parent physics with the original
+owners and flags. Use the same explicit `release_frontend=True` policy in a
+dedicated CPU worker and reuse the returned stages through the unjitted batch
+orchestrator. Observers and cache cleanup run only during preparation. Resource
+and backend qualification are recorded in Progress; constructing the interface
+does not establish a memory bound, GPU execution or advancing trajectories.
+
 ### Combining temperature, voltage and blocker readouts
 
 [`physiology_global_control_view`](../src/cells/core/physiology_global_control_view.py)

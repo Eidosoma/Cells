@@ -1,0 +1,43 @@
+{
+  "complete_native_clock_component_retained_before_correspondence_assertions": true,
+  "exception_path_writes_full_capture_then_rethrows": true,
+  "files_sha256": {
+    "lifecycle-evidence-reader.py": "147912490f11a7625b78d8bf8966d166c06a37354159633b947a2fe43113302f",
+    "tests/unit/test_betse_normal_ecm_run_lifecycle.py": "ab6755d5eabca61bcff7451b64a5d66ab7bb1ea1f57cad48989ff0435b62c4ca",
+    "validation/betse/betse_normal_ecm_run_lifecycle_native.py": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc"
+  },
+  "fixture_evaluations": 0,
+  "formatted_candidates_compile_without_import": true,
+  "inherited_component_source_unchanged": true,
+  "kind": "cells.explicit_ECM_successor_lifecycle_evidence_proposals@1",
+  "mechanics_exact_class_stage_and_prefixed_message_required": true,
+  "named_root_causes_and_unrelated_failure_rejection_required": true,
+  "new_or_retained_qualification_passes": 0,
+  "numerical_runs": 0,
+  "observer_per_call_paths_and_exact_leaf_witness_retained": true,
+  "original_lifecycle01_preserved": true,
+  "preformat_draft_sha256": "50b7ed8c1cf759d548989aa7d1653363f74caa37add2ba1987cf3f6f33c885d8",
+  "prior_lifecycle_evidence_proposal": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_02/lifecycle-evidence-proposals.json",
+    "sha256": "12d7d4410cd9cc27b0838776d598a652213bfe0efd780ee55ea70bcfb839a70d"
+  },
+  "prior_proposal": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_01/source-proposals.json",
+    "sha256": "715c3c4d4abcef6fe1ceffe2b8f747d10f5fac0e952d3ae1c110b9292aef48d3"
+  },
+  "pytest_collection_runs": 0,
+  "raw_case_specific_boundary_witnesses": [
+    "events_zero_width_store_equality",
+    "GRN_refusal_before_noise_unchanged_RNG",
+    "negative_event_temperature_call2_before_material_drive",
+    "nonfinite_mechanics_trial_before_material_commit"
+  ],
+  "reference_evaluations": 0,
+  "ruff_check_and_format": "passed",
+  "scientific_AST_executions": 0,
+  "scientific_equations_roster_and_tolerances_unchanged": true,
+  "scientific_imports": 0,
+  "source_clock_bodies_and_all_other_functions_AST_exact": true,
+  "status": "ready_for_independent_static_review_unrun",
+  "unchanged_test_functions_except_raw_and_observer": true
+}

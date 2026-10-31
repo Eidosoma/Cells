@@ -1,0 +1,57 @@
+{
+  "active_job_queries": 0,
+  "all_rosters_and_physical_equations_and_numerical_budgets_preserved": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "cleared_lifecycle_and_event_proposals": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-preflight-20261031-01/repair-review-02/REVIEW.json",
+    "sha256": "64b226aa7a4db1b4713d14623a85cc1b2cdb8e04d55cd4f30c5559290bfdc317"
+  },
+  "explicit_reference_domain_delta": "Reviewed finite-input constant NaLeak adapter, identical branch in event dispatch",
+  "fixture_evaluations": 0,
+  "inputs": {
+    "catalog05": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-05/inputs.json",
+      "sha256": "513b3a4030f79eb027db8eea664e4acd0854b314634f0bbb97c2c2b86d77bc33"
+    },
+    "event04": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-04/inputs.json",
+      "sha256": "d631d3cc4d34c634dde94faa79dc5c74b65a0442c4f30620446a4bfbb8de4c8c"
+    },
+    "event_mechanics03": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-mechanics-prepared-20261031-03/inputs.json",
+      "sha256": "e1485b60a9da466bd18b720704ed631e6a6c956e5edbdd844dec7ba00065385a"
+    },
+    "lifecycle02": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+      "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+    }
+  },
+  "kind": "cells.explicit_ECM_successor_review_handoff@1",
+  "lint_cache_handling": "Final Ruff generated non-executable cache files after manifest hashing; preserve all frozen inputs and bind each extra cache byte in static receipt, reject all other unmanifested files",
+  "native_capture_exception_retention_and_raw_observer_witnesses_in_lifecycle02": true,
+  "new_or_retained_qualification_passes": 0,
+  "numerical_runs": 0,
+  "pending": [
+    "Independent review of four complete frozen successor packets",
+    "Event/mechanics/lifecycle archive capture-overhead accounting before runner release"
+  ],
+  "planned_checks": {
+    "catalog05": 94,
+    "event04": 42,
+    "event_mechanics03": 62,
+    "lifecycle02": 48
+  },
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "review_pending_flags_in_inputs_are_historical_at_freeze": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "shared_helper_or_old_frozen_changes": false,
+  "status": "four_held_source_only_successors_ready_for_packet_review",
+  "verified_batch": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_static_receipt_01.json",
+    "sha256": "b2f1c0fcb76c2301f968c8fed026a593e1b471ca881d430e7618ea5a09c1aa70"
+  }
+}

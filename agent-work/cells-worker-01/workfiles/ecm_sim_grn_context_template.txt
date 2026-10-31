@@ -1,0 +1,75 @@
+def make_context(inputs):
+    definition, initial = inputs["material_definition"], inputs["initial"]
+    external = definition["environment_geometry_definition"]
+    current = external["current_definition"]
+    g, ion = current["geometry"], current["ions"]
+    n, m = len(g["cell_ids"]), len(g["owner"])
+    rawp, transport = external["parameters"], definition["parameters"]
+    sim = SimpleNamespace(
+        cdl=n, mdl=m, edl=len(initial["environment_mol_m3"][0]),
+        cc_cells=np.asarray(initial["cell_mol_m3"], np.float64).copy(),
+        cc_at_mem=np.asarray(initial["membrane_mol_m3"], np.float64).copy(),
+        cc_env=np.asarray(initial["environment_mol_m3"], np.float64).copy(),
+        vm=np.asarray(initial["voltage_V"], np.float64).copy(),
+        vgj=np.asarray(initial["junction_voltage_V"], np.float64).copy(),
+        gjopen=np.asarray(initial["gap_open"], np.float64).copy(),
+        zs=np.asarray(ion["valence"], np.float64),
+        Dm_cells=np.asarray(definition["ions"]["membrane_diffusion_m2_s"], np.float64),
+        D_env=np.asarray(definition["ions"]["environment_diffusion_m2_s"], np.float64),
+        T=inputs["runtime_temperature_K"],
+        rho_channel=np.asarray(inputs["rho_channel"], np.float64).copy(),
+        gj_block=np.asarray(inputs["network"]["initial_controls"]["gj_block"], np.float64).copy(),
+        NaKATP_block=np.asarray(inputs["network"]["initial_controls"]["NaKATP_block"], np.float64).copy(),
+        c_env_bound=np.asarray(inputs["network"]["initial_ion_boundary"], np.float64).copy(),
+        time=clone(inputs["simulator_time_before"]),
+        E_env_x=np.asarray(inputs["electric_x_source"], np.float64).copy(),
+        E_env_y=np.asarray(inputs["electric_y_source"], np.float64).copy(),
+    )
+    for key,value in inputs["incoming_publication_fields"].items():
+        setattr(sim,key,np.asarray(value,np.float64).copy())
+    for key,attr in (("membrane_flux_mol_m2_s","fluxes_mem"),
+        ("junction_flux_mol_m2_s","fluxes_gj"),("environment_flux_x_mol_m2_s","fluxes_env_x"),
+        ("environment_flux_y_mol_m2_s","fluxes_env_y"),("junction_field_source","Egj")):
+        setattr(sim,attr,np.asarray(initial[key],np.float64).copy())
+    sim.E_gj_x,sim.E_gj_y=np.asarray(initial["junction_field_xy_source"],np.float64).T.copy()
+    sim.get_ion=lambda name:ion["ids"].index(name)
+    for name in ("Na","K","Cl"):
+        setattr(sim,"i"+name,sim.get_ion(name))
+    cells=SimpleNamespace(
+        cell_i=np.arange(n),mem_i=np.arange(m),mem_to_cells=np.asarray(g["owner"],np.int64),
+        cell_to_mems=[np.flatnonzero(np.asarray(g["owner"])==i).tolist() for i in range(n)],
+        nn_i=np.asarray(definition["junction_geometry"]["partner"],np.int64),
+        bflags_mems=np.asarray(definition["junction_geometry"]["boundary"],bool),
+        mem_sa=np.asarray(g["membrane_area_m2"],np.float64),
+        cell_sa=np.asarray(g["cell_area_m2"],np.float64),
+        cell_vol=np.asarray(external["geometry"]["cell_volume_m3"],np.float64),
+        cell_centres=np.asarray(external["geometry"]["cell_centres_m"],np.float64),
+        mem_mids_flat=np.asarray(external["geometry"]["membrane_midpoints_m"],np.float64),
+        mem_vects_flat=np.column_stack((np.zeros((m,2)),g["normal_xy"])),
+        M_sum_mems=np.asarray([[int(i==o) for o in g["owner"]] for i in range(n)],np.float64),
+        gj_len=np.asarray(definition["junction_geometry"]["gap_length_m"],np.float64),
+        **{key:external["world"][key+"_m"] for key in ("xmin","xmax","ymin","ymax")},
+    )
+    p=SimpleNamespace(
+        F=current["parameters"]["F_C_mol"],R=transport["R_J_mol_K"],
+        T=rawp["configured_temperature_K"],q=rawp["q_C"],kb=rawp["kb_J_K"],
+        dt=inputs["initial_dt_s"],tm=transport["membrane_thickness_m"],
+        cluster_open=transport["cluster_open"],fast_update_ecm=transport["fast_update_ecm"],
+        sharpness=transport["sharpness"],is_ecm=True,fluid_flow=False,
+        grid_size=external["world"]["grid_size"],cell_height=rawp["cell_height_m"],
+        cell_space=rawp["cell_space_m"],ions_dict={name:1 for name in ion["ids"]},
+        substances_affect_charge=inputs["network"]["cold_publish"],plot_network=False,
+        grn=SimpleNamespace(conf=clone(inputs["network"]["configuration"])),
+        visual=SimpleNamespace(single_cell_index=0),grn_runmodesim=False,
+        grn_unpickle_filename=None,grn_pickle_filename="/captured/grn/network.pickle",
+        grn_pickle_dirname="/captured/grn",
+    )
+    p.ions_dict.setdefault("Ca",0)
+    build_grid(cells,p,inputs)
+    cells.ecm_vol=p.cell_height*cells.delta**2
+    for key,value in inputs["network"]["grid_index_groups"].items():
+        setattr(cells,key,np.asarray(value,np.int64).copy())
+    science()["derive_context"](sim,cells)
+    phase=SimpleNamespace(sim=sim,cells=cells,p=p,kind="INIT",dyna=SimpleNamespace())
+    return SimpleNamespace(inputs=inputs,sim=sim,cells=cells,p=p,phase=phase,owner=None,
+        trace=new_trace(),files={},directories=[],before_step=None)

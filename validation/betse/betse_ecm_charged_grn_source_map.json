@@ -1,0 +1,383 @@
+{
+  "actual_normal_init_and_dispatch_guards": true,
+  "actual_source_ConfException_class": true,
+  "all_five_simulator_publications_carried": true,
+  "boundary_carry_default_with_explicit_packet_override": true,
+  "bridge_AST_sha256": {
+    "attach": "93c850e8da5e354e947e2e068ee9db26bd55b647661b5e07719d9cc3ebefb483",
+    "augment": "6ffe7042118f04762311e8381d2dfeaaa7b930f3657dc43f86978b247dcab139",
+    "before": "67a71f8433aaf7a971ac18ff5a93721e9bb8012936f8e0e78fddfa6e8fcafb3e",
+    "cache": "0e76ca97092603f93db54d14aefdf0ccbd4db80c4266a009c9e881f3906d8085",
+    "cold": "fc316fb5dcd54499533f045f503aa7e8bd7baba96b420cf4d6b30b4e8a9a3d47",
+    "ionic_state": "2a7815d375bc8eadaf1bcb771efe3d3bdea80cca422900b4c700028a64777d0b",
+    "material_values": "65e98a0b030f5649cc3cae97b842cd6903a6ed2d931003e1fc1fa28f7358923c",
+    "new_trace": "f272d57e777979fba2e6fb67fcda5dab220cd6188d3665311846a27852904782",
+    "observe_balance": "245ffc8238b256bddf370ea2c0e1130bd122a7e59d97a0e3bf5bd1d650d0c50e",
+    "owner_evidence": "d049e2c94ada042d15ec6e1f7eab4f8162b4d9b5283443280e0b8c2761ea9ff5",
+    "restore": "cd0d9f700064651f24e41d714bf6889a57251f3c1b5c48b7cdf799eee3275aa2",
+    "run_dispatch": "7caa467d2f4c6daad4b7a4d24e8753b51dc49cd64b1d9489ca0062f3055110b3",
+    "validate": "60a630ca9a0c9a13eb76afed116c34a653c1c17885e101f965d8d0d1c54cc555",
+    "validate_definition": "dbeb2e42a7be6e3f35b76214452437124dddb2cbb384317cde748f4ee7b625ec",
+    "validate_ionic_cache": "0784daf9106f90a0a67ce59184a84cb1ab72d34f29a8ff406a37a617545f8400",
+    "wire": "e195d0b87e41986b4faba04427c93565b72120db0dadd9a53704933f4a61b220"
+  },
+  "caller_disabled_mitochondrial_flag_preserved": true,
+  "capture_repair_03": {
+    "full_test_AST_inverse_exact": true,
+    "held02_is_not_numerical_failure": true,
+    "no_physics_case_budget_changes": true,
+    "numerical_runs": 0,
+    "only_two_capture_sites": true,
+    "other_six_scientific_Python_files_byte_exact": true,
+    "sha256": "7dcf86c98016fe4a9845c816406a13ca8374ccf517402c7a1165d6dc3597dd69",
+    "witness": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_capture_witness_03.json"
+  },
+  "cold_immutable_parent_copied_to_mutable_working_buffers": true,
+  "cold_reader_not_rerun_on_hot_restore": true,
+  "compensated_material_parent_adopted_before_first_call": true,
+  "disabled_ion_aliases_not_fabricated": true,
+  "ecm_fd_and_nernst_planck_bodies_original": true,
+  "error_capture_repair_02": {
+    "automatic_retry": false,
+    "controlled_nonimported_ECM02_pin_refresh": {
+      "src/cells/processes/betse_ecm_grn_join.py": {
+        "after": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+        "before": "0bfdbd38f0e438824063ef743f9b4e747c79a702ec79972e6cb50ffc2151f0ac"
+      },
+      "tests/unit/test_betse_ecm_grn_join.py": {
+        "after": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+        "before": "5fb5f59334c3469e164f1a9ea9930dfa5c87ddaa077d7bf43a086015695d2142"
+      },
+      "validation/betse/betse_ecm_grn_protocol.json": {
+        "after": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+        "before": "22788f212d829883ca1e931638ddca0704e7d138e2064679a0c01160a6b81075"
+      },
+      "validation/betse/betse_ecm_grn_source_map.json": {
+        "after": "f15588f7abe0ec565a9141c262fc9789ea14f8e877dd761f8469966f9fa114f4",
+        "before": "d5f8eb642183fe711dac1f6772a5e75efc89d39fa3f96148cce64593b7682048"
+      }
+    },
+    "final_static_audit": {
+      "all_other_test_AST_exact": true,
+      "cache_capture_guarded_by_actual_owner_core_and_try": true,
+      "final_sha256": {
+        "src/cells/processes/betse_ecm_charged_grn_join.py": "8744d00529bce1f509bb071a2a5951745683ae257adfe10ee021410fd74574fd",
+        "tests/unit/test_betse_ecm_charged_grn_join.py": "b74f8df7113858a2f3fe89584b32e5b09b4aba68c238b17ccddcad7bcfd8ff5a"
+      },
+      "five_other_scientific_Python_files_byte_exact": true,
+      "helper_AST_equal_to_reviewed_ECM02": true,
+      "join_inverse_AST_exact": true,
+      "no_valid_cache_claim_for_absent_owner": true,
+      "original_exception_explicit_raise_from": true,
+      "scientific_execution": false,
+      "supplied_malformed_parent_archived_before_invocation": true
+    },
+    "five_other_scientific_Python_files_byte_exact": true,
+    "held01_not_executed": true,
+    "join_inverse_AST_exact": true,
+    "sha256": "e54f16edd5cffd3ed7331e0a23fe4e7f8d0ed5dd09532fffc535124b5f65ad7a",
+    "witness": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_error_capture_witness_02.json"
+  },
+  "full_ionic_snapshot_and_cold_balance_events_carried": true,
+  "full_public_cache_and_E_site_buffers": true,
+  "independent_ECM_warm_reference_entire_AST_unchanged": true,
+  "independent_Hill_reference_unchanged": true,
+  "kind": "cells.normal_ecm_charged_grn_source_map@1",
+  "law_id": "betse_normal_ecm_charged_grn_network_v1_5_0@1",
+  "literal_numeric_bodies": {
+    "BetseSimConfException": {
+      "numeric_AST_sha256": "45b7750e22ca92c638ab8637f56f45020f7b3202f889c891ef3eabf3c6781c24",
+      "original_AST_equal": true
+    },
+    "DynamicValue.__init__": {
+      "numeric_AST_sha256": "8a58e7954547ae3b2a87a965644052000631ec97e5533fa844548a602ff64650",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__delitem__": {
+      "numeric_AST_sha256": "3fb9f1dc67a8442241666f385b5c5dda0244980156c0be05fd33ede70be05a2e",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__getitem__": {
+      "numeric_AST_sha256": "01d550685f2e43084ab220d0d72e9ce557af4169b1e8a797364d73c48499b854",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__init__": {
+      "numeric_AST_sha256": "b9d15f5f1d750f7209d31bf044e187c37d7d8abce99a9d980f83adc99ce657f0",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__iter__": {
+      "numeric_AST_sha256": "04dd3f5642ff059a8df8590516c9b7b0a34ae459a1c93b1dfcb34182a4fe59b5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__len__": {
+      "numeric_AST_sha256": "bbf5f222a2f001d19540eace674ac1e5aa2ea276f6eff3e1646e4d9e4ae4e2e2",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "DynamicValueDict.__setitem__": {
+      "numeric_AST_sha256": "7e12ced096a33519f5b3c5d13cba1048bf579a3313727b18c49ed9640f685d80",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.__init__": {
+      "numeric_AST_sha256": "7d346a78720b8d26ddb0d9c6cc5819fb0374961814b58e25d138cbf2a231a3b1",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.read_gene_config": {
+      "numeric_AST_sha256": "f029494a632f7deb285d197b77657f99d2a7c27d087dca9feccb5765e90747f7",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfGenes.reinitialize": {
+      "numeric_AST_sha256": "3463e3709f7b133234a4087df2ac023c03e7ccf556927a66767d1a156fced0a3",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.__init__": {
+      "numeric_AST_sha256": "c4b666de15cc086cb0db34caaeffcf0b19a986902379849a80176258f7699839",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.bal_charge": {
+      "numeric_AST_sha256": "42db3f814eea5002840cc3e0f7ba73fa5d2632f707e2c9f06dc11e3e3d52679e",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.clear_run_loop": {
+      "numeric_AST_sha256": "4cf38dda78e2c26e4f91266fe018122f9c60a650d2af25223496d1caf640f9c3",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.create_reaction_matrix": {
+      "numeric_AST_sha256": "f483aa568c2c67ceee4f05fd35574b7f2ac3cd472f1695784508c9ee6d723637",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.create_reaction_matrix_env": {
+      "numeric_AST_sha256": "af7cd6b63fdb537ea1cf0a7f51c8d6e42ff9d8a36bbafb9fb96a120357650c6a",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.default_zones": {
+      "numeric_AST_sha256": "844298847a625fce940e6580abf0b613501f0b6948e977d161b87d87be66fcd0",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.energy_charge": {
+      "numeric_AST_sha256": "2e5f7c63a8f35d660b97ee59e695b8e85a63f0f67a5d46ad83851afdc418fd21",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.get_influencers": {
+      "numeric_AST_sha256": "177d03102e838564b8cefdcb9f29a320069c1b9cdf8f7c0e975b365e50f6472c",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_modulators": {
+      "numeric_AST_sha256": "75e95cffc9b7165953699d5c4ee917b43721a56151b6c4bf43f155d371935bd4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_reactions": {
+      "numeric_AST_sha256": "3e08c2753f7ef2330ae637459859858dda28a3f0702f9f997cddb998156a20d6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.read_substances": {
+      "numeric_AST_sha256": "33c54b4dec27b6b8598259c8d3a63f2b6e08bc8081834892a15efd2a64978bb4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.run_loop": {
+      "numeric_AST_sha256": "a54a72fcd2ccd2e9c6ad8cf74ea8b0d2ed866579e441ff9cbd48373cdc495b2b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.run_loop_modulators": {
+      "numeric_AST_sha256": "4bb9a1a16912bfde9ec3de8c89a38b44b790b95054120558d338be737abb3083",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.tissue_init": {
+      "numeric_AST_sha256": "53c4c7250639c0ca69de9c2d3309e7d33ca703dcd1439a6c75c53a28f7326c47",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_growth_and_decay": {
+      "numeric_AST_sha256": "164f1be2e65891453555026d7d7e230a01f85a1a74f698e371ad60928f5fea2b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_reactions": {
+      "numeric_AST_sha256": "5e85cf5f0e661a3f3794f717468863ec326a1b7ff112346d59b86f751bfc9897",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "MasterOfNetworks.write_reactions_env": {
+      "numeric_AST_sha256": "581e7a2b961dd7b6501a17aba689c2cf2d991d5b1708867d312368dd126614bd",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Modulator.__init__": {
+      "numeric_AST_sha256": "60d0ad04d5ccfe38e7398b5596ad5bf5c7fc23c435e397a18b9036b874faa5c4",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Modulator.init_modulator": {
+      "numeric_AST_sha256": "2d4a50a5fbe71a87969a22bdb82761e021c73d2bd9a5f1df9ad520d6e1ef39c5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.__init__": {
+      "numeric_AST_sha256": "fb9554a42460b1a370129b9f150efd4709588220e8a302de05854f98fffcde60",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.init_growth": {
+      "numeric_AST_sha256": "b5ae0409c46bd3d77311221930362b547eb8be43f13c20a2d7e499c02b7496a5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.transport": {
+      "numeric_AST_sha256": "09cb573693bf2dfd2a76d62292ff84a4513893c26cfab60fc23b6e0aba6c61f2",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Molecule.update_intra": {
+      "numeric_AST_sha256": "53195e760fc1e22d04e9374c988cfaf70d281e8e89766c3e7b567d0de297a11b",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "Reaction.__init__": {
+      "numeric_AST_sha256": "1615b34794b013bc2ee1944534bc92d1ce0e3e35d1f66874e5cea26f4d9bc99a",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "diff": {
+      "numeric_AST_sha256": "d0c1b692199747f0a7df6f5cc2303ad17bc0c522dadf5c09b63f3860030265c6",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "dispatch": {
+      "first_line": 1306,
+      "last_line": 1319,
+      "original_guarded_block_equal": true
+    },
+    "div_env": {
+      "numeric_AST_sha256": "1197006c49a1e72f010849feedc609b13c4672c87000974710e2f80e22e0c46f",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "divergence": {
+      "numeric_AST_sha256": "2aeebe45691dfa75a8538c9de06e927a12a9afa283f9aee5ba0ca9073b532ecf",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "electroflux": {
+      "numeric_AST_sha256": "e0f2c84a0df780122f6b25ea641d854d85468411c08e92a36adc613ac56717de",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "gradient": {
+      "numeric_AST_sha256": "5d729cc369ebec9e8e9ed00414bfdedc84e0d3e08b4bf6e15d5d0ac7bb30c9c8",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "initialize_owner": {
+      "first_line": 884,
+      "last_line": 899,
+      "original_guarded_block_equal": true
+    },
+    "integrator": {
+      "numeric_AST_sha256": "c2fa841c57966f15f0fa5933c288f3d10cee752e906f27442f65dbf40ac1d881",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "molecule_mover": {
+      "numeric_AST_sha256": "240d1d4628e09ebd74cbc593f30020422a648b9007111aa345a697c7e9cb9aa5",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "nernst_planck_flux": {
+      "numeric_AST_sha256": "4b82cb3568a4a9549590cf82baf660d6f5a5ae27810b7bce7da6feef8fb81a8d",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "no_negs": {
+      "numeric_AST_sha256": "f0296e0abe7eda887a89613c48a42cd9c76853a1168c2ad100d327ce1a10fdf9",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "set_net_opts": {
+      "numeric_AST_sha256": "242355411306072a0df0dae047c9209a9ead43ce7cc33b7cb3f77538bc740f33",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    },
+    "update_Co": {
+      "numeric_AST_sha256": "305af54d6215c25d63d18486f125410657123cf3ae4510f2c0e937185e548620",
+      "observational_AST_equal": true,
+      "original_AST_equal": true
+    }
+  },
+  "literal_scientific_body_count": 48,
+  "native_network_before_deferred_commit": true,
+  "native_source_sha256": {
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+  },
+  "original_radial_weight_and_TJ_context_statements": true,
+  "retained_material_accuracy_accepted": false,
+  "retained_material_panel": {
+    "original_failed_case": "signed_environment",
+    "passed": 39,
+    "total": 40
+  },
+  "retained_material_step_inverse_AST_equal": true,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "charge": "Actual Na(+1), K(+1), stationary M(-1) rows; caller splits old P(-1) input by exactly supplied M. Cold weighted source Q, cell compensation before full E-grid env and boundary compensation, then balanced flag. Source membrane caches stay stale; negative cell threshold gap preserved. Compensated buffers become the material parent.",
+    "cold_hot": "Original cold constructors/readers once; live native owner persists. Full public owner/core/molecule/reaction/modulator state, ionic snapshots, compensation events, grid coefficients and all five simulator publications carry. Hot alias rebuild uses current material buffers, never replaces them with older ionic observations and never reruns cold readers. Default cold-compensated boundary carries; an explicit scheduled override replaces it and then carries. Cold initialization clones immutable admitted material into mutable working arrays before original counterion writes; success adopts complete working arrays, failure retains their partial writes. Warm callbacks keep actual material-trial aliases.",
+    "context": "Retained native-derived Cartesian grid/ownership/maps/area-sum operators and complete ECM material buffers; full E-site environments distinct from M membrane buffers",
+    "context_derivation": "Original radial-vector/radius statements; original Na D_env/max and weight-base copy; original TJ-index concatenation from explicitly supplied original boundary-index groups. Full diffusion-mask/tissue generation excluded",
+    "controls": "Carried/scheduled GJ control feeds next ordinary fixed-gap branch; new modulator output immediately feeds molecule GJ transport with already-computed gap opening. NaK output carries but supplied pump flux does not authenticate a pump law",
+    "exclusions": [
+      "Full seed/mesh/tissue/diffusion-mask/Simulator lifecycle",
+      "Mitochondria, fluid/cuts/events/noise, separate transporters/channels",
+      "Standalone sim-grn orchestration",
+      "Physical global material/charge/energy conservation, finite/shared fuel, biological calibration or independently carried trajectory accuracy",
+      "Mitochondria remain caller-disabled at both native constructor sites; no forced flag or externally preenabled pickle"
+    ],
+    "external": "Pump/late flux, channel multiplier, fixed-gap branch controls and old electric field supplied; fluid disabled and no field/current/voltage solver feedback",
+    "nonempty": "Two configured X/Y genes, native Hill GAD, one irreversible X-to-Y conversion and ion-driven GJ/NaK modulators; full original intra refresh, all RHS before commits, sequential real transport",
+    "owner": "Actual MasterOfGenes and actual configured MasterOfNetworks/Molecule objects; molecules owner disabled, grn_enabled=True are executed source-context flags",
+    "source_order": "Original cold GRN guard884-900; per-call original ECM reset/ion/clamp/transport/refresh, supplied late flux, actual guarded GRN1306-1319, deferred ordinary update_all_concs1357"
+  },
+  "selected_carry_or_override_boundary_authoritative": true
+}

@@ -1,0 +1,472 @@
+{
+  "authority": "Cells Specialist explicit original-endpoint timestep controls",
+  "budget_refusals_status": "source_predicted_by_unchanged_storage_formula_not_observed",
+  "clock_metadata_equivalence_shortcut": false,
+  "clock_rule": "Existing Cells EventGrid float i*dt labels plus the exact declared endpoint; actual step widths are adjacent label differences",
+  "comparison_arm_ids": {
+    "four-cell-reordered-gradient": [
+      "base-trace-4MiB",
+      "dt-half-trace-4MiB",
+      "dt-quarter-trace-4MiB"
+    ],
+    "two-cell-four-species": [
+      "base-trace-4MiB",
+      "dt-half-trace-4MiB",
+      "dt-quarter-trace-4MiB"
+    ],
+    "unequal-clefts-readback-defects": [
+      "base",
+      "dt-half",
+      "dt-quarter"
+    ],
+    "uniform-two-species": [
+      "base",
+      "dt-half",
+      "dt-quarter"
+    ]
+  },
+  "initial_qualification_required_for_each_arm": true,
+  "kind": "cells.explicit_partition_initial_numerical_clock_controls@1",
+  "no_budget_refusal_reclassified_as_pass": true,
+  "numerical_controls": [
+    {
+      "dt_s": 5e-07,
+      "end_time_s": 1e-06,
+      "id": "dt-half",
+      "max_steps": 2,
+      "timestep_divisor": 2
+    },
+    {
+      "dt_s": 2.5e-07,
+      "end_time_s": 1e-06,
+      "id": "dt-quarter",
+      "max_steps": 4,
+      "timestep_divisor": 4
+    }
+  ],
+  "numerical_launch_authorized": false,
+  "original_arm": {
+    "dt_s": 1e-06,
+    "end_time_s": 1e-06,
+    "id": "base",
+    "max_steps": 1,
+    "original_caller_unchanged": true
+  },
+  "original_budget_refusal_controls": [
+    {
+      "case_id": "two-cell-four-species",
+      "declared_max_trace_bytes": 1048576,
+      "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+      "numerical_control_id": "dt-quarter",
+      "required_trace_bytes": 1548448
+    },
+    {
+      "case_id": "four-cell-reordered-gradient",
+      "declared_max_trace_bytes": 1048576,
+      "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+      "numerical_control_id": "base",
+      "required_trace_bytes": 1739584
+    },
+    {
+      "case_id": "four-cell-reordered-gradient",
+      "declared_max_trace_bytes": 1048576,
+      "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+      "numerical_control_id": "dt-half",
+      "required_trace_bytes": 2319456
+    },
+    {
+      "case_id": "four-cell-reordered-gradient",
+      "declared_max_trace_bytes": 1048576,
+      "expected_refusal": "Estimated trace working storage exceeds max_trace_bytes",
+      "numerical_control_id": "dt-quarter",
+      "required_trace_bytes": 3479200
+    }
+  ],
+  "original_callers_document": {
+    "authority": "Cells Specialist explicitly manufactured time-zero passive caller declarations",
+    "cases": [
+      {
+        "bath_concentration_by_slot_y_mM": [
+          {
+            "A": 100,
+            "C": 100
+          },
+          {
+            "A": 100,
+            "C": 100
+          },
+          {
+            "A": 100,
+            "C": 100
+          }
+        ],
+        "capacities": {
+          "capacity": 1,
+          "extracellular_capacity": 8,
+          "face_capacity": 8,
+          "membrane_capacity": 4
+        },
+        "cell_concentration_mM": {
+          "A": 100,
+          "C": 100
+        },
+        "face_diffusivity_m2_per_s": {
+          "A": 2e-09,
+          "C": 1e-09
+        },
+        "geometry_case": "one-cell",
+        "id": "uniform-two-species",
+        "membrane_diffusivity_m2_per_s": {
+          "A": 2.384185791015625e-15,
+          "C": 4.76837158203125e-15
+        },
+        "membrane_permeability_m_per_s": {
+          "A": 4.76837158203125e-07,
+          "C": 9.5367431640625e-07
+        },
+        "purpose": "Explicit uniform equilibrium declaration; no predicted numerical result stored",
+        "species": [
+          {
+            "id": "C",
+            "valence": 1
+          },
+          {
+            "id": "A",
+            "valence": -1
+          }
+        ],
+        "temperature_K": 310
+      },
+      {
+        "bath_concentration_by_slot_y_mM": [
+          {
+            "A": 0.2,
+            "C": 0.2
+          },
+          {
+            "A": 0.3,
+            "C": 0.3
+          },
+          {
+            "A": 0.4,
+            "C": 0.4
+          }
+        ],
+        "capacities": {
+          "capacity": 1,
+          "extracellular_capacity": 8,
+          "face_capacity": 8,
+          "membrane_capacity": 4
+        },
+        "cell_concentration_mM": {
+          "A": 0.1,
+          "C": 0.1
+        },
+        "face_diffusivity_m2_per_s": {
+          "A": 2e-09,
+          "C": 1e-09
+        },
+        "geometry_case": "unequal-clefts",
+        "id": "unequal-clefts-readback-defects",
+        "membrane_diffusivity_m2_per_s": {
+          "A": 2.384185791015625e-15,
+          "C": 4.76837158203125e-15
+        },
+        "membrane_permeability_m_per_s": {
+          "A": 4.76837158203125e-07,
+          "C": 9.5367431640625e-07
+        },
+        "purpose": "Explicit non-dyadic concentrations and spatial bath gradients; readback defects must be retained rather than repaired",
+        "species": [
+          {
+            "id": "C",
+            "valence": 1
+          },
+          {
+            "id": "A",
+            "valence": -1
+          }
+        ],
+        "temperature_K": 300
+      },
+      {
+        "bath_concentration_by_slot_y_mM": [
+          {
+            "A": 0.25,
+            "C": 0.25,
+            "D": 0.03125,
+            "E": 0.03125
+          },
+          {
+            "A": 0.5,
+            "C": 0.5,
+            "D": 0.0625,
+            "E": 0.0625
+          },
+          {
+            "A": 0.75,
+            "C": 0.75,
+            "D": 0.09375,
+            "E": 0.09375
+          }
+        ],
+        "capacities": {
+          "capacity": 2,
+          "extracellular_capacity": 13,
+          "face_capacity": 14,
+          "membrane_capacity": 8
+        },
+        "cell_concentration_mM": {
+          "A": 0.125,
+          "C": 0.125,
+          "D": 0.0625,
+          "E": 0.0625
+        },
+        "face_diffusivity_m2_per_s": {
+          "A": 2e-09,
+          "C": 1e-09,
+          "D": 5e-10,
+          "E": 7.5e-10
+        },
+        "geometry_case": "two-cells",
+        "id": "two-cell-four-species",
+        "membrane_diffusivity_m2_per_s": {
+          "A": 2.384185791015625e-15,
+          "C": 4.76837158203125e-15,
+          "D": 1.1920928955078125e-15,
+          "E": 5.960464477539063e-16
+        },
+        "membrane_permeability_m_per_s": {
+          "A": 4.76837158203125e-07,
+          "C": 9.5367431640625e-07,
+          "D": 2.384185791015625e-07,
+          "E": 1.1920928955078125e-07
+        },
+        "purpose": "Explicit multiple cell owners and paired divalent species; no native or biological calibration",
+        "species": [
+          {
+            "id": "C",
+            "valence": 1
+          },
+          {
+            "id": "A",
+            "valence": -1
+          },
+          {
+            "id": "D",
+            "valence": 2
+          },
+          {
+            "id": "E",
+            "valence": -2
+          }
+        ],
+        "temperature_K": 295.15
+      },
+      {
+        "bath_concentration_by_slot_y_mM": [
+          {
+            "A": 0.3,
+            "C": 0.3
+          },
+          {
+            "A": 0.6,
+            "C": 0.6
+          },
+          {
+            "A": 0.9,
+            "C": 0.9
+          },
+          {
+            "A": 1.2,
+            "C": 1.2
+          },
+          {
+            "A": 1.5,
+            "C": 1.5
+          }
+        ],
+        "capacities": {
+          "capacity": 4,
+          "extracellular_capacity": 21,
+          "face_capacity": 24,
+          "membrane_capacity": 16
+        },
+        "cell_concentration_mM": {
+          "A": 0.3,
+          "C": 0.3
+        },
+        "face_diffusivity_m2_per_s": {
+          "A": 2e-09,
+          "C": 1e-09
+        },
+        "geometry_case": "four-cells",
+        "id": "four-cell-reordered-gradient",
+        "membrane_diffusivity_m2_per_s": {
+          "A": 2.384185791015625e-15,
+          "C": 4.76837158203125e-15
+        },
+        "membrane_permeability_m_per_s": {
+          "A": 4.76837158203125e-07,
+          "C": 9.5367431640625e-07
+        },
+        "purpose": "Explicit reordered seed owners and nonuniform finite bath concentrations; every actual generated route receives caller-declared values",
+        "species": [
+          {
+            "id": "C",
+            "valence": 1
+          },
+          {
+            "id": "A",
+            "valence": -1
+          }
+        ],
+        "temperature_K": 315
+      }
+    ],
+    "expansion_law": "caller_quantifies_all_admitted_owners_and_routes_with_explicit_values_no_parameter_inference@1",
+    "geometry": {
+      "accepted_source_review_sha256": "a8c09e4245079f55784e62d79e62d05e616dc5a665de5fb62b5235365b6078c7",
+      "caller_document": "validation/geometry/stable_seed_explicit_ecm_partition_callers.json",
+      "caller_document_sha256": "db8a03812c9005770b16f5259295b59ee164e1282d54c176e92f98ab7e6c04f6",
+      "manifest_sha256": "5b6257f7a8f0f8a51b6903fb55aba11fe34c0934f2e10351e377a42eee81b406",
+      "source_review_gate": "accepted_source_review_only_numerical_qualification_unrun"
+    },
+    "kind": "cells.partition_initial_physiology_prospective_caller_declarations@1",
+    "qualification": {
+      "biological_cases": 0,
+      "checks_executed": 0,
+      "controls_count_as_cases": false,
+      "evaluated_cases": 0,
+      "materialized_cases": 0,
+      "native_equivalence": false,
+      "solver_trajectories": 0
+    },
+    "shared": {
+      "availability": 1,
+      "concentration_policy": "mM_times_admitted_binary64_pL_round_once_readback_defects_retained@1",
+      "constitutive_policy": "caller_D_and_P_agree_with_existing_D_over_geometry_path@1",
+      "electrical_policy": {
+        "closure_law": "resolved_capacitor_components_current_continuity@1",
+        "every_bath_boundary_potential_V": 0,
+        "every_bath_fixed_charge_equivalent_fmol": 0,
+        "every_bath_initial_charge_C": 0,
+        "every_cell_fixed_charge_equivalent_fmol": 0,
+        "every_cell_initial_charge_C": 0,
+        "gauge_reference": "caller-bath-0-0",
+        "kind": "explicit_charge_anchors_fixed_backgrounds_and_finite_bath_gauge@1"
+      },
+      "execution": {
+        "backend": "cpu",
+        "dt": 1e-06,
+        "edge_capacity": 0,
+        "field_solver": "capacitive_reduction_gauged_damped_newton@1",
+        "jit": false,
+        "material_balance_atol_fmol_each_species": 1e-12,
+        "max_steps": 1,
+        "max_trace_bytes": 1048576,
+        "precision": "float64",
+        "solver": "rk4"
+      },
+      "experiment": {
+        "end_time": 1e-06,
+        "junction_controls": [],
+        "observation_times": [
+          0
+        ]
+      },
+      "prior_state_policy": {
+        "kind": "fresh_time_zero_no_cached_state_or_operator_adoption@1",
+        "provided_prior_state_or_operators": null
+      },
+      "specific_capacitance_F_per_m2": 0.01
+    },
+    "status": "literal_source_declarations_only_not_materialized_or_evaluated"
+  },
+  "original_callers_document_sha256": "4be058c5f6211a9a489c709ee95f371d3dd7bf0ba03c8834e789c0be3554c09f",
+  "parent_initial_manifest_sha256": "92caecd20cba1973336f14a005492a144393740fae3d6cd3be32a2636a8fcf26",
+  "parent_initial_source_review_sha256": "e055f0ff664553e6c6fdf02fc777beb31e6206b3f99fead6835d088f8dd63249",
+  "permitted_differences": [
+    "execution.dt",
+    "execution.max_steps",
+    "explicitly declared execution.max_trace_bytes resource controls",
+    "caller provenance for numerical/resource control"
+  ],
+  "resource_control": {
+    "aggregate_guard_GiB": 2,
+    "explicitly_authorized": true,
+    "host_reserve_GiB": 8,
+    "id": "trace-4MiB",
+    "max_trace_bytes": 4194304,
+    "original_max_trace_bytes": 1048576,
+    "physical_values_or_numerical_tolerances_changed": false,
+    "process_guard_GiB": 1
+  },
+  "resource_numerical_controls": [
+    {
+      "applies_to_case_ids": [
+        "two-cell-four-species",
+        "four-cell-reordered-gradient"
+      ],
+      "clock_id": "base",
+      "dt_s": 1e-06,
+      "end_time_s": 1e-06,
+      "id": "base-trace-4MiB",
+      "max_steps": 1,
+      "max_trace_bytes": 4194304
+    },
+    {
+      "applies_to_case_ids": [
+        "two-cell-four-species",
+        "four-cell-reordered-gradient"
+      ],
+      "clock_id": "dt-half",
+      "dt_s": 5e-07,
+      "end_time_s": 1e-06,
+      "id": "dt-half-trace-4MiB",
+      "max_steps": 2,
+      "max_trace_bytes": 4194304
+    },
+    {
+      "applies_to_case_ids": [
+        "two-cell-four-species",
+        "four-cell-reordered-gradient"
+      ],
+      "clock_id": "dt-quarter",
+      "dt_s": 2.5e-07,
+      "end_time_s": 1e-06,
+      "id": "dt-quarter-trace-4MiB",
+      "max_steps": 4,
+      "max_trace_bytes": 4194304
+    }
+  ],
+  "scope": {
+    "additional_storage_case_bindings": 6,
+    "case_ids": [
+      "uniform-two-species",
+      "unequal-clefts-readback-defects",
+      "two-cell-four-species",
+      "four-cell-reordered-gradient"
+    ],
+    "common_endpoint_comparison_arms": 12,
+    "evaluated_cases": 0,
+    "materialized_cases": 0,
+    "new_physical_cases": 0,
+    "numerical_control_case_bindings": 8,
+    "numerical_control_labels": 2,
+    "original_1MiB_budget_refusals": 4,
+    "physical_cases": 4,
+    "resource_control_labels": 1,
+    "total_initial_case_arm_bindings": 18
+  },
+  "unchanged": [
+    "experiment.end_time",
+    "experiment.observation_times",
+    "controls",
+    "all model physics",
+    "all geometry/owners",
+    "all numerical tolerances",
+    "backend/precision/jit",
+    "original four caller max_trace_bytes=1MiB and their budget-refusal evidence"
+  ]
+}

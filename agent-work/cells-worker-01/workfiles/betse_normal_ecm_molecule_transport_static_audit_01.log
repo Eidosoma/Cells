@@ -1,0 +1,20 @@
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_transport_source.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_transport.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_transport_runtime.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/validation/betse/betse_normal_ecm_molecule_transport_native_network.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/validation/betse/betse_normal_ecm_molecule_transport_native_source.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/validation/betse/betse_normal_ecm_molecule_transport_native.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/validation/betse/betse_normal_ecm_molecule_transport_equations.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/validation/betse/betse_normal_ecm_molecule_transport_reference.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_regenerated_01/tests/unit/test_betse_normal_ecm_molecule_transport.py
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 284, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 94, in main
+    same("literal_native/" + cls + "." + name, actual, wanted)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_transport_implementation_audit.py", line 65, in same
+    assert common.normalized(a) == common.normalized(b), label
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: literal_native/MasterOfNetworks.read_transporters

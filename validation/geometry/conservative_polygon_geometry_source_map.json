@@ -1,0 +1,69 @@
+{
+  "kind": "cells.conforming_polygon_physical_owner_source_map@1",
+  "geometry_law_id": "cells_conforming_polygon_physical_owners@1",
+  "physical_bridge_id": "cells_polygon_physical_owners_passive_tissue@1",
+  "new_source_sha256": {
+    "src/cells/processes/conservative_polygon_geometry.py": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+    "src/cells/core/conservative_polygon_tissue_preparation.py": "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039",
+    "validation/geometry/conservative_polygon_geometry_fixtures.py": "670062def65dbf5af0f452b2da63c7ec6ddfbf197c0203a3682158dc24096193",
+    "validation/geometry/conservative_polygon_geometry_reference.py": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8",
+    "validation/geometry/conservative_polygon_geometry_replay.py": "57d49aaf0ce0dceacf5e34e46fe3a2e700ae18c72aaa8e49b177bca3a4eff6e1",
+    "validation/geometry/conservative_polygon_geometry_protocol.json": "39c202112f0f79775eba46a3c8426c27da1d4b6ab1ad203782544f5ef3971e44",
+    "tests/unit/test_conservative_polygon_geometry.py": "e58ffe089f312d47e9e55efdf476b481412b709162c7950c0d8167a3ed933300",
+    "tests/unit/test_conservative_polygon_tissue_preparation.py": "56629880756805996b3b54efa1b49c60d697011d7036e8b6a1fb047e7abce6f8"
+  },
+  "unchanged_rounding_helper_source_sha256": "c9fab4f34aa9166711431844f2af72eb6b8fe4873154bfe01dfce3f656326958",
+  "unchanged_rounding_helper_sites": {
+    "_round": {
+      "source": "src/cells/processes/stable_geometry_primitives.py",
+      "first_line": 317,
+      "last_line": 326,
+      "ast_sha256": "fc8b94eff63f526623566ab61afe355449817ce13da93c5a281826af1fb1b87d"
+    },
+    "_sqrt_bounds": {
+      "source": "src/cells/processes/stable_geometry_primitives.py",
+      "first_line": 329,
+      "last_line": 347,
+      "ast_sha256": "8d62d1eafa0167cbd42c8decb9578365b95c534eab5ae32b757e2182d6840ccf"
+    },
+    "_irrational": {
+      "source": "src/cells/processes/stable_geometry_primitives.py",
+      "first_line": 350,
+      "last_line": 367,
+      "ast_sha256": "36e581422d2cfbc90df211d056dccd37ad4dd73bbdb813b7fbb934b7cea07074"
+    },
+    "_ratio": {
+      "source": "src/cells/processes/stable_geometry_primitives.py",
+      "first_line": 27,
+      "last_line": 28,
+      "ast_sha256": "60ce08c7086e9fdc817674fc4aa3c226e1e2d3ca0afbc6577602b6785a674088"
+    },
+    "_bits": {
+      "source": "src/cells/processes/stable_geometry_primitives.py",
+      "first_line": 31,
+      "last_line": 32,
+      "ast_sha256": "ffc016cb2acbe26b96ef7b4d0c521ecfc0648b479be064a5602c26a8fb6c6c51"
+    }
+  },
+  "unchanged_independent_integer_rounding_source_sha256": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569",
+  "unchanged_physical_admission_sources": {
+    "core/surface_tissue_spec.py": "ca325e50b59a29ae25eaebc846cd126366e44c94ce0a931b833f26bb693db3aa",
+    "models/surface_tissue.py": "a0c9993799b752913deaae7ccdab6780397e05d4e2ac30f66bd60de928eafe29",
+    "numerics/surface_field.py": "6ae86409650223e5e81214ee2f57a5d6a0637c7d8ab2d3613e7dbc0d3dc26378",
+    "numerics/surface_transport.py": "f64cb3c0201be098793ce916ad65a19fd607b292c143c1b91950d03758f593d9",
+    "processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2"
+  },
+  "unchanged_physical_admission_site": {
+    "source": "src/cells/core/surface_tissue_spec.py",
+    "first_line": 139,
+    "last_line": 340,
+    "ast_sha256": "344d93dea6321f2cafa00239429ef365da662a904fa86ca506e4d4f1d5472b47"
+  },
+  "actual_existing_physical_admission_required": true,
+  "upstream_bridge_manifest_sha256": "996dbe391b0b35fcae43682fd6f09c353d9b2b2f86a54b953073b234a42b430e",
+  "upstream_bridge_source_sha256": "056cb2e47772a63416a9eebd89dd60a7019fcf217d3433403b9b053a209bedc4",
+  "B09_guard_source_sha256": "9035c4dba445292010821eb871970cbb3348fdfedd0d597459ccfe6adb1234de",
+  "native_path_changed": false,
+  "source_equivalence_claimed": false,
+  "scientific_qualification_inherited": false
+}

@@ -1,0 +1,158 @@
+{
+  "active_ECM_manifest_sha256": "929db847219d12c636fade8ee6f43ff0e8fd5bfdf8ea46fc8b8c747bc4ac0400",
+  "all_checks_unrun": true,
+  "existing_core_files_edited": false,
+  "explicit_reference_pin_AST_proof": "preparation/explicit-reference-pin-ast-proof.json",
+  "explicit_upstream_source_copy_map": "preparation/explicit-physical-bridge02-source-copy-map.json",
+  "finalizer_prepared": false,
+  "finite_ECM_adapted": false,
+  "finite_ECM_manifest_sha256": "232f5762460fd03d8990a65648e7f264dccb4b8f6ee5e2514f431d127041bc9f",
+  "finite_ECM_prerequisite": "explicit independently qualified cell/ECM geometry law resolving positive bath polygons, clefts, domain and face distances",
+  "fresh_positive_bridge_qualification_still_required": true,
+  "immutable_parent_copy_map": "preparation/immutable-environment01-copy-map.json",
+  "inventory": {
+    "Root_finalizer": 1,
+    "check_ids": [
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[held-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-one-bath]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_accepted_bridge_correspondence_and_exact_obstruction[finite-two-baths]",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_explicit_caller_domain_baths_boundaries_and_cache_refusals",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_positive_physical_bridge_evidence_is_required",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_complete_resealed_output_controls_need_same_worker_baseline",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_failed_correspondence_baseline_cannot_credit_controls",
+      "tests/unit/test_stable_seed_control_volume_environment.py::test_missing_ECM_geometry_and_old_operator_gates_remain_closed"
+    ],
+    "collection": false,
+    "completed_tests": 0,
+    "duplicate_child_replays": 0,
+    "numerical_execution": false,
+    "panels": {
+      "CORRUPTIONS": [
+        "coordinate",
+        "bath-index",
+        "cell-ring",
+        "drop-membrane",
+        "partner",
+        "direct-cell-owner",
+        "boundary-owner-role",
+        "positive-leftover",
+        "drop-cleft-prerequisite",
+        "empty-witnesses",
+        "invented-bath-face",
+        "finite-promotion",
+        "cached-operator-promotion",
+        "extra-field"
+      ],
+      "EVIDENCE_REFUSALS": [
+        "missing-acceptance",
+        "wrong-identity",
+        "negative-control-report",
+        "geometry-only-report",
+        "truncated-physical-scalars",
+        "empty-owner-truth",
+        "runtime-source-missing",
+        "runtime-imports"
+      ],
+      "REFUSALS": [
+        "missing-domain",
+        "enlarged-domain",
+        "native-domain",
+        "new-bath-role",
+        "changed-bath-volume",
+        "missing-bath",
+        "duplicate-membrane",
+        "wrong-membrane-bath",
+        "missing-boundary",
+        "reversed-boundary",
+        "open-boundary",
+        "old-cache",
+        "empty-cache",
+        "finite-admission-scope"
+      ]
+    },
+    "positive_cases": [
+      {
+        "case": "manufactured-irregular-square",
+        "id": "held-one-bath",
+        "physical_profile": "held-compartments"
+      },
+      {
+        "case": "manufactured-irregular-square",
+        "id": "finite-one-bath",
+        "physical_profile": "finite-compartments"
+      },
+      {
+        "case": "manufactured-seed17-rectangle",
+        "id": "finite-two-baths",
+        "physical_profile": "finite-compartments"
+      }
+    ],
+    "positive_scope": "ownership_and_obstruction_correspondence_only_not_finite_ECM_adaptation",
+    "potential_actual_bridge_children": 8,
+    "potential_actual_constructor_children": 8,
+    "potential_actual_environment_children": 8,
+    "potential_actual_nested_children": 24,
+    "scheduled_units": 9,
+    "top_level_pytest_trees": 8,
+    "total_process_units": 33
+  },
+  "kind": "cells.fixed_seed_environment_correspondence_preparation_plan@1",
+  "launch_gate": false,
+  "launcher_prepared": false,
+  "native_equivalence": false,
+  "owned_source_sha256": {
+    "agent-work/cells-specialist/STABLE_SEED_CONTROL_VOLUME_ENVIRONMENT.md": "198859082fc98131f5b5102a463cd19e91188678595344ae30d9ff787312da32",
+    "src/cells/processes/stable_seed_control_volume_environment.py": "6c4b16c57d732d608d4ff5641c117d6010f4cc1c0005de4199b6d9ab2d0e483d",
+    "tests/unit/test_stable_seed_control_volume_environment.py": "57fb5f91ca61911b87b958884923cca665a54794b5372996f2a1c28b7249ed9c",
+    "validation/geometry/stable_seed_control_volume_environment_audit.py": "a6cfaf60c46c85664f610500db6a132763109c6aa70c8d28ab483ac4ac22143e",
+    "validation/geometry/stable_seed_control_volume_environment_callers.json": "688ee72370f0843feacd1ad4adb984a6a1d83b917ffef527f8772cad3739b69e",
+    "validation/geometry/stable_seed_control_volume_environment_fixtures.py": "eb7178a890cc4635859bb6c9b82b7c53596ce694d32847fe2275a75f8b724cf9",
+    "validation/geometry/stable_seed_control_volume_environment_protocol.json": "d7c72216711f96ed8a2817e2c5617b4408d6e78a2bf3094cab104aa5081b718b",
+    "validation/geometry/stable_seed_control_volume_environment_reference.py": "c6da2a976ac456fc30f579060938ca57a2b9e3c38b541fa7bdb2786280594436",
+    "validation/geometry/stable_seed_control_volume_environment_source_map.json": "cc159f4c44df53d4446cba3336130bc138a0b493d0591222fc15bc3d765d8671"
+  },
+  "physical_bridge01_historical_manifest_sha256": "87674b0578a1291ea89d027a9cd830fc0fc1769a018bdfd0b1f57892cee36a7f",
+  "physical_bridge02_manifest_sha256": "93431682e3dcae1ca06a311582227f8c0d58c31ac3a64a7b811efd5c0ad25938",
+  "predecessor_manifest_sha256": "590499ec0fe07328749ebcef250ac7695952b8f3ef5c15106e9c0ce72e520a2f",
+  "prepared_bundle": "/mnt/workspaces/Cells/stable-seed-control-volume-environment-prepared-20261031-02",
+  "prepared_utc": "2026-10-31T06:24:55.963266+00:00",
+  "preserved_predecessor_files": 611,
+  "process_map": "preparation/process-map.json",
+  "protocol": "validation/geometry/stable_seed_control_volume_environment_protocol.json",
+  "required_future_environment": {
+    "CELLS_STABLE_MESH_PHYSICAL_SAVED_RUN": "/mnt/workspaces/Cells/stable-seed-control-volume-environment-prepared-20261031-02/evidence/original-run"
+  },
+  "resources": {
+    "MKL_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1,
+    "cpu_affinity_count": 2,
+    "includes_actual_nested_children": true,
+    "minimum_host_available_GiB": 8,
+    "outer_summed_RSS_GiB": 2,
+    "outer_wall_seconds": 7200,
+    "per_pytest_tree_summed_RSS_GiB": 1,
+    "per_pytest_tree_wall_seconds": 480,
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec",
+    "resource_sufficiency_measured": false
+  },
+  "schema_review_binding": {
+    "baseline_gate_AST_unchanged": true,
+    "complete_inverse_reference_and_test_AST_reviewed": true,
+    "effective_reference_sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+    "effective_test_sha256": "306657230727f680dc85db5b426d0e642b0f7ccd19be3c13ac12bb6d00077be2",
+    "numerical_admission_or_launch_authority": false,
+    "promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",
+    "review_scope": "exact array/species inventories and five coherent resealed controls; no formula/value/budget change",
+    "review_sha256": "46e8976ca62fde81dfab720672bcfdfe38cf67694e3574559c889fcaf7b51fda",
+    "source_review_only": true
+  },
+  "shared_status_edited": false,
+  "source_map": "validation/geometry/stable_seed_control_volume_environment_source_map.json",
+  "source_origins": "preparation/source-origin-map.json",
+  "static_preparer": "/mnt/workspaces/Cells/specialist-runners/stable-seed-bridge-environment-20261031-02-environment-prepare.py",
+  "static_preparer_sha256": "247674ce04497fa305e4ab577fdd9cad97fded85a2d576a999026d34cc85df10",
+  "static_receipt": "/mnt/workspaces/Cells/stable-seed-control-volume-environment-preparation-20261031-02.json",
+  "status": "source02_repaired_upstream_static_correspondence_only_finite_ECM_prerequisite_missing",
+  "upstream_schema_repair_required_before_release": false
+}

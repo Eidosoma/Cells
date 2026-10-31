@@ -1,0 +1,1392 @@
+{
+  "Ca_routing_classes": 23,
+  "Python_files": 332,
+  "catalog_inventory_sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+  "class_count": 55,
+  "cold_flag": "Original MasterOfGenes.read_gene_config reads actual channel config and sets owner.channels; no injected true flag",
+  "existing_GRN_adapter_accepts_channels": false,
+  "existing_GRN_cache_contains_channel_state": false,
+  "explicit_Ca_modulators": "Native read_channels/get_influencers may read membrane Ca or mapped environmental Ca; no implicit class free-Ca input",
+  "families": {
+    "Ca": "vgca",
+    "Cat": "vgcat",
+    "Cl": "vgcl",
+    "Fun": "vgfun",
+    "K": "vgk",
+    "ML": "vgml",
+    "Na": "vgna"
+  },
+  "gate_p_parameter_reads": [
+    "dt"
+  ],
+  "implicit_free_Ca_class_gating": false,
+  "installed_exact": true,
+  "kind": "cells.normal_ecm_modern_catalog_reachability@1",
+  "legacy_cagPotassium_runtime_calls": [],
+  "modern_class_proof": {
+    "CaLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d1181a6030ea2edd254bcecb223e3c6249095d8736ed89902008f4dcc0d83a69",
+        "_init_state": "fdd886ba69daafade1c4fa6c6b198bef19b4cddfe8e5d8bfe61a00a36a55256f"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Ca_L2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "23583e10a665224ac77a395d7f1b4bf4690f4878919924ce53aae2fb9b20a970",
+        "_init_state": "576c06ebabdc02baa5de0c783dbf0a21ddc42202d5bd62973987521f74d153b7"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Ca_L3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "c6d444fa5ae9821730dfc3353a06737b35d6557b1cbd6a62fb1f845214d7aeaf",
+        "_init_state": "49e607430cd39a23c20c798ad6f73f5e51380b8c614df891909e5a2195e2c4d9"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "CatLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "3977ca14ec8417d999f4c8891b4b6a56c7ea8e9fadea5e4e63a1ea91dcf07741",
+        "_init_state": "8cea2846fe6a2096e24e592febf1bb9ec1279dc21464f72b3acc1a6ecdcf8c30"
+      },
+      "factory_reachable": true,
+      "family": "Cat",
+      "original_base": "CationABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.0
+        ]
+      ],
+      "source": "betse/science/channels/cation.py",
+      "source_sha256": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa"
+    },
+    "CatLeak2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "3977ca14ec8417d999f4c8891b4b6a56c7ea8e9fadea5e4e63a1ea91dcf07741",
+        "_init_state": "19843926343a53656e9f6e5176966c84a0a3a210ac56bbfe7df7a82efe50ce81"
+      },
+      "factory_reachable": true,
+      "family": "Cat",
+      "original_base": "CationABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/cation.py",
+      "source_sha256": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa"
+    },
+    "Cav1p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "352c3f3de006e1f31a07857891c3331e68ce2ca23536bc879d4438236c4c90c3",
+        "_init_state": "0e4cf28d5c43df12662875c031dc6b21c8d0f67c21aa86de523ba603dc65a80a"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav1p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "eb98097035fb489147aa3cdb7b88eef6cd2e8b0d39533405b58bb6370cb15b39",
+        "_init_state": "b03b5a640c94d00f270750c915cd6e73d32d79825e7852ef31691e941990e32c"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav2p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "08011e6ca070cfe7c813046f854ee4adcfd1ff7f86761641bc479cbccd4f471c",
+        "_init_state": "60fff2a0e98ea42bc4df8dcfca1b406fa9adbd227ad3da31853562e3bc89af01"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav2p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "500313c3b2f40fd28580fd19a89f3723e310af2103d6773434011bcaf61c2c00",
+        "_init_state": "c900af2fbbd3b88ab0008921f2f871781001b01b26d56785f9e65a681d288473"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav2p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "345c1815eee1c352890518fa0943c97fe5397439265812b94d4778fa0c54f5dd",
+        "_init_state": "4250f531547c3121213ab467335f821467bacb06f6efa6d4637b5a1f247d80ef"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav3p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "4ab55b1cd79e86fdce3dbc363d2f9820749b50371d1389edfa3bf761d1b996d6",
+        "_init_state": "c54575ced0e618e5186c1de8b92fd9d4120d8afdad109bc06015b739b0eeee03"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav3p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "1644c9fd98f25e515cfa891654db7689987b4ef43a2de13f7825483440e2258b",
+        "_init_state": "4c7be2ad68a2044375dac4c75149972d55e630cd9c1d34132eec272502aab99e"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav_G": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "83e0661478c8516a573214e4c4eb41374638c985a0e67bb8b30da7257baeb44e",
+        "_init_state": "6bc89c094a8c5f1b01e520c54a13fb376530d97f77de1d4c087ba0957844c256"
+      },
+      "factory_reachable": true,
+      "family": "Ca",
+      "original_base": "VgCaABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_ca.py",
+      "source_sha256": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6"
+    },
+    "Cav_L_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "2b8e611826a406bde2d8663345a94ff6a8e6bd85151d3cd8d021f74f0a10dd83",
+        "_init_state": "916940f5d079fd74c531efc68b88bb72259be4e752591ecc8832a544df49bf34"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Cav_L_ML2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d2cb7cca27f480f1ed333432ab85bb51eddc11d4370350821acd8fde6e7c371f",
+        "_init_state": "eb2cd178d42ee8472f846f1805dcd215bc847d5b6934e060d0dd22ec2f43e5ad"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Cav_N_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "76265f6a5965612663964c04108881bc5577940b98bf47ce6f10e783e3b7abff",
+        "_init_state": "531d9750d6c562b133d2eca5883be4d89a4a05bb628bc3510c4b06d20f27f561"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Cav_T_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "fe2266a36c85f1fe21a252faf7699fea2f402de58d93acbcd2d706bf8e73922e",
+        "_init_state": "9c6b6896ca509f28d7c77363b3b45eae106a1c82e69525f66d3295f4e5f3f9f4"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "Ca",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "ClLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d1181a6030ea2edd254bcecb223e3c6249095d8736ed89902008f4dcc0d83a69",
+        "_init_state": "c8559c310cafb331c2c2b657a86a6e95eabe306aa928c60e7f510c81a926b811"
+      },
+      "factory_reachable": true,
+      "family": "Cl",
+      "original_base": "VgClABC",
+      "routes": [
+        [
+          "Cl",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_cl.py",
+      "source_sha256": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe"
+    },
+    "HCN1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "0c94f35a27d064632ca73892ff74ae168652dcca3753c9b604b6ee445b7c0de8",
+        "_init_state": "eac20732023b947e9452ec882d9752067421dedfc72611859b0e6bdf72cc4c62"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "HCN2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "fbefce1ddb5a9e178fb3b94efd221a8fa753c75706d7bd53d1e023c540dd13b1",
+        "_init_state": "8bdf31ca88fe6d6998bc0afbfbf0e91abb631ec0ae091d516f584e23266d8060"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "HCN2_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "c82213e872de760abeb687d778184d4cf0fdf2779a5fc55de061dbdbf77824e1",
+        "_init_state": "226d88ea85f9a56a920e8b8407013d44f95c3fcf47400471fa0ce2bfff4a24b2"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Na",
+          0.2
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "HCN2_cAMP": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "5f44e84c99574719a0e59528ab5bad254f9c3c77efd3a7208692ec6d2fc6facd",
+        "_init_state": "803b4ccb2accedef3310fd961e01f653b11fdca991e05d634a447625ee3b1dda"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "HCN4": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "498852519f5039af48f32a9fbcc6694532758b62e4765a8e3aa1b27e58b8dcea",
+        "_init_state": "74f56d0b34bbd5660ae0beb157388f7125c75fe23aba899182dd40f099fc50d7"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "HCN4_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "bd3fea9efabf11346c96ade65197682cfc0a6dc95e5f5207afb25e06ddc6d260",
+        "_init_state": "61752b04a0bc60474c325b34f1b95c88c282e0e6d0f036468110c2cb1191ddaa"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Na",
+          0.2
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "HCN4_cAMP": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "c0a55ddd35d1b43add05e2d0d86eccb01b89368231fe735a1c32f3b978bfc201",
+        "_init_state": "bbb1d3084637a306ca54ff2f0708745cf87f89a17c21199e7b1324845a29e816"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.2
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "HCNLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "f01cd5fd574427493f20c2b82ba646c81a4c59c195695632ac3026421dc1596b",
+        "_init_state": "83e00bfa9c443f061458f7216f45f0feb7de884bb4cded84fcdac501753461ee"
+      },
+      "factory_reachable": true,
+      "family": "Fun",
+      "original_base": "VgFunABC",
+      "routes": [
+        [
+          "Na",
+          0.33
+        ],
+        [
+          "K",
+          1.0
+        ],
+        [
+          "Ca",
+          0.05
+        ]
+      ],
+      "source": "betse/science/channels/vg_funny.py",
+      "source_sha256": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7"
+    },
+    "KLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d1181a6030ea2edd254bcecb223e3c6249095d8736ed89902008f4dcc0d83a69",
+        "_init_state": "03c2fbbf177015bd4598b7f848e789ab62f969597543334cb4d9ead310e400f1"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "K_Fast": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "5dc9471347eb2455377cf9fb2f61bafc7b5c6a5c03c1683d5446aa6b74266db7",
+        "_init_state": "0e611a2cdb0e8832848525e751ca393d9ba550de93c846c8b32785fa9fea485c"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kir2p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "23a79e53d8af7d71252910d5a9f0e4f8fe97527cc25676c954e862b8623a791c",
+        "_init_state": "a9b574862219152662dd6e0e82a81150c7b84c9c41d2fd41c04c5128c48ef673"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kir_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "566be7d1248ede5f9a3f015b2c4d55ff6f9a1b27279f7d9edaf865ddcea8037c",
+        "_init_state": "c42e0e09a9305be86a758698eb2913ec80d4f1e8f0a863ad2ef48cba6bb24afc"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Kv1p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "75bad64f31868138b1694c648cb05afacdce095c17fe0ce1f05df96ae34d6ed8",
+        "_init_state": "9ba1399a5d3198b9204687e3736f0cb7969e2a2179b4960a8abe1f0bb9a1458f"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv1p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "a89617127540b43e65b6cc7d8d6f6b68b1300d5c65bec67422b2b48250ed99fd",
+        "_init_state": "7ac48cbec6db4b6958829e562e641a35b525fd32545935c137fe57b55d3ade73"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv1p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "55cfdcde06b16740234d690df7d5db4761c04ade560eb7be4eeb0eb7299a30ca",
+        "_init_state": "0feb7569dca770c06b92feb65e55c95b6fe8c5d27c10bfec8bd049d21d02345c"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv1p3_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "e78b95cd1c1aa7d9554c40b2c4196f800fce320d12fcaac89734fbfadf1e77f5",
+        "_init_state": "3cb58f0fb3fad3dbf11ef690732209aa81b7966d3895f82b633d007a9c8d495a"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Kv1p4": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "3b0f11803432e5a67e8a3837617462868be74b2f3fcd8106f3915ac5f3b8c7ac",
+        "_init_state": "39ecdf11f5b203b7cba9d22f7c4dda9afa6997896f6757990a6c3e72d932cf99"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv1p5": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "27a22df17ad44a455574effad6aba464cb74ffff3783b51041b8880486a933bd",
+        "_init_state": "911ad92abbaaf9e111853fce2ab829d596dd816d0cddcd18fb09f6f498f9932b"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv1p5S_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "7d428d028fefb53f0857baa6442c067601c4efd7e542d64305bc6c263b0ad273",
+        "_init_state": "19a34267a3f13af98b6a89866d3cec58f5202cf1305d863cbd99f8f23bc6cf2e"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Kv1p5_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "7d428d028fefb53f0857baa6442c067601c4efd7e542d64305bc6c263b0ad273",
+        "_init_state": "09aae4a09ecec6bf0dedb18e23c60348332be14b4b3bfbaa6d1499c22fc6396b"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Kv1p6": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "01734db5744ce98480918fc1f5a8065583b0a8c5425e635934ee3e8122862452",
+        "_init_state": "da846701488f04e4ce50cdb2e2d85f6ebcd8091ff1604ba47b1b82c82ec161af"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv2p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "3cd3288a322bac2c29be3b3fe2f8c3d35acbd02235ea83d70ff55fdcec94fbc3",
+        "_init_state": "94267bb4f6560bcc0c8472687580eccc1ee4f7dccdb72804dea27460e63be291"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv2p1_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "9ad295c9c1d5efbcba474a2558fe303e58a4bd147bc0f365ba28e59dc9ba60df",
+        "_init_state": "b145e24a8f80695d259f749fe83d0fdb3cd17418e3a4e225f97248c4d8b4298e"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "Kv2p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "721d8ce041fa1d5e030dacad6204ac2a00e763c6c452452a4b4f5fccf3e3f4a9",
+        "_init_state": "c536df329a122ec0400ee5a3cfb67a9083bab1c97f91920baff8aca7d698f858"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv3p1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "a1565264b35d365ce6eef0dc62ae03974249ec00aec366c82487891252648180",
+        "_init_state": "220934b742dfa29962b2262426ea4e0303c49c05054c73de56c9d63796240b06"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv3p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d9e9eb24f5a708acb6db18df5ac7f65408239a7768b63ac5c6ae61c7aadf6071",
+        "_init_state": "fe0c0f70625838ed987d6fd178ffd032fc84cc198fbab3e1d8202477f7d6baad"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv3p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "b3f74a0b7e6cc9fd94ea75fcebdaebb88b3dcf8ba357da9586eb11de87daf541",
+        "_init_state": "9473b58a8350827521ffba557ad5fea66a1cbdbce16a525414ef2279059c3253"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv3p4": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "13d6eb1a40ef496a7e914694ad9af3f84b3bda9f6eeb65a93ab6ff8dd1bd74b8",
+        "_init_state": "6e7dd73cd1c317851705708ac55390a35bca36675fca7091e869489656fc764d"
+      },
+      "factory_reachable": true,
+      "family": "K",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_k.py",
+      "source_sha256": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f"
+    },
+    "Kv_ML1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "3173a775720dee43c0d87dbdd2287bb2ccf1ceac8b809dd3384ac47d1c4ead65",
+        "_init_state": "a11d0ded350ef0b5d459e08cfe09bdac078117385341614d325eaa5f33a7bde2"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "K",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    },
+    "NaLeak": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "d1181a6030ea2edd254bcecb223e3c6249095d8736ed89902008f4dcc0d83a69",
+        "_init_state": "221d027ade609ae30e23ff00de9a8f74e7d41d7b598a532d3a01ef994830b00e"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "Nav1p2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "2ae3deea53f9de326f20c4efccf457fcc8bdabdd8ca657121d6c72d34de55ab0",
+        "_init_state": "654a6b97996796b43e422732c4be04ede7641a05474982129e187231a7358984"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "Nav1p3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "881ad587be7b6a1f2fb07bbf70700b43c38eb8696f4d8c194a4bea145ad045e0",
+        "_init_state": "6f615dd3385bafe3a3885818ed96cdaa3a2a51a0207c65727ab7e97d4ed360c7"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "Nav1p6": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "f9f5bee9b7b3c1f0ec9ec40527db927801accb4c18f84c8fc5c4fcb248085d77",
+        "_init_state": "85755e6e4ced6c29e059a7cb5e97b7718afbf6bb3405c2802f442ec55d9a22ad"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "NavRat1": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "903ee9a61d198319dea06564fc172b161057cbb5c8ed1277f2bd634f6450a57e",
+        "_init_state": "fc69d11503cc7c55e29d258c12451488e4d59537aefe9ecac864d2fc1714da4e"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "NavRat2": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "8299126ccb5c34c26731f70963c81a756ef549e323f3c24be5e27ef010ada1ea",
+        "_init_state": "8326b52df1280aa845bb9a77b3839faf9f51634f0066776013c02db9f8ce11eb"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "NavRat3": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "903ee9a61d198319dea06564fc172b161057cbb5c8ed1277f2bd634f6450a57e",
+        "_init_state": "06934de2952278153ce740c9e2f6134c673bca921fc51c017a66e22c5480567a"
+      },
+      "factory_reachable": true,
+      "family": "Na",
+      "original_base": "VgNaABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_na.py",
+      "source_sha256": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831"
+    },
+    "Nav_ML": {
+      "constructor_and_gate_methods": {
+        "_calculate_state": "12b1fea45d780ce7f1f5a9d93fdaf986b675d0362c50dde67e6e11b14505aa53",
+        "_init_state": "299d45db48547dc1805ba0e325312ac9419adfb3464d95100e7e018ad13ac161"
+      },
+      "factory_reachable": true,
+      "family": "ML",
+      "original_base": "VgKABC",
+      "routes": [
+        [
+          "Na",
+          1.0
+        ]
+      ],
+      "source": "betse/science/channels/vg_morrislecar.py",
+      "source_sha256": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0"
+    }
+  },
+  "modern_numeric_methods": 110,
+  "numerical_runs": 0,
+  "old_Cav_G_failed_nominal_reclassified": false,
+  "old_whole_catalog_join_reused_as_ECM_or_active_CaATP": false,
+  "original_source_sha256": {
+    "betse/__init__.py": "a3dce54aab848c36dfc4738f5dba889505adefad819d63d4c61a4310655cf200",
+    "betse/__main__.py": "567bbfc745cbdaaa96c3a0434919c880bb73eb81d1e0c18d6c3725cd3dbdb1ca",
+    "betse/appmeta.py": "5cf6789033f62889ca01cdb083495f608f6432f92aacfeb7fac1a077e4476d9b",
+    "betse/cli/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/cli/__main__.py": "6021cc030e55199423bba252e45d0cff0314f6e93c0a0dd18e67617f6955fa43",
+    "betse/cli/cliinfo.py": "a46c500841300590f0f4d957db5e83786eb0df9910013cb88be5b7292b206dd2",
+    "betse/cli/climain.py": "6dbaa372c92660d7ce06e0b65c431d3394d854d69b6d0f37662ff9e7e524e36b",
+    "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+    "betse/gui/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "betse/gui/interact.py": "0428ac526ed7ef568728482195024e7a3528189621674b7535ce1f0579b5d6cd",
+    "betse/lib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/libs.py": "67e541ba7faec5f425e3139310ab7199868d3f35e5071a81a390b2473d6ca1a9",
+    "betse/lib/matplotlib/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/matplotlibs.py": "cc3553e81cbdae48ffd3968c8abb83e772a11268bceab6f71a95d5c68726ca3c",
+    "betse/lib/matplotlib/mplcolormap.py": "d19b467347ea69ea090241dbee61735bcd57f77777ea3a086c41cef5dcd3f820",
+    "betse/lib/matplotlib/mplfigure.py": "8f1d06ec5a8673d933756699974c34c213168614541fa91ac07c166ba5bfd405",
+    "betse/lib/matplotlib/mplutil.py": "c3aff56c540625720abb8889df2ee968966435f3bf4da4304ef3175cf192f1ec",
+    "betse/lib/matplotlib/mplzorder.py": "8386adcdc57d563243cdd63ad372b728e4e2f3a3c58d63ad5fb0c14154dbe2a0",
+    "betse/lib/matplotlib/writer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/matplotlib/writer/mplcls.py": "2521cf416c44a8fd94d45f86b2643379c38267d64527533d1458f67d5f881a93",
+    "betse/lib/matplotlib/writer/mplvideo.py": "773f643b33b9ac68c3cd75d7fee52058f2148623d5862bf59c86142313b458df",
+    "betse/lib/numpy/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/numpy/nparray.py": "f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889",
+    "betse/lib/numpy/npcsv.py": "7db280c870216d6597da8d845553a878b28eba9c531a05c398de8957bc169108",
+    "betse/lib/numpy/npscalar.py": "02080a869ae0cda8e84851c3d6e5f8d95b88a90ea3cd122c33a83c000da7af12",
+    "betse/lib/numpy/nptest.py": "90bf1455a75473073c45fba84aa7b271944e5766e1319de69b1d7e937a936830",
+    "betse/lib/numpy/numpys.py": "f3fff48b63db53fc53b88f112fca21c7e378e2a1ae5c2eb2ef5e8d5a26445d3d",
+    "betse/lib/pickle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pickle/pickles.py": "10ebdbadabde32d85f310c532b463d5fddf53a0427a62af926af488d4b0b897b",
+    "betse/lib/pil/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/pil/pilnumpy.py": "0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4",
+    "betse/lib/pil/pils.py": "60bfbe2643ba314e1d3d7e0c3225ae2fb4044ecc4085606674f496f3d224e10c",
+    "betse/lib/setuptools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/setuptools/setuptool.py": "121e5b7ab9cc9580911dd9a5c95fc5ca4c50e8a5e4ae9886eedfd972ae267c5c",
+    "betse/lib/setuptools/supresource.py": "83f9ad09c87b1150d16dfe42254e81a0a6c888c3b55ea71d091d616ef3a60d42",
+    "betse/lib/yaml/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/lib/yaml/abc/yamlabc.py": "73366a8a5b9c21d6743854e4ec965c6b5d31073f5145030842ccc12e72679e72",
+    "betse/lib/yaml/abc/yamlfileabc.py": "996cb5748cd6a1c975cfd6af9e0aa3b017810157dd9e3822538317c70a5ce4b1",
+    "betse/lib/yaml/abc/yamllistabc.py": "3facad0e3dc8f93a978595bb197145980f99bc8527ae15085486f92b2a357c1d",
+    "betse/lib/yaml/abc/yamlmixin.py": "fdfa4a4025378d0f8726ebd2309f5d35e2653d4a84bda5946064d8a49fd1448f",
+    "betse/lib/yaml/yamlalias.py": "cc87d9403c088a936a00187e33417b05ae2d26f64ee02b37d7857504cf3f0e37",
+    "betse/lib/yaml/yamlrepr.py": "e70d1b4b08052b42a112ed98665520301904724a31ba44b332198c33fa613907",
+    "betse/lib/yaml/yamls.py": "d159e016257ecc2c0268e8d7189cca430157bfee099b1bd02872d087e4d24091",
+    "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+    "betse/metadeps.py": "854263fb4e2d3c4c5215cffafdb72cb0ee301cbb7295f83ee6445b9031d6afc2",
+    "betse/science/__init__.py": "1b505ba1b4b8f88950e2665b954feb099e81c77bbb9d9fad0d3a87b99e600859",
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/channels/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+    "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+    "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+    "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+    "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+    "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+    "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+    "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+    "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+    "betse/science/channels/wound_channel.py": "a6a545e4e814e7e378d069f9ace425895b9a78c4bb44554a9513dd184e573035",
+    "betse/science/chemistry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+    "betse/science/chemistry/molecules.py": "69e50cbca8281d7ececc12d6136846244a0fe273e43b3d1dfaf793ea19cc2926",
+    "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/compat/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/compat/compatconf.py": "3aa5ac52e1235d12307b82b0e597c9f72761ab64d177b0176e76d2fc468ef49a",
+    "betse/science/compat/compatgrnconf.py": "d3180c1d42d7312e7d4d3df45bbd9843627ba944d041629eec4e4ac5d32da352",
+    "betse/science/compat/compatsim.py": "e3aa9072b18280972708b2884e933a4a660b389018096b2b04e2b3101cc2fe1e",
+    "betse/science/config/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/confexpabc.py": "8ce9cb6e5df7923b222a636089de0712ccb1eba7166fe1d5c3640a3cca66ede5",
+    "betse/science/config/export/confexpcsv.py": "30946d7b6196a4d074547c19514dbc6e522638724245372f2790a11fd1ddeb6f",
+    "betse/science/config/export/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/export/visual/confexpvisabc.py": "9ccb1bf7bfb30e3509656dbbf3b8cbf1fc7030c96eade8a1b8b01b0f816da5f8",
+    "betse/science/config/export/visual/confexpvisanim.py": "3ff2738c610f0cc3fc711764e009123a9f866536a39fbd1c86c6038ac08ef99d",
+    "betse/science/config/export/visual/confexpvisplot.py": "32593e272c553eb4b32c7aea27d9b4b9e64ac5b740ec753a800978fe01624628",
+    "betse/science/config/export/visual/confexpvisual.py": "2ce6c4e7e943842d432bb8bd2c59a1a4985f7dceaf14964662348c3df9c893f2",
+    "betse/science/config/grn/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/grn/confgrn.py": "5e2aea781fa57af25d2ade5e6f5710239f3188b8da0dac2f2841139719c0a55f",
+    "betse/science/config/model/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/config/model/confphase.py": "32abb2e83ba7d17b02c87e0436f191ffbcf2149d694884af837ac03498348c33",
+    "betse/science/config/model/conftis.py": "6842f6e7f8d586ec7ff94aacfd1ce2003622bd31278a8d378d4a747bb5145352",
+    "betse/science/enum/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+    "betse/science/enum/enumion.py": "f5dfa5f6f8581c2164e25cc95911ae27b20644ddc9c3e195f98a637156032799",
+    "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+    "betse/science/filehandling.py": "194ecf36cdc4e10a81b953ddb1a515cdd206eeea6a14670967e6fcf75c4a20c4",
+    "betse/science/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/cache/cacheabc.py": "0dbcc8d32758db0a9aa78834ae1ad3c178c702cb4ca0e9e03a798c19c1621549",
+    "betse/science/math/cache/cachelyrvec.py": "f47d6cfef01e36a5d91a123a2a573e78e118d26a95a704b23374aaf1a5bb98b7",
+    "betse/science/math/cache/cacheupscaled.py": "4ecc030236338007013479641c1cdcacfba26b4570df8e9ef69da346d25db940",
+    "betse/science/math/cache/cachevec.py": "ae9550c6fba5f7c8a863e0b1ae13609110c0b977915e81dffc579ddb07446b5c",
+    "betse/science/math/cache/cachevecfld.py": "c17acfd400c7eca94f3479909128be0b41146e4362680a199b5fc4bcf6f17aa9",
+    "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+    "betse/science/math/mathunit.py": "34f8112b5f6af9ec43baba08ee0847ed54b89da2f8b37a6ef44cc2634ba5c86b",
+    "betse/science/math/mesh.py": "fd0dc21e1f82aa71e19a487f3b91c4b5258f02aec4c69f22c2bf3c419e425c38",
+    "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+    "betse/science/math/systems.py": "5463f401dac898502c463980d70caf977b2b2f4549be46981a6b71c08e46ca23",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/math/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/math/vector/veccls.py": "4303453d4f74b14811506f263deb82209456c7e4fdc6df536dd334749fb08314",
+    "betse/science/math/vector/vecfldcls.py": "6db978b38bab5f86eaa26373cdd92ea70405660ed6722054707ebc79774a5463",
+    "betse/science/math/waves.py": "d84a1acb4870881ffaa955db7e2c562a5bfbb29835dbf3e8449eeb349d2df61a",
+    "betse/science/math/werner.py": "08efa10146d50b26a4ec6116f247ea19f4fe133e96fe83e8347747fb69cee478",
+    "betse/science/organelles/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/organelles/mitochondria.py": "68c313b172813ed86398b26cc311835e98aaf9d3085a4f3169bc0d90def08607",
+    "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+    "betse/science/phase/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/phasecallbacks.py": "5938685e17f94e1066c938ae080800e22e918e5457d6406820e37d847540ac2b",
+    "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+    "betse/science/phase/require/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/phase/require/abc/phasereqabc.py": "51ebf4dbd28de9961b3913fb1794295f17a64d338d61a26bebc82c5be265b5c6",
+    "betse/science/phase/require/abc/phasereqset.py": "718f4b1015af8427f86e6c3e43b1db8e14240746efa71b1fac40a966ca5e0490",
+    "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+    "betse/science/phase/require/phasereqsmake.py": "cc30ccf9b5c8db3a25a0e7dfb53049d9a9ebfe73c389a54d47f683bf7f31a905",
+    "betse/science/physics/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+    "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/physics/move_channels.py": "b857d8d125962ef50cc48a17c53044a20b09e2e0141f046521d7909d8df23ffb",
+    "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+    "betse/science/pipe/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/pipeexpabc.py": "1ad253c6ddc5f6a56c0520fafba8e100b7b98cecf7bd514e8b066c4d07634b14",
+    "betse/science/pipe/export/pipeexpanim.py": "c2d7380c95c87c49cee6b2b60966835ea17b26ee2267318455edce34c6bd330c",
+    "betse/science/pipe/export/pipeexpcsv.py": "ddedc91955309f459cd161ae0191fcbd466e3cc6f44c608e7b76ac6f1f0d3e1c",
+    "betse/science/pipe/export/pipeexpenum.py": "3aa14de3c2439a63022ad429519cd6a848496469cefe0c188876a922e68e6b28",
+    "betse/science/pipe/export/pipeexps.py": "cc41b7fd1acf35d7f11b26eac9dcbc50a9ca75564bdfdc79423d79d838be0dc2",
+    "betse/science/pipe/export/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/pipe/export/plot/pipeexpplotabc.py": "ee1f34490c8fb674b0fbb90b9ebf91fb546f43ca5288735f98f13eeb27642067",
+    "betse/science/pipe/export/plot/pipeexpplotcell.py": "230602b5fbc0ca47db361c23a2de608a6b4f2c6169ab9a2a308f0c4b7fd85290",
+    "betse/science/pipe/export/plot/pipeexpplotcells.py": "4246e2a2a9edce94b1b59d73e747b8ba9ed10754bf78cd0c9d58963bbe9d5097",
+    "betse/science/pipe/pipeabc.py": "8608bac4e1a565dc859a9e7478032fad5a532cd3b8d22fe164c0d03e9a35b9f4",
+    "betse/science/pipe/piperun.py": "04e82dcb038afabee1f7e9fc99936a3a5e1d18cd76328df4ec1ea12b0e76a1a9",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+    "betse/science/tissue/__init__.py": "7c3dbc1d832c967df5b90f071bfe313502237588cd4166a62c60a759c5abfc71",
+    "betse/science/tissue/channelpedia.py": "3b554b22dd1236f2dee7618be8b98fa1f33191f7f68a872df6f4b13ccf2b92a3",
+    "betse/science/tissue/channels_o.py": "ee6f9c538661f42d72e01afc6d01530dcfa1a9cbf1af9945d7227842827e7251",
+    "betse/science/tissue/event/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/event/tiseveabc.py": "490e9e10f3ff713878145bc332a79a3b11bf0d7650238d31d7ff1032e85205a6",
+    "betse/science/tissue/event/tisevecut.py": "95056b3486323f025b9a8ac2777073911b6303b930f23efaf12ec4937cf5c1a6",
+    "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+    "betse/science/tissue/picker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/tissue/picker/tispickcls.py": "c1c592ddc600479806da73c37ade7aecf19df0f49cd46706a74ad6bb9f1bc773",
+    "betse/science/tissue/picker/tispickimage.py": "75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac",
+    "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+    "betse/science/tissue/tisprofile.py": "9477385aea149803d1f7f8611ce6e61550056f0f2ba9e5f91ab967ff3344eb4d",
+    "betse/science/visual/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/anim/anim.py": "8eb19d783fc3409f98a75d073c80543a1abb97be290364cffcdc38e5549be85a",
+    "betse/science/visual/anim/animabc.py": "113f50cfa150e96438f5225a43b80d7c377b9cb2eed9d61418f095dcc6e92d49",
+    "betse/science/visual/anim/animafter.py": "8561cdc3024553acf83cfcded77cd15fc279cc87213865217a5a5f98c21ae48d",
+    "betse/science/visual/anim/animwhile.py": "2ff235af6d8c4f2635f66b1b7ce882bf684a2e944aad219be1eb1997371e7408",
+    "betse/science/visual/layer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/lyrabc.py": "f26411080790cc9121c5558f685b70d00fe00d02a2d965e961f4fd4085906047",
+    "betse/science/visual/layer/lyrtext.py": "0098cf584024a8f5dc03b5e3a67249b3498c4c6c62259998973f0630bda49315",
+    "betse/science/visual/layer/vector/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vector/lyrvecabc.py": "e95765b115bbe5c43b842fba566be9a05429fad2e68e9834e958285626a06671",
+    "betse/science/visual/layer/vector/lyrvecdiscrete.py": "448c3aa86c7fdca28a6054eb39d65ecb3185a6b344610cb574c2779c38f3799f",
+    "betse/science/visual/layer/vector/lyrvecsmooth.py": "0765974ace7d6c0652c287007804ee0e26aa8ea0643a3c33d26063197593efd3",
+    "betse/science/visual/layer/vectorfield/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/layer/vectorfield/lyrvecfldabc.py": "fbb56eba1837ac4bd793df529cd0808169f6549d6e4a0410b1ba8cd0144e76ac",
+    "betse/science/visual/layer/vectorfield/lyrvecfldquiver.py": "4c87afe5cd259bbad77c295abd996a35b1aeba925d41487724c1ec8a339ff7eb",
+    "betse/science/visual/layer/vectorfield/lyrvecfldstream.py": "d0420faef5b1f9f709ebcfc7ba2d8afb0050f31655b90d5464122785e58d3220",
+    "betse/science/visual/plot/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/science/visual/plot/plotabc.py": "f31d57c1a588592fed6b4121f6a3d207d890a5569d64adace8c0250a954159fc",
+    "betse/science/visual/plot/plotutil.py": "52c058f48751d7ebf1d8472629b84aa39bf41b04294a018cd2a04eefd1a2b2eb",
+    "betse/science/visual/visabc.py": "31910c4188fa1e10c07e3a188243faba1ebc79b7778abe3dc189dce38faa4e51",
+    "betse/science/wrapper.py": "4f9faa20a1415e3e5e6aced0c4b9664fd723238800ccc8822a18260b9e0ac982",
+    "betse/util/__init__.py": "27ba859ab475847ac208aa581afc5c24053ae1b487e1cd3a73ab750a0c245d11",
+    "betse/util/app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/apppath.py": "e52cff6d97ecdc27c5e551ff24df91364376f578b4970a1474d5c33488dc19c9",
+    "betse/util/app/meta/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/app/meta/appmetaabc.py": "73716c647565fc92a5fa9ab95038d035405e8d845b8b3f16ea717bb7d7103b4c",
+    "betse/util/app/meta/appmetamod.py": "1b0ff1358ee4b423712b0a556db3602f54575d1a9c8808e992c3a6adbc84e827",
+    "betse/util/app/meta/appmetaone.py": "61cf84869bc9691e31a5f96ab34be6e3f4eed9bf2cec35a88af4fdcd87e7d68e",
+    "betse/util/cli/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/cli/cliabc.py": "7e125a4eb0b3b70221aa661f04b308876624a82a9b1c29eb4e79ac22c7570cfd",
+    "betse/util/cli/cliarg.py": "3b63e06bcab23a9b1d40c6c583770783b79bc3580fc8e7400ad4a8433d275418",
+    "betse/util/cli/clicmd.py": "589e7e8ba58b2221347dd96ba59859a559375348cc410356f9883b4eb2d57b5e",
+    "betse/util/cli/clicmdabc.py": "9355398fa263e5e453957dd4d1e24a06c89976cc50161f5ab70ca02a3af9230c",
+    "betse/util/cli/cliopt.py": "9c025c7675d9a05769783e9b16ec78502da1febdab617ec9c6283cc02de35927",
+    "betse/util/cli/repl/__init__.py": "a195680f3dd78947fc8db9e244a4c6be548fff25434836b07a2ac34e7b9a7355",
+    "betse/util/cli/repl/replenv.py": "71db441f6edf7097d39c2d96398271c28ec8c11f41a6c31ea4f3a9f93572e8af",
+    "betse/util/cli/repl/repls.py": "fed099e7b26a6be45ca009086b1e74e880a6ddb6bce61f264118f07ccf8787af",
+    "betse/util/io/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/error/errexception.py": "89d76db13363c25af671443546ce125fe6c6a447ed2e47bdc97cfff6749ff830",
+    "betse/util/io/error/errfault.py": "4252d0d7a3c03bf793e02a358fcd2e0ca3df73c04452eed0a1e78439ea3d4abe",
+    "betse/util/io/error/errhaiku.py": "389692bebf25f036e156f58a8cd260396ed0e45a0547db6bdcab44016f1b10bb",
+    "betse/util/io/error/errwarning.py": "93bfcdfd06df3bd086e8494a27f93c807a72e6c89c45bcd428e8f308c3659c1b",
+    "betse/util/io/iofiles.py": "76d8ae28816192718dc4473381f97ea9550ba1e50800f76756f3839033ba91bf",
+    "betse/util/io/log/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/io/log/conf/logconf.py": "23ea0cc8122eee4903b11bb1a501e3f0f4115cf3edbd47872ce2803748afa5f0",
+    "betse/util/io/log/conf/logconfcls.py": "5f92d67b906ef1f9a2f5490c51d042997367164ed8d327df1d0a76ae8cb3411e",
+    "betse/util/io/log/conf/logconfformat.py": "4c2fb0e558416240627c01eb074180f59b248be1c43134b47b678b8c0bc18613",
+    "betse/util/io/log/conf/logconfhandle.py": "b04f7fcb07dbe64b056acf4c58c2ac2e9226ca254f8e778ea12353aaa16f2042",
+    "betse/util/io/log/logenum.py": "b5030970ec3c8976de11c0ba65c3348a84b1e046e4b250ca89563e9f37840b83",
+    "betse/util/io/log/logfilter.py": "0252faf8367486f7554aef1f1c7fb6c7dc3550f70b6006836b419ff2f396019f",
+    "betse/util/io/log/logs.py": "73195e9d13a76ad5982be04e13847d2abc76819079d1caddc6122a23d89920f2",
+    "betse/util/io/stderrs.py": "be56e74d81754e980c40e6845e6273225ba23f9b22a1fd2b3649d1d10dfff38a",
+    "betse/util/io/stdouts.py": "748f9bf242712030165d560cbbcc789bffab7998387c3abb7ecaed48afc3d1b2",
+    "betse/util/math/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/geopoint.py": "e768b5ebcffd95eea6ce0cc35a8d0f5b6e7ccda6299b77c9e0a80edf1b548a41",
+    "betse/util/math/geometry/polygon/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/math/geometry/polygon/geopoly.py": "8a031ba303e024f13964f8bd2f225b72128f27574c10ff84a21e100a67727f83",
+    "betse/util/math/geometry/polygon/geopolyconvex.py": "7c02760027be9913dc9e1e4c76352be942a6b2628f8c3b19098b21ca6b594199",
+    "betse/util/math/mathinterp.py": "15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de",
+    "betse/util/math/mathoper.py": "375d44263e2b8fbda7f99ee0b63c4f62e2090dc5e8089ece8447df6f8bac4854",
+    "betse/util/os/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/brand/linux.py": "eb4ca2ed55752603d85af421b2487756d11c9d7fb42cb5488da549c66e05d91e",
+    "betse/util/os/brand/macos.py": "810ba648d63c0f68b6c997e768eaf65731d85c367f1ccf1d1e3f32b164b53400",
+    "betse/util/os/brand/posix.py": "1f68b86f98dd1a73c8e43062cf885ac298b5e84d20e0ecfb8191eb789ef3ede0",
+    "betse/util/os/brand/windows.py": "39fb953ffb920d0e2dca2f28a3a3a4f37c5034e6f39d68ad82f524b3d7ec09a1",
+    "betse/util/os/command/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/command/cmdexit.py": "c56a20f2396f999d3c3d9a6dbdf5600db81e8852f6cdd76a7cb961645b35961f",
+    "betse/util/os/command/cmdpath.py": "3cf00f6d26ba7c8a5bbd155799d03fb8844fe718f42be260712b214e4f04f653",
+    "betse/util/os/command/cmdrun.py": "5af4ac5bf0cef111c07bb63c81f64f166366534737b0e9306635be39a3cce29f",
+    "betse/util/os/command/cmds.py": "46f67be4bc30bad0871795e09b7ed5f42a2b0fc114ae9637008c3019412a9aef",
+    "betse/util/os/displays.py": "2787c498c936cd7b561707c8db41bbffedbe07df81c7fec85c98905e018a4f99",
+    "betse/util/os/dlls.py": "66139d185595780b8603da3997102bcb49325c0609c71f614785148c83b598de",
+    "betse/util/os/kernels.py": "851cda286868360ad8b1c4fccac599fec1cae7c558f4f152031a37f67f42bca0",
+    "betse/util/os/oses.py": "0f725069755e36bb6b78049e2ec8ba51704d307dfa8c4af33d0bfa73cc981b88",
+    "betse/util/os/process/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/process/prctest.py": "320671fea230660da8941ffaec2457f8cbbbc3e918f2b4e7ea47c824fe398c1b",
+    "betse/util/os/shell/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/os/shell/shelldir.py": "30587a56b42063802bfe38ae17d43e1634d5d10bd417698ee8ce4f67ba0b8961",
+    "betse/util/os/shell/shellenv.py": "6917a95c35b1b4e21d7bc27547a5a4b49b571120c6c2a38e72e131f054c27403",
+    "betse/util/os/shell/shellstr.py": "10683f615a184461de498cfe934b827dcb2a5a904d498df478085b81df273f4f",
+    "betse/util/path/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/path/archives.py": "8b62a4877fc089a3459bd0853fd9c12b7d618269a7859d578b753ad028bfe554",
+    "betse/util/path/dirs.py": "c18337d0564727251cf5367cca094ad373148f159ca55317d3d64de8a2436d4a",
+    "betse/util/path/files.py": "5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66",
+    "betse/util/path/gits.py": "4a74f78beb4be9c048af321dd1703b4e499b90d38487347214af894e81a4d69a",
+    "betse/util/path/pathnames.py": "7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b",
+    "betse/util/path/paths.py": "4dd3c7aa0a9e9e973d556ecaea6b9dcf63ac9e248e1011560516d7f901521b4f",
+    "betse/util/path/temps.py": "28a742af5365bc39863a5c863feb1e89b48d8e0e9683f58cc9943d22f5b7c6f7",
+    "betse/util/py/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/py/module/pyimport.py": "c85beba1ff700bd5b665929e9b8208492e52524a5a2fea325fdc193c2135cdbd",
+    "betse/util/py/module/pymodname.py": "488e209a4dfd24d29b77d77453ede7d897694eb298dbf6b49ee973ac31aac634",
+    "betse/util/py/module/pymodule.py": "5022e9a1991a594b8ffa08eff5cb9b087ad8933defde72c190d05595364eaf4e",
+    "betse/util/py/module/pypackage.py": "cb8ab223386f7019a7acf5dc11933dde78e3c97a3a560c60af36d8a558b4dc19",
+    "betse/util/py/pyfreeze.py": "2737d5f0ee7fbaf0bc54bcfd771d31427b0c474dc4cee0456005874e6cbe4780",
+    "betse/util/py/pyident.py": "9c3573288519eed2cbc0ce9cde0acff523a50dc71a467acffac2a293ff05f692",
+    "betse/util/py/pyimpl.py": "516ce9913bc4728f965431a86b791c9b907248054bd4c970ddf3f44f74d807be",
+    "betse/util/py/pyprofile.py": "639c428a9a80d8c6d561df066bb74cbe89a8d0d09513971f0d76bbf14cc97aa8",
+    "betse/util/py/pyref.py": "acc3d4169b1bd2cc3b21766b6305fde6bcfeb90288da6e5f3ba5983e5e85ec29",
+    "betse/util/py/pys.py": "90f8aa6d4c83ec552b2f0ecd748ff8b5d86496e286dd6e47d7d49d8a1c9ebf09",
+    "betse/util/py/pythread.py": "8b72c5f181c4aaa566693803d75ba81f905240616ea1b2186b6510289a396788",
+    "betse/util/py/pyvenv.py": "219007a2753db42fec9580886a812c85d81b8111fc664536ad9757a4f0490a11",
+    "betse/util/test/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/fixture/pytfixture.py": "54fed051128c422cafd3177cecb6f1408850582a24a2ae1d62f6a0a8c684b1ff",
+    "betse/util/test/pytest/mark/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/test/pytest/mark/pytfail.py": "69285d8282aea27ff41fe99cce33af2aa0678d064faf2395245fa96f077a5ca3",
+    "betse/util/test/pytest/mark/pytmark.py": "16bf121ef7e97a1e6cb78c54b76d23f7f23f1dc5603fa0bc3b0436e755ed1471",
+    "betse/util/test/pytest/mark/pytparam.py": "8758dce94d17d0f660aede61648e00284e19300fb58243c72fcd0e42895406cc",
+    "betse/util/test/pytest/mark/pytskip.py": "35c5001bdc372f14940bfa88d4ee934458ceb3e9f8cff0e8eaa920f86b9b51f0",
+    "betse/util/test/pytest/pytabc.py": "c1a72752a833ea5d27e5ecdc532c3d60ee66d009b31918693c77f77b2fd40d76",
+    "betse/util/test/pytest/pytests.py": "fae1b4c1f8c6541dfb3f7cea6c5325ca41d3b2be066142b5dc5acf6af2e6b816",
+    "betse/util/test/pytest/pytrequest.py": "373f5c64a7f43f82c9ccef10e7da037d194983ed34d9bd2e48c71893a3f14792",
+    "betse/util/test/tstci.py": "2068a54c9260e5823028feb1c3c1dcaacdaad9f4c34d49a030dada97c77bfca0",
+    "betse/util/test/tsttest.py": "3e6843aa386e717d38e5640ffe30587435f3e22bc35629878243c18ba4fdf2c7",
+    "betse/util/type/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/call/callables.py": "0579a3d547c6752cb1387bbaa537a62bab762d388ddf1fbebf22cab868fa8ca7",
+    "betse/util/type/call/callbacks.py": "3d1bfd3a77c4f84dbad8392757edbb254f8f79e95bd1e528d0d5a40cf3693f83",
+    "betse/util/type/call/callers.py": "f8e6c2b1cf6f946be7c6192fa39fab695110a9f3bf590ac88230cc3f0f314771",
+    "betse/util/type/cls/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/cls/classes.py": "518cf58a45b621fae925595c3e3ed48dcba8c1f71df6718b10ffbe253710aab4",
+    "betse/util/type/contexts.py": "66fad70e4b3458f3d24e66c93c741628112be7ba591d745e034529caaa8da8ef",
+    "betse/util/type/decorator/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/decorator/deccls.py": "a294b66d7dda74a1c059046fc83776c386f24e94cb1cde8e325592c81b882f27",
+    "betse/util/type/decorator/decmemo.py": "04ba224b0b3f89a7b01e81daabc1e090c569534ccaf680118308c897fe0b96fd",
+    "betse/util/type/decorator/decorators.py": "34928e23f814b433fa5dc88bd45ec94d7d54ed0145a1c789e96f5995704bb84e",
+    "betse/util/type/decorator/decprof.py": "1e6e67c99ee56e423e14c988e93f0b27a42ba5161306a4bc8422ffaea2e4ded8",
+    "betse/util/type/descriptor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/descriptor/datadescs.py": "738468044761a2a36b2c4cde12213a3d7c910ca321eac3204e63fceb7da3a9c3",
+    "betse/util/type/descriptor/descs.py": "ddbd20c4cc4ffb3cbda95d632108ba3387936e6e70f2fe9e8ce9174701a4ba45",
+    "betse/util/type/descriptor/expralias.py": "96f5095f544894dd880a63cbdcb6333dbd178e0d64ed173b6afec384878a1986",
+    "betse/util/type/enums.py": "61924f3d1f3be6245a6696a77d90b9bfe34b5214683919b127ca46d3372d4c18",
+    "betse/util/type/iterable/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/generators.py": "f6acfb290e2b732e04f81c1a917c2c29915ed568ea49f81b6bfd9228cee3dd01",
+    "betse/util/type/iterable/iterables.py": "d5568a6a25f1d6c2a6dd0f3babac4eec1b860ee931531c1955dcd8f390ae5403",
+    "betse/util/type/iterable/iterators.py": "e7a534602fc73e64aaad768cb4072c0548a9562671eb309c779fbb7d15d262c7",
+    "betse/util/type/iterable/iterget.py": "0507d60daf5dbf1f3facadc0b0b80c7165e7ae0425cc930ff9a57660388522bd",
+    "betse/util/type/iterable/iteriter.py": "069329248e2a9578e0a1284d84268d65402c8052c25ceac1f6920630058ec7b3",
+    "betse/util/type/iterable/itersort.py": "acbff05481ff7e4e6283efab444de3ff48b5759fd8255aa3cc1be7435f8ddce8",
+    "betse/util/type/iterable/itertest.py": "b52190a6589231f4055e018fd9de36291e4c26fe277b7db738f1122eca51be2d",
+    "betse/util/type/iterable/mapping/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58",
+    "betse/util/type/iterable/mapping/mapmerge.py": "e49ec4d4fb4dbe84732f57294b406793cba2e01287081c066be2455c9678fbc0",
+    "betse/util/type/iterable/mapping/mappings.py": "37be12540d4f51b0ec62d17a7f321d6b61e2fdbaf030b7528c192099a42a57cf",
+    "betse/util/type/iterable/mapping/maptest.py": "9bbd2f2bd5e6007f5cb5f94a951ae676ca38940d8b544ba844341d411e16c488",
+    "betse/util/type/iterable/queues.py": "0477a235a70219d602abb4ede2a725c810e39cd4bd6cb4f06f52b796c626b404",
+    "betse/util/type/iterable/sequences.py": "fbd68c0d532ad56d81e8a90696d95465cd21c78b46db28f34f939f74f412abb1",
+    "betse/util/type/iterable/set/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/iterable/set/setcls.py": "e53cd54b698ef7457280fc8a4c201f096d5f7ebb29c26309a79f2546dc1bc46a",
+    "betse/util/type/iterable/set/sets.py": "930bbb8e7fae15d1568ccf1d6b0e714ce5da4fac60e02c9414e34471bc8678a5",
+    "betse/util/type/iterable/tuples.py": "af9f097ed1983c88a3a278da8d5f80102a64c0ff39e1d05477459dd60d243bbf",
+    "betse/util/type/numeric/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/numeric/bits.py": "0e1d425a5e291e6742ffe37505c157db0a39168917016e8d908b47792368395f",
+    "betse/util/type/numeric/floats.py": "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84",
+    "betse/util/type/numeric/ints.py": "cadf886fe9a34b04a89ade6fccac244116abeac9e9391782e31e50078dc3e011",
+    "betse/util/type/numeric/numerics.py": "4a948ec077371d3db6f1017d827112cbcc9a17329e91716c3a44c2ca37b27557",
+    "betse/util/type/numeric/versions.py": "f297a745a1c2f632c7700d1f3c666932934d368fadf8414ca7091fe91a7df774",
+    "betse/util/type/obj/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/obj/objects.py": "2f61869278221ea2640c6b6a0d69938e6407d29fcb91d8f2be286ec3f84a4945",
+    "betse/util/type/obj/objiter.py": "5efba02633c6d3cc6673dff7bc45ed18b0d301c1030610a834315ab89aa2f89b",
+    "betse/util/type/obj/objsize.py": "4b52f82bfe3b20f879f5f73f5196ee7bc4e08eb71f156b344cfc9defbb170cef",
+    "betse/util/type/obj/objtest.py": "22589d50c66ab6c0cdd3590ff2c5928fd901397aeafd56cac29add9c8017c837",
+    "betse/util/type/obj/sentinels.py": "cef85d8726d4bebb106eb3d3a72082971968497156aa9713f546d3925961e679",
+    "betse/util/type/text/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/chars.py": "5abae6a46e06d9ecceebf75b50f534f717f078a90b7690403219d0209fedd920",
+    "betse/util/type/text/mls.py": "52ec27d5ac0644cc37d1b78d77756cb41f2d60cb52bc1809fe2d49f7372ad622",
+    "betse/util/type/text/regexes.py": "85c5b1470bb773b82a99b2300cefa529710aefd3442d0942f1412e67ca43a700",
+    "betse/util/type/text/string/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "betse/util/type/text/string/strjoin.py": "ba85964d929a9080d7ca06e713042c07858c2dd8747e3e1206fbfa8ff2a852e7",
+    "betse/util/type/text/string/strs.py": "351a1a8cd61d7942c83cf8c7bffcbf918de9dffab9d58764ffd38e88d88c841c",
+    "betse/util/type/typehints.py": "fd1ac6d86cae62d2d4ea22afa2a7f87b91a35aa0763b2e8fba89a567c8ebfc39",
+    "betse/util/type/types.py": "9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089"
+  },
+  "pytest_collection_runs": 0,
+  "read_time": "Cold init uses prepared initial Vm before bootstrap. Population gates use current Vm once; ordered routes gather current bulk by owner, mapped full grid, Vm/runtime T/rho and write aliases immediately",
+  "required_new_seams": [
+    "Own extended literal reader/factory/scientific namespace",
+    "Own complete channel/core cache, gate-memory and hot restoration",
+    "Actual before-channels and post-channels/pre-modulator conditional checkpoints",
+    "Explicit original tissue-index preparation for named profile targets"
+  ],
+  "route_policy": "No ordinary fluxes_mem write; core extra_J_mem carries channel current into later chemistry/publication. Last-route chan_flux/DChan retained; zero-weight Ca route still executes and increments nonce",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scoped_refusals": [
+    "Expression/tissue-map lifecycle beyond explicit profile preparation",
+    "Legacy cagPotassium has no built-in runtime caller and is not a modern factory class",
+    "Forced INIT execution/skip in normal SIM",
+    "Unsupported ion roles/families and missing or changed owner/cache"
+  ],
+  "source_order": "ordinary refresh -> CaATP -> GRN clear -> channels -> modulators -> chemistry -> deferred commit -> full fields",
+  "unchanged_catalog_port_sha256": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b"
+}

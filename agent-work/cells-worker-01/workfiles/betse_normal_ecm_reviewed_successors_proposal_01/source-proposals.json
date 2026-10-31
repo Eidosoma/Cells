@@ -1,0 +1,54 @@
+{
+  "archive_cap_candidate_adopted": false,
+  "archive_review_clearance_pending": true,
+  "catalog_promotion": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/promotion.json",
+    "sha256": "627f96f8d9e531371826493213ff33536b33de35a34eda6f1b5c5ae248c2713f"
+  },
+  "catalog_review": {
+    "path": "/mnt/workspaces/Cells/ecm-catalog-naleak-reference-repair-20261031-01/root-review-01/REVIEW.json",
+    "sha256": "abcc73bdd4b50c53bb79e44a603ac33a56508b60d42920260520bb9510610277"
+  },
+  "event_NaLeak_only": {
+    "after_sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b",
+    "before_path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-03/source/validation/betse/betse_normal_ecm_event_join_reference.py",
+    "before_sha256": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+    "candidate_path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_01/validation/betse/betse_normal_ecm_event_join_reference.py",
+    "entire_module_inverse_AST_exact": true,
+    "exact_reviewed_catalog_branch": true,
+    "exact_source_byte_inverse": true,
+    "independent_event_review_pending": true,
+    "inserted_branch_AST": "If(test=Compare(left=Name(id='name', ctx=Load()), ops=[Eq()], comparators=[Constant(value='NaLeak')]), body=[Expr(value=Call(func=Attribute(value=Name(id='sodium', ctx=Load()), attr='_d', ctx=Load()), args=[Name(id='voltage', ctx=Load()), Constant(value='voltage')])), Return(value=Tuple(elts=[List(elts=[Call(func=Name(id='Decimal', ctx=Load()), args=[Constant(value=1)]), Call(func=Name(id='Decimal', ctx=Load()), args=[Constant(value=1)])], ctx=Load()), List(elts=[Call(func=Name(id='Decimal', ctx=Load()), args=[Constant(value=1)]), Call(func=Name(id='Decimal', ctx=Load()), args=[Constant(value=1)])], ctx=Load())], ctx=Load()))])",
+    "inserted_branch_AST_sha256": "70cfbfbd1d8153a0331c761a85f8a60bb435b71c6f4623d70c364aace747ef9f",
+    "other_equations_budgets_and_routes_unchanged": true
+  },
+  "fixture_evaluations": 0,
+  "kind": "cells.explicit_ECM_successor_source_proposals@1",
+  "lifecycle_observer_repair": {
+    "after_sha256": "46b35871df61d616f5d186dd2aa517f81f0299ee03282fc61a883dc816370cb9",
+    "before_path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-01/source/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+    "before_sha256": "d30c124ed6339b20c8db6815ffefb0c3303e68c25f0c3fd66fe797f5be31cff5",
+    "candidate_path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_01/tests/unit/test_betse_normal_ecm_run_lifecycle.py",
+    "exact_root_RuntimeError_and_declared_message_required": true,
+    "exact_source_byte_inverse": true,
+    "native_production_reference_equations_and_roster_unchanged": true,
+    "only_changed_test": "test_headless_observer_failure",
+    "other_test_functions_AST_exact": true,
+    "per_call_paths_for_before_accepted_and_observation": true,
+    "reader_candidate_path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_successors_proposal_01/lifecycle-observer-reader.py",
+    "reader_delta": "Require exact RuntimeError/Declared observer failure witness in observer JSON",
+    "reader_sha256": "d2319355d77f27e803b02c66274dafb8183eba0a187f01a0270e80ce68638d32"
+  },
+  "new_or_retained_qualification_passes": 0,
+  "numerical_runs": 0,
+  "old_frozen_and_live_sources_changed": false,
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "reviewed_catalog_reference": {
+    "path": "/home/robert/Cells/validation/betse/betse_normal_ecm_catalog_join_reference.py",
+    "sha256": "6c51cdddbeb166ee33a9000143aad16f003cb9e6d4178cb3993aa62a1538ea70"
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "status": "ready_for_independent_static_review_unrun"
+}

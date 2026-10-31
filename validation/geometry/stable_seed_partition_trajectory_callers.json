@@ -1,0 +1,4030 @@
+{
+  "case4_8MiB_control_separately_authorized": true,
+  "cases": [
+    {
+      "arms": [
+        {
+          "actual_steps": 20,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.4f8b588e368f0p-16",
+          "end_time_s": 1.9999999999999998e-05,
+          "id": "base",
+          "max_steps": 20,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 40,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.4f8b588e368f0p-16",
+          "end_time_s": 1.9999999999999998e-05,
+          "id": "dt-half",
+          "max_steps": 40,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 80,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.4f8b588e368f0p-16",
+          "end_time_s": 1.9999999999999998e-05,
+          "id": "dt-quarter",
+          "max_steps": 80,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        }
+      ],
+      "case_id": "uniform-two-species",
+      "coarse_steps": 20,
+      "dt_over_fastest_scale": 0.05166757268699812,
+      "end_time_s": 1.9999999999999998e-05,
+      "fastest_planning_scale": {
+        "kind": "zero_voltage_local_capacitive_slope",
+        "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+        "source_inputs": {
+          "F_C_mol": 96485.33212331001,
+          "R_J_mol_K": 8.31446261815324,
+          "specific_capacitance_F_per_m2": 0.01,
+          "summed_z2_P_meanC": 0.0001430511474609375,
+          "temperature_K": 310
+        },
+        "species": null,
+        "tau_s": 1.935449931155068e-05,
+        "tau_s_exact": {
+          "denominator": "480187621352818128330555133540171776",
+          "numerator": "9293790986888278182570710917319"
+        }
+      },
+      "fresh_initial_qualification_required_for_every_arm": true,
+      "geometry_acceptance_row": {
+        "candidate": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-000/test_positive_explicit_cell_ba0/constructor-candidate.json",
+          "sha256": "e9bf752fa151117474fbaeaae4fb76bce900cafbd900b90bf84cd3ea60abccd7"
+        },
+        "case": "one-cell",
+        "constructor_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-000/test_positive_explicit_cell_ba0/constructor-request.json",
+          "sha256": "e661f1e4f3714e43001f71c5320983033df044ca26df7a6c6f899264d119e02b"
+        },
+        "reference_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-000/test_positive_explicit_cell_ba0/reference-input.json",
+          "sha256": "f4e62f8ec3341023ac355a7ebaca573a64253447df104131c5060bb5eb31ab00"
+        },
+        "report": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-000/test_positive_explicit_cell_ba0/reference-output.json",
+          "sha256": "246ab237f8470e22b747939d3fade18474b9a8eb0a82906bc3bf953a1523d4e1"
+        },
+        "unit": "check-000"
+      },
+      "geometry_binding_identity": "4c17cab6e5645157acb715e54806c6c4aa6296190e87a43f9f3512ed3c93e273",
+      "geometry_case": "one-cell",
+      "horizon_rule": "ceil(one fastest positive local source-value time scale / coarse dt), minimum eight coarse steps",
+      "positive_arm_ids": [
+        "base",
+        "dt-half",
+        "dt-quarter"
+      ],
+      "source_time_scale_rows": [
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0013642420526593924,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "6597069766656"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0013642420526593924,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "6597069766656"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0013642420526593924,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "6597069766656"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0013642420526593924,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "6597069766656"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-A",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-A",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 0.0001430511474609375,
+            "temperature_K": 310
+          },
+          "species": null,
+          "tau_s": 1.935449931155068e-05,
+          "tau_s_exact": {
+            "denominator": "480187621352818128330555133540171776",
+            "numerator": "9293790986888278182570710917319"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-366a251b56a10fa07dfd2bbf0e6fd4dfda096d43d77f72c21ce4e4ebe662fc73",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 0.0001430511474609375,
+            "temperature_K": 310
+          },
+          "species": null,
+          "tau_s": 1.935449931155068e-05,
+          "tau_s_exact": {
+            "denominator": "480187621352818128330555133540171776",
+            "numerator": "9293790986888278182570710917319"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9c3cf223417f54bbca6bf753380f9fff8279cac3511113f88d3f46227afcb00f",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 0.0001430511474609375,
+            "temperature_K": 310
+          },
+          "species": null,
+          "tau_s": 1.935449931155068e-05,
+          "tau_s_exact": {
+            "denominator": "480187621352818128330555133540171776",
+            "numerator": "9293790986888278182570710917319"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9952856abcd81c1db16ff7f4dae59c073ab44ed9dda701842af82dea8a4b44b4",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 0.0001430511474609375,
+            "temperature_K": 310
+          },
+          "species": null,
+          "tau_s": 1.935449931155068e-05,
+          "tau_s_exact": {
+            "denominator": "480187621352818128330555133540171776",
+            "numerator": "9293790986888278182570710917319"
+          }
+        }
+      ],
+      "uninterrupted_and_restart_share_identical_full_definition": true,
+      "window_estimate_uses_initial_observation_at_zero": true
+    },
+    {
+      "arms": [
+        {
+          "actual_steps": 960,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.f75104d551d68p-11",
+          "end_time_s": 0.0009599999999999999,
+          "id": "base",
+          "max_steps": 960,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 1920,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.f75104d551d68p-11",
+          "end_time_s": 0.0009599999999999999,
+          "id": "dt-half",
+          "max_steps": 1920,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 3840,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.f75104d551d68p-11",
+          "end_time_s": 0.0009599999999999999,
+          "id": "dt-quarter",
+          "max_steps": 3840,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 944832,
+          "window_recording": "full",
+          "window_steps": 1
+        }
+      ],
+      "case_id": "unequal-clefts-readback-defects",
+      "coarse_steps": 960,
+      "dt_over_fastest_scale": 0.0010424999137431704,
+      "end_time_s": 0.0009599999999999999,
+      "fastest_planning_scale": {
+        "kind": "finite_bath_diffusive_inventory",
+        "owner": "caller-bath-0-0",
+        "source_inputs": {
+          "summed_DA_over_L_m3_s": 2.7126736111111115e-15,
+          "volume_m3": 2.6020852139652106e-18
+        },
+        "species": "A",
+        "tau_s": 0.0009592326932761351,
+        "tau_s_exact": {
+          "denominator": "4835703278458517",
+          "numerator": "4638564679680"
+        }
+      },
+      "fresh_initial_qualification_required_for_every_arm": true,
+      "geometry_acceptance_row": {
+        "candidate": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-001/test_positive_explicit_cell_ba0/constructor-candidate.json",
+          "sha256": "2f25aee0a628385e44f305776e07d3898c241e70c673643e2b74437c3821c975"
+        },
+        "case": "unequal-clefts",
+        "constructor_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-001/test_positive_explicit_cell_ba0/constructor-request.json",
+          "sha256": "790624ceaced6df8d1f117da0f68fe298caf9079feebcba202b01e0bd84817f4"
+        },
+        "reference_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-001/test_positive_explicit_cell_ba0/reference-input.json",
+          "sha256": "02c6e88fbd1aac28212295e51b05a13a14f3e8f2a245fe25a3b3381858d633e4"
+        },
+        "report": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-001/test_positive_explicit_cell_ba0/reference-output.json",
+          "sha256": "ab1f4f93582295ef13c95fad4682b29b1d601488528337af3265006233b9104f"
+        },
+        "unit": "check-001"
+      },
+      "geometry_binding_identity": "3ff904791f7fe31c573dbaca7cf0a96c109197cc56d8ca58ceedd1eb22c84968",
+      "geometry_case": "unequal-clefts",
+      "horizon_rule": "ceil(one fastest positive local source-value time scale / coarse dt), minimum eight coarse steps",
+      "positive_arm_ids": [
+        "base",
+        "dt-half",
+        "dt-quarter"
+      ],
+      "source_time_scale_rows": [
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.3563368055555557e-15,
+            "volume_m3": 2.6020852139652106e-18
+          },
+          "species": "C",
+          "tau_s": 0.0019184653865522703,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "9277129359360"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.9618443080357142e-15,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "C",
+          "tau_s": 0.005305385760342081,
+          "tau_s_exact": {
+            "denominator": "14507109835375551",
+            "numerator": "76965813944320"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.453218005952381e-15,
+            "volume_m3": 7.806255641895632e-18
+          },
+          "species": "C",
+          "tau_s": 0.005371703082346357,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "25975962206208"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.2385525173611114e-16,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 0.012278178473934531,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "59373627899904"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 1.5612511283791264e-17
+          },
+          "species": "C",
+          "tau_s": 0.012278178473934531,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "59373627899904"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.3563368055555557e-15,
+            "volume_m3": 2.6020852139652106e-18
+          },
+          "species": "C",
+          "tau_s": 0.0019184653865522703,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "9277129359360"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.9618443080357142e-15,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "C",
+          "tau_s": 0.005305385760342081,
+          "tau_s_exact": {
+            "denominator": "14507109835375551",
+            "numerator": "76965813944320"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.453218005952381e-15,
+            "volume_m3": 7.806255641895632e-18
+          },
+          "species": "C",
+          "tau_s": 0.005371703082346357,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "25975962206208"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-offset",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-17,
+            "volume_m3": 2.0816681711721685e-17
+          },
+          "species": "C",
+          "tau_s": 1.2,
+          "tau_s_exact": {
+            "denominator": "5",
+            "numerator": "6"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "C",
+          "tau_s": 3.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "3"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 5.204170427930421e-18,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 5.204170427930421e-18,
+            "volume_m3": 1.5612511283791264e-17
+          },
+          "species": "C",
+          "tau_s": 3.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "3"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "C",
+          "tau_s": 3.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "3"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.7126736111111115e-15,
+            "volume_m3": 2.6020852139652106e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009592326932761351,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4638564679680"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.9236886160714284e-15,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "A",
+          "tau_s": 0.0026526928801710405,
+          "tau_s_exact": {
+            "denominator": "14507109835375551",
+            "numerator": "38482906972160"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.906436011904762e-15,
+            "volume_m3": 7.806255641895632e-18
+          },
+          "species": "A",
+          "tau_s": 0.0026858515411731787,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "12987981103104"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 8.477105034722223e-16,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 0.006139089236967266,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "29686813949952"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 1.5612511283791264e-17
+          },
+          "species": "A",
+          "tau_s": 0.006139089236967266,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "29686813949952"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.7126736111111115e-15,
+            "volume_m3": 2.6020852139652106e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009592326932761351,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4638564679680"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.9236886160714284e-15,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "A",
+          "tau_s": 0.0026526928801710405,
+          "tau_s_exact": {
+            "denominator": "14507109835375551",
+            "numerator": "38482906972160"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.906436011904762e-15,
+            "volume_m3": 7.806255641895632e-18
+          },
+          "species": "A",
+          "tau_s": 0.0026858515411731787,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "12987981103104"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-offset",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-18,
+            "volume_m3": 2.0816681711721685e-17
+          },
+          "species": "A",
+          "tau_s": 2.4,
+          "tau_s_exact": {
+            "denominator": "5",
+            "numerator": "12"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "A",
+          "tau_s": 6.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "6"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.6020852139652106e-18,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.6020852139652106e-18,
+            "volume_m3": 1.5612511283791264e-17
+          },
+          "species": "A",
+          "tau_s": 6.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "6"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.0408340855860843e-17
+          },
+          "species": "A",
+          "tau_s": 6.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "6"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 2.1457672119140626e-07,
+            "temperature_K": 300
+          },
+          "species": null,
+          "tau_s": 0.012486773749387536,
+          "tau_s_exact": {
+            "denominator": "3299824207447016404962105217884738521277481719",
+            "numerator": "41204158291142936361178343842431241289728000"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-366a251b56a10fa07dfd2bbf0e6fd4dfda096d43d77f72c21ce4e4ebe662fc73",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 2.86102294921875e-07,
+            "temperature_K": 300
+          },
+          "species": null,
+          "tau_s": 0.009365080312040653,
+          "tau_s_exact": {
+            "denominator": "4399765609929354901321072596918288439953473283",
+            "numerator": "41204158291142936361178343842431241289728000"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9c3cf223417f54bbca6bf753380f9fff8279cac3511113f88d3f46227afcb00f",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 2.86102294921875e-07,
+            "temperature_K": 300
+          },
+          "species": null,
+          "tau_s": 0.009365080312040653,
+          "tau_s_exact": {
+            "denominator": "4399765609929354901321072596918288439953473283",
+            "numerator": "41204158291142936361178343842431241289728000"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9952856abcd81c1db16ff7f4dae59c073ab44ed9dda701842af82dea8a4b44b4",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 3.5762786865234375e-07,
+            "temperature_K": 300
+          },
+          "species": null,
+          "tau_s": 0.007492064249632522,
+          "tau_s_exact": {
+            "denominator": "1099941402482338801654035072628246173759160573",
+            "numerator": "8240831658228587272235668768486248257945600"
+          }
+        }
+      ],
+      "uninterrupted_and_restart_share_identical_full_definition": true,
+      "window_estimate_uses_initial_observation_at_zero": true
+    },
+    {
+      "arms": [
+        {
+          "actual_steps": 497,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.049235f809917p-11",
+          "end_time_s": 0.0004969999999999999,
+          "id": "base",
+          "max_steps": 497,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 2580672,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 994,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.049235f809917p-11",
+          "end_time_s": 0.0004969999999999999,
+          "id": "dt-half",
+          "max_steps": 994,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 2580672,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 1988,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.049235f809917p-11",
+          "end_time_s": 0.0004969999999999999,
+          "id": "dt-quarter",
+          "max_steps": 1988,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 2580672,
+          "window_recording": "full",
+          "window_steps": 1
+        }
+      ],
+      "case_id": "two-cell-four-species",
+      "coarse_steps": 497,
+      "dt_over_fastest_scale": 0.0020157713175893337,
+      "end_time_s": 0.0004969999999999999,
+      "fastest_planning_scale": {
+        "kind": "finite_bath_diffusive_inventory",
+        "owner": "caller-bath-0-0",
+        "source_inputs": {
+          "summed_DA_over_L_m3_s": 3.496805826822917e-15,
+          "volume_m3": 1.734723475976807e-18
+        },
+        "species": "A",
+        "tau_s": 0.0004960880191488699,
+        "tau_s_exact": {
+          "denominator": "53192736063043687",
+          "numerator": "26388279066624"
+        }
+      },
+      "fresh_initial_qualification_required_for_every_arm": true,
+      "geometry_acceptance_row": {
+        "candidate": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-002/test_positive_explicit_cell_ba0/constructor-candidate.json",
+          "sha256": "4561c24b9645a5fd4e5e2b3fd2b22d0ae76bf6839a9a97f974bc206ffa0aa847"
+        },
+        "case": "two-cells",
+        "constructor_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-002/test_positive_explicit_cell_ba0/constructor-request.json",
+          "sha256": "3b0020dcc07fd1defedd65017ee2e805e693115cf89b15f262a1b1e3f26b7be0"
+        },
+        "reference_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-002/test_positive_explicit_cell_ba0/reference-input.json",
+          "sha256": "56f77cbc7246b671db1b1f0e4b7feb4775e8f7945ae36f8ea3ffd636ff2961cd"
+        },
+        "report": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-002/test_positive_explicit_cell_ba0/reference-output.json",
+          "sha256": "ffb1265778abacff02b6ea3dc7982c3664f139a1527cfc6f96d01b401472f7f9"
+        },
+        "unit": "check-002"
+      },
+      "geometry_binding_identity": "c518877771a5ab31f04340536bd49e3b5c3b7cbb1871e7275982352ebff15f56",
+      "geometry_case": "two-cells",
+      "horizon_rule": "ceil(one fastest positive local source-value time scale / coarse dt), minimum eight coarse steps",
+      "positive_arm_ids": [
+        "base",
+        "dt-half",
+        "dt-quarter"
+      ],
+      "source_time_scale_rows": [
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.7484029134114584e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0009921760382977398,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.0345052083333334e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0017053025658242404,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "8246337208320"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.738407679966518e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 0.0019004366902717902,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "615726511554560"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1807396298363096e-15,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "C",
+          "tau_s": 0.005876734996071228,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "369435906932736"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.5894571940104167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0021827872842550278,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 9.5367431640625e-16,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0018189894035458563,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "8796093022208"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.8610229492187504e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 0.0018189894035458563,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "8796093022208"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.9073486328125e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0018189894035458563,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "8796093022208"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.7484029134114584e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0009921760382977398,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.0345052083333334e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0017053025658242404,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "8246337208320"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.738407679966518e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 0.0019004366902717902,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "615726511554560"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1807396298363096e-15,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "C",
+          "tau_s": 0.005876734996071228,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "369435906932736"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.5894571940104167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0021827872842550278,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-left",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-right",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.0408340855860843e-17,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "C",
+          "tau_s": 0.6666666666666666,
+          "tau_s_exact": {
+            "denominator": "3",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "C",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "C",
+          "tau_s": 1.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "3"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "C",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.496805826822917e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0004960880191488699,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.069010416666667e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0008526512829121202,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4123168604160"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 5.476815359933036e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009502183451358951,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "307863255777280"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.361479259672619e-15,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "A",
+          "tau_s": 0.002938367498035614,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "184717953466368"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.1789143880208334e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0010913936421275139,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.9073486328125e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009094947017729281,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4398046511104"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 5.722045898437501e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009094947017729281,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4398046511104"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.814697265625e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009094947017729281,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4398046511104"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.496805826822917e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0004960880191488699,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.069010416666667e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0008526512829121202,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4123168604160"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 5.476815359933036e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009502183451358951,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "307863255777280"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.361479259672619e-15,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "A",
+          "tau_s": 0.002938367498035614,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "184717953466368"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.1789143880208334e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0010913936421275139,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-left",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-right",
+          "source_inputs": {
+            "summed_PA_m3_s": 5.204170427930421e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "A",
+          "tau_s": 1.3333333333333333,
+          "tau_s_exact": {
+            "denominator": "3",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "A",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "A",
+          "tau_s": 3.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "3"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "A",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 8.742014567057292e-16,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "D",
+          "tau_s": 0.0019843520765954795,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.0172526041666667e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 0.003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "16492674416640"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.369203839983259e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "D",
+          "tau_s": 0.0038008733805435803,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "1231453023109120"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 5.903698149181548e-16,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "D",
+          "tau_s": 0.011753469992142456,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "738871813865472"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 7.9472859700520835e-16,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 0.0043655745685100555,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.76837158203125e-16,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "D",
+          "tau_s": 0.0036379788070917125,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.4305114746093752e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "D",
+          "tau_s": 0.0036379788070917125,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 9.5367431640625e-16,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 0.0036379788070917125,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 8.742014567057292e-16,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "D",
+          "tau_s": 0.0019843520765954795,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.0172526041666667e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 0.003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "16492674416640"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.369203839983259e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "D",
+          "tau_s": 0.0038008733805435803,
+          "tau_s_exact": {
+            "denominator": "323992119656720639",
+            "numerator": "1231453023109120"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 5.903698149181548e-16,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "D",
+          "tau_s": 0.011753469992142456,
+          "tau_s_exact": {
+            "denominator": "62864142619960721",
+            "numerator": "738871813865472"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 7.9472859700520835e-16,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 0.0043655745685100555,
+          "tau_s_exact": {
+            "denominator": "24178516392292585",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-left",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-right",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.6020852139652106e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "D",
+          "tau_s": 2.6666666666666665,
+          "tau_s_exact": {
+            "denominator": "3",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "D",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "D",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "D",
+          "tau_s": 6.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "6"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "D",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "D",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.3113021850585937e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "E",
+          "tau_s": 0.0013229013843969865,
+          "tau_s_exact": {
+            "denominator": "79789104094565525",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.52587890625e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 0.0022737367544323206,
+          "tau_s_exact": {
+            "denominator": "1450710983537555",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.0538057599748883e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "E",
+          "tau_s": 0.0025339155870290537,
+          "tau_s_exact": {
+            "denominator": "97197635897016185",
+            "numerator": "246290604621824"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 8.855547223772321e-16,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "E",
+          "tau_s": 0.007835646661428304,
+          "tau_s_exact": {
+            "denominator": "94296213929941075",
+            "numerator": "738871813865472"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1920928955078125e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 0.0029103830456733704,
+          "tau_s_exact": {
+            "denominator": "36267774588438875",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 7.152557373046875e-16,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "E",
+          "tau_s": 0.0024253192047278085,
+          "tau_s_exact": {
+            "denominator": "7253554917687775",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.1457672119140624e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "E",
+          "tau_s": 0.0024253192047278085,
+          "tau_s_exact": {
+            "denominator": "7253554917687775",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.430511474609375e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 0.0024253192047278085,
+          "tau_s_exact": {
+            "denominator": "7253554917687775",
+            "numerator": "17592186044416"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.3113021850585937e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "E",
+          "tau_s": 0.0013229013843969865,
+          "tau_s_exact": {
+            "denominator": "79789104094565525",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.52587890625e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 0.0022737367544323206,
+          "tau_s_exact": {
+            "denominator": "1450710983537555",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.0538057599748883e-15,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "E",
+          "tau_s": 0.0025339155870290537,
+          "tau_s_exact": {
+            "denominator": "97197635897016185",
+            "numerator": "246290604621824"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 8.855547223772321e-16,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "E",
+          "tau_s": 0.007835646661428304,
+          "tau_s_exact": {
+            "denominator": "94296213929941075",
+            "numerator": "738871813865472"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1920928955078125e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 0.0029103830456733704,
+          "tau_s_exact": {
+            "denominator": "36267774588438875",
+            "numerator": "105553116266496"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-left",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 4.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "4"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-right",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.3010426069826053e-18,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "E",
+          "tau_s": 5.333333333333333,
+          "tau_s_exact": {
+            "denominator": "3",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.168404344971009e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 16.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "E",
+          "tau_s": 16.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.168404344971009e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "E",
+          "tau_s": 8.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "8"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 5.204170427930421e-18
+          },
+          "species": "E",
+          "tau_s": 12.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "12"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.168404344971009e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 16.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 2.168404344971009e-19,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "E",
+          "tau_s": 16.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 4.336808689942018e-19,
+            "volume_m3": 6.938893903907228e-18
+          },
+          "species": "E",
+          "tau_s": 16.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "16"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 3.3527612686157227e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.007862338713881027,
+          "tau_s_exact": {
+            "denominator": "32998242074470162217850646017279207682275803136",
+            "numerator": "259443356152124516909390864317957289519544553"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-1030e61393b94e83040724034fca55930c08ce0c5be908be00ce8bdc1d29cbf1",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 3.3527612686157227e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.007862338713881027,
+          "tau_s_exact": {
+            "denominator": "32998242074470162217850646017279207682275803136",
+            "numerator": "259443356152124516909390864317957289519544553"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-366a251b56a10fa07dfd2bbf0e6fd4dfda096d43d77f72c21ce4e4ebe662fc73",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 5.364418029785156e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.004913961696175642,
+          "tau_s_exact": {
+            "denominator": "263985936595761297742805168138233661458206425088",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9c3cf223417f54bbca6bf753380f9fff8279cac3511113f88d3f46227afcb00f",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 5.364418029785156e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.004913961696175642,
+          "tau_s_exact": {
+            "denominator": "263985936595761297742805168138233661458206425088",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9952856abcd81c1db16ff7f4dae59c073ab44ed9dda701842af82dea8a4b44b4",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 7.37607479095459e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.003573790324491376,
+          "tau_s_exact": {
+            "denominator": "362980662819171784396357106190071284505033834496",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-6e89f3b15567940dd2031ed469cd7e076a7d404c387479b5fe54699705ade0ec",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 5.364418029785156e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.004913961696175642,
+          "tau_s_exact": {
+            "denominator": "263985936595761297742805168138233661458206425088",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-76d99d4f8afe67bd06c206545755e58158fde622cfb65639e79776b2da793c29",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 5.364418029785156e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.004913961696175642,
+          "tau_s_exact": {
+            "denominator": "263985936595761297742805168138233661458206425088",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-08815428acd2d11c6df4e93d7f454808588aa06d00cdf5e8a230fab5f1969cc6",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 7.37607479095459e-07,
+            "temperature_K": 295.15
+          },
+          "species": null,
+          "tau_s": 0.003573790324491376,
+          "tau_s_exact": {
+            "denominator": "362980662819171784396357106190071284505033834496",
+            "numerator": "1297216780760622584546954321589786447597722765"
+          }
+        }
+      ],
+      "uninterrupted_and_restart_share_identical_full_definition": true,
+      "window_estimate_uses_initial_observation_at_zero": true
+    },
+    {
+      "arms": [
+        {
+          "actual_steps": 342,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "id": "base",
+          "max_steps": 342,
+          "max_trace_bytes": 8388608,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 684,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "id": "dt-half",
+          "max_steps": 684,
+          "max_trace_bytes": 8388608,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 1368,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "id": "dt-quarter",
+          "max_steps": 1368,
+          "max_trace_bytes": 8388608,
+          "source_predicted_window_admission": true,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 342,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "base-refusal-1MiB",
+          "max_steps": 342,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 684,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "dt-half-refusal-1MiB",
+          "max_steps": 684,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 1368,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "dt-quarter-refusal-1MiB",
+          "max_steps": 1368,
+          "max_trace_bytes": 1048576,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 342,
+          "dt_s": 1e-06,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "base-refusal-4MiB",
+          "max_steps": 342,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 684,
+          "dt_s": 5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "dt-half-refusal-4MiB",
+          "max_steps": 684,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        },
+        {
+          "actual_steps": 1368,
+          "dt_s": 2.5e-07,
+          "end_time_hex": "0x1.669ced0b30b5ap-12",
+          "end_time_s": 0.00034199999999999996,
+          "expected_refusal": "Estimated window working storage exceeds max_trace_bytes",
+          "id": "dt-quarter-refusal-4MiB",
+          "max_steps": 1368,
+          "max_trace_bytes": 4194304,
+          "source_predicted_window_admission": false,
+          "source_predicted_window_bytes": 5798592,
+          "window_recording": "full",
+          "window_steps": 1
+        }
+      ],
+      "case_id": "four-cell-reordered-gradient",
+      "coarse_steps": 342,
+      "dt_over_fastest_scale": 0.0029320310074026665,
+      "end_time_s": 0.00034199999999999996,
+      "fastest_planning_scale": {
+        "kind": "finite_bath_diffusive_inventory",
+        "owner": "caller-bath-0-0",
+        "source_inputs": {
+          "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+          "volume_m3": 8.673617379884035e-19
+        },
+        "species": "A",
+        "tau_s": 0.0003410605131648481,
+        "tau_s_exact": {
+          "denominator": "4835703278458517",
+          "numerator": "1649267441664"
+        }
+      },
+      "fresh_initial_qualification_required_for_every_arm": true,
+      "geometry_acceptance_row": {
+        "candidate": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-003/test_positive_explicit_cell_ba0/constructor-candidate.json",
+          "sha256": "6db9e025063c552f42256402eb4ca3dc6ace2d711ad2e42f905f81c6237413f4"
+        },
+        "case": "four-cells",
+        "constructor_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-003/test_positive_explicit_cell_ba0/constructor-request.json",
+          "sha256": "528cf26cf037eabe2271886f2b9b36e1343b4e70ceed8004d61c4a983d2ff176"
+        },
+        "reference_request": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-003/test_positive_explicit_cell_ba0/reference-input.json",
+          "sha256": "1c9bcb61cc1902682d59f3fe7e058afd804a0e2b4ba356116cda41d79ddd3604"
+        },
+        "report": {
+          "path": "/mnt/workspaces/Cells/stable-seed-explicit-ecm-partition-launch-preparation-20261031-01/qualification-01/tmp/check-003/test_positive_explicit_cell_ba0/reference-output.json",
+          "sha256": "f0c11ff4530bafee1384af6f2cdba087401c49ec6bd72506251569581bea2544"
+        },
+        "unit": "check-003"
+      },
+      "geometry_binding_identity": "1372647d98d011078035a891072676cace01bc7ad5f014c85bf052a848719868",
+      "geometry_case": "four-cells",
+      "horizon_rule": "ceil(one fastest positive local source-value time scale / coarse dt), minimum eight coarse steps",
+      "positive_arm_ids": [
+        "base",
+        "dt-half",
+        "dt-quarter"
+      ],
+      "source_time_scale_rows": [
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.814697265625e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0009094947017729281,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4398046511104"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.1126200358072918e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 0.0015591337744678769,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "52776558133248"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 1.2715657552083335e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "C",
+          "tau_s": 0.0006821210263296962,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "3298534883328"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-00",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-10",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-01",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-11",
+          "source_inputs": {
+            "summed_PA_m3_s": 6.938893903907228e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 0.5,
+          "tau_s_exact": {
+            "denominator": "2",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-4",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-4",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "C",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0003897834436169692,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "13194139533312"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0003897834436169692,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "13194139533312"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 7.62939453125e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.00045474735088646406,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "2199023255552"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-2",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0003897834436169692,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "13194139533312"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-3",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-1-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-2-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 4.450480143229167e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0003897834436169692,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "13194139533312"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-3-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.2252400716145835e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0007795668872339384,
+          "tau_s_exact": {
+            "denominator": "33849922949209619",
+            "numerator": "26388279066624"
+          }
+        },
+        {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-4-4",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-00",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-10",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-01",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "manufactured-cell-11",
+          "source_inputs": {
+            "summed_PA_m3_s": 3.469446951953614e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 1.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "1"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-0",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-1",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-2",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-0-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-2-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 1.734723475976807e-18,
+            "volume_m3": 3.469446951953614e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-4-3",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-1-4",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "membrane_inventory_exchange",
+          "owner": "caller-bath-3-4",
+          "source_inputs": {
+            "summed_PA_m3_s": 8.673617379884035e-19,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 2.0,
+          "tau_s_exact": {
+            "denominator": "1",
+            "numerator": "2"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 4.2915344238281246e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.006555556218428457,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "2163218310285004158961863051727640167710720"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-1030e61393b94e83040724034fca55930c08ce0c5be908be00ce8bdc1d29cbf1",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 4.2915344238281246e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.006555556218428457,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "2163218310285004158961863051727640167710720"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-366a251b56a10fa07dfd2bbf0e6fd4dfda096d43d77f72c21ce4e4ebe662fc73",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 6.437301635742187e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.004370370812285638,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "1442145540190002772641242034485093445140480"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9c3cf223417f54bbca6bf753380f9fff8279cac3511113f88d3f46227afcb00f",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 6.437301635742187e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.004370370812285638,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "1442145540190002772641242034485093445140480"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-9952856abcd81c1db16ff7f4dae59c073ab44ed9dda701842af82dea8a4b44b4",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 8.58306884765625e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.0032777781092142282,
+          "tau_s_exact": {
+            "denominator": "942806916413433214947020391739254398210256347",
+            "numerator": "3090311871835720227088375788182343096729600"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-6e89f3b15567940dd2031ed469cd7e076a7d404c387479b5fe54699705ade0ec",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 6.437301635742187e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.004370370812285638,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "1442145540190002772641242034485093445140480"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-76d99d4f8afe67bd06c206545755e58158fde622cfb65639e79776b2da793c29",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 6.437301635742187e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.004370370812285638,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "1442145540190002772641242034485093445140480"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-08815428acd2d11c6df4e93d7f454808588aa06d00cdf5e8a230fab5f1969cc6",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 8.58306884765625e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.0032777781092142282,
+          "tau_s_exact": {
+            "denominator": "942806916413433214947020391739254398210256347",
+            "numerator": "3090311871835720227088375788182343096729600"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-3baf9139b3946101633d394fb746ac4770b1c95334e43589bca4766407c10d50",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 8.58306884765625e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.0032777781092142282,
+          "tau_s_exact": {
+            "denominator": "942806916413433214947020391739254398210256347",
+            "numerator": "3090311871835720227088375788182343096729600"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-8ff2bf922c52e221db39f6f879c4ff1ae6974435a0cfe1b8eaf734e1fd593f2c",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 8.58306884765625e-07,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.0032777781092142282,
+          "tau_s_exact": {
+            "denominator": "942806916413433214947020391739254398210256347",
+            "numerator": "3090311871835720227088375788182343096729600"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-bda0a58d6716e0d55bb86f4d7c8d025d9ccc9b0b055303936c2d863043a3ab21",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.0728836059570312e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002622222487371383,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "865287324114001663584745220691056067084288"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-e1c5b7c65b03ba53ffc649de26951e436bea435aa1da1c8eafc19c30645d9431",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.0728836059570312e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002622222487371383,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "865287324114001663584745220691056067084288"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-ca58ed8a759c956f2e2d6004d9d2ff521d59fc7794590789a5fc8772ced43781",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.2874603271484376e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002185185406142819,
+          "tau_s_exact": {
+            "denominator": "9899472622341048604296180266464823053666107139",
+            "numerator": "21632183102850041589618630517276401677107200"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-bb36d403f6677fd43327441f134ffd2cc65bdb001a5cbf59dae37b6eaa6ec75c",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.0728836059570312e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002622222487371383,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "865287324114001663584745220691056067084288"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-2267f5156685cf19ec26f6b7136ee7d087760d2757bb0dc81cc9f94f4ac462fb",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.0728836059570312e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002622222487371383,
+          "tau_s_exact": {
+            "denominator": "329982420744701609966703752429004226619431271",
+            "numerator": "865287324114001663584745220691056067084288"
+          }
+        },
+        {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-6403ad2df2bda934e9b4074df142c177b9d40650210f545d8ee24201ad815957",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 1.2874603271484376e-06,
+            "temperature_K": 315
+          },
+          "species": null,
+          "tau_s": 0.002185185406142819,
+          "tau_s_exact": {
+            "denominator": "9899472622341048604296180266464823053666107139",
+            "numerator": "21632183102850041589618630517276401677107200"
+          }
+        }
+      ],
+      "uninterrupted_and_restart_share_identical_full_definition": true,
+      "window_estimate_uses_initial_observation_at_zero": true
+    }
+  ],
+  "fixtures_materialized": 0,
+  "fresh_initial_case_arm_bindings": 18,
+  "frozen": false,
+  "geometry_acceptance_sha256": "f2f1eab5db26bdc5e4b6dc9a8a9e3c54f5b894b2fbcdee344f5307900603a8c9",
+  "guards": {
+    "aggregate_GiB": 2,
+    "host_reserve_GiB": 8,
+    "worker_GiB": 1
+  },
+  "kind": "cells.unfrozen_partition_trajectory_horizon_callers@1",
+  "models_evaluated": 0,
+  "new_physical_cases": 0,
+  "numerical_launch_authorized": false,
+  "original_1MiB_and_4MiB_evidence_preserved": true,
+  "original_callers_document_sha256": "4be058c5f6211a9a489c709ee95f371d3dd7bf0ba03c8834e789c0be3554c09f",
+  "original_physical_callers_unchanged": true,
+  "physical_cases": 4,
+  "positive_trajectory_arms": 12,
+  "qualification_inherited": false,
+  "source_value_time_scale_planning_only": true,
+  "time_scale_estimates_are_not_global_eigenvalues_or_stability_certificates": true,
+  "window_refusal_arms": 6
+}

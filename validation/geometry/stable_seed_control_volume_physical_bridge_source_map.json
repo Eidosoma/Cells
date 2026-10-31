@@ -1,0 +1,372 @@
+{
+  "boundary_translation": "previous/current to current/next, numeric to lexical edge axes, caller-declared None-to-self boundary partners",
+  "bridge_schema_promotion_sha256": "5039bcc2026d2b915df0d17d137be6d04ea11ebb39bddefa9336da7d722b061e",
+  "bridge_schema_repair_review_sha256": "46e8976ca62fde81dfab720672bcfdfe38cf67694e3574559c889fcaf7b51fda",
+  "complete_preparation_and_provenance_field_inventories_match": true,
+  "complete_source_only_inventory": {
+    "Root_finalizer": 1,
+    "actual_nested_reference_children_executed": 0,
+    "assertion_panels": {
+      "DECLARATION_REFUSALS": [
+        "missing-domain",
+        "changed-domain",
+        "native-domain-claim",
+        "old-geometry-scope",
+        "empty-cached-operators",
+        "provided-old-inverse",
+        "zero-height",
+        "zero-thickness",
+        "wrong-units",
+        "unsealed-caps",
+        "unselected-boundary-partner",
+        "cell-merge-policy",
+        "missing-bath-assignment",
+        "unknown-bath-id"
+      ],
+      "EVIDENCE_REFUSALS": [
+        "missing-acceptance",
+        "changed-input-digest",
+        "truncated-original-input",
+        "negative-control-report",
+        "baseline-failed",
+        "truncated-counts",
+        "empty-independent-fields",
+        "runtime-source-missing",
+        "runtime-import-contamination"
+      ],
+      "GEOMETRY_CORRUPTIONS": [
+        "cell-volume",
+        "cell-centroid",
+        "stored-vertex",
+        "empty-contact-axes",
+        "truncated-membranes",
+        "wrong-bath-owner",
+        "nonreciprocal-boundary-partner",
+        "double-contact-area",
+        "wrong-local-edge-map",
+        "wrong-lexical-direction",
+        "wrong-boundary-translation",
+        "coherent-wrong-volume-target",
+        "outgoing-selected-bound",
+        "native-promotion",
+        "extra-certificate-field",
+        "missing-owner-map-row",
+        "extra-centroid-component",
+        "extra-midpoint-component",
+        "coherent-extra-tangent-component"
+      ],
+      "PHYSICAL_CORRUPTIONS": [
+        "cell-volume-pL",
+        "neutral-inventory-change",
+        "bath-volume-pL",
+        "membrane-area",
+        "capacitance",
+        "permeability",
+        "double-contact-area",
+        "reversed-contact",
+        "missing-membrane",
+        "truncated-controls",
+        "native-promotion",
+        "extra-model-field",
+        "unknown-membrane-permeability-species",
+        "unknown-contact-permeability-species"
+      ],
+      "PHYSICAL_REFUSALS": [
+        "wrong-geometry",
+        "missing-cell",
+        "wrong-membrane-cell",
+        "wrong-membrane-bath",
+        "reversed-contact",
+        "missing-contact",
+        "zero-specific-capacitance",
+        "negative-diffusivity",
+        "unknown-closure",
+        "gpu",
+        "float32",
+        "jit"
+      ]
+    },
+    "check_ids": [
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_complete_manufactured_geometry_and_physical_owners[geometry-only-irregular]",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_complete_manufactured_geometry_and_physical_owners[physical-irregular]",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_complete_manufactured_geometry_and_physical_owners[physical-seed17-two-baths]",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_complete_caller_contract_and_stale_request_refusals",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_complete_positive_constructor_evidence_is_required",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_resealed_complete_geometry_corruptions_need_passing_same_worker_baseline",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_resealed_complete_physical_corruptions_need_passing_same_worker_baseline",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_failed_bridge_baseline_cannot_credit_output_controls",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_explicit_physics_and_existing_parser_refusals",
+      "tests/unit/test_stable_seed_control_volume_physical_bridge.py::test_closed_native_and_cached_operator_gates_remain_closed"
+    ],
+    "collection_performed": false,
+    "completed_checks": 0,
+    "duplicate_child_replays": 0,
+    "positive_cases": [
+      {
+        "case": "manufactured-irregular-square",
+        "id": "geometry-only-irregular",
+        "physical": false
+      },
+      {
+        "case": "manufactured-irregular-square",
+        "id": "physical-irregular",
+        "physical": true
+      },
+      {
+        "case": "manufactured-seed17-rectangle",
+        "id": "physical-seed17-two-baths",
+        "physical": true
+      }
+    ],
+    "potential_actual_nested_bridge_children": 10,
+    "potential_actual_nested_constructor_children": 10,
+    "potential_actual_nested_reference_children": 20,
+    "scheduled_units": 11,
+    "top_level_pytest_trees": 10,
+    "total_process_units": 31
+  },
+  "conservation": "exact declared-domain extrusion and incidence; rounded normal-area defects retained with independently derived bounds",
+  "constructor_manifest_sha256": "e882288ebec80abf4096cb87f7769f73400a5b713bb61c51f580af1aa71648cc",
+  "constructor_source_review_sha256": "97bd51e675c3840bbdc7a654604ee1d08c2e58972b177b03aa3bb878c1cea3d5",
+  "coordinate_authority": "validated constructor shared binary64 coordinates and directed rings; no cached metric input",
+  "effective_repaired_source_sha256": {
+    "tests/unit/test_stable_seed_control_volume_physical_bridge.py": "306657230727f680dc85db5b426d0e642b0f7ccd19be3c13ac12bb6d00077be2",
+    "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c"
+  },
+  "independent_sites": {
+    "conservation": {
+      "ast_sha256": "1893bcee16a34e65aacc92714e1a55c682690873be00c4e156db128543d849c8",
+      "first_line": 520,
+      "last_line": 600,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "declaration": {
+      "ast_sha256": "d0ec66b7ca3e0cbdab528265f8917bcf4855f09e072f1a59ee9094c53bc4f2a1",
+      "first_line": 221,
+      "last_line": 348,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "evaluate": {
+      "ast_sha256": "b5161dee81a9ed6bee6682ea08e627a32dedfb6b1306b4de9c6216c784998905",
+      "first_line": 1239,
+      "last_line": 1308,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "evidence": {
+      "ast_sha256": "1a6a03d3058cc8056fab787c677bb9cfdb8d2f11aef80e52f39876f51b9f7859",
+      "first_line": 111,
+      "last_line": 218,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "geometry_fields": {
+      "ast_sha256": "e4581f8ffa74c09edcf8f7ad9fe12acc9b25cb1012841f6817791291f45dd255",
+      "first_line": 712,
+      "last_line": 914,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "physical_fields": {
+      "ast_sha256": "8d7955c34b0389519ed0d2fb33976b25ce1470bbdba86670bce5d1d423ccaa0a",
+      "first_line": 947,
+      "last_line": 1120,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "topology": {
+      "ast_sha256": "2912808da5231e0f6c2edd9a005fe51df9b6e0a6d0d5c0b37a7e2208451794de",
+      "first_line": 351,
+      "last_line": 478,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "verify": {
+      "ast_sha256": "c2672b3e0d21558839edace92c49cf0c0623b8913b828bec17d3f666b397c064",
+      "first_line": 1123,
+      "last_line": 1236,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    }
+  },
+  "kind": "cells.fixed_seed_control_volume_physical_bridge_static_correspondence@1",
+  "polygon_manifest_sha256": "2a1182f4091761f20c8048e0bd8cf8281ff67b808410be2820dddb4531f1d95b",
+  "preparation": {
+    "GPU_jobs": 0,
+    "collection": 0,
+    "existing_metric_operator_and_core_files_edited": false,
+    "fixture_executions": 0,
+    "geometry_evaluations": 0,
+    "numerical_jobs": 0,
+    "production_imports": 0,
+    "reference_evaluations": 0,
+    "scientific_imports": 0,
+    "shared_status_edited": false,
+    "source_AST_only": true,
+    "source_review_does_not_authorize_launch": true,
+    "test_runs": 0
+  },
+  "production_sites": {
+    "_conservation": {
+      "ast_sha256": "4462df0d41b18dfb78e0cf229705157273d426c282a3eeebdd9191fb2223e5bc",
+      "first_line": 541,
+      "last_line": 628,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "_constructor_evidence_fields": {
+      "ast_sha256": "2ef5fe466f7ac1eff99f930c884d7100fd579b7116172ae913753d86ae640e54",
+      "first_line": 133,
+      "last_line": 232,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "_declaration": {
+      "ast_sha256": "1ebc1b82382ac9c58d61c0251e33ad6be17a2e1e6da83d03b4b2ab5c8cfdda27",
+      "first_line": 244,
+      "last_line": 319,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "_owner_maps": {
+      "ast_sha256": "a86209cdc9849c72c4de37e66e7f3f2d13f8c4962d4a933e40b78e4fd1362d0e",
+      "first_line": 417,
+      "last_line": 534,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "bind": {
+      "ast_sha256": "d5165363f4fd9588684a7bd4685edfadd6a1fe2d1507c1b0d21fa5ce44e6386d",
+      "first_line": 332,
+      "last_line": 350,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "polygon_input": {
+      "ast_sha256": "a780d2a78b612df3846953182822ededb21019d9ff89a82b6487b746068e4afc",
+      "first_line": 367,
+      "last_line": 414,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "prepare": {
+      "ast_sha256": "2d0a72a00e8fa50e584023d3783e15bd31de2236c11f64c97f985c3ab87500ac",
+      "first_line": 643,
+      "last_line": 709,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "prepare_physical": {
+      "ast_sha256": "4a485459bd662b7518df4f891db636f3c88e456f44ba93add8ca58a5d3b1c753",
+      "first_line": 734,
+      "last_line": 801,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    },
+    "require_cached_operators": {
+      "ast_sha256": "f48a524e7a7ce35c1b1ead43ba18d4ad5611ec6bca98414635b7a245f08feeee",
+      "first_line": 816,
+      "last_line": 820,
+      "source": "src/cells/processes/stable_seed_control_volume_physical_bridge.py"
+    }
+  },
+  "reference_closure": {
+    "constructor_derivation_replayed": false,
+    "executed": false,
+    "kind": "cells.fixed_seed_physical_bridge_independent_reference_AST_closure@1",
+    "modules": [
+      {
+        "imports": [
+          "argparse",
+          "decimal.Decimal",
+          "hashlib",
+          "json",
+          "math",
+          "os",
+          "pathlib.Path",
+          "traceback",
+          "validation.geometry.conservative_polygon_geometry_reference",
+          "validation.geometry.stable_seed_control_volumes_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/conservative_polygon_geometry_reference.py",
+          "validation/geometry/stable_seed_control_volumes_reference.py"
+        ],
+        "sha256": "817cec999961c7403e99addead76a720caad8ef16011a1a4e2f6319d0d72ee8c",
+        "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+      },
+      {
+        "imports": [
+          "argparse",
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "fractions.Fraction",
+          "functools.cmp_to_key",
+          "hashlib",
+          "importlib.abc",
+          "json",
+          "math",
+          "os",
+          "pathlib.Path",
+          "sys",
+          "traceback",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "643ea598f74c4a5d56753b5712d528937683cc35b57e6c904bc113bed1ac7813",
+        "source": "validation/geometry/stable_seed_control_volumes_reference.py"
+      },
+      {
+        "imports": [
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "math",
+          "struct"
+        ],
+        "local_dependencies": [],
+        "sha256": "f0ee2a5ec330457d5e372c636dc63b7470922b100d4df00cab961c1bf4ab7569",
+        "source": "validation/geometry/stable_geometry_primitives_reference.py"
+      },
+      {
+        "imports": [
+          "collections.Counter",
+          "collections.defaultdict",
+          "decimal.Decimal",
+          "decimal.localcontext",
+          "hashlib",
+          "json",
+          "math",
+          "struct",
+          "validation.geometry.stable_geometry_primitives_reference"
+        ],
+        "local_dependencies": [
+          "validation/geometry/stable_geometry_primitives_reference.py"
+        ],
+        "sha256": "5b3e621e75ebf1c539315e12ab213c7e0f6a019856db55121bf0f2f95acf06f8",
+        "source": "validation/geometry/conservative_polygon_geometry_reference.py"
+      }
+    ],
+    "production_and_scientific_imports": []
+  },
+  "reused_physical_source_pins": {
+    "core/conservative_polygon_tissue_preparation.py": "91c4bab5a1dd194c411d787e749d57f864ccffc17336f0d957cd1d856c10a039",
+    "processes/conservative_polygon_geometry.py": "5d267b20cdb3a05f4f036bbc3fa6978b40780ca4394f67ac6c33a8b605af4b0d",
+    "processes/stable_seed_control_volumes.py": "a1f743f2b1c8adb2b169693870d1de2916b2fa0dc616b39200b5f8f905327916"
+  },
+  "schema_guards": {
+    "complete_permeability_species": {
+      "ast_sha256": "65ea9168833d95e3c22f31f73bb47039ba9bc2140e439fa7d6a47d38ef216d04",
+      "first_line": 701,
+      "last_line": 709,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    },
+    "complete_vector_axes": {
+      "ast_sha256": "23bfd2de635bf6ad1ed96ea6b9115c834038e803fdf98abbb431beda9648a343",
+      "first_line": 686,
+      "last_line": 698,
+      "source": "validation/geometry/stable_seed_control_volume_physical_bridge_reference.py"
+    }
+  },
+  "schema_repair_qualification_inherited": false,
+  "source_scope_correction": {
+    "earlier_passing_square_zero_owners": 13,
+    "earlier_six_layout_panel_owners": 50,
+    "five_failed_layout_outside_owners": 20,
+    "five_failed_layout_owners": 37,
+    "missing_envelope_cases": [
+      "caller-single-square-cache",
+      "caller-single-hex-cache"
+    ],
+    "missing_envelope_origin": "lattice_seeded_ring_and_centre_caller_caches",
+    "missing_envelopes_resolved": false,
+    "original_mesh_outcome": "0/9 unchanged"
+  }
+}

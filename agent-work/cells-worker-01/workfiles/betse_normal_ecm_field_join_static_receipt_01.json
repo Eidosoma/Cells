@@ -1,0 +1,149 @@
+{
+  "accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "energetic_conservation_credit": false,
+    "field": "Full source currents, charge reconstruction and nonphysical HH/Gaussian/voltage outputs; no physical continuity, projector or field-energy identity is asserted",
+    "physical_global_conservation_credit": false,
+    "retained_failure": "Original signed_environment39/40 material panel remains failed, including raw membrane_bulk_difference at fixed old budget. Missing separately retained failed complete reference buffers are not reconstructed",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained"
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "accepted_ECM02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "accepted_ECM02_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json",
+      "sha256": "c47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb"
+    },
+    "accepted_ECM02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "actual_caller_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_reachability_01.json",
+      "sha256": "f971ddb207e536f15402e4d003a5e1f7d17d31f042b40c690d8a40cfd597f158"
+    },
+    "coordinated_diagnostic_inputs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_dependency_witness_01.json",
+      "sha256": "9b003d19a2efad6d4c002f6a20777a07b132011f0921f848cb8aaa47fb1e19bf"
+    },
+    "instantaneous_field_completion": {
+      "path": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+      "sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff"
+    },
+    "literal_source_and_composition": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_AST_witness_01.json",
+      "sha256": "b66f2fe1293f76eb6414d79af1ea5ebba1d7fa5e6a051c29808ad3169d6e9fd0"
+    },
+    "retained_failed_material_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    }
+  },
+  "binding_evidence_copies": 8,
+  "capture_repair_03": null,
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "459fb91c7463bd5e9740a399e0388409a36e4f47f86e0d822346071adf8cd4f6",
+  "error_capture_repair_02": null,
+  "inputs": "/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json",
+  "inputs_sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb",
+  "kind": "cells.native_ecm_field_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 44,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 7,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_bootstrap_field_points": 16,
+    "actual_end_field_points": 48,
+    "actual_pre_material_points": 48,
+    "actual_pre_network_points": 48,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 31,
+    "completed_positive_mover_invocations_per_implementation": 96,
+    "component_control_histories": 4,
+    "dependency_controls": 10,
+    "fresh_Decimal_reference_forms": 352,
+    "fresh_bootstrap_field_Decimal_forms": 32,
+    "fresh_cold_Decimal_forms": 32,
+    "fresh_end_field_Decimal_forms": 96,
+    "fresh_material_Decimal_forms": 96,
+    "fresh_network_Decimal_forms": 96,
+    "independent_cold_points": 16,
+    "native_captures": 21,
+    "new_field_composition_histories": 12,
+    "positive_three_call_histories": 16,
+    "raw_partial_limits": 5
+  },
+  "planned_groups": {
+    "context": 7,
+    "controls": 4,
+    "core": 5,
+    "dependencies": 10,
+    "raw": 5
+  },
+  "protected_files": 77,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2531,
+  "static_checks": {
+    "actual_bootstrap_and_suffix_order": true,
+    "actual_post_material_cache_separate": true,
+    "compile_without_import": "passed",
+    "complete_native_field_functions": 10,
+    "complete_return_before_later_work_capture": true,
+    "coordinated_dependency_inverse_AST_equal": true,
+    "exact_pytest_ID_validator_unchanged": true,
+    "full_raw_partial_buffers": true,
+    "geometry_operator_cache_derived": true,
+    "global_name_resolution": "passed",
+    "independent_geometry_current_environment_voltage": true,
+    "independent_reference_closure_stdlib": true,
+    "inherited_network_literal_bodies": 47,
+    "material_legacy_budgets_unchanged": true,
+    "numerical_runs": 0,
+    "optional_new_material_diagnostic_unclaimed": true,
+    "original_NaN_only_check_v": true,
+    "original_get_current_unsubstituted": true,
+    "post_output_terminal_failure_capture": true,
+    "previous_reconstructed_E_feedback_only": true,
+    "pytest_collection_runs": 0,
+    "reference_fixed_gross_budgets": true,
+    "retained_ECM_panel_accepted": false,
+    "retained_ECM_panel_checks": [
+      39,
+      40
+    ],
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "stale_GJ_cache_preserved": true
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

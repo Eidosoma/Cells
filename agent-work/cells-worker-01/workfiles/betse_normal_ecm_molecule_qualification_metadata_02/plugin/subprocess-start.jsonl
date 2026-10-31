@@ -1,0 +1,1 @@
+{"child_id": 0, "pid": 5, "command": ["/mnt/workspaces/Cells/venv-cpu/bin/python", "-B", "-c", "pass"], "start_ticks": 137886334, "cpu_affinity": [0]}

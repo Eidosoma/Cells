@@ -1,0 +1,1751 @@
+{
+  "acceptance": {
+    "amount": "Factor times independent absolute old/new amounts, signed source mechanisms and native-true-volume gross, plus3e-13 concentration floors times input volume sums",
+    "calcium_arithmetic": "2e-14 named-unit floor +2e-11*abs(reference); zero-product branch uses original stored binary64 product and literal1e-16 replacement. Before/after material buffers use unchanged typed ECM budgets",
+    "calcium_flux": "Existing pump_loop_preflight2e-18 mol/m2/s +2e-11*abs(reference), including masked rate and applied density; no changed budget",
+    "carried_initial_condition": "Recorded actual initialized class cache, declared explicitly; no independent constructor-equation claim",
+    "channel_additional_observables": "Unchanged ECM material concentration3e-13+6e-12*abs(target), diffusion3e-20+6e-12*abs(target), amount3e-14+6e-12*abs(target); native Hill modulation uses3e-14+6e-12*abs(target)",
+    "channel_current": "Unchanged B23 32*eps*(ions+membranes+16)*local gross +1e-30 A/m2",
+    "channel_flux": "Unchanged B24 128*eps*(ions+membranes+4+32)*local flux gross +1e-30 mol/(m2*s)",
+    "channel_gates": "Per-class frozen catalog_budgets; original B28 four classes unchanged",
+    "clock": "Exact native/port N3 vector and step/cache timing; independent cold reference uses explicit binary64 end/delta store seams",
+    "events": "Exact native full stores/stages/reset and unchanged global64eps*max(1,abs), tissue5e-12 relative with Dm1e-30,Denv1e-21,factor3e-14,pressure3e-13; salts use existing concentration2e-14+5e-13 relative.",
+    "field_factor": "128*eps*(ions+cells+membranes+grid_sites+64)",
+    "field_floors": "1e-30 current/charge;3e-14 V;3e-18 magnetic;3e-13 other source fields/HH. Add fixed factor*independent predicted gross; operator3e-13+6e-12*abs(reference), maps exact",
+    "field_gross": "Independent sum|F*z*c| and |F*z*flux|; absolute smoothing/area projection; absolute inverse times FD-neighbor gross; positive Gaussian of surface-charge gross; fixed cache/screen and derivative-neighbor sums. Independent voltage arithmetic propagates charge/current/conductivity cancellation. No actual outgoing array enters its allowance",
+    "independent": "Fresh Decimal100/160 actual cold/bootstrap/events/post-events-material/pre-CaATP/pre-channels/post-channels-pre-GRN/pre-noise/end-field. Full material inserts direct noise before ordinary commit and retains separate books. No independently carried trajectory.",
+    "inherited_budget_source_sha256": {
+      "tests/unit/test_betse_global_controls.py": "fd0bbad676eac9ba02954c19ff1ddf211a3501be1be572d04aacf85dd3ef76e4",
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "tests/unit/test_betse_time_modulation.py": "2fa7ac26c2ab8e01a09539f3078e55fceb2d319c8d6244a3a88c7a9ac0559125",
+      "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+      "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+      "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+      "validation/betse/betse_normal_calcium_join_protocol.json": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+      "validation/betse/betse_normal_catalog_join_protocol.json": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/calcium_catalog_extra_protocol.json": "b2849752d42b621028780ac24068b0c9ab85dc1d4bbf54535b033c74d2c64c7e",
+      "validation/channels/hcn_extra_protocol.json": "7ffeb3cb5fd904221a5585d8506c4885330a1213f18572ed21820c32f6f732d5",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/morris_lecar_channels_protocol.json": "1d79c843f66e9aff96b116ee9e96948add48a72e777ecb46c99a3ef88d0cc1f8",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/perturbations/betse_perturbations_protocol.json": "437ef9fbf7a975e5422164406deb74fde20622782fa1dab5889efb9539c811de",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385",
+      "validation/tissue/surface_calcium_cav_protocol.json": "cef9becd3c143510d3c6850b0ef0a250b96a89899b82245a198a6cd2471ff4b5",
+      "validation/tissue/surface_calcium_kv1_protocol.json": "fd3dd48b7b0111443dab30c2a297f9305467bedd7916e42de35d269b64068db6",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497",
+      "validation/tissue/surface_hcn_protocol.json": "5dc6d13fe0a6a9aac3a747a39803304835edbe0d2e1e257164f56f589830cae3",
+      "validation/topology/betse_tissue_profiles_protocol.json": "d1153fdef0d1b49b6ef1163bac72dfaaef0c4afc49f9dd50d406473759ebc5b4"
+    },
+    "material": "Unchanged legacy ECM typed3e-14 mol/1e-40 V/1e-18 flux/1e-28 GJ-field/3e-20 D/3e-14 alpha-opening/3e-13 concentration floors +6e-12*abs(reference). Ordinary conditional comparisons omit only molecule-induced Vm/vgj nonces after dispatch and total voltage-nonce ledger; independent GRN and exact native validate those separately",
+    "metadata": "Before-material callback clones the exact original incoming packet after unchanged Drive validation; array coercion never replaces actual declaration metadata.",
+    "native_ER_accuracy_claim": false,
+    "network": "3e-13 concentration or1e-18 flux floor +128*eps*(ions+2+cells+membranes+environment_sites+64)*independent local gross",
+    "no_outcome_tuning": true,
+    "no_tolerance_tuning": true,
+    "noise": "Exact original draws,streams,source buffers/cache epochs; independent protein concentration2e-14+5e-13*abs and flux1e-23+5e-13*abs. Separate source-effective/conservative/true-grid books use unchanged ECM3e-14+6e-12*abs amount budget. No conservation acceptance credit.",
+    "old_Cav_G_failure_reclassified": false,
+    "old_material_budget_unchanged": true,
+    "old_material_failure_reclassified": false,
+    "primary": "Exact native original source reader/factory/dispatch/gates, ordered route/ECM aliases/current/last-route caches, complete material/CaATP/GRN/field returns and every available raw partial",
+    "publication": "Same reference-fixed factor*independent F*z*scale-weighted concentration/flux gross +1e-25 C/m3 or1e-30 A/m2",
+    "rates": "Inherited2e-14 mM/s +5e-12*abs(reference); delta6e-14 +5e-12*independent gross",
+    "self_resolution_fraction": 0.1
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "Chief03_callback_preparation": {
+      "path": "/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/preparation.json",
+      "sha256": "d33625a65ab87fcc021bf94dcf17280087ad5ae09ad6c30291340992ba6d9b61"
+    },
+    "Chief03_source_review": {
+      "path": "/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "d0eb124095d187ee26c5cb52520a8add4a45d74b86dd0da45d2f3e8de974c95c"
+    },
+    "Chief_catalog01_final_preflight_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-preflight-20261031-01/REVIEW.json",
+      "sha256": "fc24a488b881d81fa221160ce312e3a8ffcd963c3e9d799ed1e6080d1666e814"
+    },
+    "Chief_finalized_field_calcium_repairs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json",
+      "sha256": "def122f63bdc407a49ecc74bb54c45ce3c27090fbe78d10205921d8ed6315b4f"
+    },
+    "accepted_ECM02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "accepted_ECM02_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json",
+      "sha256": "c47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb"
+    },
+    "accepted_ECM02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "actual_caller_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_reachability_01.json",
+      "sha256": "f971ddb207e536f15402e4d003a5e1f7d17d31f042b40c690d8a40cfd597f158"
+    },
+    "calcium01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_static_receipt_01.json",
+      "sha256": "008f94c21a1908ff790104b1533231486b0dd70edff86cd514ccf857e718e34e"
+    },
+    "calcium03_callback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-03/inputs.json",
+      "sha256": "9df5f4fd651d81aaa4fdb9e33aeabd10f599715a243dc3b9f58f6bc2c93fe490"
+    },
+    "calcium_and_clock_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_AST_witness_02.json",
+      "sha256": "83f388961651dff5cf90ebf748b906ac9d2be71597ca173eb3226ae463e1b4c9"
+    },
+    "catalog03_callback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-03/inputs.json",
+      "sha256": "de6330ffd844d14ad2c8d2d209e1fddfcb9aa021dfe6dc3ef12f4fb9532db8a4"
+    },
+    "catalog04_preparation": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/preparation04.json",
+      "sha256": "75695edce7ca7e335210bfba60278d2ae14a80b00420626f92986ead3488dac9"
+    },
+    "catalog06_prepared_not_launched": {
+      "path": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+      "sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69"
+    },
+    "catalog_composition_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_AST_witness_01.json",
+      "sha256": "b25a4bc45800f1bd115b0db999e54d5478fda8f2dfb8dc42e2b862e0eaf28e76"
+    },
+    "composition_source_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_mechanics_AST_witness_01.json",
+      "sha256": "74c72cbd61e69b8fbefe9b3a87a819cd35e7a6197f346980f76c75923d4aca7d"
+    },
+    "coordinated_diagnostic_inputs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_dependency_witness_01.json",
+      "sha256": "9b003d19a2efad6d4c002f6a20777a07b132011f0921f848cb8aaa47fb1e19bf"
+    },
+    "event_bounded_metadata_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reporting_metadata_check_01.json",
+      "sha256": "e004de77d6277bf0f076586e9888b1cbc0aa6fee2ee8934efd2b2d1ee47fa1b0"
+    },
+    "event_explicit03_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_dependency_witness_01.json",
+      "sha256": "4545c30ee51466084d441e312d34c61af7a94375fab84692c3278600a6cd7daa"
+    },
+    "event_final_bounded_metadata_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reporting_metadata_check_02.json",
+      "sha256": "091c0836a86a853542b91a8091105562fe8dabe604018b583b71d4bc89f83470"
+    },
+    "event_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reachability_01.json",
+      "sha256": "ae67e2b9e814ba4cf05a085bcdc9fa39050ea1a57caddd40a12fc35e9e5ed289"
+    },
+    "event_source_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_AST_witness_02.json",
+      "sha256": "0d7c04ab7d7e932ffd47934fc1100f29d15b6dd2883f24aaecb0875e0970de11"
+    },
+    "explicit_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_dependency_witness_01.json",
+      "sha256": "8347f80962aa6d913047f930976ddbb6cd5dea8c85be5e1cc482a3c865a5ff9e"
+    },
+    "explicit_overlap_binding": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_mechanics_dependency_witness_02.json",
+      "sha256": "ec1c543d6f2cee908166ecc246e1d79dd5b3f28c74f902f69d20b64c766e5251"
+    },
+    "failed_literal_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "field01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_static_receipt_01.json",
+      "sha256": "c8ef54bc4437adc04d5d691724ca04b26a9fc548b3d947682d3719067f1d126a"
+    },
+    "frozen_calcium01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-01/inputs.json",
+      "sha256": "2e2ed97ee190d9495e3029fbe389a40039786fc9070f28a52f3b4e8ce3a226d8"
+    },
+    "frozen_catalog01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-01/inputs.json",
+      "sha256": "f5ffaf4f9f9d39973525f9f39a88e8d78ea2567277106e97505c43bb8279ac36"
+    },
+    "frozen_event01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-01/inputs.json",
+      "sha256": "569101232c058441830f794fd5209356027e4d609237d444ee637e676fa626c9"
+    },
+    "frozen_field01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json",
+      "sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb"
+    },
+    "frozen_mechanics02_manifest": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-prepared-20261031-02/manifest.json",
+      "sha256": "7ed2fb1bb6e0afca8a9419d44aed74980561a9ceadde17fc542e023eb24e09ea"
+    },
+    "held_event01_preparation": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-launch-preparation-20261031-01/PREPARATION.json",
+      "sha256": "a8d4851c7da00ef5e27d7a2904605e696a0f51fac01dd667e3c38739fb930b11"
+    },
+    "held_mechanics02_preparation": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-launch-preparation-20261031-02/PREPARATION.json",
+      "sha256": "a1c4c3e4cf0a6757b74a5f41a4ecec3677d3433972b9eb80f3d761b2d5e00b47"
+    },
+    "instantaneous_field_completion": {
+      "path": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+      "sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff"
+    },
+    "literal_source_and_composition": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_AST_witness_01.json",
+      "sha256": "b66f2fe1293f76eb6414d79af1ea5ebba1d7fa5e6a051c29808ad3169d6e9fd0"
+    },
+    "mechanics02_dependency_update": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-prepared-20261031-02/dependency-update02.json",
+      "sha256": "2b5a320f1d133e570e1f43a3ba12ae949649b53b4fd005649f968087b6e59d89"
+    },
+    "mechanics02_source_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-preflight-20261031-02/REVIEW.json",
+      "sha256": "b521a3439ff4f4346c83a85c945be4bb45f1ff9861a5840782779dfadeadc917"
+    },
+    "ordinary_mechanics_source_closeout": {
+      "path": "/mnt/workspaces/Cells/betse-mechanics-join-completion-review-20261031-02/REVIEW.json",
+      "sha256": "79a3646624d72feab086347b87d2cb826a40fbdd91f8f2af5f0d14bcd961999a"
+    },
+    "reporting_final_static02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_final_witness_02.json",
+      "sha256": "8be6e3ecb09662aa208ecfd00ee7f7645ad3829c5ba3f9ea2dac299b0116f3ad"
+    },
+    "reporting_key_inverse02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_witness_02.json",
+      "sha256": "9559496328a13cc010dbaa462cee1495a231315d986176dbce474c02c32638ae"
+    },
+    "reporting_synthetic_metadata02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_metadata_check_02.json",
+      "sha256": "a5b64fe56892c7b0edccdceb1dde9fba36f101115e585e763596b614a9546d89"
+    },
+    "retained_CaATP20_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e"
+    },
+    "retained_calcium04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json",
+      "sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42"
+    },
+    "retained_calcium_raw4": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/worker-review-01/completion-verification.json",
+      "sha256": "dd1d0c1b9a9746e8e16686143a0c89cdaa1610a42094fd54272a1208de1fac8b"
+    },
+    "retained_failed_material_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    },
+    "reviewed_catalog04_guard": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "03ffd66a8823fd997a78a33a4ae739f31b91f601db735aab1267190803eb4e69"
+    },
+    "reviewed_catalog04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-04/inputs.json",
+      "sha256": "fd45d7869354bedf5c0bf10f574c0e007e33b0e09d88725cb1c1ea06c91c87f7"
+    },
+    "saved_mechanics_finalizer_fix": {
+      "path": "/mnt/workspaces/Cells/mechanics-finalizer-repair-20261031-01/preparation.json",
+      "sha256": "3b97c176905cabde743c6d7f63e5bc629c8ff89f2d27a31ec7b7c0eaf08e8a8e"
+    },
+    "separate_supplied_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "whole_modern_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reachability_01.json",
+      "sha256": "57d3520b0e041219bf92a78ac10e2f0e4aa99c4219cab6c1d39c8f926c54f192"
+    },
+    "whole_native_calcium_policy": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_reachability_01.json",
+      "sha256": "733da3737e98e189e33d6b5b140c9dea7b0f90e6930a8b2406f7995e98611b5c"
+    }
+  },
+  "explicit_dependency_binding": {
+    "catalog04_guard": {
+      "after_sha256": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23",
+      "before_sha256": "9ed006a1d1ad00ed586541bbc2ee8ec0b0f59e6050dfebd1578c475039ec231b",
+      "equations_and_budgets_unchanged": true,
+      "only_inverse_assignments": [
+        "warm",
+        "dynamic"
+      ],
+      "path": "src/cells/processes/betse_normal_ecm_catalog_join_source.py",
+      "whole_module_inverse_AST_exact": true
+    },
+    "catalog04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-04/inputs.json",
+      "sha256": "fd45d7869354bedf5c0bf10f574c0e007e33b0e09d88725cb1c1ea06c91c87f7"
+    },
+    "catalog04_review": {
+      "path": "/mnt/workspaces/Cells/ecm-catalog-hot-cache-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "03ffd66a8823fd997a78a33a4ae739f31b91f601db735aab1267190803eb4e69"
+    },
+    "event01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-01/inputs.json",
+      "sha256": "569101232c058441830f794fd5209356027e4d609237d444ee637e676fa626c9"
+    },
+    "explicit_prior_mechanics_divergence_category_change": {
+      "after": 3e-14,
+      "before": 3e-20,
+      "category": "preexisting auxiliary_atol",
+      "factor": 1000000,
+      "field": "divergence_numeric",
+      "relative_unchanged": 8e-12,
+      "resolution_fraction_unchanged": 0.1
+    },
+    "fixture_evaluations": 0,
+    "kind": "cells.event_mechanics_explicit_dependency_binding@1",
+    "mechanics02_manifest": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-prepared-20261031-02/manifest.json",
+      "sha256": "7ed2fb1bb6e0afca8a9419d44aed74980561a9ceadde17fc542e023eb24e09ea"
+    },
+    "mechanics02_update": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-mechanics-join-prepared-20261031-02/dependency-update02.json",
+      "sha256": "2b5a320f1d133e570e1f43a3ba12ae949649b53b4fd005649f968087b6e59d89"
+    },
+    "new_budget_changes": false,
+    "no_scientific_qualification_inherited": true,
+    "numerical_runs": 0,
+    "overlap_resolution": {
+      "src/cells/__init__.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+        "mechanics02": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+        "selected": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e"
+      },
+      "src/cells/core/__init__.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+        "mechanics02": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+        "selected": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f"
+      },
+      "src/cells/core/errors.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+        "mechanics02": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+        "selected": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5"
+      },
+      "src/cells/core/physiology_native_calendar.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+        "mechanics02": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+        "selected": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb"
+      },
+      "src/cells/numerics/__init__.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+        "mechanics02": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+        "selected": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696"
+      },
+      "src/cells/numerics/extracellular_field.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+        "mechanics02": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+        "selected": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf"
+      },
+      "src/cells/processes/__init__.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+        "mechanics02": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+        "selected": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142"
+      },
+      "src/cells/processes/betse_calcium_atp_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
+        "mechanics02": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
+        "selected": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6"
+      },
+      "src/cells/processes/betse_channel_catalog_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+        "mechanics02": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+        "selected": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b"
+      },
+      "src/cells/processes/betse_deformation.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+        "mechanics02": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+        "selected": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+      },
+      "src/cells/processes/betse_ecm_grn_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+        "mechanics02": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+        "selected": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274"
+      },
+      "src/cells/processes/betse_ecm_grn_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+        "mechanics02": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+        "selected": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25"
+      },
+      "src/cells/processes/betse_ecm_transport.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+        "mechanics02": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+        "selected": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541"
+      },
+      "src/cells/processes/betse_environment_field.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+        "mechanics02": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+        "selected": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea"
+      },
+      "src/cells/processes/betse_environment_transport.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+        "mechanics02": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+        "selected": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c"
+      },
+      "src/cells/processes/betse_fast_solver.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+        "mechanics02": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+        "selected": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475"
+      },
+      "src/cells/processes/betse_fluid_flow.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+        "mechanics02": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+        "selected": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41"
+      },
+      "src/cells/processes/betse_geometry.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+        "mechanics02": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+        "selected": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff"
+      },
+      "src/cells/processes/betse_mechanics_join.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+        "mechanics02": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+        "selected": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a"
+      },
+      "src/cells/processes/betse_network_modulation.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+        "mechanics02": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+        "selected": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100"
+      },
+      "src/cells/processes/betse_network_reactions.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+        "mechanics02": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+        "selected": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364"
+      },
+      "src/cells/processes/betse_normal_calcium_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141",
+        "mechanics02": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141",
+        "selected": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141"
+      },
+      "src/cells/processes/betse_normal_channel_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+        "mechanics02": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+        "selected": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17"
+      },
+      "src/cells/processes/betse_normal_current.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+        "mechanics02": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+        "selected": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7"
+      },
+      "src/cells/processes/betse_normal_ecm_field_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+        "mechanics02": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+        "selected": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad"
+      },
+      "src/cells/processes/betse_normal_gated_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+        "mechanics02": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+        "selected": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684"
+      },
+      "src/cells/processes/betse_normal_grn_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b",
+        "mechanics02": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b",
+        "selected": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b"
+      },
+      "src/cells/processes/betse_normal_grn_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b",
+        "mechanics02": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b",
+        "selected": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b"
+      },
+      "src/cells/processes/betse_normal_ion_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+        "mechanics02": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+        "selected": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d"
+      },
+      "src/cells/processes/betse_normal_molecule_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+        "mechanics02": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+        "selected": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f"
+      },
+      "src/cells/processes/betse_normal_network_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7",
+        "mechanics02": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7",
+        "selected": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7"
+      },
+      "src/cells/processes/betse_normal_network_join_source.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+        "mechanics02": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+        "selected": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe"
+      },
+      "src/cells/processes/betse_normal_pump_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+        "mechanics02": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+        "selected": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753"
+      },
+      "src/cells/processes/betse_normal_voltage.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+        "mechanics02": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+        "selected": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4"
+      },
+      "src/cells/processes/betse_perturbations.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+        "mechanics02": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+        "selected": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56"
+      },
+      "src/cells/processes/betse_time_modulation.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+        "mechanics02": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+        "selected": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577"
+      },
+      "src/cells/processes/electrochemistry.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+        "mechanics02": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+        "selected": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2"
+      },
+      "tests/__init__.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+        "mechanics02": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+        "selected": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb"
+      },
+      "tests/unit/test_betse_ecm_grn_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+        "mechanics02": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+        "selected": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039"
+      },
+      "tests/unit/test_betse_fast_solver.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+        "mechanics02": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+        "selected": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb"
+      },
+      "tests/unit/test_betse_normal_calcium_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+        "mechanics02": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+        "selected": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9"
+      },
+      "tests/unit/test_betse_normal_channel_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+        "mechanics02": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+        "selected": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf"
+      },
+      "tests/unit/test_betse_normal_ecm_field_join.py": {
+        "ancestors_equal": false,
+        "authority": "event01_callback03_snapshot",
+        "event01": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+        "mechanics02": "cad319c8891ed3c011c9df5daecca4b430e67649c9d92db6e237e0927268ec76",
+        "selected": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d"
+      },
+      "tests/unit/test_betse_normal_gated_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+        "mechanics02": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+        "selected": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476"
+      },
+      "tests/unit/test_betse_normal_grn_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+        "mechanics02": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+        "selected": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2"
+      },
+      "tests/unit/test_betse_normal_ion_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+        "mechanics02": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+        "selected": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071"
+      },
+      "tests/unit/test_betse_normal_network_join.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+        "mechanics02": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+        "selected": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf"
+      },
+      "validation/betse/betse_ecm_grn_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406",
+        "mechanics02": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406",
+        "selected": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406"
+      },
+      "validation/betse/betse_ecm_grn_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+        "mechanics02": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+        "selected": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc"
+      },
+      "validation/betse/betse_ecm_grn_native_network.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+        "mechanics02": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+        "selected": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2"
+      },
+      "validation/betse/betse_ecm_grn_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+        "mechanics02": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+        "selected": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe"
+      },
+      "validation/betse/betse_ecm_grn_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+        "mechanics02": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+        "selected": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40"
+      },
+      "validation/betse/betse_ecm_transport_checks.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+        "mechanics02": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+        "selected": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122"
+      },
+      "validation/betse/betse_ecm_transport_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+        "mechanics02": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+        "selected": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2"
+      },
+      "validation/betse/betse_ecm_transport_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+        "mechanics02": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+        "selected": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3"
+      },
+      "validation/betse/betse_ecm_transport_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+        "mechanics02": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+        "selected": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+      },
+      "validation/betse/betse_ecm_transport_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+        "mechanics02": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+        "selected": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd"
+      },
+      "validation/betse/betse_environment_field_checks.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+        "mechanics02": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+        "selected": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f"
+      },
+      "validation/betse/betse_environment_field_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+        "mechanics02": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+        "selected": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3"
+      },
+      "validation/betse/betse_environment_field_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+        "mechanics02": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+        "selected": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4"
+      },
+      "validation/betse/betse_environment_field_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+        "mechanics02": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+        "selected": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359"
+      },
+      "validation/betse/betse_environment_field_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+        "mechanics02": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+        "selected": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c"
+      },
+      "validation/betse/betse_fast_solver_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+        "mechanics02": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+        "selected": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48"
+      },
+      "validation/betse/betse_fast_solver_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+        "mechanics02": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+        "selected": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d"
+      },
+      "validation/betse/betse_fast_solver_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+        "mechanics02": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+        "selected": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26"
+      },
+      "validation/betse/betse_mechanics_join_checks.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+        "mechanics02": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+        "selected": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f"
+      },
+      "validation/betse/betse_mechanics_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+        "mechanics02": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+        "selected": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141"
+      },
+      "validation/betse/betse_mechanics_join_protocol.json": {
+        "ancestors_equal": false,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "b3971cf35cc53289861c53f24e559be124a3a534b9730e6848367609ba7fc161",
+        "mechanics02": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+        "selected": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71"
+      },
+      "validation/betse/betse_mechanics_join_reference.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+        "mechanics02": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+        "selected": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19"
+      },
+      "validation/betse/betse_normal_calcium_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5",
+        "mechanics02": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5",
+        "selected": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5"
+      },
+      "validation/betse/betse_normal_calcium_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+        "mechanics02": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+        "selected": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67"
+      },
+      "validation/betse/betse_normal_calcium_join_native_helpers.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711",
+        "mechanics02": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711",
+        "selected": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711"
+      },
+      "validation/betse/betse_normal_calcium_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+        "mechanics02": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+        "selected": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3"
+      },
+      "validation/betse/betse_normal_catalog_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+        "mechanics02": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+        "selected": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb"
+      },
+      "validation/betse/betse_normal_catalog_join_inventory.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+        "mechanics02": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+        "selected": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      "validation/betse/betse_normal_catalog_join_native_helpers.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+        "mechanics02": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+        "selected": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720"
+      },
+      "validation/betse/betse_normal_catalog_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+        "mechanics02": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+        "selected": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1"
+      },
+      "validation/betse/betse_normal_catalog_join_scalar.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+        "mechanics02": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+        "selected": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49"
+      },
+      "validation/betse/betse_normal_channel_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+        "mechanics02": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+        "selected": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4"
+      },
+      "validation/betse/betse_normal_channel_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+        "mechanics02": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+        "selected": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1"
+      },
+      "validation/betse/betse_normal_channel_join_native_helpers.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+        "mechanics02": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+        "selected": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d"
+      },
+      "validation/betse/betse_normal_channel_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f",
+        "mechanics02": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f",
+        "selected": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f"
+      },
+      "validation/betse/betse_normal_channel_join_runtime.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+        "mechanics02": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+        "selected": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf"
+      },
+      "validation/betse/betse_normal_current_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+        "mechanics02": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+        "selected": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613"
+      },
+      "validation/betse/betse_normal_current_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+        "mechanics02": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+        "selected": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e"
+      },
+      "validation/betse/betse_normal_current_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+        "mechanics02": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+        "selected": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233"
+      },
+      "validation/betse/betse_normal_current_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+        "mechanics02": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+        "selected": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db"
+      },
+      "validation/betse/betse_normal_ecm_field_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df",
+        "mechanics02": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df",
+        "selected": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df"
+      },
+      "validation/betse/betse_normal_ecm_field_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+        "mechanics02": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+        "selected": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812"
+      },
+      "validation/betse/betse_normal_ecm_field_join_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+        "mechanics02": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+        "selected": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82"
+      },
+      "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "mechanics02_explicit_qualified_dependency_snapshot",
+        "event01": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+        "mechanics02": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+        "selected": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325"
+      },
+      "validation/betse/betse_normal_gated_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+        "mechanics02": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+        "selected": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603"
+      },
+      "validation/betse/betse_normal_gated_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+        "mechanics02": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+        "selected": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450"
+      },
+      "validation/betse/betse_normal_gated_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+        "mechanics02": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+        "selected": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056"
+      },
+      "validation/betse/betse_normal_grn_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c",
+        "mechanics02": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c",
+        "selected": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c"
+      },
+      "validation/betse/betse_normal_grn_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+        "mechanics02": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+        "selected": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf"
+      },
+      "validation/betse/betse_normal_grn_join_native_helpers.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf",
+        "mechanics02": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf",
+        "selected": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf"
+      },
+      "validation/betse/betse_normal_grn_join_native_network.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019",
+        "mechanics02": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019",
+        "selected": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019"
+      },
+      "validation/betse/betse_normal_grn_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e",
+        "mechanics02": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e",
+        "selected": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e"
+      },
+      "validation/betse/betse_normal_ion_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+        "mechanics02": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+        "selected": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78"
+      },
+      "validation/betse/betse_normal_ion_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+        "mechanics02": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+        "selected": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360"
+      },
+      "validation/betse/betse_normal_ion_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+        "mechanics02": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+        "selected": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5"
+      },
+      "validation/betse/betse_normal_molecule_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+        "mechanics02": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+        "selected": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96"
+      },
+      "validation/betse/betse_normal_molecule_join_native_network.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+        "mechanics02": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+        "selected": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a"
+      },
+      "validation/betse/betse_normal_molecule_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad",
+        "mechanics02": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad",
+        "selected": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad"
+      },
+      "validation/betse/betse_normal_network_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b",
+        "mechanics02": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b",
+        "selected": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b"
+      },
+      "validation/betse/betse_normal_network_join_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+        "mechanics02": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+        "selected": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8"
+      },
+      "validation/betse/betse_normal_network_join_native_helpers.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca",
+        "mechanics02": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca",
+        "selected": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca"
+      },
+      "validation/betse/betse_normal_network_join_native_network.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7",
+        "mechanics02": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7",
+        "selected": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7"
+      },
+      "validation/betse/betse_normal_network_join_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d",
+        "mechanics02": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d",
+        "selected": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d"
+      },
+      "validation/betse/betse_normal_network_join_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+        "mechanics02": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+        "selected": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+      },
+      "validation/betse/betse_normal_pump_join_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+        "mechanics02": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+        "selected": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df"
+      },
+      "validation/betse/betse_normal_voltage_fixtures.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+        "mechanics02": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+        "selected": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c"
+      },
+      "validation/betse/betse_normal_voltage_native.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228",
+        "mechanics02": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228",
+        "selected": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228"
+      },
+      "validation/betse/betse_normal_voltage_protocol.json": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+        "mechanics02": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+        "selected": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9"
+      },
+      "validation/channels/calcium_catalog_extra_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+        "mechanics02": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+        "selected": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10"
+      },
+      "validation/channels/hcn_extra_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+        "mechanics02": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+        "selected": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f"
+      },
+      "validation/channels/morris_lecar_channels_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+        "mechanics02": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+        "selected": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff"
+      },
+      "validation/channels/potassium_catalog_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+        "mechanics02": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+        "selected": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c"
+      },
+      "validation/channels/sodium_catalog_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+        "mechanics02": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+        "selected": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+      },
+      "validation/mechanics/betse_deformation_reference.py": {
+        "ancestors_equal": true,
+        "authority": "event01_callback03_snapshot",
+        "event01": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+        "mechanics02": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca",
+        "selected": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca"
+      }
+    },
+    "protected_sha256": {
+      "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+      "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "src/cells/core/physiology_native_calendar.py": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+      "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+      "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "src/cells/processes/betse_calcium_atp_source.py": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
+      "src/cells/processes/betse_channel_catalog_source.py": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+      "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+      "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+      "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+      "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+      "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+      "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+      "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+      "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+      "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+      "src/cells/processes/betse_network_modulation.py": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+      "src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+      "src/cells/processes/betse_normal_calcium_join.py": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141",
+      "src/cells/processes/betse_normal_channel_join.py": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+      "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+      "src/cells/processes/betse_normal_ecm_calcium_join.py": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
+      "src/cells/processes/betse_normal_ecm_catalog_join.py": "3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504",
+      "src/cells/processes/betse_normal_ecm_catalog_join_source.py": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23",
+      "src/cells/processes/betse_normal_ecm_event_join.py": "ffb8d11440030ef57958a86d8d60e880da82a9a407464e3653e3710a3869e916",
+      "src/cells/processes/betse_normal_ecm_event_join_material.py": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895",
+      "src/cells/processes/betse_normal_ecm_event_join_source.py": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071",
+      "src/cells/processes/betse_normal_ecm_field_join.py": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+      "src/cells/processes/betse_normal_gated_join.py": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+      "src/cells/processes/betse_normal_grn_join.py": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b",
+      "src/cells/processes/betse_normal_grn_source.py": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b",
+      "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+      "src/cells/processes/betse_normal_molecule_source.py": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+      "src/cells/processes/betse_normal_network_join.py": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7",
+      "src/cells/processes/betse_normal_network_join_source.py": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+      "src/cells/processes/betse_normal_pump_join.py": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+      "src/cells/processes/betse_normal_voltage.py": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+      "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+      "src/cells/processes/betse_time_modulation.py": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+      "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/unit/test_betse_ecm_grn_join.py": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+      "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+      "tests/unit/test_betse_normal_calcium_join.py": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+      "tests/unit/test_betse_normal_channel_join.py": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+      "tests/unit/test_betse_normal_ecm_catalog_join.py": "8639b53a83be820b405c94366844a072c432c36972c61c377335bbd26125af02",
+      "tests/unit/test_betse_normal_ecm_event_join.py": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902",
+      "tests/unit/test_betse_normal_ecm_field_join.py": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+      "tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+      "tests/unit/test_betse_normal_grn_join.py": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "tests/unit/test_betse_normal_network_join.py": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+      "validation/betse/betse_ecm_grn_fixtures.py": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406",
+      "validation/betse/betse_ecm_grn_native.py": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+      "validation/betse/betse_ecm_grn_native_network.py": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+      "validation/betse/betse_ecm_grn_protocol.json": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+      "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+      "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+      "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+      "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+      "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+      "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "validation/betse/betse_environment_field_checks.py": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+      "validation/betse/betse_environment_field_fixtures.py": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+      "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+      "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+      "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+      "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+      "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+      "validation/betse/betse_fast_solver_protocol.json": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+      "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+      "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+      "validation/betse/betse_mechanics_join_protocol.json": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+      "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+      "validation/betse/betse_normal_calcium_join_fixtures.py": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5",
+      "validation/betse/betse_normal_calcium_join_native.py": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+      "validation/betse/betse_normal_calcium_join_native_helpers.py": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711",
+      "validation/betse/betse_normal_calcium_join_protocol.json": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+      "validation/betse/betse_normal_catalog_join_fixtures.py": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+      "validation/betse/betse_normal_catalog_join_inventory.json": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+      "validation/betse/betse_normal_catalog_join_native_helpers.py": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+      "validation/betse/betse_normal_catalog_join_protocol.json": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+      "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+      "validation/betse/betse_normal_channel_join_fixtures.py": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+      "validation/betse/betse_normal_channel_join_native.py": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+      "validation/betse/betse_normal_channel_join_native_helpers.py": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+      "validation/betse/betse_normal_channel_join_protocol.json": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f",
+      "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+      "validation/betse/betse_normal_current_fixtures.py": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+      "validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+      "validation/betse/betse_normal_ecm_calcium_join_fixtures.py": "1e6ab500e82cc193021a44c9bff24d079cedb07ff6d0d6f56f55883a57907aa6",
+      "validation/betse/betse_normal_ecm_catalog_join_fixtures.py": "03427c27578afd90c88a348e8184b04ffbad33154b88d496cf263a7a269e2470",
+      "validation/betse/betse_normal_ecm_catalog_join_native.py": "f155c3722accd0e51d2a901f2dbf739d6bcbe42b1d5244749eb32663c7b2d4db",
+      "validation/betse/betse_normal_ecm_catalog_join_native_network.py": "42adbcf69461d02060754cf3f3047bb97a6825c5f3c567d6190456297465de74",
+      "validation/betse/betse_normal_ecm_catalog_join_protocol.json": "5b55d8bd28a3c8b6942062cbb0a112a0fc99771863b3a45420ccdb6dd9a35c9b",
+      "validation/betse/betse_normal_ecm_event_join_fixtures.py": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414",
+      "validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea",
+      "validation/betse/betse_normal_ecm_event_join_native_events.py": "28d9515f9bcc589692671a92b8d949e408f4e1f164029131cccb100c92035e10",
+      "validation/betse/betse_normal_ecm_event_join_protocol.json": "f65236961b87a7a44e420b9772c3074021787ccb42e95ed9ea510aea67575b36",
+      "validation/betse/betse_normal_ecm_event_join_reference.py": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+      "validation/betse/betse_normal_ecm_field_join_fixtures.py": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df",
+      "validation/betse/betse_normal_ecm_field_join_native.py": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+      "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+      "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+      "validation/betse/betse_normal_gated_join_fixtures.py": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+      "validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+      "validation/betse/betse_normal_gated_join_protocol.json": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+      "validation/betse/betse_normal_grn_join_fixtures.py": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c",
+      "validation/betse/betse_normal_grn_join_native.py": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+      "validation/betse/betse_normal_grn_join_native_helpers.py": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf",
+      "validation/betse/betse_normal_grn_join_native_network.py": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019",
+      "validation/betse/betse_normal_grn_join_protocol.json": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e",
+      "validation/betse/betse_normal_ion_join_fixtures.py": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+      "validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_molecule_join_fixtures.py": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+      "validation/betse/betse_normal_molecule_join_native_network.py": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+      "validation/betse/betse_normal_molecule_join_protocol.json": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad",
+      "validation/betse/betse_normal_network_join_fixtures.py": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b",
+      "validation/betse/betse_normal_network_join_native.py": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+      "validation/betse/betse_normal_network_join_native_helpers.py": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca",
+      "validation/betse/betse_normal_network_join_native_network.py": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7",
+      "validation/betse/betse_normal_network_join_protocol.json": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d",
+      "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+      "validation/betse/betse_normal_pump_join_fixtures.py": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+      "validation/betse/betse_normal_voltage_fixtures.py": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+      "validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca"
+    },
+    "pytest_collection_runs": 0,
+    "reference_closure": {
+      "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+      "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+      "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+      "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+      "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+      "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+      "validation/betse/betse_normal_ecm_event_join_reference.py": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+      "validation/betse/betse_normal_ecm_event_mechanics_reference.py": "e19fd3e3cb390887c14ebf685bda7a35f0d4f0856dea07956e9d883bea5e6955",
+      "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+      "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+      "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca"
+    },
+    "reference_evaluations": 0,
+    "scientific_AST_executions": 0,
+    "scientific_import_closure": {
+      "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+      "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "src/cells/core/physiology_native_calendar.py": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+      "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+      "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "src/cells/processes/betse_calcium_atp_source.py": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
+      "src/cells/processes/betse_channel_catalog_source.py": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+      "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+      "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+      "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+      "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+      "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+      "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+      "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+      "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+      "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+      "src/cells/processes/betse_network_modulation.py": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+      "src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+      "src/cells/processes/betse_normal_calcium_join.py": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141",
+      "src/cells/processes/betse_normal_channel_join.py": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+      "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+      "src/cells/processes/betse_normal_ecm_calcium_join.py": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
+      "src/cells/processes/betse_normal_ecm_catalog_join.py": "3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504",
+      "src/cells/processes/betse_normal_ecm_catalog_join_source.py": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23",
+      "src/cells/processes/betse_normal_ecm_event_join.py": "ffb8d11440030ef57958a86d8d60e880da82a9a407464e3653e3710a3869e916",
+      "src/cells/processes/betse_normal_ecm_event_join_material.py": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895",
+      "src/cells/processes/betse_normal_ecm_event_join_source.py": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071",
+      "src/cells/processes/betse_normal_ecm_event_mechanics.py": "4a49891151912d69023954ba476b0d2f7f8019dad6e3bb2f804df5d8746dfd06",
+      "src/cells/processes/betse_normal_ecm_field_join.py": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+      "src/cells/processes/betse_normal_gated_join.py": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+      "src/cells/processes/betse_normal_grn_join.py": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b",
+      "src/cells/processes/betse_normal_grn_source.py": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b",
+      "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+      "src/cells/processes/betse_normal_molecule_source.py": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+      "src/cells/processes/betse_normal_network_join.py": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7",
+      "src/cells/processes/betse_normal_network_join_source.py": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+      "src/cells/processes/betse_normal_pump_join.py": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+      "src/cells/processes/betse_normal_voltage.py": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+      "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+      "src/cells/processes/betse_time_modulation.py": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+      "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/unit/test_betse_ecm_grn_join.py": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+      "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+      "tests/unit/test_betse_normal_calcium_join.py": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+      "tests/unit/test_betse_normal_channel_join.py": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+      "tests/unit/test_betse_normal_ecm_catalog_join.py": "8639b53a83be820b405c94366844a072c432c36972c61c377335bbd26125af02",
+      "tests/unit/test_betse_normal_ecm_event_join.py": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902",
+      "tests/unit/test_betse_normal_ecm_event_mechanics.py": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c",
+      "tests/unit/test_betse_normal_ecm_field_join.py": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+      "tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+      "tests/unit/test_betse_normal_grn_join.py": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "tests/unit/test_betse_normal_network_join.py": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+      "validation/betse/betse_ecm_grn_fixtures.py": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406",
+      "validation/betse/betse_ecm_grn_native.py": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+      "validation/betse/betse_ecm_grn_native_network.py": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+      "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+      "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+      "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+      "validation/betse/betse_environment_field_checks.py": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+      "validation/betse/betse_environment_field_fixtures.py": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+      "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+      "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+      "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+      "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+      "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+      "validation/betse/betse_normal_calcium_join_fixtures.py": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5",
+      "validation/betse/betse_normal_calcium_join_native.py": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+      "validation/betse/betse_normal_calcium_join_native_helpers.py": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711",
+      "validation/betse/betse_normal_catalog_join_fixtures.py": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+      "validation/betse/betse_normal_catalog_join_native_helpers.py": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+      "validation/betse/betse_normal_channel_join_fixtures.py": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+      "validation/betse/betse_normal_channel_join_native.py": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+      "validation/betse/betse_normal_channel_join_native_helpers.py": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+      "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+      "validation/betse/betse_normal_current_fixtures.py": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+      "validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+      "validation/betse/betse_normal_ecm_calcium_join_fixtures.py": "1e6ab500e82cc193021a44c9bff24d079cedb07ff6d0d6f56f55883a57907aa6",
+      "validation/betse/betse_normal_ecm_catalog_join_fixtures.py": "03427c27578afd90c88a348e8184b04ffbad33154b88d496cf263a7a269e2470",
+      "validation/betse/betse_normal_ecm_catalog_join_native.py": "f155c3722accd0e51d2a901f2dbf739d6bcbe42b1d5244749eb32663c7b2d4db",
+      "validation/betse/betse_normal_ecm_catalog_join_native_network.py": "42adbcf69461d02060754cf3f3047bb97a6825c5f3c567d6190456297465de74",
+      "validation/betse/betse_normal_ecm_event_join_fixtures.py": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414",
+      "validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea",
+      "validation/betse/betse_normal_ecm_event_join_native_events.py": "28d9515f9bcc589692671a92b8d949e408f4e1f164029131cccb100c92035e10",
+      "validation/betse/betse_normal_ecm_event_mechanics_fixtures.py": "40a90414cbc8a4ddbe663805e6fc00c97f4cb1d8c3ba5e237cc862a35d4cf032",
+      "validation/betse/betse_normal_ecm_event_mechanics_native.py": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4",
+      "validation/betse/betse_normal_ecm_event_mechanics_native_mechanics.py": "8b743992fd5826c6231df0525bbc89844b7a4d85eb8815a656373114f92a8cae",
+      "validation/betse/betse_normal_ecm_field_join_fixtures.py": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df",
+      "validation/betse/betse_normal_ecm_field_join_native.py": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+      "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+      "validation/betse/betse_normal_gated_join_fixtures.py": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+      "validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+      "validation/betse/betse_normal_grn_join_fixtures.py": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c",
+      "validation/betse/betse_normal_grn_join_native.py": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+      "validation/betse/betse_normal_grn_join_native_helpers.py": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf",
+      "validation/betse/betse_normal_grn_join_native_network.py": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019",
+      "validation/betse/betse_normal_ion_join_fixtures.py": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+      "validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+      "validation/betse/betse_normal_molecule_join_fixtures.py": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+      "validation/betse/betse_normal_molecule_join_native_network.py": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+      "validation/betse/betse_normal_network_join_fixtures.py": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b",
+      "validation/betse/betse_normal_network_join_native.py": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+      "validation/betse/betse_normal_network_join_native_helpers.py": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca",
+      "validation/betse/betse_normal_network_join_native_network.py": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7",
+      "validation/betse/betse_normal_pump_join_fixtures.py": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+      "validation/betse/betse_normal_voltage_fixtures.py": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+      "validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228"
+    },
+    "scientific_imports": 0,
+    "selected_pin_authority": {
+      "src/cells/__init__.py": "event01_callback03_snapshot",
+      "src/cells/core/__init__.py": "event01_callback03_snapshot",
+      "src/cells/core/errors.py": "event01_callback03_snapshot",
+      "src/cells/core/physiology_native_calendar.py": "event01_callback03_snapshot",
+      "src/cells/numerics/__init__.py": "event01_callback03_snapshot",
+      "src/cells/numerics/extracellular_field.py": "event01_callback03_snapshot",
+      "src/cells/processes/__init__.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_calcium_atp_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_channel_catalog_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_deformation.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "src/cells/processes/betse_ecm_grn_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_ecm_grn_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_ecm_transport.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_environment_field.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_environment_transport.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_fast_solver.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_fluid_flow.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "src/cells/processes/betse_geometry.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_mechanics_join.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "src/cells/processes/betse_network_modulation.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_network_reactions.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_calcium_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_channel_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_current.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_calcium_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_catalog_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_catalog_join_source.py": "reviewed_catalog04_guard_only",
+      "src/cells/processes/betse_normal_ecm_event_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_event_join_material.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_event_join_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ecm_field_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_gated_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_grn_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_grn_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_ion_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_molecule_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_network_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_network_join_source.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_pump_join.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_normal_voltage.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_perturbations.py": "event01_callback03_snapshot",
+      "src/cells/processes/betse_time_modulation.py": "event01_callback03_snapshot",
+      "src/cells/processes/electrochemistry.py": "event01_callback03_snapshot",
+      "tests/__init__.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_ecm_grn_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_fast_solver.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_calcium_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_channel_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_ecm_catalog_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_ecm_event_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_ecm_field_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_gated_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_grn_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_ion_join.py": "event01_callback03_snapshot",
+      "tests/unit/test_betse_normal_network_join.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_grn_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_grn_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_grn_native_network.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_grn_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_grn_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_transport_checks.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_transport_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_transport_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_transport_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_ecm_transport_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_environment_field_checks.py": "event01_callback03_snapshot",
+      "validation/betse/betse_environment_field_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_environment_field_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_environment_field_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_environment_field_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_fast_solver_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_fast_solver_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_fast_solver_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_mechanics_join_checks.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "validation/betse/betse_mechanics_join_native.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "validation/betse/betse_mechanics_join_protocol.json": "mechanics02_explicit_qualified_dependency_snapshot",
+      "validation/betse/betse_mechanics_join_reference.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "validation/betse/betse_normal_calcium_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_calcium_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_calcium_join_native_helpers.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_calcium_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_catalog_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_catalog_join_inventory.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_catalog_join_native_helpers.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_catalog_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_catalog_join_scalar.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_channel_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_channel_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_channel_join_native_helpers.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_channel_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_channel_join_runtime.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_current_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_current_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_current_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_current_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_calcium_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_catalog_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_catalog_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_catalog_join_native_network.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_catalog_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_event_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_event_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_event_join_native_events.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_event_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_event_join_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_field_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_field_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_field_join_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": "mechanics02_explicit_qualified_dependency_snapshot",
+      "validation/betse/betse_normal_gated_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_gated_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_gated_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_grn_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_grn_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_grn_join_native_helpers.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_grn_join_native_network.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_grn_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ion_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ion_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_ion_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_molecule_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_molecule_join_native_network.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_molecule_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_native_helpers.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_native_network.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_protocol.json": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_network_join_reference.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_pump_join_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_voltage_fixtures.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_voltage_native.py": "event01_callback03_snapshot",
+      "validation/betse/betse_normal_voltage_protocol.json": "event01_callback03_snapshot",
+      "validation/channels/calcium_catalog_extra_reference.py": "event01_callback03_snapshot",
+      "validation/channels/hcn_extra_reference.py": "event01_callback03_snapshot",
+      "validation/channels/morris_lecar_channels_reference.py": "event01_callback03_snapshot",
+      "validation/channels/potassium_catalog_reference.py": "event01_callback03_snapshot",
+      "validation/channels/sodium_catalog_reference.py": "event01_callback03_snapshot",
+      "validation/mechanics/betse_deformation_reference.py": "event01_callback03_snapshot"
+    },
+    "status": "all_used_dependencies_resolved_static_only"
+  },
+  "failure_retention": {
+    "full_native_event_CaATP_GeRN_noise_mechanics_partial": true,
+    "native_mechanics_constructor_locals_and_partial_view": true,
+    "native_source_guards_distinct_from_stricter_owned_admission": true,
+    "owned_initial_parent_and_every_reached_callback": true,
+    "sampled_display_refusal_preserves_reached_post_field_and_mechanics_parent": true,
+    "zero_accuracy_credit": true
+  },
+  "fixture_evaluations": 0,
+  "independent_reference": {
+    "actual_archived_inputs": true,
+    "carried_reference_forms": 0,
+    "fresh_subprocesses": true,
+    "mechanics_raw_Decimal_tree_preserved": true,
+    "production_and_scientific_imports_denied": true,
+    "runtime_inventory_every_mode": true,
+    "self_resolution_fraction": 0.1
+  },
+  "inherited_mechanics_divergence_category_disclosure": {
+    "after": 3e-14,
+    "before": 3e-20,
+    "category": "preexisting auxiliary_atol",
+    "factor": 1000000,
+    "field": "divergence_numeric",
+    "relative_unchanged": 8e-12,
+    "resolution_fraction_unchanged": 0.1
+  },
+  "kind": "cells.normal_ecm_event_mechanics_static_contract@1",
+  "mechanics_acceptance": {
+    "auxiliary_atol": 3e-14,
+    "displacement_atol_m": 3e-20,
+    "display_atol_m": 3e-17,
+    "operator_atol": 2e-14,
+    "pressure_atol_Pa": 3e-09,
+    "relative": 8e-12
+  },
+  "mechanics_budget_source_sha256": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "version": "1.5.0"
+  },
+  "new_budget_changes": false,
+  "new_numerical_equations": false,
+  "numerical_runs": 0,
+  "old_frozen_and_live_component_files_edited": false,
+  "planned": {
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 62,
+    "completed_display_samples": 0,
+    "component_controls": 10,
+    "conditional_points_per_positive_history": 26,
+    "corruption_controls": 4,
+    "dependency_controls": 26,
+    "duplicate_baseline_calls_per_implementation": 12,
+    "duplicate_baseline_histories": 4,
+    "duplicate_baseline_reference_forms": 208,
+    "dynamic_deformation_calls": 0,
+    "enabled_flow_calls": 0,
+    "forms_per_history": 52,
+    "fresh_Decimal_reference_forms": 1508,
+    "native_captures": 36,
+    "new_composition_contexts": 15,
+    "new_positive_reference_forms": 1300,
+    "new_qualification_passes": 0,
+    "physical_initializations": 0,
+    "positive_completed_calls_per_implementation": 75,
+    "positive_three_call_histories": 25,
+    "precision_levels": [
+      100,
+      160
+    ],
+    "raw_source_limits": 7,
+    "retained_qualification_passes": 0
+  },
+  "purpose": "Resolve shared supplied owners and source epochs while adding steady mechanics after actual events and protein noise, without double material/field stepping",
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "resources": {
+    "cpu": null,
+    "cpu_coordination": "Only a separate requested and Root-coordinated numerical round may run",
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": {
+    "absent_disabled_flow_cold_stores_not_claimed_native_producers": true,
+    "actual_event_pressure_temperature": true,
+    "actual_events_then_CaATP_GRN_channels_then_noise_then_mechanics": true,
+    "completed_display_output": false,
+    "component_qualification_pending": true,
+    "current_post_noise_primary_and_post_GRN_molecules": true,
+    "cut_or_geometry_rebuild": false,
+    "dynamic_deformation": false,
+    "enabled_flow": false,
+    "event01_and_ECM_mechanics02_scientific_passes_inherited": 0,
+    "exact_common_owner_measure_centres_maps": true,
+    "held_zero_fluid_stores": true,
+    "independent_carried_trajectory": false,
+    "maximum_field_cells": 16,
+    "mechanical_DEC_view_separate_from_material_geometry": true,
+    "mechanics_before_deferred_material_and_field": true,
+    "minimum_quartic_display_cells": 25,
+    "native_calendar_sample_eligibility_preserved": true,
+    "one_material_and_one_field_advance_per_call": true,
+    "ordinary_ECM_FULL_only": true,
+    "original_material39of40_still_failed": true,
+    "physical_global_conservation_credit": false,
+    "physical_initialization_or_full_native_solver": false,
+    "previous_field_current_charge_epoch": true,
+    "sampling_policy": "calendar_eligibility_only_explicit_display_refusal",
+    "supplied_mechanics_entry_cache": true,
+    "supplied_state_only": true
+  },
+  "source_map": "validation/betse/betse_normal_ecm_event_mechanics_source_map.json",
+  "source_order": [
+    "phase.dyna.fire_events",
+    "self.grn.core.run_loop",
+    "self.protein_noise_flux =",
+    "osmotic_P(",
+    "getDeformation(",
+    "self.update_all_concs(",
+    "self.update_V(",
+    "stb.check_v(",
+    "self.write2storage("
+  ],
+  "status": "static_preparation_unexecuted_unqualified"
+}

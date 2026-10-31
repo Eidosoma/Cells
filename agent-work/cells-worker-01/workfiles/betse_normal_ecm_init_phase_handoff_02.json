@@ -1,0 +1,39 @@
+{
+  "active_job_queries": 0,
+  "capture_metadata_controls": 10,
+  "driver_changes": false,
+  "evidence_metadata_controls": 18,
+  "fixture_model_reference_evaluations": 0,
+  "fixture_protocol_equations_ids_budgets_unchanged": true,
+  "historical_and_failed_evidence_preserved": true,
+  "inherited_scientific_passes": 0,
+  "inputs_sha256": "bd0c4a284aa414a0fb2195c0826b862ebaeb72580b18032cd3668c2c6a01375d",
+  "kind": "cells.INIT02_held_source_handoff@1",
+  "manifest_sha256": "528a1c7d1df0be152919b9dd446f3247676856585652f2c2924d82840c27d36f",
+  "numerical_runs": 0,
+  "oracle_domain_changes": false,
+  "package": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-02",
+  "parent_manifest_sha256": "33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf",
+  "prospective": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "pytest_collections": 0,
+  "reference_modules": 23,
+  "repaired_findings": [
+    "INIT-CAPTURE-01",
+    "INIT-SAMPLING-02"
+  ],
+  "resource_files": 28,
+  "runtime_modules": 124,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_static_review_sha256": "2f68c98fbda8fa4c4a3a146100677b326e1f8bb615cd0af4144cd85af2a03a38",
+  "status": "held_for_Chief_review_no_science_run"
+}

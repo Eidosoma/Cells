@@ -1,0 +1,69 @@
+{
+  "all_other_test_AST_exact": true,
+  "authority": "Chief requested narrow ECM02 handler repair then charged sibling continuation; same handler deficiency is statically present in charged01",
+  "automatic_retry": false,
+  "controlled_nonimported_ECM02_pin_refresh": {
+    "src/cells/processes/betse_ecm_grn_join.py": {
+      "after": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+      "before": "0bfdbd38f0e438824063ef743f9b4e747c79a702ec79972e6cb50ffc2151f0ac"
+    },
+    "tests/unit/test_betse_ecm_grn_join.py": {
+      "after": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+      "before": "5fb5f59334c3469e164f1a9ea9930dfa5c87ddaa077d7bf43a086015695d2142"
+    },
+    "validation/betse/betse_ecm_grn_protocol.json": {
+      "after": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+      "before": "22788f212d829883ca1e931638ddca0704e7d138e2064679a0c01160a6b81075"
+    },
+    "validation/betse/betse_ecm_grn_source_map.json": {
+      "after": "f15588f7abe0ec565a9141c262fc9789ea14f8e877dd761f8469966f9fa114f4",
+      "before": "d5f8eb642183fe711dac1f6772a5e75efc89d39fa3f96148cce64593b7682048"
+    }
+  },
+  "final_static_audit": {
+    "all_other_test_AST_exact": true,
+    "cache_capture_guarded_by_actual_owner_core_and_try": true,
+    "final_sha256": {
+      "src/cells/processes/betse_ecm_charged_grn_join.py": "8744d00529bce1f509bb071a2a5951745683ae257adfe10ee021410fd74574fd",
+      "tests/unit/test_betse_ecm_charged_grn_join.py": "b74f8df7113858a2f3fe89584b32e5b09b4aba68c238b17ccddcad7bcfd8ff5a"
+    },
+    "five_other_scientific_Python_files_byte_exact": true,
+    "helper_AST_equal_to_reviewed_ECM02": true,
+    "join_inverse_AST_exact": true,
+    "no_valid_cache_claim_for_absent_owner": true,
+    "original_exception_explicit_raise_from": true,
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_charged_grn_error_capture_audit_02.py",
+    "scientific_execution": false,
+    "sha256": "121ef69d27eef9d221010f841e5455106689f90f4b9698eec5a062a250dd4194",
+    "supplied_malformed_parent_archived_before_invocation": true
+  },
+  "five_other_scientific_Python_files_byte_exact": true,
+  "held01": {
+    "inputs": "/mnt/workspaces/Cells/betse-ecm-charged-grn-prepared-20261031-01/inputs.json",
+    "numerical_runs": 0,
+    "sha256": "27462eb8c8fae10d694e34ac642f28f6f9ce1f1e00d9925818300a928b6e6df7",
+    "status": "prepared_not_executed_not_qualified"
+  },
+  "join_inverse_AST_exact": true,
+  "kind": "cells.ecm_charged_grn_error_capture_02@1",
+  "no_complete_cache_claim_for_absent_owner": true,
+  "numerical_runs": 0,
+  "original_ECM_round_still_failed": {
+    "accepted": false,
+    "failed": 2,
+    "passed": 6,
+    "unrun": 17
+  },
+  "original_exception_chain_preserved": true,
+  "original_material_panel_still_failed": {
+    "accepted": false,
+    "passed": 39,
+    "total": 40
+  },
+  "pytest_collection_runs": 0,
+  "remaining_protected_pins_exact": 281,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": "Same source exception-capture plumbing only, plus pre-call durable malformed input archives; no physics, cases, native comparators or budgets change",
+  "shared_failure_helper_AST_equal_to_ECM02": true
+}

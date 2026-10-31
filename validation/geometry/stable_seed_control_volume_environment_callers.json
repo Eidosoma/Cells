@@ -1,0 +1,16 @@
+{
+  "kind": "cells.fixed_seed_environment_correspondence_test_callers@1",
+  "authority": "Cells Specialist explicit manufactured prerequisite-correspondence test declaration",
+  "scope": "Inspect accepted cells and explicit compartment/boundary selections; no ECM geometry or native admission",
+  "domain_policy": "caller explicitly reselects complete previously accepted manufactured domain; no enlargement",
+  "boundary_selection": "sealed_no_transport@1",
+  "boundary_selection_applied_to_physics": false,
+  "profiles": ["held-compartments", "finite-compartments"],
+  "finite_profile_gauge_by_case": {
+    "manufactured-irregular-square": "manufactured-bath",
+    "manufactured-seed17-rectangle": "manufactured-bath-even"
+  },
+  "physical_policy": "Retain prior explicitly manufactured species, inventories, coefficients and bath volumes. Finite profile explicitly selects reservoir=false and its recorded gauge before new complete bridge admission.",
+  "missing_lattice_caller_envelopes_resolved": false,
+  "qualification": {"executed": false, "finite_ECM_adapted": false, "native_equivalence": false}
+}

@@ -1,0 +1,718 @@
+{
+  "active_consumers": [
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2575,
+      "last_line": 2575,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2576,
+      "last_line": 2576,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2634,
+      "last_line": 2634,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2645,
+      "last_line": 2645,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2327,
+      "last_line": 2327,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2328,
+      "last_line": 2328,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2382,
+      "last_line": 2382,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2382,
+      "last_line": 2382,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2391,
+      "last_line": 2391,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2391,
+      "last_line": 2391,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "8ec6d3f154a9fe9488b88d912a5fdd4e638ad6a97bd5d0267874f8b3a74dac18",
+      "column": 2,
+      "expression": "self.mem_vects_flat[:, 2]",
+      "first_line": 2620,
+      "last_line": 2620,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "c4393c93f39b38dcf0eabe3884b6ea0b3a53a6e005217e3fd37eba4de139630d",
+      "column": 3,
+      "expression": "self.mem_vects_flat[:, 3]",
+      "first_line": 2621,
+      "last_line": 2621,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "cf99a294a3e120748d44363234370b16c2312ce5453340d5efc75fc39a6e3f95",
+      "column": 2,
+      "expression": "self.mem_vects_flat[i, 2]",
+      "first_line": 1425,
+      "last_line": 1425,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "71e0f68489d007ea36b6810d446a7701737eb0a09edea6d2d1531dc263145280",
+      "column": 3,
+      "expression": "self.mem_vects_flat[i, 3]",
+      "first_line": 1425,
+      "last_line": 1425,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "f5df341ccaa173375a85e2d39d348579f559fb06b8634c7afe2a374355ccf903",
+      "column": 2,
+      "expression": "self.mem_vects_flat[j, 2]",
+      "first_line": 1428,
+      "last_line": 1428,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "5e034226b732746c2d2ef6fda046a6e9dfd28a7da612d6a027c28bd5f33fc2f3",
+      "column": 3,
+      "expression": "self.mem_vects_flat[j, 3]",
+      "first_line": 1428,
+      "last_line": 1428,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 5744,
+      "last_line": 5744,
+      "source": "betse/science/chemistry/networks.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 5745,
+      "last_line": 5745,
+      "source": "betse/science/chemistry/networks.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 77,
+      "last_line": 77,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 77,
+      "last_line": 77,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 80,
+      "last_line": 80,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 81,
+      "last_line": 81,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 177,
+      "last_line": 177,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 183,
+      "last_line": 183,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 87,
+      "last_line": 87,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 88,
+      "last_line": 88,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 294,
+      "last_line": 294,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 294,
+      "last_line": 294,
+      "source": "betse/science/organelles/microtubules.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 39,
+      "last_line": 39,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 40,
+      "last_line": 40,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 47,
+      "last_line": 47,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 47,
+      "last_line": 47,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 111,
+      "last_line": 111,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 112,
+      "last_line": 112,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 155,
+      "last_line": 155,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 156,
+      "last_line": 156,
+      "source": "betse/science/physics/ion_current.py"
+    },
+    {
+      "ast_sha256": "80691b99bcf303176964d95e8fd06559ff253c06e95a2b23f1e2ef0106b484bf",
+      "column": 2,
+      "expression": "phase.cells.mem_vects_flat[mems_for_plotcell, 2]",
+      "first_line": 92,
+      "last_line": 92,
+      "source": "betse/science/pipe/export/plot/pipeexpplotcell.py"
+    },
+    {
+      "ast_sha256": "96bdbde8d2e543432c9a242809454037b2541c5bdf32306305aa0b36a5478a07",
+      "column": 3,
+      "expression": "phase.cells.mem_vects_flat[mems_for_plotcell, 3]",
+      "first_line": 97,
+      "last_line": 97,
+      "source": "betse/science/pipe/export/plot/pipeexpplotcell.py"
+    },
+    {
+      "ast_sha256": "5e0242d6701e7331b3be4988a6938729a7f2bf3e630397e4f33aa3fafef27661",
+      "column": 2,
+      "expression": "phase.cells.mem_vects_flat[:, 2]",
+      "first_line": 873,
+      "last_line": 873,
+      "source": "betse/science/pipe/export/plot/pipeexpplotcells.py"
+    },
+    {
+      "ast_sha256": "314911f412a05f8adbce17aa1e99eec122e7b10df9e9440742916fd11fa9bf0c",
+      "column": 3,
+      "expression": "phase.cells.mem_vects_flat[:, 3]",
+      "first_line": 874,
+      "last_line": 874,
+      "source": "betse/science/pipe/export/plot/pipeexpplotcells.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 2177,
+      "last_line": 2177,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 2178,
+      "last_line": 2178,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 1563,
+      "last_line": 1563,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 1564,
+      "last_line": 1564,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 1568,
+      "last_line": 1568,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 1569,
+      "last_line": 1569,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 2072,
+      "last_line": 2072,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 2073,
+      "last_line": 2073,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 2044,
+      "last_line": 2044,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 2045,
+      "last_line": 2045,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 2079,
+      "last_line": 2079,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 2080,
+      "last_line": 2080,
+      "source": "betse/science/sim.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 1009,
+      "last_line": 1009,
+      "source": "betse/science/sim_toolbox.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 1010,
+      "last_line": 1010,
+      "source": "betse/science/sim_toolbox.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 1355,
+      "last_line": 1355,
+      "source": "betse/science/sim_toolbox.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 1356,
+      "last_line": 1356,
+      "source": "betse/science/sim_toolbox.py"
+    },
+    {
+      "ast_sha256": "ffcc06cd6fe5cbfdc2598c2c8db1cc991627a20e0f8224e51e95a6e7940d3381",
+      "column": 0,
+      "expression": "cells.mem_vects_flat[:, 0]",
+      "first_line": 825,
+      "last_line": 825,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "2ccdbd607a5c04343ad784da291ee53ba2d9ab306dfba5402a44db6b27ae82ad",
+      "column": 1,
+      "expression": "cells.mem_vects_flat[:, 1]",
+      "first_line": 825,
+      "last_line": 825,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "6296fe05f2a2aa9ab63104ce838b3f7f022066e41e2882f50e1d431071897ae3",
+      "column": 4,
+      "expression": "cells.mem_vects_flat[:, 4]",
+      "first_line": 825,
+      "last_line": 825,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "38f6036883e1da681bcd2a0e0d432a2ca91ccbb952587a8689ef8617cd2b2211",
+      "column": 5,
+      "expression": "cells.mem_vects_flat[:, 5]",
+      "first_line": 826,
+      "last_line": 826,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "ffcc06cd6fe5cbfdc2598c2c8db1cc991627a20e0f8224e51e95a6e7940d3381",
+      "column": 0,
+      "expression": "cells.mem_vects_flat[:, 0]",
+      "first_line": 827,
+      "last_line": 827,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "2ccdbd607a5c04343ad784da291ee53ba2d9ab306dfba5402a44db6b27ae82ad",
+      "column": 1,
+      "expression": "cells.mem_vects_flat[:, 1]",
+      "first_line": 827,
+      "last_line": 827,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 827,
+      "last_line": 827,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 828,
+      "last_line": 828,
+      "source": "betse/science/visual/plot/plotutil.py"
+    },
+    {
+      "ast_sha256": "a0080e79e4b322e59e0b2295b2cc4bbdfb649314949ad281a1b79c7b17834f74",
+      "column": 2,
+      "expression": "cells.mem_vects_flat[:, 2]",
+      "first_line": 837,
+      "last_line": 837,
+      "source": "betse/science/wrapper.py"
+    },
+    {
+      "ast_sha256": "6887e1c10ad416dacac2a1529311b2bfbdbba00e40f8c3497e2e6b5d900beaca",
+      "column": 3,
+      "expression": "cells.mem_vects_flat[:, 3]",
+      "first_line": 838,
+      "last_line": 838,
+      "source": "betse/science/wrapper.py"
+    }
+  ],
+  "column_units": [
+    "m",
+    "m",
+    "1",
+    "1",
+    "1",
+    "1"
+  ],
+  "columns": [
+    "mid_x",
+    "mid_y",
+    "nx",
+    "ny",
+    "tx",
+    "ty"
+  ],
+  "conversion_maps": {
+    "midpoint_normal": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "normal_tangent": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "flatten_owner_order": {
+    "ast_sha256": "5399af9622f2f0b885c6e3c93846c1eb8951e2e5767fa279cc9f9541d6998099",
+    "expression": "@type_check\ndef flatten(ls_of_ls: SequenceTypes) -> tuple:\n    \"\"\"\n    Flattens a doubly-nested sequences of sequences (e.g., list of lists,\n    two-dimensional Numpy array).\n\n    For convenience, this function silently flattens two-dimensional Numpy\n    arrays to lists of lists. Notheless, for both sanity and clarity, callers\n    are recommended to instead call the standard :meth:`numpy.ndarray.flatten`\n    method when this sequence is known to be a Numpy array.\n\n    Parameters\n    ----------\n    ls_of_ls : SequenceTypes\n        Nested sequence of sequences (e.g., ``[[a,b,c],[d,e,f],[g,h,i]]``).\n\n    Returns\n    -------\n    (list, list, list)\n        3-tuple ``(ls_flat, ind_map, rind_map)``, where:\n        * ``ls_flat`` is a flattened version of the input list (e.g.,\n          ``[a,b,c,d,e,f,g,h,i]``).\n        * ``ind_map`` is a list of forward indices mapping from all indices of\n          the output ``ls_flat`` list to the corresponding indices of the input\n          ``ls_of_ls`` list (e.g., ``ind_map[5] = [0,5]``, which would yield the\n          same value for ``ls_flat[5]`` and ``ls_of_ls[0][5]``).\n        * ``rind_map`` is a list of lists of reverse indices mapping from all\n          indices of the input ``ls_of_ls`` list to the corresponding indices of\n          the output ``ls_flat`` list.\n    \"\"\"\n    ls_flat = []\n    ind_map = []\n    rind_map = copy.deepcopy(ls_of_ls)\n    for i, sublist in enumerate(ls_of_ls):\n        for j, val in enumerate(sublist):\n            ls_flat.append(val)\n            ind_map.append([i, j])\n    for j, vals in enumerate(ind_map):\n        rind_map[vals[0]][vals[1]] = j\n    return (ls_flat, ind_map, rind_map)",
+    "first_line": 21,
+    "last_line": 63,
+    "source": "betse/science/math/toolbox.py"
+  },
+  "held_initialization02": {
+    "actual_contract": "columns2:4 are normals; not normal+tangent",
+    "changed": false,
+    "core_sha256": "780ffb431383b1ba5b8f2e05d98d1159755cd5b5b6c2504aaf0f205838e896af",
+    "four_column_gate": {
+      "ast_sha256": "913bb2328de384d0fbd47fe9f97e0800a227f0d86a38a75ba60ac7c3bbf3f900",
+      "expression": "vectors.shape != (m, 4)",
+      "first_line": 621,
+      "last_line": 621,
+      "source": "src/cells/processes/betse_normal_ecm_initialization.py"
+    },
+    "integration_performed": false,
+    "manifest_sha256": "f423016aedf458d416b51e2b56640e64f5d36716b84d77efb953d7b2be371909"
+  },
+  "kind": "cells.betse_native_membrane_layout_static_correspondence@1",
+  "native_owner_sites": {
+    "self.cell_i": {
+      "ast_sha256": "f15814683c6b3afb53c9bf0a0c0fecb317bfe5fd3b93672d41453e810b667ee3",
+      "expression": "self.cell_i = [x for x in range(0, len(self.cell_centres))]",
+      "first_line": 1103,
+      "last_line": 1103,
+      "source": "betse/science/cells.py"
+    },
+    "self.cell_to_mems": {
+      "ast_sha256": "19cc8d785b992ad4cf9e66d237180838149c65e088865b2aa0b3ecc2df3e80e3",
+      "expression": "self.cell_to_mems = []",
+      "first_line": 1129,
+      "last_line": 1129,
+      "source": "betse/science/cells.py"
+    },
+    "self.mem_i": {
+      "ast_sha256": "0f9ac21d1be666a440bc11dddca0a07115da62ae11c4788737603bc19383ce03",
+      "expression": "self.mem_i = [x for x in range(0, len(self.mem_mids_flat))]",
+      "first_line": 1104,
+      "last_line": 1104,
+      "source": "betse/science/cells.py"
+    },
+    "self.mem_to_cells": {
+      "ast_sha256": "56dfdf44fbe6b523a76741b15ec500b00021cc04bc8814fbe30892708bdf469d",
+      "expression": "self.mem_to_cells = indmap_mem[:, 0]",
+      "first_line": 1126,
+      "last_line": 1126,
+      "source": "betse/science/cells.py"
+    }
+  },
+  "native_source_sha256": {
+    "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+    "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+    "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+    "betse/science/organelles/microtubules.py": "775cf740d4c98ddeb247b6da3ccc9115ad1255b18c75b7958b6d96a13346febf",
+    "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+    "betse/science/pipe/export/plot/pipeexpplotcell.py": "230602b5fbc0ca47db361c23a2de608a6b4f2c6169ab9a2a308f0c4b7fd85290",
+    "betse/science/pipe/export/plot/pipeexpplotcells.py": "4246e2a2a9edce94b1b59d73e747b8ba9ed10754bf78cd0c9d58963bbe9d5097",
+    "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+    "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+    "betse/science/visual/plot/plotutil.py": "52c058f48751d7ebf1d8472629b84aa39bf41b04294a018cd2a04eefd1a2b2eb",
+    "betse/science/wrapper.py": "4f9faa20a1415e3e5e6aced0c4b9664fd723238800ccc8822a18260b9e0ac982"
+  },
+  "producers": {
+    "cellVerts": {
+      "method": {
+        "ast_sha256": "b320e0bccbe0f05bb143eb1fdbd4e1447a9aef36ab59cc6c8f1ae2fd3de1fb51",
+        "expression": "def cellVerts(self, p):\n    \"\"\"\n        Calculate the true vertices of each individual cell from the extracellular matrix (ecm) vertices\n        of the closed & clipped Voronoi diagram.\n\n        The BETSE cell grid has each cell defined by unique vertices, which are scaled in from the ecm points.\n\n        Creates\n        -------\n        self.cell_verts      A nested python list of the [x,y] point pairs defining vertices of each individual cell\n                            polygon. The points of each polygon are arranged in a counterclockwise manner.\n        self.mem_verts          Flat list of self.cell_verts\n        self.cell_vol       Volume of each cell [m3]\n        self.cell_sa        Whole cell surface area\n\n        self.mem_edges_flat          membrane edge points [x,y] coordinates\n        self.mem_length         membrane surface area values [m2]\n        self.mem_mids_flat      unraveled list of membrane edge midpoints [x,y] arranged to self.mem_i\n        self.mem_vects_flat     list of normal and tangent vectors (non nested) arranged to self.mem_i\n\n        Notes\n        -------\n        The Voronoi diagram returns a connected graph. For this simulation, each cell needs unique vertices and edges.\n        This method takes the vertices of the original diagram and scales them in to make unique cells.\n        \"\"\"\n    self.gj_len = p.cell_space\n    self.cell_verts = []\n    for centre, poly in zip(self.cell_centres, self.ecm_verts):\n        pt_scale = []\n        for vert in poly:\n            pt_zero = vert - centre\n            pt_scale.append(p.scale_cell * pt_zero + centre)\n        self.cell_verts.append(np.asarray(pt_scale))\n    self.cell_verts = np.asarray(self.cell_verts, dtype=object)\n    self.cell_sa = []\n    self.cell_area = []\n    mem_edges = []\n    mem_length = []\n    mem_mids = []\n    cv_x = []\n    cv_y = []\n    cv_nx = []\n    cv_ny = []\n    cv_tx = []\n    cv_ty = []\n    for polyc in self.cell_verts:\n        edge = []\n        mps = []\n        surfa = []\n        for i in range(0, len(polyc)):\n            pt1 = polyc[i - 1]\n            pt2 = polyc[i]\n            pt1 = np.asarray(pt1)\n            pt2 = np.asarray(pt2)\n            edge.append([pt1, pt2])\n            mid = (pt1 + pt2) / 2\n            mps.append(mid.tolist())\n            lgth = np.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2)\n            surfa.append(lgth)\n            tang_a = pt2 - pt1\n            tang = tang_a / np.linalg.norm(tang_a)\n            normal = np.array([tang[1], -tang[0]])\n            cv_x.append(mid[0])\n            cv_y.append(mid[1])\n            cv_nx.append(normal[0])\n            cv_ny.append(normal[1])\n            cv_tx.append(tang[0])\n            cv_ty.append(tang[1])\n        mem_edges.append(edge)\n        mem_mids.append(mps)\n        mem_length.append(surfa)\n    self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T\n    self.mem_mids = np.asarray(mem_mids, dtype=object)\n    self.mem_mids_flat, indmap_mem, _ = tb.flatten(mem_mids)\n    self.mem_mids_flat = np.asarray(self.mem_mids_flat)\n    self.cell_i = [x for x in range(0, len(self.cell_centres))]\n    self.mem_i = [x for x in range(0, len(self.mem_mids_flat))]\n    mem_length, _, _ = tb.flatten(mem_length)\n    mem_length = np.asarray(mem_length)\n    self.mem_sa = mem_length * p.cell_height\n    self.mem_edges_flat, _, _ = tb.flatten(mem_edges)\n    self.mem_edges_flat = np.asarray(self.mem_edges_flat)\n    self.mem_verts, _, _ = tb.flatten(self.cell_verts)\n    self.mem_verts = np.asarray(self.mem_verts)\n    self.plot_xy = np.vstack((self.mem_mids_flat, self.mem_verts))\n    indmap_mem = np.asarray(indmap_mem)\n    self.mem_to_cells = indmap_mem[:, 0]\n    self.cell_to_mems = []\n    for cell_index in self.cell_i:\n        mems_index = (self.mem_to_cells == cell_index).nonzero()[0]\n        self.cell_to_mems.append(mems_index)\n    self.cell_to_mems = np.asarray(self.cell_to_mems, dtype=object)\n    self.cell_sa = []\n    for grp in self.cell_to_mems:\n        cell_sa = sum(self.mem_sa[grp])\n        self.cell_sa.append(cell_sa)\n    self.cell_sa = np.asarray(self.cell_sa)\n    cellVertTree = cKDTree(self.mem_verts)\n    self.index_to_mem_verts = []\n    for cell_nest in mem_edges:\n        for mem_points in cell_nest:\n            _, pt_ind1 = cellVertTree.query(mem_points[0])\n            _, pt_ind2 = cellVertTree.query(mem_points[1])\n            self.index_to_mem_verts.append([pt_ind1, pt_ind2])\n    self.index_to_mem_verts = np.asarray(self.index_to_mem_verts)\n    self.rads = self.mem_mids_flat - self.cell_centres[self.mem_to_cells]\n    self.R_rads = np.sqrt(self.rads[:, 0] ** 2 + self.rads[:, 1] ** 2)\n    self.nx_rads = self.rads[:, 0] / self.R_rads\n    self.ny_rads = self.rads[:, 1] / self.R_rads",
+        "first_line": 978,
+        "last_line": 1175,
+        "source": "betse/science/cells.py"
+      },
+      "writer": {
+        "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+        "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+        "first_line": 1089,
+        "last_line": 1089,
+        "source": "betse/science/cells.py"
+      }
+    },
+    "deformWorld": {
+      "method": {
+        "ast_sha256": "d64acae36402d5caa817320dd880422a8fb6846641e1892554dcc0e9e3e14ce0",
+        "expression": "def deformWorld(self, p, ecm_verts) -> None:\n    \"\"\"\n        Recalculates the current world to accomodate a mechanical deformation.\n\n        Note that each cell is assumed to be incompressible by default.\n        Therefore, cell volumes and total surface area are not updated in a\n        deformation routine.\n        \"\"\"\n    self.cell_centres = np.array([0, 0])\n    for poly in ecm_verts:\n        aa = np.asarray(poly)\n        aa = np.mean(aa, axis=0)\n        self.cell_centres = np.vstack((self.cell_centres, aa))\n    self.cell_centres = np.delete(self.cell_centres, 0, 0)\n    self.cell_verts = []\n    for centre, poly in zip(self.cell_centres, ecm_verts):\n        pt_scale = []\n        for vert in poly:\n            pt_zero = vert - centre\n            pt_scale.append(p.scale_cell * pt_zero + centre)\n        self.cell_verts.append(np.asarray(pt_scale))\n    self.cell_verts = np.asarray(self.cell_verts)\n    mem_edges = []\n    mem_length = []\n    mem_mids = []\n    cv_x = []\n    cv_y = []\n    cv_nx = []\n    cv_ny = []\n    cv_tx = []\n    cv_ty = []\n    for polyc in self.cell_verts:\n        edge = []\n        mps = []\n        surfa = []\n        for i in range(0, len(polyc)):\n            pt1 = polyc[i - 1]\n            pt2 = polyc[i]\n            pt1 = np.asarray(pt1)\n            pt2 = np.asarray(pt2)\n            edge.append([pt1, pt2])\n            mid = (pt1 + pt2) / 2\n            mps.append(mid.tolist())\n            lgth = np.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2)\n            surfa.append(lgth)\n            tang_a = pt2 - pt1\n            tang = tang_a / np.linalg.norm(tang_a)\n            normal = np.array([tang[1], -tang[0]])\n            cv_x.append(mid[0])\n            cv_y.append(mid[1])\n            cv_nx.append(normal[0])\n            cv_ny.append(normal[1])\n            cv_tx.append(tang[0])\n            cv_ty.append(tang[1])\n        mem_edges.append(edge)\n        mem_mids.append(mps)\n        mem_length.append(surfa)\n    self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T\n    self.mem_mids_flat, indmap_mem, _ = tb.flatten(mem_mids)\n    self.mem_mids_flat = np.asarray(self.mem_mids_flat)\n    self.cell_i = [x for x in range(0, len(self.cell_centres))]\n    self.mem_i = [x for x in range(0, len(self.mem_mids_flat))]\n    mem_length, _, _ = tb.flatten(mem_length)\n    mem_length = np.asarray(mem_length)\n    self.mem_sa = mem_length * p.cell_height\n    self.mem_edges_flat, _, _ = tb.flatten(mem_edges)\n    self.mem_edges_flat = np.asarray(self.mem_edges_flat)\n    self.mem_verts, _, _ = tb.flatten(self.cell_verts)\n    self.mem_verts = np.asarray(self.mem_verts)\n    self.plot_xy = np.vstack((self.mem_mids_flat, self.mem_verts))\n    self.cell_sa = []\n    for grp in self.cell_to_mems:\n        cell_sa = sum(self.mem_sa[grp])\n        self.cell_sa.append(cell_sa)\n    self.cell_sa = np.asarray(self.cell_sa)\n    ecm_verts_flat, _, _ = tb.flatten(ecm_verts)\n    ecm_verts_set = set()\n    for vert in ecm_verts_flat:\n        ptx = vert[0]\n        pty = vert[1]\n        ecm_verts_set.add((ptx, pty))\n    ecm_verts_unique = [list(verts) for verts in list(ecm_verts_set)]\n    ecm_verts_unique = np.asarray(ecm_verts_unique)\n    xmin = np.min(ecm_verts_unique[:, 0])\n    xmax = np.max(ecm_verts_unique[:, 0])\n    ymin = np.min(ecm_verts_unique[:, 1])\n    ymax = np.max(ecm_verts_unique[:, 1])\n    if xmin < self.xmin:\n        self.xmin = xmin\n    if xmax > self.xmax:\n        self.xmax = xmax\n    if ymin < self.ymin:\n        self.ymin = ymin\n    if ymax > self.ymax:\n        self.ymax = ymax",
+        "first_line": 529,
+        "last_line": 689,
+        "source": "betse/science/cells.py"
+      },
+      "writer": {
+        "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+        "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+        "first_line": 622,
+        "last_line": 622,
+        "source": "betse/science/cells.py"
+      }
+    },
+    "quickVerts": {
+      "method": {
+        "ast_sha256": "781de859dd23357d64cae3d3bd11dc85dcc13c916325b7372bedecdfacaa6b73",
+        "expression": "def quickVerts(self, p):\n    self.cell_verts = []\n    for centre, poly in zip(self.cell_centres, self.ecm_verts):\n        pt_scale = []\n        for vert in poly:\n            pt_zero = vert - centre\n            pt_scale.append(p.scale_cell * pt_zero + centre)\n        self.cell_verts.append(np.asarray(pt_scale))\n    self.cell_verts = np.asarray(self.cell_verts)\n    mem_edges = []\n    mem_length = []\n    mem_mids = []\n    cv_x = []\n    cv_y = []\n    cv_nx = []\n    cv_ny = []\n    cv_tx = []\n    cv_ty = []\n    for polyc in self.cell_verts:\n        edge = []\n        mps = []\n        surfa = []\n        for i in range(0, len(polyc)):\n            pt1 = polyc[i - 1]\n            pt2 = polyc[i]\n            pt1 = np.asarray(pt1)\n            pt2 = np.asarray(pt2)\n            edge.append([pt1, pt2])\n            mid = (pt1 + pt2) / 2\n            mps.append(mid.tolist())\n            lgth = np.sqrt((pt2[0] - pt1[0]) ** 2 + (pt2[1] - pt1[1]) ** 2)\n            surfa.append(lgth)\n            tang_a = pt2 - pt1\n            tang = tang_a / np.linalg.norm(tang_a)\n            normal = np.array([tang[1], -tang[0]])\n            cv_x.append(mid[0])\n            cv_y.append(mid[1])\n            cv_nx.append(normal[0])\n            cv_ny.append(normal[1])\n            cv_tx.append(tang[0])\n            cv_ty.append(tang[1])\n        mem_edges.append(edge)\n        mem_mids.append(mps)\n        mem_length.append(surfa)\n    self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T\n    self.mem_mids_flat, indmap_mem, _ = tb.flatten(mem_mids)\n    self.mem_mids_flat = np.asarray(self.mem_mids_flat)\n    self.cell_i = [x for x in range(0, len(self.cell_centres))]\n    self.mem_i = [x for x in range(0, len(self.mem_mids_flat))]\n    mem_length, _, _ = tb.flatten(mem_length)\n    mem_length = np.asarray(mem_length)\n    self.mem_sa = mem_length * p.cell_height\n    self.mem_edges_flat, _, _ = tb.flatten(mem_edges)\n    self.mem_edges_flat = np.asarray(self.mem_edges_flat)\n    self.mem_verts, _, _ = tb.flatten(self.cell_verts)\n    self.mem_verts = np.asarray(self.mem_verts)\n    self.plot_xy = np.vstack((self.mem_mids_flat, self.mem_verts))\n    self.cell_sa = []\n    for grp in self.cell_to_mems:\n        cell_sa = sum(self.mem_sa[grp])\n        self.cell_sa.append(cell_sa)\n    self.cell_sa = np.asarray(self.cell_sa)",
+        "first_line": 1177,
+        "last_line": 1274,
+        "source": "betse/science/cells.py"
+      },
+      "writer": {
+        "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+        "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+        "first_line": 1241,
+        "last_line": 1241,
+        "source": "betse/science/cells.py"
+      }
+    }
+  },
+  "scope": {
+    "PROGRESS_edited": false,
+    "candidate_evaluation": false,
+    "collection": false,
+    "fixture_construction": false,
+    "native_seed_init_chain_closed": false,
+    "numerical_jobs": false,
+    "physical_geometry_admitted": false,
+    "scientific_imports": false
+  },
+  "source_semantics": {
+    "consumer_normals": "actual column2/3, including ordinary physics",
+    "mem_i": "contiguous native membrane row axis",
+    "midpoints": "same producer mid values as mem_mids_flat",
+    "normal": "clockwise [ty,-tx] in producer; no geometry qualification here",
+    "owner_order": "cell-major then local edge(i-1,i)",
+    "plotting": "actual midpoint0/1 and tangent4/5 reads exist"
+  },
+  "writes": [
+    {
+      "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+      "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+      "first_line": 622,
+      "last_line": 622,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+      "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+      "first_line": 1089,
+      "last_line": 1089,
+      "source": "betse/science/cells.py"
+    },
+    {
+      "ast_sha256": "3322d2abd92da6164d208e163f4657283dc819ebf9ff75ebecd60c49c9f34574",
+      "expression": "self.mem_vects_flat = np.array([cv_x, cv_y, cv_nx, cv_ny, cv_tx, cv_ty]).T",
+      "first_line": 1241,
+      "last_line": 1241,
+      "source": "betse/science/cells.py"
+    }
+  ]
+}

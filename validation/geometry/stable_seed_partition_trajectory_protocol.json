@@ -1,0 +1,294 @@
+{
+  "PROGRESS_edited": false,
+  "caller_document_sha256": "f92bd42908af17b28692a681b44e8701d5d01c3a2534cb11ac5f504f00f8ae5e",
+  "checkpoint": {
+    "IO": "Existing cells.io.write_snapshot/load_snapshot",
+    "additional_actual_child_origin_and_loaded_driver_source_links": true,
+    "binding": "Complete initial input/report identities, unchanged normalized full spec, all owner bytes and global time/step/event",
+    "fresh_process_restore": true,
+    "hidden_field_cache_reuse": false
+  },
+  "clocks": {
+    "actual_steps_multipliers": [
+      1,
+      2,
+      4
+    ],
+    "branch_checkpoint_used": false,
+    "controls": "Original time-zero schedules held on each actual interval; original observation only at zero",
+    "dt_s": [
+      1e-06,
+      5e-07,
+      2.5e-07
+    ],
+    "full_end_and_max_steps_declared_at_initialization": true,
+    "horizon_or_execution_contract_enlarged_on_restart": false,
+    "max_steps_covers_existing_float_quotient_admission": true,
+    "same_complete_definition_for_uninterrupted_prefix_and_restored_suffix": true,
+    "step_sizes": "Adjacent actual unchanged global EventGrid labels, including exact end"
+  },
+  "driver": {
+    "checks": "Existing integrated global checks on each two-boundary pair; immutable initial ledger anchors and adjacent dissipation",
+    "completion_marker_last": true,
+    "failed_prefixes_and_orphaned_writes_preserved": true,
+    "kernel": "Unchanged stable_seed_partition_advance._cells_trial / original rk4_checked_step",
+    "live_history": "One step and its adjacent states; durable append-only raw chunks and hash-chained index",
+    "no_retry_subdivision_clipping_repair_padding_drop_or_new_physical_law": true,
+    "raw_steps": "k1,k2,k3,k4,unmasked endpoint, original guard returns, full field and RHS"
+  },
+  "frozen": false,
+  "geometry": {
+    "root_acceptance_sha256": "f2f1eab5db26bdc5e4b6dc9a8a9e3c54f5b894b2fbcdee344f5307900603a8c9",
+    "scope": "accepted_saved_declared_partitions_only_original_wrapper_failure_preserved",
+    "whole_biological_native_or_physiology_admission_inherited": false
+  },
+  "guards": {
+    "aggregate_GiB": 2,
+    "existing_external_guarded_runner_required": true,
+    "host_reserve_GiB": 8,
+    "jobs_expected_10_minutes_or_more": "Detached with durable logs and result/failure artifacts; return control; no automatic polling",
+    "no_new_launcher_installed": true,
+    "worker_GiB": 1
+  },
+  "horizons": {
+    "cases": [
+      {
+        "case_id": "uniform-two-species",
+        "coarse_steps": 20,
+        "end_time_s": 1.9999999999999998e-05,
+        "fastest_planning_scale": {
+          "kind": "zero_voltage_local_capacitive_slope",
+          "owner": "ecm-membrane-502ca9413f7a48594782718c03e7bb89a29e1aeb01e0433646d48e8bbfd9215a",
+          "source_inputs": {
+            "F_C_mol": 96485.33212331001,
+            "R_J_mol_K": 8.31446261815324,
+            "specific_capacitance_F_per_m2": 0.01,
+            "summed_z2_P_meanC": 0.0001430511474609375,
+            "temperature_K": 310
+          },
+          "species": null,
+          "tau_s": 1.935449931155068e-05,
+          "tau_s_exact": {
+            "denominator": "480187621352818128330555133540171776",
+            "numerator": "9293790986888278182570710917319"
+          }
+        },
+        "max_trace_bytes": 1048576,
+        "window_bytes": 944832
+      },
+      {
+        "case_id": "unequal-clefts-readback-defects",
+        "coarse_steps": 960,
+        "end_time_s": 0.0009599999999999999,
+        "fastest_planning_scale": {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.7126736111111115e-15,
+            "volume_m3": 2.6020852139652106e-18
+          },
+          "species": "A",
+          "tau_s": 0.0009592326932761351,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "4638564679680"
+          }
+        },
+        "max_trace_bytes": 1048576,
+        "window_bytes": 944832
+      },
+      {
+        "case_id": "two-cell-four-species",
+        "coarse_steps": 497,
+        "end_time_s": 0.0004969999999999999,
+        "fastest_planning_scale": {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 3.496805826822917e-15,
+            "volume_m3": 1.734723475976807e-18
+          },
+          "species": "A",
+          "tau_s": 0.0004960880191488699,
+          "tau_s_exact": {
+            "denominator": "53192736063043687",
+            "numerator": "26388279066624"
+          }
+        },
+        "max_trace_bytes": 4194304,
+        "window_bytes": 2580672
+      },
+      {
+        "case_id": "four-cell-reordered-gradient",
+        "coarse_steps": 342,
+        "end_time_s": 0.00034199999999999996,
+        "fastest_planning_scale": {
+          "kind": "finite_bath_diffusive_inventory",
+          "owner": "caller-bath-0-0",
+          "source_inputs": {
+            "summed_DA_over_L_m3_s": 2.543131510416667e-15,
+            "volume_m3": 8.673617379884035e-19
+          },
+          "species": "A",
+          "tau_s": 0.0003410605131648481,
+          "tau_s_exact": {
+            "denominator": "4835703278458517",
+            "numerator": "1649267441664"
+          }
+        },
+        "max_trace_bytes": 8388608,
+        "window_bytes": 5798592
+      }
+    ],
+    "concentration_units": "Caller mM equals mol/m3 numerically in the capacitive slope",
+    "derivation": "Accepted saved V/A/L and unchanged literal D/P/C/T, with binary64-exact rational arithmetic",
+    "estimates_are_local_planning_values_not_global_eigenvalues_or_stability_certificates": true,
+    "formulas": [
+      "V/sum(D*A/L)",
+      "V/sum(P*A)",
+      "Cm*R*T/(F^2*sum(z^2*P*Cmean))"
+    ],
+    "rule": "One fastest positive local source-value scale, rounded up to coarse dt; minimum eight coarse steps"
+  },
+  "independent_accuracy": {
+    "amount_energy_atol": 2e-14,
+    "common_endpoint_refinement": {
+      "amount_energy_floor": 3e-13,
+      "electrode_charge_floor_C": 3e-27,
+      "fine_error_limit": 0.2,
+      "fourth_order_claimed": false,
+      "retain_all_three_errors": true
+    },
+    "electrode_charge_atol_C": 1e-29,
+    "initial_condition": "True original time-zero state, never a candidate checkpoint",
+    "integrated_checks": "Independent owner incidence sums, finite inventories, charge, stable energy changes, complete zero-source work/charge and adjacent dissipation",
+    "integrated_tolerances": {
+      "charge_atol_C": 3e-25,
+      "charge_rtol": 2e-12,
+      "dissipation_atol_pJ": 1e-12,
+      "energy_atol_pJ": 2e-08,
+      "material": "Original per-caller",
+      "work_atol_pJ": 3e-12
+    },
+    "max_step_s": 0.0001,
+    "method": "DOP853",
+    "process": "Fresh worker denying Cells/BETSE/JAX/PIL/Torch; NumPy/SciPy only after every authority gate",
+    "raw_retention": "Every completed/failed RHS/root return, full solver return and dense interpolant coefficients before success checks",
+    "rtol": 2e-11,
+    "same_point_RHS": {
+      "amount_energy_rate_atol": 3e-12,
+      "electrode_charge_rate_atol_C_s": 3e-23,
+      "rtol": 3e-10
+    },
+    "same_point_field": "Unchanged initial field/transport codec budgets and normalized-residual links",
+    "same_point_field_RHS_checker_AST_unchanged_except_explicit_context": true,
+    "sample_bound": "4*declared coarse steps+1; every actual boundary and every actual RK4 same-point field/RHS",
+    "seven_inherited_numerical_functions_AST_unchanged": true,
+    "trajectory": {
+      "amount_energy_atol": 2e-11,
+      "electrode_charge_atol_C": 3e-25,
+      "endpoint_voltage_atol_V": 2e-08,
+      "rtol": 3e-09
+    }
+  },
+  "kind": "cells.partition_trajectory_unfrozen_protocol@1",
+  "new_geometry_or_physics": false,
+  "new_physical_cases": 0,
+  "numerical_prerequisites": {
+    "first_advance": "pending_source_and_numerical_qualification",
+    "initial18": "pending_accepted_numerical_receipt",
+    "own_full_horizon_initials": "all_18_require_fresh_complete_physics_RHS_and_accounting_checks",
+    "own_source": "pending_Chief_review_no_freeze"
+  },
+  "original_callers_sha256": "4be058c5f6211a9a489c709ee95f371d3dd7bf0ba03c8834e789c0be3554c09f",
+  "owner_inventory": {
+    "RHS": 12,
+    "compact_original_axes": true,
+    "control": 2,
+    "field": 21,
+    "geometry_owner_or_volume_rebase": false,
+    "layout": 40,
+    "ledgers": "Every material, electrode-charge, source-work and route-dissipation owner retained",
+    "rates": 19,
+    "state": 12
+  },
+  "physical_cases": 4,
+  "prepared_manifest_created": false,
+  "prepared_science_capsule_created": false,
+  "proposed_future_initial_qualification_schema": {
+    "accepted_bindings": "Exactly 18 newly qualified case/control bindings; receipt does not yet exist",
+    "binding_fields": [
+      "case_id",
+      "numerical_control_id",
+      "input_sha256",
+      "report_sha256",
+      "initial_request_identity",
+      "initial_preparation_identity",
+      "definition_sha256"
+    ],
+    "kind": "cells.partition_trajectory_initial_qualification@1",
+    "qualification_inherited": false,
+    "status": "accepted"
+  },
+  "prospective_tests": {
+    "controls": [
+      "closed missing-receipt gate",
+      "original checked window driver equality",
+      "fresh exact restart",
+      "independent full-horizon accuracy/refinement",
+      "six original storage refusals",
+      "third-step raw-return failure prefix",
+      "checkpoint shape,dtype,owner,time,event,definition,checksum defects"
+    ],
+    "nested_children": 92,
+    "status": "all_unrun_and_uncollected",
+    "trees": 38
+  },
+  "purpose": "Resolve full-horizon clock/storage and complete restart risks before any new trajectory claim",
+  "restart_equality": {
+    "accuracy_credit": false,
+    "quantities": "All state/layout/control, clock, raw checked stages, boundary field/rates and RHS",
+    "scope": "Byte-exact entire uninterrupted vs prefix-plus-restored-suffix record stream",
+    "split_controls": "Every case/clock at midpoint; first and penultimate coarse boundaries for case1"
+  },
+  "science_or_fixture_execution_authorized": false,
+  "shared_or_frozen_source_edits": false,
+  "source_review_by_Chief_required": true,
+  "source_review_risks": [
+    "New full-horizon wrapper and independent integrated accounting assembly",
+    "Public window reservation and portable checkpoint source boundaries newly bound for this feature",
+    "Raw evidence overhead, numerical success and exact restart remain unmeasured"
+  ],
+  "status": "source_proposal_static_checked_numerical_prerequisites_pending",
+  "storage": {
+    "admission": "Unchanged cells.core.windows.plan_windows and original trace_bytes formula",
+    "case4_8MiB_control_separately_authorized": true,
+    "case4_refusal_cap_bytes": [
+      1048576,
+      4194304
+    ],
+    "failed_or_old_budget_arms_reclassified": false,
+    "initial_observation_at_zero_included": true,
+    "policy": {
+      "recording": "full",
+      "window_steps": 1
+    },
+    "positive_arms": 12,
+    "positive_cap_bytes": [
+      1048576,
+      1048576,
+      4194304,
+      8388608
+    ],
+    "raw_evidence_extra_overhead_and_resource_sufficiency_measured": false,
+    "refusal_clocks": "all_three",
+    "source_predicted_bytes": [
+      944832,
+      944832,
+      2580672,
+      5798592
+    ],
+    "unchanged_original_1MiB_and_4MiB_evidence_preserved": true,
+    "window_refusal_arms": 6
+  }
+}

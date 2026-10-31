@@ -1,0 +1,132 @@
+{
+  "kind": "cells.init_native_orchestration_generation@1",
+  "scientific_execution": false,
+  "parent_sha256": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4",
+  "substitutions": [
+    {
+      "old": "from validation.betse import betse_normal_ecm_event_join_native_events as event_native",
+      "new": "from validation.betse import betse_normal_ecm_init_phase_native_setup as setup_native\nfrom validation.betse.betse_normal_ecm_run_lifecycle_native import clock_profile",
+      "count": 1
+    },
+    {
+      "old": "from validation.betse.betse_normal_ecm_event_join_native import capture, run_dispatch",
+      "new": "from validation.betse.betse_normal_ecm_event_join_native import capture",
+      "count": 1
+    },
+    {
+      "old": "    declared = composition[\"event_inputs\"]",
+      "new": "    declared = composition",
+      "count": 1
+    },
+    {
+      "old": "    before_rng = copy.deepcopy(np.random.get_state())",
+      "new": "    before_rng = copy.deepcopy(np.random.get_state())\n    before_python_rng = setup_native.random.getstate()",
+      "count": 1
+    },
+    {
+      "old": "    sim.T, parameters.dt = (parameters.T, 0.0)",
+      "new": "    sim.T, parameters.dt = (parameters.T, composition[\"time_profile\"][\"init_dt_s\"])",
+      "count": 1
+    },
+    {
+      "old": "    event_owner = event_native.Owner(ctx, declared)",
+      "new": "    setup_owner = setup_native.Owner(ctx, declared)",
+      "count": 1
+    },
+    {
+      "old": "            event_stores=event_native.snapshot(sim),\n            noise_stream=event_native.manifest(event_owner.rng),",
+      "new": "            setup_pre=copy.deepcopy(setup_owner.pre),",
+      "count": 1
+    },
+    {
+      "old": "    cold_event_stores = event_native.snapshot(sim)\n    cold_noise_stream = event_native.manifest(event_owner.rng)\n    cold_noise_cache = dict(\n        present=hasattr(sim, \"protein_noise_flux\"),\n        value=network.clone(sim.protein_noise_flux) if hasattr(sim, \"protein_noise_flux\") else None,\n    )\n    parameters.sim_tsteps = 3\n    parameters.dt = inputs[\"bootstrap\"][\"dt_s\"]\n    ctx.phase.kind = \"SIM\"\n    source_times = ca_api[\"source_clock\"](ctx.phase)\n",
+      "new": "    setup_pre = copy.deepcopy(setup_owner.pre)\n    # Original mechanics entry tools are supplied conditional owners, as in the\n    # common source capture; they are initialized once before finalization.\n    mechanical_owner = mechanical.Owner(composition, sim, cells, parameters)\n    finalized = setup_owner.finalize()\n    source_calendar = clock_profile(composition[\"time_profile\"])\n    source_times = source_calendar[\"source_labels_s\"].copy()\n    ctx.phase.kind = \"INIT\"\n    parameters._run_sim = False\n",
+      "count": 1
+    },
+    {
+      "old": "    mechanical_owner = None\n    with warnings.catch_warnings(record=True) as caught:",
+      "new": "    with warnings.catch_warnings(record=True) as caught:",
+      "count": 1
+    },
+    {
+      "old": "            mechanical_owner = mechanical.Owner(composition, sim, cells, parameters)\n            parameters.t_resample = declared[\"calendar\"][\"sample_stride\"]",
+      "new": "            parameters.t_resample = source_calendar[\"sample_stride\"]",
+      "count": 1
+    },
+    {
+      "old": "                event_entry = event_result = reset_return = noise_result = None\n                event_owner.last_event = event_owner.last_noise = None\n                calcium_count = len(calcium_rows)\n                field_phase = \"events\"\n                parameters.dt = call[\"material\"][\"dt_s\"]\n                event_entry = dict(\n                    mode=\"events\",\n                    owner=network.clone(declared[\"event_owner\"]),\n                    before=event_native.snapshot(sim),\n                    material_before=values(),\n                    clock=clock(index),\n                    source_time_s=float(source_times[index]),\n                    configured_temperature_K=parameters.T,\n                    dt_s=parameters.dt,\n                    ion_ids=list(names),\n                    valence=sim.zs.copy(),\n                )\n                source[\"resets\"](sim, cells, parameters, float(source_times[index]))\n                reset_return = values()\n                event_result = event_owner.fire(float(source_times[index]))\n                event_rows.append(copy.deepcopy(event_result))\n",
+      "new": "                calcium_count = len(calcium_rows)\n                field_phase = \"reset\"\n                parameters.dt = call[\"material\"][\"dt_s\"]\n                before_reset = values()\n                source[\"resets\"](sim, cells, parameters, float(source_times[index]))\n                reset_return = values()\n                field_phase = \"nak\"\n                nak_result = setup_owner.pump(values)\n",
+      "count": 1
+    },
+    {
+      "old": "                preview, preview_after = event_owner.preview(index)\n",
+      "new": "",
+      "count": 1
+    },
+    {
+      "old": "                    initial=values(),\n                    steps=[network.clone(packet)],",
+      "new": "                    initial=before_reset,\n                    steps=[network.clone(packet)],",
+      "count": 1
+    },
+    {
+      "old": "                    event_stores=event_native.snapshot(sim),\n                    noise=network.clone(declared[\"noise\"]),\n                    noise_stream_before=event_native.manifest(event_owner.rng),\n                    prospective_noise_uniforms=preview,\n                    prospective_stream_after=preview_after,\n                    prospective_draw_is_uncommitted=True,\n                )\n",
+      "new": "                    nak_before=network.clone(nak_result[\"before\"]),\n                    source_phase=\"INIT\", legacy_run_sim=False,\n                )\n",
+      "count": 1
+    },
+    {
+      "old": "                ctx.trace.update(channel_events=[], channel_initializations=[])",
+      "new": "                ctx.trace.update(channel_events=[], channel_initializations=[], source_phase=\"INIT\", legacy_run_sim=False)",
+      "count": 1
+    },
+    {
+      "old": "                observe(\"initial\")\n                observe(\"reset_flux\")",
+      "new": "                frames.append(dict(stage=\"initial\",ion_id=None,values=before_reset))\n                frames.append(dict(stage=\"reset_flux\",ion_id=None,values=reset_return))",
+      "count": 1
+    },
+    {
+      "old": "                sim.fluxes_mem += np.asarray(\n                    packet[\"supplied_pump_membrane_flux_mol_m2_s\"], np.float64\n                )\n",
+      "new": "                packet[\"supplied_pump_membrane_flux_mol_m2_s\"] = nak_result[\"applied_flux\"].copy()\n                material_before[\"steps\"][0][\"supplied_pump_membrane_flux_mol_m2_s\"] = nak_result[\"applied_flux\"].copy()\n",
+      "count": 1
+    },
+    {
+      "old": "                field_phase = \"protein_noise\"\n                noise_result = event_owner.noise()\n                noise_rows.append(copy.deepcopy(noise_result))\n                observe(\"protein_noise\")\n",
+      "new": "",
+      "count": 1
+    },
+    {
+      "old": "                field_phase = \"material_network\"\n                sim.update_all_concs(cells, parameters)",
+      "new": "                observe(\"INIT_post_network\")\n                field_phase = \"material_network\"\n                sim.update_all_concs(cells, parameters)",
+      "count": 1
+    },
+    {
+      "old": "                            before_events=event_entry,\n                            events=event_result,\n                            reset_return=reset_return,\n                            event_stores_after=event_native.snapshot(sim),\n                            noise=noise_result,\n                            noise_stream_after=event_native.manifest(event_owner.rng),\n                            noise_cache_after=dict(\n                                present=hasattr(sim, \"protein_noise_flux\"),\n                                value=network.clone(sim.protein_noise_flux)\n                                if hasattr(sim, \"protein_noise_flux\")\n                                else None,\n                            ),\n",
+      "new": "                            nak=copy.deepcopy(nak_result),\n                            reset_return=reset_return,\n                            phase_stores_after=setup_native.snapshot(sim),\n",
+      "count": 1
+    },
+    {
+      "old": "                        before_events=event_entry,\n                        events=network.clone(event_owner.last_event),\n                        reset_return=reset_return,\n                        event_stores_after=event_native.snapshot(sim),\n                        noise=network.clone(event_owner.last_noise),\n                        noise_stream_after=event_native.manifest(event_owner.rng),\n",
+      "new": "                        nak=copy.deepcopy(setup_owner.nak_history[-1]) if setup_owner.nak_history else None,\n                        reset_return=reset_return,\n                        phase_stores_after=setup_native.snapshot(sim),\n",
+      "count": 1
+    },
+    {
+      "old": "        cold_event_stores=cold_event_stores,\n        cold_noise_stream=cold_noise_stream,\n        cold_noise_cache=cold_noise_cache,\n        event_rows=event_rows,\n        noise_rows=noise_rows,\n",
+      "new": "        setup_pre=setup_pre,\n        event_finalization=finalized,\n        source_calendar=source_calendar,\n        nak_history=setup_owner.nak_history,\n        event_fire_calls=0,\n        dynamic_noise_calls=0,\n        source_phase=\"INIT\",\n        legacy_run_sim=False,\n        Python_RNG_unchanged=before_python_rng == setup_native.random.getstate(),\n",
+      "count": 1
+    },
+    {
+      "old": "        native_source_sha256=pins[\"source_sha256\"]\n        | json.loads(event_native.PROTOCOL.read_text())[\"native_source\"][\"source_sha256\"],",
+      "new": "        native_source_sha256=pins[\"source_sha256\"],",
+      "count": 1
+    },
+    {
+      "old": "\"Supplied pump before ion loop; supplied late flux after ion loop; \"",
+      "new": "\"Actual native NaK before ion loop; no arbitrary late flux; ordinary INIT; \"",
+      "count": 1
+    },
+    {
+      "old": "Native event/mechanics production import denied: ",
+      "new": "Native INIT production import denied: ",
+      "count": 1
+    }
+  ]
+}

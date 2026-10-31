@@ -1,0 +1,7 @@
+{
+  "kind": "cells.init_reference_generation@1",
+  "scientific_execution": false,
+  "channel_inverse_exact": true,
+  "material_function_AST_exact": true,
+  "main_function_AST_exact": true
+}

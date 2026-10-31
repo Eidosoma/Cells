@@ -1,0 +1,42 @@
+F401 [*] `importlib.util` imported but unused
+ --> agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_metadata_check.py:6:8
+  |
+4 | import ast
+5 | import copy
+6 | import importlib.util
+  |        ^^^^^^^^^^^^^^
+7 | import json
+8 | import os
+  |
+help: Remove unused import: `importlib.util`
+  |
+5 | import copy
+  - import importlib.util
+6 | import json
+  |
+
+E501 Line too long (106 > 100)
+   --> agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_metadata_check.py:228:101
+    |
+226 |     expected = ["tests/unit/test_example.py::test_metadata[one]"]
+227 |     good = ET.fromstring(
+228 |         '<testsuite><testcase classname="tests.unit.test_example" name="test_metadata[one]"/></testsuite>'
+    |                                                                                                     ^^^^^^
+229 |     ).findall("testcase")
+230 |     test("unique_pytest_ID_accept", lambda: reader.verify_pytest_ids(good, expected))
+    |
+
+F841 Local variable `child` is assigned to but never used
+   --> agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_qualification_metadata_check.py:391:9
+    |
+389 |     plugin.pytest_sessionstart(None)
+390 |     try:
+391 |         child = subprocess.run([sys.executable, "-B", "-c", "pass"], check=True, timeout=10)
+    |         ^^^^^
+392 |         plugin.pytest_runtest_logreport(
+393 |             SimpleNamespace(
+    |
+help: Remove assignment to unused variable `child`
+
+Found 3 errors.
+[*] 1 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

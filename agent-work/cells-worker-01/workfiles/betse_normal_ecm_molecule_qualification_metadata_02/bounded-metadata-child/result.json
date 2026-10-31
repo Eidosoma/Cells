@@ -1,0 +1,25 @@
+{
+  "automatic_retry": false,
+  "elapsed_seconds": 0.2615445258561522,
+  "limits": {
+    "max_individual_process_rss_bytes": 536870912,
+    "max_process_tree_memory_bytes": 536870912,
+    "max_process_tree_rss_bytes": 536870912,
+    "max_wall_seconds": 10,
+    "min_available_host_memory_bytes": 8589934592,
+    "process_tree_memory_metric": "rss",
+    "sample_interval_seconds": 0.25
+  },
+  "minimum_available_host_memory_bytes": 22699364352,
+  "observed_process_high_water_bytes": 7094272,
+  "process_tree_memory_metric": "rss",
+  "returncode": 0,
+  "rss_fallback_samples": 0,
+  "sampled_peak_charged_memory_bytes": 7094272,
+  "sampled_peak_process_tree_rss_bytes": 7094272,
+  "sampled_peak_summed_process_memory_bytes": 7094272,
+  "samples": 2,
+  "shared_address_space_samples": 0,
+  "status": "completed",
+  "utc": "2026-10-31T09:46:51.192079+00:00"
+}

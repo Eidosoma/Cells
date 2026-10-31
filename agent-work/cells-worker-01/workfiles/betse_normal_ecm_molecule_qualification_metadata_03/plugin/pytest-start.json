@@ -1,0 +1,11 @@
+{
+  "cpu_affinity": [
+    0
+  ],
+  "executable": "/usr/bin/python3.13",
+  "executable_sha256": "889c603f0d17cb54060951bcf4c4f9b8c9ebd9e52b392c70209bbb9755d797d9",
+  "optimize": 0,
+  "pid": 3,
+  "start_ticks": 137908992,
+  "started_ns": 1793440237864479068
+}

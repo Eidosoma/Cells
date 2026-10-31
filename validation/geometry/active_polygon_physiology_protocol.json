@@ -1,0 +1,592 @@
+{
+  "kind": "cells.active_polygon_physiology_preparation_protocol@1",
+  "law_id": "cells_polygon_active_physiology_preparation@1",
+  "status": "static_unexecuted_candidate",
+  "family_matrix": [
+    {
+      "target_model_id": "resolved_tissue@2",
+      "public_parser": "cells.core.surface_kinetic_spec.parse",
+      "model_module": "cells.models.surface_kinetic",
+      "exact_model_type": "cells.core.surface_kinetic_spec.SurfaceKineticModel",
+      "nested_ionic_identity": null,
+      "calcium": false,
+      "finite_fuel": false,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_ionic_volume@1",
+      "independent_initial_field_module": "validation.tissue.surface_kinetic_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_kinetic_spec.py",
+        "first_line": 249,
+        "last_line": 570,
+        "ast_sha256": "1b85e7cb43e55393409fa83cf00e44aaa2f6ce1f0d3d0de6770d01ec94e076c9"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_kinetic_spec.py",
+        "first_line": 64,
+        "last_line": 65,
+        "ast_sha256": "553b223f24fda6a0e33f51a1e7c8e9ab3863941aee52a35c1619c9f28d9b6f96"
+      }
+    },
+    {
+      "target_model_id": "resolved_tissue@12",
+      "public_parser": "cells.core.surface_kinetic_spec.parse",
+      "model_module": "cells.models.surface_hcn_extra",
+      "exact_model_type": "cells.core.surface_kinetic_spec.SurfaceHCNExtraModel",
+      "nested_ionic_identity": null,
+      "calcium": false,
+      "finite_fuel": false,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_ionic_volume@1",
+      "independent_initial_field_module": "validation.tissue.surface_kinetic_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_kinetic_spec.py",
+        "first_line": 249,
+        "last_line": 570,
+        "ast_sha256": "1b85e7cb43e55393409fa83cf00e44aaa2f6ce1f0d3d0de6770d01ec94e076c9"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_kinetic_spec.py",
+        "first_line": 133,
+        "last_line": 134,
+        "ast_sha256": "fdfb5e3b946dc16a8f72605a3152a91d47073d2668411a53d65d6f778be6fc2c"
+      }
+    },
+    {
+      "target_model_id": "resolved_calcium@1",
+      "public_parser": "cells.core.surface_calcium_spec.parse",
+      "model_module": "cells.models.surface_calcium",
+      "exact_model_type": "cells.core.surface_calcium_spec.SurfaceCalciumModel",
+      "nested_ionic_identity": "resolved_tissue@2",
+      "calcium": true,
+      "finite_fuel": false,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.surface_calcium_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_calcium_spec.py",
+        "first_line": 609,
+        "last_line": 615,
+        "ast_sha256": "110d8e57c09363b965e62715ee68d882b209ba271fb33f99abaf625e675f23fc"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_calcium_spec.py",
+        "first_line": 39,
+        "last_line": 45,
+        "ast_sha256": "7de7dad5322fca7dd9a732fd55060dda8555c7438772956f41c5805247dd6f47"
+      }
+    },
+    {
+      "target_model_id": "resolved_calcium@11",
+      "public_parser": "cells.core.surface_calcium_spec.parse",
+      "model_module": "cells.models.surface_calcium_hcn_extra",
+      "exact_model_type": "cells.core.surface_calcium_spec.SurfaceCalciumHCNExtraModel",
+      "nested_ionic_identity": "resolved_tissue@12",
+      "calcium": true,
+      "finite_fuel": false,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.surface_calcium_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_calcium_spec.py",
+        "first_line": 609,
+        "last_line": 615,
+        "ast_sha256": "110d8e57c09363b965e62715ee68d882b209ba271fb33f99abaf625e675f23fc"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_calcium_spec.py",
+        "first_line": 96,
+        "last_line": 97,
+        "ast_sha256": "51822761d492f482a1d388c7fa0d4109cb2321347b6a3f4d23ee67e7f26da309"
+      }
+    },
+    {
+      "target_model_id": "resolved_energy@1",
+      "public_parser": "cells.core.surface_energy_spec.parse",
+      "model_module": "cells.models.surface_energy",
+      "exact_model_type": "cells.core.surface_energy_spec.SurfaceEnergyModel",
+      "nested_ionic_identity": null,
+      "calcium": false,
+      "finite_fuel": true,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_ionic_volume@1",
+      "independent_initial_field_module": "validation.tissue.surface_energy_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_energy_spec.py",
+        "first_line": 278,
+        "last_line": 415,
+        "ast_sha256": "815fcf358cfc7ec294ec32707769bd1916dd7def2a4d8a2239de8d721d408012"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_energy_spec.py",
+        "first_line": 63,
+        "last_line": 65,
+        "ast_sha256": "65f63a0b30b7eba4e2b81b05b5cd0b9bea1fd05aa395e04a36dbd9519d04e7ea"
+      }
+    },
+    {
+      "target_model_id": "resolved_energy@2",
+      "public_parser": "cells.core.surface_energy_spec.parse",
+      "model_module": "cells.models.surface_energy_morris_lecar",
+      "exact_model_type": "cells.core.surface_energy_spec.SurfaceEnergyMorrisLecarModel",
+      "nested_ionic_identity": null,
+      "calcium": false,
+      "finite_fuel": true,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_ionic_volume@1",
+      "independent_initial_field_module": "validation.tissue.surface_energy_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_energy_spec.py",
+        "first_line": 278,
+        "last_line": 415,
+        "ast_sha256": "815fcf358cfc7ec294ec32707769bd1916dd7def2a4d8a2239de8d721d408012"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_energy_spec.py",
+        "first_line": 69,
+        "last_line": 70,
+        "ast_sha256": "34ab1eb82819253f9a0318c2e31a3f56c6e8d81acbbb9b91307a2d78c3e64b35"
+      }
+    },
+    {
+      "target_model_id": "resolved_calcium_energy@1",
+      "public_parser": "cells.core.surface_calcium_energy_spec.parse",
+      "model_module": "cells.models.surface_calcium_energy",
+      "exact_model_type": "cells.core.surface_calcium_energy_spec.SurfaceCalciumEnergyModel",
+      "nested_ionic_identity": "resolved_tissue@8",
+      "calcium": true,
+      "finite_fuel": true,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.surface_calcium_energy_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_calcium_energy_spec.py",
+        "first_line": 460,
+        "last_line": 469,
+        "ast_sha256": "a54c68c581a5a437cb54feb4a2ff25062aa8459e347604d726109f53f624c2e5"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_calcium_energy_spec.py",
+        "first_line": 43,
+        "last_line": 45,
+        "ast_sha256": "4d6e9db5bd57cf2bffb04448736c14f60c54e3b6b700e05206c039d348de8329"
+      }
+    },
+    {
+      "target_model_id": "resolved_calcium_energy@5",
+      "public_parser": "cells.core.surface_calcium_energy_spec.parse",
+      "model_module": "cells.models.surface_calcium_energy_hcn_extra",
+      "exact_model_type": "cells.core.surface_calcium_energy_spec.SurfaceCalciumEnergyHCNExtraModel",
+      "nested_ionic_identity": "resolved_tissue@12",
+      "calcium": true,
+      "finite_fuel": true,
+      "actual_open_reservoirs": false,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.surface_calcium_energy_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_calcium_energy_spec.py",
+        "first_line": 460,
+        "last_line": 469,
+        "ast_sha256": "a54c68c581a5a437cb54feb4a2ff25062aa8459e347604d726109f53f624c2e5"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_calcium_energy_spec.py",
+        "first_line": 64,
+        "last_line": 65,
+        "ast_sha256": "00fefd94bb125e5dc9e36d9f942ac7d0066be199bbe5303acdce2ec4833d6d9b"
+      }
+    },
+    {
+      "target_model_id": "resolved_open_calcium@1",
+      "public_parser": "cells.core.surface_open_calcium_spec.parse",
+      "model_module": "cells.models.surface_open_calcium",
+      "exact_model_type": "cells.core.surface_open_calcium_spec.SurfaceOpenCalciumModel",
+      "nested_ionic_identity": "resolved_tissue@12",
+      "calcium": true,
+      "finite_fuel": false,
+      "actual_open_reservoirs": true,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.open_calcium_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_open_calcium_spec.py",
+        "first_line": 39,
+        "last_line": 49,
+        "ast_sha256": "e3d6237e918ff064abd6d912d88b4eac160631a811ea70c2792946e373acb3c3"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_open_calcium_spec.py",
+        "first_line": 14,
+        "last_line": 17,
+        "ast_sha256": "322916cafe2453ad0ae22189d0116c274f18b0264d87f34403a26e04db5ab084"
+      }
+    },
+    {
+      "target_model_id": "resolved_open_calcium_energy@1",
+      "public_parser": "cells.core.surface_open_calcium_energy_spec.parse",
+      "model_module": "cells.models.surface_open_calcium_energy",
+      "exact_model_type": "cells.core.surface_open_calcium_energy_spec.SurfaceOpenCalciumEnergyModel",
+      "nested_ionic_identity": "resolved_tissue@12",
+      "calcium": true,
+      "finite_fuel": true,
+      "actual_open_reservoirs": true,
+      "volume_policy": "polygon_total_partitioned_cytosol_ER@1",
+      "independent_initial_field_module": "validation.tissue.open_calcium_reference",
+      "parse_source": {
+        "source": "src/cells/core/surface_open_calcium_energy_spec.py",
+        "first_line": 39,
+        "last_line": 49,
+        "ast_sha256": "16dad092aad88738ed0c7ad29177af2053a0d2c09e0792b7fc3300d5814cba83"
+      },
+      "model_type_source": {
+        "source": "src/cells/core/surface_open_calcium_energy_spec.py",
+        "first_line": 14,
+        "last_line": 17,
+        "ast_sha256": "9760ae8a2253a58a5b33d6188db3acd80b646211f7463518f92a97b5143294a1"
+      }
+    }
+  ],
+  "positive_cases": {
+    "ionic-basic": "resolved_tissue@2",
+    "ionic-full": "resolved_tissue@12",
+    "calcium-basic": "resolved_calcium@1",
+    "calcium-full": "resolved_calcium@11",
+    "fuel-ionic": "resolved_energy@1",
+    "fuel-ionic-ml": "resolved_energy@2",
+    "fuel-calcium": "resolved_calcium_energy@1",
+    "fuel-calcium-full": "resolved_calcium_energy@5",
+    "open-calcium-mixed": "resolved_open_calcium@1",
+    "open-fuel-mixed": "resolved_open_calcium_energy@1",
+    "calcium-merged": "resolved_calcium@1",
+    "full-nonuniform-reordered": "resolved_tissue@12",
+    "open-fuel-all-held": "resolved_open_calcium_energy@1",
+    "open-calcium-empty": "resolved_open_calcium@1",
+    "fuel-calcium-depleted": "resolved_calcium_energy@5"
+  },
+  "domain_cases": [
+    "unsupported-water-family",
+    "passive-relabel",
+    "wrong-nested-family",
+    "wrong-law",
+    "wrong-geometry-id",
+    "missing-provenance",
+    "non298-temperature",
+    "exterior-spatial-face",
+    "missing-cell",
+    "wrong-patch-cell",
+    "wrong-patch-bath",
+    "wrong-reference-owner",
+    "numeric-volume-override",
+    "numeric-area-override",
+    "numeric-capacitance-override",
+    "numeric-channel-permeability",
+    "reference-in-inventory",
+    "reference-in-control",
+    "negative-diffusivity",
+    "zero-specific-capacitance",
+    "missing-junction",
+    "reversed-junction",
+    "wrong-reciprocal-membranes",
+    "zero-junction-path",
+    "centroid-junction-path-policy",
+    "missing-ER-partition",
+    "zero-ER-fraction",
+    "unit-ER-fraction",
+    "unknown-ER-volume-policy",
+    "missing-ER-geometry",
+    "zero-ER-thickness",
+    "wrong-ER-compartment-role",
+    "wrong-free-ion-amount",
+    "missing-calcium-route",
+    "wrong-Cav-owner",
+    "missing-IP3-binding",
+    "missing-fuel-pool",
+    "cross-cell-NaK-fuel",
+    "cross-cell-PMCA-fuel",
+    "cross-cell-ER-fuel",
+    "unknown-regeneration-pool",
+    "maintained-pump-in-fuel-family",
+    "closed-calcium-held-bath",
+    "closed-fuel-held-bath",
+    "missing-open-policy",
+    "open-ceiling-below-true-moiety",
+    "empty-open-nonnull-ceiling",
+    "missing-control",
+    "unordered-control-clock",
+    "existing-charge-closure-refusal"
+  ],
+  "mutation_cases": [
+    "definition-area",
+    "definition-inventory",
+    "definition-fuel",
+    "provenance-owner",
+    "returned-copy-alias"
+  ],
+  "independent_corruption_cases": [
+    "volume",
+    "capacitance",
+    "channel-path",
+    "fuel-owner",
+    "reservoir-flag",
+    "control-clock"
+  ],
+  "expected_checks": 77,
+  "fresh_reference_records": 36,
+  "proposed_guarded_units": 114,
+  "scope": {
+    "complete_existing_family_admission": true,
+    "geometry_unit_conversion": true,
+    "complete_initial_state_and_derivative": true,
+    "polarized_nonzero_initial_field": true,
+    "active_initial_pump_channel_calcium_fuel_flow": true,
+    "unchanged_initial_state_control_probes_s": [
+      0.0,
+      5e-07
+    ],
+    "trajectories": false,
+    "time_stepping": false,
+    "native_equivalence": false,
+    "whole_mesh_qualification_inherited": false,
+    "other_failed_evidence_closed": false
+  },
+  "geometry": {
+    "authority": "cells_conforming_polygon_physical_owners@1",
+    "base_bundle_manifest_sha256": "2a1182f4091761f20c8048e0bd8cf8281ff67b808410be2820dddb4531f1d95b",
+    "max_cells": 16,
+    "max_channels": 256,
+    "exact_volume_rule": "Partition original binary64-input polygon volume into cytosol/ER before rounding; identical ionic/cytosol pL bits; no amount scaling",
+    "membrane_capacitance_rule": "sqrt(exact area squared * exact caller specific capacitance squared)",
+    "path_rule": "permeability = explicit diffusivity / declared patch/contact/ER path length"
+  },
+  "independence": {
+    "conversion": "Fresh process denies Cells/BETSE/NumPy/SciPy/JAX/Torch/Pillow; original integer-grid Green/ear geometry, exact ratio conversions and rounding-cell tests at two Decimal precisions",
+    "initial_field": "Fresh process denies Cells/BETSE/JAX/Torch/Pillow; established independent scalar/Decimal laws, complete derivative fields and full-node SciPy roots; NumPy/SciPy allowed",
+    "actual_reservoir_flags_and_true_bound_moieties": true,
+    "no_closed_surrogate": true,
+    "all_inputs_actual_trials_targets_refusals_saved_before_asserts": true,
+    "runtime_module_and_mapped_library_hashes": true,
+    "ionic_total_energy_identity": "Basic ionic reference supplies full-node charge/current proofs and complete derivatives; no new independent total-energy identity claim",
+    "chemical_table_semantics": "Only named moieties/species/compartments/reactions inside model.stores[index].model are order independent. Their identifiers and every associated value must match; ionic species axes, gates and schedules stay ordered."
+  },
+  "budgets": {
+    "initial_potential_absolute_V": 3e-13,
+    "initial_potential_relative": 3e-10,
+    "complete_derivative_absolute": 3e-12,
+    "charge_derivative_absolute_C_per_s": 3e-23,
+    "complete_derivative_relative": 3e-10,
+    "conversion": "Correctly rounded binary64 exact integer target; no tolerance widening",
+    "source_geometry": "Frozen conservative polygon reference budgets unchanged",
+    "instantaneous_energy_balance_pJ_per_s": {
+      "resolved_tissue@2": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": null,
+        "independent_identity_available": false
+      },
+      "resolved_tissue@12": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": null,
+        "independent_identity_available": false
+      },
+      "resolved_energy@1": {
+        "actual_absolute": 2e-08,
+        "independent_absolute": 2e-08,
+        "independent_identity_available": true
+      },
+      "resolved_energy@2": {
+        "actual_absolute": 2e-08,
+        "independent_absolute": 2e-10,
+        "independent_identity_available": true
+      },
+      "resolved_calcium@1": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": 1e-10,
+        "independent_identity_available": true
+      },
+      "resolved_calcium@11": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": 1e-10,
+        "independent_identity_available": true
+      },
+      "resolved_calcium_energy@1": {
+        "actual_absolute": 2e-10,
+        "independent_absolute": 3e-10,
+        "independent_identity_available": true
+      },
+      "resolved_calcium_energy@5": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": 3e-10,
+        "independent_identity_available": true
+      },
+      "resolved_open_calcium@1": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": 1e-10,
+        "independent_identity_available": true
+      },
+      "resolved_open_calcium_energy@1": {
+        "actual_absolute": 1e-10,
+        "independent_absolute": 1e-10,
+        "independent_identity_available": true
+      }
+    },
+    "energy_limit_source_correspondence": {
+      "resolved_calcium@1": {
+        "actual_evidence": [
+          "tests/unit/test_surface_calcium.py:104"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [
+          "tests/unit/test_surface_calcium.py:105",
+          "validation/tissue/surface_calcium_protocol.json:64"
+        ],
+        "independent_limit_pJ_s": 1e-10,
+        "scope_note": ""
+      },
+      "resolved_calcium@11": {
+        "actual_evidence": [
+          "tests/unit/test_hcn_extra_catalog.py:82"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [
+          "tests/unit/test_surface_calcium.py:105"
+        ],
+        "independent_limit_pJ_s": 1e-10,
+        "scope_note": "HCN-specific test has no independent absolute-residual assertion; the shared calcium reference identity has the stated original gate."
+      },
+      "resolved_calcium_energy@1": {
+        "actual_evidence": [
+          "tests/unit/test_surface_calcium_energy.py:47"
+        ],
+        "actual_limit_pJ_s": 2e-10,
+        "independent_evidence": [
+          "validation/tissue/test_calcium_energy_reference.py:160"
+        ],
+        "independent_limit_pJ_s": 3e-10,
+        "scope_note": "Do not substitute the distinct pool_internal_transfer_balance_pJ_s allowance (3e-12 plus measured summation roundoff) for this total physical residual."
+      },
+      "resolved_calcium_energy@5": {
+        "actual_evidence": [
+          "tests/unit/test_hcn_extra_catalog.py:82"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [
+          "validation/tissue/test_calcium_energy_reference.py:160"
+        ],
+        "independent_limit_pJ_s": 3e-10,
+        "scope_note": "Actual HCN catalog check is 1e-10. No HCN-specific independent total residual gate found; 3e-10 is the general shared finite-calcium reference gate. Setting both to 1e-10 would be a new prospective tightening, not an unchanged original check."
+      },
+      "resolved_energy@1": {
+        "actual_evidence": [
+          "tests/unit/test_surface_energy.py:100"
+        ],
+        "actual_limit_pJ_s": 2e-08,
+        "independent_evidence": [
+          "tests/unit/test_surface_energy.py:101"
+        ],
+        "independent_limit_pJ_s": 2e-08,
+        "scope_note": ""
+      },
+      "resolved_energy@2": {
+        "actual_evidence": [
+          "tests/unit/test_surface_energy.py:100",
+          "src/cells/models/surface_energy_morris_lecar.py:6"
+        ],
+        "actual_limit_pJ_s": 2e-08,
+        "independent_evidence": [
+          "validation/tissue/test_morris_lecar_energy_water_reference.py:166"
+        ],
+        "independent_limit_pJ_s": 2e-10,
+        "scope_note": "Actual limit is the generic finite-energy implementation check; energy@2 imports its exact readouts. Independent Morris-Lecar energy context has a tighter explicit total residual gate. The 2e-8 assertion at line361 of that reference test is a separate water expansion/contraction context."
+      },
+      "resolved_open_calcium@1": {
+        "actual_evidence": [
+          "tests/unit/test_open_calcium.py:138"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [
+          "tests/unit/test_open_calcium.py:139"
+        ],
+        "independent_limit_pJ_s": 1e-10,
+        "scope_note": "Existing open-family instantaneous total-energy identity, including actual reservoir/electrode work. Active-polygon covers declared held reservoirs as well as closed reductions."
+      },
+      "resolved_open_calcium_energy@1": {
+        "actual_evidence": [
+          "tests/unit/test_open_calcium.py:138"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [
+          "tests/unit/test_open_calcium.py:139"
+        ],
+        "independent_limit_pJ_s": 1e-10,
+        "scope_note": "Existing open-family instantaneous total-energy identity, including actual reservoir/electrode work. Active-polygon covers declared held reservoirs as well as closed reductions."
+      },
+      "resolved_tissue@12": {
+        "actual_evidence": [
+          "tests/unit/test_hcn_extra_catalog.py:82"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [],
+        "independent_limit_pJ_s": null,
+        "scope_note": "The kinetic reference has no total-energy proof. Its complete derivative and node-charge/current checks do not establish an independent total-energy identity."
+      },
+      "resolved_tissue@2": {
+        "actual_evidence": [
+          "tests/unit/test_surface_kinetic.py:92",
+          "tests/unit/test_surface_kinetic.py:334"
+        ],
+        "actual_limit_pJ_s": 1e-10,
+        "independent_evidence": [],
+        "independent_limit_pJ_s": null,
+        "scope_note": "The kinetic reference has no total-energy proof. Its complete derivative and node-charge/current checks do not establish an independent total-energy identity."
+      }
+    }
+  },
+  "evidence": {
+    "input_packet_limit_bytes": 16777216,
+    "failure": "Full caller/geometry/preparation/initial field prelude, exact stage, exception and traceback retained; admission refusal retains both materialized and returned definitions when available; independent raw return precedes comparison; immutable files use exclusive creation.",
+    "finalizer": "Root supplies an independently reviewed finalizer and external wrapper; metadata uses hashes/counts and sidecar payloads below existing size bounds"
+  },
+  "unsupported": [
+    {
+      "domain": "Other existing ionic/calcium/fuel catalog version IDs",
+      "disposition": "Explicit unsupported identity; no fallback or ID upgrade"
+    },
+    {
+      "domain": "Temperature other than 298.15 K",
+      "disposition": "Existing selected channel identities have no declared temperature scaling"
+    },
+    {
+      "domain": "Water, moving geometry, fuel/ionic network transport, mitochondria, assembly/regulation, profiles, interventions, bath events and epochs",
+      "disposition": "Separate family-specific preparation required; no added defaults"
+    },
+    {
+      "domain": "Exterior spatial diffusion faces or inferred cleft extent",
+      "disposition": "No matching polygon spatial-face geometry in this identity"
+    },
+    {
+      "domain": "ER geometry inferred from plasma polygons",
+      "disposition": "Caller must declare internal ER membrane area/thickness and volume fraction"
+    },
+    {
+      "domain": "Centroid, nearest-edge or midpoint contact path inference",
+      "disposition": "Caller must declare positive physical interface path and exact reciprocal membranes"
+    },
+    {
+      "domain": "Closed calcium/fuel with actual held reservoirs",
+      "disposition": "Existing closed parser refusal retained; use an explicitly complete supported open family"
+    },
+    {
+      "domain": "Invented physiology, passive template relabel, copied inventory after geometry rescaling",
+      "disposition": "Complete actual family required; no defaults or inventory rewriting"
+    },
+    {
+      "domain": "Whole-mesh, B09, source Voronoi/Delaunay or native BETSE qualification",
+      "disposition": "No inherited qualification or native-equivalence claim"
+    },
+    {
+      "domain": "Trajectories, time stepping, acceptance or performance claims",
+      "disposition": "Outside preparation/initial-field scope"
+    }
+  ],
+  "numerical_launch_authorized": false,
+  "numerical_execution": false,
+  "fixture_materialization": false,
+  "pytest_collection": false
+}

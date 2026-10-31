@@ -473,8 +473,15 @@ def quartic_display_interpolator(cell_centres_m, vertices_m):
     target_vertices = np.clip(vertices, centres.min(axis=0), centres.max(axis=0))
     c, v = (a - offset for a in (centres, target_vertices))
     c, v = c / scale, v / scale
-    design = np.polynomial.polynomial.polyvander2d(c[:, 0], c[:, 1], (4, 4)).reshape(len(c), 25)
-    target = np.polynomial.polynomial.polyvander2d(v[:, 0], v[:, 1], (4, 4)).reshape(len(v), 25)
+    # Legendre products span the same degree(4,4) polynomial space. Scaling
+    # near [-1, 1] avoids the poorly conditioned high powers of the former
+    # monomial basis; the least-squares law and rectangular clamp are unchanged.
+    design = np.polynomial.legendre.legvander2d(2 * c[:, 0], 2 * c[:, 1], (4, 4)).reshape(
+        len(c), 25
+    )
+    target = np.polynomial.legendre.legvander2d(2 * v[:, 0], 2 * v[:, 1], (4, 4)).reshape(
+        len(v), 25
+    )
     solution, _, rank, _ = np.linalg.lstsq(design, np.eye(len(c)), rcond=1e-15)
     if rank != 25:
         raise ValueError("Rank-deficient quartic display fit")

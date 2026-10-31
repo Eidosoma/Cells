@@ -1,0 +1,182 @@
+{
+  "AST_proofs": 70,
+  "accounting": "Separate per-species bulk/environment changes, requested exchange, fast collocation defect, membrane-buffer discrepancy, source-weighted charge and current. Continue complete material/field/owner books. Compare original residuals to independent predictions rather than forcing zero.",
+  "amounts": "Separate namespaced source-effective molecular books, native true-volume diagnostics, all deferred primary candidate buffers and original primary amount ledgers. Old signed_environment 39/40 failure remains failed; no global conservation credit.",
+  "clock_rules": "Parameters.load truncates total/dt; phase selects independent original calendar. Labels are linspace(0,N*dt,N), separate from accumulated material dt. Counts0/1/3 and sample indices retain native endpoint rules. No rebasing an incomplete, failed, paused or capped INIT prefix.",
+  "cold_presence": "rho_pump and rho_channel are absent before cold owners and are written late. Actual cache presence and original failures are retained; no missing native attribute is inferred.",
+  "configuration_obstruction": {
+    "exact_obstruction": "Absent general network leaves molecules_enabled unwritten; the else sets only mol_mit_enabled=False. No automatic false default is admitted.",
+    "explicit_present_configuration": "implement network is the independent general-handler flag; explicit True and False supported",
+    "lines": [
+      779,
+      796
+    ],
+    "missing_branch_attribute": "molecules_enabled",
+    "native_expression": "self.network_config = self._conf.get('general network', None)",
+    "path": "betse/science/parameters.py"
+  },
+  "event_boundary": "No fire_events or makeAllChanges equivalence is claimed. Native SIM calls those even with no scheduled interventions. This explicit supplied material seam keeps their inputs stable and records zero event-fire calls; it is not a whole SIM loop or physical initializer claim.",
+  "exclusions": [
+    "native seed/parser/physical initializer/pickle/load/storage/display",
+    "whole SIM event loop",
+    "changed owner enablement/configuration/cold-publication or latent dictionaries",
+    "general transporter subset targets or configured GRN transporters",
+    "Molecule.pump/gating active branches",
+    "ER/mitochondria/flow/electroosmosis/dynamic deformation/osmotic coupling/noise/events/FAST/GPU",
+    "nonunit rho or extra flux",
+    "global physical conservation, energy/ATP/heat closure and biological calibration"
+  ],
+  "explicit_dependencies": {
+    "INIT04_dependency_review": {
+      "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/DEPENDENCY_REVIEW.json",
+      "sha256": "61725332404df4f9803a629e32147c21048a478a4e9f17e7a227a8244ef3e0de"
+    },
+    "INIT04_handoff": {
+      "path": "/mnt/workspaces/Cells/ecm-init-event-reference-successor-20261031-01/HANDOFF.json",
+      "sha256": "2825a1310b1dc8f6426406cf36fe5e2012b1ad3ed514a7784c7eb94e75a9b58f"
+    },
+    "historical_transition02_INIT02_unchanged": true,
+    "inherited_scientific_passes": 0,
+    "kind": "cells.explicit_molecule_lifecycle_dependencies@1",
+    "numerical_launches": 0,
+    "parents": {
+      "INIT04": {
+        "inputs_sha256": "c2a9c280de04448e71f768546be6f57b423f5b2a876198e2dbaebe8cb0c2396f",
+        "manifest_sha256": "a6495a39ff5af284a0dce6df146d949f0f772f605bcdd8d998409a84a026f017",
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-phase-prepared-20261031-04"
+      },
+      "dispatch01": {
+        "inputs_sha256": "9c3a2c8c1ce17de9f121d2f9db887470ef97b8030d465ee7745ed4c36837352e",
+        "manifest_sha256": "e51f7eead8d6bfe3a0e4f669005386e6f4271632f0531084754320025b1ed922",
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-01"
+      },
+      "transition02": {
+        "inputs_sha256": "404bf6f9d9868ad8a35b1757df55f6a212035f09fc1cce9addde68b58f9dbb76",
+        "manifest_sha256": "fab41871bfaf8e457141bd76a491926577f1a84d16a6052aee2538e0e5eec312",
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-init-sim-transition-prepared-20261031-02"
+      },
+      "transport01": {
+        "inputs_sha256": "4a00be2ef81abd7e393de593ce861a6482d81133dc5816d6f170c44d2c770f4e",
+        "manifest_sha256": "166e53330a63866f42897029daafde64b3b957bb1ec1771191e46b8c458b5ba6",
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-01"
+      }
+    },
+    "resolution_policy": "New lifecycle source uses explicit transport01 and copied transition02 bodies; only the two exact INIT04 reference members override older references in the new proposal. Old packets and their lineage are unchanged. No whole transition02 requalification or silent historical rebase is claimed.",
+    "reviewed_reference_overrides": {
+      "validation/betse/betse_normal_ecm_event_join_reference.py": {
+        "INIT04_sha256": "2e5ee61c3ecc0031392fc0b80bdb752a0d8892d0258f59a6296407319b56dabf",
+        "adopted_for_new_lifecycle_only": true,
+        "changed_top_level_ASTs": [
+          "conditioned_network",
+          "evaluate"
+        ],
+        "historical_INIT02_sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+      },
+      "validation/betse/betse_normal_ecm_init_phase_reference.py": {
+        "INIT04_sha256": "e30cb52520f18f3a9b6dfb52b7842149aa66ed1809c05360a0d185b56410f3b6",
+        "adopted_for_new_lifecycle_only": true,
+        "changed_top_level_ASTs": [
+          "main"
+        ],
+        "historical_INIT02_sha256": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a"
+      }
+    },
+    "scientific_AST_executions": 0,
+    "scientific_evaluations": 0,
+    "scientific_imports": 0,
+    "status": "source_dependencies_authenticated"
+  },
+  "failure_capture_dependency": {
+    "helper": {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/proposal/validation/betse/betse_normal_ecm_molecule_failure_checks.py",
+      "relative": "validation/betse/betse_normal_ecm_molecule_failure_checks.py",
+      "sha256": "95b303d2816379a719b045acf9c211b9dde2900ef19de3c9e81cb963410fca19"
+    },
+    "historical_dispatch01_transport01_unchanged": true,
+    "kind": "cells.explicit_lifecycle_failure_capture_dependency@1",
+    "old_transport01_comparison_helpers_unchanged": true,
+    "review": {
+      "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "e46bf69108beb45ff4d312e06dacc205f2c26c02de3a29ffb1e6320145b3f1f1"
+    },
+    "scientific_evaluations": 0,
+    "use": [
+      "retained_call",
+      "exception_chain"
+    ]
+  },
+  "fixture_model_reference_evaluations": 0,
+  "implementation_audit": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_implementation_audit_03.json",
+  "implementation_audit_sha256": "d7397c2ae8f7f72de61e66b59568731feec38530e6ac9e5e39ac50f32cf44615",
+  "independent_reference_scope": "Fresh Decimal100/160 actual incoming conditionals for cold/setup, clocks, phase reset, NaK/primary material/CaATP, each actual owner's transporters/channels/chemistry, deferred primary commit and full fields. No carried reference trajectory. Exact native captures are local owner boundaries, not independent whole trajectories.",
+  "inherited_oracle_limits": "Nav and other channel reference domains remain unchanged. KLeak/CaLeak guards still precede constant branches. Catalog05 no_CaATP Nav reference refusal and all 11 unrun cases remain uncredited; no fixture/domain tuning.",
+  "inherited_scientific_passes": 0,
+  "kind": "cells.held_ordinary_ECM_molecule_lifecycle_protocol@1",
+  "law_id": "betse_supplied_ECM_general_transport_INIT_to_SIM_v1_5_0@1",
+  "native_files_installed_exact": 332,
+  "native_methods_audited": 27,
+  "native_revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+  "numerical_runs": 0,
+  "ordinary_pump_weight": "rho_pump remains scalar identity 1; cached activation is refused. No dormant movement, projector replacement or hypothetical ECM CaATP nonunit branch.",
+  "original_partials": "Two cold and two retained warm missing-max-rate controls preserve original KeyError and earlier writes. Validator-only witnesses never restore a field in executed input. Raw general/GRN negative-molecule and observer failures retain actual partials and accepted prefix distinctly.",
+  "owner_rules": "Enabled original owners, cores and molecule objects survive warm setup; no read_substances call or fresh cold substitute. Non-null configured transporters/channels rebuild; None and empty retain distinct flags. Stable disabled owners stay absent; latent-null or changed-enable transitions are refused with source evidence rather than erased.",
+  "planned": {
+    "biological_cases": 0,
+    "checks": 54,
+    "dependency_controls": 19,
+    "independent_reference_forms": 3006,
+    "independently_carried_reference_trajectories": 0,
+    "native_captures": 177,
+    "observer_cases": 4,
+    "positive_INIT_calls": 61,
+    "positive_SIM_calls": 66,
+    "positive_cases": 22,
+    "prefix_refusals": 3,
+    "raw_INIT_cases": 4,
+    "raw_SIM_cases": 2
+  },
+  "purpose": "Resolve phase-selector identity, retained owner/core/molecule identity, transporter rebuild/flux epoch, storage resets, INIT completion admission and independent SIM clock risks.",
+  "pytest_collections": 0,
+  "release": {
+    "execution_hold": true,
+    "metadata_only_driver": true,
+    "separately_requested_Chief_review_and_release_controller_required": true
+  },
+  "reset_rules": "Literal clear_storage/clear_cache resets actual time lists, not concentrations or transporter flux. Non-null read_transporters already rebuilds flux=None. CaATP and NaK attributes survive entry; disabled CaATP retains cache while each SIM NaK producer can reset its proxy.",
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_boundary_sha256": "66e5f37f06d3a0f71d3037a6b4d34160e8f5f688fedb2e8b94759b4ae040b9f6",
+  "source_call_order": [
+    "actual phase/legacy selection",
+    "supplied core/tissue seams and static setup",
+    "general then GRN cold constructors",
+    "INIT source labels/NaK/material/CaATP/general transporters+channels+chemistry/GRN channels+chemistry/deferred commit/fields",
+    "complete INIT admission",
+    "SIM profiles/initDenv/static/block resets",
+    "general then GRN retained reinitialize",
+    "mechanics entry/event finalizers/screening/clear_storage",
+    "new SIM clock/journal/bootstrap",
+    "three source-ordered SIM calls"
+  ],
+  "source_scope": "Supplied cold setup -> bounded complete headless INIT -> retained original general-then-GRN reinitialize -> three-call supplied no-intervention SIM material seam. Independent stable owner flags and stable configured chemistry/gates/publication policy. Original physical declarations are unchanged and untuned.",
+  "status": "source_static_only_unrun",
+  "transporter_source_defects": [
+    "Current increment precedes all material commits; no transaction rollback or retry.",
+    "Internal membrane-sample updates omit the stoichiometric coefficient; report the predicted discrepancy.",
+    "ECM fast projection uses duplicate-site indexed last writes with total site membrane area; slow projection uses the original area map.",
+    "Environment commits use the original target indexing after div_env; no ideal conservative scatter substitutes.",
+    "ignore ECM is stored but unused in the native builder/executor; first scope explicitly declares False.",
+    "Product Km is absent from the final executable rate; conversion factor 1e-3 lies outside each concentration power.",
+    "Native transporter current uses bare valence while molecular charge publication retains scale_factor; no forced electrical closure."
+  ],
+  "unchanged_budgets": {
+    "channels_and_CaATP": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+    "configured_transporter_commits": "Original ion FLOORS plus the existing 128*eps operation-count rule extended by the ECM site count; declared before any evaluation.",
+    "configured_transporter_rates": "validation/transport/betse_network_transport_protocol.json",
+    "fields": "tests/unit/test_betse_normal_ecm_field_join.py",
+    "material": "validation/betse/betse_ecm_transport_checks.py",
+    "max_normalized_error": 1.0,
+    "max_self_resolution": 0.1,
+    "molecular_amount_charge_current": "tests/unit/test_betse_ecm_grn_join.py"
+  }
+}

@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_prepared_02/driver.py", line 355, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_prepared_02/driver.py", line 351, in main
+    run(out, args.group, args.coordinated_cpu, args.requested_round)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_prepared_02/driver.py", line 199, in run
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: INIT source handoff is held; Chief review and a separately released successor are required

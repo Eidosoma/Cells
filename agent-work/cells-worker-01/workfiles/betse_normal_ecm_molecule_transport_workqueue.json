@@ -1,0 +1,745 @@
+{
+  "automatic_launch": false,
+  "capture_arithmetic": "23*(1 setup+3 dispatch)+4*(1 setup+1 failed molecular dispatch)+2*(1 failed transporter setup)=102.",
+  "execution_hold": true,
+  "form_arithmetic": "Each positive case: 2 bootstrap + 2 per enabled cold owner + 3*(8 prefix/CaATP/commit/field + 4 per enabled channel/network owner + 2 if the general transporter flag is true). Empty-list configuration still sets that source flag true.",
+  "groups": {
+    "dependency-FAST": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "FAST",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[FAST]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-GRN_flag_missing": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "GRN_flag_missing",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[GRN_flag_missing]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-GRN_flag_not_bool": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "GRN_flag_not_bool",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[GRN_flag_not_bool]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-absent_general_network": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "absent_general_network",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[absent_general_network]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-arbitrary_pump_weight": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "arbitrary_pump_weight",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[arbitrary_pump_weight]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_Ca_cache": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_Ca_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[changed_Ca_cache]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_field_owner": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_field_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[changed_field_owner]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_publication_projection": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_publication_projection",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[changed_publication_projection]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_shared_epoch": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_shared_epoch",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[changed_shared_epoch]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_transporter_equation": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_transporter_equation",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[changed_transporter_equation]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-changed_transporter_flux_epoch": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "changed_transporter_flux_epoch",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[changed_transporter_flux_epoch]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-enabled_ER": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "enabled_ER",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[enabled_ER]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-enabled_flow": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "enabled_flow",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[enabled_flow]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-fabricated_disabled_owner": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "fabricated_disabled_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[fabricated_disabled_owner]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_general_cache_role": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_general_cache_role",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[foreign_general_cache_role]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_general_config": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_general_config",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[foreign_general_config]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_implement_flag": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_implement_flag",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[foreign_implement_flag]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_membrane_volume": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_membrane_volume",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[foreign_membrane_volume]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_native_transporters": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_native_transporters",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[foreign_native_transporters]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-foreign_profile_owner": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "foreign_profile_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[foreign_profile_owner]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-missing_general_cache": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_general_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[missing_general_cache]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-missing_implement_flag": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_implement_flag",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[missing_implement_flag]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-missing_membrane_volume": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_membrane_volume",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[missing_membrane_volume]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-missing_shared_charge": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_shared_charge",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[missing_shared_charge]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-missing_transporter_cache": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_transporter_cache",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[missing_transporter_cache]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-noise_requires_owner": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "noise_requires_owner",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[noise_requires_owner]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-osmotic_requires_both_owners": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "osmotic_requires_both_owners",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[osmotic_requires_both_owners]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-swapped_handler_caches": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "swapped_handler_caches",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_dependency[swapped_handler_caches]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-unmarked_missing_rate": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "unmarked_missing_rate",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[unmarked_missing_rate]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-unsupported_GRN_transporters": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "unsupported_GRN_transporters",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[unsupported_GRN_transporters]"
+      ],
+      "source_status": "unrun"
+    },
+    "dependency-unsupported_profile": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "unsupported_profile",
+      "category": "dependency",
+      "independent_forms": 0,
+      "native_captures": 0,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_transporter_dependency[unsupported_profile]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-GRN_only": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "GRN_only",
+      "category": "component_control",
+      "independent_forms": 40,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[GRN_only]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-NCX_three": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "NCX_three",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[NCX_three]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-NKCC_two": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "NKCC_two",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[NKCC_two]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-Na_export": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "Na_export",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[Na_export]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-activator": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "activator",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[activator]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-both_channels": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "both_channels",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[both_channels]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-both_disabled": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "both_disabled",
+      "category": "component_control",
+      "independent_forms": 26,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[both_disabled]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-both_enabled": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "both_enabled",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[both_enabled]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-charged_molecule": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "charged_molecule",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[charged_molecule]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-disabled_configuration": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "disabled_configuration",
+      "category": "component_control",
+      "independent_forms": 54,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[disabled_configuration]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-empty_transporters": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "empty_transporters",
+      "category": "component_control",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[empty_transporters]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-fast_duplicate": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "fast_duplicate",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[fast_duplicate]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-general_transport": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "general_transport",
+      "category": "positive",
+      "independent_forms": 46,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[general_transport]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-ignored_product_Km": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "ignored_product_Km",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[ignored_product_Km]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-no_CaATP": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "no_CaATP",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[no_CaATP]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-ordered": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "ordered",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[ordered]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-publication_carry": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "publication_carry",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[publication_carry]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-rectangular": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "rectangular",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[rectangular]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-reverse_order": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "reverse_order",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[reverse_order]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-smoothed": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "smoothed",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[smoothed]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-temperature_split": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "temperature_split",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[temperature_split]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-time_dilation": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "time_dilation",
+      "category": "positive",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[time_dilation]"
+      ],
+      "source_status": "unrun"
+    },
+    "positive-zero_capacity": {
+      "accepted_calls": 3,
+      "biological_case": false,
+      "case": "zero_capacity",
+      "category": "component_control",
+      "independent_forms": 60,
+      "native_captures": 4,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_two_owner_history[zero_capacity]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw-first_GRN_negative": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "first_GRN_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_molecule_failure[first_GRN_negative]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw-first_general_negative": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "first_general_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_molecule_failure[first_general_negative]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw-second_GRN_negative": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "second_GRN_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_molecule_failure[second_GRN_negative]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw-second_general_negative": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "second_general_negative",
+      "category": "raw",
+      "independent_forms": 0,
+      "native_captures": 2,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_molecule_failure[second_general_negative]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw_setup-missing_max_rate_0": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_max_rate_0",
+      "category": "raw_setup",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_transporter_setup_failure[missing_max_rate_0]"
+      ],
+      "source_status": "unrun"
+    },
+    "raw_setup-missing_max_rate_1": {
+      "accepted_calls": 0,
+      "biological_case": false,
+      "case": "missing_max_rate_1",
+      "category": "raw_setup",
+      "independent_forms": 0,
+      "native_captures": 1,
+      "node_ids": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py::test_original_transporter_setup_failure[missing_max_rate_1]"
+      ],
+      "source_status": "unrun"
+    }
+  },
+  "kind": "cells.held_general_ECM_transporter_workqueue@1",
+  "planned": {
+    "accepted_calls": 69,
+    "biological_cases": 0,
+    "checks": 60,
+    "component_controls": 5,
+    "dependency_controls": 31,
+    "independent_reference_forms": 1306,
+    "independently_carried_trajectories": 0,
+    "native_captures": 102,
+    "positive_cases": 23,
+    "raw_cases": 4,
+    "raw_setup_cases": 2
+  },
+  "pytest_collection": false,
+  "scientific_evaluations": 0,
+  "status": "unrun"
+}

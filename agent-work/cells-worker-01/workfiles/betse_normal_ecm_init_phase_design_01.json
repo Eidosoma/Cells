@@ -1,0 +1,101 @@
+{
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "boundary": {
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_source_boundary_01.json",
+    "sha256": "fc458bbdd0d5c0cbb0228cbecd65838bd959971ae7be6f656b1a367e30946e87"
+  },
+  "clocks": {
+    "N0_N1_and_fractional_sampling_must_be_explicit": true,
+    "count": "int(init_time_total/init_time_step), using stored binary64 division",
+    "first_implementation_call_cap": "Audit inherited bounded kernel caps; use an explicitly labelled prefix with original full calendar or refuse larger counts. Never call a prefix the whole phase.",
+    "labels": "Source linspace(0,N*dt,N); labels are not update dt and must not be rebased",
+    "material_dt": "Exactly init_time_step per admitted call",
+    "native_sampling_stride_below1": "Explicit nonprogress boundary, never execute hanging loop",
+    "ordinary_native_count_not_forced_to3": true,
+    "sampling": "Original repeated i+=stride; i=int(i) source rule; stride=init_sampling/init_dt"
+  },
+  "dispatch": {
+    "CaATP_if_enabled_by_source_configuration": true,
+    "ECM": true,
+    "GRN": "Explicit configuration may enable or disable; never infer a global False/True default",
+    "actual_source_loop_order_preserved": true,
+    "bulk_primary_ion_pumps_and_movers": true,
+    "channel_counts": "Per population actual source population_after events; inactive0 and active current tick are legal together",
+    "channels": "Every configured population is constructed; init_active=False skips its warm update and leaves its cold private fields/call count unchanged",
+    "deferred_primary_commit_and_full_fields_once": true,
+    "dynamic_protein_noise_execution": false,
+    "enabled_ER": false,
+    "flow_and_dynamic_deformation": false,
+    "general_molecules": "Explicitly disabled for first isolated GRN scope; other owner families need separate admission",
+    "mechanics_splice": "Explicit post-network hook before deferred commit; never drop mechanics when skipping the SIM-only noise hook",
+    "network_internal_order": [
+      "clear",
+      "transporters if configured",
+      "INIT-active channels if configured",
+      "modulators if configured",
+      "run_loop chemistry and movement"
+    ],
+    "phase": "INIT",
+    "rho_pump_and_rho_channel": "Source setup resets both to1 at actual new phase entry",
+    "scheduled_event_execution": false,
+    "selected_first_GRN_scope": "Admit only declared owner/transport/channel/modulator branches whose complete state is supplied and separately checked",
+    "solver": "FULL",
+    "steady_mechanics": "Only if explicitly configured and required source owners/caches exist"
+  },
+  "entry": {
+    "INIT_dt_used_for_cold_constructors_and_bootstrap": true,
+    "actual_pre_cold_voltage_must_be_archived": true,
+    "configured_temperature_and_actual_cache_owners_required": true,
+    "legacy_run_sim_flag": false,
+    "missing_f_sweep_slope_not_repaired_or_computed_from_INIT_duration": true,
+    "native_fresh_core_vs_loaded_SIM_distinguished": true,
+    "physical_seed_load_init_core_and_whole_native_init_claim": false,
+    "proposed_initial_scope": "Headless INIT material/field execution on explicitly supplied source core/entry owners, complete phase setup receipt and caches",
+    "scheduled_event_finalization_is_not_event_execution": true,
+    "source_setup_single_NumPy_draw_and_optional_Python_randomness_retained": true
+  },
+  "fixture_evaluations": 0,
+  "implementation_files_created": false,
+  "kind": "cells.separate_ordinary_ECM_INIT_phase_design@1",
+  "lifecycle": {
+    "INIT_to_SIM_requires_native_reinitialize_audit_not_blind_cache_carry": true,
+    "field_domain_at_most16_and_quartic_display_at_least25_unchanged": true,
+    "native_storage_display_pickle_and_INIT_to_SIM_transition_closed": true,
+    "own_INIT_binding_and_state_identities": true,
+    "single_complete_material_and_field_advance": true,
+    "source_reset_and_cold_setup_only_at_explicit_new_entry": true,
+    "window_pause_resume_preserves_full_state_and_original_calendar": true,
+    "zero_sample_native_pickle_vm_time_last_requires_separate_boundary": true
+  },
+  "new_prefix": "betse_normal_ecm_init_phase",
+  "numerical_release_authorized": false,
+  "numerical_runs": 0,
+  "prospective_check_families": [
+    "INIT clock/count/truncation/N0/N1/original sampling and event-disabled labels",
+    "Poisoned event/noise callbacks prove the SIM-only branches are unreachable without changing configured flags",
+    "init_active defaultTrue, explicitTrue, explicitFalse and mixed populations; exact inactive cold cache and active-only counts",
+    "Configured GRN off/on and CaATP off/on with ERNone/Ca_dynFalse preserved",
+    "Complete conditional source/native/Decimal100/160 material/CaATP/channels/GRN/mechanics/field checks with old budgets",
+    "Phase-entry resets and RNG receipts distinguished from no per-loop protein-noise draws",
+    "Window pause/resume, exact stop/prefix/exhaustion, callbacks and full raw failures",
+    "Reject SIM-labelled parents, stale dt/cache phase, forged inactive warm fields, enabled ER/flow/dynamic/display/physical admission"
+  ],
+  "purpose": "Resolve real INIT/SIM dispatch, cold-entry, channel-count and RNG differences before a separate ordinary ECM INIT material-execution feature",
+  "pytest_collection_runs": 0,
+  "reference_evaluations": 0,
+  "references_and_capture": {
+    "actual_inputs_before_each_consumer_archived": true,
+    "all_reached_candidates_contexts_RNG_and_failures_preserved_before_checks": true,
+    "common_SIM_warm_dispatch_and_channel_sequence_not_reused_unchanged": true,
+    "complete_function_bodies_and_extracted_slices_labelled_separately": true,
+    "inherited_SIM_qualification_credit": 0,
+    "new_INIT_capture_profile_required_before_evidence_tool_selection": true,
+    "new_phase_aware_native_wrapper_and_fresh_conditional_oracle_required": true,
+    "reuse_existing_pinned_source_bodies_and_unchanged_numeric_budgets_only": true
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "status": "source_design_only_implementation_and_numerical_release_not_started"
+}

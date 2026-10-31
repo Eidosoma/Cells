@@ -1,0 +1,82 @@
+{
+  "active_job_queries": 0,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "capture_and_hold_metadata_controls": {
+    "changed_profile_pins_checked": true,
+    "controls_passed": 10,
+    "large_archive_generated": false,
+    "max_rss_bytes": 22507520,
+    "path": "INIT02-metadata/result.json",
+    "sha256": "420af92b585a553d7ac840942a6291167d9f8b1abbf43cba3afb164344928988"
+  },
+  "catalog05_failure_preserved": "82 passed/1 failed/11 unrun. no_CaATP second-call Nav1p2 +0.162 to +0.380 V exceeded inherited reference domain; native completed three calls. Reference refusal, not tolerance failure. No pass inherited.",
+  "changed_source": {
+    "tests/unit/test_betse_normal_ecm_init_phase.py": {
+      "after_sha256": "63fcf14e66c78cf3e9c4bb762fcd07ddc893b34a53341cb1bbd863fd9503ef7e",
+      "before_sha256": "3cbfe48604c6f0c7f2cc88aca1526c98bcc5aa4b0c07baa84a480576a46acb61"
+    },
+    "validation/betse/betse_normal_ecm_init_phase_capture.py": {
+      "after_sha256": "b74d088d80688189b4d947119bfabd051d9b344a23c5c117c2da12e0a34c38c2",
+      "before_sha256": null
+    },
+    "validation/betse/betse_normal_ecm_init_phase_native.py": {
+      "after_sha256": "b59b8a9209a7e550d8a0db37e9d98b54243a26d407e076a7c891161f4e1cd5e6",
+      "before_sha256": "e28640c28fab7da71b25759e8cedccf6839a0ac5c71da89807325a1131c261ff"
+    }
+  },
+  "classified_source_reads": 181,
+  "driver_unchanged_and_held": true,
+  "evidence_controls": {
+    "controls_passed": 18,
+    "path": "INIT02-evidence/betse_normal_ecm_init_phase_successor_02_software_03.json",
+    "sha256": "19813bd217a28f3242acbbbe94b1696eb9a02de663f0c09163e536d9a0b3055c"
+  },
+  "final_parent_independent_review_sha256": "ab6b07e33489748bdfa75d01a037aa82b0c22e8e8cfb33c0e0a36acca0137c3d",
+  "fixture_model_reference_evaluations": 0,
+  "fixtures_protocol_reference_equations_roster_budgets_unchanged": true,
+  "full_native_evaluator_evidence_inverse_matches_parent": true,
+  "full_positive_test_sampling_inverse_matches_parent": true,
+  "future_runner_observations_unresolved": [
+    "The draft driver is held before imports/output creation, verifies exact unique JUnit IDs and start/end source/native/tool hashes, and retains fixed resource bounds. A later release controller must bind each saved runtime inventory to frozen origins/hashes rather than relying only on production_imports_denied booleans.",
+    "Draft read_evidence skips a manifest when arrays.npz or data.json is absent. A release finalizer should require all expected declared native/reference/owned archives complete and authenticate inventory counts, not accept the existence of any one complete archive.",
+    "The reference CLI writes completed forms and logs but has no structured top-level failure capture/runtime inventory on an early reference exception. Successful-form acceptance remains strict; failed attempted forms must remain uncredited and their available input/log/partial evidence preserved."
+  ],
+  "inherited_qualification": 0,
+  "inherited_static_evidence": {
+    "note": "Historical INIT01 receipt; superseded native/test pins are not current proofs",
+    "path": "lineage/INIT01/SOURCE_STATIC_REVIEW.json"
+  },
+  "inputs_sha256": "bd0c4a284aa414a0fb2195c0826b862ebaeb72580b18032cd3668c2c6a01375d",
+  "kind": "cells.INIT02_evidence_repair_held_source_receipt@1",
+  "numerical_runs": 0,
+  "oracle_domain_caveat": "INIT-ORACLE-DOMAIN-03 remains: active KLeak/CaLeak standalone references guard [-0.120,+0.060] V before constant branches. Inactive Nav does not qualify active Nav. No oracle, fixture or tolerance change.",
+  "parent_manifest_sha256": "33e09b2c908ab9d03cabed4d5f485ae29cba702d6f454397fa2b2a0fa3fe99bf",
+  "prospective": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "pytest_collections": 0,
+  "reference_import_closure_files": 23,
+  "repaired_findings": [
+    "INIT-CAPTURE-01",
+    "INIT-SAMPLING-02"
+  ],
+  "resource_files": 28,
+  "runtime_import_closure_files": 124,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "static_checks": {
+    "Ruff_no_cache": true,
+    "compile_without_execution": true
+  },
+  "status": "held_source_static_complete_numerical_suite_unrun",
+  "unclassified_source_reads": 0
+}

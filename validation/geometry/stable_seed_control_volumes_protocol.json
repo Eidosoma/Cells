@@ -1,0 +1,109 @@
+{
+  "GPU_jobs": 0,
+  "acceptance": {
+    "conservation": "constant integrated-line-normal closure, reciprocal interior flux cancellation and all four affine moment/area identities on actual shared geometry",
+    "domain": "explicit finite convex CCW envelope/provenance; all seeds strictly inside; no [0,L], 1.1 extent, margin or tissue-equivalence default",
+    "domain_proposals": "three original environment boxes explicitly adopted with a new prospective role, pending Chief review; two image envelopes unresolved",
+    "exact_partition": "all seed half-planes, complete n(n-1) input/returned clipping records, no perturbation or topology diagonal for degeneracy",
+    "failures": "capture full source/domain inputs and bisector/clip/scalar trials before evaluation, returns before gates, full exception/partial/fallback artifacts",
+    "geometric_admission": "pinned conservative production admission; independent convex separating-axis/global edge/side-interval checks; strict containment, CCW positive areas, no overlap or domain gap",
+    "incidence": "complete shared global vertex/edge axes, one/two-owner edges, opposite reciprocal traversals, native previous-to-current local edge convention, exact boundary-of-boundary",
+    "input_controls": "Root finalizer must first require all independently passing proposed construction cases; input-gap and raw checks add no geometry/biological admission credit",
+    "output_controls": "same single reference derivation must accept unchanged baseline before changed output receives control credit",
+    "rounded_domain": "exact original domain-side coverage and total area after shared projection; collisions, seed loss, nonconvexity or boundary departure refuse without added tolerance",
+    "scalars": "exactly 2V+3C+1 complete input/return links: two coordinates per shared vertex; stored-geometry area/two centroid components per cell; declared domain area",
+    "source": "complete original retained request/candidate, unchanged seed bits/owner IDs and immutable original failed evidence",
+    "storage_bounds": "independent input-derived projections and exact errors; preserve ideal/stored bisector residuals and area-store sum defects"
+  },
+  "collection": 0,
+  "constructor": "successive exact rational polygon clipping; global rational equality vertex IDs; shared binary64 coordinate projected once",
+  "dependencies": {
+    "metric03_geometry_helper_manifest_sha256": "39c7dae39a44409cd83cf352d60f98ae5a96133537b51549296d611ff66522f9",
+    "operator02_manifest_sha256_preserved": "f1d0e15e6c22421660052d5c324acd9e47fafcaf3d8175254eaec5ba1de4c741",
+    "original_outside_owner_review_sha256": "06009ddb77d86e1d63011705dad5a14339709d9a3c40fd503d7cc9071cbef22f"
+  },
+  "domain_roster_sha256": "1728bbbc2847270ac5441d2cae338d4ce845acbbb469ee5149accae6524fa622",
+  "environment_binding_admitted": false,
+  "exact_and_stored_geometry_roles": {
+    "finite_arithmetic": "no rounded exact-nearest-seed or exact sum of binary64 area stores claim",
+    "ideal": "exact Voronoi geometry on retained binary64 seeds and explicit binary64 domain",
+    "metrics": "exact moments of actual shared binary64 geometry; ideal moments retained separately",
+    "stored": "one global correctly rounded vertex store, strict convex/seed/domain/conforming admission repeated"
+  },
+  "explicit_domain_input_gaps": [
+    "caller-single-square-cache",
+    "caller-single-hex-cache"
+  ],
+  "finalizer_prepared": false,
+  "independent_reference": "constraint-line pair intersections, feasible hull and seed-angle boundary ordering; no production clipping/admission import",
+  "inherited_historical_parent_metadata_is_current_authority": false,
+  "input_kind": "cells.stable_seed_control_volume_declaration@1",
+  "invalidated": [
+    "all_source_dual_vertices_cell_rings_and_edge_pairings",
+    "source_primal_connectivity_as_a_dual_neighbor_map",
+    "all_old_metrics_normals_areas_reference_face_areas_and_inverses",
+    "native_gap_boundary_profile_and_membrane_owner_maps",
+    "physical_cells_membrane_measures_volumes_and_extrusion",
+    "environment_grid_maps_operators_and_bath_policy",
+    "native_initialization_and_all_loop_state_bindings"
+  ],
+  "kind": "cells.fixed_seed_control_volumes_prospective_protocol@1",
+  "launch_gate": false,
+  "launcher_prepared": false,
+  "law": "cells_fixed_seed_explicit_domain_voronoi_control_volumes@1",
+  "native_cache_admitted": false,
+  "operator_qualified": false,
+  "ordinary_ECM_loop_ready": false,
+  "original_mesh_outcome": "0/9 unchanged",
+  "original_outside_layouts_reclassified": false,
+  "physical_geometry_admitted": false,
+  "planned": {
+    "Root_finalizer": 1,
+    "actual_new_geometry_or_reference_runs": 0,
+    "all_checks_unrun": true,
+    "checks": 41,
+    "continued_physical_refusal_checks": 1,
+    "declared_units": 61,
+    "duplicate_child_replays": 0,
+    "explicit_domain_input_gaps": 2,
+    "fresh_native_workers": 0,
+    "input_refusal_checks": 12,
+    "nested_reference_workers": 19,
+    "potential_nested_reference_children": 19,
+    "prospective_source_constructions": 3,
+    "raw_exact_component_checks": 6,
+    "resealed_output_controls": 16,
+    "scalar_underflow_checks": 1,
+    "scheduled_top_level_units": 42,
+    "total_distinct_process_units": 61
+  },
+  "replacement_law": "exact bounded nearest-seed half-planes within a caller-declared strict convex CCW polygon",
+  "resources": {
+    "fresh_children_guarded_inside_parent_tree": true,
+    "host_reserve_GiB": 8,
+    "launch_finalizer_startup_failure_and_runtime_capture_owner": "Chief/Root",
+    "outer_summed_RSS_GiB": 2,
+    "outer_timeout_s": 7200,
+    "per_pytest_tree_summed_RSS_GiB": 1,
+    "per_pytest_tree_wall_s": 480,
+    "resource_guard_sha256": "ece716396f480fb20601694cac1c57b8c03444c0df5ef6c7cdf2f8f2d93977ec"
+  },
+  "scientific_evaluations_during_preparation": 0,
+  "source_origin": "native centroids/reflected boundary points, directed-only edge lookup and nearest-midpoint selected edges; corrected topology preserves old coordinates/rings",
+  "status": "static_prepared_fixed_seed_constructor_three_proposed_domains_two_input_gaps_unexecuted",
+  "units": {
+    "area": "m2",
+    "coordinates": "m",
+    "integrated_line_normal": "m"
+  },
+  "withheld": [
+    "native tissue boundary equivalence",
+    "unmodified primal/dual connectivity",
+    "all old metrics/inverses",
+    "native membrane/gap/boundary/profile maps",
+    "physical extrusion and membrane measures",
+    "environment grids/operators/bath policies",
+    "native initialization",
+    "ordinary loop"
+  ]
+}

@@ -1,0 +1,7 @@
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle_source.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle_owners.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle_mechanics.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle_phase.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle_setup.py
+agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_regenerated_01/src/cells/processes/betse_normal_ecm_molecule_lifecycle.py
+{"output": "agent-work/cells-worker-01/workfiles/betse_normal_ecm_molecule_lifecycle_draft_audit_01.json", "sha256": "b9d4cf01f0f42f8a2a711b268d4c5061660c7c8bfa268e1fe6b9eadb31cac3cc", "proofs": 33, "compiled_files": 6}

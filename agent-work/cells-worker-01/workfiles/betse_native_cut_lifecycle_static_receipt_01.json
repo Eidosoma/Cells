@@ -1,0 +1,138 @@
+{
+  "accounting": {
+    "complete_native_cut": false,
+    "explicit_owner_sink_ledger_is_separate": true,
+    "native_material_conservation_credit": false,
+    "ordinary_checkpoint_ready": false,
+    "physical_global_conservation_credit": false,
+    "physical_mesh_qualified": false
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "cut_bounded_metadata_schema_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_native_cut_lifecycle_metadata_witness_01.json",
+      "sha256": "94b9cccb59b130e422e3dda19b18418f9152ec86931f20d0f8c5e483988afd40"
+    },
+    "cut_literal_prefix_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_native_cut_lifecycle_AST_witness_01.json",
+      "sha256": "c5ac0407733ec49f69f7be7a40e093ddffa8642f0df4cf37bfda1c17d15b79bd"
+    },
+    "cut_whole_source_capability_audit": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_native_cut_lifecycle_source_witness_01.json",
+      "sha256": "5359cf573152e94b3612ce5641fb42a33d9f2b7048c4917107855a6833e79fb6"
+    },
+    "frozen_event01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-01/inputs.json",
+      "sha256": "569101232c058441830f794fd5209356027e4d609237d444ee637e676fa626c9"
+    },
+    "frozen_event01_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_static_receipt_01.json",
+      "sha256": "74c65599befdf2faf23bef43a5017cf6a0a37aeb74401532f767f2d95b807f60"
+    }
+  },
+  "binding_evidence_copies": 5,
+  "capture_repair_03": null,
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "cd54002c2f8f65e93dc61ebea375c99440f642b6bba0323f6540182c00e48794",
+  "error_capture_repair_02": null,
+  "inputs": "/mnt/workspaces/Cells/betse-native-cut-lifecycle-prepared-20261031-01/inputs.json",
+  "inputs_sha256": "7a0d04b5e9acf0f3e29598a34c4fdc7e086aa94339ebfbce98ebcd3d4d3e1cb1",
+  "kind": "cells.native_native_cut_lifecycle_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 16,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 9,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 25,
+    "complete_native_cuts": 0,
+    "dependency_controls": 11,
+    "existing_quantity_precision": 80,
+    "fresh_independent_reference_forms": 6,
+    "geometry_calls": 0,
+    "native_captures": 14,
+    "ordinary_resumes": 0,
+    "physical_mesh_cases": 0,
+    "prefix_conditions": 6,
+    "raw_limits": 8
+  },
+  "planned_groups": {
+    "core": 6,
+    "dependencies": 11,
+    "raw": 8
+  },
+  "protected_files": 145,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/topology/betse_native_cut_lifecycle_reference.py": "3a98f98f2bc452eb8e10ca43841c951cfb35e35f53be8bc33597dcef232c88a6",
+    "validation/topology/betse_tissue_cut_reference.py": "6e4544deb885d9672500c9a34763df7d05c5a875640c7fedda2f8e3af9f5fdb6"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2621,
+  "static_checks": {
+    "actual_source_partial_frames_and_list_alias_mutations_retained": true,
+    "all_original_prefix_and_flatten_AST_equal": true,
+    "compile_without_import": "passed",
+    "compiled_python_files": 17,
+    "complete_metadata_cannot_unlock_checkpoint": true,
+    "empty_source_selection_still_invalidates": true,
+    "exact_pytest_ID_and_durable_failure_contract": true,
+    "fixed_existing_quantity_budget_and_precision_unchanged": true,
+    "fixture_evaluations": 0,
+    "global_names": "passed",
+    "import_closure_modules": 10,
+    "installed_exact_python_files": 332,
+    "metadata_files": 15,
+    "numeric_view_buffer_alias_not_checkpointed": true,
+    "numerical_runs": 0,
+    "pytest_collection_runs": 0,
+    "reference_closure_modules": 2,
+    "reference_evaluations": 0,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0,
+    "source_AST_proof": {
+      "appended_observation": "return locals() only",
+      "compile_global_names": true,
+      "compiled_python_files": 17,
+      "complete_available_phase_and_source_frame_failure_evidence": true,
+      "empty_selection_invalidates_native_lifecycle": true,
+      "first_unowned_line": 1153,
+      "fixture_evaluations": 0,
+      "generic_capture_records_not_scientific_equations_shared": true,
+      "independent_native_original_prefix_AST_equal": true,
+      "kind": "cells.native_cut_prefix_capability_AST_proof@1",
+      "literal_flatten_equal": true,
+      "literal_original_prefix_statements_including_docstring": 32,
+      "numeric_view_buffer_alias_not_checkpointed": true,
+      "numerical_runs": 0,
+      "original_normalized_prefix_AST_sha256": "393c941e1a87ca8b3f7f1cfe12ede557e4e8413c4c4b5a6d3354548d0525a9e2",
+      "owner_metadata_never_unlocks_checkpoint_or_mesh": true,
+      "parent_graph_isolated_dictionary_order_and_container_aliases_retained": true,
+      "pytest_collection_runs": 0,
+      "scientific_AST_executions": 0,
+      "scientific_imports": 0,
+      "source_and_conservative_removal_policies_separate": true,
+      "supplied_picker_occurrence_order_preserved": true
+    },
+    "source_and_stable_owner_policy_separate": true,
+    "source_boundary_line": 1153,
+    "whole_lifecycle_methods": 32
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

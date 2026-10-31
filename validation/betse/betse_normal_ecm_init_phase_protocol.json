@@ -1,0 +1,159 @@
+{
+  "acceptance": {
+    "NaK_flux_proxy": "existing 2e-18 + 2e-11*abs(reference)",
+    "budgets_changed": false,
+    "carried_reference_forms": 0,
+    "formal_ATP_consumption_claim": false,
+    "independent": "Fresh stdlib Decimal100/160 setup and seven one-call conditional modes, from each actual incoming state",
+    "independent_trajectory": false,
+    "inherited_budget_files": {
+      "validation/betse/betse_ecm_transport_protocol.json": {
+        "path": "validation/betse/betse_ecm_transport_protocol.json",
+        "sha256": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+      },
+      "validation/betse/betse_normal_ecm_catalog_join_protocol.json": {
+        "path": "validation/betse/betse_normal_ecm_catalog_join_protocol.json",
+        "sha256": "98083abd4d5536de59ae330d6ae5b213676c98a8cb3f337beffb0eb01cc41363"
+      },
+      "validation/betse/betse_normal_ecm_event_mechanics_protocol.json": {
+        "path": "validation/betse/betse_normal_ecm_event_mechanics_protocol.json",
+        "sha256": "56818507a4cb2667113a80b032b2c36cdc554c6b1d407616fd22530079a2b60b"
+      },
+      "validation/betse/betse_normal_pump_join_protocol.json": {
+        "path": "validation/betse/betse_normal_pump_join_protocol.json",
+        "sha256": "c94fd0669859b2652ed97ae8ba8f2de611731e6a0c9a854d90d01c0d55714852"
+      }
+    },
+    "native": "Complete same-source typed arrays/caches/stores, both RNG receipts and exact clock/native stages",
+    "physical_global_conservation_credit": false,
+    "reference_modes": [
+      "setup",
+      "cold_initialization",
+      "bootstrap",
+      "nak",
+      "material",
+      "calcium",
+      "channels",
+      "network",
+      "mechanics",
+      "field"
+    ],
+    "retained_material_failure": "signed_environment remains 39/40; no new answer/tolerance used",
+    "retained_material_panel_passed": false,
+    "self_resolution_fraction": 0.1,
+    "static_K": "existing ECM diffusion 3e-20 + 6e-12*abs(reference); uniform scalar 3e-14 + 6e-12*abs(reference)"
+  },
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "call_order": [
+    "reset fluxes",
+    "real native maintained-pool NaK",
+    "primary membrane/GJ/ECM/intracellular movers",
+    "CaATP",
+    "GRN clear/transporters/INIT-active channels/modulators/chemistry-movement",
+    "osmotic and steady mechanics",
+    "deferred primary commit",
+    "current/environment/voltage reconstruction and check_v",
+    "headless sample eligibility"
+  ],
+  "capture_profile": {
+    "NPY_header_bytes": 16384,
+    "all_captures_fit_byte_caps_claim": false,
+    "compressed_expanded_JSON_bytes_each": 67108864,
+    "compression": "ZIP_STORED",
+    "member_limit": 310689,
+    "name": "ordinary_ecm_init_phase_01",
+    "observed_case_maximum_claim": false,
+    "source_format_capacity_bound": true,
+    "status": "new prospective held profile; Chief review required"
+  },
+  "execution_hold": true,
+  "explicit_refusals": [
+    "General molecule handler or GRN-disabled owner composition remains unqualified",
+    "Enabled ER, fluid flow, electroosmosis or dynamic deformation",
+    "Seed/load/profile selection or full physical initializer claims",
+    "INIT-to-SIM carry without audited source reinitialization",
+    "Native sampled storage/display/pickle and whole run_sim_core completion",
+    "Field <=16 cells versus quartic display >=25 boundary is unchanged"
+  ],
+  "kind": "cells.ordinary_INIT_prospective_contract@1",
+  "law_id": "betse_ordinary_FULL_ECM_supplied_INIT_v1_5_0@1",
+  "native_source": {
+    "checkout": "/mnt/workspaces/Cells/betse-v1.5.0",
+    "installed_package": "/mnt/workspaces/Cells/venv-betse/lib/python3.13/site-packages/betse",
+    "revision": "5269a714aa2593ed2a6708c4516289977d8ae1a2",
+    "source_sha256": {
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54"
+    }
+  },
+  "no_science_preparation": {
+    "active_job_queries": 0,
+    "fixture_model_reference_evaluations": 0,
+    "imports": 0,
+    "numerical_runs": 0,
+    "pytest_collection": 0,
+    "scientific_AST_executions": 0
+  },
+  "parent": {
+    "path": "/mnt/workspaces/Cells/betse-normal-ecm-run-lifecycle-prepared-20261031-02/inputs.json",
+    "qualification_inherited": false,
+    "sha256": "0b3b3a1dd39190b74b60f31fbb65d48349fe7c21e9962c3df588ad8c081d58e4"
+  },
+  "planned": {
+    "accepted_calls": 61,
+    "checks": 62,
+    "dependency_controls": 33,
+    "independent_reference_forms": 986,
+    "native_captures": 29,
+    "observer_controls": 2,
+    "positive_cases": 22,
+    "raw_cases": 5
+  },
+  "resources": {
+    "coordination": "Chief chooses a CPU in a newly requested round; no worker launch or automatic followup",
+    "cpu_count": 1,
+    "gpu": false,
+    "max_command_seconds": 480,
+    "max_process_tree_rss_bytes": 1073741824,
+    "min_available_host_memory_bytes": 8589934592,
+    "threads": 1
+  },
+  "scientific_release_authorized": false,
+  "setup_scope": [
+    "Supplied pre-static tissue/init_core owner values, with source zero initial Vm and pressure",
+    "One explicit native MT19937 static_K draw even at zero level; original K scaling and untouched base/scheduled stores",
+    "Fresh cold GRN/catalog construction; full inactive private caches retained",
+    "Supplied ordinary mechanics entry view and caches on identical owners/measures/maps",
+    "Complete native global and targeted event finalizers, local Python shuffle, preserved unused shuffled-copy target convention",
+    "Only constant or dormant source f_sweep targeted callbacks; legacy _run_sim=False leaves unspecified slope None",
+    "Existing explicitly supplied conditional screening/conductivity cache seam; no whole init_dynamics qualification"
+  ],
+  "source_scope": {
+    "Ca_dyn": false,
+    "admitted_original_counts": "N0,N1 and unchanged-calendar bounded prefix of any admitted native count",
+    "defaults": "init active defaults True per population; all populations constructed even when inactive",
+    "fluid_flow": false,
+    "grn_enabled": true,
+    "is_ecm": true,
+    "legacy_run_sim": false,
+    "maximum_material_calls": 3,
+    "molecules_enabled": false,
+    "phase": "INIT",
+    "sim_eosmosis": false,
+    "solver": "FULL",
+    "td_deform": false
+  },
+  "status": "held_source_preparation_unrun",
+  "unreachable": [
+    "SIM event fire",
+    "SIM dynamic protein-noise draw and application"
+  ]
+}

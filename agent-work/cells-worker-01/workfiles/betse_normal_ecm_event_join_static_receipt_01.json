@@ -1,0 +1,355 @@
+{
+  "accounting": {
+    "alternate": "Native true_environment_volume field is a separate diagnostic amount change, never a volume reinterpretation that closes source books",
+    "calcium": "CaATP density adds to ordinary Ca membrane flux, committed only where Ca is moving. Stationary-Ca stored flux, directed GJ/deferred shell/cache, fast duplicate-last exchange and all legacy ledgers remain literal",
+    "channels": "Direct modern ion updates never add to ordinary membrane flux arrays. Core current -F*z*flux accumulates then shares molecular publications. Source-effective uniform-site, conservative area-sum and actual true-grid volume amount books remain separate; fast duplicate-last differences are retained",
+    "enabled_ER_conservation_claim": false,
+    "energetic_conservation_credit": false,
+    "field": "Full source currents, charge reconstruction and nonphysical HH/Gaussian/voltage outputs; no physical continuity, projector or field-energy identity is asserted",
+    "formal_ATP_consumption_claim": false,
+    "maintained_pools": "ATP/ADP/Pi are original fixed maintained parameters. No formal ATP use, finite shared fuel, ER reservoir, buffer or thermodynamic global closure is asserted",
+    "material_ledgers": "Legacy ledgers remain literal; direct-channel and noise amounts appear in ordinary residuals. Full independent material predicts source residuals; no silent subtraction.",
+    "noise": "Direct post-GRN protein update changes bulk,membrane,ECM without ordinary flux storage or clipping. Source-effective uniform-site,conservative area-sum and true-grid volume books separate; fast last-duplicate defect retained. If P moves ordinary later commit/clipping/shell semantics remain source.",
+    "physical_global_conservation_credit": false,
+    "pressure": "Source P_mod/P_cells writes retained without a mechanics or energy claim.",
+    "retained_failure": "Original signed_environment39/40 material panel remains failed, including raw membrane_bulk_difference at fixed old budget. Missing separately retained failed complete reference buffers are not reconstructed",
+    "source_effective": "Uniform source site volume cell_height*delta^2; separately retain cell membrane transfer, source grid exchange, conservative area-sum oracle, fast duplicate-last defect, gene source/conversion, directed GJ, boundary-clamp reservoir writes, collocated transport and smoothing changes",
+    "source_identity": "Final minus initial minus independently predicted source terms; signed terms and full errors/budgets retained",
+    "zero_weight": "CatLeak Ca weight0 still evaluates electroflux/update_Co, refreshes membrane from bulk, consumes voltage nonce and overwrites last-route cache. No skipped-route or boundary-mask substitute"
+  },
+  "adapter_field_repair_02": null,
+  "admission_bridge_repair_02": null,
+  "all_frozen_source_native_binding_hashes_match": true,
+  "automatic_followup": false,
+  "automatic_launch": false,
+  "automatic_polling": false,
+  "binding_evidence": {
+    "Chief03_callback_preparation": {
+      "path": "/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/preparation.json",
+      "sha256": "d33625a65ab87fcc021bf94dcf17280087ad5ae09ad6c30291340992ba6d9b61"
+    },
+    "Chief03_source_review": {
+      "path": "/mnt/workspaces/Cells/ecm-callback-repair-20261031-01/root-review-01/REVIEW.json",
+      "sha256": "d0eb124095d187ee26c5cb52520a8add4a45d74b86dd0da45d2f3e8de974c95c"
+    },
+    "Chief_catalog01_final_preflight_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-preflight-20261031-01/REVIEW.json",
+      "sha256": "fc24a488b881d81fa221160ce312e3a8ffcd963c3e9d799ed1e6080d1666e814"
+    },
+    "Chief_finalized_field_calcium_repairs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-join-repair-preparation-20261031-01/result.json",
+      "sha256": "def122f63bdc407a49ecc74bb54c45ce3c27090fbe78d10205921d8ed6315b4f"
+    },
+    "accepted_ECM02_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-02/inputs.json",
+      "sha256": "b745902da40be9677582250d768f2c190c2d00880cd8309a945a9c3bbbd58317"
+    },
+    "accepted_ECM02_review": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-02/root-review-01/REVIEW.json",
+      "sha256": "c47105e71db20d6d3312f921583c4cb74b93db8edce3e568e6f1386a939c18fb"
+    },
+    "accepted_ECM02_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_02.json",
+      "sha256": "855be396818cab9410d9e1ec4724afe2c531ea55ac6f636cc09023d428a2c9db"
+    },
+    "actual_caller_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_reachability_01.json",
+      "sha256": "f971ddb207e536f15402e4d003a5e1f7d17d31f042b40c690d8a40cfd597f158"
+    },
+    "calcium01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_static_receipt_01.json",
+      "sha256": "008f94c21a1908ff790104b1533231486b0dd70edff86cd514ccf857e718e34e"
+    },
+    "calcium03_callback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-03/inputs.json",
+      "sha256": "9df5f4fd651d81aaa4fdb9e33aeabd10f599715a243dc3b9f58f6bc2c93fe490"
+    },
+    "calcium_and_clock_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_AST_witness_02.json",
+      "sha256": "83f388961651dff5cf90ebf748b906ac9d2be71597ca173eb3226ae463e1b4c9"
+    },
+    "catalog03_callback_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-03/inputs.json",
+      "sha256": "de6330ffd844d14ad2c8d2d209e1fddfcb9aa021dfe6dc3ef12f4fb9532db8a4"
+    },
+    "catalog06_prepared_not_launched": {
+      "path": "/mnt/workspaces/Cells/betse-normal-catalog-prepared-20261030-06/inputs.json",
+      "sha256": "faf91ca4f1f21d816cd37c71cb1fb7b5bfd3643210e48b34db7927fb0122bc69"
+    },
+    "catalog_composition_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_AST_witness_01.json",
+      "sha256": "b25a4bc45800f1bd115b0db999e54d5478fda8f2dfb8dc42e2b862e0eaf28e76"
+    },
+    "coordinated_diagnostic_inputs": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_dependency_witness_01.json",
+      "sha256": "9b003d19a2efad6d4c002f6a20777a07b132011f0921f848cb8aaa47fb1e19bf"
+    },
+    "event_bounded_metadata_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reporting_metadata_check_01.json",
+      "sha256": "e004de77d6277bf0f076586e9888b1cbc0aa6fee2ee8934efd2b2d1ee47fa1b0"
+    },
+    "event_explicit03_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_dependency_witness_01.json",
+      "sha256": "4545c30ee51466084d441e312d34c61af7a94375fab84692c3278600a6cd7daa"
+    },
+    "event_final_bounded_metadata_check": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reporting_metadata_check_02.json",
+      "sha256": "091c0836a86a853542b91a8091105562fe8dabe604018b583b71d4bc89f83470"
+    },
+    "event_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_reachability_01.json",
+      "sha256": "ae67e2b9e814ba4cf05a085bcdc9fa39050ea1a57caddd40a12fc35e9e5ed289"
+    },
+    "event_source_AST": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_event_join_AST_witness_02.json",
+      "sha256": "0d7c04ab7d7e932ffd47934fc1100f29d15b6dd2883f24aaecb0875e0970de11"
+    },
+    "explicit_dependency_refresh": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_dependency_witness_01.json",
+      "sha256": "8347f80962aa6d913047f930976ddbb6cd5dea8c85be5e1cc482a3c865a5ff9e"
+    },
+    "failed_literal_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "7ae9c06aebd41b5ac59bc63412eabeee193084aa1ab1ea4d0a7a9cc893e01656"
+    },
+    "field01_static_receipt": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_static_receipt_01.json",
+      "sha256": "c8ef54bc4437adc04d5d691724ca04b26a9fc548b3d947682d3719067f1d126a"
+    },
+    "frozen_calcium01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-calcium-join-prepared-20261031-01/inputs.json",
+      "sha256": "2e2ed97ee190d9495e3029fbe389a40039786fc9070f28a52f3b4e8ce3a226d8"
+    },
+    "frozen_catalog01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-catalog-join-prepared-20261031-01/inputs.json",
+      "sha256": "f5ffaf4f9f9d39973525f9f39a88e8d78ea2567277106e97505c43bb8279ac36"
+    },
+    "frozen_field01_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-ecm-field-join-prepared-20261031-01/inputs.json",
+      "sha256": "0c4b575619efdad36239c28642014ef0b521e436304cd9d6591a43cc1fae2abb"
+    },
+    "instantaneous_field_completion": {
+      "path": "/mnt/workspaces/Cells/betse-environment-field-20261030-02/completion-verification.json",
+      "sha256": "e90eab89f9d767199ec7263fca39b6e7e27b1d1a247416a7a22564dfa269b6ff"
+    },
+    "literal_source_and_composition": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_field_join_AST_witness_01.json",
+      "sha256": "b66f2fe1293f76eb6414d79af1ea5ebba1d7fa5e6a051c29808ad3169d6e9fd0"
+    },
+    "reporting_final_static02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_final_witness_02.json",
+      "sha256": "8be6e3ecb09662aa208ecfd00ee7f7645ad3829c5ba3f9ea2dac299b0116f3ad"
+    },
+    "reporting_key_inverse02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_witness_02.json",
+      "sha256": "9559496328a13cc010dbaa462cee1495a231315d986176dbce474c02c32638ae"
+    },
+    "reporting_synthetic_metadata02": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reporting_metadata_check_02.json",
+      "sha256": "a5b64fe56892c7b0edccdceb1dde9fba36f101115e585e763596b614a9546d89"
+    },
+    "retained_CaATP20_review": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "b9781ad497d00da81041a43f809a5b9ff833e128147d2ef115fe2831799f7f4e"
+    },
+    "retained_calcium04_inputs": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-prepared-20261030-04/inputs.json",
+      "sha256": "e1c4f35db9d51657f01f509ead6d06c2b9bebae2ae7d3ecbb4fa7bc6a4bebe42"
+    },
+    "retained_calcium_raw4": {
+      "path": "/mnt/workspaces/Cells/betse-normal-calcium-raw-subset-tests-20261030-01/worker-review-01/completion-verification.json",
+      "sha256": "dd1d0c1b9a9746e8e16686143a0c89cdaa1610a42094fd54272a1208de1fac8b"
+    },
+    "retained_failed_material_round": {
+      "path": "/mnt/workspaces/Cells/betse-ecm-transport-failed-round-20261030-01.json",
+      "sha256": "50d3357f876f272ffca3e7e858f7ac37cd8c04f5937316fa5a57c6f8655281e5"
+    },
+    "separate_supplied_ER_review": {
+      "path": "/mnt/workspaces/Cells/betse-prepared-er-tests-20261030-02/root-review-01/REVIEW.json",
+      "sha256": "a946f94703c1e860d444a5f98e591fe53c7e35379ea6233bc03914799def1334"
+    },
+    "whole_modern_reachability": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_catalog_join_reachability_01.json",
+      "sha256": "57d3520b0e041219bf92a78ac10e2f0e4aa99c4219cab6c1d39c8f926c54f192"
+    },
+    "whole_native_calcium_policy": {
+      "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_calcium_join_reachability_01.json",
+      "sha256": "733da3737e98e189e33d6b5b140c9dea7b0f90e6930a8b2406f7995e98611b5c"
+    }
+  },
+  "binding_evidence_copies": 38,
+  "capture_repair_03": null,
+  "configuration_container_repair_03": null,
+  "controlled_dependency_refresh": null,
+  "driver_sha256": "188beccd6a47a4b1527ab25386fcabf7468471e13bcf20e2580004262470c1f3",
+  "error_capture_repair_02": null,
+  "inputs": "/mnt/workspaces/Cells/betse-normal-ecm-event-join-prepared-20261031-01/inputs.json",
+  "inputs_sha256": "569101232c058441830f794fd5209356027e4d609237d444ee637e676fa626c9",
+  "kind": "cells.native_ecm_event_static_receipt@1",
+  "live_and_frozen_owned_protected_match": true,
+  "native_capture_runs": 0,
+  "native_key_retention_repair02": null,
+  "native_source_copies": 52,
+  "no_biological_or_trajectory_accuracy_claim": true,
+  "numerical_runs": 0,
+  "owned_files": 10,
+  "physical_global_conservation_credit": false,
+  "planned": {
+    "actual_bootstrap_field_points": 20,
+    "actual_calcium_conditional_points": 60,
+    "actual_channel_conditional_points": 60,
+    "actual_end_field_conditional_points": 60,
+    "actual_event_conditional_points": 60,
+    "actual_material_conditional_points": 60,
+    "actual_network_conditional_points": 60,
+    "actual_noise_conditional_points": 60,
+    "biological_cases": 0,
+    "carried_reference_forms": 0,
+    "checks": 42,
+    "component_control_histories": 6,
+    "dependency_controls": 16,
+    "enabled_ER_calls": 0,
+    "fresh_Decimal_reference_forms": 920,
+    "fresh_bootstrap_field_Decimal_forms": 40,
+    "fresh_calcium_Decimal_forms": 120,
+    "fresh_channel_Decimal_forms": 120,
+    "fresh_cold_Decimal_forms": 40,
+    "fresh_end_field_Decimal_forms": 120,
+    "fresh_event_Decimal_forms": 120,
+    "fresh_material_Decimal_forms": 120,
+    "fresh_network_Decimal_forms": 120,
+    "fresh_noise_Decimal_forms": 120,
+    "independent_cold_points": 20,
+    "native_captures": 26,
+    "new_event_histories": 14,
+    "positive_histories": 20,
+    "positive_normal_calls_per_implementation": 60,
+    "raw_partial_limits": 6,
+    "source_clock_N": 3,
+    "three_call_context_histories": 20
+  },
+  "planned_groups": {
+    "controls": 6,
+    "core": 5,
+    "dependencies": 16,
+    "global": 4,
+    "raw": 6,
+    "tissue": 5
+  },
+  "protected_files": 131,
+  "pytest_collection_runs": 0,
+  "reference_closure": {
+    "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+    "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+    "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+    "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+    "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+    "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+    "validation/betse/betse_normal_ecm_event_join_reference.py": "4608d28127b64521349a2a68253479e90d351b4544b34922a700a01f60d01fb0",
+    "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+    "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+    "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+    "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+    "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+    "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+    "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+  },
+  "reference_fixed_cold_budget_repair02": null,
+  "reference_runs": 0,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "source_snapshot_files": 2607,
+  "static_checks": {
+    "actual_dense_calendar_and_separate_material_dt": true,
+    "all_python_files_compiled": 23,
+    "bounded_metadata_cases": 2,
+    "bounded_metadata_files": 162,
+    "compile_without_import": "passed",
+    "complete_parent_actual_inputs_native_returns_and_failure_archives": true,
+    "dependency_schema_cases": 16,
+    "direct_keyword_interfaces": 33,
+    "explicit03_dependency_refresh": true,
+    "fixed_inherited_budgets_unchanged": true,
+    "fixture_evaluations": 0,
+    "global_names": "passed",
+    "numerical_runs": 0,
+    "owned_python_files": 8,
+    "pytest_collection_runs": 0,
+    "raw_schema_cases": 6,
+    "reference_closure_modules": 14,
+    "reference_evaluations": 0,
+    "ruff_check": "passed",
+    "ruff_format": "passed",
+    "scalar_control_and_noise_reference_inverse_exact": true,
+    "scientific_AST_executions": 0,
+    "scientific_import_closure_modules": 93,
+    "scientific_imports": 0,
+    "source_AST_proof": {
+      "actual_reset_before_event_and_post_event_material": true,
+      "compile_and_global_names_pass": true,
+      "fixed_geometry_identity_checked": true,
+      "fixture_evaluations": 0,
+      "independent_native_firer_AST_equal": true,
+      "independent_native_original_noise_AST_equal": true,
+      "kind": "cells.normal_ecm_event_owned_adapter_AST_audit@1",
+      "legitimate_runtime_material_binding_lowering": true,
+      "literal_event_firer_and_voltage_bodies": 5,
+      "material_inverse_exact": true,
+      "native_field_CaATP_capture_and_dispatch_functions_unchanged": true,
+      "native_reset_event_CaATP_GRN_noise_commit_order": true,
+      "noise_draw_interface_replacements": 1,
+      "numerical_runs": 0,
+      "opaque_contexts_excluded_from_failure_serialization": true,
+      "original_noise_guard_body_equal_except_explicit_draw_interface": true,
+      "original_pulse_equal": true,
+      "original_reset_and_SIM_guard_equal": true,
+      "post_GRN_noise_hook_before_commit": true,
+      "prior_cache_restored_before_reapplying_earlier_event_writes": true,
+      "pytest_collection_runs": 0,
+      "reference_CaATP_and_other_catalog_scalar_functions_unchanged": true,
+      "reference_material_noise_insertion_inverse_exact": true,
+      "relocated_reset_buffer_effects": 4,
+      "relocated_reset_statements": 3,
+      "scalar_channel_reference_inverse_exact": true,
+      "scientific_AST_executions": 0,
+      "scientific_imports": 0,
+      "source_bodies": {
+        "SimEventPulseVoltage.fire": {
+          "first_line": 76,
+          "last_line": 88,
+          "original_AST_sha256": "f89d16fcf52b0a7921f08dba59cb3a529d338a979873648c7c0da50f879df00a",
+          "port_AST_sha256": "f97f149c6e7cc5f72c7449bed285a9c959bfb25447378ec012f157fdd721a94a"
+        },
+        "TissueHandler._fire_events_global": {
+          "first_line": 728,
+          "last_line": 790,
+          "original_AST_sha256": "7ddbc0fa0fa90355159e40721299c990d818579d8c7a8e1a5c61ce613996856f",
+          "port_AST_sha256": "3a973dc5ef4798edd1940d5a8b72d5a69229732c2f5fe22de24e1ca8f074a6c8"
+        },
+        "TissueHandler._fire_events_tissue": {
+          "first_line": 794,
+          "last_line": 917,
+          "original_AST_sha256": "77806a550a9daf3ab65dbb1d4898914827003e9d0f3edf6eb1ad51ae3f7d326a",
+          "port_AST_sha256": "311d4e3403346bec2a9f9f38283e8d0dd176c6f1ef5cccbc112981f635fdfa41"
+        },
+        "TissueHandler.fire_events": {
+          "first_line": 709,
+          "last_line": 724,
+          "original_AST_sha256": "545a50901b6b5419b52477a8302f66ca8b035fd2d65495d46b91fa2c6d9fc123",
+          "port_AST_sha256": "e531f52b93e1b2b179c6d70b98289ef058e751f0f476afb23d0be628315b1dcf"
+        },
+        "TissueHandler.makeAllChanges": {
+          "first_line": 1321,
+          "last_line": 1332,
+          "original_AST_sha256": "169a98c6deba956f4134d9203b0ca9153fe791bccae3364ab9b99ff83a25d809",
+          "port_AST_sha256": "2b6e7ef14d769bf0d373d14130dc9adc730d922d0da039016452d3115620d0f6"
+        }
+      },
+      "status": "static_source_correspondence_passed_no_numerics",
+      "temporal_helper_keyword_interfaces_valid": true,
+      "uncommitted_noise_preview_separate_from_actual_draw": true
+    },
+    "supplied_entry_owner_no_mesh_or_initializer_inference": true
+  },
+  "status": "static_frozen_unqualified_no_numerical_retry"
+}

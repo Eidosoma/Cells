@@ -1,0 +1,54 @@
+--- a/src/cells/processes/betse_ecm_transport.py
++++ b/src/cells/processes/betse_ecm_transport.py
+@@ -409,6 +409,7 @@
+         clip = np.zeros(s)
+         clamp, collocated, smoothing = np.zeros(s), np.zeros(s), np.zeros(s)
+         environment_exchange = np.zeros(s)
++        requested_gap_outward_increment = np.zeros_like(cell)
+ 
+         def observe(stage, i=None):
+             frames.append(
+@@ -564,6 +565,7 @@
+                 environment_exchange[i] = np.sum(de * forcing.dt_s * volume)
+                 observe("membrane_commit", i)
+                 dg = np.dot(ck.owner_sum, -fg[i] * ck.membrane_area_m2) / cell_volume
++                requested_gap_outward_increment[i] = -(forcing.dt_s * dg)
+                 cell[i] += forcing.dt_s * dg
+                 observe("junction_commit", i)
+                 negative, nan = cell[i] < 0, np.isnan(cell[i])
+@@ -607,6 +609,7 @@
+                 environment_accounting_residual_mol=env_change
+                 - (clamp + collocated + smoothing + environment_exchange),
+                 membrane_bulk_difference_mol_m3=membrane - cell[:, ck.owner],
++                junction_requested_outward_increment_mol_m3=requested_gap_outward_increment,
+                 source_voltage_nonce_delta_V=vm - parent.values.voltage_V,
+                 negative_environment_retained=bool(np.any(env < 0)),
+                 negative_membrane_retained=bool(np.any(membrane < 0)),
+--- a/validation/betse/betse_ecm_transport_reference.py
++++ b/validation/betse/betse_ecm_transport_reference.py
+@@ -98,6 +98,7 @@
+             old = deepcopy(v)
+             frames, environment_records, conservative_exchange = [], [], []
+             clamp, collocated, smoothing, exchange, clip = ([zero] * s for _ in range(5))
++            requested_gap_outward_increment = [[zero] * n for _ in range(s)]
+ 
+             def observe(stage, i=None, destination=frames):
+                 destination.append(
+@@ -299,6 +300,9 @@
+                 exchange[i] = dt * sum(rates) * site_volume
+                 observe("membrane_commit", i)
+                 for a in range(n):
++                    requested_gap_outward_increment[i][a] = (
++                        dt * sum(fg[j] * area[j] for j in range(m) if owner[j] == a) / volume[a]
++                    )
+                     v["cell_mol_m3"][i][a] -= (
+                         dt * sum(fg[j] * area[j] for j in range(m) if owner[j] == a) / volume[a]
+                     )
+@@ -360,6 +364,7 @@
+                     [c - v["cell_mol_m3"][i][a] for c, a in zip(row, owner, strict=True)]
+                     for i, row in enumerate(v["membrane_mol_m3"])
+                 ],
++                junction_requested_outward_increment_mol_m3=requested_gap_outward_increment,
+                 source_voltage_nonce_delta_V=[
+                     a - b for a, b in zip(v["voltage_V"], old["voltage_V"], strict=True)
+                 ],

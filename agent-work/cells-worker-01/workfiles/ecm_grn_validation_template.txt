@@ -1,0 +1,85 @@
+
+def _number(value,positive=False):
+    return type(value) in (int,float) and np.isfinite(value) and (value>0 if positive else value>=0)
+
+
+def validate_definition(definition,ids,n,m,e):
+    required={"owner","configuration","cold_publish","grid_index_groups","initial_controls","initial_ion_boundary","raw_initialization_fault","scope"}
+    if set(definition)!=required or definition["owner"]!="grn":
+        raise ValueError("Require a complete genuine ECM GRN declaration")
+    if definition["scope"]!={"mitochondria":False,"fluid":False,"cuts":False,"standalone":False}:
+        raise ValueError("ECM GRN mitochondria/fluid/cuts/standalone require separate state")
+    if not {"Na","K"}<=set(ids):
+        raise ValueError("Require actual Na/K rows for the ECM network context")
+    cfg=definition["configuration"]
+    if set(cfg)-{"biomolecules","reactions","modulators","time dilation factor"}:
+        raise ValueError("Other ECM GRN lifecycle branches require separate state")
+    if not _number(cfg.get("time dilation factor",1.0),True):
+        raise ValueError("Require positive source time dilation")
+    if type(definition["cold_publish"]) is not bool:
+        raise ValueError("Require an explicit ECM cold publication flag")
+    rows=cfg["biomolecules"]
+    if len(rows)!=2 or [row["name"] for row in rows]!=["X","Y"]:
+        raise ValueError("Require actual configured X/Y gene products")
+    fault=definition["raw_initialization_fault"]
+    if fault not in (None,"X","Y"):
+        raise ValueError("Undeclared ECM cold source failure")
+    for row in rows:
+        needed={"name","cell conc","env conc","Dm","Do","z","update intracellular","TJ permeable","GJ impermeable","TJ factor","growth and decay","plotting"}
+        if needed-set(row)!=({"Dm"} if fault==row["name"] else set()) or set(row)-needed-{"Dgj","scale factor","use time dilation"}:
+            raise ValueError("Require complete bounded ECM gene configuration")
+        if row["z"] not in (-1.0,0.0,1.0) or row["update intracellular"] is not False:
+            raise ValueError("Require bounded monovalent instant-mixing ECM products")
+        if any(type(row[key]) is not bool for key in ("TJ permeable","GJ impermeable")) or type(row.get("use time dilation",False)) is not bool:
+            raise ValueError("Require explicit source transport flags")
+        if not all(_number(row.get(key,default)) for key,default in (("cell conc",0.0),("env conc",0.0),("Dm",0.0),("Do",0.0),("Dgj",1e-16),("TJ factor",1.0))) or not _number(row.get("scale factor",1.0),True):
+            raise ValueError("Require finite source concentrations and coefficients")
+        if row["plotting"]!={"plot 2D":False,"animate":False,"autoscale colorbar":True,"max val":1.0,"min val":0.0}:
+            raise ValueError("ECM network plotting is outside this boundary")
+        gad=row["growth and decay"]
+        if gad is not None:
+            allowed={"production rate","decay rate","decay max","scale factor","apply to","activators","Km activators","n activators","inhibitors","Km inhibitors","n inhibitors","decay activators","Km decay activators","n decay activators","decay inhibitors","Km decay inhibitors","n decay inhibitors"}
+            if set(gad)-allowed or gad["apply to"]!="all" or not _number(gad["production rate"]) or not _number(gad["decay rate"]) or not _number(gad.get("decay max",0.0)) or not _number(gad.get("scale factor",1.0),True):
+                raise ValueError("Require ordinary all-cell ECM gene regulation")
+            for prefix in ("","decay "):
+                for sign in ("activators","inhibitors"):
+                    names=gad.get(prefix+sign)
+                    if names is None:continue
+                    for name,km,exponent in zip(names,gad["Km "+prefix+sign],gad["n "+prefix+sign],strict=True):
+                        if name not in (*ids,"X","Y") or not _number(km,True) or not _number(exponent,True):
+                            raise ValueError("Invalid ECM gene Hill regulator")
+    if definition["cold_publish"] and any(row["z"]!=0 for row in rows):
+        raise ValueError("Charged ECM cold compensation is separately scoped")
+    if rows[0]["z"]!=rows[1]["z"] or rows[0].get("scale factor",1.0)!=rows[1].get("scale factor",1.0):
+        raise ValueError("Preserve X-to-Y formal charge weighting")
+    reactions=cfg["reactions"]
+    if len(reactions)!=1:
+        raise ValueError("Require one configured source X-to-Y reaction")
+    reaction=reactions[0]
+    if reaction["name"]!="X_to_Y" or reaction["reaction zone"]!="cell" or reaction["reactants"]!=["X"] or reaction["products"]!=["Y"] or reaction["reactant multipliers"]!=[1.0] or reaction["product multipliers"]!=[1.0] or reaction["standard free energy"]!="None":
+        raise ValueError("Require the irreversible cell-zone conversion")
+    for key in ("Km reactants","Km products"):
+        if len(reaction[key])!=1 or not _number(reaction[key][0],True):
+            raise ValueError("Require positive source reaction constants")
+    if not _number(reaction["max rate"]):
+        raise ValueError("Require a finite source reaction rate")
+    for mod in cfg.get("modulators") or []:
+        allowed={"name","target","max effect","activators","activator Km","activator n","activator zone","inhibitors","inhibitor Km","inhibitor n","inhibitor zone"}
+        if set(mod)-allowed or mod["target"] not in ("GJ","Na/K-ATPase") or not _number(mod["max effect"]):
+            raise ValueError("Require bounded ion-driven ECM modulators")
+        for sign in ("activator","inhibitor"):
+            names=mod.get(sign+"s")
+            if names is None:continue
+            zone=mod.get(sign+" zone",["cell"]*len(names))
+            for name,km,exponent,where in zip(names,mod[sign+" Km"],mod[sign+" n"],zone,strict=True):
+                if name not in ids or not _number(km,True) or not _number(exponent,True) or where not in ("cell","env"):
+                    raise ValueError("Invalid ECM modulator input")
+    if set(definition["grid_index_groups"])!={"all_bound_mem_inds","interior_bound_mem_inds","ecm_inds_bound_cell"}:
+        raise ValueError("Require the three original TJ index groups")
+    for group in definition["grid_index_groups"].values():
+        if any(type(index) is not int or not 0<=index<e for index in group):
+            raise ValueError("Require owned in-grid TJ indices")
+    if set(definition["initial_controls"])!={"gj_block","NaKATP_block"} or any(len(row)!=m or not all(_number(value) for value in row) for row in definition["initial_controls"].values()):
+        raise ValueError("Require complete ECM network controls")
+    if len(definition["initial_ion_boundary"])!=len(ids) or not all(_number(v) for v in definition["initial_ion_boundary"]):
+        raise ValueError("Require every original ionic boundary scalar")

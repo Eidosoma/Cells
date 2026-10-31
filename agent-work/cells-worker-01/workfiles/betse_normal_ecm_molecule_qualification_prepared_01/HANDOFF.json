@@ -1,0 +1,116 @@
+{
+  "status": "two_explicit_capture02_sources_frozen_held",
+  "independent_repair_review": {
+    "path": "/mnt/workspaces/Cells/ecm-molecule-capture-repair-20261031-01/root-review-01/REVIEW.json",
+    "sha256": "e46bf69108beb45ff4d312e06dacc205f2c26c02de3a29ffb1e6320145b3f1f1"
+  },
+  "successors": [
+    {
+      "status": "frozen_held_unrun",
+      "family": "dispatch",
+      "packet": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-02",
+      "manifest": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-02/MANIFEST.json",
+        "sha256": "9b16ca0b52590269c7c3ad450485c8d24fbfa882bc5032cbf24d3ba64322427e"
+      },
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-02/inputs.json",
+        "sha256": "00b7b6895c5575a33e33b9e4a5a22cdf6be6b15b23b86f24776db3395a55ab6b"
+      },
+      "source_receipt": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-dispatch-prepared-20261031-02/SOURCE_STATIC_REVIEW.json",
+        "sha256": "751c017090f109487ada210b9afe0c52a4d9d205415430a6c7c07a931928c8c5"
+      },
+      "source_files": 2743,
+      "packet_files": 3633,
+      "capture_profile": "ordinary_ecm_molecule_dispatch_02",
+      "prospective": {
+        "accepted_calls": 57,
+        "biological_cases": 0,
+        "checks": 44,
+        "dependency_controls": 21,
+        "independent_reference_forms": 942,
+        "independently_carried_trajectories": 0,
+        "native_captures": 84,
+        "positive_cases": 19,
+        "raw_cases": 4
+      },
+      "archive_call_delta": {
+        "old_count": 16,
+        "new_count": 21,
+        "retained_AST_occurrences": 16,
+        "removed_or_replaced_AST_occurrences": 0,
+        "added_AST_occurrences": 5
+      },
+      "changed_sources": [
+        "tests/unit/test_betse_normal_ecm_molecule_dispatch.py"
+      ],
+      "new_sources": [
+        "validation/betse/betse_normal_ecm_molecule_failure_checks.py"
+      ],
+      "scientific_evaluations": 0,
+      "execution_hold": true
+    },
+    {
+      "status": "frozen_held_unrun",
+      "family": "transport",
+      "packet": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-02",
+      "manifest": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-02/MANIFEST.json",
+        "sha256": "ccbf083ece28a970ead618ef7264cfb7247f5cbd39d6efed971da2a54332e76b"
+      },
+      "inputs": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-02/inputs.json",
+        "sha256": "f60ebffbdb216e97abc764b7732281253e32557b43128c8eb638d17e6fa754b2"
+      },
+      "source_receipt": {
+        "path": "/mnt/workspaces/Cells/betse-normal-ecm-molecule-transport-prepared-20261031-02/SOURCE_STATIC_REVIEW.json",
+        "sha256": "b70cc3b4bd955e009d38ad3a9e8d0fb65574f1be594bc5df9f9aaf2ee68ba1c4"
+      },
+      "source_files": 2773,
+      "packet_files": 3689,
+      "capture_profile": "ordinary_ecm_molecule_transport_02",
+      "prospective": {
+        "accepted_calls": 69,
+        "biological_cases": 0,
+        "checks": 60,
+        "component_controls": 5,
+        "dependency_controls": 31,
+        "independent_reference_forms": 1306,
+        "independently_carried_trajectories": 0,
+        "native_captures": 102,
+        "positive_cases": 23,
+        "raw_cases": 4,
+        "raw_setup_cases": 2
+      },
+      "archive_call_delta": {
+        "old_count": 21,
+        "new_count": 30,
+        "retained_AST_occurrences": 21,
+        "removed_or_replaced_AST_occurrences": 0,
+        "added_AST_occurrences": 9
+      },
+      "changed_sources": [
+        "tests/unit/test_betse_normal_ecm_molecule_transport.py"
+      ],
+      "new_sources": [
+        "validation/betse/betse_normal_ecm_molecule_failure_checks.py"
+      ],
+      "scientific_evaluations": 0,
+      "execution_hold": true
+    }
+  ],
+  "retained_synthetic_checks": 39,
+  "new_scientific_or_fixture_evaluations": 0,
+  "pytest_collection": 0,
+  "launch": 0,
+  "current_image_memory": {
+    "VmHWM": 88760320,
+    "VmRSS": 88223744
+  },
+  "cpu_affinity": [
+    2
+  ],
+  "historical_software01_02_and_stale_proposals_preserved": true,
+  "scope": "Only relevant test overlay +new shared helper perpacket; metadata/resource/profile refresh explicitly bound"
+}

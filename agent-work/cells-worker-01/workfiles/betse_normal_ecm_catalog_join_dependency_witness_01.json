@@ -1,0 +1,28 @@
+{
+  "authority": "Chief directed water-owned test/capture-only repairs, original failed runs preserved",
+  "changes": {
+    "tests/unit/test_betse_normal_ecm_field_join.py": {
+      "actual_call3_network_refusal_after_two_completed_calls": true,
+      "changed_functions": [
+        "test_normal_ecm_field_raw_partial"
+      ],
+      "material_overflow_credit": false,
+      "new_sha256": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+      "old_sha256": "cad319c8891ed3c011c9df5daecca4b430e67649c9d92db6e237e0927268ec76",
+      "scientific_equations_or_order_changed": false
+    },
+    "validation/betse/betse_normal_ecm_calcium_join_native.py": {
+      "new_sha256": "1cbbc9791267387c882c73a97752b70faeb093710a86e52f7b3430c6e8b1908b",
+      "observation_map_inverse_AST_exact": true,
+      "old_sha256": "d1ef06f5a5392ca05bd95e4becfa0dbcb7be4bcc0a9f32b1a982a735b9122261",
+      "scientific_equations_or_order_changed": false
+    }
+  },
+  "kind": "cells.ECM_catalog_explicit_dependency_refresh@1",
+  "no_old_inputs_or_receipts_refreshed": true,
+  "numerical_runs": 0,
+  "pytest_collection_runs": 0,
+  "qualification_credit": false,
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0
+}

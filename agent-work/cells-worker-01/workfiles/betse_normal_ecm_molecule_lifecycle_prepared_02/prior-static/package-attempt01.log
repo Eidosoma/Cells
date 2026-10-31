@@ -1,0 +1,8 @@
+{"status": "resource_classification_pending", "pending": [{"module": "validation/betse/betse_normal_ecm_init_phase_reference.py", "line": 274, "expression": "path.open('rb')", "containing_function": "file_record", "classification": "manual_resolution_pending"}, {"module": "validation/betse/betse_normal_ecm_molecule_lifecycle_reference.py", "line": 138, "expression": "path.open('rb')", "containing_function": "file_record", "classification": "manual_resolution_pending"}], "missing": []}
+Traceback (most recent call last):
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_molecule_lifecycle_package.py", line 322, in <module>
+    main()
+    ~~~~^^
+  File "/home/robert/Cells/agent-work/cells-worker-01/workfiles/prepare_betse_normal_ecm_molecule_lifecycle_package.py", line 143, in main
+    raise ValueError("Preserve unresolved source resource evidence")
+ValueError: Preserve unresolved source resource evidence

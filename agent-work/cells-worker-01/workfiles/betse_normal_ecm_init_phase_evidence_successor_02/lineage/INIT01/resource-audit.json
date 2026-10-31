@@ -1,0 +1,3432 @@
+{
+  "inventory": {
+    "kind": "cells.reviewed_ECM_successor_resource_inventory@1",
+    "literal_resource_audit": {
+      "complete_dependency_closure_claim": false,
+      "kind": "cells.literal_sibling_resource_audit@1",
+      "missing_resources": [],
+      "modules": [
+        {
+          "path": "src/cells/__init__.py",
+          "sha256": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e"
+        },
+        {
+          "path": "src/cells/core/__init__.py",
+          "sha256": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f"
+        },
+        {
+          "path": "src/cells/core/errors.py",
+          "sha256": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5"
+        },
+        {
+          "path": "src/cells/core/physiology_native_calendar.py",
+          "sha256": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb"
+        },
+        {
+          "path": "src/cells/numerics/__init__.py",
+          "sha256": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696"
+        },
+        {
+          "path": "src/cells/numerics/extracellular_field.py",
+          "sha256": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf"
+        },
+        {
+          "path": "src/cells/processes/__init__.py",
+          "sha256": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142"
+        },
+        {
+          "path": "src/cells/processes/betse_calcium_atp_source.py",
+          "sha256": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6"
+        },
+        {
+          "path": "src/cells/processes/betse_channel_catalog_source.py",
+          "sha256": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b"
+        },
+        {
+          "path": "src/cells/processes/betse_deformation.py",
+          "sha256": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6"
+        },
+        {
+          "path": "src/cells/processes/betse_ecm_grn_join.py",
+          "sha256": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274"
+        },
+        {
+          "path": "src/cells/processes/betse_ecm_grn_source.py",
+          "sha256": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25"
+        },
+        {
+          "path": "src/cells/processes/betse_ecm_transport.py",
+          "sha256": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541"
+        },
+        {
+          "path": "src/cells/processes/betse_environment_field.py",
+          "sha256": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea"
+        },
+        {
+          "path": "src/cells/processes/betse_environment_transport.py",
+          "sha256": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c"
+        },
+        {
+          "path": "src/cells/processes/betse_fast_solver.py",
+          "sha256": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475"
+        },
+        {
+          "path": "src/cells/processes/betse_fluid_flow.py",
+          "sha256": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41"
+        },
+        {
+          "path": "src/cells/processes/betse_geometry.py",
+          "sha256": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff"
+        },
+        {
+          "path": "src/cells/processes/betse_mechanics_join.py",
+          "sha256": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a"
+        },
+        {
+          "path": "src/cells/processes/betse_network_modulation.py",
+          "sha256": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100"
+        },
+        {
+          "path": "src/cells/processes/betse_network_reactions.py",
+          "sha256": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_calcium_join.py",
+          "sha256": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_channel_join.py",
+          "sha256": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_current.py",
+          "sha256": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_calcium_join.py",
+          "sha256": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_catalog_join.py",
+          "sha256": "3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_catalog_join_source.py",
+          "sha256": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_event_join.py",
+          "sha256": "fd829dadf0f41faa3edbe2285d117345a20d8c31fe2159fd7edf90ea36dc7033"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_event_join_material.py",
+          "sha256": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_event_join_source.py",
+          "sha256": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_event_mechanics.py",
+          "sha256": "73c635e8b664ef444086919a0b1f72bad8724b49a5d6d68bdd25f54ab16b8a03"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_field_join.py",
+          "sha256": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase.py",
+          "sha256": "f60afbf1cac76bdce19e9d8cee80f764dfb2f0c29936cde5ce8a790116f526d6"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase_material.py",
+          "sha256": "1ac0918177b590c091e4915afbe87247b96a2ce283a282b6d4dcf72efc7212f1"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase_mechanics.py",
+          "sha256": "b8b58fb964679baf2c1279823d7aebe3a1adc259043eb472df07c9f8c09a54fa"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase_pump.py",
+          "sha256": "40a44ece79523048e72dfe883171af79abb4892acdffbfb69fb55b1e103e6f6b"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase_setup.py",
+          "sha256": "01e915cfc4e1d0b655c001d48076dec5697c71052d155ac72c6af732b86c2431"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_init_phase_source.py",
+          "sha256": "361c1ff18eed3cc4bd67a64c807c211b4636f7d48b6d548fd9935ebbc391aa59"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ecm_run_lifecycle.py",
+          "sha256": "d336f6ff8c3c019b13876bfcc1b14d96c02d6949d67aae90717b7e92c0d26cbb"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_gated_join.py",
+          "sha256": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_grn_join.py",
+          "sha256": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_grn_source.py",
+          "sha256": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_ion_join.py",
+          "sha256": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_molecule_source.py",
+          "sha256": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_network_join.py",
+          "sha256": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_network_join_source.py",
+          "sha256": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_pump_join.py",
+          "sha256": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753"
+        },
+        {
+          "path": "src/cells/processes/betse_normal_voltage.py",
+          "sha256": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4"
+        },
+        {
+          "path": "src/cells/processes/betse_perturbations.py",
+          "sha256": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56"
+        },
+        {
+          "path": "src/cells/processes/betse_time_modulation.py",
+          "sha256": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577"
+        },
+        {
+          "path": "src/cells/processes/electrochemistry.py",
+          "sha256": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2"
+        },
+        {
+          "path": "tests/__init__.py",
+          "sha256": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb"
+        },
+        {
+          "path": "tests/unit/test_betse_ecm_grn_join.py",
+          "sha256": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039"
+        },
+        {
+          "path": "tests/unit/test_betse_fast_solver.py",
+          "sha256": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_calcium_join.py",
+          "sha256": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_channel_join.py",
+          "sha256": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+          "sha256": "8639b53a83be820b405c94366844a072c432c36972c61c377335bbd26125af02"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ecm_event_join.py",
+          "sha256": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+          "sha256": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ecm_field_join.py",
+          "sha256": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ecm_init_phase.py",
+          "sha256": "3cbfe48604c6f0c7f2cc88aca1526c98bcc5aa4b0c07baa84a480576a46acb61"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_gated_join.py",
+          "sha256": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_grn_join.py",
+          "sha256": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_ion_join.py",
+          "sha256": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071"
+        },
+        {
+          "path": "tests/unit/test_betse_normal_network_join.py",
+          "sha256": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf"
+        },
+        {
+          "path": "validation/betse/betse_ecm_grn_fixtures.py",
+          "sha256": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406"
+        },
+        {
+          "path": "validation/betse/betse_ecm_grn_native.py",
+          "sha256": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc"
+        },
+        {
+          "path": "validation/betse/betse_ecm_grn_native_network.py",
+          "sha256": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2"
+        },
+        {
+          "path": "validation/betse/betse_ecm_grn_reference.py",
+          "sha256": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40"
+        },
+        {
+          "path": "validation/betse/betse_ecm_transport_checks.py",
+          "sha256": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122"
+        },
+        {
+          "path": "validation/betse/betse_ecm_transport_fixtures.py",
+          "sha256": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2"
+        },
+        {
+          "path": "validation/betse/betse_ecm_transport_native.py",
+          "sha256": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3"
+        },
+        {
+          "path": "validation/betse/betse_ecm_transport_reference.py",
+          "sha256": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd"
+        },
+        {
+          "path": "validation/betse/betse_environment_field_checks.py",
+          "sha256": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f"
+        },
+        {
+          "path": "validation/betse/betse_environment_field_fixtures.py",
+          "sha256": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3"
+        },
+        {
+          "path": "validation/betse/betse_environment_field_native.py",
+          "sha256": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4"
+        },
+        {
+          "path": "validation/betse/betse_environment_field_reference.py",
+          "sha256": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c"
+        },
+        {
+          "path": "validation/betse/betse_fast_solver_fixtures.py",
+          "sha256": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48"
+        },
+        {
+          "path": "validation/betse/betse_fast_solver_native.py",
+          "sha256": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d"
+        },
+        {
+          "path": "validation/betse/betse_mechanics_join_checks.py",
+          "sha256": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f"
+        },
+        {
+          "path": "validation/betse/betse_mechanics_join_native.py",
+          "sha256": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141"
+        },
+        {
+          "path": "validation/betse/betse_mechanics_join_reference.py",
+          "sha256": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19"
+        },
+        {
+          "path": "validation/betse/betse_normal_calcium_join_fixtures.py",
+          "sha256": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5"
+        },
+        {
+          "path": "validation/betse/betse_normal_calcium_join_native.py",
+          "sha256": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67"
+        },
+        {
+          "path": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+          "sha256": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711"
+        },
+        {
+          "path": "validation/betse/betse_normal_catalog_join_fixtures.py",
+          "sha256": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb"
+        },
+        {
+          "path": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+          "sha256": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720"
+        },
+        {
+          "path": "validation/betse/betse_normal_catalog_join_scalar.py",
+          "sha256": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49"
+        },
+        {
+          "path": "validation/betse/betse_normal_channel_join_fixtures.py",
+          "sha256": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4"
+        },
+        {
+          "path": "validation/betse/betse_normal_channel_join_native.py",
+          "sha256": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1"
+        },
+        {
+          "path": "validation/betse/betse_normal_channel_join_native_helpers.py",
+          "sha256": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d"
+        },
+        {
+          "path": "validation/betse/betse_normal_channel_join_runtime.py",
+          "sha256": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf"
+        },
+        {
+          "path": "validation/betse/betse_normal_current_fixtures.py",
+          "sha256": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613"
+        },
+        {
+          "path": "validation/betse/betse_normal_current_native.py",
+          "sha256": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e"
+        },
+        {
+          "path": "validation/betse/betse_normal_current_reference.py",
+          "sha256": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_calcium_join_fixtures.py",
+          "sha256": "1e6ab500e82cc193021a44c9bff24d079cedb07ff6d0d6f56f55883a57907aa6"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_catalog_join_fixtures.py",
+          "sha256": "03427c27578afd90c88a348e8184b04ffbad33154b88d496cf263a7a269e2470"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+          "sha256": "f155c3722accd0e51d2a901f2dbf739d6bcbe42b1d5244749eb32663c7b2d4db"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_catalog_join_native_network.py",
+          "sha256": "42adbcf69461d02060754cf3f3047bb97a6825c5f3c567d6190456297465de74"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_catalog_join_reference.py",
+          "sha256": "6c51cdddbeb166ee33a9000143aad16f003cb9e6d4178cb3993aa62a1538ea70"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_join_fixtures.py",
+          "sha256": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_join_native.py",
+          "sha256": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+          "sha256": "28d9515f9bcc589692671a92b8d949e408f4e1f164029131cccb100c92035e10"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_join_reference.py",
+          "sha256": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_mechanics_fixtures.py",
+          "sha256": "40a90414cbc8a4ddbe663805e6fc00c97f4cb1d8c3ba5e237cc862a35d4cf032"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_mechanics_native.py",
+          "sha256": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_event_mechanics_native_mechanics.py",
+          "sha256": "8b743992fd5826c6231df0525bbc89844b7a4d85eb8815a656373114f92a8cae"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_field_join_fixtures.py",
+          "sha256": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_field_join_native.py",
+          "sha256": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_field_join_reference.py",
+          "sha256": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_init_phase_fixtures.py",
+          "sha256": "609cac0c222dde94260ef77034c8e77417713f98b3f40fef7676827a4fb7b656"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_init_phase_native.py",
+          "sha256": "e28640c28fab7da71b25759e8cedccf6839a0ac5c71da89807325a1131c261ff"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_init_phase_native_setup.py",
+          "sha256": "01f76f14dcc3c86920a0ea6673fbee1ffa3c230ad675a42110cf4c49d8601a65"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_init_phase_reference.py",
+          "sha256": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_init_phase_reference_models.py",
+          "sha256": "bba92372125bc4f87839002027c027c253593f235ddc64b319aa01ac28519b52"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py",
+          "sha256": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325"
+        },
+        {
+          "path": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "sha256": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc"
+        },
+        {
+          "path": "validation/betse/betse_normal_gated_join_fixtures.py",
+          "sha256": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603"
+        },
+        {
+          "path": "validation/betse/betse_normal_gated_join_native.py",
+          "sha256": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450"
+        },
+        {
+          "path": "validation/betse/betse_normal_gated_join_reference.py",
+          "sha256": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c"
+        },
+        {
+          "path": "validation/betse/betse_normal_grn_join_fixtures.py",
+          "sha256": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c"
+        },
+        {
+          "path": "validation/betse/betse_normal_grn_join_native.py",
+          "sha256": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf"
+        },
+        {
+          "path": "validation/betse/betse_normal_grn_join_native_helpers.py",
+          "sha256": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf"
+        },
+        {
+          "path": "validation/betse/betse_normal_grn_join_native_network.py",
+          "sha256": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019"
+        },
+        {
+          "path": "validation/betse/betse_normal_ion_join_fixtures.py",
+          "sha256": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78"
+        },
+        {
+          "path": "validation/betse/betse_normal_ion_join_native.py",
+          "sha256": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360"
+        },
+        {
+          "path": "validation/betse/betse_normal_ion_join_reference.py",
+          "sha256": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941"
+        },
+        {
+          "path": "validation/betse/betse_normal_molecule_join_fixtures.py",
+          "sha256": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96"
+        },
+        {
+          "path": "validation/betse/betse_normal_molecule_join_native_network.py",
+          "sha256": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a"
+        },
+        {
+          "path": "validation/betse/betse_normal_network_join_fixtures.py",
+          "sha256": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b"
+        },
+        {
+          "path": "validation/betse/betse_normal_network_join_native.py",
+          "sha256": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8"
+        },
+        {
+          "path": "validation/betse/betse_normal_network_join_native_helpers.py",
+          "sha256": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca"
+        },
+        {
+          "path": "validation/betse/betse_normal_network_join_native_network.py",
+          "sha256": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7"
+        },
+        {
+          "path": "validation/betse/betse_normal_network_join_reference.py",
+          "sha256": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a"
+        },
+        {
+          "path": "validation/betse/betse_normal_pump_join_fixtures.py",
+          "sha256": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df"
+        },
+        {
+          "path": "validation/betse/betse_normal_pump_join_reference.py",
+          "sha256": "5dcdfba6067ac3a264edc2ecddbe0701a710cb6e81ccee33d1c66e06b1c51da5"
+        },
+        {
+          "path": "validation/betse/betse_normal_voltage_fixtures.py",
+          "sha256": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c"
+        },
+        {
+          "path": "validation/betse/betse_normal_voltage_native.py",
+          "sha256": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228"
+        },
+        {
+          "path": "validation/betse/betse_normal_voltage_reference.py",
+          "sha256": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7"
+        },
+        {
+          "path": "validation/channels/calcium_catalog_extra_reference.py",
+          "sha256": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10"
+        },
+        {
+          "path": "validation/channels/hcn_extra_reference.py",
+          "sha256": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f"
+        },
+        {
+          "path": "validation/channels/morris_lecar_channels_reference.py",
+          "sha256": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff"
+        },
+        {
+          "path": "validation/channels/potassium_catalog_reference.py",
+          "sha256": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c"
+        },
+        {
+          "path": "validation/channels/sodium_catalog_reference.py",
+          "sha256": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf"
+        },
+        {
+          "path": "validation/mechanics/betse_deformation_reference.py",
+          "sha256": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca"
+        }
+      ],
+      "required_resources": [
+        {
+          "expression": "Path(__file__).with_name('betse_normal_catalog_join_inventory.json').read_text()",
+          "line": 11,
+          "module": "validation/betse/betse_normal_catalog_join_fixtures.py",
+          "present": true,
+          "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+          "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+        },
+        {
+          "expression": "Path(__file__).with_name('betse_normal_catalog_join_inventory.json').read_text()",
+          "line": 161,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_reference.py",
+          "present": true,
+          "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+          "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+        },
+        {
+          "expression": "Path(__file__).with_name('betse_normal_catalog_join_inventory.json').read_text()",
+          "line": 425,
+          "module": "validation/betse/betse_normal_ecm_event_join_reference.py",
+          "present": true,
+          "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+          "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+        },
+        {
+          "expression": "Path(__file__).with_name('betse_normal_ecm_run_lifecycle_protocol.json').read_text()",
+          "line": 165,
+          "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+          "present": true,
+          "resource": "validation/betse/betse_normal_ecm_run_lifecycle_protocol.json",
+          "sha256": "5bb0bbc537c7ab46be1d01ca0581a894997931fbc21897ffe94dc8e7f3b90fc2"
+        }
+      ],
+      "scientific_imports_or_evaluations": 0,
+      "unresolved_reads": [
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 85,
+          "module": "tests/unit/test_betse_ecm_grn_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "native.PROTOCOL.read_text()",
+          "line": 23,
+          "module": "tests/unit/test_betse_fast_solver.py"
+        },
+        {
+          "containing_function": "archive_read",
+          "expression": "(path / 'manifest.json').read_text()",
+          "line": 41,
+          "module": "tests/unit/test_betse_fast_solver.py"
+        },
+        {
+          "containing_function": "independent",
+          "expression": "path.read_text()",
+          "line": 131,
+          "module": "tests/unit/test_betse_fast_solver.py"
+        },
+        {
+          "containing_function": "archive_read",
+          "expression": "(path / 'data.json').read_text()",
+          "line": 65,
+          "module": "tests/unit/test_betse_fast_solver.py"
+        },
+        {
+          "containing_function": "archive_read",
+          "expression": "(path / name).read_bytes()",
+          "line": 45,
+          "module": "tests/unit/test_betse_fast_solver.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 151,
+          "module": "tests/unit/test_betse_normal_calcium_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "(SOURCE_ROOT / 'validation/betse/pump_loop_preflight/protocol.json').read_text()",
+          "line": 95,
+          "module": "tests/unit/test_betse_normal_channel_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "(SOURCE_ROOT / 'validation/betse/junction_gate/protocol.json').read_text()",
+          "line": 98,
+          "module": "tests/unit/test_betse_normal_channel_join.py"
+        },
+        {
+          "containing_function": "independent",
+          "expression": "path.read_text()",
+          "line": 85,
+          "module": "tests/unit/test_betse_normal_channel_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "(SOURCE_ROOT / path).read_text()",
+          "line": 275,
+          "module": "tests/unit/test_betse_normal_channel_join.py"
+        },
+        {
+          "containing_function": "compare_channels",
+          "expression": "(Path(__file__).resolve().parents[2] / 'validation/betse/betse_normal_ecm_catalog_join_protocol.json').read_text()",
+          "line": 236,
+          "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 62,
+          "module": "tests/unit/test_betse_normal_ecm_catalog_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 62,
+          "module": "tests/unit/test_betse_normal_ecm_event_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 66,
+          "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 63,
+          "module": "tests/unit/test_betse_normal_ecm_field_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "output.read_text()",
+          "line": 70,
+          "module": "tests/unit/test_betse_normal_ecm_init_phase.py"
+        },
+        {
+          "containing_function": "independent",
+          "expression": "path.read_text()",
+          "line": 78,
+          "module": "tests/unit/test_betse_normal_gated_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "(Path(__file__).resolve().parents[2] / 'validation/chemistry/betse_network_reactions_protocol.json').read_text()",
+          "line": 31,
+          "module": "tests/unit/test_betse_normal_grn_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 150,
+          "module": "tests/unit/test_betse_normal_grn_join.py"
+        },
+        {
+          "containing_function": "independent",
+          "expression": "path.read_text()",
+          "line": 87,
+          "module": "tests/unit/test_betse_normal_ion_join.py"
+        },
+        {
+          "containing_function": "<module>",
+          "expression": "(Path(__file__).resolve().parents[2] / 'validation/regulation/betse_network_modulation_protocol.json').read_text()",
+          "line": 31,
+          "module": "tests/unit/test_betse_normal_network_join.py"
+        },
+        {
+          "containing_function": "references",
+          "expression": "path.read_text()",
+          "line": 150,
+          "module": "tests/unit/test_betse_normal_network_join.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 373,
+          "module": "validation/betse/betse_ecm_grn_native.py"
+        },
+        {
+          "containing_function": "extra_nodes",
+          "expression": "(root / 'science/sim_toolbox.py').read_text()",
+          "line": 39,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "extra_nodes",
+          "expression": "(root / 'science/math/finitediff.py').read_text()",
+          "line": 40,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "Path(__file__).read_text()",
+          "line": 72,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "science",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 86,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "science",
+          "expression": "PROTOCOL.read_text()",
+          "line": 84,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "science",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 88,
+          "module": "validation/betse/betse_ecm_grn_native_network.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 687,
+          "module": "validation/betse/betse_ecm_grn_reference.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 34,
+          "module": "validation/betse/betse_ecm_transport_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 35,
+          "module": "validation/betse/betse_ecm_transport_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / 'betse/science/math/finitediff.py').read_bytes()",
+          "line": 36,
+          "module": "validation/betse/betse_ecm_transport_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 31,
+          "module": "validation/betse/betse_ecm_transport_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(frozen_root / name).read_bytes()",
+          "line": 38,
+          "module": "validation/betse/betse_environment_field_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 32,
+          "module": "validation/betse/betse_environment_field_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "path.read_bytes()",
+          "line": 40,
+          "module": "validation/betse/betse_environment_field_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / name).read_bytes()",
+          "line": 64,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "write_archive",
+          "expression": "os.open(directory, os.O_RDONLY)",
+          "line": 432,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 58,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 460,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "write_archive",
+          "expression": "(path / name).read_bytes()",
+          "line": 419,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(installed / name).read_bytes()",
+          "line": 67,
+          "module": "validation/betse/betse_fast_solver_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 25,
+          "module": "validation/betse/betse_mechanics_join_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / name).read_text()",
+          "line": 33,
+          "module": "validation/betse/betse_mechanics_join_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(base / name).read_bytes()",
+          "line": 30,
+          "module": "validation/betse/betse_mechanics_join_native.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'manifest.json').read_text()",
+          "line": 699,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 748,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'data.json').read_text()",
+          "line": 723,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / name).read_bytes()",
+          "line": 703,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "helper_probe",
+          "expression": "path.read_text()",
+          "line": 646,
+          "module": "validation/betse/betse_normal_calcium_join_native.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "INVENTORY.read_text()",
+          "line": 40,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 44,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "INVENTORY.read_text()",
+          "line": 198,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+          "line": 225,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+          "line": 269,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 47,
+          "module": "validation/betse/betse_normal_calcium_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "INVENTORY.read_text()",
+          "line": 40,
+          "module": "validation/betse/betse_normal_catalog_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 44,
+          "module": "validation/betse/betse_normal_catalog_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "INVENTORY.read_text()",
+          "line": 198,
+          "module": "validation/betse/betse_normal_catalog_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_catalog_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 47,
+          "module": "validation/betse/betse_normal_catalog_join_native_helpers.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_channel_join_native.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_channel_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 647,
+          "module": "validation/betse/betse_normal_channel_join_native.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 29,
+          "module": "validation/betse/betse_normal_channel_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 26,
+          "module": "validation/betse/betse_normal_channel_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "installed.read_bytes()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_channel_join_native_helpers.py"
+        },
+        {
+          "containing_function": "inventory",
+          "expression": "path.read_bytes()",
+          "line": 21,
+          "module": "validation/betse/betse_normal_channel_join_runtime.py"
+        },
+        {
+          "containing_function": "inventory",
+          "expression": "executable.read_bytes()",
+          "line": 27,
+          "module": "validation/betse/betse_normal_channel_join_runtime.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / name).read_bytes()",
+          "line": 38,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "write_archive",
+          "expression": "os.open(directory, os.O_RDONLY)",
+          "line": 281,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 309,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "write_archive",
+          "expression": "(path / name).read_bytes()",
+          "line": 268,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(installed / name).read_bytes()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_current_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 155,
+          "module": "validation/betse/betse_normal_current_reference.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 30,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/cells.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 78,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 81,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/parameters.py').read_bytes()",
+          "line": 83,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 1075,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native.py"
+        },
+        {
+          "containing_function": "parsed",
+          "expression": "path.read_text()",
+          "line": 141,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_native_network.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 937,
+          "module": "validation/betse/betse_normal_ecm_catalog_join_reference.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/cells.py').read_bytes()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 79,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 82,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "calcium_nodes",
+          "expression": "(root / 'betse/science/parameters.py').read_bytes()",
+          "line": 84,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 1151,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "evaluate",
+          "expression": "event_native.PROTOCOL.read_text()",
+          "line": 1115,
+          "module": "validation/betse/betse_normal_ecm_event_join_native.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'science/tissue/tishandler.py').read_text()",
+          "line": 54,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'science/math/toolbox.py').read_text()",
+          "line": 70,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'science/tissue/event/tisevevolt.py').read_text()",
+          "line": 76,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'science/sim.py').read_text()",
+          "line": 92,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 149,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(root / 'science/math/modulate.py').read_text()",
+          "line": 158,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(root / 'science/sim.py').read_text()",
+          "line": 165,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 147,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 152,
+          "module": "validation/betse/betse_normal_ecm_event_join_native_events.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 1231,
+          "module": "validation/betse/betse_normal_ecm_event_join_reference.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 979,
+          "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py"
+        },
+        {
+          "containing_function": "evaluate",
+          "expression": "event_native.PROTOCOL.read_text()",
+          "line": 948,
+          "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 30,
+          "module": "validation/betse/betse_normal_ecm_field_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_ecm_field_join_native.py"
+        },
+        {
+          "containing_function": "field_nodes",
+          "expression": "(root / 'betse/science/cells.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_ecm_field_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 709,
+          "module": "validation/betse/betse_normal_ecm_field_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 540,
+          "module": "validation/betse/betse_normal_ecm_field_join_reference.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 983,
+          "module": "validation/betse/betse_normal_ecm_init_phase_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 266,
+          "module": "validation/betse/betse_normal_ecm_init_phase_reference.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 181,
+          "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "(base / name).read_bytes()",
+          "line": 170,
+          "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py"
+        },
+        {
+          "containing_function": "authenticated_gate",
+          "expression": "(base / name).read_bytes()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_gated_join_native.py"
+        },
+        {
+          "containing_function": "authenticated_gate",
+          "expression": "PROTOCOL.read_text()",
+          "line": 29,
+          "module": "validation/betse/betse_normal_gated_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 459,
+          "module": "validation/betse/betse_normal_gated_join_native.py"
+        },
+        {
+          "containing_function": "authenticated_gate",
+          "expression": "(installed / name).read_bytes()",
+          "line": 37,
+          "module": "validation/betse/betse_normal_gated_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 482,
+          "module": "validation/betse/betse_normal_gated_join_reference.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'manifest.json').read_text()",
+          "line": 665,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 714,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'data.json').read_text()",
+          "line": 689,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / name).read_bytes()",
+          "line": 669,
+          "module": "validation/betse/betse_normal_grn_join_native.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "INVENTORY.read_text()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 45,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "INVENTORY.read_text()",
+          "line": 213,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+          "line": 240,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+          "line": 284,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 42,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 48,
+          "module": "validation/betse/betse_normal_grn_join_native_helpers.py"
+        },
+        {
+          "containing_function": "original_nodes",
+          "expression": "(root / 'science/chemistry/networks.py').read_text()",
+          "line": 45,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "original_nodes",
+          "expression": "(root / 'science/chemistry/gene.py').read_text()",
+          "line": 69,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "original_nodes",
+          "expression": "(root / 'util/type/iterable/mapping/mapcls.py').read_text()",
+          "line": 87,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "original_nodes",
+          "expression": "(root / 'science/sim.py').read_text()",
+          "line": 104,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 161,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 159,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 163,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "original_nodes",
+          "expression": "(root / 'science/chemistry/netplot.py').read_text()",
+          "line": 98,
+          "module": "validation/betse/betse_normal_grn_join_native_network.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(base / name).read_bytes()",
+          "line": 51,
+          "module": "validation/betse/betse_normal_ion_join_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 46,
+          "module": "validation/betse/betse_normal_ion_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 353,
+          "module": "validation/betse/betse_normal_ion_join_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(installed / name).read_bytes()",
+          "line": 54,
+          "module": "validation/betse/betse_normal_ion_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 223,
+          "module": "validation/betse/betse_normal_ion_join_reference.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "path.read_text()",
+          "line": 86,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'science/sim_toolbox.py').read_text()",
+          "line": 103,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "(root / 'exceptions.py').read_text()",
+          "line": 138,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "path.read_bytes()",
+          "line": 157,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 150,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 159,
+          "module": "validation/betse/betse_normal_molecule_join_native_network.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim.py').read_bytes()",
+          "line": 32,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "pump_material_source",
+          "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'manifest.json').read_text()",
+          "line": 659,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 708,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / 'data.json').read_text()",
+          "line": 683,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "read_raw_capture_inputs",
+          "expression": "(path / name).read_bytes()",
+          "line": 663,
+          "module": "validation/betse/betse_normal_network_join_native.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "INVENTORY.read_text()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['checkout']) / name).read_bytes()",
+          "line": 45,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "INVENTORY.read_text()",
+          "line": 213,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+          "line": 240,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "setup",
+          "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+          "line": 284,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 42,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 48,
+          "module": "validation/betse/betse_normal_network_join_native_helpers.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "path.read_bytes()",
+          "line": 75,
+          "module": "validation/betse/betse_normal_network_join_native_network.py"
+        },
+        {
+          "containing_function": "literal_nodes",
+          "expression": "path.read_text()",
+          "line": 31,
+          "module": "validation/betse/betse_normal_network_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+          "line": 77,
+          "module": "validation/betse/betse_normal_network_join_native_network.py"
+        },
+        {
+          "containing_function": "authenticated",
+          "expression": "PROTOCOL.read_text()",
+          "line": 72,
+          "module": "validation/betse/betse_normal_network_join_native_network.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 165,
+          "module": "validation/betse/betse_normal_network_join_reference.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 567,
+          "module": "validation/betse/betse_normal_pump_join_reference.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(root / name).read_bytes()",
+          "line": 38,
+          "module": "validation/betse/betse_normal_voltage_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "PROTOCOL.read_text()",
+          "line": 33,
+          "module": "validation/betse/betse_normal_voltage_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 292,
+          "module": "validation/betse/betse_normal_voltage_native.py"
+        },
+        {
+          "containing_function": "capture",
+          "expression": "(installed / name).read_bytes()",
+          "line": 41,
+          "module": "validation/betse/betse_normal_voltage_native.py"
+        },
+        {
+          "containing_function": "main",
+          "expression": "args.inputs.read_text()",
+          "line": 326,
+          "module": "validation/betse/betse_normal_voltage_reference.py"
+        }
+      ]
+    },
+    "manual_unresolved_review_pending": true,
+    "numerical_runs": 0,
+    "prefix": "betse_normal_ecm_init_phase",
+    "reference_closure": {
+      "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
+      "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
+      "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
+      "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
+      "validation/betse/betse_normal_catalog_join_scalar.py": "06f3e47a4f51ec94feb71379b9cf8eca80a4e6d95cfb036613d8af00e63c9f49",
+      "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+      "validation/betse/betse_normal_current_reference.py": "22213629337d868993f0c598c40fa822e6e7a73d72f8da1e7aa85b34bd0ae4db",
+      "validation/betse/betse_normal_ecm_catalog_join_reference.py": "6c51cdddbeb166ee33a9000143aad16f003cb9e6d4178cb3993aa62a1538ea70",
+      "validation/betse/betse_normal_ecm_event_join_reference.py": "2724e8d2f5c6a3c0e04b361a1d028b6edf439ec2dbac191e7c300c014550da3b",
+      "validation/betse/betse_normal_ecm_field_join_reference.py": "abd0552ef045487aa47364b7a2a742586f504c06ec571648a8f1e15789655c82",
+      "validation/betse/betse_normal_ecm_init_phase_reference.py": "c5f8b5ed2bd2c6c448c25b897a5c38d1fe4a8ddd832b13f2853bd750c02f623a",
+      "validation/betse/betse_normal_ecm_init_phase_reference_models.py": "bba92372125bc4f87839002027c027c253593f235ddc64b319aa01ac28519b52",
+      "validation/betse/betse_normal_gated_join_reference.py": "35621ce3fde94902a923458804982991be1c0ac4302975af7b636ea134babe7c",
+      "validation/betse/betse_normal_ion_join_reference.py": "fee2c0456aea9ec42444f0bad9936c20022bb3c43a07c7aca93a48cb59a12941",
+      "validation/betse/betse_normal_network_join_reference.py": "9c769e09a6b5336181c1d3f3f7ef977772bc851e5a1b9883d1838f96fce2ed0a",
+      "validation/betse/betse_normal_pump_join_reference.py": "5dcdfba6067ac3a264edc2ecddbe0701a710cb6e81ccee33d1c66e06b1c51da5",
+      "validation/betse/betse_normal_voltage_reference.py": "44bf70118a8ae24aece17b0701b6ff56c2062571e4266ffa94175282064047e7",
+      "validation/channels/calcium_catalog_extra_reference.py": "edd4b16e4faebadcd911df267b82bc46886bc97693119434f4068f26caa46e10",
+      "validation/channels/hcn_extra_reference.py": "78466eadec4fa1577d33181163d4db479055c4eb56e97d7f4fd867aa141d000f",
+      "validation/channels/morris_lecar_channels_reference.py": "20bc3e32f5760c90c4ede2ba5dfebf031e7c1f9b957a30bb0c94aeca3a2f57ff",
+      "validation/channels/potassium_catalog_reference.py": "accfd82d413df7cd213fc1fe94abeeb164bed2b36e0af2c981f8aa723e49078c",
+      "validation/channels/sodium_catalog_reference.py": "27bd6662889eb3cd84a52c3239518b29e03b37d92183d76c32dc1c47c7a980bf",
+      "validation/mechanics/betse_deformation_reference.py": "40831f4e32fcac708bf55f72f3ccbd0fbc78f0c4eb526fee31b332d7ef98c5ca"
+    },
+    "root": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_normal_ecm_init_phase_prepared_02/source",
+    "scientific_AST_executions": 0,
+    "scientific_import_closure": {
+      "src/cells/__init__.py": "c52dd018d1eabbb38929a8c5d5fedb125b01c37da01012933af1588f4f6cfa5e",
+      "src/cells/core/__init__.py": "431fe702c286ec9c6bfb4d625ea3fddfe40210fa8362531cd94271502be1831f",
+      "src/cells/core/errors.py": "42d447162f55e6931c1fd1ff8ff42baa832a072476c403023cd4656101b93cf5",
+      "src/cells/core/physiology_native_calendar.py": "111a3ff8fa0fba75497eab2bf6a0b086a7a4e9c9128909077bc7e366254b19fb",
+      "src/cells/numerics/__init__.py": "78f29ade80db277f67facd2022a2405a218cc12ecb03015bf42ba9f43e253696",
+      "src/cells/numerics/extracellular_field.py": "bb0702893a0605616fa84e7864d1e8b4409dbf3404a0b8c8195a538c2488fbbf",
+      "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
+      "src/cells/processes/betse_calcium_atp_source.py": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
+      "src/cells/processes/betse_channel_catalog_source.py": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
+      "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+      "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+      "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
+      "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
+      "src/cells/processes/betse_environment_field.py": "8f52e718c2420777998cd04f4428aa2512726c153e8a9c944efeb9d2f66693ea",
+      "src/cells/processes/betse_environment_transport.py": "7cf5b793964f9b34dccd85b04982a3c2f2e92f3b043b8e04a30a647409afe42c",
+      "src/cells/processes/betse_fast_solver.py": "e11737ac645598e6c1921e527c632fbcf46331dae8211af31a8d70f2ca0d1475",
+      "src/cells/processes/betse_fluid_flow.py": "b58a918da7e9e65ba066e1b117c4d4a1cd999c3a90b597d389335f184c01ab41",
+      "src/cells/processes/betse_geometry.py": "18a082cd09acc817707ba775196666c446b439c5b254a04e36f0b49157b46dff",
+      "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
+      "src/cells/processes/betse_network_modulation.py": "c7b2129bf47ac8cd2ab02aa3626c62ec238cf8eaf31bcae95e650aedceebe100",
+      "src/cells/processes/betse_network_reactions.py": "4731a672c7ebca1db101480f4ae4d0e13d6d9585282387384d8489b5bc184364",
+      "src/cells/processes/betse_normal_calcium_join.py": "49fc5d7669bc30ee4f1e9cfca8379ffdc359078b2ba8284d7ade879e9f92b141",
+      "src/cells/processes/betse_normal_channel_join.py": "9cc713f82c772c9602c257753b3744a192d45166488964054730e4638c73bb17",
+      "src/cells/processes/betse_normal_current.py": "294a4d3e267e9d75caccd50eaaacc462931a8597d5eadd88ea94f9dc3856add7",
+      "src/cells/processes/betse_normal_ecm_calcium_join.py": "d1f897bf49d613fefaae909e001f570d5aa00f0d05e4fdb2de44d136cea90b63",
+      "src/cells/processes/betse_normal_ecm_catalog_join.py": "3d2692dff6bab9f7ac2ef9f6d35ad1095cda46359e6335527bfc4f1589ca2504",
+      "src/cells/processes/betse_normal_ecm_catalog_join_source.py": "f4ddc4f75a9513cbba904f3959b39be432b58aea90372ef79a3aa3f936818a23",
+      "src/cells/processes/betse_normal_ecm_event_join.py": "fd829dadf0f41faa3edbe2285d117345a20d8c31fe2159fd7edf90ea36dc7033",
+      "src/cells/processes/betse_normal_ecm_event_join_material.py": "1e427cf705d27c977dffb961f4dc8bd06981098e8337569174d11523b75f9895",
+      "src/cells/processes/betse_normal_ecm_event_join_source.py": "85972f7ca0208c4f4248b84ff4a0f0a2806d6fd71077deb08974a2778d864071",
+      "src/cells/processes/betse_normal_ecm_event_mechanics.py": "73c635e8b664ef444086919a0b1f72bad8724b49a5d6d68bdd25f54ab16b8a03",
+      "src/cells/processes/betse_normal_ecm_field_join.py": "fa50436c824362e34422d7bdf233f7676a364256011476d34333982bfcd2ddad",
+      "src/cells/processes/betse_normal_ecm_init_phase.py": "f60afbf1cac76bdce19e9d8cee80f764dfb2f0c29936cde5ce8a790116f526d6",
+      "src/cells/processes/betse_normal_ecm_init_phase_material.py": "1ac0918177b590c091e4915afbe87247b96a2ce283a282b6d4dcf72efc7212f1",
+      "src/cells/processes/betse_normal_ecm_init_phase_mechanics.py": "b8b58fb964679baf2c1279823d7aebe3a1adc259043eb472df07c9f8c09a54fa",
+      "src/cells/processes/betse_normal_ecm_init_phase_pump.py": "40a44ece79523048e72dfe883171af79abb4892acdffbfb69fb55b1e103e6f6b",
+      "src/cells/processes/betse_normal_ecm_init_phase_setup.py": "01e915cfc4e1d0b655c001d48076dec5697c71052d155ac72c6af732b86c2431",
+      "src/cells/processes/betse_normal_ecm_init_phase_source.py": "361c1ff18eed3cc4bd67a64c807c211b4636f7d48b6d548fd9935ebbc391aa59",
+      "src/cells/processes/betse_normal_ecm_run_lifecycle.py": "d336f6ff8c3c019b13876bfcc1b14d96c02d6949d67aae90717b7e92c0d26cbb",
+      "src/cells/processes/betse_normal_gated_join.py": "8ecf90128d599896098a83832b9610b2ccb43a4acfe3a9fea77fae4438f2b684",
+      "src/cells/processes/betse_normal_grn_join.py": "7308a719591532c729ae72fcf005db9044d4dbbd530dd1c3950a13ea66e1035b",
+      "src/cells/processes/betse_normal_grn_source.py": "ad45398c6293dee7dce39965ed6a5b47c86d7dd2ee8a8cfe3fdb43613c75e18b",
+      "src/cells/processes/betse_normal_ion_join.py": "f41a79fd30efdf777cc12af9808427b26d30af4d902ad99fe9c48fb55d7ed56d",
+      "src/cells/processes/betse_normal_molecule_source.py": "e5a8de6c1a22a934dff9503cbfa8dadaa1efc9eb6db07984955cfb824e20640f",
+      "src/cells/processes/betse_normal_network_join.py": "cd93d4e9cee04b27d6fbfe68fd1ff3f307ddf278d3975f1a43989c98d49671c7",
+      "src/cells/processes/betse_normal_network_join_source.py": "4405592c1303fd72cd55e57458637f82ef123da252166cf47e84e405bd859bbe",
+      "src/cells/processes/betse_normal_pump_join.py": "4dea03f4afb617ec58be39280ba7930aa00732446aff002c20f4ab2ea7582753",
+      "src/cells/processes/betse_normal_voltage.py": "1e59687b0b3612c0edc0df87a9c89c3421686029d225344360f247fab3736ae4",
+      "src/cells/processes/betse_perturbations.py": "75fbb75e84d23ab3095230117cd23fef3bf04fecb71e09ba5cb256aea64fbc56",
+      "src/cells/processes/betse_time_modulation.py": "c77d635bf0871d35178811b52fe0863c051f216eb7cc983e44145eaafecc2577",
+      "src/cells/processes/electrochemistry.py": "e52dc29e3514268d538b7ceff293d32fd24d36ed3e9ef6242dc2906592c112f2",
+      "tests/__init__.py": "f6c9e938da18b5b1aa3dc1185caab720ddac239a7385d8ac9f0accd5807dfbcb",
+      "tests/unit/test_betse_ecm_grn_join.py": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039",
+      "tests/unit/test_betse_fast_solver.py": "4b7c1b613e4853a505b9893f4e0efde3999b0789a14479b0ae9e2e035f487cdb",
+      "tests/unit/test_betse_normal_calcium_join.py": "84be9a21eb214548f7f9bc72b5ce81f5f46b94d3032968f7e7aee59f8c0732f9",
+      "tests/unit/test_betse_normal_channel_join.py": "0d76ef558896cc2b363a10cc8683ab770b31c3de18ecc0055b40edbf27be0ccf",
+      "tests/unit/test_betse_normal_ecm_catalog_join.py": "8639b53a83be820b405c94366844a072c432c36972c61c377335bbd26125af02",
+      "tests/unit/test_betse_normal_ecm_event_join.py": "5367c6aa6fe109b032af6296825704b4cd3a54f7f0e8524f89847b3024706902",
+      "tests/unit/test_betse_normal_ecm_event_mechanics.py": "62fc44b921d8c2247c9626c83bbac171d019f590f1dfff40bdf74a30c8c7782c",
+      "tests/unit/test_betse_normal_ecm_field_join.py": "5b3a10f1aec3da22e5d069becb4a78da521653d017e8b7a8ee6731e317d8f92d",
+      "tests/unit/test_betse_normal_ecm_init_phase.py": "3cbfe48604c6f0c7f2cc88aca1526c98bcc5aa4b0c07baa84a480576a46acb61",
+      "tests/unit/test_betse_normal_gated_join.py": "a36de61abe38d4b98f789afa101af1859e54d7c0718f1c96c247987cab643476",
+      "tests/unit/test_betse_normal_grn_join.py": "1a4a6d99953418c22a272be79e5df03d7d174f527a447e8241ac7569ba9c50d2",
+      "tests/unit/test_betse_normal_ion_join.py": "2bf8eafcd6ef5e6c11957d51cf6e60bf0edc6edce551869fa5d36c701a137071",
+      "tests/unit/test_betse_normal_network_join.py": "7f6339070d858ab6b6620b4e14a6c0d8186b2ff80949c70fa997a86fe53033cf",
+      "validation/betse/betse_ecm_grn_fixtures.py": "412f7bcab5d989c949ae7b449c31c65e50e110d60dae9a8ed7326ed25b649406",
+      "validation/betse/betse_ecm_grn_native.py": "9b7aa7031e3d46fa929dc99bee2b7be72fc8e9a69a08aeb17ed9f5086e8e4efc",
+      "validation/betse/betse_ecm_grn_native_network.py": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+      "validation/betse/betse_ecm_transport_checks.py": "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122",
+      "validation/betse/betse_ecm_transport_fixtures.py": "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2",
+      "validation/betse/betse_ecm_transport_native.py": "f7dc33413b07be8430f885262e842c413a2f29867e8d44edfdf5356357d0b3b3",
+      "validation/betse/betse_environment_field_checks.py": "a3f1e4ce965223b90e47eb46dbe3eea576431775f1d60536e5bbd170f2c04d9f",
+      "validation/betse/betse_environment_field_fixtures.py": "e23567f0bed57336eeb04fa7b3b620f4cd0b819fee50496e90f551b96fc6b5e3",
+      "validation/betse/betse_environment_field_native.py": "ac72ac4908c4d279384cfe6f0113088c4a0da0fdff8e84e2e2d51a2a2bcadaa4",
+      "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
+      "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
+      "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+      "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
+      "validation/betse/betse_normal_calcium_join_fixtures.py": "08ac9a66bd96cf9be3c49152a44c434e9e8443b6effd0a15ba370c931ce983d5",
+      "validation/betse/betse_normal_calcium_join_native.py": "e338ee9713532c91dbb9258188fdc11c8c8f4e643b73567f52bace4822c61c67",
+      "validation/betse/betse_normal_calcium_join_native_helpers.py": "b07dd885d3decf117b452de064b6e8a04c610839990f5e5c47311d8407976711",
+      "validation/betse/betse_normal_catalog_join_fixtures.py": "529ff94eaf8b3f73eb7efaea4018e616a88147b6876841b1e279f11d49f0b4fb",
+      "validation/betse/betse_normal_catalog_join_native_helpers.py": "7bb3e3f65271941138abd0c06799145a4a13d9d66d25f105bbe03daaec4fc720",
+      "validation/betse/betse_normal_channel_join_fixtures.py": "7d4963398bd004f443018b5377613342e9d74adfa0a4c3d8b4b1aec21eae62c4",
+      "validation/betse/betse_normal_channel_join_native.py": "767d1cc2374a0f06e4b0b59cdbda5fbb33c37c2d5ee43ace051ab2e42a1739c1",
+      "validation/betse/betse_normal_channel_join_native_helpers.py": "54cf64ccd714888ef3a76008923e22d007a768bdf650cca6aaee34b098066a2d",
+      "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
+      "validation/betse/betse_normal_current_fixtures.py": "ef4a9b91bb9700f6fb7ee5847a4fcb4d95f344f4fd35e27e6d97270b34cb1613",
+      "validation/betse/betse_normal_current_native.py": "e321be3cc2bf5f40de526397efb40012577b6c3ac96a6865a8344f602dff770e",
+      "validation/betse/betse_normal_ecm_calcium_join_fixtures.py": "1e6ab500e82cc193021a44c9bff24d079cedb07ff6d0d6f56f55883a57907aa6",
+      "validation/betse/betse_normal_ecm_catalog_join_fixtures.py": "03427c27578afd90c88a348e8184b04ffbad33154b88d496cf263a7a269e2470",
+      "validation/betse/betse_normal_ecm_catalog_join_native.py": "f155c3722accd0e51d2a901f2dbf739d6bcbe42b1d5244749eb32663c7b2d4db",
+      "validation/betse/betse_normal_ecm_catalog_join_native_network.py": "42adbcf69461d02060754cf3f3047bb97a6825c5f3c567d6190456297465de74",
+      "validation/betse/betse_normal_ecm_event_join_fixtures.py": "a0e1534ffb55e930b117191804fa67c5ac1b9e7f83d29bb75d0e32d769468414",
+      "validation/betse/betse_normal_ecm_event_join_native.py": "074b5694635bcb042427e474ca5495004849a29950de3e3265388dd8db29d6ea",
+      "validation/betse/betse_normal_ecm_event_join_native_events.py": "28d9515f9bcc589692671a92b8d949e408f4e1f164029131cccb100c92035e10",
+      "validation/betse/betse_normal_ecm_event_mechanics_fixtures.py": "40a90414cbc8a4ddbe663805e6fc00c97f4cb1d8c3ba5e237cc862a35d4cf032",
+      "validation/betse/betse_normal_ecm_event_mechanics_native.py": "ba69ea63063b49638ef4e48fc72e88dd27f5beb15deb077bfe3a22cadca9e3c4",
+      "validation/betse/betse_normal_ecm_event_mechanics_native_mechanics.py": "8b743992fd5826c6231df0525bbc89844b7a4d85eb8815a656373114f92a8cae",
+      "validation/betse/betse_normal_ecm_field_join_fixtures.py": "9a0eba11ddd70388779f900e1df56a7ff08dfe013cf6c9447018186fe42c89df",
+      "validation/betse/betse_normal_ecm_field_join_native.py": "505beaddc10c87fef1e0ef27b9bf5681e1de284ea5207ca804807b8338b8f812",
+      "validation/betse/betse_normal_ecm_init_phase_fixtures.py": "609cac0c222dde94260ef77034c8e77417713f98b3f40fef7676827a4fb7b656",
+      "validation/betse/betse_normal_ecm_init_phase_native.py": "e28640c28fab7da71b25759e8cedccf6839a0ac5c71da89807325a1131c261ff",
+      "validation/betse/betse_normal_ecm_init_phase_native_setup.py": "01f76f14dcc3c86920a0ea6673fbee1ffa3c230ad675a42110cf4c49d8601a65",
+      "validation/betse/betse_normal_ecm_mechanics_join_fixtures.py": "a8320b156564a636f29c4e968066418518c459b1c8d5238b2e099cb87e824325",
+      "validation/betse/betse_normal_ecm_run_lifecycle_native.py": "c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc",
+      "validation/betse/betse_normal_gated_join_fixtures.py": "8791e57c4fb96fe2ecbb57b19c330f1910273eb6669c319246f04258521c3603",
+      "validation/betse/betse_normal_gated_join_native.py": "ca1c3297a154cdbfd1cfb4992c1718c3c7701c78945a6c43d4a3a97face7a450",
+      "validation/betse/betse_normal_grn_join_fixtures.py": "4ab5614db1283b57511ca125e1eec2758cec28ac8bf14cd18ec932252792452c",
+      "validation/betse/betse_normal_grn_join_native.py": "a0070d1898f43c4a84355153a8d0ae78238cb5afd538ce2fd894c4b5c13e0bbf",
+      "validation/betse/betse_normal_grn_join_native_helpers.py": "82e287b8e6cd43e5520d24cac6fe22cc40b9293271379c7a2e284b6245578dcf",
+      "validation/betse/betse_normal_grn_join_native_network.py": "ed87252618eacbb5d7ba7ca375c84d0b388801a5cb6b4dbd3e6a41cdfb691019",
+      "validation/betse/betse_normal_ion_join_fixtures.py": "21db71d381bd42c73897c54776d4102459b5077d2df8ab5549c251afae8d3d78",
+      "validation/betse/betse_normal_ion_join_native.py": "bf8f537180fb617890ec137bc538bf43f03c5f0ba841f6a1c9fcdabd190ee360",
+      "validation/betse/betse_normal_molecule_join_fixtures.py": "9a65b184d27ff6e3a86a3c0489b4a7f4be2c842a76f15f3bb38e64635c5e8e96",
+      "validation/betse/betse_normal_molecule_join_native_network.py": "3f63c204a13342f2e5c1d491ac84bb0a42ad15ce184de2d843013c9d58a3924a",
+      "validation/betse/betse_normal_network_join_fixtures.py": "174ba55a84219f4c0b582fc28f83b01ef4bf89b863f384488d2b19339dc0800b",
+      "validation/betse/betse_normal_network_join_native.py": "2ac30a004cfadbb4d23b9ed68a12b08fc2ce41787a5eb6497967e6760f8bcda8",
+      "validation/betse/betse_normal_network_join_native_helpers.py": "47aa5bf5789f7770257bc74fee59e042af65a605c12ebe1e62a0841c274982ca",
+      "validation/betse/betse_normal_network_join_native_network.py": "33ee43c354e1be2acd2ff591af255a10488bec5458822aa210137d24dd7944b7",
+      "validation/betse/betse_normal_pump_join_fixtures.py": "515c2aa24b4fa442eebe7eecf300b2382c280b5fd028019ab592b9c950cc86df",
+      "validation/betse/betse_normal_voltage_fixtures.py": "2a0710992e7908cb17fc4859d7f840dc60c17bc739a170d8a98135464e08de0c",
+      "validation/betse/betse_normal_voltage_native.py": "6f499352210ea274a8517e4e11ca810e493cddefbedc94e33d1dbbc71e4f6228"
+    },
+    "scientific_imports": 0,
+    "utility": {
+      "path": "/home/robert/Cells/validation/frozen_resource_dependencies.py",
+      "sha256": "7bb4f7ffb482da3845b1e31927e0d467b874b43b64c19daa7de4a10ce3d54957"
+    }
+  },
+  "review": {
+    "INIT_additional_resolution": "The new references() output.read_text() reads the explicit fresh subprocess output path, after a checked exit; it is not a packaged data read.",
+    "all_resources_present": true,
+    "complete_general_dependency_resolver_claim": false,
+    "kind": "cells.manual_frozen_resource_review@1",
+    "native_checkout_and_installed_pins_verified": true,
+    "native_source_union_sha256": {
+      "betse/data/yaml/extra_configs/extra_config_template.yaml": "2dd1322fdab1dff7d7b9b1d90894d27e5f8357bf37b30050c2ae8c10e91492b7",
+      "betse/data/yaml/sim_config.yaml": "7ed5a32f9fc256c541db63090aeed6d0207bf706d2847b27269d6bc8c9e85415",
+      "betse/exceptions.py": "c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971",
+      "betse/metadata.py": "6a09cc83d58ec6c1ea4b5a4c11fa0eb46d3b84518309a0495ddc7d61610ce8a1",
+      "betse/science/cells.py": "be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2",
+      "betse/science/channels/cation.py": "b05b4adca8e7876c2cf109988892f6c01dfa29d3225be3bf5dc3d82f182df1fa",
+      "betse/science/channels/channelsabc.py": "ed3e6395ec844108be7b585fd1007a9e22e899ff13df964fc1a3b14e5bf944d4",
+      "betse/science/channels/gap_junction.py": "17b4bd95ea8801c0907a8363d71a194d14292df5f25509f9f353397f91d39bbd",
+      "betse/science/channels/vg_ca.py": "843d83f969ec53ba9322504f6ef0f699171c3c7c6e2caf03784de5bb17171dd6",
+      "betse/science/channels/vg_cl.py": "e61db1f403f725fe72e3daa03419230a81a7bef5b527f8a3205a03f33965b4fe",
+      "betse/science/channels/vg_funny.py": "254f2176e0b86906ae445fdd297750ad0b68cc9bd22da11d05437e6f9824cde7",
+      "betse/science/channels/vg_k.py": "89412aff6163dfe4ccf61afb82418a788ff8e10fbe2ec8cda24c498316b4842f",
+      "betse/science/channels/vg_morrislecar.py": "90e9d4dd2ea93bb3c292649aa31a330914ac897cae07094e0b070167bb4383f0",
+      "betse/science/channels/vg_na.py": "6faa67bdc4bfd0ee35dc1cc0fd8dcd73a703ff58120d1b1968da94dac1fe8831",
+      "betse/science/chemistry/gene.py": "949657c9282b9109123fabb8380ee9fc05941ecef0d085f196154fa1b6bd87d1",
+      "betse/science/chemistry/netplot.py": "205f3fe2f01da21c2f5d263e9161ae6b4f8f9632d5ca5bf3dc21587b697dce6f",
+      "betse/science/chemistry/networks.py": "e32741a04c08812342461d18c80676153a6316bbd6bb958861defb23cb321177",
+      "betse/science/enum/enumconf.py": "5f7f7a7232d4078eaffd5ee378e884533ca3d48058de767fde57720e438dc625",
+      "betse/science/enum/enumphase.py": "7ae73b8e56e6323d9e9d4c9519f9cf6cfcee46e1d75b6949b94c88045ba667d6",
+      "betse/science/math/finitediff.py": "8186bc5c013db8aec224f6ed9b0892e944b2ddd4247f135ff19caf7419478350",
+      "betse/science/math/modulate.py": "c29f4ae27930f00780736e075183e61f44263dd0caa9d7c2f9a30971f616bff7",
+      "betse/science/math/toolbox.py": "a2a63fe1f44303fe05d2b1fbcfe9250e4575992f688cbe4cbd7fd99ef99e60a3",
+      "betse/science/organelles/endo_retic.py": "14a989709bd22558f557b7177bd7728c8bf02b5711e0306a3673833812a848f8",
+      "betse/science/parameters.py": "f36ec747918aa285ca043fe51086bcff4e4e2198cd4f30a138f1e58a51ecf85e",
+      "betse/science/phase/phasecls.py": "e7c129aca1930fcb31884f32d4f2ebbb46d31113a66887a39c85ba0009b78ea8",
+      "betse/science/phase/require/phasereqs.py": "8ab97580e7ef1ddc7b7395aff0a004f6b10a6910ddc0dd904e7a519b7eb89443",
+      "betse/science/physics/deform.py": "0e14b4cb7a06fc5286e0056a91a4028856a2e2b4db63d8c5dd9cb4fbb29951d2",
+      "betse/science/physics/flow.py": "37e99f7af5030127d203bc7ed674f53796149410ab15c80d2e8aca45838413ad",
+      "betse/science/physics/ion_current.py": "a9a82ef377853c3e83466c312e508fdb33cae28237c5310a00fb50df3f56bc9f",
+      "betse/science/physics/pressures.py": "44ee9b860f77529f9be877fd3375ae9df8a5ea40ff1032ea0601188d35381586",
+      "betse/science/sim.py": "02a9a049b5daa5cf6bc543332aa89437f58a4700ed31310abc3ee13697f22d43",
+      "betse/science/sim_toolbox.py": "d94b50e8c0fdcee28b6b301c493ffa5aaf42b18e87ea4750483e164a3bdcacec",
+      "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a",
+      "betse/science/tissue/event/tisevevolt.py": "28e1124a729bfbea9a3c4ce6821a93f419a0b82fadc6342d4ce9ab648d02b29b",
+      "betse/science/tissue/tishandler.py": "057ddab87be773e5d338d0681bd503b12aee02861be0902d6ef46e1133d42f54",
+      "betse/util/type/iterable/mapping/mapcls.py": "15a88829cbb5fc9fc9d60c0a8b4e7ea120f86d06ceb7e1876d55862ee060ad58"
+    },
+    "numerical_runs": 0,
+    "pending_manual_reads": [],
+    "resource_sha256": {
+      "validation/betse/betse_ecm_grn_native_network.py": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2",
+      "validation/betse/betse_ecm_grn_protocol.json": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe",
+      "validation/betse/betse_ecm_transport_protocol.json": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19",
+      "validation/betse/betse_environment_field_protocol.json": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359",
+      "validation/betse/betse_fast_solver_protocol.json": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26",
+      "validation/betse/betse_mechanics_join_protocol.json": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+      "validation/betse/betse_normal_calcium_join_protocol.json": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3",
+      "validation/betse/betse_normal_catalog_join_inventory.json": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681",
+      "validation/betse/betse_normal_catalog_join_protocol.json": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1",
+      "validation/betse/betse_normal_channel_join_protocol.json": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f",
+      "validation/betse/betse_normal_current_protocol.json": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233",
+      "validation/betse/betse_normal_ecm_catalog_join_protocol.json": "98083abd4d5536de59ae330d6ae5b213676c98a8cb3f337beffb0eb01cc41363",
+      "validation/betse/betse_normal_ecm_event_join_protocol.json": "3c0143884891fc54768706a6ab722201cf483c4aff5f4d92a513c3eb2f859800",
+      "validation/betse/betse_normal_ecm_run_lifecycle_protocol.json": "5bb0bbc537c7ab46be1d01ca0581a894997931fbc21897ffe94dc8e7f3b90fc2",
+      "validation/betse/betse_normal_gated_join_protocol.json": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056",
+      "validation/betse/betse_normal_grn_join_protocol.json": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e",
+      "validation/betse/betse_normal_ion_join_protocol.json": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5",
+      "validation/betse/betse_normal_molecule_join_protocol.json": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad",
+      "validation/betse/betse_normal_network_join_protocol.json": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d",
+      "validation/betse/betse_normal_voltage_protocol.json": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9",
+      "validation/betse/junction_gate/protocol.json": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f",
+      "validation/betse/pump_loop_preflight/protocol.json": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f",
+      "validation/channels/leak_channels_protocol.json": "32a6f3a8c54adb01fe5bc3c8c236614f54bf8b211bd64c6228e60f141ecb9247",
+      "validation/channels/potassium_catalog_protocol.json": "ce4598c807d476cd6b05a09735302c8ae371e25af5593e1dc872336f6b117e53",
+      "validation/channels/sodium_catalog_protocol.json": "6cfc7b3f0f59546efb91a0afbc6b1a07b36227d2443c99977571b4a729854e85",
+      "validation/chemistry/betse_network_reactions_protocol.json": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591",
+      "validation/regulation/betse_network_modulation_protocol.json": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385",
+      "validation/tissue/surface_channel_protocol.json": "4619b7ae86060f31ef6bfbc812f4d76048d844264aa630c8bf0d3f674a8c4497"
+    },
+    "reviewed_unresolved_reads": [
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 85,
+        "module": "tests/unit/test_betse_ecm_grn_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "<module>",
+        "expression": "native.PROTOCOL.read_text()",
+        "line": 23,
+        "module": "tests/unit/test_betse_fast_solver.py",
+        "resource": "validation/betse/betse_fast_solver_protocol.json",
+        "sha256": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "archive_read",
+        "expression": "(path / 'manifest.json').read_text()",
+        "line": 41,
+        "module": "tests/unit/test_betse_fast_solver.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "independent",
+        "expression": "path.read_text()",
+        "line": 131,
+        "module": "tests/unit/test_betse_fast_solver.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "archive_read",
+        "expression": "(path / 'data.json').read_text()",
+        "line": 65,
+        "module": "tests/unit/test_betse_fast_solver.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "archive_read",
+        "expression": "(path / name).read_bytes()",
+        "line": 45,
+        "module": "tests/unit/test_betse_fast_solver.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 151,
+        "module": "tests/unit/test_betse_normal_calcium_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "<module>",
+        "expression": "(SOURCE_ROOT / 'validation/betse/pump_loop_preflight/protocol.json').read_text()",
+        "line": 95,
+        "module": "tests/unit/test_betse_normal_channel_join.py",
+        "resource": "validation/betse/pump_loop_preflight/protocol.json",
+        "sha256": "55043c14a2f67af43f83b69b7aa61b32c231972fa98f0b3e6c9df8e368a7943f"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "<module>",
+        "expression": "(SOURCE_ROOT / 'validation/betse/junction_gate/protocol.json').read_text()",
+        "line": 98,
+        "module": "tests/unit/test_betse_normal_channel_join.py",
+        "resource": "validation/betse/junction_gate/protocol.json",
+        "sha256": "154881e6512716ddc53c4b9e81f8697a4dbe181b2f44b0f1da38e3b6d781fb9f"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "independent",
+        "expression": "path.read_text()",
+        "line": 85,
+        "module": "tests/unit/test_betse_normal_channel_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "frozen_literal_channel_protocol_table",
+        "containing_function": "<module>",
+        "expression": "(SOURCE_ROOT / path).read_text()",
+        "line": 275,
+        "module": "tests/unit/test_betse_normal_channel_join.py",
+        "resources": [
+          "validation/channels/sodium_catalog_protocol.json",
+          "validation/channels/potassium_catalog_protocol.json",
+          "validation/channels/leak_channels_protocol.json",
+          "validation/tissue/surface_channel_protocol.json"
+        ]
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "compare_channels",
+        "expression": "(Path(__file__).resolve().parents[2] / 'validation/betse/betse_normal_ecm_catalog_join_protocol.json').read_text()",
+        "line": 236,
+        "module": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+        "resource": "validation/betse/betse_normal_ecm_catalog_join_protocol.json",
+        "sha256": "98083abd4d5536de59ae330d6ae5b213676c98a8cb3f337beffb0eb01cc41363"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 62,
+        "module": "tests/unit/test_betse_normal_ecm_catalog_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 62,
+        "module": "tests/unit/test_betse_normal_ecm_event_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 66,
+        "module": "tests/unit/test_betse_normal_ecm_event_mechanics.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 63,
+        "module": "tests/unit/test_betse_normal_ecm_field_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "output.read_text()",
+        "line": 70,
+        "module": "tests/unit/test_betse_normal_ecm_init_phase.py",
+        "rationale": "Explicit path just supplied to checked fresh subprocess; no packaged data read"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "independent",
+        "expression": "path.read_text()",
+        "line": 78,
+        "module": "tests/unit/test_betse_normal_gated_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "<module>",
+        "expression": "(Path(__file__).resolve().parents[2] / 'validation/chemistry/betse_network_reactions_protocol.json').read_text()",
+        "line": 31,
+        "module": "tests/unit/test_betse_normal_grn_join.py",
+        "resource": "validation/chemistry/betse_network_reactions_protocol.json",
+        "sha256": "934e6753ec45559952ceca08957e025f24da7d48feed30a1b665b1dea8197591"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 150,
+        "module": "tests/unit/test_betse_normal_grn_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "independent",
+        "expression": "path.read_text()",
+        "line": 87,
+        "module": "tests/unit/test_betse_normal_ion_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "<module>",
+        "expression": "(Path(__file__).resolve().parents[2] / 'validation/regulation/betse_network_modulation_protocol.json').read_text()",
+        "line": 31,
+        "module": "tests/unit/test_betse_normal_network_join.py",
+        "resource": "validation/regulation/betse_network_modulation_protocol.json",
+        "sha256": "cceafd91fe8b075111d772c75b01a0ddbf3ab1ba5677663879b6e05f9962b385"
+      },
+      {
+        "classification": "future_fresh_reference_output",
+        "containing_function": "references",
+        "expression": "path.read_text()",
+        "line": 150,
+        "module": "tests/unit/test_betse_normal_network_join.py",
+        "rationale": "Read the JSON path just supplied to a checked fresh reference subprocess"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 373,
+        "module": "validation/betse/betse_ecm_grn_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "extra_nodes",
+        "expression": "(root / 'science/sim_toolbox.py').read_text()",
+        "line": 39,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "extra_nodes",
+        "expression": "(root / 'science/math/finitediff.py').read_text()",
+        "line": 40,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "literal_nodes",
+        "expression": "Path(__file__).read_text()",
+        "line": 72,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "resource": "validation/betse/betse_ecm_grn_native_network.py",
+        "sha256": "45622e17235df70ada4f9be485891b2d448c1207cd30fde42937dcb9576d13a2"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "science",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 86,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "science",
+        "expression": "PROTOCOL.read_text()",
+        "line": 84,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "resource": "validation/betse/betse_ecm_grn_protocol.json",
+        "sha256": "86446f6474966e0317cc3b344e7b71fe429b2923e1a915535c098b2db3bc52fe"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "science",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 88,
+        "module": "validation/betse/betse_ecm_grn_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 687,
+        "module": "validation/betse/betse_ecm_grn_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 34,
+        "module": "validation/betse/betse_ecm_transport_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 35,
+        "module": "validation/betse/betse_ecm_transport_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / 'betse/science/math/finitediff.py').read_bytes()",
+        "line": 36,
+        "module": "validation/betse/betse_ecm_transport_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 31,
+        "module": "validation/betse/betse_ecm_transport_native.py",
+        "resource": "validation/betse/betse_ecm_transport_protocol.json",
+        "sha256": "e0436b4ab066a59cf5b1d38f39b9c873f3ff7082fdabce3882d16037717ecf19"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(frozen_root / name).read_bytes()",
+        "line": 38,
+        "module": "validation/betse/betse_environment_field_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 32,
+        "module": "validation/betse/betse_environment_field_native.py",
+        "resource": "validation/betse/betse_environment_field_protocol.json",
+        "sha256": "fbaf625ada76b021b5647adacd42dacefe1fbf46d3e62115ac47714855f42359"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "path.read_bytes()",
+        "line": 40,
+        "module": "validation/betse/betse_environment_field_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / name).read_bytes()",
+        "line": 64,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "output_directory_fsync_descriptor",
+        "containing_function": "write_archive",
+        "expression": "os.open(directory, os.O_RDONLY)",
+        "line": 432,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "rationale": "Directory descriptor used by fsync, no data resource opened"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 58,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "resource": "validation/betse/betse_fast_solver_protocol.json",
+        "sha256": "a8bf0a770edf0ce165366bc5c3bd0b0d0b51de0c831676fa023a399889095f26"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 460,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "hash_newly_written_archive_payload",
+        "containing_function": "write_archive",
+        "expression": "(path / name).read_bytes()",
+        "line": 419,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "rationale": "Hash only the payload pair written by this writer"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(installed / name).read_bytes()",
+        "line": 67,
+        "module": "validation/betse/betse_fast_solver_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 25,
+        "module": "validation/betse/betse_mechanics_join_native.py",
+        "resource": "validation/betse/betse_mechanics_join_protocol.json",
+        "sha256": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / name).read_text()",
+        "line": 33,
+        "module": "validation/betse/betse_mechanics_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(base / name).read_bytes()",
+        "line": 30,
+        "module": "validation/betse/betse_mechanics_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'manifest.json').read_text()",
+        "line": 699,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 748,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'data.json').read_text()",
+        "line": 723,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / name).read_bytes()",
+        "line": 703,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_native_helper_probe_output",
+        "containing_function": "helper_probe",
+        "expression": "path.read_text()",
+        "line": 646,
+        "module": "validation/betse/betse_normal_calcium_join_native.py",
+        "rationale": "Read fresh subprocess probe JSON at its explicit output path"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "INVENTORY.read_text()",
+        "line": 40,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 44,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "setup",
+        "expression": "INVENTORY.read_text()",
+        "line": 198,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+        "line": 225,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+        "line": 269,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_calcium_join_protocol.json",
+        "sha256": "c3c847f0b47ae3fa77b439b40dcf8134bbd9e4556cb5ddaa2e58fadbe05f13f3"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 47,
+        "module": "validation/betse/betse_normal_calcium_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "INVENTORY.read_text()",
+        "line": 40,
+        "module": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 44,
+        "module": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "setup",
+        "expression": "INVENTORY.read_text()",
+        "line": 198,
+        "module": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_protocol.json",
+        "sha256": "45cbaf185d249bacc82e2ed6967d742319f2fd54a2d4b4f04d41910d2af91af1"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 47,
+        "module": "validation/betse/betse_normal_catalog_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_channel_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_channel_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 647,
+        "module": "validation/betse/betse_normal_channel_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 29,
+        "module": "validation/betse/betse_normal_channel_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 26,
+        "module": "validation/betse/betse_normal_channel_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_channel_join_protocol.json",
+        "sha256": "1b39f2723e9a0dcfb189fc5a9612c828249d19cb21310eb3a5aa0d9890d7736f"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "installed.read_bytes()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_channel_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_loaded_module_and_interpreter_identity",
+        "containing_function": "inventory",
+        "expression": "path.read_bytes()",
+        "line": 21,
+        "module": "validation/betse/betse_normal_channel_join_runtime.py",
+        "rationale": "Actual loaded module __file__ paths and sys.executable are hashed by runtime inventory; not static packaged data"
+      },
+      {
+        "classification": "future_loaded_module_and_interpreter_identity",
+        "containing_function": "inventory",
+        "expression": "executable.read_bytes()",
+        "line": 27,
+        "module": "validation/betse/betse_normal_channel_join_runtime.py",
+        "rationale": "Actual loaded module __file__ paths and sys.executable are hashed by runtime inventory; not static packaged data"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "resource": "validation/betse/betse_normal_current_protocol.json",
+        "sha256": "cfe1b100721b6a844fc8c24de07b94830425d303736d288c86cdc3b512b7e233"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / name).read_bytes()",
+        "line": 38,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "output_directory_fsync_descriptor",
+        "containing_function": "write_archive",
+        "expression": "os.open(directory, os.O_RDONLY)",
+        "line": 281,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "rationale": "Directory descriptor used by fsync, no data resource opened"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 309,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "hash_newly_written_archive_payload",
+        "containing_function": "write_archive",
+        "expression": "(path / name).read_bytes()",
+        "line": 268,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "rationale": "Hash only the payload pair written by this writer"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(installed / name).read_bytes()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_current_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 155,
+        "module": "validation/betse/betse_normal_current_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 30,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/cells.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 78,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 81,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/parameters.py').read_bytes()",
+        "line": 83,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 1075,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "parsed",
+        "expression": "path.read_text()",
+        "line": 141,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 937,
+        "module": "validation/betse/betse_normal_ecm_catalog_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/cells.py').read_bytes()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 79,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 82,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "calcium_nodes",
+        "expression": "(root / 'betse/science/parameters.py').read_bytes()",
+        "line": 84,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 1151,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "evaluate",
+        "expression": "event_native.PROTOCOL.read_text()",
+        "line": 1115,
+        "module": "validation/betse/betse_normal_ecm_event_join_native.py",
+        "resource": "validation/betse/betse_normal_ecm_event_join_protocol.json",
+        "sha256": "3c0143884891fc54768706a6ab722201cf483c4aff5f4d92a513c3eb2f859800"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'science/tissue/tishandler.py').read_text()",
+        "line": 54,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'science/math/toolbox.py').read_text()",
+        "line": 70,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'science/tissue/event/tisevevolt.py').read_text()",
+        "line": 76,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'science/sim.py').read_text()",
+        "line": 92,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 149,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(root / 'science/math/modulate.py').read_text()",
+        "line": 158,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(root / 'science/sim.py').read_text()",
+        "line": 165,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 147,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "resource": "validation/betse/betse_normal_ecm_event_join_protocol.json",
+        "sha256": "3c0143884891fc54768706a6ab722201cf483c4aff5f4d92a513c3eb2f859800"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 152,
+        "module": "validation/betse/betse_normal_ecm_event_join_native_events.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 1231,
+        "module": "validation/betse/betse_normal_ecm_event_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 979,
+        "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "evaluate",
+        "expression": "event_native.PROTOCOL.read_text()",
+        "line": 948,
+        "module": "validation/betse/betse_normal_ecm_event_mechanics_native.py",
+        "resource": "validation/betse/betse_normal_ecm_event_join_protocol.json",
+        "sha256": "3c0143884891fc54768706a6ab722201cf483c4aff5f4d92a513c3eb2f859800"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 30,
+        "module": "validation/betse/betse_normal_ecm_field_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_ecm_field_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "field_nodes",
+        "expression": "(root / 'betse/science/cells.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_ecm_field_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 709,
+        "module": "validation/betse/betse_normal_ecm_field_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 540,
+        "module": "validation/betse/betse_normal_ecm_field_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 983,
+        "module": "validation/betse/betse_normal_ecm_init_phase_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 266,
+        "module": "validation/betse/betse_normal_ecm_init_phase_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 181,
+        "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "main",
+        "expression": "(base / name).read_bytes()",
+        "line": 170,
+        "module": "validation/betse/betse_normal_ecm_run_lifecycle_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated_gate",
+        "expression": "(base / name).read_bytes()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_gated_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated_gate",
+        "expression": "PROTOCOL.read_text()",
+        "line": 29,
+        "module": "validation/betse/betse_normal_gated_join_native.py",
+        "resource": "validation/betse/betse_normal_gated_join_protocol.json",
+        "sha256": "5d59b120bc0e87062ac0760e56e26b69f009504324d92fb2a52348aff2952056"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 459,
+        "module": "validation/betse/betse_normal_gated_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated_gate",
+        "expression": "(installed / name).read_bytes()",
+        "line": 37,
+        "module": "validation/betse/betse_normal_gated_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 482,
+        "module": "validation/betse/betse_normal_gated_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'manifest.json').read_text()",
+        "line": 665,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 714,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'data.json').read_text()",
+        "line": 689,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / name).read_bytes()",
+        "line": 669,
+        "module": "validation/betse/betse_normal_grn_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "INVENTORY.read_text()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 45,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "setup",
+        "expression": "INVENTORY.read_text()",
+        "line": 213,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+        "line": 240,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+        "line": 284,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 42,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_grn_join_protocol.json",
+        "sha256": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 48,
+        "module": "validation/betse/betse_normal_grn_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "original_nodes",
+        "expression": "(root / 'science/chemistry/networks.py').read_text()",
+        "line": 45,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "original_nodes",
+        "expression": "(root / 'science/chemistry/gene.py').read_text()",
+        "line": 69,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "original_nodes",
+        "expression": "(root / 'util/type/iterable/mapping/mapcls.py').read_text()",
+        "line": 87,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "original_nodes",
+        "expression": "(root / 'science/sim.py').read_text()",
+        "line": 104,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 161,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 159,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "resource": "validation/betse/betse_normal_grn_join_protocol.json",
+        "sha256": "632ac4ef620c215f5e5863ad3e429e01bed04a9d25e33cf2343aa5bf7fe3c77e"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 163,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "original_nodes",
+        "expression": "(root / 'science/chemistry/netplot.py').read_text()",
+        "line": 98,
+        "module": "validation/betse/betse_normal_grn_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(base / name).read_bytes()",
+        "line": 51,
+        "module": "validation/betse/betse_normal_ion_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 46,
+        "module": "validation/betse/betse_normal_ion_join_native.py",
+        "resource": "validation/betse/betse_normal_ion_join_protocol.json",
+        "sha256": "7a6bc6e266c35a5f16e335a6c90e7d9ceaf677354fb345e99e233b4e3ba529d5"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 353,
+        "module": "validation/betse/betse_normal_ion_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(installed / name).read_bytes()",
+        "line": 54,
+        "module": "validation/betse/betse_normal_ion_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 223,
+        "module": "validation/betse/betse_normal_ion_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "path.read_text()",
+        "line": 86,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'science/sim_toolbox.py').read_text()",
+        "line": 103,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "(root / 'exceptions.py').read_text()",
+        "line": 138,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "path.read_bytes()",
+        "line": 157,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 150,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "resource": "validation/betse/betse_normal_molecule_join_protocol.json",
+        "sha256": "242d007fb2bf561f5b8643533ad124e9935a7a22c5976eb2f329317a1b5271ad"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 159,
+        "module": "validation/betse/betse_normal_molecule_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim.py').read_bytes()",
+        "line": 32,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "pump_material_source",
+        "expression": "(root / 'betse/science/sim_toolbox.py').read_bytes()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'manifest.json').read_text()",
+        "line": 659,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 708,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / 'data.json').read_text()",
+        "line": 683,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "future_hash_bound_typed_evidence",
+        "containing_function": "read_raw_capture_inputs",
+        "expression": "(path / name).read_bytes()",
+        "line": 663,
+        "module": "validation/betse/betse_normal_network_join_native.py",
+        "rationale": "Read the requested generated evidence directory, verify exact manifest payload hashes, preserve typed buffers"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "INVENTORY.read_text()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['checkout']) / name).read_bytes()",
+        "line": 45,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "setup",
+        "expression": "INVENTORY.read_text()",
+        "line": 213,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_catalog_join_inventory.json",
+        "sha256": "3a8c42f5ecda35c119627766828942e0de1c90dbc762ec37c3bc0e4cd7691681"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim_toolbox.py').read_text()",
+        "line": 240,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "setup",
+        "expression": "(Path(pins['checkout']) / 'betse/science/sim.py').read_text()",
+        "line": 284,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 42,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "resource": "validation/betse/betse_normal_network_join_protocol.json",
+        "sha256": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 48,
+        "module": "validation/betse/betse_normal_network_join_native_helpers.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "path.read_bytes()",
+        "line": 75,
+        "module": "validation/betse/betse_normal_network_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "literal_nodes",
+        "expression": "path.read_text()",
+        "line": 31,
+        "module": "validation/betse/betse_normal_network_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "authenticated",
+        "expression": "(Path(pins['installed_package']).parent / name).read_bytes()",
+        "line": 77,
+        "module": "validation/betse/betse_normal_network_join_native_network.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "authenticated",
+        "expression": "PROTOCOL.read_text()",
+        "line": 72,
+        "module": "validation/betse/betse_normal_network_join_native_network.py",
+        "resource": "validation/betse/betse_normal_network_join_protocol.json",
+        "sha256": "36d248d8202231d89de4c7b38939352a066ab97b406057a49b47432f65380e3d"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 165,
+        "module": "validation/betse/betse_normal_network_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 567,
+        "module": "validation/betse/betse_normal_pump_join_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(root / name).read_bytes()",
+        "line": 38,
+        "module": "validation/betse/betse_normal_voltage_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "frozen_constant_path_or_imported_alias",
+        "containing_function": "capture",
+        "expression": "PROTOCOL.read_text()",
+        "line": 33,
+        "module": "validation/betse/betse_normal_voltage_native.py",
+        "resource": "validation/betse/betse_normal_voltage_protocol.json",
+        "sha256": "62ebed982121594351c1e2d2e130fe1029dd79e2f36da7d7f3b9220d72ed41f9"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 292,
+        "module": "validation/betse/betse_normal_voltage_native.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      },
+      {
+        "classification": "pinned_native_source_consumer",
+        "containing_function": "capture",
+        "expression": "(installed / name).read_bytes()",
+        "line": 41,
+        "module": "validation/betse/betse_normal_voltage_native.py",
+        "rationale": "Reviewed caller passes checkout/installed BETSE paths from authenticated protocol/inventory source tables; these tables and their complete union are verified separately"
+      },
+      {
+        "classification": "future_explicit_CLI_input",
+        "containing_function": "main",
+        "expression": "args.inputs.read_text()",
+        "line": 326,
+        "module": "validation/betse/betse_normal_voltage_reference.py",
+        "rationale": "The selected test writes inputs.json then supplies its path to this subprocess; no hidden packaged data read"
+      }
+    ],
+    "scientific_AST_executions": 0,
+    "scientific_imports": 0
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0
+}

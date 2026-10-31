@@ -1,0 +1,55 @@
+{
+  "all_other_test_module_AST_equal": true,
+  "automatic_retry": false,
+  "changed_before": {
+    "src/cells/processes/betse_ecm_grn_join.py": "0bfdbd38f0e438824063ef743f9b4e747c79a702ec79972e6cb50ffc2151f0ac",
+    "tests/unit/test_betse_ecm_grn_join.py": "5fb5f59334c3469e164f1a9ea9930dfa5c87ddaa077d7bf43a086015695d2142"
+  },
+  "complete_owner_cache_not_fabricated": true,
+  "existing_fixture_case_IDs_budgets_unchanged": true,
+  "final_static_audit": {
+    "all_other_test_AST_exact": true,
+    "cache_capture_guarded_by_actual_owner_core_and_try": true,
+    "final_sha256": {
+      "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
+      "tests/unit/test_betse_ecm_grn_join.py": "a6918a31f2b079cd2211805b7204f96b0343621c1f97eaba88e027bb2b8a3039"
+    },
+    "five_other_scientific_Python_files_byte_exact": true,
+    "join_inverse_AST_exact": true,
+    "no_valid_cache_claim_for_absent_owner": true,
+    "original_exception_explicit_raise_from": true,
+    "path": "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_error_capture_audit_02.py",
+    "scientific_execution": false,
+    "sha256": "98649ea1f5618412f3ddb83ae7c10a1484c653d4be42ef5e62914de720b02578",
+    "supplied_malformed_parent_archived_before_invocation": true
+  },
+  "five_other_scientific_Python_files_byte_exact": true,
+  "initial_round": {
+    "accepted": false,
+    "completed_positive_histories": 0,
+    "failed": 2,
+    "independent_reference_forms_credited": 0,
+    "output": "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01",
+    "passed": 6,
+    "unrun": 17
+  },
+  "join_whole_AST_equal_after_reverting_only_exception_handlers_and_removing_new_helper": true,
+  "kind": "cells.ecm_grn_error_capture_repair_02@1",
+  "numerical_runs": 0,
+  "original_exception_chain_preserved": true,
+  "original_failed_round_retention_limit": "Failed01 baseline/input archives and stdout/XML/tracebacks are preserved; separate malformed-parent input was not durably archived before its handler failed. No retroactive reconstruction receives credit. The new code archives future malformed inputs before invocation.",
+  "original_failure": "source.restore rejects missing_cache/default before ctx.sim.grn exists; old advance exception handler calls source.cache(ctx) and masks ValueError with AttributeError",
+  "pytest_collection_runs": 0,
+  "raw_inputs_durable_before_failing_call": true,
+  "repair": "Cache capture guarded by actual owner/core presence; separately labelled available context and malformed supplied input retained. Every diagnostic call is guarded; original exception cause chain remains. Test archives malformed parent/input before invocation.",
+  "saved_failed_and_frozen01_sha256": {
+    "/home/robert/Cells/agent-work/cells-worker-01/workfiles/betse_ecm_grn_static_receipt_01.json": "28e4903f06bd150c2987d3212575a6d9ab5c68b501f3b86959e2f134f269d8af",
+    "/mnt/workspaces/Cells/betse-ecm-grn-prepared-20261031-01/inputs.json": "df6acbe3b1f2cd3bcb61cf7c8d33ceadf1a26599ac230014cf61c3d7c6653f44",
+    "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/failure.json": "fcc95121c61668f17f74aa5d31dd2b1ba59b22f8f69a2ddd29cc874c314938b2",
+    "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/run-dependencies/failure.json": "3a848ca91ca6ab7c7f87f612b60d31a1aaac9c7ad8b051f28b771010aee1a81b",
+    "/mnt/workspaces/Cells/betse-ecm-grn-tests-20261031-01/run-dependencies/tests.xml": "3366bc5db4bcb3ce980a08482974534554cc2624438a506fc55944641290a9fa"
+  },
+  "scientific_AST_executions": 0,
+  "scientific_imports": 0,
+  "scope": "Error capture only; no scientific law, native comparator, fixture/case/ID or tolerance change"
+}
