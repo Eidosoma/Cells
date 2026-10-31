@@ -285,6 +285,25 @@ def finite_budget(value, limit):
     return type(value) in (int, float) and math.isfinite(value) and 0 <= value <= limit
 
 
+def release_file(root=HERE):
+    root = Path(root).resolve()
+    path = Path(os.environ.get("CELLS_INIT_RELEASE_FILE", root.parent / "release.json")).absolute()
+    require(not path.resolve().is_relative_to(root), "Release belongs outside immutable runner")
+    return path
+
+
+def checkout_binding(snapshot, bindings, hashes):
+    for target, checkout_path in bindings.items():
+        canonical(checkout_path)
+        row = snapshot["files"].get(checkout_path)
+        require(
+            row is not None
+            and row["checkout_path"] == checkout_path
+            and row["sha256"] == hashes[target],
+            "Execution producer differs from checkout snapshot: " + target,
+        )
+
+
 def verify_release(root=HERE):
     root = Path(root)
     plan = read(root / "plan.json")
@@ -294,6 +313,18 @@ def verify_release(root=HERE):
     )
     seal = read(root / "seal.json")
     verify_files(root, seal["files"])
+    preparation = read(root.parent / "preparation.json")
+    require(
+        not (root.parent / "FAILURE.json").exists()
+        and preparation.get("status") == "held_prepared_from_checkout_no_scientific_execution"
+        and preparation.get("runner_plan_sha256") == sha(root / "plan.json")
+        and preparation.get("runner_seal_sha256") == sha(root / "seal.json"),
+        "Complete matching checkout preparation required",
+    )
+    from source_snapshot import verify
+
+    snapshot = verify(plan["checkout_snapshot"], manifest_sha256=plan["checkout_snapshot_sha256"])
+    checkout_binding(snapshot, plan["runner_checkout_bindings"], plan["runner_sha256"])
     for name, digest in plan["pins"].items():
         require(sha(name) == digest, "Reviewed prerequisite changed: " + name)
     require(
@@ -301,7 +332,7 @@ def verify_release(root=HERE):
         and sha(root / "expected-evidence.json") == plan["evidence_contract_sha256"],
         "Exact runner contracts",
     )
-    release = read(root / "release.json")
+    release = read(release_file(root))
     require(
         release.get("authorized") is True
         and release.get("requested_round") is True

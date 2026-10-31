@@ -12,6 +12,8 @@ import json
 import warnings
 from dataclasses import dataclass, replace
 from pathlib import Path
+from threading import get_ident
+from weakref import WeakKeyDictionary
 
 import numpy as np
 
@@ -23,6 +25,7 @@ from cells.processes import betse_normal_current as records
 LAW_ID = "betse_owned_single_cell_pre_mesh_core_prerequisite@1"
 MAX_CONSTRUCTOR_OCCURRENCES = 7
 HELD_UNQUALIFIED_SOURCE_STAGE = True
+_PREPARING_RUNTIMES = WeakKeyDictionary()
 SOURCE_PINS = {
     "betse_initial_mesh_preparation": (
         "ef33e60ea5cd741d3618bccaaba494ac472664b02f4c82d08942b3e2c52c89b0"
@@ -119,6 +122,18 @@ class State:
     identity: str
 
 
+@dataclass(frozen=True, slots=True)
+class _LiveCoreTrial:
+    """Process-local source objects; never a serialized or admitted parent."""
+
+    request: Request
+    state: State
+    kernel: object
+    observer: object
+    rng: object
+    warning_records: tuple
+
+
 class CorePrerequisiteRejected(ValueError):
     def __init__(
         self,
@@ -134,6 +149,7 @@ class CorePrerequisiteRejected(ValueError):
         capture_error=None,
         source_stage=None,
         capture_stage=None,
+        live_runtime=None,
     ):
         super().__init__(reason + " at " + stage)
         self.stage = stage
@@ -143,6 +159,12 @@ class CorePrerequisiteRejected(ValueError):
         # formatting or serialization is attempted in this error carrier.
         self.source_error, self.capture_error = source_error, capture_error
         self.source_stage, self.capture_stage = source_stage, capture_stage
+        self.live_runtime = live_runtime
+
+
+def _preparing_runtime(kernel):
+    """Private dynamic extent of the actual driver, never a field on the mesh."""
+    return _PREPARING_RUNTIMES.get(kernel) == get_ident()
 
 
 def _verify_sources():
@@ -492,7 +514,21 @@ def _seal_trial(
     return state
 
 
-def prepare(request):
+def prepare(request, *, _runtime_type=None):
+    """Run the owned source prerequisite, including its existing numerical replays.
+
+    The private runtime option is for the typed single-cell transport. It adds
+    methods to this same constructor instance, never restores inspection data,
+    and returns live objects only after the ordinary trial seals successfully.
+    """
+    if _runtime_type is not None and (
+        not isinstance(_runtime_type, type) or not issubclass(_runtime_type, _Runtime)
+    ):
+        raise CorePrerequisiteRejected(
+            "Live continuation requires the owned runtime subclass",
+            stage="live_runtime_type",
+            parent_request=request,
+        )
     validate_request(request)
     base, parent = request.initial_request, request.initial_state
     saved = initial.streams.native_stream_manifest(base.stream_before)["state"]
@@ -500,7 +536,7 @@ def prepare(request):
     rng.set_state((saved[0], np.asarray(saved[1], dtype=np.uint32), saved[2], saved[3], saved[4]))
     observer = initial._Observer(base.constructor_point_ids)
     observer.first_failure = None
-    kernel = object.__new__(_Runtime)
+    kernel = object.__new__(_Runtime if _runtime_type is None else _runtime_type)
     kernel._cells_observer, kernel._cells_rng = observer, initial._Random(rng, observer)
     kwargs = {
         name: np.array(value, copy=True, order="K") if isinstance(value, np.ndarray) else value
@@ -535,76 +571,88 @@ def prepare(request):
             capture,
         )
         raise rejected from capture_error
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        try:
-            kernel.__init__(**kwargs)
-            constructed = caches.snapshot(initial._public_cache(kernel))
-            if (
-                constructed.identity != parent.constructed_cache.identity
-                or initial._rng_stream(rng).identity != parent.stream_after_constructor.identity
-            ):
-                raise ValueError("Actual constructor cache/RNG differs from retained native parent")
-            stage = "pre_mesh_replay"
-            kernel.pre_mesh()
-            before = caches.snapshot(initial._public_cache(kernel))
-            if (
-                before.identity != parent.cache.identity
-                or observer.ids != parent.retained_point_ids
-                or initial._rng_stream(rng).identity != parent.stream_after.identity
-            ):
-                raise ValueError(
-                    "Actual pre_mesh cache/occurrence/RNG differs from retained native parent"
+    if _runtime_type is not None:
+        _PREPARING_RUNTIMES[kernel] = get_ident()
+    try:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            try:
+                kernel.__init__(**kwargs)
+                constructed = caches.snapshot(initial._public_cache(kernel))
+                if (
+                    constructed.identity != parent.constructed_cache.identity
+                    or initial._rng_stream(rng).identity != parent.stream_after_constructor.identity
+                ):
+                    raise ValueError(
+                        "Actual constructor cache/RNG differs from retained native parent"
+                    )
+                stage = "pre_mesh_replay"
+                kernel.pre_mesh()
+                before = caches.snapshot(initial._public_cache(kernel))
+                if (
+                    before.identity != parent.cache.identity
+                    or observer.ids != parent.retained_point_ids
+                    or initial._rng_stream(rng).identity != parent.stream_after.identity
+                ):
+                    raise ValueError(
+                        "Actual pre_mesh cache/occurrence/RNG differs from retained native parent"
+                    )
+                stage = "pre_mesh_event_replay"
+                actual_events = [
+                    (e.sequence, e.kind, e.method, e.depth, e.payload.identity)
+                    for e in observer.events
+                ]
+                expected_events = [
+                    (e.sequence, e.kind, e.method, e.depth, e.payload.identity)
+                    for e in parent.events
+                ]
+                if actual_events != expected_events:
+                    raise ValueError("Actual constructor/pre_mesh event chain differs from parent")
+                if tuple(str(w.message) for w in caught) != parent.warnings:
+                    raise ValueError("Actual constructor/pre_mesh warnings differ from parent")
+                stage = "pre_mesh_required_fields"
+                attributes = initial._public_cache(kernel)
+                missing = sorted(set(REQUIRED_PRE_MESH_FIELDS) - set(attributes))
+                if missing:
+                    raise ValueError("Native parent lacks source fields: " + repr(missing))
+                if kernel.make_all_operators is not False or kernel.single_cell is not True:
+                    raise ValueError("Retained native caller branch flags differ")
+                if kernel.n_tverts != len(observer.ids):
+                    raise ValueError("Native DEC vertex occurrence axis lost")
+                owners = _source_owners(request, kernel)
+                observer.add(
+                    "owned_single_cell_core_start", dict(cache=attributes, point_ids=observer.ids)
                 )
-            stage = "pre_mesh_event_replay"
-            actual_events = [
-                (e.sequence, e.kind, e.method, e.depth, e.payload.identity) for e in observer.events
-            ]
-            expected_events = [
-                (e.sequence, e.kind, e.method, e.depth, e.payload.identity) for e in parent.events
-            ]
-            if actual_events != expected_events:
-                raise ValueError("Actual constructor/pre_mesh event chain differs from parent")
-            if tuple(str(w.message) for w in caught) != parent.warnings:
-                raise ValueError("Actual constructor/pre_mesh warnings differ from parent")
-            stage = "pre_mesh_required_fields"
-            attributes = initial._public_cache(kernel)
-            missing = sorted(set(REQUIRED_PRE_MESH_FIELDS) - set(attributes))
-            if missing:
-                raise ValueError("Native parent lacks source fields: " + repr(missing))
-            if kernel.make_all_operators is not False or kernel.single_cell is not True:
-                raise ValueError("Retained native caller branch flags differ")
-            if kernel.n_tverts != len(observer.ids):
-                raise ValueError("Native DEC vertex occurrence axis lost")
-            owners = _source_owners(request, kernel)
-            observer.add(
-                "owned_single_cell_core_start", dict(cache=attributes, point_ids=observer.ids)
-            )
-            stage = "create_core_operators"
-            kernel.create_core_operators()
-            core_completed = True
-            stage = "core_finite_and_source_axis_admission"
-            after = initial._public_cache(kernel)
-            original_keys = _cache_keys(before)
-            if (
-                caches.snapshot({key: after[key] for key in original_keys}).identity
-                != before.identity
-            ):
-                raise ValueError(
-                    "Native core operator call changed the retained pre_mesh attributes"
-                )
-            if set(after) - set(original_keys) != {"delta_tri_0", "delta_tri_0_inv"}:
-                raise ValueError("Unexpected source fields outside core operator continuation")
-            if (
-                np.shape(kernel.delta_tri_0) != (kernel.n_tedges, kernel.n_tverts)
-                or np.shape(kernel.delta_tri_0_inv) != (kernel.n_tverts, kernel.n_tedges)
-                or not caches.snapshot(after).all_finite
-            ):
-                raise ValueError("Native core result has invalid source axes or nonfinite caches")
-            if initial._rng_stream(rng).identity != parent.stream_after.identity:
-                raise ValueError("Core operator call consumed an unexpected RNG epoch")
-        except Exception as failure:
-            error = failure
+                stage = "create_core_operators"
+                kernel.create_core_operators()
+                core_completed = True
+                stage = "core_finite_and_source_axis_admission"
+                after = initial._public_cache(kernel)
+                original_keys = _cache_keys(before)
+                if (
+                    caches.snapshot({key: after[key] for key in original_keys}).identity
+                    != before.identity
+                ):
+                    raise ValueError(
+                        "Native core operator call changed the retained pre_mesh attributes"
+                    )
+                if set(after) - set(original_keys) != {"delta_tri_0", "delta_tri_0_inv"}:
+                    raise ValueError("Unexpected source fields outside core operator continuation")
+                if (
+                    np.shape(kernel.delta_tri_0) != (kernel.n_tedges, kernel.n_tverts)
+                    or np.shape(kernel.delta_tri_0_inv) != (kernel.n_tverts, kernel.n_tedges)
+                    or not caches.snapshot(after).all_finite
+                ):
+                    raise ValueError(
+                        "Native core result has invalid source axes or nonfinite caches"
+                    )
+                if initial._rng_stream(rng).identity != parent.stream_after.identity:
+                    raise ValueError("Core operator call consumed an unexpected RNG epoch")
+            except Exception as failure:
+                error = failure
+    finally:
+        if _runtime_type is not None:
+            _PREPARING_RUNTIMES.pop(kernel, None)
     capture = dict(
         stage=None,
         snapshots=dict(constructed=constructed, before=before),
@@ -657,7 +705,19 @@ def prepare(request):
             trial=state,
             source_error=error,
             source_stage=stage,
+            partial=None
+            if _runtime_type is None
+            else dict(
+                original_kernel=kernel,
+                original_observer=observer,
+                original_rng=rng,
+                raw_warning_records=tuple(caught),
+                complete_state_available=True,
+                usable_live_handle_available=False,
+            ),
         ) from error
+    if _runtime_type is not None:
+        return _LiveCoreTrial(request, state, kernel, observer, rng, tuple(caught))
     return state
 
 

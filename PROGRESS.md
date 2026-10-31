@@ -18,7 +18,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Recent source packets had not yet been integrated. Root imported post-cut
   mesh/contact and charged-surface code; Key Dev integrated 50 owned files,
   including molecule events, run/restart and reusable validation; Specialist
-  integrated the new tissue modules and is reconciling older tissue versions.
+  integrated the new tissue modules and reconciled the named older tissue versions.
   The [earlier-source inventory](/mnt/workspaces/Cells/repository-source-integration-20261031-01/earlier-source-inventory.json)
   mapped 449,438 snapshot copies to 614 canonical paths. It found nine substantive
   workspace-only modules, all now tracked by Git. Two synthetic test sentinels
@@ -43,17 +43,86 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   cases; no core or polygon scientific calculation ran. The
   [integration summary](/mnt/workspaces/Cells/repository-source-integration-20261031-01/integration-summary.json)
   records 83 source/support files and 64 distinct passing software cases.
-  Key Dev's next implementation is durable save/load for the existing molecule
-  INIT/SIM run state, with complete ownership, state and journal preservation.
-  The in-memory handoff already exists; native BETSE pickle interoperability and
-  physical/post-cut admission are outside this persistence assignment.
-  At the user's request, Specialist now owns the checkout snapshot builder and
-  corrected INIT62 runner preparation, including Root's in-progress Git files.
-  The [assignment](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/specialist-assignment.json)
-  keeps source, reusable runners and tests in Git, with run copies generated
-  one-way into `/mnt/workspaces/Cells`. The new reference import dependencies
-  must be included before release. Root retains scientific launch and result
-  review; no new INIT run has launched.
+  A further [12-file older tissue import](/mnt/workspaces/Cells/repository-source-integration-20261031-01/older-tissue-source-review.json)
+  is verified at source level: membrane dependency metadata, the held
+  refinement candidate and its initial-authority bindings, and the declared
+  mechanics dependency update. Refinement methods are unchanged. The mechanics
+  update explicitly adopts the previously qualified auxiliary divergence bound
+  of `3e-14` instead of `3e-20`; its composition remains unrun. No tests or
+  scientific evaluations accompanied this import, and original failures remain.
+  Key Dev has implemented durable molecule checkpoint save/load in Git.
+  [The earlier saved-result review](/mnt/workspaces/Cells/molecule-checkpoint-root-review-20261031-01/saved-results-review.json)
+  verifies **21 distinct passing checks on that source version**, 96 snapshot
+  files and the recorded producer/runtime bindings. Across development batches,
+  199 explicit preparation/control invocations, 58 ownership checks and six
+  accepted INIT timesteps are counted as executed work, with zero independent
+  scientific credit. Earlier failures and the SIM prerequisite refusal remain.
+  [All three checkpoint contract repairs are now reviewed](/mnt/workspaces/Cells/molecule-checkpoint-contract-repair-20261031-01/root-review.json):
+  original errors and available inputs survive recovery I/O failures; uncertain
+  publication is reported explicitly; unsupported dictionary/proxy backing
+  aliases refuse; only the exact retained SIM prerequisite can be an expected
+  test failure. **51 software cases passed, 24 deselected**, in **5.54 seconds,
+  215.5 MiB peak**. Earlier lint, import and synthetic fixture failures remain
+  preserved. These checks used synthetic ownership gates and executed no actual
+  setup, native model, owner verifier or timestep. A later identical snapshot
+  adds no test credit. Key Dev is fixing the retained-owner INIT-to-SIM
+  handoff. The [saved comparison](/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/owner-comparison.json)
+  identifies dictionary insertion order as the difference in three geometry/world
+  declarations; values, list order and floating-point bits match, and ions
+  match exactly. The fix keeps all four ownership checks and requires exact
+  correspondence between the supplied and bound SIM declarations. Its source
+  and software review are pending; actual transition validation stays held.
+  Positive SIM checkpointing and uninterrupted-versus-restored continuation
+  remain held; native BETSE pickle and physical/post-cut admission are outside
+  this persistence assignment.
+  Specialist completed the checkout snapshot builder and corrected INIT62
+  runner. [Root's packet and saved-result review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/packet-software-review.json)
+  verifies 198 snapshot files, 1,249 packet payloads and **38 passing software
+  controls** in **7.36 seconds, 76.1 MiB peak**, with no scientific imports.
+  All three additional reference imports are included. Four later
+  [snapshot filename/exit-status regressions passed separately](/mnt/workspaces/Cells/source-snapshot-ignore-regression-20261031-01/root-review.json)
+  in **1.52 seconds, 41.7 MiB peak**. Their new test-source binding is separate
+  from the original 38 controls; the helper and frozen qualification code are
+  unchanged. The
+  [independent runner review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/runner-review.json)
+  found no release blocker. Source, reusable runners and tests stay in Git;
+  immutable execution copies and results stay under `/mnt/workspaces/Cells`.
+  **Root launched the fresh 62-check INIT qualification at 14:51:42 UTC on
+  CPU4**, detached, with [durable launch evidence](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/launch-record.json).
+  Results remain pending review. The estimate is **30–90 minutes**, unmeasured
+  for this complete round. No prior passes are carried forward; the original
+  35-pass/one-failure/26-unrun attempt remains failed. Status checks wait for
+  the user's request; no automatic retry or follow-up is queued.
+  A later [prepared-04 candidate](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/specialist-preparation-result-04.json)
+  remains unreleased; it does not replace the launched prepared-03 run.
+  The [INIT closure review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/closure-review.json)
+  found no change to the equations, fixtures or tolerances invoked by INIT;
+  its snapshot must bind the changed files and three additional reference
+  imports. Key Dev restored a separate loss of SIM failure-capture code in the
+  run-lifecycle native validator; Root verified the restored file is byte-exact
+  to the original INIT baseline, leaving seven changed closure files. Its
+  [saved-result review is complete](/mnt/workspaces/Cells/repository-source-integration-20261031-01/run-lifecycle-failure-retention-review.json):
+  **12 distinct synthetic controls passed in both checkout and snapshot**
+  (24 executions), taking **7.32 and 8.62 seconds**, with a maximum **79.8 MiB
+  peak**. The review verified 171 source/evidence bindings, failure payloads,
+  preserved partial output and collision refusal. No scientific calculation ran.
+  This restores diagnostic retention after a component returns; it does not
+  resolve the separate actual INIT-to-SIM retained-owner refusal.
+
+- **Live single-cell mesh transport:** Specialist's implementation retains the
+  actual constructor/pre-mesh/core object, its array aliases, observer and RNG,
+  and preserves original cut returns, failures and partial mutations. Root
+  [reviewed the frozen core integration](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-core-review.json)
+  and [33 passing synthetic controls](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-software-review.json):
+  **25.16 seconds, 221.1 MiB peak**, zero native entry attempts, with 372 frozen
+  source files and 52 selected runtime bindings verified. Earlier 28-check
+  evidence remains separate. The [authority review](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-authority-review.json)
+  leaves direct map/core entry guards and raw-mesh issuance checks for the newer
+  checkout revision; those edits do not inherit the 33 passes. Specialist is
+  completing that revision. Positive native execution, the later actual
+  Cells/simulation/picker owner chain, all 11 invalidated owners and all 12
+  post-cut scientific cases remain unqualified. No physical or checkpoint
+  admission follows from this source transport.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user

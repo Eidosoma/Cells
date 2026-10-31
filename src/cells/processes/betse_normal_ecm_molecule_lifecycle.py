@@ -6,6 +6,8 @@ Every phase keeps its own source labels, material dt, caches and journal.
 This new source proposal carries no scientific result or native persistence claim.
 """
 
+import json
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 import numpy as np
@@ -185,9 +187,23 @@ def check_owners(binding, completed):
     if binding.expected_init_identity != completed.binding.identity:
         raise ValueError("Transition declaration belongs to another INIT binding")
     old = completed.binding.material_binding.geometry_binding.definition
-    new = raw["sim_composition_template"]["event_inputs"]["field"]["definition"][
+    supplied = raw["sim_composition_template"]["event_inputs"]["field"]["definition"][
         "environment_geometry_definition"
     ]
+    bound = binding.declaration.base.material_binding.geometry_binding
+    # Environment-field bindings store the exact declaration as sorted JSON.
+    # Compare the two bound owner declarations, not a canonical INIT mapping
+    # against the SIM template's incidental key insertion order. No geometry,
+    # current binding, cache, world or owner is constructed/replaced here.
+    declared = json.dumps(
+        material.geometry_source.plain(supplied),
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+    if declared != bound.definition_json:
+        raise ValueError("SIM owner template differs from its bound geometry declaration")
+    new = bound.definition
     if (
         not catalog.equal_tree(old["geometry"], new["geometry"])
         or not catalog.equal_tree(old["world"], new["world"])
@@ -205,6 +221,53 @@ def check_owners(binding, completed):
         raise ValueError(
             "Transition may not replace retained ionic, cell, membrane or environment owners"
         )
+
+    # The binder's JSON encoding intentionally erases ndarray/scalar dtypes.
+    # Keep an additional comparison of the two original declarations so that
+    # this representation bridge cannot erase an array/sequence distinction.
+    # Only mapping insertion order is irrelevant here; no value is converted.
+    def same_raw(left, right):
+        if isinstance(left, Mapping) or isinstance(right, Mapping):
+            return (
+                isinstance(left, Mapping)
+                and isinstance(right, Mapping)
+                and set(left) == set(right)
+                and all(same_raw(left[key], right[key]) for key in left)
+            )
+        if isinstance(left, (np.ndarray, np.generic)) or isinstance(
+            right, (np.ndarray, np.generic)
+        ):
+            return (
+                type(left) is type(right)
+                and left.dtype == right.dtype
+                and left.shape == right.shape
+                and np.array_equal(left, right)
+            )
+        if isinstance(left, (tuple, list)) or isinstance(right, (tuple, list)):
+            return (
+                isinstance(left, (tuple, list))
+                and isinstance(right, (tuple, list))
+                and len(left) == len(right)
+                and all(same_raw(a, b) for a, b in zip(left, right, strict=True))
+            )
+        return catalog.equal_tree(left, right)
+
+    old_supplied = completed.binding.inputs_raw["field"]["definition"][
+        "environment_geometry_definition"
+    ]
+    for before, after in (
+        (old_supplied["geometry"], supplied["geometry"]),
+        (old_supplied["world"], supplied["world"]),
+        (
+            old_supplied["current_definition"]["geometry"],
+            supplied["current_definition"]["geometry"],
+        ),
+        (old_supplied["current_definition"]["ions"], supplied["current_definition"]["ions"]),
+    ):
+        if not same_raw(before, after):
+            raise ValueError(
+                "Transition may not change retained owner sequence/array type, dtype, shape, order or values"
+            )
     cfg = raw["source_setup"]
     if cfg["rng_mode"] == "same_process_no_unowned_draws":
         receipt = completed.binding.setup_receipt

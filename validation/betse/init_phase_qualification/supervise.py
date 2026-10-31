@@ -1,16 +1,16 @@
 """Explicit later launch only; retain failures before output ownership."""
 
+import argparse
 import hashlib
 import json
 import os
 import subprocess
-import sys
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-LAUNCH = ROOT / "launch-01"
+LAUNCH = ROOT.parent / "launch-01"
 
 
 def sha(path):
@@ -148,7 +148,9 @@ def launch():
             detached=True,
             output=plan["output"],
             plan_sha256=sha(ROOT / "plan.json"),
-            release_sha256=sha(ROOT / "release.json"),
+            release_sha256=sha(
+                Path(os.environ.get("CELLS_INIT_RELEASE_FILE", ROOT.parent / "release.json"))
+            ),
             automatic_polling=False,
             automatic_retry=False,
             automatic_followup=False,
@@ -173,9 +175,13 @@ def launch():
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["launch"]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", choices=("launch", "worker"))
+    parser.add_argument("--release", type=Path)
+    args = parser.parse_args()
+    if args.release is not None:
+        os.environ["CELLS_INIT_RELEASE_FILE"] = str(args.release.resolve())
+    if args.action == "launch":
         launch()
-    elif sys.argv[1:] == ["worker"]:
-        worker()
     else:
-        raise SystemExit("Use launch only after a new instruction and explicit release")
+        worker()

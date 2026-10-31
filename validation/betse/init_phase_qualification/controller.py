@@ -10,9 +10,11 @@ from pathlib import Path
 from common import (
     HERE,
     canonical,
+    checkout_binding,
     exact_ids,
     memory,
     read,
+    release_file,
     require,
     resource_receipt,
     sha,
@@ -41,6 +43,10 @@ def verify_packet(packet, plan):
         "Exact held source declarations",
     )
     verify_files(packet / "source", inputs["source_sha256"], exact=True)
+    from source_snapshot import verify
+
+    snapshot = verify(plan["checkout_snapshot"], manifest_sha256=plan["checkout_snapshot_sha256"])
+    checkout_binding(snapshot, inputs["checkout_bindings"], manifest["files"])
     verify_files(packet, inputs["native_snapshot_sha256"])
     verify_files(packet, inputs["tool_sha256"])
     verify_files(Path(inputs["native_checkout"]), inputs["live_native_source_sha256"])
@@ -81,6 +87,7 @@ def environment(out, target):
         CELLS_COMPONENT_EVIDENCE=str(target / "evidence"),
         CELLS_INIT_PHASE_RELEASED="1",
         CELLS_INIT_RUNNER_METADATA=str(target),
+        CELLS_INIT_RELEASE_FILE=str(release_file()),
     )
     for name in (
         "OMP_NUM_THREADS",
@@ -268,6 +275,26 @@ def group_worker(group):
         raise
 
 
+def copy_packet(packet, out, manifest):
+    """Copy reviewed inputs exclusively; executable source remains immutable."""
+    for name, digest in manifest["files"].items():
+        target = out / canonical(name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with (packet / name).open("rb") as source, target.open("xb") as destination:
+            shutil.copyfileobj(source, destination, length=1024 * 1024)
+        require(sha(target) == digest, "Copied frozen file mismatch: " + name)
+        target.chmod((packet / name).stat().st_mode & ~0o222)
+    with (
+        (packet / "MANIFEST.json").open("rb") as source,
+        (out / "MANIFEST.json").open("xb") as target,
+    ):
+        shutil.copyfileobj(source, target)
+    (out / "MANIFEST.json").chmod(0o444)
+    for path in sorted(out.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+        if path.is_dir():
+            path.chmod(0o555)
+
+
 def worker():
     owned = False
     out = None
@@ -292,19 +319,14 @@ def worker():
                 utc=utc(),
                 cpu=plan["cpu"],
                 plan_sha256=sha(HERE / "plan.json"),
-                release_sha256=sha(HERE / "release.json"),
+                release_sha256=sha(release_file()),
                 detached=True,
                 automatic_retry=False,
             ),
         )
         stage = "complete_frozen_packet_copy"
         packet = Path(plan["packet"])
-        for name, digest in manifest["files"].items():
-            target = out / canonical(name)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(packet / name, target)
-            require(sha(target) == digest, "Copied frozen file mismatch: " + name)
-        shutil.copyfile(packet / "MANIFEST.json", out / "MANIFEST.json")
+        copy_packet(packet, out, manifest)
         verify_packet(out, plan)
         from runtime_inventory import inventory
 
@@ -331,7 +353,7 @@ def worker():
                 original_hold_marker_preserved=True,
                 source_and_inputs_overlays=[],
                 exact_test_ids=True,
-                release_sha256=sha(HERE / "release.json"),
+                release_sha256=sha(release_file()),
                 original_driver_preserved_not_invoked=True,
                 why=(
                     "Reviewed runner supplies strict complete archives and runtime binding; "

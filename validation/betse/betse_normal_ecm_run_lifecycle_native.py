@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import sys
+import traceback
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -123,7 +124,7 @@ def clock_profile(raw):
     )
 
 
-def evaluate(inputs):
+def evaluate(inputs, *, retain_reached=None):
     raw = inputs["time_profile"]
     clock = clock_profile(raw)
     if clock["phase"] != "SIM" or clock["step_count"] != 3:
@@ -133,10 +134,7 @@ def evaluate(inputs):
     if clock["dt_s"] != calendar["dt_s"] or clock["sample_stride"] != calendar["sample_stride"]:
         raise ValueError("Component/profile clock association differs")
     captured = component.evaluate(declared)
-    for index, row in enumerate(captured.get("sample_states", ())):
-        assert row["source_time_s"] == float(clock["source_labels_s"][index])
-        assert row["native_calendar_eligible"] is clock["sampled"][index]
-    return dict(
+    reached = dict(
         clock=clock,
         composition=captured,
         RNG_unchanged=captured["RNG_unchanged"],
@@ -147,6 +145,12 @@ def evaluate(inputs):
         native_full_phase_completed=False,
         physical_initialization_claim=False,
     )
+    if retain_reached is not None:
+        retain_reached(reached)
+    for index, row in enumerate(captured.get("sample_states", ())):
+        assert row["source_time_s"] == float(clock["source_labels_s"][index])
+        assert row["native_calendar_eligible"] is clock["sampled"][index]
+    return reached
 
 
 def main():
@@ -176,23 +180,49 @@ def main():
     builtins.__import__ = guarded
     inputs = json.loads(args.inputs.read_text())
     before_rng = copy.deepcopy(np.random.get_state())
-    result = (
-        dict(clock=clock_profile(inputs), RNG_unchanged=True, clock_only=True)
-        if args.clock_only
-        else evaluate(inputs)
-    )
-    after_rng = np.random.get_state()
-    result["RNG_unchanged"] = bool(
-        before_rng[0] == after_rng[0]
-        and np.array_equal(before_rng[1], after_rng[1])
-        and before_rng[2:] == after_rng[2:]
-    )
-    loaded = [name for name in sys.modules if name.split(".")[0] in blocked]
-    assert not loaded
-    result.update(
-        production_imports_denied=True, loaded_production_modules=loaded, runtime=inventory()
-    )
-    component.archives.write_archive(args.output, result)
+    reached = {}
+
+    def retain_reached(value):
+        reached.update(value)
+
+    try:
+        result = (
+            dict(clock=clock_profile(inputs), RNG_unchanged=True, clock_only=True)
+            if args.clock_only
+            else evaluate(inputs, retain_reached=retain_reached)
+        )
+        retain_reached(result)
+        after_rng = np.random.get_state()
+        result["RNG_unchanged"] = bool(
+            before_rng[0] == after_rng[0]
+            and np.array_equal(before_rng[1], after_rng[1])
+            and before_rng[2:] == after_rng[2:]
+        )
+        loaded = [name for name in sys.modules if name.split(".")[0] in blocked]
+        assert not loaded
+        result.update(
+            production_imports_denied=True, loaded_production_modules=loaded, runtime=inventory()
+        )
+        component.archives.write_archive(args.output, result)
+    except BaseException as error:
+        if reached:
+            failed_output = args.output.with_name(args.output.name + "-failed-reached")
+            component.archives.write_archive(
+                failed_output,
+                dict(
+                    reached_capture=reached,
+                    failure=dict(
+                        type=type(error).__name__,
+                        message=str(error),
+                        traceback=traceback.format_exc(),
+                    ),
+                    failed_after_capture_return=True,
+                    native_full_phase_completed=False,
+                    physical_initialization_claim=False,
+                    qualification_credit=False,
+                ),
+            )
+        raise
 
 
 if __name__ == "__main__":

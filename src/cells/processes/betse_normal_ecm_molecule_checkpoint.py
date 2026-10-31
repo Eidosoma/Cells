@@ -58,10 +58,40 @@ class Loaded:
 
 
 class CheckpointRejected(ValueError):
-    def __init__(self, error, evidence, attempts):
-        super().__init__(str(error))
+    """Primary refusal plus available in-memory inputs if recovery I/O fails.
+
+    Recovery errors never replace ``primary`` or its original exception chain.
+    A rejected save may have a visible manifest: consult ``publication`` rather
+    than treating this exception as proof that publication never happened.
+    """
+
+    def __init__(self, error, evidence, attempts, *, stage, context, publication):
+        self.primary = error
+        self.stage = stage
         self.evidence = Path(evidence)
         self.attempts = tuple(attempts)
+        self.binding = context["binding"]
+        self.parent = context["parent"]
+        self.capture = context
+        self.publication = publication
+        self.recovery_errors = []
+        self.primary_traceback = error.__traceback__
+        self.primary_chain, seen, current = [], set(), error
+        while current is not None and id(current) not in seen:
+            seen.add(id(current))
+            self.primary_chain.append(current)
+            current = current.__cause__ if current.__cause__ is not None else current.__context__
+        self.primary_record = None
+        try:
+            self.primary_record = _exception_record(error)
+        except BaseException as secondary:
+            self.recovery_errors.append(dict(stage="recovery.primary_record", error=secondary))
+        try:
+            message = str(error)
+        except BaseException as secondary:
+            self.recovery_errors.append(dict(stage="recovery.primary_message", error=secondary))
+            message = type(error).__name__
+        super().__init__(message)
 
 
 def producer_identity():
@@ -341,42 +371,194 @@ def _read(path, maximum):
     return data
 
 
-def _failure(directory, error, attempts):
-    target = directory / "failure.json"
-    if not target.exists():
-        _write_json(
-            target,
-            dict(
-                status="refused",
-                type=type(error).__name__,
-                message=str(error),
-                attempts=attempts,
-                no_checkpoint_admission=True,
-                preserved_inputs=True,
-                traceback="".join(traceback.format_exception(error)),
+def _exception_record(error):
+    chain, seen, current = [], set(), error
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        chain.append(
+            dict(type=type(current).__name__, module=type(current).__module__, message=str(current))
+        )
+        current = current.__cause__ if current.__cause__ is not None else current.__context__
+    return dict(
+        type=type(error).__name__,
+        module=type(error).__module__,
+        message=str(error),
+        traceback="".join(traceback.format_exception(error)),
+        exception_chain=chain,
+    )
+
+
+def _recover(rejection, stage, operation):
+    """One independent evidence attempt; its failure cannot mask the refusal."""
+    try:
+        return operation()
+    except BaseException as error:
+        rejection.recovery_errors.append(dict(stage=stage, error=error))
+        return None
+
+
+def _refusal_record(rejection):
+    primary = rejection.primary_record or _exception_record(rejection.primary)
+    capture = rejection.capture
+    return dict(
+        status="refused",
+        **primary,
+        stage=rejection.stage,
+        attempts=rejection.attempts,
+        success_receipt_returned=False,
+        no_checkpoint_admission=(
+            True
+            if capture["operation"] == "load"
+            or (
+                rejection.publication["manifest_visibility"] == "absent"
+                and not rejection.publication.get("link_attempted", False)
+            )
+            else None
+        ),
+        publication=rejection.publication,
+        binding_identity=(
+            rejection.binding.identity if type(rejection.binding) is run.Binding else None
+        ),
+        parent_identity=(
+            rejection.parent.identity if type(rejection.parent) is run.RunState else None
+        ),
+        expected_phase=capture["expected_phase"],
+        expected_parent_identity=capture["expected_parent_identity"],
+        available_capture=dict(
+            tree_complete=capture.get("tree") is not None,
+            nodes=len(capture.get("nodes", ())),
+            arrays=list(capture.get("arrays", {})),
+            raw_files=list(capture.get("raw", {})),
+            caller_binding_retained_in_memory=True,
+            parent_available_in_memory=rejection.parent is not None,
+        ),
+    )
+
+
+def _failure(directory, rejection):
+    _write_json(directory / "failure.json", _refusal_record(rejection))
+
+
+def _raw_file(path, data):
+    with path.open("xb") as stream:
+        stream.write(data)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _refusal(error, directory, attempts, stage, context, publication, *, encoder=None):
+    """Best-effort recovery, retaining actual objects independently of storage."""
+    if encoder is not None:
+        context.update(nodes=encoder.nodes, arrays=encoder.arrays)
+    rejection = CheckpointRejected(
+        error, directory, attempts, stage=stage, context=context, publication=publication
+    )
+    publication["success_receipt_returned"] = False
+
+    def observe_manifest():
+        try:
+            os.lstat(Path(context["source"]) / "manifest.json")
+        except FileNotFoundError:
+            publication["manifest_visibility"] = "absent"
+        else:
+            publication["manifest_visibility"] = "visible"
+
+    publication["manifest_visibility"] = "unknown"
+    _recover(rejection, "recovery.observe_manifest", observe_manifest)
+    if context["operation"] == "save":
+        publication["durability"] = (
+            "not_published"
+            if publication["manifest_visibility"] == "absent"
+            and not publication.get("link_attempted", False)
+            else "uncertain"
+        )
+        if encoder is not None and encoder.nodes and not context.get("input_written", False):
+            _recover(
+                rejection,
+                "recovery.input_prefix",
+                lambda: _write_json(
+                    directory / "input-prefix.json",
+                    dict(
+                        complete=False,
+                        nodes=encoder.nodes,
+                        root=context.get("tree", {}).get("root") if context.get("tree") else None,
+                        error="Unadmitted available input; no reconstruction permitted",
+                    ),
+                ),
+            )
+
+            def arrays():
+                with (directory / "input-arrays.npz").open("xb") as stream:
+                    np.savez(stream, allow_pickle=False, **encoder.arrays)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+
+            _recover(rejection, "recovery.input_arrays", arrays)
+    else:
+        for name, data in context["raw"].items():
+            _recover(
+                rejection,
+                "recovery.raw." + name,
+                lambda name=name, data=data: _raw_file(directory / ("input-" + name), data),
+            )
+    _recover(rejection, "recovery.failure_json", lambda: _failure(directory, rejection))
+    _recover(rejection, "recovery.sync_directory", lambda: _sync_directory(directory))
+    _recover(rejection, "recovery.sync_parent", lambda: _sync_directory(directory.parent))
+    if rejection.recovery_errors:
+        # Later recovery failures cannot be appended to an already written
+        # failure.json without overwriting evidence. Keep a separate record;
+        # the exception's list remains authoritative if this write/sync fails.
+        _recover(
+            rejection,
+            "recovery.secondary_json",
+            lambda: _write_json(
+                directory / "recovery-errors.json",
+                dict(
+                    primary=_refusal_record(rejection),
+                    errors=[
+                        dict(stage=row["stage"], **_exception_record(row["error"]))
+                        for row in rejection.recovery_errors
+                    ],
+                ),
             ),
         )
-        _sync_directory(directory)
-        _sync_directory(directory.parent)
+        _recover(rejection, "recovery.secondary_sync", lambda: _sync_directory(directory))
+    return rejection
 
 
-def _publish(directory, payload):
-    """Atomic, nonreplacing commit marker after all payload bytes are durable."""
+def _publish(directory, payload, *, publication):
+    """Publish atomically; retain temporary bytes on failure without rollback.
+
+    A later I/O error can follow a successful link. The caller retains each
+    completed step and reports publication uncertainty instead of hiding it.
+    """
+    publication["stage"] = "publish.create_temporary"
     fd, name = tempfile.mkstemp(
         prefix=".molecule-checkpoint-", suffix=".json", dir=directory.parent
     )
     temporary = Path(name)
-    try:
-        with os.fdopen(fd, "wb") as stream:
-            stream.write(codec.json_bytes(payload) + b"\n")
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.link(temporary, directory / "manifest.json", follow_symlinks=False)
-        _sync_directory(directory)
-        _sync_directory(directory.parent)
-    finally:
-        temporary.unlink(missing_ok=True)
-        _sync_directory(directory.parent)
+    publication["temporary_path"] = str(temporary)
+    with os.fdopen(fd, "wb") as stream:
+        publication["stage"] = "publish.write_manifest"
+        stream.write(codec.json_bytes(payload) + b"\n")
+        stream.flush()
+        publication["stage"] = "publish.sync_manifest"
+        os.fsync(stream.fileno())
+    publication["stage"] = "publish.link_manifest"
+    publication["link_attempted"] = True
+    os.link(temporary, directory / "manifest.json", follow_symlinks=False)
+    publication["link_returned"] = True
+    publication["stage"] = "publish.sync_directory"
+    _sync_directory(directory)
+    publication["directory_synced"] = True
+    publication["stage"] = "publish.sync_parent"
+    _sync_directory(directory.parent)
+    publication["parent_synced"] = True
+    publication["stage"] = "publish.unlink_temporary"
+    temporary.unlink()
+    publication["stage"] = "publish.sync_cleanup"
+    _sync_directory(directory.parent)
+    publication.update(complete=True, manifest_visibility="visible", durability="confirmed")
 
 
 def save_checkpoint(
@@ -391,13 +573,33 @@ def save_checkpoint(
 ):
     """Save a complete, externally identified owned run; retain refused writes.
 
-    Failed runs require their actual RunRejected object. A partial/refused
-    directory never becomes a checkpoint. Existing destinations are untouched.
+    Failed runs require their actual RunRejected object. Existing destinations
+    are untouched. A refused call returns no receipt; after publication starts,
+    its exception reports possible manifest visibility/durability uncertainty.
     The source run's persistence/native laws and defaults are not modified.
     """
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
-    attempts, encoder, input_written = [], None, False
+    attempts, encoder = [], None
+    context = dict(
+        operation="save",
+        source=str(directory),
+        binding=binding,
+        parent=parent,
+        expected_phase=expected_phase,
+        expected_parent_identity=expected_parent_identity,
+        failure_input=failure,
+        input_written=False,
+        tree=None,
+    )
+    publication = dict(
+        complete=False,
+        link_attempted=False,
+        link_returned=False,
+        directory_synced=False,
+        parent_synced=False,
+    )
+    stage = "save.request"
     try:
         _write_json(
             directory / "request.json",
@@ -407,30 +609,43 @@ def save_checkpoint(
                 expected_parent_identity=expected_parent_identity,
             ),
         )
+        stage = "save.encoder"
         encoder = codec.Encoder(limits)
+        stage = "save.failure_record"
         retained_failure = failure_record(failure, parent) if failure is not None else None
         graph = dict(binding=binding, parent=parent, failure=retained_failure)
+        context["graph"] = graph
+        stage = "save.capture"
         tree = encoder.capture(graph)
+        context["tree"] = tree
+        stage = "save.seal"
         seal = encoder.seal(tree)
+        stage = "save.payload"
         encoder.write(directory, tree)
-        input_written = True
+        context["input_written"] = True
+        stage = "save.binding_and_parent"
         _expect(binding, expected_phase, expected_parent_identity)
         codec.require(
             type(parent) is run.RunState and parent.identity == expected_parent_identity,
             "Wrong expected checkpoint parent",
         )
         _check_failure(parent, retained_failure)
+        stage = "save.producer"
         producer = producer_identity()
+        stage = "save.ownership"
         _verify(binding, parent, attempts)
+        stage = "save.unchanged"
         codec.require(
             codec.fingerprint(graph, limits) == seal, "Save validation changed owned input state"
         )
         codec.require(
             producer_identity() == producer, "Producer/dependency changed during checkpoint save"
         )
+        stage = "save.operation"
         _write_json(
             directory / "operation.json", dict(attempts=attempts, producer_rebinds=0, timesteps=0)
         )
+        stage = "save.manifest"
         payload = dict(
             kind=KIND,
             complete=True,
@@ -445,7 +660,10 @@ def save_checkpoint(
             files={name: _sha(directory / name) for name in sorted(FILES)},
         )
         manifest = payload | dict(identity=digest(payload))
-        _publish(directory, manifest)
+        context["manifest"] = manifest
+        stage = "save.publish"
+        _publish(directory, manifest, publication=publication)
+        stage = "save.receipt"
         return Receipt(
             directory,
             manifest["identity"],
@@ -457,26 +675,12 @@ def save_checkpoint(
             len(attempts),
         )
     except BaseException as error:
-        if encoder is not None and encoder.nodes:
-            if not (directory / "state.json").exists():
-                _write_json(
-                    directory / "input-prefix.json",
-                    dict(
-                        complete=False,
-                        nodes=encoder.nodes,
-                        error="Unadmitted partial encoding; no reconstruction permitted",
-                    ),
-                )
-            if not input_written:
-                # Keep the complete available input buffers even if the failed
-                # writer already created state.json or a truncated arrays.npz.
-                # Never overwrite those failed output bytes.
-                with (directory / "input-arrays.npz").open("xb") as stream:
-                    np.savez(stream, allow_pickle=False, **encoder.arrays)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-        _failure(directory, error, attempts)
-        raise CheckpointRejected(error, directory, attempts) from error
+        if stage == "save.publish":
+            stage = publication.get("stage", stage)
+        rejection = _refusal(
+            error, directory, attempts, stage, context, publication, encoder=encoder
+        )
+        raise rejection from error
 
 
 def load_checkpoint(
@@ -503,6 +707,18 @@ def load_checkpoint(
     )
     evidence.mkdir(parents=True, exist_ok=False)
     attempts = []
+    context = dict(
+        operation="load",
+        source=str(directory),
+        binding=binding,
+        parent=None,
+        raw={},
+        expected_phase=expected_phase,
+        expected_parent_identity=expected_parent_identity,
+        tree=None,
+    )
+    publication = dict(complete=False, durability="not_assessed_by_refused_load")
+    stage = "load.request"
     try:
         _write_json(
             evidence / "request.json",
@@ -514,6 +730,7 @@ def load_checkpoint(
                 expected_checkpoint_identity=expected_checkpoint_identity,
             ),
         )
+        stage = "load.binding_and_directory"
         limits.check()
         _expect(binding, expected_phase, expected_parent_identity)
         codec.require(
@@ -524,7 +741,10 @@ def load_checkpoint(
             {p.name for p in directory.iterdir()} == FILES | {"manifest.json"},
             "Incomplete, refused or extended checkpoint directory",
         )
+        stage = "load.read.manifest.json"
         manifest_data = _read(directory / "manifest.json", limits.json_bytes)
+        context["raw"]["manifest.json"] = manifest_data
+        stage = "load.manifest"
         manifest = codec.parse_json(manifest_data, limits)
         fields = {
             "kind",
@@ -572,6 +792,7 @@ def load_checkpoint(
             and manifest["binding_seal"] == codec.fingerprint(binding, limits),
             "Complete supplied binding mismatch",
         )
+        stage = "load.producer"
         producer = producer_identity()
         codec.require(
             manifest["producer"] == producer, "Checkpoint producer/dependency/runtime mismatch"
@@ -580,18 +801,21 @@ def load_checkpoint(
             type(manifest["files"]) is dict and set(manifest["files"]) == FILES,
             "Checkpoint payload list differs",
         )
-        raw = {
-            name: _read(
+        raw = {}
+        for name in sorted(FILES):
+            stage = "load.read." + name
+            raw[name] = _read(
                 directory / name,
                 limits.archive_bytes if name == "arrays.npz" else limits.json_bytes,
             )
-            for name in sorted(FILES)
-        }
+            context["raw"][name] = raw[name]
+        stage = "load.payload_hashes"
         for name, data in raw.items():
             codec.require(
                 hashlib.sha256(data).hexdigest() == manifest["files"][name],
                 "Checkpoint payload hash changed: " + name,
             )
+        stage = "load.operation"
         saved_operation = codec.parse_json(raw["operation.json"], limits)
         saved_request = codec.parse_json(raw["request.json"], limits)
         codec.require(
@@ -621,7 +845,13 @@ def load_checkpoint(
             codec.json_bytes(saved_operation) == codec.json_bytes(expected_operation),
             "Missing successful save ownership-validation evidence",
         )
-        graph = codec.decode(codec.parse_json(raw["state.json"], limits), raw["arrays.npz"], limits)
+        stage = "load.decode"
+        context["tree"] = codec.parse_json(raw["state.json"], limits)
+        graph = codec.decode(context["tree"], raw["arrays.npz"], limits)
+        context["graph"] = graph
+        if type(graph) is dict:
+            context["parent"] = graph.get("parent")
+        stage = "load.graph"
         codec.require(
             type(graph) is dict and set(graph) == {"binding", "parent", "failure"},
             "Complete run graph required",
@@ -645,7 +875,9 @@ def load_checkpoint(
         )
         _check_failure(parent, graph["failure"])
         restored_binding = graph["binding"]
+        stage = "load.ownership"
         _verify(restored_binding, parent, attempts)
+        stage = "load.unchanged"
         codec.require(
             codec.fingerprint(graph, limits) == manifest["graph_seal"],
             "Load validation changed saved runtime state",
@@ -660,9 +892,13 @@ def load_checkpoint(
             checkpoint_identity=manifest["identity"],
             parent_identity=parent.identity,
         )
+        stage = "load.operation_evidence"
         _write_json(evidence / "operation.json", operation)
+        stage = "load.sync_directory"
         _sync_directory(evidence)
+        stage = "load.sync_parent"
         _sync_directory(evidence.parent)
+        stage = "load.receipt"
         receipt = Receipt(
             directory,
             manifest["identity"],
@@ -678,5 +914,5 @@ def load_checkpoint(
         # bind/reinitialization routine is used to construct these plain records.
         return Loaded(restored_binding, parent, graph["failure"], receipt, operation)
     except BaseException as error:
-        _failure(evidence, error, attempts)
-        raise CheckpointRejected(error, evidence, attempts) from error
+        rejection = _refusal(error, evidence, attempts, stage, context, publication)
+        raise rejection from error

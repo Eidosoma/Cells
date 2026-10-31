@@ -23,11 +23,80 @@ from validation.betse import betse_normal_current_native as archives
 from validation.betse import betse_normal_ecm_molecule_failure_checks as failures
 from validation.betse import betse_normal_ecm_molecule_run_lifecycle_fixtures as fixtures
 
+SIM_PREREQUISITE = "Transition may not replace retained ionic, cell, membrane or environment owners"
+
+
+def retained_SIM_prerequisite(error):
+    """Recognize only the exact known refusal with its complete retained return.
+
+    Evidence I/O/hash/type failures propagate normally, never as an upstream
+    expected failure. This classifies a refusal; it admits no run parent.
+    """
+    if (
+        type(error) is not run.RunRejected
+        or str(error) != SIM_PREREQUISITE
+        or not isinstance(error.partial, Mapping)
+        or error.partial.get("stage") != "actual_retained_molecule54_transition"
+        or error.partial.get("automatic_retry") is not False
+    ):
+        return False
+    receipt = getattr(error, "checkpoint_retention", None)
+    if not isinstance(receipt, dict) or receipt.get("source_error") is not error:
+        return False
+    payload = receipt.get("payload", {})
+    failure = payload.get("failure", {})
+    if (
+        receipt.get("complete") is not True
+        or receipt.get("stage") != "actual-INIT-to-SIM"
+        or payload.get("status") != "unexpected_source_failure"
+        or failure.get("stage") != "actual-INIT-to-SIM"
+        or failure.get("type") != "RunRejected"
+        or failure.get("message") != SIM_PREREQUISITE
+        or payload.get("capture_errors") != []
+        or payload.get("available", {}).get("partial") is not error.partial
+    ):
+        return False
+    path = Path(receipt["path"])
+    checkpoint.codec.require(
+        checkpoint._sha(path / "manifest.json") == receipt["manifest_sha256"],
+        "Changed retained SIM prerequisite manifest",
+    )
+    manifest = checkpoint.codec.parse_json(
+        checkpoint._read(path / "manifest.json", checkpoint.codec.DEFAULT_LIMITS.json_bytes),
+        checkpoint.codec.DEFAULT_LIMITS,
+    )
+    checkpoint.codec.require(
+        type(manifest) is dict
+        and set(manifest) == {"kind", "complete", "files"}
+        and manifest["kind"] == "cells.betse_normal_current_raw_evidence@1"
+        and manifest["complete"] is True
+        and type(manifest["files"]) is dict
+        and set(manifest["files"]) == {"data.json", "arrays.npz"},
+        "Incomplete retained SIM prerequisite archive",
+    )
+    for name, expected in manifest["files"].items():
+        checkpoint.codec.require(
+            not (path / name).is_symlink() and checkpoint._sha(path / name) == expected,
+            "Changed retained SIM prerequisite payload: " + name,
+        )
+    return True
+
 
 def _retainer(directory, attempts):
     def retain(name, operation, **readers):
         event = dict(operation=name, numerical_work_possible=True, status="attempted")
         attempts.append(event)
+        retained = dict(stage=name, path=directory / name, complete=False)
+
+        def capture(value):
+            retained["payload"] = value
+            try:
+                archives.write_archive(directory / name, ions.data(value))
+                retained["manifest_sha256"] = checkpoint._sha(directory / name / "manifest.json")
+                retained["complete"] = True
+            except BaseException as error:
+                retained["retention_error"] = error
+                raise
 
         def counted():
             event["operation_status"] = "attempted"
@@ -48,10 +117,16 @@ def _retainer(directory, attempts):
                 counted,
                 stage=name,
                 readers={k: lambda value=value: value for k, value in readers.items()},
-                retain=lambda value: archives.write_archive(directory / name, ions.data(value)),
+                retain=capture,
             )
-        except BaseException:
+        except BaseException as error:
             event["status"] = "refused"
+            retained["source_error"] = error
+            error.checkpoint_retention = retained
+            secondary = retained.get("retention_error")
+            if secondary is not None and secondary is not error:
+                secondary.checkpoint_retention = retained
+                raise secondary from error
             raise
         event["status"] = "returned"
         return result
@@ -89,7 +164,7 @@ def prepare_INIT(directory, case, attempts, *, call_limit=None):
     return outer, parent
 
 
-def prepare_SIM(directory, init_binding, init_parent, attempts):
+def prepare_SIM(directory, init_binding, init_parent, attempts, *, case="zero_INIT_calls"):
     """Use the existing complete-INIT admission and actual warm transition."""
     directory = Path(directory)
     directory.mkdir(exist_ok=False)
@@ -102,11 +177,11 @@ def prepare_SIM(directory, init_binding, init_parent, attempts):
     )
     raw = retain(
         "SIM-fixture",
-        lambda: fixtures.sim_inputs("zero_INIT_calls", complete.complete_init),
+        lambda: fixtures.sim_inputs(case, complete.complete_init),
         complete=complete,
     )
     component = retain("SIM-component-binding", lambda: leaf.bind(raw), raw=raw)
-    declared = retain("SIM-run-inputs", lambda: fixtures.declaration("zero_INIT_calls", component))
+    declared = retain("SIM-run-inputs", lambda: fixtures.declaration(case, component))
     return retain(
         "actual-INIT-to-SIM",
         lambda: run.transition(

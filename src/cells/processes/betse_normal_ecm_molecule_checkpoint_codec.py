@@ -3,9 +3,13 @@
 Uses the existing Cells JSON/fsync helpers and NumPy's non-pickle archive format.
 Unlike the diagnostic raw writer, scalar/0D and container categories survive.
 No setup, scientific bind/replay, dynamic import from data or RNG draw occurs.
+Proxies require private plain backing dictionaries. Exposed backings and
+distinct proxies sharing one backing are refused; repeated object aliases are
+supported. This narrower ownership contract prevents silent association loss.
 """
 
 import ast
+import gc
 import hashlib
 import io
 import json
@@ -83,6 +87,7 @@ class Encoder:
         self.by_class = {cls: (name, fields) for name, (cls, fields) in self.records.items()}
         self.nodes, self.arrays, self.seen, self.active = [], {}, {}, set()
         self.original_arrays = []
+        self.proxy_backings, self.exposed_mappings = {}, set()
         self.bytes = 0
 
     def encode(self, value, depth=0):
@@ -178,6 +183,25 @@ class Encoder:
                 fields=[[f, self.encode(getattr(value, f), depth + 1)] for f in fields],
             )
         elif kind in (dict, MappingProxyType):
+            if kind is dict:
+                require(
+                    ident not in self.proxy_backings,
+                    "Exposed proxy backing dictionary is unsupported",
+                )
+                self.exposed_mappings.add(ident)
+            else:
+                owners = gc.get_referents(value)
+                require(
+                    len(owners) == 1 and type(owners[0]) is dict,
+                    "Proxy requires an inspectable private plain dictionary backing",
+                )
+                backing = owners[0]
+                require(
+                    id(backing) not in self.exposed_mappings
+                    and id(backing) not in self.proxy_backings,
+                    "Exposed/shared proxy backing dictionary is unsupported",
+                )
+                self.proxy_backings[id(backing)] = backing
             node = dict(
                 tag="mapping",
                 proxy=kind is MappingProxyType,

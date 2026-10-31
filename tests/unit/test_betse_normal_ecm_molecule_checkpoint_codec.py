@@ -53,11 +53,49 @@ def test_exact_scalar_array_container_and_alias_categories():
 
 
 @pytest.mark.parametrize(
-    "value", [object(), lambda: None, np.array([object()]), np.random.RandomState(0)]
+    "factory",
+    [
+        lambda: object(),
+        lambda: lambda: None,
+        lambda: np.array([object()]),
+        lambda: np.random.RandomState(0),
+    ],
+    ids=["object", "callable", "object_array", "live_rng"],
 )
-def test_unowned_runtime_object_or_stream_refused(value):
+def test_unowned_runtime_object_or_stream_refused(factory):
     with pytest.raises(ValueError, match="[Uu]nowned|ownership"):
-        codec.Encoder().capture(value)
+        codec.Encoder().capture(factory())
+
+
+@pytest.mark.parametrize("proxy_first", [False, True])
+def test_exposed_proxy_backing_is_refused_before_mutation_association_is_lost(proxy_first):
+    backing = {"value": 0}
+    proxy = MappingProxyType(backing)
+    graph = [proxy, backing] if proxy_first else [backing, proxy]
+    backing["value"] = 1
+    assert proxy["value"] == 1
+    with pytest.raises(ValueError, match="proxy backing"):
+        packed(graph)
+    with pytest.raises(ValueError, match="proxy backing"):
+        codec.fingerprint(graph)
+
+
+def test_private_proxy_repeated_alias_and_mutable_child_association_survive():
+    child = []
+    proxy = MappingProxyType({"child": child})
+    tree, data = packed([proxy, proxy, child])
+    first, repeated, loaded_child = codec.decode(tree, data)
+    assert first is repeated
+    loaded_child.append(7)
+    assert first["child"] is loaded_child and repeated["child"] == [7]
+    with pytest.raises(TypeError):
+        first["new"] = 1
+
+
+def test_distinct_proxies_sharing_private_backing_are_explicitly_refused():
+    backing = {"value": 1}
+    with pytest.raises(ValueError, match="shared proxy backing"):
+        packed([MappingProxyType(backing), MappingProxyType(backing)])
 
 
 @pytest.mark.parametrize("source", ["writable-view", "readonly-view", "mutable-buffer"])

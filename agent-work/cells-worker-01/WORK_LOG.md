@@ -7483,3 +7483,146 @@ credit. Frozen packets, holds and historical INIT04 bindings remain unchanged.
 No shared status/ledger, Root CaLeak/reference/catalog or specialist files were
 edited. No full regression/qualification, detached run or scientific-job query
 was started. I did not stage or commit changes.
+
+## 2026-10-31 14:15 UTC — durable ordinary molecule checkpoint
+
+Implemented six owned Git files: production
+`src/cells/processes/betse_normal_ecm_molecule_checkpoint{,_codec,_records}.py`,
+two matching unit-test modules, and
+`validation/betse/betse_normal_ecm_molecule_checkpoint.py`.
+The specific typed graph/NPZ adapter reuses existing Cells durability helpers;
+save/load retain full binding/state aliases, scalar/0D categories, owners,
+caches, clocks, setup RNG manifests, journals/samples and actual failed prefixes.
+Atomic nonreplacing publication, bounded decoding and exact source/runtime/binding
+matching fail closed. Unknown/live state and mutable external buffer owners
+are refused. Existing run/lifecycle modules and persistence/flag defaults were
+not changed; no source bind, setup replay or native pickle is used by load.
+
+Final matching source passed **16 codec/owned INIT checks** and **5 status/journal
+checks**, including a real two-call prefix and sample. The preceding precision
+and failed-write batch passed four checks. Earlier full software coverage was
+32 passed/one upstream SIM xfail; all intermediate failures remain preserved.
+The actual existing INIT-to-SIM transition refuses replacement of retained
+physical owners. Positive SIM persistence and uninterrupted-versus-loaded/source
+continuity qualification remain held on that prerequisite, with no retry or
+upstream lifecycle edit. No native BETSE checkpoint parity is claimed.
+
+Evidence: `/mnt/workspaces/Cells/molecule-checkpoint-software-20261031-01/results-final.json`
+(SHA256 `77e5f107e5bcb2a9cab59fefa8a120d2aaadd8d6e9cb560ce2499cc68c0ab4a7`).
+The one-way 96-file source snapshot matches the final command and actual saved
+producer hashes. Counts include 199 explicit preparation/control invocations,
+58 checkpoint ownership-verifier invocations and six accepted short INIT
+timesteps across all batches; two previously omitted pause invocations are
+explicitly supplemented without changing their old logs. Independent scientific
+credit is zero. All attached checks finished inside CPU0/one-thread resource
+guards; none launched a detached run, GPU work or full qualification. No shared
+status/ledger or other developer's source was edited, staged or committed by me.
+
+## 2026-10-31 — standalone lifecycle reached-output retention repair
+
+Restored only the missing `evaluate` callback-before-checks and `main` failure
+archive/rethrow path in
+`validation/betse/betse_normal_ecm_run_lifecycle_native.py`, plus `traceback`.
+The repaired module is byte-exact to the supplied frozen source, SHA256
+`c62dc31e916b6e19c983de5fae4772cd6afb190faebe697da45888e0559b27cc`.
+All four clock helpers, equations, real fixtures and tolerances are unchanged.
+Added `tests/unit/test_betse_normal_ecm_run_lifecycle_failure_retention.py`.
+Its 12 synthetic cases pass both against Git and an immutable one-way snapshot,
+using existing archive writer/reader bodies with actual component, source clock
+and production imports blocked. Complete payload/traceback retention, success,
+clock-only behavior, partial writer output and collision refusal are covered.
+Ruff and source compilation pass; each batch used CPU0/one thread with the
+512 MiB/480 s/8 GiB reserve guard. These are the same 12 controls executed twice,
+with zero scientific/native component executions or qualification credit.
+
+Evidence: `/mnt/workspaces/Cells/cells-worker-01-run-lifecycle-failure-retention-20261031-01/results.json`
+(SHA256 `e031fe72fcf339b8c405665a599b0d3bedcd582c742f66b2e1c3b368945cca65`).
+The initial snapshot helper Git-literal error remains preserved; its owner fixed
+the helper, after which the seven-file immutable snapshot and checks passed.
+I did not edit the helper, shared status, protocols, scientific fixtures or the
+durable molecule checkpoint feature. Existing diagnostic scalar/0D limitations
+and assertion-enabled prerequisites remain. INIT clock-only reachability grants
+no acceptance to this separate SIM failure path. No science/GPU/detached run,
+staging or commit was performed; Root retains release and qualification review.
+
+## 2026-10-31 — checkpoint review contract repairs
+
+Repaired the three bounded review findings directly in five of the six owned
+checkpoint source/test/validation files; the record schema is unchanged.
+`CheckpointRejected` keeps the original exception, traceback/chain/stage,
+actual caller references, available encoded/raw inputs and attempts even when
+recovery I/O fails. Recovery operations and their errors are independent;
+separate recovery metadata is best effort. A post-link refusal honestly reports
+marker visibility/durability uncertainty, including a subsequently missing
+marker, and retains remaining failed temporary bytes. It returns no receipt.
+The codec explicitly refuses exposed/shared proxy backing dictionaries while
+preserving private proxy/repeated-object and mutable-child associations.
+SIM xfail now requires the exact retained RunRejected, transition stage and
+checksum-bound complete evidence. Unexpected errors and journal failures fail
+normally; retention I/O keeps the original error as its cause.
+
+Final immutable-source validation: **51 passed, 24 deselected**, with zero real
+setup, RNG, native component, owner-verifier or timestep invocations and no
+positive SIM retry. Six explicitly synthetic metadata gates exercised failed
+publication only; they cannot admit real parents. CPU0/one thread, 1 GiB/480 s/
+8 GiB reserve guard; final run 5.54 s, peak 225,972,224 bytes RSS. Compilation and
+Ruff pass. The earlier tool-config/import-closure setup failures and the overly
+broad fault-injector failure are preserved, alongside all historical evidence.
+The final 448-file immutable snapshot includes static metadata-helper imports;
+their presence grants no scientific admission. All development stayed in Git.
+
+Evidence: `/mnt/workspaces/Cells/molecule-checkpoint-contract-repair-20261031-01/results.json`
+(SHA256 `fca793d183fbfedab5c7570d18f34ebfcb59c4d22c86f8fdc774f31cdc8970a4`).
+When storage is unavailable, available full objects/buffers remain on the error;
+durable recovery cannot be promised. No law, owner, tolerance, flag default or
+actual INIT-to-SIM transition was repaired or relaxed. Scientific holds remain.
+No shared status/ledger/snapshot tool edits, detached/full qualification/GPU run,
+staging or commit was performed by me. Root retains release and qualification.
+
+Fresh final snapshot requested after the Specialist's helper notice:
+`/mnt/workspaces/Cells/molecule-checkpoint-contract-repair-20261031-01/source-final/SNAPSHOT.json`
+SHA256 `1ebd35cad6f2c0ee7e50b1463b5505d5a97ae49e87e6014b6bdae75d0603f0ad`.
+All 448 source payloads are identical to tested `source-05`; helper SHA54d3002c
+was already present there and was verified again. Existing 51 checks were not
+rerun. Link record `final-snapshot.json` SHA256
+`32b692c5619f7821c91b754c7d5cd1b634b293b94529bba33388d12d82235779`.
+No production changes; failed historical source-before/baseline-process evidence
+is untouched. Metadata-only freeze finished in 12.08 s on CPU0 inside its guard.
+
+## 2026-10-31 — retained-owner INIT-to-SIM compatibility repair
+
+Saved failure diagnosis found no physical value, axis or ion difference. The
+raw SIM template preserves fixture key insertion order; the INIT environment
+binding stores sorted JSON. `catalog.equal_tree` checks mapping order, so the
+guard rejected geometry, world and current-geometry declarations despite the
+complete bound SIM definition matching the INIT definition exactly.
+
+Changed only `check_owners` in the lifecycle implementation: compare the existing
+bound declarations and require the raw SIM definition to match its bound JSON
+through the environment binder's existing encoding. All four strict owner
+comparisons, stream/identity/profile checks and transition/setup bodies remain.
+No owner/cache/geometry is constructed or replaced by this check. No physical
+fixture, equality comparator, equation or tolerance was changed.
+
+Added the saved-declaration reader and prospective actual continuity helper in
+`validation/betse/betse_normal_ecm_molecule_handoff.py`, plus dedicated unit
+tests. Existing checkpoint validation gains optional SIM-case forwarding; its
+positive SIM test now uses the established Root run-lifecycle release gate.
+The held checks cover original zero/one-call INIT, actual owner-retention
+assertions, a SIM prefix, pause/save/load/resume and separately counted original
+and loaded continuation branches with exact full-state/journal comparison.
+
+**21 software checks passed, 3 actual nodes stayed skipped before setup.** The
+saved-data reader reproduced the exact original three mapping-order deltas;
+original complete parent, failed input/partial and manifest/file hashes remain.
+Five owned files compile and pass Ruff. CPU0/one thread, 1 GiB/480 s/8 GiB reserve;
+the software/metadata batch took 4.03 s, peak tree RSS 241,590,272 bytes.
+Actual setup/bind/transition/RNG/timestep, native/reference and GPU runs are zero.
+Actual transition success, native source agreement and checkpoint continuity
+remain unqualified and held for Root-coordinated release; no retry or pass credit.
+
+Evidence: `/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/results.json`
+(SHA256 `76ba80bc8bb6f4c7d1b954e5ab4d8348ea47f5bac79fc2c717bf65125f8bd453`).
+Source is an immutable one-way Git snapshot with exact revision/dirty-source
+and producer bindings. No Root INIT/calcium, Specialist tissue, shared status,
+ledger or snapshot-tool edits; no CPU4 job queries, staging or commits by me.
