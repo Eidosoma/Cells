@@ -10,6 +10,7 @@ import ast
 import hashlib
 import json
 import math
+import struct
 import sys
 import warnings
 from dataclasses import dataclass, replace
@@ -373,45 +374,72 @@ def trial_record(trial):
 
 
 def _graph(caller, p, tape):
-    objects, seen = [], set()
+    """Retain actual objects and every labeled reference edge, including repeats.
 
-    def visit(value):
-        if (
-            id(value) in seen
-            or value is None
-            or isinstance(value, (str, bool, int, float, np.generic))
-        ):
-            return
-        if len(objects) > core.caches.MAX_TREE_NODES:
+    Equal already-retained objects can exchange aliases without changing the
+    first-visit object list or any numeric cache. Traversal tokens therefore
+    record roots, dictionary keys/positions, sequence positions and array bases
+    independently of the strong references that establish object identity.
+    """
+    objects, nodes, seen = [], [], {}
+    visits = 0
+
+    def visit(value, depth=0):
+        nonlocal visits
+        visits += 1
+        if depth > 48 or visits > core.caches.MAX_TREE_NODES:
             raise ValueError("Bounded live caller graph exhausted")
-        seen.add(id(value))
+        if value is None or type(value) in (str, bool, int):
+            return (type(value).__name__, value)
+        if type(value) is float:
+            return ("float", struct.pack(">d", value).hex())
+        if isinstance(value, np.generic):
+            return ("numpy_scalar", value.dtype.str, value.tobytes().hex())
+        if id(value) in seen:
+            return ("ref", seen[id(value)])
+        token = len(objects)
+        seen[id(value)] = token
         objects.append(value)
-        if isinstance(value, np.ndarray):
-            visit(value.base)
-            if value.dtype.hasobject:
-                for item in value.flat:
-                    visit(item)
-        elif isinstance(value, dict):
-            for key, item in value.items():
-                visit(key)
-                visit(item)
-        elif isinstance(value, (list, tuple)):
-            for item in value:
-                visit(item)
+        node = dict(token=token, type=type(value).__module__ + "." + type(value).__qualname__)
+        nodes.append(node)
 
-    for value in (
-        caller,
-        p,
-        tape,
-        tape.rng,
-        vars(caller),
-        vars(p),
-        tape.events,
-        tape.draws,
-        tape.locals,
-    ):
-        visit(value)
-    return tuple(objects)
+        def edge(label, item):
+            return (*label, visit(item, depth + 1))
+
+        if isinstance(value, np.ndarray):
+            if value.size > core.caches.MAX_ARRAY_ELEMENTS:
+                raise ValueError("Bounded live caller array exhausted")
+            node["layout"] = core.caches.layout(value)
+            edges = [edge(("base",), value.base)]
+            if value.dtype.hasobject:
+                edges.extend(edge(("item", index), item) for index, item in enumerate(value.flat))
+        elif isinstance(value, dict):
+            edges = []
+            for index, (key, item) in enumerate(value.items()):
+                edges.append(edge(("key", index), key))
+                edges.append(edge(("value", index), item))
+        elif isinstance(value, (list, tuple)):
+            edges = [edge(("item", index), item) for index, item in enumerate(value)]
+        else:
+            edges = []
+        node["edges"] = edges
+        return ("ref", token)
+
+    roots = tuple(
+        (name, visit(value))
+        for name, value in (
+            ("caller", caller),
+            ("parameters", p),
+            ("tape", tape),
+            ("RNG", tape.rng),
+            ("caller_attributes", vars(caller)),
+            ("parameter_attributes", vars(p)),
+            ("events", tape.events),
+            ("draws", tape.draws),
+            ("locals", tape.locals),
+        )
+    )
+    return tuple(objects), dict(roots=roots, nodes=nodes)
 
 
 class CallerOwner:
@@ -471,9 +499,11 @@ def _validate_owner(owner):
             raise ValueError("Changed actual source event sequence")
         if _bindings(value["caller"]) != value["bindings"]:
             raise ValueError("Changed actual constructor/lattice method bindings")
-        graph = _graph(value["caller"], value["parameters"], value["tape"])
-        if len(graph) != len(value["graph"]) or any(
-            a is not b for a, b in zip(graph, value["graph"], strict=True)
+        graph, edges = _graph(value["caller"], value["parameters"], value["tape"])
+        if (
+            edges != value["graph_edges"]
+            or len(graph) != len(value["graph"])
+            or any(a is not b for a, b in zip(graph, value["graph"], strict=True))
         ):
             raise ValueError("Changed original objects or aliases")
     except Exception as error:
@@ -593,7 +623,7 @@ def prepare(request):
     try:
         if _verify_sources() != producers:
             raise ValueError("Producer drift during caller execution")
-        graph = _graph(caller, p, tape)
+        graph, edges = _graph(caller, p, tape)
         owner = object.__new__(CallerOwner)
         _ISSUED[owner] = dict(
             request=request,
@@ -603,6 +633,7 @@ def prepare(request):
             trial=trial,
             producers=producers,
             graph=graph,
+            graph_edges=edges,
             bindings=_bindings(caller),
             invalid=False,
         )

@@ -68,7 +68,7 @@ def pinned(row):
 def runtime_pins(producer):
     """Reuse checkpoint runtime pins and bind pytest plus the local stdlib."""
     files = dict(producer["runtime_code_sha256"])
-    for package in ("pytest", "pluggy", "pygments", "iniconfig", "packaging"):
+    for package in ("pytest", "pluggy", "pygments", "iniconfig", "packaging", "setuptools"):
         distribution = metadata.distribution(package)
         require(distribution.files is not None, "Missing pytest runtime inventory")
         for member in distribution.files:
@@ -575,18 +575,18 @@ def retain_failure(directory, error, *, stage):
 def worker(packet, output, request):
     # Check the existing gate before I/O, source imports, process launch or setup.
     require(os.environ.get(handoff.RELEASE_ENV) == "1", "Held: existing Root release required")
-    output = Path(output).absolute()
+    packet = Path(packet).resolve(strict=True)
+    output = Path(output).resolve(strict=False)
+    require(
+        not output.is_relative_to(packet),
+        "Output must be separate from the held packet",
+    )
     output.mkdir(parents=True, exist_ok=False)
     stage, completed = "preflight", {}
     try:
-        packet = Path(packet).resolve(strict=True)
         inputs = verify_packet(packet, request["packet_sha256"])
         released_request(inputs, request)
         source = packet / "source"
-        require(
-            not output.resolve().is_relative_to(packet),
-            "Output must be separate from the held packet",
-        )
         require(
             Path(__file__).resolve() == source / OWNED[0], "Execute the immutable snapshot runner"
         )

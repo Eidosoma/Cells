@@ -17,7 +17,7 @@ from scipy.interpolate import RectBivariateSpline
 from scipy.spatial import ConvexHull
 
 # Original ASTs, docstrings and unused locals are retained.
-# ruff: noqa: E501,F821,F841,B007,E731
+# ruff: noqa: E501,F821,F841,B007,B905,E731
 # fmt: off
 
 NATIVE_PINS = {'betse/exceptions.py': 'c78612e009270a8d054ea6c52e9e7014ce22e0131a929530e7c3ddc318765971', 'betse/lib/numpy/nparray.py': 'f7c1362a5c6daf545b6a516e0ce06fe53242c13abd05a5f2520226b7dd222889', 'betse/lib/pil/pilnumpy.py': '0e0f9c7589c8ae0d41d59c0f8306db66f4d87086932e1c7d7bf9cbe340f631b4', 'betse/science/cells.py': 'be38678a4f0bd084044fe7d952d74a4550003ce9701f5d073d1f124ba6daeaf2', 'betse/science/tissue/picker/tispickcls.py': 'c1c592ddc600479806da73c37ade7aecf19df0f49cd46706a74ad6bb9f1bc773', 'betse/science/tissue/picker/tispickimage.py': '75c5252998e73cce4f94d8ee03de5c206a82fae6caa1f33d0ae53260cef4a1ac', 'betse/util/math/mathinterp.py': '15f3f217e151fbd9e01dff55d771d600e895b9585afc123f1ee54af2a166f4de', 'betse/util/path/dirs.py': 'c18337d0564727251cf5367cca094ad373148f159ca55317d3d64de8a2436d4a', 'betse/util/path/files.py': '5bb48c45c609fe7f161cc5062d6a5ab7a543409333cd004d225bb4cb605a4a66', 'betse/util/path/pathnames.py': '7530fe8e0deeb0806787859c01a0d1d4448457af8126d859ceb82594ea69969b', 'betse/util/path/paths.py': '4dd3c7aa0a9e9e973d556ecaea6b9dcf63ac9e248e1011560516d7f901521b4f', 'betse/util/type/types.py': '9b8c83555b06a18bfb252d236c95c0d625699237e5c5cc671c085d282fc2c089'}

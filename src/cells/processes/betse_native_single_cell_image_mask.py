@@ -32,8 +32,12 @@ LAW_ID = "betse_owned_single_cell_live_image_mask@1"
 INVALIDATED_OWNERS = core.INVALIDATED_OWNERS
 HELD_UNQUALIFIED_SOURCE_STAGE = True
 CALLER_PINS = {
-    "betse_native_single_cell_caller_lattice": "e5b3b09adf69b8daf42e89d511f6a17995d17eab3ec94a76cefb1df521cf5f6c",
-    "betse_native_single_cell_caller_lattice_source": "026586341ef51a4d1f7cd6095e087cb07db8129a555afd505fa40aa7acdb1e30",
+    "betse_native_single_cell_caller_lattice": (
+        "e5b3b09adf69b8daf42e89d511f6a17995d17eab3ec94a76cefb1df521cf5f6c"
+    ),
+    "betse_native_single_cell_caller_lattice_source": (
+        "026586341ef51a4d1f7cd6095e087cb07db8129a555afd505fa40aa7acdb1e30"
+    ),
 }
 _ISSUED = WeakKeyDictionary()
 
@@ -127,6 +131,7 @@ def _context(owner):
         or len(image.file_bytes) > images.MAX_IMAGE_BYTES
         or any(value.flags.writeable for value in prelude.values)
         or max(image.bitmap.shape) > images.MAX_IMAGE_SIDE
+        or image.pillow_version != images.metadata.version("pillow")
     ):
         raise ImageOwnerRejected("Changed frozen image evidence", stage="upstream_image_identity")
     return context, prelude
@@ -436,6 +441,8 @@ def _graph(tape):
         tape.events,
     ):
         visit(value)
+    if hasattr(tape.hull, "__dict__"):
+        visit(vars(tape.hull))
     return tuple(objects)
 
 
@@ -471,6 +478,10 @@ def _validate_owner(owner):
         context, prelude = _context(value["request"].caller)
         if value["invalid"] or _verify_sources() != value["producers"]:
             raise ValueError("Changed source producer")
+        if core.records._digest(trial_record(value["trial"])) != value["trial"].identity:
+            raise ValueError("Changed sealed image trial")
+        for cache in (value["trial"].audit, *value["trial"].events):
+            core.caches.validate(cache)
         if core.records._digest(request_record(value["request"])) != value["request"].identity:
             raise ValueError("Changed source request")
         if context["caller"] is not value["caller"] or context["tape"].rng is not value["rng"]:

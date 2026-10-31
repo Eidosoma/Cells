@@ -7647,3 +7647,38 @@ Final evidence: `/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/res
 (SHA256 `1b0c941bd02e17099394ae68558f0850aac5cd5779727dbd113062075506e072`).
 Earlier result, original failed parent/input/partial and historical INIT04
 bindings remain untouched. Actual checks still require the existing Root release.
+
+## 2026-10-31 — held retained-owner continuity run preparation
+
+Added three owned Git files: `validation/betse/betse_normal_ecm_molecule_handoff_run.py`,
+its `_plugin.py`, and `tests/unit/test_betse_normal_ecm_molecule_handoff_run.py`.
+The runner freezes current Git bytes with the existing snapshot helper, binds
+the original failed INIT/SIM archives and Root's typed-guard review, and selects
+exactly the two existing zero/one-INIT continuity nodes plus the existing SIM
+association checkpoint node. No production, fixture, target-test, shared status,
+Root INIT/calcium or Specialist source was edited.
+
+The existing release flag remains closed. Root must supply the resource plan
+and launch. Each future child has a saved PID/start-time binding, runtime and
+producer inventory, nested setup/verification/RNG/timestep/checkpoint accounting,
+complete archive/checkpoint pins and strict rejection of skips, xfails,
+truncated journals, unbound source/runtime files or incomplete outcomes. Counts
+describe observed callable boundaries; wrapper layers and duplicate setup do
+not acquire independent biological credit. C constructor internals and per-draw
+elements are outside the profiler's claim; raw scalar/0D limits remain explicit.
+
+Final `packet-04`: **45 new software controls passed**, compile/Ruff passed,
+455 snapshot files, 62 checkpoint producer sources and 3,615 runtime file pins.
+Final metadata readiness binds every loaded metadata module, with no scientific
+imports or actual setup/RNG/timestep calls. Initial namespace-lint, missing
+reader dependencies and unpinned startup-module refusals remain saved. All ten
+attached process records were checked terminal; no detached/scientific/GPU
+launch, CPU4 query or old scientific evidence rerun occurred.
+
+Evidence: `/mnt/workspaces/Cells/molecule-retained-continuity-preparation-20261031-01/results.json`
+SHA256 `99f1cfb7d4159404745e49922688b17c7a9edd51c4d2d29f6a419a0cc3592bfe`.
+Packet inputs SHA256 `3a2c8041ffb0438272179e2e5ff6b8599752ecc20c42ecbb6a30cf8ba97e5e01`;
+source snapshot SHA256 `284d08198a76a436361d0377f3d26b957ca6763df8b2c9cc2c0d1c355a75c6e8`.
+`launch.json` records the immutable worker invocation and remaining Root release
+prerequisites. Actual continuity, native/source equivalence and biological
+acceptance remain held; no source snapshot was overlaid from historical bytes.

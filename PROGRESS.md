@@ -128,8 +128,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   one-failure** run remains failed: the corrected test now retains prior weakly
   registered handles strongly and compares their exact identities. Additional
   production guards and six controls in the final version are also accounted for.
-  Specialist is implementing the earlier live caller/lattice prerequisite in
-  four new owned Git files. `Cells.__init__` has a pass body;
+  Specialist implemented the earlier live caller/lattice prerequisite in
+  four new owned Git files. [Its source and saved-result review](/mnt/workspaces/Cells/native-single-cell-caller-lattice-20261031-01/root-review.json)
+  verifies **27 synthetic passes in 10.33 seconds, 218.7 MiB sampled peak RSS**,
+  with zero native entries. Earlier 23-check evidence remains separate.
+  The ownership guard needs one narrow repair: a list of retained objects can
+  miss an alias retargeted between equal objects already in that list. A
+  nonnumerical graph diagnostic reproduced this limitation; Specialist is
+  adding explicit reference edges and a regression control. Source ownership
+  acceptance remains pending that correction. `Cells.__init__` has a pass body;
   `_make_cell_lattice` creates the caller bounds, centre and arrays. Existing
   frozen seed/image records do not retain those live owners. The new boundary
   uses declared scalar parameter stores and does not claim full

@@ -329,6 +329,153 @@ def test_software_stale_source_owner_refuses_without_replay(change, monkeypatch,
     save(evidence, "stale", dict(error=error.value, calls=h.calls))
 
 
+@pytest.mark.parametrize("retarget", [False, True])
+def test_software_existing_equal_alias_edge_is_guarded(retarget, monkeypatch, evidence):
+    h = harness(monkeypatch)
+    original_graph = caller._graph
+    probe = dict(left=h.raw["dx"], right=h.raw["dy"], alias=h.raw["dx"])
+    assert probe["left"] is not probe["right"]
+    assert probe["left"].tobytes() == probe["right"].tobytes()
+
+    def graph(cells, p, tape):
+        # Synthetic diagnostic state only. Original fixture buffers, source
+        # methods, sealed value audit and scalar inputs are unchanged.
+        tape.locals.setdefault("synthetic_alias_probe", probe)
+        return original_graph(cells, p, tape)
+
+    monkeypatch.setattr(caller, "_graph", graph)
+    owner = execute(h, evidence)
+    authority = caller._authority(owner)
+
+    def value_checks():
+        cells, p, tape = authority["caller"], authority["parameters"], authority["tape"]
+        binding, seed, _ = h.request.core_request.initial_request.upstream
+        return (
+            caller.core.caches.snapshot(caller._public(cells)).identity,
+            caller.core.caches.snapshot(caller._parameters(p)).identity,
+            caller._audit(cells, p, tape, seed, binding).identity,
+            tuple(caller.core.caches.snapshot(e).identity for e in tape.events),
+            caller.core.initial._rng_stream(tape.rng).identity,
+            caller.core.caches.snapshot(probe).identity,
+        )
+
+    before_values = value_checks()
+    before_objects, before_edges = original_graph(
+        authority["caller"], authority["parameters"], authority["tape"]
+    )
+    assert owner.cells is h.objects["caller"] and probe["alias"] is probe["left"]
+    if retarget:
+        probe["alias"] = probe["right"]
+    after_objects, after_edges = original_graph(
+        authority["caller"], authority["parameters"], authority["tape"]
+    )
+    assert value_checks() == before_values
+    assert len(before_objects) == len(after_objects)
+    assert all(a is b for a, b in zip(before_objects, after_objects, strict=True))
+    if retarget:
+        assert before_edges != after_edges
+        with pytest.raises(caller.CallerRejected) as caught:
+            _ = owner.cells
+        assert caught.value.stage == "caller_authority_drift"
+        assert str(caught.value.source_error) == "Changed original objects or aliases"
+    else:
+        assert before_edges == after_edges
+        assert owner.cells is h.objects["caller"] and probe["alias"] is probe["left"]
+    assert h.calls["auth"] == h.calls["constructor"] == h.calls["lattice"] == 1
+    assert h.calls["draws"] == 2 and h.calls["native"] == []
+    save(
+        evidence,
+        "alias-edge",
+        dict(
+            retarget=retarget,
+            before=before_edges,
+            after=after_edges,
+            all_value_checks_unchanged=True,
+            original_object_references_unchanged=True,
+            calls=h.calls,
+        ),
+    )
+
+
+@pytest.mark.parametrize("kind", ["dict-key", "dict-value", "list", "tuple", "object-array"])
+def test_software_graph_records_positions_keys_roots_and_array_bases(kind, evidence):
+    left = np.asarray([0.125, -0.0])
+    right = left.copy()
+    left_view, right_view = left.view(), right.view()
+    key_left, key_right = tuple(["same-key"]), tuple(["same-key"])
+    cells = SimpleNamespace(
+        left=left,
+        right=right,
+        left_view=left_view,
+        right_view=right_view,
+        key_left=key_left,
+        key_right=key_right,
+        tuple_left=(left_view,),
+        tuple_right=(right_view,),
+    )
+    p = SimpleNamespace()
+    tape = SimpleNamespace(rng=object(), events=[], draws=[], locals={})
+    if kind == "dict-key":
+        probe = {key_left: left_view}
+    elif kind == "dict-value":
+        probe = dict(first=left_view, second=right_view, alias=left_view)
+    elif kind == "list":
+        probe = [left_view, right_view, left_view]
+    elif kind == "tuple":
+        probe = cells.tuple_left
+    else:
+        probe = np.empty(3, dtype=object)
+        probe[0], probe[1], probe[2] = left_view, right_view, left_view
+    tape.locals["probe"] = probe
+    values_before = caller.core.caches.snapshot(tape.locals).identity
+    objects_before, edges_before = caller._graph(cells, p, tape)
+    roots = dict(edges_before["roots"])
+    assert {
+        "caller",
+        "parameters",
+        "tape",
+        "RNG",
+        "caller_attributes",
+        "parameter_attributes",
+        "events",
+        "draws",
+        "locals",
+    } == set(roots)
+
+    def token(value):
+        return ("ref", next(i for i, item in enumerate(objects_before) if item is value))
+
+    left_node = edges_before["nodes"][token(left_view)[1]]
+    right_node = edges_before["nodes"][token(right_view)[1]]
+    assert left_node["edges"] == [("base", token(left))]
+    assert right_node["edges"] == [("base", token(right))]
+    if kind == "dict-key":
+        probe.clear()
+        probe[key_right] = left_view
+    elif kind == "dict-value":
+        probe["alias"] = right_view
+    elif kind == "tuple":
+        tape.locals["probe"] = cells.tuple_right
+    else:
+        probe[2] = right_view
+    objects_after, edges_after = caller._graph(cells, p, tape)
+    assert caller.core.caches.snapshot(tape.locals).identity == values_before
+    assert len(objects_before) == len(objects_after)
+    assert all(a is b for a, b in zip(objects_before, objects_after, strict=True))
+    assert edges_before != edges_after
+    save(
+        evidence,
+        "reference-edges",
+        dict(
+            kind=kind,
+            before=edges_before,
+            after=edges_after,
+            values_unchanged=True,
+            retained_objects_unchanged=True,
+        ),
+    )
+
+
 @pytest.mark.parametrize("outcome", ["constructor-failure", "lattice-failure"])
 def test_software_source_failure_retains_original_chain_without_owner(
     outcome, monkeypatch, evidence
