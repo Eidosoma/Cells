@@ -20,6 +20,8 @@ from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as init
 from cells.processes import betse_normal_ecm_molecule_lifecycle_setup as setup
+from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
+from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
 
 LAW_ID = "betse_supplied_ECM_general_transport_INIT_to_SIM_v1_5_0@1"
@@ -138,9 +140,11 @@ def check_complete(value):
 
 def validate_setup_inputs(raw):
     cfg = raw["source_setup"]
+    selected = temporal_config.selection(raw)
+    periodic = None if selected is not None else periodic_authority.configuration(raw)
     if (
         set(cfg)
-        != {
+        != (({
             "kind",
             "provenance",
             "rng_mode",
@@ -152,7 +156,9 @@ def validate_setup_inputs(raw):
             "cbnd",
             "static_noise_level",
             "frequency_sweep",
-        }
+        } - ({"frequency_sweep"} if selected is not None else set()))
+            | ({"periodic_properties", "periodic_event_configuration", "periodic_preparation_route"}
+             if periodic is not None else temporal_config.KEYS if selected is not None else set()))
         or cfg["kind"] != "cells.supplied_SIM_reinitialization_seams@1"
     ):
         raise ValueError("Require every source SIM setup seam and process RNG owner")
@@ -164,11 +170,12 @@ def validate_setup_inputs(raw):
     setup.numpy_restore(cfg["numpy_rng"])
     setup.init_setup.python_restore(cfg["python_rng"])
     setup.init_setup.real(cfg["static_noise_level"], "SIM static noise")
-    if set(cfg["frequency_sweep"]) != {"f start", "f stop", "f slope"}:
-        raise ValueError("Require the actual SIM frequency factory inputs")
-    for key, value in cfg["frequency_sweep"].items():
-        if value is not None or key != "f slope":
-            setup.init_setup.real(value, key)
+    if selected is None:
+        if set(cfg["frequency_sweep"]) != {"f start", "f stop", "f slope"}:
+            raise ValueError("Require the actual SIM frequency factory inputs")
+        for key, value in cfg["frequency_sweep"].items():
+            if value is not None or key != "f slope":
+                setup.init_setup.real(value, key)
     equality = raw["config_equality_receipt"]
     if (
         set(equality)
@@ -382,7 +389,7 @@ def bind(inputs, *, event_owner_inputs=None):
     for key in ("case_id", "provenance", "expected_init_binding_identity"):
         if not isinstance(original[key], str) or not original[key].strip():
             raise ValueError("Require explicit lifecycle association " + key)
-    if event_owner_inputs is not None:
+    if temporal_config.selection(original) is not None or event_owner_inputs is not None:
         event_owner_bridge.check_inputs(
             event_owner_inputs, expected_INIT=original["expected_init_binding_identity"]
         )
@@ -392,6 +399,20 @@ def bind(inputs, *, event_owner_inputs=None):
             "The new SIM phase must retain its independent original three-call calendar"
         )
     raw = setup.legacy_setup_inputs(original)
+    selected = temporal_config.selection(original)
+    selected_setup = temporal_config.finalizer_setup(original)
+    if selected_setup is not None:
+        if selected["family"] == "periodic":
+            init.validate_periodic_finalizer_setup(declaration, selected_setup,
+                                                 preparation_route=periodic_authority.ROUTE)
+        else:
+            # The original common validator already admits f_sweep. Keep its
+            # full schema/RNG/map/noise guards and actual SIM N3 owner above.
+            setup.init_setup.validate(selected_setup, declaration.base)
+    periodic_setup = None if selected is not None else periodic_authority.finalizer_setup(original)
+    if periodic_setup is not None:
+        init.validate_periodic_finalizer_setup(declaration, periodic_setup,
+                                             preparation_route=periodic_authority.ROUTE)
     validate_setup_inputs(raw)
     if raw["source_setup"]["static_noise_level"] != 0:
         raise ValueError(

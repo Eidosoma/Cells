@@ -383,7 +383,7 @@ def test_observer_budget_failure_is_not_a_native_failure(tmp_path):
         namespace,
     )
     work = runner.WorkLog(tmp_path, source)
-    work.count = 100000
+    work.trace_count = 100000
     with work.active():
         result = runner.run_stages(
             [("native", namespace["action"])], runner.Evidence(tmp_path), work
@@ -402,7 +402,7 @@ def test_swallowed_profiler_error_still_stops_diagnostic(tmp_path):
         namespace,
     )
     work = runner.WorkLog(tmp_path, source)
-    work.count = 100000
+    work.trace_count = 100000
     later = []
 
     def catching_action():
@@ -421,6 +421,60 @@ def test_swallowed_profiler_error_still_stops_diagnostic(tmp_path):
     assert result["observer_error"] and result["source_error"] is None
     assert not later and not result["completed_stages"]
     assert result["captures"][0]["label"] == "native:interrupted-return"
+
+
+def test_recursive_helper_work_is_counted_without_per_element_logging(tmp_path):
+    source = tmp_path / "source"
+    namespace = {}
+    exec(
+        compile(
+            "def encode(n):\n    return encode(n-1) if n else 0\n",
+            str(source / "src/cells/codec.py"),
+            "exec",
+        ),
+        namespace,
+    )
+    work = runner.WorkLog(tmp_path, source)
+    with work.active():
+        work.phase = "upstream"
+        namespace["encode"](200)
+        work.phase = "authentication"
+        namespace["encode"](300)
+    summary = runner.read(tmp_path / "work-counts.json")
+    assert summary["observed_entry_attempts"] == 502
+    assert summary["ordered_trace_entries"] == 2
+    assert [(row["phase"], row["attempts"]) for row in summary["call_sites"]] == [
+        ("upstream", 201),
+        ("authentication", 301),
+    ]
+    assert summary["independent_case_credit"] == 0
+    assert len(work.path.read_text().splitlines()) == 2
+
+
+def test_literal_kernel_entries_remain_in_exact_order(tmp_path):
+    source = tmp_path / "source"
+    namespace = {}
+    exec(
+        compile(
+            "def native_body():\n    return 1\n", str(source / "src/cells/native_kernel.py"), "exec"
+        ),
+        namespace,
+    )
+    work = runner.WorkLog(tmp_path, source)
+    with work.active():
+        for phase in ("constructor", "authentication", "authentication", "continuation"):
+            work.phase = phase
+            namespace["native_body"]()
+    rows = [json.loads(line) for line in work.path.read_text().splitlines()]
+    assert [row["phase"] for row in rows] == [
+        "constructor",
+        "authentication",
+        "authentication",
+        "continuation",
+    ]
+    assert [row["sequence"] for row in rows] == list(range(4))
+    summary = runner.read(tmp_path / "work-counts.json")
+    assert summary["observed_entry_attempts"] == summary["ordered_trace_entries"] == 4
 
 
 @pytest.mark.parametrize("mode", ["source_failure", "guard_stop", "success"])

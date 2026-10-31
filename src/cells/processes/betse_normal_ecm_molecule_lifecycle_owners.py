@@ -9,6 +9,7 @@ from cells.processes import betse_ecm_grn_join as network
 from cells.processes import betse_normal_ecm_calcium_join as calcium
 from cells.processes import betse_normal_ecm_catalog_join_source as qualified
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
 
 ROLES = ("molecules", "grn")
@@ -83,10 +84,18 @@ def available(ctx):
     return result
 
 
-def make_context(component, raw, values, forcing=None, *, phase_kind):
+def make_context(component, raw, values, forcing=None, *, phase_kind, parameter_issuance=None):
     if phase_kind not in ("INIT", "SIM"):
         raise ValueError("Require an explicit source phase before owner construction")
-    ctx = network.make_context(component, values, ions.data(component.inputs["network"]), forcing)
+    if parameter_issuance is None:
+        ctx = network.make_context(component, values, ions.data(component.inputs["network"]), forcing)
+    else:
+        if type(parameter_issuance) is not temporal_config.Issuance:
+            raise ValueError("Require the actual early selected parameter issuer, never saved data")
+        temporal_config.context.check_original()
+        ctx = temporal_config.context.construct_context(
+            component, values, ions.data(component.inputs["network"]), forcing,
+            parameter_constructor=parameter_issuance.construct)
     ctx.enabled = dict(
         molecules=raw["configuration"]["general network"]["implement network"],
         grn=raw["configuration"]["gene regulatory network settings"][
@@ -121,6 +130,8 @@ def make_context(component, raw, values, forcing=None, *, phase_kind):
     ctx.cells.mem_vol = np.asarray(raw["transport"]["membrane_volume_m3"], np.float64).copy()
     for view in ctx.views.values():
         view.initial_transporter_fields = {}
+    if parameter_issuance is not None:
+        parameter_issuance.attach(ctx)
     return ctx
 
 

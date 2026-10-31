@@ -200,9 +200,9 @@ def _preflight(owner):
         context.parameter_owner, context.mesh_context.parent_caller["request"], context.p
     )
     if (
-        parameter.request.projection != parameters.GEOMETRY
-        or parameter.trial.projection != parameters.GEOMETRY
-        or parameter.trial.store_roster != parameters._projection(parameters.GEOMETRY)[3]
+        parameter.request.projection not in (parameters.GEOMETRY, parameters.ENVIRONMENT)
+        or parameter.trial.projection != parameter.request.projection
+        or parameter.trial.store_roster != parameters._projection(parameter.request.projection)[3]
     ):
         raise GeometryRejected(
             "Fresh original cell_space/scale_cell/tm parameter stores are unavailable",
@@ -387,7 +387,7 @@ def _check(context):
         parent.parameter_owner, mesh.parent_caller["request"], parent.p
     )
     if (
-        parameter.trial.projection != parameters.GEOMETRY
+        parameter.trial.projection not in (parameters.GEOMETRY, parameters.ENVIRONMENT)
         or (parameter.trial.projection, parameter.trial.store_roster, parameter.trial.store_lines)
         != context.parameter_signature
     ):

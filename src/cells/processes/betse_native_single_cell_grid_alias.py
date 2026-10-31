@@ -180,6 +180,7 @@ def _bindings(info):
         _check_modules,
         _module_bindings,
         _module_records,
+        _dispatch_bindings,
         source_pins,
         prepare_runtime,
         reading,
@@ -196,7 +197,32 @@ def _bindings(info):
         cls.__get__.__globals__.get("BetseExprAliasException"),
         cls.__get__.__globals__.get("BetseTypeException"),
     )
-    return (*values, *(_atom for fn in functions for _atom in _atoms(fn)))
+    return (
+        *values,
+        *_dispatch_bindings(info.runtime),
+        *(_atom for fn in functions for _atom in _atoms(fn)),
+    )
+
+
+def _dispatch_bindings(runtime):
+    """Read class dictionaries without invoking the instance lookup surface."""
+    mro = type.__getattribute__(runtime, "__mro__")
+    result = []
+    for base in mro:
+        result.append(base)
+        for name, value in type.__getattribute__(base, "__dict__").items():
+            result.extend((name, value))
+    for name in ("__getattribute__", "__getattr__"):
+        result.append(name)
+        for base in mro:
+            namespace = type.__getattribute__(base, "__dict__")
+            if name in namespace:
+                result.append(base)
+                result.extend(_atoms(namespace[name]))
+                break
+        else:
+            result.append(None)
+    return tuple(result)
 
 
 def validate(info):
@@ -236,9 +262,16 @@ class _GridAlias:
         if reader.descriptor_read_started:
             raise ValueError("Selected native grid_size read was already attempted")
         reader.descriptor_read_started = True
+        reader.descriptor_read_instance = instance
+        reader.descriptor_read_native = info.native
+        reader.descriptor_read_epoch = reader.retirement
         reader.observe("grid_size_read_enter", instance)
         try:
-            return type(info.native).__get__(info.native, instance, owner)
+            value = type(info.native).__get__(info.native, instance, owner)
+            reader.descriptor_read_completed = True
+            reader.descriptor_read_return_instance = instance
+            reader.observe("grid_size_read_success", (instance, value))
+            return value
         finally:
             reader.observe("grid_size_read_return_or_unwind", instance)
 

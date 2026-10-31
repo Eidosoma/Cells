@@ -537,7 +537,10 @@ def _parent_evidence(image, caller):
             caller_draws=draws,
             caller_locals=images._event_record(tape.locals),
             parameters=callers._parameters(caller["parameters"]),
-            caller_request=callers.request_record(caller["request"]),
+            # Request records include frozen MappingProxyType declarations.
+            # Use the same canonical projector as their existing identity;
+            # this is evidence only, never a replacement for the typed parent.
+            caller_request=core.records.record(callers.request_record(caller["request"])),
             caller_trial=callers.trial_record(caller["trial"]),
             image_trial=images.trial_record(image["trial"]),
             image_audit=images._audit(image["tape"], prelude).identity,

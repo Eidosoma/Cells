@@ -25,6 +25,7 @@ from cells.processes import betse_normal_ecm_init_phase_setup as setup
 from cells.processes import betse_normal_ecm_molecule_lifecycle_mechanics as mechanical
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
 from cells.processes import betse_normal_ecm_molecule_transport as transport
 from cells.processes import betse_normal_ecm_run_lifecycle as lifecycle
 from cells.processes import betse_normal_ion_join as ions
@@ -834,6 +835,16 @@ def request_native_sample(binding, parent):
 
 def phase_failure_snapshot(ctx, supplied):
     return dict(owner_buffers=owners.available(ctx), supplied_owner_cache=supplied)
+
+
+def validate_periodic_finalizer_setup(declaration, finalizer_setup, *, preparation_route):
+    """Separate source finalizer setup, never intervention in material inputs."""
+    if (type(declaration) is not Declaration or declaration.calendar.phase != "SIM"
+            or declaration.calendar.step_count != 3):
+        raise ValueError("Periodic finalizer requires the actual separate SIM N3 declaration")
+    return periodic_authority.validate_SIM_setup(
+        finalizer_setup, declaration.base, phase=declaration.calendar.phase,
+        run_sim=declaration.inputs["flags"]["_run_sim"], preparation_route=preparation_route)
 
 
 def expected_flags(raw):

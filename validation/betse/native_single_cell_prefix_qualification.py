@@ -322,7 +322,47 @@ class WorkLog:
     def __init__(self, output, source):
         self.path, self.source = output / "work.jsonl", str(source) + os.sep
         self.phase, self.count = "imports", 0
+        self.trace_count = 0
+        self.counts = {}
         self.failure = None
+
+    def record(self, stream, row):
+        """Count recursive codec work without emitting a line per scalar.
+
+        Keep every literal source/kernel entry in order, plus the first entry
+        at each other call site and phase. All repetitions remain in exact
+        counters; these are computational attempts, not independent cases.
+        """
+        key = tuple(row[k] for k in ("phase", "event", "source", "function", "line", "c_callable"))
+        new = key not in self.counts
+        if new:
+            if len(self.counts) >= 4096:
+                raise RuntimeError("Source work log exceeded its distinct-call-site allowance")
+            self.counts[key] = dict(**row, attempts=0, first_sequence=self.count)
+        counter = self.counts[key]
+        counter["attempts"] += 1
+        counter["last_sequence"] = self.count
+        self.count += 1
+        literal = row["source"].endswith(("_source.py", "_kernel.py"))
+        if new or literal:
+            if self.trace_count >= 100000:
+                raise RuntimeError("Source entry log exceeded its diagnostic allowance")
+            stream.write(json.dumps(row) + "\n")
+            stream.flush()
+            self.trace_count += 1
+
+    def summary(self):
+        return dict(
+            observed_entry_attempts=self.count,
+            ordered_trace_entries=self.trace_count,
+            call_sites=list(self.counts.values()),
+            aggregation=(
+                "All calls counted by site and phase; ordered trace keeps first occurrences "
+                "and literal source/kernel entries"
+            ),
+            complete_native_operation_count=False,
+            independent_case_credit=0,
+        )
 
     @contextmanager
     def active(self):
@@ -349,14 +389,10 @@ class WorkLog:
                     entry_is_success_or_independent_case=False,
                 )
                 try:
-                    if self.count >= 100000:
-                        raise RuntimeError("Source entry log exceeded its diagnostic allowance")
-                    stream.write(json.dumps(row) + "\n")
-                    stream.flush()
+                    self.record(stream, row)
                 except Exception as error:
                     self.failure = exception_record(error)
                     raise
-                self.count += 1
 
             sys.setprofile(profile)
             try:
@@ -367,6 +403,7 @@ class WorkLog:
                 try:
                     stream.flush()
                     os.fsync(stream.fileno())
+                    write(self.path.with_name("work-counts.json"), self.summary())
                 except Exception as error:
                     self.failure = exception_record(error)
                     if primary is None:

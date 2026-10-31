@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from cells.processes import betse_normal_ecm_molecule_events as events
 from cells.processes import betse_normal_ecm_molecule_lifecycle as lifecycle
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as phase
+from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
 from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
 
 source = lifecycle.catalog
@@ -82,6 +83,12 @@ def event_scope(binding):
     if not lifecycle.event_owner_bridge.same(published.event_finalized, fields):
         raise ValueError("Foreign actual finalized callback publication association")
     original = published.owner
+    if any(
+        len(owner["scheduled_options"][key]) == 6
+        and owner["scheduled_options"][key][5] == "periodic"
+        for key in selected
+    ):
+        periodic_authority.validate(binding.source_binding, owner, published, fields)
     swept = any(
         len(owner["scheduled_options"][key]) == 6
         and owner["scheduled_options"][key][5] == "f_sweep"
@@ -93,7 +100,7 @@ def event_scope(binding):
         row, callback = owner["scheduled_options"][key], owner["callbacks"][suffix]
         if (
             len(row) != 6
-            or row[5] not in ("None", "f_sweep")
+            or row[5] not in ("None", "f_sweep", "periodic")
             or callback["source_function"] != row[5]
             or (row[5] == "None" and callback["dynamic"] != {"kind": "constant"})
             or type(callback["source_scalar"]) is not int

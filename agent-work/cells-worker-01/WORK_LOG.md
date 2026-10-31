@@ -8097,3 +8097,137 @@ No periodic/spatial/bitmap, pressure/ecmJ/cut/voltage/noise or native-pickle
 admission was added. No shared/other-lane edit, detached run, INIT/job query,
 stage or commit occurred; historical snapshots remain immutable.
 
+## 2026-10-31 — S1 sweep profile return/unwind repair
+
+Changed only sweep_authority.py and its existing sweep checkpoint test.
+FactoryObservation now records CPython return(None) as incomplete/ambiguous
+return-or-unwind before context/success validation. It keeps pending entry,
+sequence/match/counters and no accepted factory receipt. finish() rejects a
+normal None or unmatched incomplete event; unchanged __exit__ restores the
+profiler and propagates an active factory exception/cause unchanged. Existing
+setup retention/chaining needs no hook edit; its bytes and all other472 source
+files match the sealed359 parent. No equation/fixture/tolerance/codec/gate or
+constant/published-global default changed.
+
+89 final-source focused checks passed:88 sweep controls +1 existing producer
+binding check. Five new controls include four genuinely CPython-profiled
+synthetic functions (exception, exception after context mutation, normal None,
+successful tuple) plus unmatched return refusal. Production observer methods
+run unchanged against test-only function/frame identities; original native
+factory/callback/time-law/model/RNG guards remain active. Primary and cause
+object identity, partial data, finish stage and profiler restoration asserted.
+Four S1 profiling receipts and15 complete archives retained. The failed baseline
+has three S1 behavior failures plus a tuple control failing only its new metadata
+field assertion; it is not evidence that successful tuple handling was broken.
+
+All three process outcomes are terminal (two completed/one failed). Original
+five outcomes,359 passes/42 archives and all historical packets remain frozen.
+CPU0/one thread; final software process17.61s/256,696,320B sampled peak,
+pytest8.98s under1GiB/480s/8GiB reserve; metadata512MiB. Compile/Ruff passed.
+Snapshot474/producer69/runtime2300; pytest producer matches, exact prior runtime
+map reused. Full loaded inventory belongs to the binding process.
+
+Results: /mnt/workspaces/Cells/molecule-sweep-profile-unwind-repair-20261031-01/results.json
+SHA256 ed93405e79059674ffdf7ff0f34bf4763cbfdb5193246d3f446b608b03661ead.
+Snapshot SHA256 778855b03d49bb0970609959d2294b4b027d5f6cba3293da4895502e5c133fd6.
+Source SHA256 668b2e385021612f760287072ac04b6c763d10bdb1debbc55d1ee374249c4235;
+test SHA256 ff272eaaf90bb01260e7f95bd8d4844f858768f1aac6768b57c3b20aff0adcbb.
+All actual22/26/28 and16 sweep routes remain held. No actual source factory,
+time law, model/native/RNG/reference/trajectory/INIT/SIM/checkpoint execution,
+detached launch, job query, shared/other-lane edit, stage or commit occurred.
+
+## 2026-10-31 — actual periodic factory/parameter checkpoint prerequisite
+
+Verified pinned native modulate.py c29f4ae2 and parameters.py f36ec747:
+factory name periodic(pc,cells,p), scalar1, closure p; native configuration
+modulator function properties/periodic frequency and phase (float parsing).
+Adopted the exact native periodic function AST in lifecycle_source and exposed
+only that factory in its existing mod namespace. All previous literal source
+function/class AST remains unchanged; the qualified time-law evaluator is reused.
+
+Implemented periodic authority and separate finalized_periodic preparation,
+validator and unit tests. Source setup now requires periodic_properties on the
+retained typed lifecycle binding and genuine typed event-owner Inputs; no
+default parameters or declaration-derived finalizer owner. This supplied seam
+does not establish native Parameters parsing. Actual factory observations bind
+code/globals/closure p/parameter-mapping/scalar/order/targets with S1 failure
+separation; immutable early/later publications retain data, never callables.
+No factory or callback is evaluated on decoding; runtime recreation is work.
+
+The earlier real prerequisite was shared INIT setup.validate rejecting periodic
+at the Key-owned SIM declaration. Root INIT is untouched. A SIM-only validator
+in the new authority preserves every common schema/RNG/map/zero-voltage guard;
+its AST differs only in the callback whitelist, and an upstream guard identity
+check refuses unreviewed changes. Original INIT/constant/sweep calls use the
+original validator. Only necessary hooks changed lifecycle/phase/setup/component
+and the event dispatcher. Existing sweep/S1 authority and validator bytes match.
+
+471 final-source blocked software controls passed (107 periodic +364 affected
+existing controls),61 complete archives and four actually profiled synthetic
+return/unwind controls. Native factory/config AST correspondence, all shared
+guards, source/parameter substitutions, exact closure/scalar/order, missing and
+foreign inputs, failure retention, both epochs/codec aliases, runtime program/
+clock/order/shape and nested work comparisons are covered without real source
+factory/time-law/model/RNG/native execution. Initial lint-only failure and
+intermediate90 source-01 passes remain separate; all five processes terminal.
+
+CPU0/one thread; software1GiB/480s/8GiB reserve, metadata512MiB. Final process
+33.19s/259,231,744B sampled peak (pytest23.77s); compile/Ruff passed. Snapshot477,
+producer70/runtime2300 pins,468 other sources unchanged. Binding owns the full
+loaded inventory; actual pytest producer matches and exact runtime map reused.
+Native inputs frozen as read-only static evidence, never imported/executed.
+
+Results: /mnt/workspaces/Cells/molecule-periodic-checkpoint-development-20261031-01/results.json
+SHA256 67b402e34686dd61ea7f3eefb9a5e6541f16114627e47d79d54e32d8a49b0c29.
+Snapshot SHA256 239b3fe271af0705dd7be0625a7b9525f049bb6ccaec4d91e676df0413246fae.
+All nine exact source/test pins, literal/common-guard correspondence, failed
+evidence, parent links and process/runtime records are bound in the result.
+All original22/26/28/16 and16 new periodic selector/cut branches remain held.
+Genuine parameter authorities and Root source/runtime/resource review/releases
+remain prerequisites; no scientific/native-parser/cold-SIM/pickle/parity credit.
+No shared status, Root INIT/CaLeak, Specialist or other-lane edit, scientific
+launch, detached run, INIT/job query, stage or commit occurred.
+
+## 2026-10-31 — periodic material/source declaration separation successor
+
+Further prerequisite inspection found validate_owner_scope's earlier absolute
+no-intervention material seam, before setup.validate. Preserved that guard:
+material bind/expected_flags/validate_owner_scope AST now exactly matches the
+pre-periodic S1 source. Original INIT/constant/sweep/material validation always
+uses the original validator; no callback name is rewritten or owner check relaxed.
+
+Periodic source setup is now a distinct complete periodic_event_configuration
+plus explicit periodic_preparation_route on the retained typed lifecycle binding.
+Its common schema, provenance, stream and map fields must exactly match the
+unchanged material setup; only the source scheduled program differs. A separate
+typed SIM N3 finalizer validator requires phase SIM/_run_sim is True/the explicit
+periodic route, preserving the complete common-guard AST/whitelist correspondence
+and refusing upstream drift. Material clocks/caps and no-intervention flags stay.
+Lowering keeps the original _phase_input while passing the explicit source table
+to actual native finalization. Event-owner publish AND resolve compare original
+source options with that retained table for periodic, original setup otherwise;
+R1 checks remain and synchronized resealed copy drifts reject.
+
+351 final-source focused checks passed:128 periodic +223 publication-reader,
+sweep/S1, published-global and producer controls. Original validator routing,
+INIT/unknown callback/wrong route/bool/three-call refusal, exact common table
+correspondence and source/material separation are covered. Four actual Python
+synthetic profiling controls and54 complete archives retained. All three processes
+completed; initial126 controls bind source-01 only. No broad old global rerun.
+CPU0/one thread,1GiB480s8GiB-reserve software/512MiB metadata; final process31.69s,
+259,678,208B sampled peak (pytest22.87s), compile/Ruff pass. Snapshot477/producer70/
+runtime2300; actual pytest producer matches, binding owns full loaded inventory.
+
+Results: /mnt/workspaces/Cells/molecule-periodic-material-source-separation-20261031-01/results.json
+SHA256 0ae22e54cb23e6621b15c32dfafaadc6e6237356e366d83c34fa300290f37bce.
+Snapshot SHA256 0eaff4ddf8c695d0fdea9ceb6803790c93ace99ea5020728b434d5a11d82d782.
+Seven successor source/test pins and470 unchanged sources are bound. The prior
+471 packet and all outcomes remain frozen, with the earlier material-guard
+prerequisite explicitly recorded; neither packet grants actual admission.
+All actual22/26/28/16 sweep/16 periodic routes stay held. Source configuration
+and native-parser derivation remain conditional supplied seams pending genuine
+Root authorities, source/runtime/resource review and coordinated releases.
+No equation/fixture/tolerance/codec, Root INIT/shared/other-lane change, actual
+factory/law/model/RNG/native/reference/trajectory/save-load, detached run,
+INIT/old-job query, stage or commit occurred.
+

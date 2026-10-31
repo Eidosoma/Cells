@@ -619,3 +619,294 @@ def test_software_default_parameter_path_has_no_descriptor_factory_or_record_del
     )
     assert h.events == []
     save(evidence, "trial", owner.trial)
+
+
+@pytest.mark.parametrize("when", ["before_constructor", "child_use"])
+@pytest.mark.parametrize(
+    "change",
+    [
+        "runtime_getattribute",
+        "inherited_getattribute",
+        "runtime_getattr",
+        "inherited_getattr",
+        "dispatch_code",
+    ],
+)
+def test_software_parameter_dispatch_retarget_keeps_state_but_refuses(
+    when, change, monkeypatch, tmp_path, evidence
+):
+    h = harness(monkeypatch, tmp_path)
+    delegate = None
+    if change == "dispatch_code":
+
+        def delegate(p, name):
+            return object.__getattribute__(p, name)
+
+        monkeypatch.setattr(ecm.parameters._Runtime, "__getattribute__", delegate, raising=False)
+    before = parent(h)
+    request = ecm.from_geometry(before, law_id=ecm.LAW_ID)
+    diagnostics = []
+
+    def retarget(context):
+        p = context.parent.parent.p
+        runtime = type(p)
+        mro = runtime.__mro__
+        state = ecm._snapshot(context).identity
+        stream = ecm.core.initial._rng_stream(context.parent.parent.rng).identity
+        count = h.events.count("descriptor_read")
+        if change == "dispatch_code":
+            monkeypatch.setattr(delegate, "__code__", delegate.__code__.replace())
+        else:
+            target = runtime if change.startswith("runtime") else ecm.parameters._Runtime
+            if change.endswith("getattribute"):
+
+                def lookup(instance, name):
+                    if name == "grid_size":
+                        return 4
+                    return object.__getattribute__(instance, name)
+
+                monkeypatch.setattr(target, "__getattribute__", lookup, raising=False)
+                assert p.grid_size == 4
+                assert h.events.count("descriptor_read") == count
+            else:
+                monkeypatch.setattr(target, "__getattr__", lambda instance, name: 4, raising=False)
+                assert p.synthetic_missing_grid_attribute == 4
+        assert type(p) is runtime and runtime.__mro__ is mro
+        assert ecm._snapshot(context).identity == state
+        assert ecm.core.initial._rng_stream(context.parent.parent.rng).identity == stream
+        with pytest.raises(ValueError) as caught:
+            ecm.aliases.validate(context.parameter_info)
+        assert "callable/type authority changed" in str(caught.value)
+        diagnostics.append(caught.value)
+
+    if when == "before_constructor":
+        original = ecm._namespace
+
+        def namespace(context):
+            method = original(context)
+            retarget(context)
+            return method
+
+        monkeypatch.setattr(ecm, "_namespace", namespace)
+        with pytest.raises(ecm.EcmRejected) as caught:
+            ecm.prepare_continuation(request)
+        save(evidence, "refusal", caught.value)
+        assert caught.value.partial["grid"] is None
+        assert "constructor_body" not in h.events
+        assert caught.value.partial["parent_trial"] is before.trial
+    else:
+        child = ecm.prepare_continuation(request)
+        context = ecm._authority(child)
+        retarget(context)
+        with pytest.raises(ecm.EcmRejected) as caught:
+            _ = child.cells
+        save(evidence, "refusal", caught.value)
+        assert caught.value.stage == "ecm_drift"
+    assert before in ecm.geometry._FORWARDED
+    save(evidence, "dispatch-diagnostic", diagnostics)
+
+
+@pytest.mark.parametrize(
+    "proof",
+    [
+        "never_entered",
+        "entered_only",
+        "wrong_start",
+        "wrong_return",
+        "not_completed",
+        "wrong_native",
+        "wrong_epoch",
+    ],
+)
+def test_software_constructor_requires_successful_same_parameter_descriptor_read(
+    proof, monkeypatch, tmp_path, evidence
+):
+    h = harness(
+        monkeypatch, tmp_path, failure="descriptor_read" if proof == "entered_only" else None
+    )
+    before = parent(h)
+    request = ecm.from_geometry(before, law_id=ecm.LAW_ID)
+    original = ecm._namespace
+    witnesses = []
+
+    def namespace(context):
+        method = original(context)
+        step = method.__globals__["step"]
+
+        def supplied(cells, p):
+            if proof != "never_entered":
+                try:
+                    value = p.grid_size
+                except SyntheticSourceFailure as error:
+                    assert proof == "entered_only"
+                    witnesses.append(error)
+                else:
+                    assert value == 4
+            if proof in {"wrong_start", "wrong_return"}:
+                other = object.__new__(type(p))
+                vars(other).update(vars(p))
+                assert (
+                    ecm.core.caches.snapshot(ecm.geometry.callers._parameters(other)).identity
+                    == ecm.core.caches.snapshot(ecm.geometry.callers._parameters(p)).identity
+                )
+                setattr(
+                    context,
+                    "descriptor_read_instance"
+                    if proof == "wrong_start"
+                    else "descriptor_read_return_instance",
+                    other,
+                )
+            elif proof == "not_completed":
+                context.descriptor_read_completed = False
+            elif proof == "wrong_native":
+                context.descriptor_read_native = object()
+            elif proof == "wrong_epoch":
+                context.descriptor_read_epoch = object()
+            return step(cells, SimpleNamespace(grid_size=4))
+
+        method.__globals__["step"] = supplied
+        return method
+
+    monkeypatch.setattr(ecm, "_namespace", namespace)
+    with pytest.raises(ecm.EcmRejected) as caught:
+        ecm.prepare_continuation(request)
+    error = caught.value
+    save(evidence, "failure", error)
+    save(evidence, "retained-read-error", witnesses)
+    assert (
+        str(error.source_error)
+        == "Owned grid_size descriptor read did not complete on the same parameter epoch"
+    )
+    assert error.partial["grid"] is None and "constructor_body" not in h.events
+    assert error.partial["parent_trial"] is before.trial and error.partial["geometry_consumed"]
+    assert not any(ctx.request is request for ctx in ecm._ISSUED.values())
+    if proof == "entered_only":
+        assert witnesses[0] is h.errors["source"] and witnesses[0].__cause__ is h.errors["cause"]
+        assert error.partial["descriptor_read"]["started"] is True
+        assert error.partial["descriptor_read"]["completed"] is False
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "descriptor_read_started",
+        "descriptor_read_completed",
+        "descriptor_read_instance",
+        "descriptor_read_return_instance",
+        "descriptor_read_native",
+        "descriptor_read_epoch",
+    ],
+)
+def test_software_completed_child_retains_descriptor_read_identity(
+    field, monkeypatch, tmp_path, evidence
+):
+    h = harness(monkeypatch, tmp_path)
+    child = ecm.prepare(h.request)
+    context = ecm._authority(child)
+    state = ecm._snapshot(context).identity
+    stream = ecm.core.initial._rng_stream(context.parent.parent.rng).identity
+    setattr(
+        context,
+        field,
+        False if field in {"descriptor_read_started", "descriptor_read_completed"} else object(),
+    )
+    assert ecm._snapshot(context).identity == state
+    assert ecm.core.initial._rng_stream(context.parent.parent.rng).identity == stream
+    with pytest.raises(ecm.EcmRejected) as caught:
+        _ = child.cells
+    save(evidence, "refusal", caught.value)
+    assert (
+        str(caught.value.source_error)
+        == "Owned grid_size descriptor read did not complete on the same parameter epoch"
+    )
+
+
+@pytest.mark.parametrize("stage", ["grid_constructor", "cell_grid"])
+@pytest.mark.parametrize("observer", ["locals", "event"])
+@pytest.mark.parametrize("unwind", [False, True])
+def test_software_grid_method_capture_stops_at_return_and_preserves_native_unwind(
+    stage, observer, unwind, monkeypatch, tmp_path, evidence
+):
+    h = harness(
+        monkeypatch,
+        tmp_path,
+        failure=("constructor" if stage == "grid_constructor" else "cell_grid") if unwind else None,
+    )
+    before = parent(h)
+    request = ecm.from_geometry(before, law_id=ecm.LAW_ID)
+    capture = SyntheticCaptureFailure("synthetic grid method boundary observation failure")
+    if observer == "locals":
+        original_capture = ecm.geometry._capture_locals
+
+        def broken(context, name, frame):
+            if name == stage:
+                raise capture
+            return original_capture(context, name, frame)
+
+        monkeypatch.setattr(ecm.geometry, "_capture_locals", broken)
+    else:
+        original_namespace = ecm._namespace
+
+        class Events(list):
+            def append(self, item):
+                if item[0] == stage + ("_unwind" if unwind else "_return"):
+                    raise capture
+                super().append(item)
+
+        def namespace(context):
+            context.events = Events()
+            return original_namespace(context)
+
+        monkeypatch.setattr(ecm, "_namespace", namespace)
+    target = ecm._INIT.__code__ if stage == "grid_constructor" else ecm._GRID.__code__
+    previous = sys.getprofile()
+    delivered = []
+
+    def profile(frame, event, arg):
+        if frame.f_code is target and event == "return":
+            delivered.append((frame.f_code.co_name, event))
+        if previous is not None:
+            previous(frame, event, arg)
+
+    sys.setprofile(profile)
+    try:
+        with pytest.raises(ecm.EcmRejected) as caught:
+            ecm.prepare_continuation(request)
+        assert sys.getprofile() is profile
+    finally:
+        sys.setprofile(previous)
+    error = caught.value
+    save(evidence, "failure", error)
+    save(evidence, "profiler-delivery", delivered)
+    assert error.stage == "capture" and error.capture_error is capture
+    assert delivered and len(delivered) == 1
+    if unwind:
+        assert (
+            error.source_error is h.errors["source"]
+            and error.source_error.__cause__ is h.errors["cause"]
+        )
+        assert error.__cause__ is h.errors["source"]
+    else:
+        assert error.source_error is None and error.__cause__ is capture
+    assert error.partial["parent_trial"] is before.trial
+    assert error.partial["geometry_consumed"] and not error.partial["usable_ecm_child_available"]
+    assert error.partial["stage"] == stage
+    caller, grid = error.partial["caller"], error.partial["grid"]
+    assert grid is not None
+    if stage == "grid_constructor":
+        assert "grid_obj" not in vars(caller)
+        assert (
+            "constructor_return_before_assignment" not in h.events
+            and "cell_grid_body" not in h.events
+        )
+        assert error.partial["grid_stage"]["constructed"] is (not unwind)
+    else:
+        assert caller.grid_obj is grid
+        assert error.partial["grid_stage"]["initialized"] is (not unwind)
+        assert grid.cents_X is not None
+    assert "X" not in vars(caller) and "ecm_points" not in vars(caller)
+    assert not any(ctx.request is request for ctx in ecm._ISSUED.values())
+    for call in (grid.__init__, lambda: grid.cell_grid(1, 0, 1, 0, 1)):
+        with pytest.raises(ecm.EcmRejected) as blocked:
+            call()
+        assert blocked.value.stage == "source_call_unavailable"

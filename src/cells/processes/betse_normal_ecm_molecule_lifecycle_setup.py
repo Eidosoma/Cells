@@ -22,7 +22,9 @@ from cells.processes import betse_normal_ecm_init_phase_setup as init_setup
 from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
 from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
+from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
 from cells.processes import betse_perturbations as perturbations
 
@@ -149,7 +151,7 @@ def constant_callback_record(suffix, actual=None):
     )
 
 
-def finalized_owner(template, actual, p, *, sweep_observation=None):
+def finalized_owner(template, actual, p, *, sweep_observation=None, periodic_observation=None):
     owner = ions.data(template)
     owner.update(
         {
@@ -182,12 +184,19 @@ def finalized_owner(template, actual, p, *, sweep_observation=None):
         if row == 0:
             continue
         function = row[5]
-        if function not in ("None", "f_sweep"):
+        if function not in ("None", "f_sweep", "periodic"):
             raise ValueError(
-                "Transition source setup admits only constant or real SIM f_sweep callbacks"
+                "Transition source setup requires actual constant/sweep/periodic finalizer authority"
             )
         if function == "None":
             constant_callback_record(suffix, actual)
+        elif function == "periodic":
+            if (type(periodic_observation) is not periodic_authority.FactoryObservation
+                    or periodic_observation.owner is not actual or periodic_observation.p is not p
+                    or not periodic_observation.complete or suffix not in periodic_observation.records
+                    or getattr(actual, "dyna_"+suffix, None) is not periodic_observation.returned[suffix]):
+                raise ValueError("Missing actual periodic factory observation; no hydration allowed")
+            periodic_authority.inspect_callback(getattr(actual, "dyna_"+suffix), getattr(actual, "scalar_"+suffix), p)
         else:
             if (type(sweep_observation) is not sweep_authority.FactoryObservation
                     or sweep_observation.owner is not actual or sweep_observation.p is not p
@@ -200,6 +209,9 @@ def finalized_owner(template, actual, p, *, sweep_observation=None):
         dynamic = (
             dict(kind="constant")
             if function == "None"
+            else dict(kind="periodic", frequency=p.periodic_properties["frequency"],
+                      phase=p.periodic_properties["phase"], provenance="Actual SIM periodic finalizer result")
+            if function == "periodic"
             else dict(
                 kind="sweep",
                 start=p.f_scan_properties["f start"],
@@ -221,11 +233,16 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
     """Execute real reinitialize/setup bodies; never call a fresh cold initializer."""
     raw = legacy_setup_inputs(raw)
     cfg = ions.data(raw["source_setup"])
+    selected = temporal_config.selection(raw)
+    periodic = None if selected is not None else periodic_authority.configuration(raw)
+    if periodic is not None:
+        periodic_authority.require_source(source_binding, periodic)
     template = ions.data(raw["sim_composition_template"])
     packet = template["event_inputs"]
     field = packet["field"]
     field["initial"] = material.plain(init_parent.network.material.values._asdict())
     ctx = None
+    parameter_issuance = None
     reached = {}
     stage = "supplied_SIM_configuration"
 
@@ -235,6 +252,9 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
             observer(name, ions.freeze(value))
 
     try:
+        if selected is not None:
+            stage = "selected_temporal_parameter_issuance"
+            parameter_issuance = temporal_config.Issuance(source_binding, completed)
         temporary = calcium.bind(
             dict(
                 kind="cells.normal_ecm_calcium_join_inputs@1",
@@ -249,6 +269,7 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
             ions.data(init_binding.inputs_raw["owners"]),
             [np.array(v, copy=True) for v in init_parent.network.material.values],
             phase_kind="INIT",
+            **(dict(parameter_issuance=parameter_issuance) if parameter_issuance is not None else {}),
         )
         owners.restore(ctx, ions.data(init_parent.network.network_cache))
         for key, value in init_parent.stores.items():
@@ -269,7 +290,17 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         p.sim_time_total = raw["time_profile"]["sim_total_s"]
         p.global_options = ions.data(packet["event_owner"]["global_options"])
         p.scheduled_options = ions.data(packet["event_owner"]["scheduled_options"])
-        p.f_scan_properties = ions.data(cfg["frequency_sweep"])
+        if parameter_issuance is None:
+            p.f_scan_properties = ions.data(cfg["frequency_sweep"])
+            if periodic is not None:
+                p.periodic_properties = ions.data(periodic)
+        else:
+            stage = "selected_temporal_store_admission"
+            parameter_issuance.check(ctx.phase)
+            sweep_authority.properties(p.f_scan_properties, resolved=False)
+            periodic_authority.properties(p.periodic_properties)
+            if selected["family"] == "periodic":
+                periodic = ions.data(p.periodic_properties)
         p.channel_noise_level = cfg["static_noise_level"]
         ep = field["definition"]["environment_geometry_definition"]["parameters"]
         p.NAv, p.er, p.eo = (
@@ -334,11 +365,29 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         sim.rho_pump = 1
         sim.rho_channel = 1
         stage = "SIM_event_finalization"
+        if parameter_issuance is not None:
+            parameter_issuance.check(ctx.phase)
         source._finalize_events_global(owner, ctx.phase, shuffle=python_rng.shuffle)
         sweep_observation = None
-        if any(p.scheduled_options[key] != 0 and p.scheduled_options[key][5] == "f_sweep"
+        periodic_observation = None
+        if periodic is not None:
+            periodic_observation = periodic_authority.FactoryObservation(owner, ctx.phase, periodic, binding=source_binding,
+                **(dict(parameter_issuance=parameter_issuance) if parameter_issuance is not None else {}))
+            try:
+                with periodic_observation:
+                    source._finalize_events_tissue(owner, ctx.phase)
+            except BaseException as error:
+                try:
+                    observe("periodic_factory_observed", periodic_observation.data())
+                except BaseException as secondary:
+                    error.add_note("Periodic observation retention also failed: " + repr(secondary))
+                raise
+            observe("periodic_factory_observed", periodic_observation.data())
+        elif any(p.scheduled_options[key] != 0 and p.scheduled_options[key][5] == "f_sweep"
                for key in sweep_authority.MEMBRANE_KEYS):
-            sweep_observation = sweep_authority.FactoryObservation(owner, ctx.phase, cfg["frequency_sweep"])
+            sweep_observation = sweep_authority.FactoryObservation(owner, ctx.phase,
+                cfg["frequency_sweep"] if parameter_issuance is None else parameter_issuance.initial["f_sweep"],
+                **(dict(parameter_issuance=parameter_issuance) if parameter_issuance is not None else {}))
             try:
                 with sweep_observation:
                     source._finalize_events_tissue(owner, ctx.phase)
@@ -351,7 +400,7 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
             observe("sweep_factory_observed", sweep_observation.data())
         else:
             source._finalize_events_tissue(owner, ctx.phase)
-        event_owner = finalized_owner(packet["event_owner"], owner, p, sweep_observation=sweep_observation)
+        event_owner = finalized_owner(packet["event_owner"], owner, p, sweep_observation=sweep_observation, periodic_observation=periodic_observation)
         callback_authority = {
             suffix: constant_callback_record(suffix, owner)
             for suffix, callback in event_owner["callbacks"].items()
@@ -366,6 +415,8 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                 source_phase="SIM",
                 legacy_run_sim=True,
                 event_fire_calls=0,
+                **(dict(temporal_configuration_store=parameter_issuance.receipt(periodic_observation or sweep_observation))
+                   if parameter_issuance is not None else {}),
                 **(
                     dict(constant_callback_authority=callback_authority)
                     if callback_authority
@@ -373,6 +424,9 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                 ),
                 **(dict(sweep_callback_authority=sweep_observation.records)
                    if sweep_observation is not None else {}),
+                **(dict(periodic_callback_authority=periodic_observation.records,
+                        periodic_properties_after=p.periodic_properties)
+                   if periodic_observation is not None else {}),
             ),
         )
         stage = "source_screening_conductivity"
@@ -478,6 +532,8 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                 reached=reached,
                 available=available(ctx),
                 source_init_parent=init_parent,
+                **(dict(temporal_configuration_store=parameter_issuance.available())
+                   if parameter_issuance is not None else {}),
                 root_cause=dict(type=type(error).__name__, message=str(error)),
             ),
         ) from error
@@ -487,14 +543,18 @@ def legacy_setup_inputs(raw):
     result = ions.data(raw)
     current = ions.data(raw["sim_phase"])
     setup = current["setup"]
+    selected_setup = temporal_config.finalizer_setup(raw)
+    periodic_setup = None if selected_setup is not None else periodic_authority.finalizer_setup(raw)
+    event_setup = (ions.data(selected_setup) if selected_setup is not None else
+                   setup if periodic_setup is None else ions.data(periodic_setup))
     event_owner = dict(
-        global_options=setup["global_options"],
-        scheduled_options=setup["scheduled_options"],
+        global_options=event_setup["global_options"],
+        scheduled_options=event_setup["scheduled_options"],
         handler_fields={},
         callbacks={},
-        tissue_target_inds=setup["maps"]["tissue_target_inds"],
-        cell_target_inds=setup["maps"]["cell_target_inds"],
-        env_target_inds=setup["maps"]["env_target_inds"],
+        tissue_target_inds=event_setup["maps"]["tissue_target_inds"],
+        cell_target_inds=event_setup["maps"]["cell_target_inds"],
+        env_target_inds=event_setup["maps"]["env_target_inds"],
     )
     result["flags"] = current["flags"]
     result["time_profile"] = current["time_profile"]

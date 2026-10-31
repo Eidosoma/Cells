@@ -6,7 +6,7 @@ import pickle
 import sys
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -32,7 +32,7 @@ def evidence(request, tmp_path):
     return path
 
 
-def harness(monkeypatch, tmp_path, *, failure=None):
+def harness(monkeypatch, tmp_path, *, failure=None, request_metadata=None):
     """Issued synthetic parents, literal caches and no real source execution.
 
     Metadata-only upstream projectors substitute for separately reviewed seed
@@ -144,9 +144,14 @@ def harness(monkeypatch, tmp_path, *, failure=None):
         initial_state=initial_state,
     )
     caller_request = callers.Request(core_request, "")
-    monkeypatch.setattr(
-        callers, "request_record", lambda r: dict(synthetic_only=True, core=r.core_request.identity)
-    )
+
+    def request_record(request):
+        result = dict(synthetic_only=True, core=request.core_request.identity)
+        if request_metadata is not None:
+            result["frozen_metadata"] = request_metadata
+        return result
+
+    monkeypatch.setattr(callers, "request_record", request_record)
     caller_request = replace(
         caller_request, identity=core.records._digest(callers.request_record(caller_request))
     )
@@ -540,6 +545,68 @@ def test_software_actual_premesh_evidence_must_match_retained_parent(
     assert h.caller.mesh is caught.value.partial["kernel"]
     assert_consumed(h)
     save(evidence, "failure", caught.value)
+
+
+def test_software_frozen_request_evidence_preserves_bits_and_original_parents(
+    monkeypatch, tmp_path, evidence
+):
+    bits = np.asarray([0x8000000000000000, 0x7FF8000000000042], dtype=np.uint64)
+    raw = bits.view(np.float64)
+    original_bytes = raw.tobytes()
+    metadata = MappingProxyType(
+        {"nested": MappingProxyType({"negative_zero": -0.0, "raw": raw}), "labels": (1, "x")}
+    )
+    h = harness(monkeypatch, tmp_path, request_metadata=metadata)
+    original_request = h.parent_caller["request"]
+    observed = mesh._parent_evidence(h.parent_image, h.parent_caller)
+    declaration = mesh.core.caches.plain(observed)["caller_request"]
+    save(evidence, "parent-evidence", observed)
+    assert declaration["frozen_metadata"]["nested"]["negative_zero"] == {
+        "float64_bits": "0000000000000080"
+    }
+    assert declaration["frozen_metadata"]["nested"]["raw"] == {
+        "dtype": raw.dtype.str,
+        "shape": [2],
+        "sha256": hashlib.sha256(original_bytes).hexdigest(),
+    }
+    assert mesh.core.records._digest(declaration) == original_request.identity
+    child = mesh.prepare(h.request)
+    save(evidence, "trial", child.trial)
+    context = mesh._authority(child)
+    assert context.caller_request is original_request
+    assert context.parent_evidence.identity == observed.identity
+    assert raw.tobytes() == original_bytes and type(metadata) is MappingProxyType
+    assert h.parent_caller["request"] is original_request
+    assert h.calls["constructor"] == h.calls["core"] == 1
+    assert_consumed(h)
+
+
+@pytest.mark.parametrize("changed", ["signed_zero", "array_nan_bits"])
+def test_software_frozen_request_backing_mutation_refuses_before_constructor(
+    changed, monkeypatch, tmp_path, evidence
+):
+    raw = np.asarray([0x7FF8000000000042], dtype=np.uint64)
+    backing = {"value": -0.0, "array": raw.view(np.float64)}
+    metadata = MappingProxyType({"nested": MappingProxyType(backing)})
+    h = harness(monkeypatch, tmp_path, request_metadata=metadata)
+    original = mesh._authenticate
+
+    def authenticate(context):
+        original(context)
+        if changed == "signed_zero":
+            backing["value"] = 0.0
+        else:
+            raw[0] = 0x7FF8000000000043
+
+    monkeypatch.setattr(mesh, "_authenticate", authenticate)
+    with pytest.raises(mesh.ContinuationRejected) as caught:
+        mesh.prepare(h.request)
+    save(evidence, "failure", caught.value)
+    assert "Authentication changed original source evidence" in str(caught.value.source_error)
+    assert h.calls["authentication"] == 1 and h.calls["constructor"] == 0
+    assert "mesh" not in vars(h.caller)
+    assert caught.value.partial["this_attempt_retired_parents"]
+    assert_consumed(h)
 
 
 @pytest.mark.parametrize(

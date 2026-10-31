@@ -16,6 +16,7 @@ from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_single_cell_caller_completion_source as source
 from cells.processes import betse_native_single_cell_caller_lattice as callers
+from cells.processes import betse_native_single_cell_environment_source as environment_source
 from cells.processes import betse_native_single_cell_geometry_parameter_source as geometry_source
 from cells.processes import betse_native_single_cell_grid_alias as grid_alias
 
@@ -24,10 +25,13 @@ LAW_ID = "betse_owned_single_cell_normalized_height_parameters@1"
 GEOMETRY_LAW_ID = "betse_owned_single_cell_normalized_initial_geometry_parameters@1"
 HEIGHT = "height"
 GEOMETRY = "initial_geometry"
+ENVIRONMENT = "environment_mask"
+ENVIRONMENT_LAW_ID = "betse_owned_single_cell_normalized_environment_parameters@1"
 HELD_UNQUALIFIED_SOURCE_STAGE = True
 _ACTIVE, _ISSUED, _CLAIMED = WeakKeyDictionary(), WeakKeyDictionary(), WeakKeyDictionary()
 _PARAMETER_STORES = source.ParameterStores.initialize_source_stores
 _GEOMETRY_STORES = geometry_source.ParameterStores.initialize_source_stores
+_ENVIRONMENT_STORES = environment_source.ParameterStores.initialize_source_stores
 _EXPECTED_STORES = (
     "_conf",
     "world_len",
@@ -93,7 +97,7 @@ def _verify_sources():
     original = callers.NATIVE_ROOT / "betse/science/parameters.py"
     if hashlib.sha256(original.read_bytes()).hexdigest() != source.NATIVE_PARAMETERS_SHA256:
         raise ValueError("Original Parameters source changed")
-    for module in (source, geometry_source):
+    for module in (source, geometry_source, environment_source):
         tree = ast.parse(Path(module.__file__).read_text())
         cls = next(
             n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "ParameterStores"
@@ -108,6 +112,7 @@ def _verify_sources():
         Path(__file__),
         Path(source.__file__),
         Path(geometry_source.__file__),
+        Path(environment_source.__file__),
         Path(callers.__file__),
         Path(grid_alias.__file__),
         original,
@@ -131,7 +136,10 @@ def request_record(request):
         full_Parameters_YAML_phase_package=False,
     )
     if request.grid_descriptor is not None:
-        if request.grid_descriptor != grid_alias.SELECTOR or request.projection != GEOMETRY:
+        if request.grid_descriptor != grid_alias.SELECTOR or request.projection not in (
+            GEOMETRY,
+            ENVIRONMENT,
+        ):
             raise ParameterRejected("Unknown selected parameter read authority", stage="descriptor")
         record["selected_descriptor"] = grid_alias.specification()
     return record
@@ -140,6 +148,14 @@ def request_record(request):
 def _projection(name):
     if name == HEIGHT:
         return LAW_ID, source, _PARAMETER_STORES, _EXPECTED_STORES
+    if name == ENVIRONMENT:
+        base = _projection(GEOMETRY)[3]
+        return (
+            ENVIRONMENT_LAW_ID,
+            environment_source,
+            _ENVIRONMENT_STORES,
+            (*base[:5], "plot_grid_size", *base[5:]),
+        )
     if name == GEOMETRY:
         return (
             GEOMETRY_LAW_ID,
@@ -232,6 +248,7 @@ def _bindings():
         _construct,
         _PARAMETER_STORES,
         _GEOMETRY_STORES,
+        _ENVIRONMENT_STORES,
         _Runtime.__init__,
         _Runtime.__setattr__,
         _Runtime.initialize_source_stores,

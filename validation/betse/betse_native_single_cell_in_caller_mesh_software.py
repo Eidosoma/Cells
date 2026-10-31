@@ -139,11 +139,12 @@ def child(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--cpu", type=int, default=6)
     parser.add_argument("--_child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     output = args.output.absolute()
-    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {6}:
-        parser.error("Require CPU6 and a fresh /mnt/workspaces/Cells output")
+    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {args.cpu}:
+        parser.error("Require the declared single CPU and a fresh /mnt/workspaces/Cells output")
     if args._child:
         return child(output)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
@@ -161,6 +162,7 @@ def main():
             snapshot_manifest_sha256=runner.source_snapshot.digest(frozen / "SNAPSHOT.json"),
             source_sha256={name: row["sha256"] for name, row in snapshot["files"].items()},
             selected_tests=[TEST],
+            cpu=args.cpu,
             synthetic_only=True,
             actual_source_replay_released=False,
         ),
@@ -194,6 +196,8 @@ def main():
             "--output",
             str(output),
             "--_child",
+            "--cpu",
+            str(args.cpu),
         ],
         directory=output / "process",
         cwd=frozen,

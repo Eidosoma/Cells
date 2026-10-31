@@ -19,19 +19,45 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   release, input protection, typed failed-parent capture and separate
   source/capture/observer errors prevent a failed prerequisite from becoming
   a completed geometry result. No automatic retry is performed.
-  [Saved results and review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/review.json)
-  bind **35 software passes in 3.78 seconds, 39.4 MiB sampled peak RSS**, with
-  no scientific imports. The first **26-pass/1-failure** attempt remains saved:
-  its assertion expected a plain cached RNG float instead of the correct exact
-  bit record. The intermediate 31-pass version remains separately bound.
-  Metadata preparation also passed, freezing 788 selected files and 158
-  external file pins, including 13 original native source files and the YAML
-  provenance of the two declared scalars. The prepared candidate contains
-  concurrent tissue development and needs coherent source review before use;
-  **no release or numerical run was created**. Successful execution alone will
-  not establish parity: the full-prefix independent comparison is still missing.
-  All four new terminal outcomes are reviewed in the central ledger. Existing
-  INIT evidence, the 11 invalidated post-cut owners and 12 held cases are unchanged.
+  The [latest square diagnostic completed](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/square-diagnostic-03/root-review.json)
+  in **33.40 seconds, 231.4 MiB sampled peak RSS**. The actual continuing mesh
+  constructor, guarded assignment, initialization/core operators, caller
+  aliases/indexing and five ordinary geometry methods ran through `near_neigh`.
+  All five stage captures were saved; the recorded stage caches and final 137
+  numeric columns report finite values. There was no source or observer error.
+  The logger reconciles 4,599,765 observed attempts and 5,007 ordered trace rows;
+  four pre-mesh executions include authentication work, not four independent
+  cases. **This is one completed source diagnostic, without an independent
+  numerical comparison, physical geometry or checkpoint qualification.**
+  The [prior square failure](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/square-diagnostic-02/root-review.json)
+  remains preserved: **17.08 seconds, 222.8 MiB sampled peak RSS**, stopped by
+  frozen request-evidence serialization before continuing mesh construction.
+  Its 23 saved sidecars include three null markers; seven opaque-object captures
+  failed, so that failed run does not retain a complete raw live graph.
+  The [request-evidence repair review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/frozen-request-fix-review.json)
+  binds the Git fix to **158 native-blocked software passes in 21.10 seconds,
+  230.5 MiB sampled peak RSS**: the previous 155 controls plus three mapping,
+  signed-zero and NaN-bit controls. The handoff uses the request's existing
+  canonical encoding and retains the original typed parent. Native equations,
+  tolerances and ownership guards are unchanged. The completed third square
+  diagnostic verifies that this fix also works in the real execution path.
+  The [first diagnostic and logging-fix review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/logging-fix-review.json)
+  preserves the earlier **8.80-second** logger failure and its separately bound
+  **37 software checks**. The logger now aggregates repeated helpers while
+  retaining ordered literal source entries.
+  The [earlier runner evidence](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/review.json)
+  preserves the initial **26-pass/1-failure** assertion mistake and separately
+  bound 31- and 35-pass versions. The [third snapshot and exact-case review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/square-prefix-source-review-03.json)
+  verifies 789 selected files and 158 external pins. Preparation took **29.48
+  seconds, 38.0 MiB sampled peak RSS**. Concurrent environment hooks were
+  inspected for the unchanged selected geometry path; no environment method
+  was released. The [earlier preparation review](/mnt/workspaces/Cells/native-single-cell-prefix-runner-20261031-01/preparation-review-02.json)
+  retains both earlier snapshots and the invocation that failed before launching
+  a child. **No hex or ECM/environment diagnostic has run.**
+  Successful execution alone will not establish parity: the full-prefix
+  independent comparison is still missing. All recorded runner/preparation/
+  diagnostic outcomes are reviewed in the central ledger. Existing INIT evidence, the
+  11 invalidated post-cut owners and 12 held cases are unchanged.
 
 - **Source integration into Git (31 October):** production modules, reusable
   validators and tests belong in this checkout. `/mnt/workspaces/Cells` holds
@@ -189,8 +215,41 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   remains failed. The final validator additionally strengthens INIT/geometry
   checks; the retry was not wholly test-only. Original 22 targeted and 26 global
   conditions remain held, as do 28 explicit route aliases, which are not new
-  independent cases. Key next implements actual `f_sweep` callback authority
-  and a separate membrane-event preparation route; actual execution stays held.
+  independent cases. Key delivered actual `f_sweep` callback authority and its
+  separate membrane-event preparation route. The [sweep source/result review](/mnt/workspaces/Cells/molecule-sweep-checkpoint-development-20261031-01/root-review.json)
+  verifies **359 blocked software checks** (83 sweep and 276 affected controls)
+  in **27.41 seconds, 246.2 MiB sampled peak RSS**. All five process outcomes,
+  including the initial lint failure, and 42 complete final archives are reviewed.
+  The [exception-unwind repair review](/mnt/workspaces/Cells/molecule-sweep-profile-unwind-repair-20261031-01/root-review.json)
+  closes the source finding: the profiler preserves the original factory error
+  and cause, records an incomplete return separately, and rejects a normal
+  `None` return at final validation. **89 blocked controls passed in 17.61 seconds,
+  244.8 MiB sampled peak RSS**: 83 repeated sweep controls, five new controls and
+  one producer-binding check, not 89 additions to the prior 359. Four controls
+  use actual Python profiling on synthetic functions. All three new process
+  outcomes and 15 final archives are reviewed; the four baseline failures remain
+  preserved, including a tuple case that failed only its new metadata assertion.
+  The 16 sweep branches span eight scenarios; neither aliases nor validation
+  controls are independent biological cases. Actual execution stays held.
+  Key's [periodic source/result review](/mnt/workspaces/Cells/molecule-periodic-checkpoint-development-20261031-01/root-review.json)
+  verifies **471 native-blocked software passes in 33.19 seconds, 247.2 MiB
+  sampled peak RSS**: 107 new periodic controls and 364 affected controls, with
+  earlier executions kept separate. All five process outcomes and 61 final
+  archives are reviewed, including the initial lint failure and earlier
+  90-pass source version. That version was blocked by an earlier material-phase
+  guard before the new periodic validator. The [source-separation successor
+  review](/mnt/workspaces/Cells/molecule-periodic-material-source-separation-20261031-01/root-review.json)
+  closes this prerequisite: distinct retained material and source-finalizer
+  declarations preserve exact common fields, maps and owners, while the original
+  material guard remains unchanged. **351 focused software checks passed in
+  31.69 seconds, 247.6 MiB sampled peak RSS**: 128 periodic and 223 affected
+  controls, not additions to the previous 471. All three outcomes and 54 archives
+  are reviewed; the earlier 126-pass source version remains separate. Key next
+  implements actual selected native parameter-store provenance for periodic
+  and frequency-sweep inputs together; full Parameters/YAML parsing remains
+  distinct from that normalized configuration scope.
+  The 16 proposed periodic branches span eight scenarios; no actual periodic
+  callback or checkpoint qualification has run.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
@@ -348,11 +407,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   84-pass/one-failure attempt remains failed, with its missing per-case refusal
   payload disclosed; the final correction changed only the synthetic flatten
   stand-in and evidence-save order. Production bytes were unchanged.
-  The accepted normalized caller/geometry source now reaches `near_neigh` and
-  stops before `makeECM`; actual native execution remains unqualified.
-  Specialist next implements extracellular geometry and grid construction,
-  including genuine `grid_size` descriptor ownership, stopping before
-  `environment`. Phase/callback and full
+  The geometry segment ends at `near_neigh`; actual native execution remains
+  unqualified.
+  Specialist delivered extracellular geometry and grid construction, including
+  genuine `grid_size` descriptor ownership, stopping before `environment`.
+  The [makeECM source/result review](/mnt/workspaces/Cells/native-single-cell-make-ecm-20261031-01/root-review.json)
+  verifies **48 native-blocked software passes in 82.13 seconds, 348.8 MiB sampled
+  peak RSS**. All five outcomes are reviewed; both earlier failed fixture attempts
+  and their disclosed missing per-case payloads remain preserved. Three source
+  repairs are closed by the [successor source/result review](/mnt/workspaces/Cells/native-single-cell-make-ecm-20261031-01/root-review-02.json):
+  parameter attribute dispatch is bound, the actual same-owner descriptor read
+  must complete, and observation failures stop at constructor/grid boundaries
+  while preserving the original source error. **79 blocked checks passed in
+  142.91 seconds, 485.2 MiB sampled peak RSS**, including the prior 48 and 31 new
+  controls. The guarded result, lint outcome and all 184 evidence files are
+  reviewed. This accepts the source/software continuation through `makeECM`;
+  the positive descriptor/grid/native path remains unrun. Specialist next owns
+  ordinary `environment -> grid_len -> make_maskM`, including fresh native
+  `plot_grid_size` parameter construction, stopping before the first Poisson
+  solve. Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,
   all 11 invalidated owners and all 12 post-cut scientific cases remain

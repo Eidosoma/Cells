@@ -14,6 +14,7 @@ from pathlib import Path
 
 from validation.betse import betse_normal_ecm_molecule_global_event_checkpoint as global_events
 from validation.betse import betse_normal_ecm_molecule_membrane_event_checkpoint as membrane_events
+from validation.betse import betse_normal_ecm_molecule_periodic_checkpoint as periodic_events
 from validation.betse import (
     betse_normal_ecm_molecule_published_global_checkpoint as published_global,
 )
@@ -46,6 +47,9 @@ SOURCE_FILES = (
     "src/cells/processes/betse_normal_ecm_molecule_sweep_authority.py",
     "validation/betse/betse_normal_ecm_molecule_sweep_checkpoint.py",
     "tests/unit/test_betse_normal_ecm_molecule_sweep_checkpoint.py",
+    "src/cells/processes/betse_normal_ecm_molecule_periodic_authority.py",
+    "validation/betse/betse_normal_ecm_molecule_periodic_checkpoint.py",
+    "tests/unit/test_betse_normal_ecm_molecule_periodic_checkpoint.py",
 )
 
 
@@ -177,6 +181,7 @@ def check_observation(value, anchor):
     if (
         anchor["scenario"] in membrane_events.SCENARIOS
         or anchor.get("preparation_route") == sweep_events.ROUTE
+        or anchor.get("preparation_route") == periodic_events.ROUTE
     ):
         global_events.check_stores(value, anchor)
         membrane_events.check_stores(value, anchor)
@@ -195,7 +200,13 @@ def check_observation(value, anchor):
 
 
 def actual_continuity(
-    directory, *, scenario, cut, event_owner_inputs=None, preparation_route="legacy"
+    directory,
+    *,
+    scenario,
+    cut,
+    event_owner_inputs=None,
+    preparation_route="legacy",
+    periodic_properties=None,
 ):
     """Prospective real continuity check; every branch/verification is work."""
     require(
@@ -204,17 +215,30 @@ def actual_continuity(
     )
     require(__debug__ and sys.flags.optimize == 0, "Assertions must be enabled")
     require(
-        preparation_route in ("legacy", published_global.ROUTE, sweep_events.ROUTE),
+        preparation_route
+        in ("legacy", published_global.ROUTE, sweep_events.ROUTE, periodic_events.ROUTE),
         "Unknown preparation route",
     )
     explicit_sweep = preparation_route == sweep_events.ROUTE
+    explicit_periodic = preparation_route == periodic_events.ROUTE
     require(
-        scenario in (sweep_events.SCENARIOS if explicit_sweep else SCENARIOS)
+        explicit_periodic or periodic_properties is None,
+        "Periodic source configuration requires its separate explicit route",
+    )
+    require(
+        scenario
+        in (
+            periodic_events.SCENARIOS
+            if explicit_periodic
+            else sweep_events.SCENARIOS
+            if explicit_sweep
+            else SCENARIOS
+        )
         and type(cut) is int
         and cut in CUTS,
         "Bounded event case/cut required",
     )
-    membrane = explicit_sweep or scenario in membrane_events.SCENARIOS
+    membrane = explicit_periodic or explicit_sweep or scenario in membrane_events.SCENARIOS
     explicit_global = preparation_route == published_global.ROUTE
     if explicit_global:
         published_global.check_route(scenario)
@@ -254,6 +278,7 @@ def actual_continuity(
                 SIM_parent=lambda: sim,
                 original_event_declaration=lambda: original,
                 explicit_event_owner_inputs=lambda: event_owner_inputs,
+                explicit_periodic_properties=lambda: periodic_properties,
                 declared_global_intervention=lambda: intervention,
                 event_program=lambda: raw,
                 event_component=lambda: component,
@@ -299,7 +324,9 @@ def actual_continuity(
     try:
         stream = (directory / "invocations.jsonl").open("x")
         calls = (
-            sweep_events.observer(Calls, stream, events.events.__file__, directory)
+            periodic_events.observer(Calls, stream, events.events.__file__, directory)
+            if explicit_periodic
+            else sweep_events.observer(Calls, stream, events.events.__file__, directory)
             if explicit_sweep
             else membrane_events.observer(Calls, stream, events.events.__file__, directory)
             if membrane
@@ -314,11 +341,31 @@ def actual_continuity(
                 lambda: owner_bridge.check_inputs(event_owner_inputs),
                 supplied=event_owner_inputs,
             )
+        if explicit_periodic:
+            from cells.processes import (
+                betse_normal_ecm_molecule_periodic_authority as periodic_authority,
+            )
+
+            take(
+                "required-periodic-configuration",
+                lambda: periodic_authority.properties(periodic_properties),
+                supplied=periodic_properties,
+            )
         initial_binding, initial = preparation.prepare_INIT(
             directory / "INIT", "zero_INIT_calls", attempts
         )
         sim_binding, sim = (
-            sweep_events.prepare_sim(
+            periodic_events.prepare_sim(
+                directory / "SIM",
+                initial_binding,
+                initial,
+                attempts,
+                scenario=scenario,
+                event_owner_inputs=event_owner_inputs,
+                periodic_properties=periodic_properties,
+            )
+            if explicit_periodic
+            else sweep_events.prepare_sim(
                 directory / "SIM",
                 initial_binding,
                 initial,
@@ -348,7 +395,12 @@ def actual_continuity(
             else preparation.prepare_SIM(directory / "SIM", initial_binding, initial, attempts)
         )
         labels = tuple(float(t) for t in sim.active.active.clock.source_times_s)
-        if explicit_sweep:
+        if explicit_periodic:
+            original = take(
+                "actual-source-periodic-publication-declaration",
+                lambda: periodic_events.declaration(sim_binding.composition, sim.active, scenario),
+            )
+        elif explicit_sweep:
             original = take(
                 "actual-source-sweep-publication-declaration",
                 lambda: sweep_events.declaration(sim_binding.composition, sim.active, scenario),
@@ -467,7 +519,9 @@ def actual_continuity(
                 scheduled_options=run.ions.data(actual_owner["scheduled_options"]),
                 callback_identity=fp(actual_owner["callbacks"]),
                 callback_authority=fp(
-                    sweep_events.source_authority(component)
+                    periodic_events.source_authority(component)
+                    if explicit_periodic
+                    else sweep_events.source_authority(component)
                     if explicit_sweep
                     else component.base.setup_receipt["event_finalization"]["source_fields"][
                         "constant_callback_authority"
@@ -482,7 +536,7 @@ def actual_continuity(
                 },
                 entry_membrane={key: stamp(entry.stores[key]) for key in membrane_events.STORES},
             )
-            if explicit_sweep:
+            if explicit_sweep or explicit_periodic:
                 anchor.update(
                     preparation_route=preparation_route,
                     callbacks=run.ions.data(actual_owner["callbacks"]),
@@ -537,7 +591,9 @@ def actual_continuity(
                     scheduled_options=run.ions.data(owner.raw["event_owner"]["scheduled_options"]),
                     callback_identity=fp(owner.raw["event_owner"]["callbacks"]),
                     callback_authority=fp(
-                        sweep_events.source_authority(owner)
+                        periodic_events.source_authority(owner)
+                        if explicit_periodic
+                        else sweep_events.source_authority(owner)
                         if explicit_sweep
                         else owner.base.setup_receipt["event_finalization"]["source_fields"][
                             "constant_callback_authority"
@@ -687,6 +743,7 @@ def actual_continuity(
                 "global_boundaries",
                 "membrane_boundaries",
                 "sweep_boundaries",
+                "periodic_boundaries",
             )
             else ["before_onset", "active", "after_release"]
             if scenario != "no_events"
@@ -711,6 +768,13 @@ def actual_continuity(
         )
         if explicit_global:
             result.update(preparation_route=preparation_route, declared_intervention=intervention)
+        elif explicit_periodic:
+            result.update(
+                preparation_route=preparation_route,
+                actual_periodic_authority=run.ions.data(
+                    periodic_events.source_authority(component)
+                ),
+            )
         elif explicit_sweep:
             result.update(
                 preparation_route=preparation_route,
@@ -779,7 +843,11 @@ def actual_continuity(
             )
         if membrane:
             result["membrane_source_callbacks_pulses"] = (
-                sweep_events.check_calls if explicit_sweep else membrane_events.check_calls
+                periodic_events.check_calls
+                if explicit_periodic
+                else sweep_events.check_calls
+                if explicit_sweep
+                else membrane_events.check_calls
             )(accounting, anchor)
         write_json(directory / "result.json", result)
     except BaseException as error:
@@ -790,12 +858,16 @@ def actual_continuity(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=SCENARIOS + sweep_events.SCENARIOS, required=True)
+    parser.add_argument(
+        "--scenario",
+        choices=SCENARIOS + sweep_events.SCENARIOS + periodic_events.SCENARIOS,
+        required=True,
+    )
     parser.add_argument("--cut", choices=CUTS, type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--preparation-route",
-        choices=("legacy", published_global.ROUTE, sweep_events.ROUTE),
+        choices=("legacy", published_global.ROUTE, sweep_events.ROUTE, periodic_events.ROUTE),
         default="legacy",
     )
     args = parser.parse_args()

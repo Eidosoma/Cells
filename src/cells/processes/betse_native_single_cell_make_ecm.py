@@ -29,6 +29,7 @@ _MAKE, _INIT, _GRID = (
     source.FiniteDiffSolver.cell_grid,
 )
 _ISSUED, _GRIDS = WeakKeyDictionary(), WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
 _HELPERS = ("unique", "asarray", "vstack", "hstack", "linspace", "meshgrid", "column_stack")
 
@@ -129,6 +130,8 @@ def _bindings():
         _GridRuntime.cell_grid,
         _construct_grid,
         _active,
+        _require_descriptor_read,
+        _stop_observation,
         aliases._GridAlias.__get__,
         aliases._GridAlias.__set__,
     )
@@ -241,6 +244,26 @@ def _active(grid):
     return context
 
 
+def _require_descriptor_read(context):
+    p = context.parent.parent.p
+    if (
+        context.descriptor_read_started is not True
+        or context.descriptor_read_completed is not True
+        or context.descriptor_read_instance is not p
+        or context.descriptor_read_return_instance is not p
+        or context.descriptor_read_native is not context.parameter_info.native
+        or context.descriptor_read_epoch is not context.retirement
+    ):
+        raise ValueError(
+            "Owned grid_size descriptor read did not complete on the same parameter epoch"
+        )
+
+
+def _stop_observation(context):
+    if context.observation_error is not None:
+        raise _CaptureStop()
+
+
 class _GridRuntime(source.FiniteDiffSolver):
     def __init__(self):
         context = _active(self)
@@ -252,10 +275,14 @@ class _GridRuntime(source.FiniteDiffSolver):
         context.constructing = True
         try:
             _INIT(self)
+        except Exception:
+            _observe(context, "grid_constructor_unwind", self)
+            raise
         finally:
             context.constructing = False
         context.constructed = True
         _observe(context, "grid_constructor_return", self)
+        _stop_observation(context)
         context.stage = "makeECM"
         context.prefix.stage = "makeECM"
 
@@ -276,10 +303,14 @@ class _GridRuntime(source.FiniteDiffSolver):
         context.initializing = True
         try:
             _GRID(self, *args)
+        except Exception:
+            _observe(context, "cell_grid_unwind", self)
+            raise
         finally:
             context.initializing = False
         context.initialized = True
         _observe(context, "cell_grid_return", self)
+        _stop_observation(context)
         context.stage = "makeECM"
         context.prefix.stage = "makeECM"
 
@@ -293,6 +324,7 @@ def _construct_grid(context):
     if context.observation_error is not None:
         raise _CaptureStop()
     _check(context)
+    _require_descriptor_read(context)
     grid = object.__new__(_GridRuntime)
     context.grid = grid
     _GRIDS[grid] = context
@@ -375,6 +407,8 @@ def _check(context):
         )
     if _verify_sources() != context.producers:
         raise ValueError("Owned ECM source/helper producer changed")
+    if context.grid is not None or context.finished:
+        _require_descriptor_read(context)
     if context.finished:
         caller, grid = parent.parent.caller, context.grid
         if (
@@ -450,6 +484,12 @@ def _graphs(context):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise EcmRejected(
+            "ECM epoch was consumed by an environment attempt",
+            stage="ecm_epoch_consumed",
+            trial=context.trial,
+        )
     try:
         if context.invalid or context.thread != get_ident() or context.active:
             raise ValueError("Invalid completed ECM authority")
@@ -470,6 +510,15 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_environment(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise EcmRejected("Actual ECM owner changed", stage="ecm_owner")
+        _FORWARDED[owner] = transition
+        return context
 
 
 @contextmanager
@@ -534,6 +583,11 @@ def prepare_continuation(request, *, _work=None):
         initialized=False,
         initializing=False,
         descriptor_read_started=False,
+        descriptor_read_completed=False,
+        descriptor_read_instance=None,
+        descriptor_read_return_instance=None,
+        descriptor_read_native=None,
+        descriptor_read_epoch=None,
         finished=False,
         stage="preflight",
         events=[],
@@ -596,7 +650,17 @@ def prepare_continuation(request, *, _work=None):
         snapshots=context.snapshots,
         work=_work.work,
         observation_errors=context.observation_errors,
+        observation_origin=context.observation_origin,
         observation_raw=context.observation_raw,
+        descriptor_read=dict(
+            started=context.descriptor_read_started,
+            completed=context.descriptor_read_completed,
+            instance=context.descriptor_read_instance,
+            returned_instance=context.descriptor_read_return_instance,
+            native=context.descriptor_read_native,
+            epoch=context.descriptor_read_epoch,
+        ),
+        grid_stage=dict(constructed=context.constructed, initialized=context.initialized),
         geometry_consumed=request.geometry_owner in geometry._FORWARDED,
         usable_ecm_child_available=False,
     )

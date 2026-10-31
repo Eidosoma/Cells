@@ -1788,4 +1788,30 @@ def screening_conductivity(self, cells, p):
     self.cgj = 1 / (2 / p.cm)
 
 
-mod = SimpleNamespace(f_sweep=f_sweep)
+def periodic(pc,cells,p):
+    """
+    Creates a time-dependent signal of a sinusoidal function.
+
+    Parameters
+    ----------
+    pc                 Indices of cells (p.is_ecm == False) or membranes (p.is_ecm == True)
+    cells              Instance of Cells module
+    p                  Instance of parameters
+
+    Returns
+    ---------
+    y              Data values from 0 to 1 defining a periodic signal.
+    scalar         Null output corresponding to spatial variation.
+    """
+
+    scalar = 1
+
+    y = lambda t: np.sin(
+        t*np.pi*(p.periodic_properties['frequency']/1) +
+        p.periodic_properties['phase']
+    ) ** 2
+
+    return scalar, y
+
+
+mod = SimpleNamespace(f_sweep=f_sweep, periodic=periodic)

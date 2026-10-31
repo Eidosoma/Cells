@@ -17,6 +17,7 @@ from types import CodeType, FunctionType
 import numpy as np
 
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
 from cells.processes import betse_normal_ion_join as ions
 from cells.processes import betse_time_modulation as time_laws
 
@@ -134,7 +135,18 @@ def inspect_callback(callback, scalar, parameters):
     return closure["f_slope"]
 
 
-def record(suffix, sequence, initial, before, after, duration, targets, profiles):
+def record(
+    suffix,
+    sequence,
+    initial,
+    before,
+    after,
+    duration,
+    targets,
+    profiles,
+    *,
+    configuration_store=None,
+):
     """Expected data shape only; this never produces a live factory receipt."""
     value = dict(
         kind=KIND,
@@ -158,6 +170,8 @@ def record(suffix, sequence, initial, before, after, duration, targets, profiles
         evaluated=False,
         callable_instance_persisted=False,
     )
+    if configuration_store is not None:
+        value["configuration_store"] = ions.data(configuration_store)
     return dict(value, identity=ions.digest(value))
 
 
@@ -168,8 +182,11 @@ class FactoryObservation:
     are published; neither decoding nor admission installs this observer.
     """
 
-    def __init__(self, owner, phase, initial):
+    def __init__(self, owner, phase, initial, *, parameter_issuance=None):
         self.owner, self.phase, self.p = owner, phase, phase.p
+        self.parameter_issuance = parameter_issuance
+        if parameter_issuance is not None:
+            temporal.callback_association(parameter_issuance, phase)
         self.initial = properties(initial, resolved=False)
         self.duration = self.p.sim_time_total
         require(
@@ -187,6 +204,7 @@ class FactoryObservation:
         require(self.selected, "Require an explicitly configured membrane sweep")
         self.entries, self.records, self.returned = [], {}, {}
         self.entry_attempts = self.return_events = 0
+        self.return_or_unwind_events = []
         self.pending = None
         self.complete = False
         self.previous = self.installed = None
@@ -199,10 +217,27 @@ class FactoryObservation:
             self.complete = False
         else:
             self.return_events += 1
+            if arg is None:
+                # CPython uses return(None) for both an exception unwind and
+                # a normal None return. Do not validate a successful tuple or
+                # inspect possibly half-mutated parameters from this event.
+                # Keep the pending entry incomplete: __exit__ propagates an
+                # active source error unchanged; finish refuses a normal None.
+                self.complete = False
+                matched = self.pending is not None and self.pending[0] == id(frame)
+                sequence = self.pending[3]["sequence"] if matched else None
+                self.return_or_unwind_events.append(
+                    dict(sequence=sequence, matched_entry=matched, return_value_is_None=True)
+                )
+                if matched:
+                    self.pending[3].update(status="return_or_unwind_incomplete")
+                return
         require(
             self.p._run_sim is True and same(self.p.sim_time_total, self.duration),
             "Changed retained SIM sweep parameter context",
         )
+        if self.parameter_issuance is not None:
+            temporal.callback_association(self.parameter_issuance, self.phase)
         if event == "call":
             require(
                 self.pending is None and len(self.entries) < len(self.selected),
@@ -262,6 +297,15 @@ class FactoryObservation:
             self.p.sim_time_total,
             entry["targets"],
             self.p.scheduled_options[key][4],
+            **(
+                dict(
+                    configuration_store=temporal.callback_association(
+                        self.parameter_issuance, self.phase
+                    )
+                )
+                if self.parameter_issuance is not None
+                else {}
+            ),
         )
         self.returned[suffix] = callback
         entry.update(status="returned", after=after)
@@ -281,8 +325,12 @@ class FactoryObservation:
 
     def finish(self):
         self.complete = False
+        if self.parameter_issuance is not None:
+            temporal.callback_association(self.parameter_issuance, self.phase)
         require(
-            self.pending is None and len(self.records) == len(self.selected),
+            self.pending is None
+            and not self.return_or_unwind_events
+            and len(self.records) == len(self.selected),
             "Missing/omitted sweep factory return",
         )
         require(
@@ -321,6 +369,7 @@ class FactoryObservation:
             factory_entry_attempts=self.entry_attempts,
             factory_return_events=self.return_events,
             factory_returns=len(self.records),
+            return_or_unwind_events=copy.deepcopy(self.return_or_unwind_events),
             entries=copy.deepcopy(self.entries),
             records=copy.deepcopy(self.records),
             independent_cases=0,
@@ -342,7 +391,13 @@ def validate(source_binding, owner, published, fields):
         "Missing/foreign actual sweep callback authority; no hydration allowed",
     )
     original = source_binding.inputs
-    initial = properties(original["source_setup"]["frequency_sweep"], resolved=False)
+    store = temporal.validate_receipt(source_binding, fields)
+    initial = properties(
+        original["source_setup"]["frequency_sweep"]
+        if store is None
+        else store["initial"]["f_sweep"],
+        resolved=False,
+    )
     after = properties(fields["frequency_sweep_after"], resolved=True)
     duration = original["sim_phase"]["time_profile"]["sim_total_s"]
     require(
@@ -366,6 +421,17 @@ def validate(source_binding, owner, published, fields):
             duration,
             published.owner["handler_fields"]["targets_" + suffix],
             row[4],
+            **(
+                dict(
+                    configuration_store=dict(
+                        source_binding_identity=source_binding.identity,
+                        configuration_identity=ions.digest(store["configuration"]),
+                        authority=temporal.AUTHORITY,
+                    )
+                )
+                if store is not None
+                else {}
+            ),
         )
         require(
             same(authorities[suffix], expected),

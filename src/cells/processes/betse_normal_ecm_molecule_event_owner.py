@@ -169,6 +169,18 @@ def record(value):
     )
 
 
+def source_setup_configuration(source_binding):
+    # Periodic source setup is separate from the unchanged material seam.
+    from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic
+    from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
+
+    selected = temporal.finalizer_setup(source_binding.inputs)
+    if selected is not None:
+        return selected
+    supplied = periodic.finalizer_setup(source_binding.inputs)
+    return source_binding.inputs["sim_phase"]["setup"] if supplied is None else supplied
+
+
 def field_sources(early):
     result = {key: "unchanged actual event_finalized.owner." + key for key in early["owner"]}
     result.update(
@@ -290,6 +302,9 @@ def publish(
         "Require the unchanged actual zero-fire SIM finalization epoch",
     )
     cfg = source_binding.inputs["source_setup"]
+    from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
+
+    temporal.validate_receipt(source_binding, event_finalized, completed=completed)
     profiles = actual_profiles.tissue_name_to_profile
     require(
         list(profiles) == [row["name"] for row in cfg["tissue_profiles"]],
@@ -314,7 +329,7 @@ def publish(
         set(owner[maps[0]]) == set(owner[maps[1]]) == set(owner[maps[2]]),
         "Missing actual finalized profile map; no profile hydration",
     )
-    original_setup = source_binding.inputs["sim_phase"]["setup"]
+    original_setup = source_setup_configuration(source_binding)
     for key in ("global_options", "scheduled_options"):
         require(
             same(owner[key], original_setup[key]),
@@ -438,6 +453,9 @@ def resolve(source_binding, source_entry):
         "Foreign setup/config/INIT/SIM parent in event-owner publication",
     )
     early = finalization["source_fields"]
+    from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
+
+    temporal.validate_receipt(source_binding, early, completed=completed)
     require(
         early["source_phase"] == "SIM"
         and early["legacy_run_sim"] is True
@@ -445,7 +463,7 @@ def resolve(source_binding, source_entry):
         and early["event_fire_calls"] == 0,
         "Changed original zero-fire SIM finalization epoch/phase",
     )
-    original_setup = source_binding.inputs["sim_phase"]["setup"]
+    original_setup = source_setup_configuration(source_binding)
     for key in ("global_options", "scheduled_options"):
         require(
             same(early["owner"][key], original_setup[key]),

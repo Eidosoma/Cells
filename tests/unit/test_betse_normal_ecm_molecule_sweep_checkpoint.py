@@ -326,6 +326,7 @@ def test_factory_observations_refuse_wrong_association_order_and_failed_prefixes
                 v.trace.finish()
             else:
                 v.trace.observe(call, "return", None)
+                v.trace.finish()  # The profile event itself must not replace a source error.
     assert v.trace.data()["complete"] is False
 
 
@@ -349,6 +350,134 @@ def test_observer_forwards_work_profile_and_restores_it_on_error():
     finally:
         sys.setprofile(before)
     assert not v.trace.data()["complete"]
+
+
+@pytest.mark.parametrize("outcome", ["raise", "raise-after-context-change", "None", "tuple"])
+def test_actual_synthetic_profile_return_or_unwind_preserves_primary_and_restores_profiler(
+    tmp_path, monkeypatch, outcome
+):
+    """CPython emits these events; real factory/callback/law code stays blocked.
+
+    Only the test's function/frame identities and source metadata are adapted.
+    Production observe/profile/enter/exit/finish methods execute unchanged.
+    The tuple contains an uninvoked manufactured closure, never source output.
+    """
+    value = manufactured_factory("sweep_Na_mem", explicit=True)
+    native_callback_code = authority.callback_code()
+    test_module = sys.modules[__name__]
+    function = FunctionType(
+        native_callback_code,
+        vars(test_module),
+        closure=(CellType(value.p.f_scan_properties["f slope"]), CellType(value.p)),
+    )
+    primary = RuntimeError("synthetic profiled factory error")
+    cause = LookupError("synthetic original factory cause")
+    primary.partial = dict(unowned_failed_factory_output="retained synthetic prefix")
+    value.p.software_outcome = outcome
+
+    def controlled_factory(pc, cells, p):
+        if p.software_outcome.startswith("raise"):
+            if p.software_outcome.endswith("context-change"):
+                p._run_sim = False
+                p.sim_time_total += 1
+            raise primary from cause
+        f_slope = p.f_scan_properties["f slope"]
+        if f_slope is None:
+            raise AssertionError("Synthetic control must not resolve a slope")
+        return (1, function) if p.software_outcome == "tuple" else None
+
+    def controlled_finalizer(self, phase):
+        returned = controlled_factory(self.targets_Namem, phase.cells, phase.p)
+        if returned is not None:
+            self.scalar_Namem, self.dyna_Namem = returned
+
+    monkeypatch.setattr(authority, "FACTORY_CODE", controlled_factory.__code__)
+    monkeypatch.setattr(authority, "FINALIZER_CODE", controlled_finalizer.__code__)
+    monkeypatch.setattr(authority, "source", test_module)
+    monkeypatch.setattr(authority, "source_identity", lambda: dict(unowned_synthetic_profile=True))
+    monkeypatch.setattr(authority, "callback_code", lambda: native_callback_code)
+    before = sys.getprofile()
+    seen = []
+
+    def previous(frame, event, arg):
+        if before is not None:
+            before(frame, event, arg)  # Forward the real-execution blockers.
+        if frame.f_code is controlled_factory.__code__:
+            seen.append(dict(event=event, arg_is_None=arg is None))
+
+    sys.setprofile(previous)
+    caught = None
+    try:
+        if outcome.startswith("raise"):
+            with pytest.raises(RuntimeError) as error:
+                with value.trace:
+                    controlled_finalizer(value.owner, value.phase)
+            caught = error.value
+            assert caught is primary and caught.__cause__ is cause
+            assert caught.partial == dict(unowned_failed_factory_output="retained synthetic prefix")
+        elif outcome == "None":
+            with pytest.raises(ValueError, match="Missing/omitted sweep factory return") as error:
+                with value.trace:
+                    controlled_finalizer(value.owner, value.phase)
+            caught = error.value
+            frames = []
+            tb = caught.__traceback__
+            while tb is not None:
+                frames.append(tb.tb_frame.f_code)
+                tb = tb.tb_next
+            assert authority.FactoryObservation.finish.__code__ in frames
+            assert authority.FactoryObservation.observe.__code__ not in frames
+        else:
+            with value.trace:
+                controlled_finalizer(value.owner, value.phase)
+            assert value.trace.complete and value.owner.dyna_Namem is function
+        assert sys.getprofile() is previous
+    finally:
+        sys.setprofile(before)
+    data = value.trace.data()
+    assert [r["event"] for r in seen if r["event"] in ("call", "return")] == ["call", "return"]
+    assert seen[-1] == dict(event="return", arg_is_None=outcome != "tuple")
+    assert data["factory_entry_attempts"] == data["factory_return_events"] == 1
+    assert data["factory_returns"] == int(outcome == "tuple")
+    assert data["complete"] is (outcome == "tuple")
+    if outcome != "tuple":
+        assert data["entries"][0]["status"] == "return_or_unwind_incomplete"
+        assert data["return_or_unwind_events"] == [
+            dict(sequence=0, matched_entry=True, return_value_is_None=True)
+        ]
+        assert data["records"] == {} and value.trace.pending is not None
+    else:
+        assert data["return_or_unwind_events"] == []
+    # Retain the real Python profiling events and original exception identities
+    # as structural software evidence; no actual source/native admission.
+    (tmp_path / "S1-profile-control.json").write_text(
+        json.dumps(
+            dict(
+                outcome=outcome,
+                actual_synthetic_profile_events=seen,
+                observation=data,
+                primary_identity_preserved=caught is primary
+                if outcome.startswith("raise")
+                else None,
+                cause_identity_preserved=caught.__cause__ is cause
+                if outcome.startswith("raise")
+                else None,
+                parent_admission=False,
+                scientific_acceptance=False,
+            )
+        )
+    )
+
+
+def test_unmatched_None_profile_return_cannot_complete_prior_successful_observation():
+    value = fabricate_returns(manufactured_factory("sweep_Na_mem"))
+    value.trace.observe(frame(value, "Namem"), "return", None)
+    assert value.trace.data()["return_or_unwind_events"] == [
+        dict(sequence=None, matched_entry=False, return_value_is_None=True)
+    ]
+    with pytest.raises(ValueError, match="Missing/omitted sweep factory return"):
+        value.trace.finish()
+    assert value.trace.data()["complete"] is False
 
 
 @pytest.mark.parametrize("fault", ["factory", "factory-code", "factory-lookup", "numpy"])
