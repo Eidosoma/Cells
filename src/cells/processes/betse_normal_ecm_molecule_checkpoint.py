@@ -16,6 +16,8 @@ import tempfile
 import traceback
 from collections.abc import Mapping
 from dataclasses import dataclass
+from enum import Enum
+from importlib import metadata
 from pathlib import Path
 from types import ModuleType
 
@@ -23,7 +25,7 @@ import numpy as np
 
 import cells
 from cells.core.specs import digest
-from cells.io import runtime_identity
+from cells.io import RUNTIME_PACKAGES, runtime_identity
 from cells.physiology_checkpoint import _sha, _sync_directory, _write_json
 from cells.processes import betse_normal_ecm_molecule_checkpoint_codec as codec
 from cells.processes import betse_normal_ecm_molecule_checkpoint_records as records
@@ -98,11 +100,78 @@ def producer_identity():
         codec.require(path.is_relative_to(root) and path.suffix == ".py", "Unowned producer module")
         sources[str(path.relative_to(root))] = _sha(path)
     executable = Path(sys.executable).resolve()
+    runtime_files = {}
+    for package in RUNTIME_PACKAGES:
+        distribution = metadata.distribution(package)
+        codec.require(distribution.files is not None, "Missing numerical runtime file inventory")
+        for member in distribution.files:
+            if str(member).endswith(".py") or ".so" in str(member) or str(member).endswith(".pyd"):
+                path = Path(distribution.locate_file(member)).resolve()
+                codec.require(path.is_file(), "Missing numerical runtime code file")
+                runtime_files[str(path)] = _sha(path)
+    for name in (
+        "json",
+        "json.decoder",
+        "json.encoder",
+        "zipfile",
+        "ast",
+        "struct",
+        "io",
+        "random",
+        "tempfile",
+        "hashlib",
+        "traceback",
+        "importlib.metadata",
+        "enum",
+        "_json",
+        "_struct",
+        "_hashlib",
+        "binascii",
+    ):
+        module = importlib.import_module(name)
+        if getattr(module, "__file__", None):
+            path = Path(module.__file__).resolve()
+            runtime_files[str(path)] = _sha(path)
+    jax_configuration = {}
+    for name, value in importlib.import_module("jax").config.values.items():
+        if type(value) in (type(None), bool, int, float, str):
+            jax_configuration[name] = value
+        elif (
+            isinstance(value, Enum)
+            and type(value).__module__ == "jax._src.config"
+            and type(value.value) in (bool, int, float, str)
+        ):
+            jax_configuration[name] = dict(
+                enum_type=type(value).__module__ + "." + type(value).__qualname__,
+                member=value.name,
+                value=value.value,
+            )
+        else:
+            raise ValueError("Unowned JAX runtime configuration object: " + name)
+    codec.json_bytes(jax_configuration)
     return dict(
         kind="cells.molecule_checkpoint_producer@1",
         source_hashes=sources,
         runtime=runtime_identity("cpu"),
         executable=dict(path=str(executable), sha256=_sha(executable)),
+        runtime_code_sha256=runtime_files,
+        numpy_error_policy=np.geterr(),
+        interpreter=dict(optimize=sys.flags.optimize, debug=__debug__, byteorder=sys.byteorder),
+        jax_configuration=jax_configuration,
+        numerical_environment={
+            name: os.environ.get(name)
+            for name in (
+                "OMP_NUM_THREADS",
+                "OPENBLAS_NUM_THREADS",
+                "MKL_NUM_THREADS",
+                "NUMEXPR_NUM_THREADS",
+                "XLA_FLAGS",
+                "JAX_PLATFORMS",
+                "JAX_ENABLE_X64",
+                "JAX_DISABLE_JIT",
+                "CUDA_VISIBLE_DEVICES",
+            )
+        },
         rng_policy=RNG_POLICY,
     )
 
@@ -259,7 +328,7 @@ def _read(path, maximum):
     """Hash/consume the same bounded regular inode, refusing links."""
     import stat
 
-    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), "rb") as stream:
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as stream:
         info = os.fstat(stream.fileno())
         codec.require(
             stat.S_ISREG(info.st_mode) and info.st_size <= maximum,
@@ -328,7 +397,7 @@ def save_checkpoint(
     """
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
-    attempts, encoder = [], None
+    attempts, encoder, input_written = [], None, False
     try:
         _write_json(
             directory / "request.json",
@@ -344,6 +413,7 @@ def save_checkpoint(
         tree = encoder.capture(graph)
         seal = encoder.seal(tree)
         encoder.write(directory, tree)
+        input_written = True
         _expect(binding, expected_phase, expected_parent_identity)
         codec.require(
             type(parent) is run.RunState and parent.identity == expected_parent_identity,
@@ -387,19 +457,24 @@ def save_checkpoint(
             len(attempts),
         )
     except BaseException as error:
-        if not (directory / "state.json").exists() and encoder is not None and encoder.nodes:
-            _write_json(
-                directory / "input-prefix.json",
-                dict(
-                    complete=False,
-                    nodes=encoder.nodes,
-                    error="Unadmitted partial encoding; no reconstruction permitted",
-                ),
-            )
-            with (directory / "input-arrays.npz").open("xb") as stream:
-                np.savez(stream, allow_pickle=False, **encoder.arrays)
-                stream.flush()
-                os.fsync(stream.fileno())
+        if encoder is not None and encoder.nodes:
+            if not (directory / "state.json").exists():
+                _write_json(
+                    directory / "input-prefix.json",
+                    dict(
+                        complete=False,
+                        nodes=encoder.nodes,
+                        error="Unadmitted partial encoding; no reconstruction permitted",
+                    ),
+                )
+            if not input_written:
+                # Keep the complete available input buffers even if the failed
+                # writer already created state.json or a truncated arrays.npz.
+                # Never overwrite those failed output bytes.
+                with (directory / "input-arrays.npz").open("xb") as stream:
+                    np.savez(stream, allow_pickle=False, **encoder.arrays)
+                    stream.flush()
+                    os.fsync(stream.fileno())
         _failure(directory, error, attempts)
         raise CheckpointRejected(error, directory, attempts) from error
 
@@ -476,6 +551,13 @@ def load_checkpoint(
             "Checkpoint manifest identity changed",
         )
         codec.require(
+            type(manifest["cursor"]) is int
+            and manifest["cursor"] >= 0
+            and type(manifest["status"]) is str
+            and manifest["status"] in run.STATUS,
+            "Checkpoint cursor/status categories changed",
+        )
+        codec.require(
             expected_checkpoint_identity is None
             or manifest["identity"] == expected_checkpoint_identity,
             "Wrong expected checkpoint identity",
@@ -521,14 +603,22 @@ def load_checkpoint(
             ),
             "Saved request/parent association changed",
         )
+        expected_operation = dict(
+            attempts=[
+                dict(
+                    operation="existing_run_ownership_contract_and_scope",
+                    numerical_work_possible=True,
+                    status="returned",
+                    producer_rebinds=0,
+                    timesteps=0,
+                    global_rng_unchanged=True,
+                )
+            ],
+            producer_rebinds=0,
+            timesteps=0,
+        )
         codec.require(
-            type(saved_operation) is dict
-            and set(saved_operation) == {"attempts", "producer_rebinds", "timesteps"}
-            and saved_operation["producer_rebinds"] == saved_operation["timesteps"] == 0
-            and type(saved_operation["attempts"]) is list
-            and len(saved_operation["attempts"]) == 1
-            and saved_operation["attempts"][0]["status"] == "returned"
-            and saved_operation["attempts"][0]["numerical_work_possible"] is True,
+            codec.json_bytes(saved_operation) == codec.json_bytes(expected_operation),
             "Missing successful save ownership-validation evidence",
         )
         graph = codec.decode(codec.parse_json(raw["state.json"], limits), raw["arrays.npz"], limits)
@@ -554,7 +644,8 @@ def load_checkpoint(
             "Saved status/cursor mismatch",
         )
         _check_failure(parent, graph["failure"])
-        _verify(binding, parent, attempts)
+        restored_binding = graph["binding"]
+        _verify(restored_binding, parent, attempts)
         codec.require(
             codec.fingerprint(graph, limits) == manifest["graph_seal"],
             "Load validation changed saved runtime state",
@@ -582,7 +673,10 @@ def load_checkpoint(
             parent.status,
             len(attempts),
         )
-        return Loaded(binding, parent, graph["failure"], receipt, operation)
+        # Return the reconstructed binding graph after its complete external
+        # match, retaining aliases shared with the restored state. No producer
+        # bind/reinitialization routine is used to construct these plain records.
+        return Loaded(restored_binding, parent, graph["failure"], receipt, operation)
     except BaseException as error:
         _failure(evidence, error, attempts)
         raise CheckpointRejected(error, evidence, attempts) from error

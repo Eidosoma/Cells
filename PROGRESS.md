@@ -47,6 +47,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   INIT/SIM run state, with complete ownership, state and journal preservation.
   The in-memory handoff already exists; native BETSE pickle interoperability and
   physical/post-cut admission are outside this persistence assignment.
+  At the user's request, Specialist now owns the checkout snapshot builder and
+  corrected INIT62 runner preparation, including Root's in-progress Git files.
+  The [assignment](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/specialist-assignment.json)
+  keeps source, reusable runners and tests in Git, with run copies generated
+  one-way into `/mnt/workspaces/Cells`. The new reference import dependencies
+  must be included before release. Root retains scientific launch and result
+  review; no new INIT run has launched.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
@@ -242,7 +249,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   | Specialist implementation / Root review | Saved-mesh topology correction | Accepted topology-only: 33 checks, six candidate layouts and nine corruption controls with 15 nested reference workers. Original 0/9 complete-mesh failure and metric/physical admission remain open |
   | Root review / Specialist implementation | Metrics on retained mesh coordinates | Reviewed pass: 39 checks / 40 actual nested children, one positive layout, five domain refusals and 18 baseline-checked corruptions. Original 0/9 panel unchanged; physical/native/operator admission remains closed |
   | Root qualification / Specialist implementation | Primal graph operator reconstruction | Reviewed pass: 45 checks / 17 actual nested children, one square layout and five domain refusals. All 18 exact algebra identities and original storage budgets verified. Original 0/9, physical/native and weighted-Laplacian admission remain unchanged |
-  | Root repair / Specialist implementation | Supplied membrane initialization bridge | Latest run remains 0 passed / one failure / 40 unrun. Explicit source05 adopts the reviewed scalar-copy and calcium callback fixes; dependency pins remain draft-only pending review. No retry launched |
+  | Root repair / Specialist implementation | Supplied membrane initialization bridge | Latest run remains 0 passed / one failure / 40 unrun. The source05 wrapper and typed pre-capture retention tests are now in Git; [static review](/mnt/workspaces/Cells/repository-source-integration-20261031-01/membrane-source05-import.json) verifies the two dependency updates, all eight pins and unchanged equations. Full qualification remains held; no retry launched |
   | Root repair / Specialist implementation | Supplied-owner component routing | Reviewed pass: 30 checks, five supplied examples / 15 existing-component calls, four cold baselines and 23 refusal controls. Exact supplied owners and cold physical state retained; no native INIT or independent accuracy claim. Original failed run preserved |
   | Root qualification / Specialist implementation | Fixed-seed control volumes | Reviewed pass: 41 unique checks / 19 actual children, covering three source geometries and 16 output-corruption controls. Original 0/9 remains unchanged; no physical/native/operator admission |
   | Key implementation / Root review | Native cut pre-mesh lifecycle | Accepted prefix-only: 25 checks, 14 native captures and six conditional owner forms. Five native exceptions and three defective completed prefixes retained. Full cutting, geometry rebuild and ordinary continuation remain unqualified |

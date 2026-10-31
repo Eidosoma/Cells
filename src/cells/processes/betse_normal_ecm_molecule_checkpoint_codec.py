@@ -130,6 +130,24 @@ class Encoder:
                     "Writable runtime array alias is not owned",
                 )
             else:
+                if kind is np.ndarray:
+                    owner = array
+                    while type(owner) is np.ndarray:
+                        require(
+                            not owner.flags.writeable,
+                            "Read-only runtime view has an unowned writable buffer owner",
+                        )
+                        owner = owner.base
+                    require(
+                        owner is None
+                        or type(owner) is bytes
+                        or (
+                            type(owner) is memoryview
+                            and owner.readonly
+                            and type(owner.obj) is bytes
+                        ),
+                        "Read-only runtime buffer has an unowned external owner",
+                    )
                 require(
                     not any(
                         prior.flags.writeable and np.shares_memory(array, prior)
@@ -244,6 +262,22 @@ def _headers(data, limits):
         and end[5] + end[6] == len(data) - 22,
         "Noncanonical/oversized ZIP directory",
     )
+    # The EOCD count can lie. Bound every central record before ZipFile builds
+    # its in-memory entry list, including names/extras/comments.
+    offset, stop = end[6], end[6] + end[5]
+    for _ in range(end[4]):
+        require(
+            offset + 46 <= stop and data[offset : offset + 4] == b"PK\x01\x02",
+            "Truncated checkpoint ZIP directory",
+        )
+        name, extra, comment = struct.unpack_from("<3H", data, offset + 28)
+        require(
+            0 < name <= 32 and extra <= 256 and comment == 0,
+            "Oversized checkpoint ZIP directory record",
+        )
+        offset += 46 + name + extra + comment
+        require(offset <= stop, "Checkpoint ZIP directory record bound")
+    require(offset == stop, "Checkpoint ZIP directory count differs")
     headers, total = {}, 0
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         require(len(archive.infolist()) == end[4], "Checkpoint ZIP count differs")

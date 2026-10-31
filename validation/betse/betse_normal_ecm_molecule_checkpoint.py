@@ -26,18 +26,34 @@ from validation.betse import betse_normal_ecm_molecule_run_lifecycle_fixtures as
 
 def _retainer(directory, attempts):
     def retain(name, operation, **readers):
-        attempts.append(dict(operation=name, numerical_work_possible=True, status="attempted"))
+        event = dict(operation=name, numerical_work_possible=True, status="attempted")
+        attempts.append(event)
+
+        def counted():
+            event["operation_status"] = "attempted"
+            if name.startswith("actual-call-"):
+                event["source_timestep_attempts"] = 1
+            try:
+                value = operation()
+            except BaseException:
+                event["operation_status"] = "refused"
+                raise
+            event["operation_status"] = "returned"
+            if name.startswith("actual-call-"):
+                event["accepted_timestep_executions"] = 1
+            return value
+
         try:
             result = failures.retained_call(
-                operation,
+                counted,
                 stage=name,
                 readers={k: lambda value=value: value for k, value in readers.items()},
                 retain=lambda value: archives.write_archive(directory / name, ions.data(value)),
             )
         except BaseException:
-            attempts[-1]["status"] = "refused"
+            event["status"] = "refused"
             raise
-        attempts[-1]["status"] = "returned"
+        event["status"] = "returned"
         return result
 
     return retain
@@ -98,7 +114,9 @@ def prepare_SIM(directory, init_binding, init_parent, attempts):
             init_parent,
             component,
             declared,
-            provenance="Actual existing transition for checkpoint conditional; no synthetic admission",
+            provenance=(
+                "Actual existing transition for checkpoint conditional; no synthetic admission"
+            ),
         ),
         component=component,
         declared=declared,

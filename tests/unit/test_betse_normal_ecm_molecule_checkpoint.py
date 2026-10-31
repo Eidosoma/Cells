@@ -1,8 +1,12 @@
 """Short actual-owner conditional checkpoint checks, not full qualification."""
 
 import json
+import os
 import shutil
+from dataclasses import replace
+from pathlib import Path
 
+import numpy as np
 import pytest
 
 from cells.processes import betse_normal_ecm_molecule_checkpoint as checkpoint
@@ -14,6 +18,29 @@ from validation.betse.betse_normal_ecm_molecule_checkpoint import (
 )
 
 ATTEMPTS = []
+
+
+@pytest.fixture(scope="module", autouse=True)
+def retain_test_attempts(tmp_path_factory):
+    yield
+    root = Path(
+        os.environ.get("CELLS_CHECKPOINT_TEST_EVIDENCE", str(tmp_path_factory.getbasetemp()))
+    )
+    with (root / "actual-execution-attempts.json").open("x") as stream:
+        json.dump(
+            dict(
+                attempts=ATTEMPTS,
+                policy=(
+                    "Every explicit producer/verification/advance invocation is an attempt; "
+                    "nested validation is included in its root invocation"
+                ),
+                upstream_qualification="pending",
+                native_checkpoint_parity=False,
+            ),
+            stream,
+            indent=2,
+        )
+        stream.write("\n")
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +94,7 @@ def test_owned_zero_INIT_roundtrip_without_setup_rebind_or_replay(owned, tmp_pat
         tmp_path / "load",
         expected_checkpoint_identity=receipt.identity,
     )
-    assert loaded.binding is binding
+    assert checkpoint.codec.fingerprint(loaded.binding) == checkpoint.codec.fingerprint(binding)
     assert loaded.parent.status == parent.status == "exhausted"
     assert loaded.parent.cursor == 0 and loaded.parent.identity == parent.identity
     assert checkpoint.codec.fingerprint((binding, parent)) == checkpoint.codec.fingerprint(
@@ -77,6 +104,7 @@ def test_owned_zero_INIT_roundtrip_without_setup_rebind_or_replay(owned, tmp_pat
     assert loaded.operation["saved_operation"]["attempts"][0]["numerical_work_possible"]
     assert loaded.operation["timesteps"] == loaded.operation["producer_rebinds"] == 0
     assert loaded.parent.entry_receipt["declaration_is_initialization_attestation"] is False
+    ATTEMPTS.append(dict(operation="postload_existing_run.verify", numerical_work_possible=True))
     assert run.verify(loaded.binding, loaded.parent) is loaded.parent
 
 
@@ -88,6 +116,9 @@ def test_actual_capped_prefix_stays_capped_and_cannot_complete(tmp_path):
     save(tmp_path / "saved", binding, parent)
     loaded = load(tmp_path / "saved", binding, parent, tmp_path / "load")
     assert loaded.parent.status == "capped" and loaded.parent.cursor == 0
+    ATTEMPTS.append(
+        dict(operation="capped_existing_run.complete_INIT", numerical_work_possible=True)
+    )
     with pytest.raises(run.RunRejected):
         run.complete_INIT(binding, loaded.parent)
 
@@ -118,11 +149,15 @@ def test_actual_journal_and_sampling_prefix_conditional(tmp_path):
             + str(error)
         )
     assert prefix.cursor == 2 and len(prefix.history) == 2 and len(prefix.observations) == 1
+    ATTEMPTS.append(dict(operation="actual_journal_run.pause", numerical_work_possible=True))
     paused = run.pause(binding, prefix)
     save(tmp_path / "saved", binding, paused)
     loaded = load(tmp_path / "saved", binding, paused, tmp_path / "load")
     assert checkpoint.codec.fingerprint(paused) == checkpoint.codec.fingerprint(loaded.parent)
-    assert run.next_call(binding, run.resume(binding, loaded.parent))["call_index"] == 2
+    ATTEMPTS.append(dict(operation="loaded_existing_run.resume", numerical_work_possible=True))
+    resumed = run.resume(binding, loaded.parent)
+    ATTEMPTS.append(dict(operation="loaded_existing_run.next_call", numerical_work_possible=True))
+    assert run.next_call(binding, resumed)["call_index"] == 2
 
 
 def test_paused_run_stays_paused_and_cannot_advance_implicitly(owned, tmp_path):
@@ -134,6 +169,9 @@ def test_paused_run_stays_paused_and_cannot_advance_implicitly(owned, tmp_path):
     assert loaded.parent.status == "paused" and loaded.parent.cursor == 0
     assert checkpoint.codec.fingerprint(paused) == checkpoint.codec.fingerprint(loaded.parent)
     with pytest.raises(ValueError):
+        ATTEMPTS.append(
+            dict(operation="paused_existing_run.next_call", numerical_work_possible=True)
+        )
         run.next_call(binding, loaded.parent)
 
 
@@ -163,12 +201,21 @@ def test_failed_prefix_retains_actual_input_cause_and_failed_status(owned, tmp_p
     assert loaded.failure["partial"]["caller_parent"].identity == ready.identity
     assert loaded.failure["exception_chain"][-1]["message"] == str(error.__cause__)
     with pytest.raises(ValueError):
+        ATTEMPTS.append(dict(operation="failed_existing_run.resume", numerical_work_possible=True))
         run.resume(binding, loaded.parent)
 
 
 @pytest.mark.parametrize(
     "fault",
-    ["array-truncated", "json-truncated", "wrong-parent", "wrong-phase", "producer", "status"],
+    [
+        "array-truncated",
+        "json-truncated",
+        "wrong-parent",
+        "wrong-phase",
+        "producer",
+        "status",
+        "boolean-cursor",
+    ],
 )
 def test_refused_load_preserves_checkpoint_and_has_no_numeric_validation(owned, tmp_path, fault):
     binding, parent = owned[0]
@@ -193,8 +240,10 @@ def test_refused_load_preserves_checkpoint_and_has_no_numeric_validation(owned, 
             manifest["producer"]["source_hashes"][
                 next(iter(manifest["producer"]["source_hashes"]))
             ] = "0" * 64
-        else:
+        elif fault == "status":
             manifest["status"] = "ready"
+        else:
+            manifest["cursor"] = False
         manifest["identity"] = checkpoint.digest(
             {k: v for k, v in manifest.items() if k != "identity"}
         )
@@ -230,6 +279,31 @@ def test_atomic_commit_refusal_and_failed_input_output_retention(owned, tmp_path
         load(tmp_path / "partial", binding, parent, tmp_path / "load")
 
 
+def test_partial_array_write_retains_complete_input_and_failed_output(owned, tmp_path, monkeypatch):
+    binding, parent = owned[0]
+    captured = {}
+
+    def interrupted(encoder, directory, tree):
+        captured.update(encoder.arrays)
+        checkpoint._write_json(directory / "state.json", tree)
+        (directory / "arrays.npz").write_bytes(b"truncated injected output")
+        raise OSError("Injected array-write failure")
+
+    monkeypatch.setattr(checkpoint.codec.Encoder, "write", interrupted)
+    with pytest.raises(checkpoint.CheckpointRejected, match="array-write") as caught:
+        save(tmp_path / "partial", binding, parent)
+    assert caught.value.attempts == ()
+    assert (tmp_path / "partial/arrays.npz").read_bytes() == b"truncated injected output"
+    assert not (tmp_path / "partial/manifest.json").exists()
+    with np.load(tmp_path / "partial/input-arrays.npz", allow_pickle=False) as arrays:
+        assert set(arrays.files) == set(captured)
+        for key, expected in captured.items():
+            assert arrays[key].dtype == expected.dtype
+            assert arrays[key].shape == expected.shape
+            assert arrays[key].tobytes(order="A") == expected.tobytes(order="A")
+    assert json.loads((tmp_path / "partial/failure.json").read_text())["no_checkpoint_admission"]
+
+
 def test_wrong_save_parent_preserves_complete_unadmitted_input(owned, tmp_path):
     binding, parent = owned[0]
     with pytest.raises(checkpoint.CheckpointRejected) as caught:
@@ -261,6 +335,72 @@ def test_existing_destination_and_receipt_are_never_parent_admission(owned, tmp_
             expected_phase="INIT",
             expected_parent_identity=parent.identity,
         )
+
+
+def test_actual_foreign_run_binding_is_refused_before_numeric_validation(owned, tmp_path):
+    binding, parent = owned[0]
+    save(tmp_path / "saved", binding, parent)
+    ATTEMPTS.append(dict(operation="actual_foreign_run.bind", numerical_work_possible=True))
+    raw = run.ions.data(binding.inputs)
+    raw["run_id"] += "-foreign"
+    foreign = run.bind(raw, binding.composition)
+    with pytest.raises(checkpoint.CheckpointRejected, match="binding mismatch") as caught:
+        load(tmp_path / "saved", foreign, parent, tmp_path / "load")
+    assert caught.value.attempts == ()
+
+
+def test_changed_effective_jax_precision_refused_before_numeric_validation(owned, tmp_path):
+    binding, parent = owned[0]
+    save(tmp_path / "saved", binding, parent)
+    jax = checkpoint.importlib.import_module("jax")
+    prior = jax.config.jax_enable_x64
+    try:
+        jax.config.update("jax_enable_x64", not prior)
+        with pytest.raises(checkpoint.CheckpointRejected, match="runtime mismatch") as caught:
+            load(tmp_path / "saved", binding, parent, tmp_path / "load")
+    finally:
+        jax.config.update("jax_enable_x64", prior)
+    assert caught.value.attempts == ()
+
+
+def test_self_digested_synthetic_receipt_is_not_parent_admission(owned, tmp_path):
+    binding, parent = owned[0]
+    receipt = run.ions.data(parent.entry_receipt)
+    receipt["declaration_is_initialization_attestation"] = True
+    changed = replace(parent, entry_receipt=run.ions.freeze(receipt), identity="")
+    changed = replace(changed, identity=run.ions.digest(run._record(changed)))
+    with pytest.raises(checkpoint.CheckpointRejected, match="entry") as caught:
+        save(tmp_path / "refused", binding, changed)
+    assert len(caught.value.attempts) == 1 and caught.value.attempts[0]["status"] == "refused"
+    assert not (tmp_path / "refused/manifest.json").exists()
+    assert (tmp_path / "refused/state.json").exists()
+
+
+def test_manifest_is_linked_only_after_all_payload_fsyncs(owned, tmp_path, monkeypatch):
+    binding, parent = owned[0]
+    sync, link = checkpoint.os.fsync, checkpoint.os.link
+    synced = set()
+
+    def durable(fd):
+        synced.add(Path(os.readlink(f"/proc/self/fd/{fd}")).name)
+        return sync(fd)
+
+    def publish(source, target, **kwargs):
+        assert checkpoint.FILES <= synced
+        assert not Path(target).exists()
+        return link(source, target, **kwargs)
+
+    monkeypatch.setattr(checkpoint.os, "fsync", durable)
+    monkeypatch.setattr(checkpoint.os, "link", publish)
+    save(tmp_path / "saved", binding, parent)
+    assert (tmp_path / "saved/manifest.json").is_file()
+
+
+def test_nonregular_payload_is_refused_without_waiting_for_a_writer(tmp_path):
+    path = tmp_path / "fifo"
+    os.mkfifo(path)
+    with pytest.raises(ValueError, match="regular"):
+        checkpoint._read(path, 100)
 
 
 def test_owned_checkpoint_has_no_native_persistence_or_default_law_change(owned):

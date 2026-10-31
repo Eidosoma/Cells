@@ -60,6 +60,19 @@ def test_unowned_runtime_object_or_stream_refused(value):
         codec.Encoder().capture(value)
 
 
+@pytest.mark.parametrize("source", ["writable-view", "readonly-view", "mutable-buffer"])
+def test_array_views_cannot_hide_unowned_mutable_buffer_state(source):
+    if source == "mutable-buffer":
+        value = np.frombuffer(bytearray(np.arange(3.0).tobytes()), dtype="<f8")
+    else:
+        owner = np.arange(3.0)
+        value = owner.view()
+    if source != "writable-view":
+        value.setflags(write=False)
+    with pytest.raises(ValueError, match="unowned"):
+        codec.Encoder().capture(value)
+
+
 def test_cyclic_missing_and_unknown_record_nodes_refused():
     cyclic = []
     cyclic.append(cyclic)
@@ -122,6 +135,21 @@ def test_duplicate_archive_owner_and_unbound_payload_refused():
     tree["nodes"].append(dict(tag="tuple", items=[]))
     with pytest.raises(ValueError, match="Unbound"):
         codec.decode(tree, data)
+
+
+def test_forged_zip_count_is_bounded_before_zipfile_entry_allocation(monkeypatch):
+    tree, data = packed(np.array([1.0]))
+    body = bytearray(data)
+    # A forged zero count with a nonempty central directory must fail before
+    # ZipFile parses attacker-supplied entries into Python objects.
+    struct.pack_into("<HH", body, len(body) - 22 + 8, 0, 0)
+
+    def unsafe(*args, **kwargs):
+        raise AssertionError("Unbounded ZIP directory allocation was attempted")
+
+    monkeypatch.setattr(codec.zipfile, "ZipFile", unsafe)
+    with pytest.raises(ValueError, match="directory count"):
+        codec.decode(tree, body)
 
 
 def test_codec_rejects_noncanonical_metadata_categories():
