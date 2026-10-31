@@ -7626,3 +7626,24 @@ Evidence: `/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/results.j
 Source is an immutable one-way Git snapshot with exact revision/dirty-source
 and producer bindings. No Root INIT/calcium, Specialist tissue, shared status,
 ledger or snapshot-tool edits; no CPU4 job queries, staging or commits by me.
+
+Final raw-input guard also compares the original INIT/SIM declarations while
+ignoring only mapping insertion order. This preserves NumPy scalar/array
+category, dtype, endian, shape, sequence/axis order and values that the existing
+JSON binder could otherwise erase. The original four bound owner comparisons
+are unchanged; no other production function changed. The saved original raw
+declarations match in all four groups as well as their bound definitions.
+
+Final immutable-source batch: **34 passed, 3 scientific nodes held/skipped**;
+compile and Ruff passed. All 34 controls record zero forbidden setup, bind,
+transition, RNG or timestep attempts. CPU0/one thread, 10.83 s, peak tree RSS
+247,873,536 bytes, 1 GiB/480 s/8 GiB reserve. Producer inventory pins 62 Cells
+files and 2,300 runtime files; the snapshot contains 450 source files. A first
+snapshot refused concurrent Git-state changes; its failed bytes and terminal
+record remain, and fresh `source-03` passed the existing snapshot contract.
+No actual transition/continuity or native/reference claim is made.
+
+Final evidence: `/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/results-final.json`
+(SHA256 `1b0c941bd02e17099394ae68558f0850aac5cd5779727dbd113062075506e072`).
+Earlier result, original failed parent/input/partial and historical INIT04
+bindings remain untouched. Actual checks still require the existing Root release.

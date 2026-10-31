@@ -70,8 +70,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   identifies dictionary insertion order as the difference in three geometry/world
   declarations; values, list order and floating-point bits match, and ions
   match exactly. The fix keeps all four ownership checks and requires exact
-  correspondence between the supplied and bound SIM declarations. Its source
-  and software review are pending; actual transition validation stays held.
+  correspondence between the supplied and bound SIM declarations. The
+  [final source/software review](/mnt/workspaces/Cells/molecule-retained-handoff-20261031-01/root-final-source-software-review.json)
+  verifies **34 fresh passes and three release-held nodes**, including raw
+  array/scalar type, dtype, shape and value checks that JSON encoding alone
+  cannot provide. The existing numerical-value contract remains; arbitrary
+  byte-layout identity is not claimed. Earlier 21-check evidence and the failed
+  snapshot preparation remain separate. Key's next assignment is a reusable,
+  held CPU qualification runner for the actual handoff and checkpoint-continuity
+  checks. Actual setup, transition and advancing simulation remain unrun here.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
@@ -111,18 +118,27 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 - **Live single-cell mesh transport:** Specialist's implementation retains the
   actual constructor/pre-mesh/core object, its array aliases, observer and RNG,
-  and preserves original cut returns, failures and partial mutations. Root
-  [reviewed the frozen core integration](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-core-review.json)
-  and [33 passing synthetic controls](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-software-review.json):
-  **25.16 seconds, 221.1 MiB peak**, zero native entry attempts, with 372 frozen
-  source files and 52 selected runtime bindings verified. Earlier 28-check
-  evidence remains separate. The [authority review](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-authority-review.json)
-  leaves direct map/core entry guards and raw-mesh issuance checks for the newer
-  checkout revision; those edits do not inherit the 33 passes. Specialist is
-  completing that revision. Positive native execution, the later actual
-  Cells/simulation/picker owner chain, all 11 invalidated owners and all 12
-  post-cut scientific cases remain unqualified. No physical or checkpoint
-  admission follows from this source transport.
+  and preserves original method returns, failures and partial mutations. Root's
+  [final source/software review](/mnt/workspaces/Cells/native-dec-single-cell-transport-20261031-01/root-final-review.json)
+  closes the direct cut/map/core entry guards and process-local runtime issuance
+  checks. **50 synthetic controls passed in 61.89 seconds, 224.9 MiB sampled peak
+  RSS**, with zero native entry attempts. The review verifies 372 frozen source
+  files, 52 selected runtime bindings and 184 per-control evidence files.
+  Earlier 28- and 33-check versions remain separate. The intermediate **43-pass,
+  one-failure** run remains failed: the corrected test now retains prior weakly
+  registered handles strongly and compares their exact identities. Additional
+  production guards and six controls in the final version are also accounted for.
+  Specialist is implementing the earlier live caller/lattice prerequisite in
+  four new owned Git files. `Cells.__init__` has a pass body;
+  `_make_cell_lattice` creates the caller bounds, centre and arrays. Existing
+  frozen seed/image records do not retain those live owners. The new boundary
+  uses declared scalar parameter stores and does not claim full
+  Parameters/YAML/SimPhase or package type-checking authority. Live image-mask
+  ownership is the next prerequisite; the later Voronoi assignments and
+  `cell_index` remain held until it exists.
+  Positive native execution, the full Cells/simulation/picker owner chain,
+  all 11 invalidated owners and all 12 post-cut scientific cases remain
+  unqualified. No physical or checkpoint admission follows from this transport.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
