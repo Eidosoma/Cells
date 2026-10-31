@@ -15,6 +15,25 @@
   "all_successful_prefixes_and_raw_failed_returns_retained": true,
   "core": "src/cells/processes/stable_seed_partition_advance_refinement.py",
   "frozen": false,
+  "future_execution_counting": {
+    "38_tree_draft_included": false,
+    "expected_accepted_intervals_before_injected_failure": 84,
+    "guarded_top_level_with_finalizer": 16,
+    "independent_DOP853_integrations": 4,
+    "initial_or_geometry_qualification_replays": 0,
+    "instrumented_complete_arm_histories": 24,
+    "instrumented_three_arm_panel_instances": 8,
+    "nested_reference_children": 4,
+    "ordinary_driver_arm_histories": 12,
+    "physical_cases": 4,
+    "physical_or_biological_cases_added": 0,
+    "production_arm_histories_total": 36,
+    "pytest_trees": 15,
+    "separate_injected_case_complete_intervals": 5,
+    "separate_injected_later_interval_attempts": 1,
+    "storage_refusal_controls": 4,
+    "total_entities": 20
+  },
   "independent_comparison": {
     "actual_independent_fresh_process_required": true,
     "all_failures_and_raw_reference_trials_retained": true,
@@ -153,10 +172,11 @@
     "unit_specific_reference_atol_AST_unchanged": true
   },
   "independent_reference": "validation/geometry/stable_seed_partition_advance_refinement_reference.py",
+  "initial_source_gate_pinned": true,
   "initial_successor_manifest_sha256": "61679336deda03709b6425f6dc571222a1ffdb6a3e92af01b2378bd3270c115f",
-  "initial_successor_numerical_qualification_sha256": null,
+  "initial_successor_numerical_qualification_sha256": "5aad4bce5c8f90020b0bc09786a6e7d4aad11cc71d25b2f1109556f572c788cc",
   "initial_successor_packet": "/mnt/workspaces/Cells/stable-seed-partition-advance-initial-successor-prepared-20261031-01",
-  "initial_successor_source_review_sha256": null,
+  "initial_successor_source_review_sha256": "84440f74eff19c7a96a275afb81f99ccc0eecc241d484c4cb3c9a13735f1f614",
   "kind": "cells.partition_common_endpoint_refinement_source_protocol@1",
   "launcher_finalizer_prepared": false,
   "new_physical_cases": 0,
@@ -875,10 +895,8 @@
     "source_work_atol_pJ": 3e-12
   },
   "pending": [
-    "Chief independent source review of new comparison and complete field assembly",
-    "Source-review and numerical-qualification receipts for all 18 initial bindings",
-    "Pin accepted receipt bytes and separately authorize numerical execution",
-    "Bounded durable launcher/finalizer for all proposed tests and actual nested children"
+    "Independent review of exact source activation, child failure retention and new held runner",
+    "Explicit Root numerical release; no automatic execution"
   ],
   "process_guards": {
     "aggregate_GiB": 2,
@@ -889,7 +907,7 @@
   "production": {
     "complete_history_uses_existing_integrated_checks": true,
     "complete_prefix_and_unmasked_failure_evidence_retained": true,
-    "core_sha256": "1c1fcbfa171bf49276de263b4170d106ffbe9f5be4a6a26c16b7edff01c085c7",
+    "core_sha256": "dc492f60c1f3d3b8c1d340b2db621ba728ff26e807515029e378ec308fc8041f",
     "new_physical_law": false,
     "no_field_cache_or_initial_accounting_after_advancement": true,
     "numerical_tolerances_changed": false,
@@ -898,32 +916,32 @@
     "source_sites": {
       "_execute_arm": {
         "ast_sha256": "bbacaec833a1a70e382b940f143a9822e041bb1391572228ee03be24853d6138",
-        "first_line": 283,
-        "last_line": 445,
+        "first_line": 287,
+        "last_line": 449,
         "source": "src/cells/processes/stable_seed_partition_advance_refinement.py"
       },
       "_qualified_arm": {
         "ast_sha256": "7171ebdb972765c6fad54276618e10304e2b430d648e092ffaecaecb05066f39",
-        "first_line": 103,
-        "last_line": 216,
+        "first_line": 107,
+        "last_line": 220,
         "source": "src/cells/processes/stable_seed_partition_advance_refinement.py"
       },
       "advance": {
         "ast_sha256": "6167ba2adf05cab4fbd7abcb49effaf74817f57fc576820e7784ace03f252742",
-        "first_line": 452,
-        "last_line": 550,
+        "first_line": 456,
+        "last_line": 554,
         "source": "src/cells/processes/stable_seed_partition_advance_refinement.py"
       },
       "bind": {
         "ast_sha256": "4516243a076ca6945024ce7d82839475dd737ac8fb263a95d7ff79298729e993",
-        "first_line": 223,
-        "last_line": 280,
+        "first_line": 227,
+        "last_line": 284,
         "source": "src/cells/processes/stable_seed_partition_advance_refinement.py"
       },
       "gate": {
         "ast_sha256": "fe1b57c75067a441719045f770bb93a625caf7316dca7e3b6a23848c1e484254",
-        "first_line": 63,
-        "last_line": 100,
+        "first_line": 67,
+        "last_line": 104,
         "source": "src/cells/processes/stable_seed_partition_advance_refinement.py"
       }
     },
@@ -974,7 +992,7 @@
   "source_auditor": "validation/geometry/stable_seed_partition_advance_refinement_audit.py",
   "source_map": "validation/geometry/stable_seed_partition_advance_refinement_source_map.json",
   "source_only": true,
-  "status": "unfrozen_source_draft_initial_successor_review_and_numeric_qualification_pending",
+  "status": "source_frozen_held_for_independent_runner_review",
   "tests": "tests/unit/test_stable_seed_partition_advance_refinement.py",
   "tests_and_collection_executed": 0
 }

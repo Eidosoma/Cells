@@ -539,7 +539,7 @@ def test_init_raw_refusal(tmp_path, case):
             assert initial_ca["helper"]["finite"] is True
             assert not later_ca["helper_returned"] and later_ca["source_exception_observed"]
             assert not later_ca["source_completed"] and not later_ca["helper"]["finite"]
-            exact(available["calcium"]["helper"], initial_ca["helper"])
+            exact(ions.data(available["calcium"]["helper"]), initial_ca["helper"])
 
             def same_array(actual, expected):
                 actual, expected = np.asarray(actual), np.asarray(expected)

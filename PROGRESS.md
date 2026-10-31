@@ -12,14 +12,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **Source integration into Git (31 October):** production modules, reusable
   validators and tests belong in this checkout. `/mnt/workspaces/Cells` holds
   outputs and frozen execution evidence, not the sole active implementation.
+  Future execution snapshots are generated one-way from the checkout, with the
+  Git revision and any dirty/untracked source changes recorded. Fixes stay in
+  the checkout; immutable snapshots do not become parallel development trees.
   Recent source packets had not yet been integrated. Root imported post-cut
   mesh/contact and charged-surface code; Key Dev integrated 50 owned files,
   including molecule events, run/restart and reusable validation; Specialist
-  is finishing tissue integration and the single-cell core repair.
+  integrated the new tissue modules and is reconciling older tissue versions.
   The [earlier-source inventory](/mnt/workspaces/Cells/repository-source-integration-20261031-01/earlier-source-inventory.json)
   mapped 449,438 snapshot copies to 614 canonical paths. It found nine substantive
-  workspace-only modules, all present in the checkout by the final existence
-  check. Two synthetic test sentinels and an obsolete network-source filename
+  workspace-only modules, all now tracked by Git. Two synthetic test sentinels
+  and an obsolete network-source filename
   are intentionally excluded. Named active source versions were compared;
   historical snapshots were not exhaustively content-hashed or automatically
   substituted for current code.
@@ -34,6 +37,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   remain held. [Key Dev's repository integration](/mnt/workspaces/Cells/repository-source-integration-20261031-01/key-and-charged-source-integration.json)
   passed 13 software checks in **6.81 seconds, 210.9 MiB peak**; full numerical
   qualification remains separate.
+  [Tissue integration](/mnt/workspaces/Cells/repository-source-integration-20261031-01/tissue-software-result-review.json)
+  passed 41 software checks in **8.34 seconds, 222.8 MiB peak**. A later guard
+  check repeated the two polygon software cases and skipped all 29 numerical
+  cases; no core or polygon scientific calculation ran. The
+  [integration summary](/mnt/workspaces/Cells/repository-source-integration-20261031-01/integration-summary.json)
+  records 83 source/support files and 64 distinct passing software cases.
+  Key Dev's next implementation is durable save/load for the existing molecule
+  INIT/SIM run state, with complete ownership, state and journal preservation.
+  The in-memory handoff already exists; native BETSE pickle interoperability and
+  physical/post-cut admission are outside this persistence assignment.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
@@ -78,9 +91,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   passed a `Trial` dataclass to a comparator expecting a dictionary; the
   saved 24 helper arrays and all 47 material frames match exactly. Source,
   archive and runtime evidence verify, with no resource breach. A one-line
-  test-only normalization is prepared in isolation; original failure and
-  eight broader declaration/control representation differences are retained.
-  Nothing was promoted or rerun.
+  test-only normalization is now [integrated into the checkout](/mnt/workspaces/Cells/repository-source-integration-20261031-01/init-comparator-import.json),
+  exactly matching the saved proposal. Original failure and eight broader
+  declaration/control representation differences are retained. No numerical
+  rerun or scientific acceptance followed.
   The [full recorded-launch reconciliation is complete](/mnt/workspaces/Cells/qualification-completion-audit-20261031-1118-01/REVIEW.json): 109 launch aliases
   resolve to **81 terminal executions**, each with a completed review or
   diagnostic disposition; **no unexplained orphan** was found. Historical
@@ -163,16 +177,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   peak**. Positive construction/core execution remains unrun.
   [The event-history comparison repair is reviewed at source level](/mnt/workspaces/Cells/native-dec-single-cell-core-root-review-20261031-01/event-replay-accounting-review.json):
   the continuing replay now checks its own events and warnings before core
-  entry. That revised path is untested; the ten earlier refusal passes remain
-  bound to the original source. Specialist is integrating it into the checkout
-  and repairing final-capture retention so a snapshot/sealing error cannot erase
-  the primary error and partial evidence. Executable-parent and
+  entry. The ten earlier refusal passes remain bound to the original source.
+  [Both source-contract repairs are now accepted](/mnt/workspaces/Cells/native-dec-single-cell-core-root-review-20261031-01/contract-repair-review.json).
+  The sealed repair passed 29 synthetic history/capture controls in **5.80
+  seconds, 217.0 MiB peak**, with native execution blocked. Its first attempt
+  remains **28 passed / one synthetic fixture failure**: CPython cleared the
+  intended context cycle; the corrected explicit-cause fixture preserves the
+  cycle check, with production code unchanged. The first failure's missing
+  pre-assertion case artifact remains an explicit limitation. All 785 successor
+  payloads, 555 parent payloads and 520 unchanged upstream files verify; the
+  tested module is already in Git. The later repository run of these 29 plus
+  the ten refusal controls is separate evidence. Positive construction/core
+  execution remains unrun. Executable-parent and
   physical/checkpoint admission remain held; future qualification must count
   every nested replay as execution. Frozen sources and results stay intact.
   The separate
   [Cells fixed-polygon removal/rebuild source handoff](/mnt/workspaces/Cells/fixed-polygon-removal-prepared-20261031-01/HANDOFF.json)
   is received and deferred: all 21 payload pins and five copied dependency
-  files verify. Source-semantic review, 31 checks (29 scientific, two software)
+  files verify. Its source is now in Git, with two software controls passed and
+  an explicit test-release guard. Source-semantic review, 29 scientific checks
   and ten planned reference-worker executions remain pending. This preparation
   does not resolve native parent admission or any of the 11 invalidated owners.
 

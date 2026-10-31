@@ -436,23 +436,29 @@
       },
       "source_snapshot_files": 2531
     },
-    "mechanics02": {
-      "path": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-02",
-      "manifest_sha256": "71275556eb88251b0850edba47879c2a4573c06b995f9689c83755470926b954",
+    "mechanics03": {
+      "path": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "manifest_sha256": "c9445623a35644b22837223b8851110d58727a3cf3616461110f52a6a096dbc1",
       "owned_source_sha256": {
         "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
-        "validation/betse/betse_mechanics_join_checks.py": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+        "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
         "validation/betse/betse_mechanics_join_fixtures.py": "ee45b6fb4346423b846f98fa9aa0fa46742c5448e07b83330ac5febb2ef96946",
         "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
         "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
         "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
         "validation/betse/betse_mechanics_join_replay.py": "8ababb151b75475e06643b9d3eb7efe3944e95076dea0783f9e0514236a75bbb",
         "tests/unit/test_betse_mechanics_join.py": "8ed5c0f510eba4d98f6952f58fe9a202034922ba8fe59198bd0b2ac5de43bac3",
-        "validation/betse/betse_mechanics_join_protocol.json": "b3971cf35cc53289861c53f24e559be124a3a534b9730e6848367609ba7fc161",
-        "validation/betse/betse_mechanics_join_source_map.json": "87c889c9a1429df4425c977eb7b191c41d3a92a3e853e2998f1e4897f9b0851c",
+        "validation/betse/betse_mechanics_join_protocol.json": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+        "validation/betse/betse_mechanics_join_source_map.json": "d9a5322aec9fcbe02cf3bd1c0ba0ced21391e70b2ecc7db49cbbaee63899796c",
         "agent-work/cells-specialist/BETSE_MECHANICS_JOIN.md": "a1ffacc64a5e1bdc1eff9b0da11deb2168ff3f86a012ad00759f4c6717ba8249"
       },
-      "source_snapshot_files": 203
+      "source_snapshot_files": 211,
+      "component_closeout": {
+        "path": "/mnt/workspaces/Cells/betse-mechanics-join-completion-review-20261031-02/REVIEW.json",
+        "sha256": "79a3646624d72feab086347b87d2cb826a40fbdd91f8f2af5f0d14bcd961999a",
+        "local_path": "dependencies/update02/mechanics03_scientific_closeout.json"
+      },
+      "prospective_composition_qualification_inherited": false
     }
   },
   "executed_source_closure_sha256": {
@@ -465,7 +471,7 @@
     "src/cells/processes/__init__.py": "26ca2cc8045c256192fee77ec49fc76520af2a95d9835d09fc23882661883142",
     "src/cells/processes/betse_calcium_atp_source.py": "c4c9bbd87d9531ce7e2d12b9e2005cd533953f8102b20a1ea3d5e8cc3073dae6",
     "src/cells/processes/betse_channel_catalog_source.py": "af852ca7891380e4038d7f55d3cc2a03ceefc62366d47f54c895c4baae5ee35b",
-    "src/cells/processes/betse_deformation.py": "88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2",
+    "src/cells/processes/betse_deformation.py": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
     "src/cells/processes/betse_ecm_grn_join.py": "f73b54e367613b1cf6473c14fd0d1b9967e5d9a328aa2c2299e319850454b274",
     "src/cells/processes/betse_ecm_grn_source.py": "638e4e7130c5301c7c7f8ea5afda0a2f2b38f492ab05b79b5467eeb19d049c25",
     "src/cells/processes/betse_ecm_transport.py": "05c909a59a760c763a05e30e36dd2630ce5959262519b58fde9e19f121500541",
@@ -517,7 +523,7 @@
     "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
     "validation/betse/betse_fast_solver_fixtures.py": "d1ac30a816d348635b961cd512a58738fb41e3eb6ec0b7d38658575c09c6cd48",
     "validation/betse/betse_fast_solver_native.py": "83f6977b3832829f507f07cc3e50cbf4bbb9a9903bd45dedec9f6987cb57206d",
-    "validation/betse/betse_mechanics_join_checks.py": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+    "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
     "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
     "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
     "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
@@ -567,7 +573,7 @@
     "validation/betse/betse_ecm_grn_reference.py": "5e6b33f30a9925afa7f3fe6e7028719df5d83c6a603710a8de688bbf5165ce40",
     "validation/betse/betse_ecm_transport_reference.py": "b58f097b4e11f06c9b06404f165b5766d4eeac708a13e3d2df1fd1fcb072bfdd",
     "validation/betse/betse_environment_field_reference.py": "3e1c3633a314c33dcfa438a27475d3f1b1f0eebbb21485e5f0277c36a24dba2c",
-    "validation/betse/betse_mechanics_join_checks.py": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+    "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
     "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
     "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
     "validation/betse/betse_normal_channel_join_runtime.py": "0f440c14561f750b2ab83f1ddc6cd58a390556b7145571e87d93f7e1d20bc1bf",
@@ -706,5 +712,41 @@
     "betse/science/simrunner.py": "6a9389f106d717dc83ea1a594a64aa5bde278cef9a17b2a8ff01251b08d7be8a"
   },
   "numerical_execution": false,
-  "qualification_inherited": false
+  "qualification_inherited": false,
+  "dependency_update02": {
+    "path": "dependency-update02.json",
+    "sha256": "2b5a320f1d133e570e1f43a3ba12ae949649b53b4fd005649f968087b6e59d89"
+  },
+  "prospective_dependency_overlays": {
+    "source/src/cells/processes/betse_deformation.py": {
+      "before": "88e61c22a979edbfaa564170a5e615b698092a6356cb1aaa017182e4aba56cb2",
+      "after": "87bc2618de4f566f1e123cd8d801befd32972a588894dff04d1968d51a2fb6c6",
+      "from_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "role": "qualified_dependency_code"
+    },
+    "source/validation/betse/betse_mechanics_join_checks.py": {
+      "before": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+      "after": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
+      "from_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "role": "qualified_dependency_code"
+    },
+    "source/validation/betse/betse_mechanics_join_protocol.json": {
+      "before": "b3971cf35cc53289861c53f24e559be124a3a534b9730e6848367609ba7fc161",
+      "after": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+      "from_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "role": "exact_qualified_dependency_metadata"
+    },
+    "source/validation/betse/betse_mechanics_join_source_map.json": {
+      "before": "87c889c9a1429df4425c977eb7b191c41d3a92a3e853e2998f1e4897f9b0851c",
+      "after": "d9a5322aec9fcbe02cf3bd1c0ba0ced21391e70b2ecc7db49cbbaee63899796c",
+      "from_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "role": "exact_qualified_dependency_metadata"
+    },
+    "source/agent-work/cells-specialist/betse_mechanics_join_plan.json": {
+      "before": "051d8142858b5ed2520aa943dd14b22d3b9b7132eb78df42f3bdb3a8a7f38b47",
+      "after": "57b0b8509877597b4a691528f4c24b644370738298d22419ceca93152ff04474",
+      "from_bundle": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "role": "exact_qualified_dependency_metadata"
+    }
+  }
 }

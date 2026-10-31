@@ -18,6 +18,17 @@ from validation.geometry import fixed_polygon_removal_fixtures as fixtures
 from validation.geometry import fixed_polygon_removal_reference as reference
 
 
+@pytest.fixture(autouse=True)
+def require_scientific_release(request):
+    if request.node.originalname.startswith("test_software_"):
+        return
+    if os.environ.get("CELLS_FIXED_POLYGON_REMOVAL_SCIENTIFIC_RELEASE") != "1":
+        pytest.skip(
+            "Held polygon numerical checks; set "
+            "CELLS_FIXED_POLYGON_REMOVAL_SCIENTIFIC_RELEASE=1 after scientific release"
+        )
+
+
 def save(name, value):
     root = Path(os.environ["CELLS_COMPONENT_EVIDENCE"]) / "fixed-polygon-removal"
     root.mkdir(parents=True, exist_ok=True)

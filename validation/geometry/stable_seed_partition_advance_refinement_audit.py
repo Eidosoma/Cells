@@ -192,7 +192,7 @@ def dynamics_ancestry(project):
 def production_scope(project):
     core, first = tree(project / CORE), tree(project / FIRST_CORE)
     assert sha(project / FIRST_CORE) == FIRST_SHA256 == literal(core, "FIRST_ADVANCE_SOURCE_SHA256")
-    assert literal(core, "DRAFT_ONLY") is True
+    assert literal(core, "DRAFT_ONLY") is False
     manifest_pin = literal(core, "INITIAL_SUCCESSOR_MANIFEST_SHA256")
     if manifest_pin is not None:
         assert sha(INITIAL_SUCCESSOR / "manifest.json") == manifest_pin
@@ -203,7 +203,7 @@ def production_scope(project):
         "INITIAL_SUCCESSOR_SOURCE_REVIEW_SHA256",
         "INITIAL_SUCCESSOR_NUMERICAL_QUALIFICATION_SHA256",
     ):
-        assert literal(core, name) is None
+        assert literal(core, name) == ACCEPTED_INITIAL_RECEIPTS[name]
     gate = function(core, "gate")
     assert isinstance(gate.body[0], ast.If) and isinstance(gate.body[0].body[0], ast.Raise)
     bind, advance, execute = (function(core, name) for name in ("bind", "advance", "_execute_arm"))
@@ -269,7 +269,7 @@ def production_scope(project):
 
 def reference_scope(project):
     module = tree(project / REFERENCE)
-    assert literal(module, "DRAFT_ONLY") is True
+    assert literal(module, "DRAFT_ONLY") is False
     assert literal(module, "INITIAL_SUCCESSOR_MANIFEST_SHA256") == literal(
         tree(project / CORE), "INITIAL_SUCCESSOR_MANIFEST_SHA256"
     )
@@ -277,7 +277,7 @@ def reference_scope(project):
         "INITIAL_SUCCESSOR_SOURCE_REVIEW_SHA256",
         "INITIAL_SUCCESSOR_NUMERICAL_QUALIFICATION_SHA256",
     ):
-        assert literal(module, name) is None
+        assert literal(module, name) == ACCEPTED_INITIAL_RECEIPTS[name]
     auth, evaluate = function(module, "authenticate"), function(module, "evaluate")
     assert call_line(auth, "gate") < call_line(auth, "metadata.authenticate")
     imports = [n.lineno for n in ast.walk(evaluate) if isinstance(n, ast.ImportFrom)]
@@ -386,3 +386,13 @@ def audit(project):
         GPU_activity=0,
         PROGRESS_edited=False,
     )
+
+
+ACCEPTED_INITIAL_RECEIPTS = {
+    "INITIAL_SUCCESSOR_SOURCE_REVIEW_SHA256": (
+        "84440f74eff19c7a96a275afb81f99ccc0eecc241d484c4cb3c9a13735f1f614"
+    ),
+    "INITIAL_SUCCESSOR_NUMERICAL_QUALIFICATION_SHA256": (
+        "5aad4bce5c8f90020b0bc09786a6e7d4aad11cc71d25b2f1109556f572c788cc"
+    ),
+}

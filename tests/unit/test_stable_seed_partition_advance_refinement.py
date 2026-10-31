@@ -243,7 +243,13 @@ def test_independent_common_endpoint_and_original_refinement_budgets(case, tmp_p
                 ),
             )
             process.wait(timeout=480)
-        except BaseException:
+        except BaseException as error:
+            persist(
+                tmp_path / "reference-child-failure.json",
+                dict(
+                    type=type(error).__name__, reason=str(error), traceback=traceback.format_exc()
+                ),
+            )
             if process is not None and process.poll() is None:
                 process.kill()
                 process.wait()
@@ -251,7 +257,13 @@ def test_independent_common_endpoint_and_original_refinement_budgets(case, tmp_p
         finally:
             log.flush()
             os.fsync(log.fileno())
-    persist(tmp_path / "process.json", dict(pid=process.pid, returncode=process.returncode))
+            persist(
+                tmp_path / "process.json",
+                dict(
+                    pid=process.pid if process is not None else None,
+                    returncode=process.returncode if process is not None else None,
+                ),
+            )
     report = json.loads(target.read_text())
     assert report["runtime_origin"]["pid"] == process.pid
     assert report["runtime_origin"]["parent_pid"] == os.getpid()

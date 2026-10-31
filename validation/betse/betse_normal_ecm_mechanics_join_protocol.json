@@ -437,23 +437,29 @@
       },
       "source_snapshot_files": 2531
     },
-    "mechanics02": {
-      "path": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-02",
-      "manifest_sha256": "71275556eb88251b0850edba47879c2a4573c06b995f9689c83755470926b954",
+    "mechanics03": {
+      "path": "/mnt/workspaces/Cells/betse-mechanics-join-prepared-20261031-03",
+      "manifest_sha256": "c9445623a35644b22837223b8851110d58727a3cf3616461110f52a6a096dbc1",
       "owned_source_sha256": {
         "src/cells/processes/betse_mechanics_join.py": "e5475c5558f02a41829565c7874687f05f38ab15c36ef653dfbf5c5ab67ff55a",
-        "validation/betse/betse_mechanics_join_checks.py": "7454629a3cf5fa846088d3c2873980bdc4ce7c70fcb3d09028d5df0429acea07",
+        "validation/betse/betse_mechanics_join_checks.py": "6841f8f33a1492f0a67e794a127a7f1d8566727dbe6013a76ad920b062f0389f",
         "validation/betse/betse_mechanics_join_fixtures.py": "ee45b6fb4346423b846f98fa9aa0fa46742c5448e07b83330ac5febb2ef96946",
         "validation/betse/betse_mechanics_join_reference.py": "292155b534d4fe07a5e592530ea20fbd8df24a8a6834320c7a4328c426b92f19",
         "validation/betse/betse_mechanics_join_native.py": "8abe79b3a0af23c3990e1d95fc555eef58d81991406eeac061a65e05af6c0141",
         "validation/betse/betse_mechanics_join_runtime.py": "210b5eb461bd6a3bb5d5b755159052a5234b5f311241230bc708912ef226ad75",
         "validation/betse/betse_mechanics_join_replay.py": "8ababb151b75475e06643b9d3eb7efe3944e95076dea0783f9e0514236a75bbb",
         "tests/unit/test_betse_mechanics_join.py": "8ed5c0f510eba4d98f6952f58fe9a202034922ba8fe59198bd0b2ac5de43bac3",
-        "validation/betse/betse_mechanics_join_protocol.json": "b3971cf35cc53289861c53f24e559be124a3a534b9730e6848367609ba7fc161",
-        "validation/betse/betse_mechanics_join_source_map.json": "87c889c9a1429df4425c977eb7b191c41d3a92a3e853e2998f1e4897f9b0851c",
+        "validation/betse/betse_mechanics_join_protocol.json": "a7a76e47557f878f36c129bdf133f490041c8c9c5bcf028bdc5409d67421ac71",
+        "validation/betse/betse_mechanics_join_source_map.json": "d9a5322aec9fcbe02cf3bd1c0ba0ced21391e70b2ecc7db49cbbaee63899796c",
         "agent-work/cells-specialist/BETSE_MECHANICS_JOIN.md": "a1ffacc64a5e1bdc1eff9b0da11deb2168ff3f86a012ad00759f4c6717ba8249"
       },
-      "source_snapshot_files": 203
+      "source_snapshot_files": 211,
+      "component_closeout": {
+        "path": "/mnt/workspaces/Cells/betse-mechanics-join-completion-review-20261031-02/REVIEW.json",
+        "sha256": "79a3646624d72feab086347b87d2cb826a40fbdd91f8f2af5f0d14bcd961999a",
+        "local_path": "dependencies/update02/mechanics03_scientific_closeout.json"
+      },
+      "prospective_composition_qualification_inherited": false
     }
   },
   "native_source": {
@@ -562,7 +568,11 @@
       "rates": "Inherited2e-14 mM/s +5e-12*abs(reference); delta6e-14 +5e-12*independent gross",
       "self_resolution_fraction": 0.1
     },
-    "unchanged_mechanics02": {
+    "source_epoch_parent_identity": "Exact all shapes/values/binary64 bits",
+    "reference_self_resolution_fraction": 0.1,
+    "outgoing_values_never_set_budgets": true,
+    "carried_allowance": false,
+    "qualified_mechanics03": {
       "relative": 8e-12,
       "displacement_atol_m": 3e-20,
       "display_atol_m": 3e-17,
@@ -570,10 +580,15 @@
       "pressure_atol_Pa": 3e-09,
       "auxiliary_atol": 3e-14
     },
-    "source_epoch_parent_identity": "Exact all shapes/values/binary64 bits",
-    "reference_self_resolution_fraction": 0.1,
-    "outgoing_values_never_set_budgets": true,
-    "carried_allowance": false
+    "divergence_numeric_category_change": {
+      "field": "divergence_numeric",
+      "before": 3e-20,
+      "after": 3e-14,
+      "factor": 1000000,
+      "category": "preexisting auxiliary_atol",
+      "relative_unchanged": 8e-12,
+      "resolution_fraction_unchanged": 0.1
+    }
   },
   "independence": {
     "fresh_workers_deny_Cells_BETSE_and_all_scientific_packages": true,
@@ -624,5 +639,9 @@
   "pytest_collection": false,
   "qualification_inherited": false,
   "automatic_followup": false,
-  "automatic_polling": false
+  "automatic_polling": false,
+  "dependency_update02": {
+    "path": "dependency-update02.json",
+    "sha256": "2b5a320f1d133e570e1f43a3ba12ae949649b53b4fd005649f968087b6e59d89"
+  }
 }

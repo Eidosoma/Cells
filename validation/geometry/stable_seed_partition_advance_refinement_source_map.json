@@ -1422,6 +1422,22 @@
     },
     "unchanged_timeline_storage_admission_before_all_steps": true
   },
+  "prospective_successor_overlay": {
+    "accepted_initial_evidence_copied_byte_exact": 18,
+    "capture_only_test_delta": "Reference child exit written in finally, with original exception retained; successful assertions and roster unchanged.",
+    "initial_receipt_pins": {
+      "INITIAL_SUCCESSOR_NUMERICAL_QUALIFICATION_SHA256": "5aad4bce5c8f90020b0bc09786a6e7d4aad11cc71d25b2f1109556f572c788cc",
+      "INITIAL_SUCCESSOR_SOURCE_REVIEW_SHA256": "84440f74eff19c7a96a275afb81f99ccc0eecc241d484c4cb3c9a13735f1f614"
+    },
+    "owned_files_sha256": {
+      "src/cells/processes/stable_seed_partition_advance_refinement.py": "dc492f60c1f3d3b8c1d340b2db621ba728ff26e807515029e378ec308fc8041f",
+      "tests/unit/test_stable_seed_partition_advance_refinement.py": "20f881016e9de97dcd7c694f90d1b39ce8c45dc0b45c2ee337396fc9e5606b6b",
+      "validation/geometry/stable_seed_partition_advance_refinement_audit.py": "5460464be33335d5d01b3f5241a515594e55c5fd0d3e5f48ac970473047f653a",
+      "validation/geometry/stable_seed_partition_advance_refinement_dynamics.py": "14e8839ceca62cbdea67a8eb35f713b9500faa9c92bec0f0e0c22fcc11b1924c",
+      "validation/geometry/stable_seed_partition_advance_refinement_reference.py": "ddf050f318728fb773ec17e93effb24d21874f8229b164ba1ed1c79f740761af"
+    },
+    "source_and_metadata_only": true
+  },
   "prospective_tests": {
     "collected": false,
     "exact_source_predicted_ids": [
