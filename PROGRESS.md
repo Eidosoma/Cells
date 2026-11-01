@@ -473,8 +473,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   disabled JIT; the worker records CPU, precision and JIT settings. Every
   pre-existing numerical method is AST-unchanged. The earlier 14-check image
   remains separately scoped because ordinary-call JIT enablement was not recorded.
-  All six terminal outcomes are reviewed. No GPU run, large compiled-grid
-  qualification or simulation throughput claim is added.
+  All six terminal outcomes are reviewed. No GPU run or simulation throughput
+  claim is added.
+  The [retained 625-point physical grid now passes the iterative NumPy and
+  compiled CPU-JAX comparison](/mnt/workspaces/Cells/rectangular-iterative-retained-development-20261101-01/root-review.json).
+  Both backends meet the unchanged **2e-12 relative residual target** on four
+  balanced probes, preserve the zero-mean voltage reference and refuse the
+  incompatible constant probe. Independent Fraction arithmetic checks both
+  solutions against the same bound/count stencil; agreement with the saved
+  dense solution also satisfies a spectral error bound. Cold active iteration
+  counts are **0 / 111 / 12 / 12 / 0**; repeating with the prior voltage takes
+  **zero additional iterations** on these probes. All four batches completed
+  in **15.34 seconds, 409.9 MiB sampled peak RSS**, including compilation and
+  diagnostic overhead. **25 final harness controls**, all ten terminal outcomes,
+  53 complete result/input arrays and runtime bindings are reviewed; earlier
+  21- and 24-control images remain separately scoped. The original coordinates,
+  unequal horizontal/vertical spacing and forcing are unchanged. This extends
+  numerical evidence for the rectangular law; populated tissue coupling,
+  native INIT/SIM, GPU throughput and full restart qualification remain open.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

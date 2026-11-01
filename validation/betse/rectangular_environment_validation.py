@@ -38,6 +38,7 @@ STENCIL_TEST = "tests/unit/test_rectangular_environment_stencil.py"
 METRIC_TEST = "tests/unit/test_rectangular_environment_metric.py"
 ITERATIVE_TEST = "tests/unit/test_rectangular_environment_iterative.py"
 JAX_TEST = "tests/unit/test_rectangular_environment_jax.py"
+ITERATIVE_SAVED_TEST = "tests/unit/test_rectangular_environment_iterative_saved.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -55,6 +56,15 @@ def suite_files(suite):
         return FILES, TEST
     if suite == "saved":
         return (*[name for name in FILES if name != TEST], *SAVED_EXTRA, SAVED_TEST), SAVED_TEST
+    if suite == "iterative_saved":
+        return (
+            *[name for name in FILES if name != TEST],
+            *SAVED_EXTRA,
+            "src/cells/processes/rectangular_environment_stencil.py",
+            "src/cells/processes/rectangular_environment_iterative.py",
+            "validation/betse/rectangular_environment_iterative_saved.py",
+            ITERATIVE_SAVED_TEST,
+        ), ITERATIVE_SAVED_TEST
     if suite in ("stencil", "metric"):
         test = STENCIL_TEST if suite == "stencil" else METRIC_TEST
         return (
@@ -245,17 +255,22 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
     sys.setprofile(counting_profile)
     try:
         if analysis_inputs is not None:
-            from validation.betse import rectangular_environment_saved as adapter
-
             input_pin, data = bound_json(analysis_inputs)
             if input_pin["sha256"] != analysis_sha256:
                 raise ValueError("Changed declared numerical inputs before execution")
-            adapter.run(
-                data["baseline"]["path"],
-                data["baseline"]["sha256"],
-                output / "calculation",
-                numpy_pins=data["numpy_pins"],
-            )
+            if suite == "iterative_saved":
+                from validation.betse import rectangular_environment_iterative_saved as adapter
+
+                adapter.run(data, output / "calculation")
+            else:
+                from validation.betse import rectangular_environment_saved as adapter
+
+                adapter.run(
+                    data["baseline"]["path"],
+                    data["baseline"]["sha256"],
+                    output / "calculation",
+                    numpy_pins=data["numpy_pins"],
+                )
             code = 0
             if snapshot.digest(analysis_inputs) != analysis_sha256:
                 raise ValueError("Changed declared numerical inputs during execution")
@@ -302,11 +317,16 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
     base = Path("/mnt/workspaces/Cells")
     if not output.is_relative_to(base) or output == base or output.resolve() != output:
         raise ValueError("Require a new regular output directory below /mnt/workspaces/Cells")
-    if analysis_inputs is not None and suite != "saved":
+    if analysis_inputs is not None and suite not in ("saved", "iterative_saved"):
         raise ValueError("Retained-grid evaluation uses the explicit saved-grid suite")
     numerical_inputs, numerical_copy, raw = None, None, None
     if analysis_inputs is not None:
-        numerical_inputs, raw = analysis_preflight(output, analysis_inputs)
+        if suite == "iterative_saved":
+            from validation.betse import rectangular_environment_iterative_saved as adapter
+
+            numerical_inputs, raw = adapter.preflight(output, analysis_inputs)
+        else:
+            numerical_inputs, raw = analysis_preflight(output, analysis_inputs)
     files, selected_test = suite_files(suite)
     expected_cpu = sorted(os.sched_getaffinity(0))
     if len(expected_cpu) != 1:
@@ -349,7 +369,9 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
             source_manifest_sha256=manifest_sha,
             suite=suite,
             jax_execution_policy=(
-                dict(platform="cpu", enable_x64=True, disable_jit=False) if suite == "jax" else None
+                dict(platform="cpu", enable_x64=True, disable_jit=False)
+                if suite in ("jax", "iterative_saved")
+                else None
             ),
             analysis_inputs=numerical_inputs,
             analysis_inputs_copy=numerical_copy,
@@ -382,7 +404,7 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
         CELLS_RECTANGULAR_EVIDENCE=str(output / "evidence"),
         TMPDIR=str(output / "tmp"),
     )
-    if suite == "jax":
+    if suite in ("jax", "iterative_saved"):
         env["JAX_DISABLE_JIT"] = "0"
     (output / "tmp").mkdir()
     try:
@@ -453,7 +475,16 @@ def main():
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
         "--suite",
-        choices=("small", "saved", "reference", "stencil", "metric", "iterative", "jax"),
+        choices=(
+            "small",
+            "saved",
+            "reference",
+            "stencil",
+            "metric",
+            "iterative",
+            "jax",
+            "iterative_saved",
+        ),
         default="small",
     )
     parser.add_argument("--analysis-inputs", type=Path)
