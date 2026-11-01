@@ -213,10 +213,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   controls retained. The [next contiguous numeric-parameter prefix is source-reviewed](/mnt/workspaces/Cells/native-parameter-numeric-prefix-development-20261101-01/root-review.json):
   39 final blocked controls and all nine terminal outcomes are checked, with
   the earlier 35-pass/four-failure image preserved. It remains bound to its
-  original subconfiguration predecessor; later repairs require explicit
-  adoption. Key is building that adoption and the shared construction lease
-  for Specialist's fresh tissue-handler constructor. No positive native
-  parameter-load execution is credited.
+  original subconfiguration predecessor. The [shared construction guard and
+  numeric successor are now reviewed](/mnt/workspaces/Cells/native-parameter-construction-lease-development-20261101-01/root-review.json),
+  explicitly adopting the repaired predecessor. **78 blocked controls pass**
+  (39 new construction controls plus 39 affected numeric controls), in
+  **114.90 seconds, 248.9 MiB sampled peak RSS**. All five outcomes are checked;
+  the initial lint failure remains preserved. Construction and numeric advance
+  now share one exclusive claim on the actual parameter object, retain original
+  exceptions, and refuse runtime changes without refreshing its authority.
+  Specialist is integrating this interface into the tissue-handler constructor;
+  Key's next scope is the contiguous event/schedule declarations. No positive
+  native parameter-load execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results

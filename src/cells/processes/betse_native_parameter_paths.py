@@ -19,6 +19,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_parameter_yaml_prefix as prefix
 
 LAW_ID = prefix.PATHS_LAW
+SUBCONFIGURATION_LAW = "betse_native_same_parameter_subconfigurations@1"
 YAML_SHA256 = "0d1ab4b8f7931bc9084359a4ad9f4d97647def1daf4be8808b67dff3810e129b"
 RELEASE = "CELLS_NATIVE_PARAMETER_PATHS_RELEASED"
 BASE = Path("/mnt/workspaces")
@@ -554,6 +555,8 @@ def _bindings():
         _validate,
         prepare,
         require_complete_load,
+        handoff_subconfigurations,
+        handoff_subconfigurations.__wrapped__,
         prefix.begin_paths,
     )
     return (
@@ -567,6 +570,7 @@ def _bindings():
             _LOCK,
             _ACTIVE,
             LAW_ID,
+            SUBCONFIGURATION_LAW,
             YAML_SHA256,
             RELEASE,
             BASE,
@@ -813,3 +817,35 @@ def require_complete_load(owner):
             full_parameters_or_phase_or_INIT_admitted=False,
         ),
     )
+
+
+@contextmanager
+def handoff_subconfigurations(owner, *, law_id):
+    """Retire the path epoch and keep its existing audit guard read-only."""
+    if type(law_id) is not str or law_id != SUBCONFIGURATION_LAW:
+        raise PathsRejected("Explicit subconfiguration consumer required", stage="consumer")
+    if os.environ.get(RELEASE) != "1":
+        raise PathsRejected("Actual subconfiguration handoff held", stage="consumer")
+    with _LOCK:
+        if _ACTIVE:
+            _ACTIVE[-1].invalid = True
+            raise PathsRejected("Active path epoch cannot be consumed", stage="consumer")
+        context = _validate(owner)
+        context.invalid = True
+        guard = SimpleNamespace(
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            directory_depth=0,
+            directory_calls=0,
+            directory_targets=(),
+            filesystem=[],
+            audit_ready=False,
+        )
+        _ACTIVE.append(guard)
+        try:
+            _install_audit(guard)
+            yield context, guard
+        finally:
+            guard.active = False
+            _ACTIVE.pop()
