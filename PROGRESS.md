@@ -429,7 +429,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   construction. A synthetic **3,072-cell** rectangle retains **50,064 bytes
   of numerical geometry arrays** (excluding IDs/provenance), with complete
   saved batched actions and exact conservation/energy checks. The new declared
-  host cap is **2**20 cells**, not tested-at-cap or GPU evidence. The original
+  host cap is **1,048,576 cells**, not tested-at-cap or GPU evidence. The original
   dense solve rejects this geometry-only type. No native tissue, retained-grid
   requalification or scalable Poisson solve is implied.
 
