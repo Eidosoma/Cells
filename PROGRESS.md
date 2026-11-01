@@ -500,6 +500,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   unequal horizontal/vertical spacing and forcing are unchanged. This extends
   numerical evidence for the rectangular law; populated tissue coupling,
   native INIT/SIM, GPU throughput and full restart qualification remain open.
+  [Homogeneous slab conduction is now implemented](src/cells/processes/rectangular_environment_conduction.py)
+  on that same metric: explicit conductivity/depth give `E = -grad(phi)`,
+  `J = sigma E`, face currents and the original-source current residual.
+  It composes the existing matrix-free solver without changing its equations.
+  [Source review](/mnt/workspaces/Cells/rectangular-conduction-development-20261101-01/source-review.json)
+  and [saved-result review](/mnt/workspaces/Cells/rectangular-conduction-development-20261101-01/saved-results-review.json)
+  cover **44 NumPy checks and 14 actual compiled CPU checks**, respectively
+  **3.28 / 27.94 seconds** and **57.8 / 411.9 MiB sampled peak RSS**.
+  Independent exact resistor-network fixtures check current, units, potential
+  and power; mixed batches, warm reuse, failed candidates and extreme-value
+  refusals retain their raw evidence. Original source compatibility, conversion,
+  current residual and readout-range gates all contribute to usability.
+  Power balance is reported separately, without an ionic energy-closure claim.
+  Earlier images, the failed JAX configuration test and a prelaunch controller
+  failure remain preserved. This is small-grid numerical evidence; retained
+  tissue current coupling, heterogeneous conductivity, GPU execution and full
+  INIT/SIM/restart remain unqualified.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

@@ -39,6 +39,8 @@ METRIC_TEST = "tests/unit/test_rectangular_environment_metric.py"
 ITERATIVE_TEST = "tests/unit/test_rectangular_environment_iterative.py"
 JAX_TEST = "tests/unit/test_rectangular_environment_jax.py"
 ITERATIVE_SAVED_TEST = "tests/unit/test_rectangular_environment_iterative_saved.py"
+CONDUCTION_TEST = "tests/unit/test_rectangular_environment_conduction.py"
+CONDUCTION_JAX_TEST = "tests/unit/test_rectangular_environment_conduction_jax.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -89,6 +91,17 @@ def suite_files(suite):
             "src/cells/processes/rectangular_environment_iterative.py",
             JAX_TEST,
         ), JAX_TEST
+    if suite in ("conduction", "conduction_jax"):
+        test = CONDUCTION_TEST if suite == "conduction" else CONDUCTION_JAX_TEST
+        return (
+            *FILES,
+            "tests/__init__.py",
+            "src/cells/processes/rectangular_environment_stencil.py",
+            "src/cells/processes/rectangular_environment_iterative.py",
+            "src/cells/processes/rectangular_environment_conduction.py",
+            CONDUCTION_TEST,
+            *([CONDUCTION_JAX_TEST] if suite == "conduction_jax" else []),
+        ), test
     if suite == "reference":
         return (
             OWN,
@@ -241,6 +254,9 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
         ("cells.processes.rectangular_environment_iterative", "solve"),
         ("cells.processes.rectangular_environment_iterative", "compile_jax_solver"),
         ("cells.processes.rectangular_environment_iterative", "_positive_action"),
+        ("cells.processes.rectangular_environment_conduction", "evaluate"),
+        ("cells.processes.rectangular_environment_conduction", "solve"),
+        ("cells.processes.rectangular_environment_conduction", "compile_jax_solver"),
     }
     original_profile = profile
 
@@ -370,7 +386,7 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
             suite=suite,
             jax_execution_policy=(
                 dict(platform="cpu", enable_x64=True, disable_jit=False)
-                if suite in ("jax", "iterative_saved")
+                if suite in ("jax", "iterative_saved", "conduction_jax")
                 else None
             ),
             analysis_inputs=numerical_inputs,
@@ -404,7 +420,7 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
         CELLS_RECTANGULAR_EVIDENCE=str(output / "evidence"),
         TMPDIR=str(output / "tmp"),
     )
-    if suite in ("jax", "iterative_saved"):
+    if suite in ("jax", "iterative_saved", "conduction_jax"):
         env["JAX_DISABLE_JIT"] = "0"
     (output / "tmp").mkdir()
     try:
@@ -484,6 +500,8 @@ def main():
             "iterative",
             "jax",
             "iterative_saved",
+            "conduction",
+            "conduction_jax",
         ),
         default="small",
     )
