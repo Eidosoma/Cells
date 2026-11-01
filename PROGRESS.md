@@ -688,6 +688,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   owns the explicit repair, preserving both layouts and the live mask.
   This failed input grants no positive multi-cell credit or independent
   original-source comparison; no automatic retry has been launched.
+  Root prepared the independent original-source boundary through `cell_index`,
+  including 20 original parameter statements and eight clipping helpers from
+  24 pinned BETSE files. [Source review](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/source-review-02.json)
+  and [22 software controls](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/root-results-review.json)
+  verify the literal caller prefix, helper bodies and separate identities of
+  the two `to_iterable` functions (**11.56 seconds, 67.2 MiB sampled peak RSS**).
+  These controls compile ASTs without executing them; the earlier nine checks
+  retain their own source. Runtime/import bindings, the complete comparison
+  driver and actual multi-cell reference execution remain to be built/verified.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
