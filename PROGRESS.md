@@ -36,8 +36,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [Timing inspection](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-02/root-timing-inspection.json)
   records about **272 CPU seconds over 480 wall seconds** and extra observed
   request-processing work. It cannot assign the elapsed time to one cause.
-  Root is adding durable action/capture wall and CPU checkpoints before another
-  actual attempt; numerical settings, evidence retention and guards are unchanged.
+  Root added durable action/capture wall and CPU checkpoints. The
+  [final timing image passed 27 software checks](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/stage-timing-development-01/software-03/software-result.json)
+  in **19.79 seconds, 116.7 MiB sampled peak RSS**, including retained large
+  returns when observation fails and preservation of prior profiling guards.
+  [Source review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/stage-timing-development-01/source-review-03.json)
+  is clear. Earlier 19- and 25-check images retain their own source limits.
+  No actual timing-enabled retry has run; numerical settings, evidence retention
+  and guards are unchanged.
   Both failed attempts remain failed and grant no continuation acceptance.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
