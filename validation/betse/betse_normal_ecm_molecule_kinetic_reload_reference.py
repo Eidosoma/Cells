@@ -296,6 +296,11 @@ class RuntimeCapture:
                 status="returned",
                 nodes=len(graph.nodes),
                 array_bytes=graph.array_bytes,
+                array_headers=len(graph.arrays),
+                storage_nodes=graph.storage_nodes,
+                array_byte_scope=(
+                    "unique retained storage; view headers do not allocate new payloads"
+                ),
                 dynamic_alias_objects=len(graph.cloned_aliases),
             )
             self.reference_contracts = dict(

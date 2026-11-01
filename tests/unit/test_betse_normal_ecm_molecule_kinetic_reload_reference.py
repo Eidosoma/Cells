@@ -7,6 +7,7 @@ Positive graphs/profiles are explicitly synthetic and confer no parent credit.
 import ast
 import copy
 import json
+import struct
 import sys
 from types import CellType, FunctionType, SimpleNamespace
 
@@ -335,9 +336,10 @@ def test_full_comparison_detects_non_rate_graph_drift(fault, tmp_path):
     [
         "unknown-object",
         "callback",
-        "noncontiguous",
-        "writable-view",
-        "shared-storage",
+        "unknown-base",
+        "unknown-buffer",
+        "logical-bound",
+        "metadata-dtype",
         "object-array",
         "missing-root",
         "node-bound",
@@ -350,15 +352,22 @@ def test_unowned_runtime_data_and_layout_refuse_with_partial_evidence(monkeypatc
         value["raw"]["unowned"] = object()
     elif fault == "callback":
         value["p"].foreign_callback = lambda: None
-    elif fault == "noncontiguous":
-        value["raw"]["view"] = np.arange(8.0)[::2]
-    elif fault == "writable-view":
-        value["raw"]["view"] = np.arange(8.0).reshape(2, 4)
-    elif fault == "shared-storage":
-        a = np.arange(8.0)
-        value["raw"].update(a=a[:4], b=a[4:])
+    elif fault == "unknown-base":
+        value["raw"]["view"] = np.lib.stride_tricks.as_strided(
+            np.arange(8.0), shape=(2,), strides=(8,)
+        )
+    elif fault == "unknown-buffer":
+        value["raw"]["view"] = np.frombuffer(memoryview(bytearray(32)), dtype=np.float64)
+    elif fault == "logical-bound":
+        value["raw"]["view"] = np.ndarray(
+            (native.MAX_ARRAY_BYTES // 8 + 1,), dtype=np.float64, buffer=np.zeros(1), strides=(0,)
+        )
     elif fault == "object-array":
         value["raw"]["array"] = np.array([object()])
+    elif fault == "metadata-dtype":
+        value["raw"]["array"] = np.zeros(
+            2, dtype=np.dtype("f8", metadata={"unowned_callback": lambda: None})
+        )
     elif fault == "missing-root":
         value.pop("phase")
     elif fault == "node-bound":
@@ -370,10 +379,11 @@ def test_unowned_runtime_data_and_layout_refuse_with_partial_evidence(monkeypatc
     intended = {
         "unknown-object": "class/callback authority",
         "callback": "class/callback authority",
-        "noncontiguous": "array layout",
-        "writable-view": "backing/layout authority",
-        "shared-storage": "backing/layout authority",
-        "object-array": "array layout",
+        "unknown-base": "storage/base authority",
+        "unknown-buffer": "storage/base authority",
+        "logical-bound": "logical array exceeds byte bound",
+        "metadata-dtype": "array dtype",
+        "object-array": "array dtype",
         "missing-root": "Complete ordered runtime roots",
         "node-bound": "node bound",
         "byte-bound": "byte bound",
@@ -746,5 +756,216 @@ def test_structured_dtype_cannot_collapse_to_an_opaque_void_width(kind):
     value = roots()
     structured = np.array([(1, 2)], dtype=[("first", "i4"), ("second", "i4")])
     value["raw"]["structured"] = structured if kind == "array" else structured[0]
-    with pytest.raises(native.GraphRejected, match="array layout|scalar category/dtype"):
+    with pytest.raises(native.GraphRejected, match="array dtype|scalar category/dtype"):
         capture(value)
+
+
+def graph_copy(value):
+    graph = native.Graph(
+        api=SimpleNamespace(classes={"Molecule": SyntheticMolecule}), **contracts()
+    )
+    before, copied = graph.capture(value)
+    after = capture(copied)
+    native.compare_graphs(before, after)
+    return graph, before, copied, after
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "owned",
+        "flat-base",
+        "Fortran",
+        "immutable-bytes",
+        "bytearray",
+        "readonly-parent",
+        "readonly-view",
+    ],
+)
+def test_real_shaped_GJ_columns_keep_storage_base_offset_stride_and_mutations(mode, tmp_path):
+    flat = np.arange(12.0)
+    if mode == "flat-base":
+        matrix = flat.reshape(6, 2)
+    elif mode == "Fortran":
+        matrix = np.asfortranarray(flat.reshape(6, 2))
+    elif mode == "immutable-bytes":
+        matrix = np.frombuffer(flat.tobytes(), dtype=np.float64).reshape(6, 2)
+    elif mode == "bytearray":
+        matrix = np.ndarray((6, 2), dtype=np.float64, buffer=bytearray(flat.tobytes()))
+    else:
+        matrix = flat.reshape(6, 2).copy()
+    x, y = matrix[:, 0], matrix[:, 1]
+    if mode == "readonly-parent":
+        matrix.setflags(write=False)
+    elif mode == "readonly-view":
+        x.setflags(write=False)
+    value = roots()
+    value["sim"].E_gj_x, value["sim"].E_gj_y = x, y
+    value["sim"].same_x = x
+    value["raw"]["arrays_10"] = matrix
+    graph, before, copied, after = graph_copy(value)
+    cx, cy, cm = copied["sim"].E_gj_x, copied["sim"].E_gj_y, copied["raw"]["arrays_10"]
+    for source, actual in ((x, cx), (y, cy), (matrix, cm)):
+        assert native._array_layout(source) == native._array_layout(actual)
+        assert (
+            actual.base is graph.copies[id(source.base)]
+            if source.base is not None
+            else actual.base is None
+        )
+        assert source.tobytes() == actual.tobytes()
+    assert cx is copied["sim"].same_x
+    assert np.shares_memory(cx, cm) and np.shares_memory(cy, cm)
+    assert cx.base is cy.base
+    original_bytes = matrix.tobytes()
+    if cx.flags.writeable:
+        cx[2] = 123.0
+        assert cm[2, 0] == 123.0
+    if cy.flags.writeable:
+        cy[1] = 456.0
+        assert cm[1, 1] == 456.0
+    assert matrix.tobytes() == original_bytes
+    save_control(
+        tmp_path / "GJ-shared-storage",
+        dict(
+            mode=mode,
+            before=before,
+            after=after,
+            unique_storage_bytes=graph.array_bytes,
+            storage_nodes=graph.storage_nodes,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "mode", ["reverse", "zero-stride", "unaligned", "zero-dimensional", "empty"]
+)
+def test_supported_bounded_views_preserve_exact_layout_and_base(mode):
+    owner = np.arange(32, dtype=np.uint8)
+    if mode == "reverse":
+        view = owner[::-2]
+    elif mode == "zero-stride":
+        view = np.ndarray((5,), dtype=np.uint8, buffer=owner, strides=(0,))
+    elif mode == "unaligned":
+        view = np.ndarray((3,), dtype=">f8", buffer=owner, offset=1, strides=(9,))
+    elif mode == "zero-dimensional":
+        view = np.ndarray((), dtype=np.uint32, buffer=owner, offset=4)
+    else:
+        view = owner[:0]
+    value = roots()
+    value["raw"].update(view=view, owner=owner)
+    graph, _, copied, _ = graph_copy(value)
+    assert copied["raw"]["view"].base is graph.copies[id(view.base)]
+    assert native._array_layout(copied["raw"]["view"]) == native._array_layout(view)
+
+
+@pytest.mark.parametrize(
+    "fault", ["alias", "offset", "stride", "writeability", "unused-storage-byte"]
+)
+def test_equal_logical_view_values_do_not_hide_storage_or_layout_drift(fault, tmp_path):
+    def example():
+        owner = np.ones((5, 2))
+        value = roots()
+        value["sim"].E_gj_x = np.ndarray((3,), dtype=np.float64, buffer=owner, strides=(16,))
+        value["sim"].E_gj_y = np.ndarray(
+            (3,), dtype=np.float64, buffer=owner, offset=8, strides=(16,)
+        )
+        value["raw"]["owner"] = owner
+        return value
+
+    left, right = example(), example()
+    owner = right["raw"]["owner"]
+    if fault == "alias":
+        right["sim"].E_gj_x = np.ndarray((3,), dtype=np.float64, buffer=owner.copy(), strides=(16,))
+    elif fault == "offset":
+        right["sim"].E_gj_x = np.ndarray(
+            (3,), dtype=np.float64, buffer=owner, offset=16, strides=(16,)
+        )
+    elif fault == "stride":
+        right["sim"].E_gj_x = np.ndarray((3,), dtype=np.float64, buffer=owner, strides=(8,))
+    elif fault == "writeability":
+        right["sim"].E_gj_x.setflags(write=False)
+    else:
+        owner[-1, -1] = 2.0
+    assert np.array_equal(left["sim"].E_gj_x, right["sim"].E_gj_x)
+    assert np.array_equal(left["sim"].E_gj_y, right["sim"].E_gj_y)
+    before, after = capture(left), capture(right)
+    with pytest.raises(native.GraphRejected, match="graph differs") as caught:
+        native.compare_graphs(before, after)
+    save_control(
+        tmp_path / "storage-drift",
+        dict(
+            fault=fault,
+            original=before,
+            candidate=after,
+            difference=caught.value.partial,
+            logical_GJ_values_equal=True,
+        ),
+    )
+
+
+def test_shared_storage_is_bounded_and_counted_once(monkeypatch):
+    owner = np.arange(16.0)
+    value = {name: None for name in native.ROOTS}
+    value["sim"] = SimpleNamespace(views=[owner[i % 8 : i % 8 + 8] for i in range(20)])
+    value["raw"] = {"owner": owner}
+    monkeypatch.setattr(native, "MAX_ARRAY_BYTES", owner.nbytes)
+    graph = native.Graph(**contracts())
+    _, copied = graph.capture(value)
+    assert graph.array_bytes == owner.nbytes and graph.storage_nodes == 1
+    assert all(v.base is copied["raw"]["owner"] for v in copied["sim"].views)
+
+
+@pytest.mark.parametrize(
+    "bits",
+    [
+        "0000000000000000",
+        "8000000000000000",
+        "3ff8000000000000",
+        "0000000000000001",
+        "7ff0000000000000",
+        "fff0000000000000",
+        "7ff8000000000001",
+        "7ff8000000000002",
+        "fff8000000000001",
+        "7ff0000000000001",
+    ],
+)
+def test_python_float_binary64_bits_survive_capture_and_copy(bits, tmp_path):
+    number = struct.unpack(">d", bytes.fromhex(bits))[0]
+    value = roots()
+    value["raw"]["number"] = number
+    _, before, copied, after = graph_copy(value)
+    assert struct.pack(">d", copied["raw"]["number"]).hex() == bits
+    raw_node = next(
+        n
+        for n in before["nodes"]
+        if n.get("kind") == "mapping" and any(k == "number" for k, _ in n["items"])
+    )
+    token = next(v for k, v in raw_node["items"] if k == "number")
+    assert token == dict(scalar="float", encoding="ieee754-binary64-big-endian", value=bits)
+    save_control(tmp_path / "binary64", dict(bits=bits, original=before, copied=after))
+
+
+@pytest.mark.parametrize(
+    "left,right",
+    [
+        ("7ff8000000000001", "7ff8000000000002"),
+        ("7ff8000000000001", "fff8000000000001"),
+        ("7ff0000000000001", "7ff8000000000001"),
+        ("0000000000000000", "8000000000000000"),
+    ],
+)
+def test_nan_payload_sign_and_signed_zero_differences_refuse(left, right):
+    a, b = roots(), roots()
+    a["raw"]["number"] = struct.unpack(">d", bytes.fromhex(left))[0]
+    b["raw"]["number"] = struct.unpack(">d", bytes.fromhex(right))[0]
+    with pytest.raises(native.GraphRejected, match="graph differs"):
+        native.compare_graphs(capture(a), capture(b))
+
+
+def test_old_lossy_graph_version_gets_no_repair_credit():
+    a = capture(roots())
+    b = copy.deepcopy(a)
+    a["kind"] = b["kind"] = "cells.kinetic_reference_complete_data_graph@1"
+    with pytest.raises(ValueError, match="version required"):
+        native.compare_graphs(a, b)

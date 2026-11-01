@@ -17,7 +17,7 @@ import runpy
 import sys
 import sysconfig
 import traceback
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from importlib.machinery import PathFinder
 from pathlib import Path
 
@@ -413,12 +413,25 @@ class WorkLog:
     ledgers remain non-additive observations of the same execution.
     """
 
-    def __init__(self, output, source):
+    def __init__(self, output, source, *, phases):
+        if (
+            type(phases) not in (list, tuple)
+            or not 1 <= len(phases) <= len(stage_names("lapENV_P_inv"))
+            or any(type(phase) is not str or not phase or len(phase) > 64 for phase in phases)
+            or len(set(phases)) != len(phases)
+            or "imports" in phases
+        ):
+            raise ValueError("Declare bounded, unique diagnostic work phases")
         self.path, self.source = output / "work.jsonl", str(source) + os.sep
         self.phase, self.count = "imports", 0
+        self.phases = ("imports", *phases)
+        self.sites = set()
         self.trace_count = 0
         self.counts = {}
         self.failure = None
+        self._active_profile = None
+        self._retaining_failure = 0
+        self.failure_retention_entries = 0
 
     def record(self, stream, row):
         """Count recursive codec work without emitting a line per scalar.
@@ -428,10 +441,15 @@ class WorkLog:
         counters; these are computational attempts, not independent cases.
         """
         key = tuple(row[k] for k in ("phase", "event", "source", "function", "line", "c_callable"))
+        if row["phase"] not in self.phases:
+            raise RuntimeError("Undeclared diagnostic work phase")
+        site = key[1:]
+        if site not in self.sites:
+            if len(self.sites) >= 4096:
+                raise RuntimeError("Source work log exceeded its distinct-call-site allowance")
+            self.sites.add(site)
         new = key not in self.counts
         if new:
-            if len(self.counts) >= 4096:
-                raise RuntimeError("Source work log exceeded its distinct-call-site allowance")
             self.counts[key] = dict(**row, attempts=0, first_sequence=self.count)
         counter = self.counts[key]
         counter["attempts"] += 1
@@ -449,6 +467,10 @@ class WorkLog:
         return dict(
             observed_entry_attempts=self.count,
             ordered_trace_entries=self.trace_count,
+            distinct_call_sites=len(self.sites),
+            declared_phases=list(self.phases),
+            site_phase_counters=len(self.counts),
+            limits=dict(distinct_call_sites=4096, ordered_trace_entries=100000),
             call_sites=list(self.counts.values()),
             aggregation=(
                 "All calls counted by site and phase; ordered trace keeps first occurrences "
@@ -456,7 +478,32 @@ class WorkLog:
             ),
             complete_native_operation_count=False,
             independent_case_credit=0,
+            failure_retention_entries=self.failure_retention_entries,
+            failure_retention_scope=(
+                "After recorder failure only, failure serialization bypasses this recorder; "
+                "the prior profiler/guards remain chained. These entries are not added to "
+                "the incomplete source counts, and no continuation is accepted."
+            ),
         )
+
+    @contextmanager
+    def retain_failure(self):
+        """Keep an exhausted recorder from preventing forensic serialization."""
+        if self.failure is None:
+            yield
+            return
+        entry_profile = sys.getprofile()
+        self._retaining_failure += 1
+        try:
+            # CPython may have removed the failed Root hook. Restore its
+            # previous-guard chain for capture, without replacing a still
+            # installed source observer that already chains that hook.
+            if entry_profile is None and self._active_profile is not None:
+                sys.setprofile(self._active_profile)
+            yield
+        finally:
+            sys.setprofile(entry_profile)
+            self._retaining_failure -= 1
 
     @contextmanager
     def active(self):
@@ -472,6 +519,9 @@ class WorkLog:
                 relative = filename[len(self.source) :]
                 if not relative.startswith(("src/cells/", "validation/betse/")) or relative == OWN:
                     return
+                if self._retaining_failure:
+                    self.failure_retention_entries += 1
+                    return
                 row = dict(
                     sequence=self.count,
                     phase=self.phase,
@@ -485,15 +535,18 @@ class WorkLog:
                 try:
                     self.record(stream, row)
                 except Exception as error:
-                    self.failure = exception_record(error)
+                    if self.failure is None:
+                        self.failure = exception_record(error)
                     raise
 
+            self._active_profile = profile
             sys.setprofile(profile)
             try:
                 yield
             finally:
                 primary = sys.exception()
                 sys.setprofile(previous)
+                self._active_profile = None
                 try:
                     stream.flush()
                     os.fsync(stream.fileno())
@@ -646,13 +699,15 @@ def run_stages(steps, evidence, work):
             value = action()
         except Exception as primary:
             failed, error = stage, exception_record(primary)
-            evidence.failure(primary)
+            with work.retain_failure() if isinstance(work, WorkLog) else nullcontext():
+                evidence.failure(primary)
             break
         # CPython disables a profiling hook after its exception. A source
         # helper can catch that error and return normally; that return must
         # never turn an interrupted observation into a completed diagnostic.
         if getattr(work, "failure", None):
-            evidence.save(stage + ":interrupted-return", value)
+            with work.retain_failure() if isinstance(work, WorkLog) else nullcontext():
+                evidence.save(stage + ":interrupted-return", value)
             failed = stage + ":observer"
             break
         # Capture before taking the next step. A failed capture ends the case
@@ -699,7 +754,7 @@ def worker(prepared, plan_sha256, release, case, output):
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     output = execution_output(output, prepared, plan)
     evidence = Evidence(output, sidecars=plan["stop_after"] == "lapENV_P_inv")
-    work = WorkLog(output, source)
+    work = WorkLog(output, source, phases=stage_names(plan["stop_after"]))
     result = None
     try:
         with work.active():

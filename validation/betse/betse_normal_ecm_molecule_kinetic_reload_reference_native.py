@@ -3,13 +3,15 @@
 No Cells numerical implementation is imported here. Compilation defines pinned
 original methods; it does not call a constructor, formatter or warm method.
 Graph utilities are plumbing, never INIT/owner admission or native persistence.
-Unknown objects, callbacks, shared array views and unsupported layouts refuse.
+Known bounded ndarray/byte storage and views retain their base graph. Unknown
+objects, callbacks, storage providers and unsupported layouts refuse.
 """
 
 import ast
 import copy
 import hashlib
 import math
+import struct
 from collections import OrderedDict
 from pathlib import Path
 from types import FunctionType, SimpleNamespace
@@ -32,6 +34,7 @@ PINS = {
 PREFIX = "<original BETSE kinetic reload: "
 ROOTS = ("sim", "cells", "p", "phase", "raw", "ion_ids", "enabled", "definitions", "catalogs")
 MAX_NODES, MAX_ARRAY_BYTES = 25000, 64 * 2**20
+GRAPH_KIND = "cells.kinetic_reference_complete_data_graph@2"
 SCALAR_TYPES = frozenset(
     t for t in np.sctypeDict.values() if isinstance(t, type) and issubclass(t, np.generic)
 )
@@ -244,6 +247,8 @@ def _array_layout(value):
         C=bool(value.flags.c_contiguous),
         F=bool(value.flags.f_contiguous),
         writable=bool(value.flags.writeable),
+        owns_data=bool(value.flags.owndata),
+        aligned=bool(value.flags.aligned),
     )
 
 
@@ -265,6 +270,7 @@ class Graph:
         self.types, self.aliases, self.functions, self.api = types, aliases, functions, api
         self.nodes, self.seen, self.copies, self.arrays = [], {}, {}, []
         self.array_bytes, self.excluded = 0, []
+        self.storage_info, self.storage_nodes = {}, 0
         self.cloned_aliases, self.cloned_functions = {}, {}
 
     def refuse(self, message, path):
@@ -280,6 +286,21 @@ class Graph:
         )
         try:
             root, cloned = self.visit(roots, "$roots")
+            # Build all views while owned storage is writable, then restore
+            # each original flag. A pre-existing writable view may legally
+            # outlive a later read-only flag on its owning ndarray.
+            for value, copied, _ in self.arrays:
+                if not value.flags.writeable:
+                    copied.setflags(write=False)
+            for value, copied, path in self.arrays:
+                if _array_layout(value) != _array_layout(copied):
+                    self.refuse("Array layout/flags cannot be copied exactly", path)
+                expected_base = None if value.base is None else self.copies[id(value.base)]
+                if copied.base is not expected_base:
+                    self.refuse("Array direct base cannot be copied exactly", path)
+                info = self.storage_info[id(value)]
+                if self._address(copied) - self._address(info["copy"]) != self._array_offset(value):
+                    self.refuse("Array storage offset cannot be copied exactly", path)
         except GraphRejected:
             raise
         except Exception as error:
@@ -287,17 +308,108 @@ class Graph:
                 str(error), dict(nodes=self.nodes, complete=False, excluded_observers=self.excluded)
             ) from error
         return dict(
-            kind="cells.kinetic_reference_complete_data_graph@1",
+            kind=GRAPH_KIND,
             root=root,
             nodes=self.nodes,
             excluded_observers=self.excluded,
             capture_complete=True,
         ), cloned
 
+    @staticmethod
+    def _address(value):
+        if type(value) is np.ndarray:
+            return value.__array_interface__["data"][0]
+        if type(value) in (bytes, bytearray):
+            return np.frombuffer(value, dtype=np.uint8).__array_interface__["data"][0]
+        raise ValueError("Unknown array storage provider")
+
+    def _array_offset(self, value):
+        return self._address(value) - self.storage_info[id(value)]["address"]
+
+    def _reserve_storage(self, size, path):
+        self.array_bytes += size
+        if self.array_bytes > MAX_ARRAY_BYTES:
+            self.refuse("Runtime storage exceeds byte bound", path)
+        self.storage_nodes += 1
+
+    def _array(self, value, node, index, path):
+        if type(value) is not np.ndarray:
+            self.refuse("Unowned runtime array category", path)
+        if value.dtype.kind not in "biuf" or value.dtype.metadata is not None:
+            self.refuse("Unowned/unsupported runtime array dtype", path)
+        if value.nbytes > MAX_ARRAY_BYTES:
+            self.refuse("Runtime logical array exceeds byte bound", path)
+        if value.base is None:
+            if not value.flags.owndata or not (
+                value.flags.c_contiguous or value.flags.f_contiguous
+            ):
+                self.refuse("Unsupported owning array storage/layout", path)
+            self._reserve_storage(value.nbytes, path)
+            raw = value.tobytes(order="A")
+            copied = np.ndarray(value.shape, dtype=value.dtype, strides=value.strides)
+            if raw:
+                target = copied.ravel(order="K").view(np.uint8)
+                if not np.shares_memory(target, copied):
+                    self.refuse("Owning array byte storage cannot be copied exactly", path)
+                target[:] = np.frombuffer(raw, dtype=np.uint8)
+            info = dict(
+                ref=dict(ref=index), address=self._address(value), size=value.nbytes, copy=copied
+            )
+            self.storage_info[id(value)] = info
+            node.update(
+                kind="array",
+                layout=_array_layout(value),
+                base=None,
+                storage=info["ref"],
+                offset=0,
+                data=raw.hex(),
+            )
+        else:
+            if type(value.base) not in (np.ndarray, bytes, bytearray):
+                self.refuse("Unknown array storage/base authority", path)
+            base, copied_base = self.visit(value.base, path + ".base")
+            info = self.storage_info[id(value.base)]
+            self.storage_info[id(value)] = info
+            offset = self._array_offset(value)
+            lower = offset + sum(
+                min(0, (n - 1) * s) for n, s in zip(value.shape, value.strides, strict=True)
+            )
+            upper = (
+                offset
+                + sum(max(0, (n - 1) * s) for n, s in zip(value.shape, value.strides, strict=True))
+                + value.itemsize
+            )
+            if value.size == 0:
+                lower = upper = offset
+            if not 0 <= lower <= upper <= info["size"]:
+                self.refuse("Array view exceeds retained storage bounds", path)
+            relative = self._address(value) - self._address(value.base)
+            copied = np.ndarray(
+                value.shape,
+                dtype=value.dtype,
+                buffer=copied_base,
+                offset=relative,
+                strides=value.strides,
+            )
+            node.update(
+                kind="array",
+                layout=_array_layout(value),
+                base=base,
+                storage=info["ref"],
+                offset=offset,
+            )
+        self.arrays.append((value, copied, path))
+        return copied
+
     def visit(self, value, path):
         if type(value) in (type(None), bool, int, float, str):
-            scalar = value.hex() if type(value) is float else value
-            return dict(scalar=type(value).__name__, value=scalar), value
+            if type(value) is float:
+                return dict(
+                    scalar="float",
+                    encoding="ieee754-binary64-big-endian",
+                    value=struct.pack(">d", value).hex(),
+                ), value
+            return dict(scalar=type(value).__name__, value=value), value
         identity = id(value)
         if identity in self.seen:
             require(identity in self.copies, "Unsupported cyclic immutable sequence")
@@ -309,40 +421,21 @@ class Graph:
         node = {}
         self.nodes.append(node)
         if isinstance(value, np.ndarray):
-            if type(value) is not np.ndarray:
-                self.refuse("Unowned runtime array category", path)
-            if value.dtype.kind not in "biuf" or not (
-                value.flags.c_contiguous or value.flags.f_contiguous
-            ):
-                self.refuse("Unowned/unsupported runtime array layout", path)
-            backing = value
-            while isinstance(backing, np.ndarray):
-                backing = backing.base
-            if value.base is not None and not (
-                type(backing) is bytes and not value.flags.writeable
-            ):
-                self.refuse("Runtime array backing/layout authority is unavailable", path)
-            for other in self.arrays:
-                if np.shares_memory(value, other):
-                    self.refuse(
-                        "Distinct runtime array views need retained storage authority", path
-                    )
-            self.arrays.append(value)
-            self.array_bytes += value.nbytes
-            if self.array_bytes > MAX_ARRAY_BYTES:
-                self.refuse("Runtime arrays exceed byte bound", path)
-            cloned = value.copy(order="K")
-            cloned.setflags(write=value.flags.writeable)
-            if _array_layout(cloned) != _array_layout(value):
-                self.refuse("Array layout cannot be copied exactly", path)
-            node.update(
-                kind="array", layout=_array_layout(value), data=value.tobytes(order="A").hex()
-            )
+            cloned = self._array(value, node, index, path)
         elif isinstance(value, np.generic):
             if type(value) not in SCALAR_TYPES or value.dtype.kind not in "biuf":
                 self.refuse("Unowned runtime scalar category/dtype", path)
             cloned = value.copy()
             node.update(kind="numpy_scalar", dtype=value.dtype.str, data=value.tobytes().hex())
+        elif type(value) in (bytes, bytearray):
+            self._reserve_storage(len(value), path)
+            cloned = memoryview(value).tobytes() if type(value) is bytes else bytearray(value)
+            node.update(
+                kind="storage", provider=type(value).__name__, size=len(value), data=value.hex()
+            )
+            self.storage_info[identity] = dict(
+                ref=dict(ref=index), address=self._address(value), size=len(value), copy=cloned
+            )
         elif type(value) in (dict, OrderedDict):
             cloned = type(value)()
             self.copies[identity] = cloned
@@ -466,6 +559,10 @@ def compare_graphs(original, candidate):
     require(
         original["capture_complete"] is candidate["capture_complete"] is True,
         "Incomplete source graph cannot match",
+    )
+    require(
+        original["kind"] == candidate["kind"] == GRAPH_KIND,
+        "Retained storage/binary64 graph version required; old graph evidence is not rebound",
     )
     # Node IDs express alias topology; arrays include exact bytes, dtype, shape,
     # strides, order and writeability. No scalar-rate projection or tolerance.

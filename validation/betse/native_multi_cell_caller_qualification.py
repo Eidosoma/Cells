@@ -350,7 +350,7 @@ def worker(prepared, plan_sha256, release, case, output):
         raise ValueError("Worker must use the declared interpreter and immutable source")
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     output = shared.execution_output(output, prepared, plan)
-    evidence, work = shared.Evidence(output), shared.WorkLog(output, source)
+    evidence, work = shared.Evidence(output), shared.WorkLog(output, source, phases=STAGES)
     result = None
     try:
         with work.active():

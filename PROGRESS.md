@@ -440,10 +440,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   verifies **73 blocked-source controls plus one producer check**, all 12
   outcomes (nine completed, three failed), and 25 byte archives, including
   one intentionally incomplete reader-error diagnostic. The final 73 took
-  **21.08 seconds, 246.5 MiB sampled peak RSS**. Before actual use, Key must
-  repair capture of legitimate retained column-array views and preserve the
-  exact bits of Python NaN scalars. The frozen reference retains its earlier
-  recorder dependencies; the separate forwarding fix does not recredit it.
+  **21.08 seconds, 246.5 MiB sampled peak RSS**. Its two capture blockers are
+  closed by the [reviewed storage and binary64 repair](/mnt/workspaces/Cells/molecule-kinetic-reload-reference-graph-repair-20261101-01/root-source-review.json).
+  Legitimate shared column-array views now retain their backing bytes, direct
+  bases, offsets, strides and flags; Python NaN scalars retain their exact bits.
+  [Saved-result review](/mnt/workspaces/Cells/molecule-kinetic-reload-reference-graph-repair-20261101-01/root-results-review.json)
+  verifies **107 reference controls plus one producer check**, **24.83 seconds,
+  249.5 MiB sampled peak RSS**, and all 11 outcomes (eight completed, three
+  preserved failures). Its 47 archive file sets include one explicitly incomplete
+  reader diagnostic. Intermediate 106 passes and the original 73 retain their
+  separate bindings and receive no additional case credit. The successor binds
+  the accepted forwarding dependencies; old evidence remains unchanged.
   Static inspection also found that the inherited `tex_val = str` helper differs
   from BETSE's original formatter; full cached metadata must be compared without
   normalizing that difference away. No numerical mismatch has been observed.
@@ -701,7 +708,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   preserve repeated matrix bits while keeping the original 16 MiB metadata
   limit; they do not change production cache admission. All ten new terminal
   outcomes are linked in the central ledger, including the setup-only failure.
-  No actual Poisson solve or grid-size workaround has been launched.
+  The first actual prefix attempt and its pre-operator failure are recorded below;
+  no Poisson solve or grid-size workaround completed.
   Further [static capacity review](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-policy-20261101-01/capacity-preflight-findings.json)
   found that original `A = A / delta**2` creates a separate scaled matrix.
   The two solves require six distinct retained arrays: both zeros allocations,
@@ -737,13 +745,27 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   reporting-only rounding clarification passed two existing analytic controls;
   its remaining AST is identical. All three outcomes are reviewed and recorded.
   These stdlib diagnostics execute no native solver, introduce no acceptance
-  tolerance and provide no new physical validation. Actual Poisson execution
-  remains unrun; the capacity blocker is resolved at source/software scope.
+  tolerance and provide no new physical validation. The capacity blocker is
+  resolved at source/software scope; actual operators remain unverified.
   The [fresh diagnostic setup is reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-qualification-20261101-01/preparation-review.json):
   848 frozen source files and 591 external inputs, with the original 25 × 25
   grid and resource limits. Preparation took **28.64 seconds, 38.7 MiB sampled
-  peak RSS**. It remains unreleased; this round performed no native numerical
-  or independent-reference execution.
+  peak RSS**. The user-authorized [first actual diagnostic failed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-qualification-20261101-01/square-diagnostic-01/root-review.json)
+  after **134.09 seconds, 260.6 MiB sampled peak RSS**, before either Poisson
+  operator. Ten preparation stages completed; 26 captures were saved and nine
+  capture failures remain explicit. The logger exhausted its 4,096 site/phase
+  keys while observing only 1,426 distinct sites across 12 phases. Resource
+  limits were respected. A separate early-failure sealing error accessed a
+  missing `before` snapshot; the original failure chain remains preserved.
+  Root's [logger repair passes source review](/mnt/workspaces/Cells/native-prefix-work-log-phase-repair-20261101-01/source-review.json).
+  It separates actual sites from a bounded list of phases, preserving the
+  4,096-site and 100,000-ordered-row limits. Failure capture retains prior
+  profiler guards even when Python removes the failed logger hook.
+  [All 126 software controls passed](/mnt/workspaces/Cells/native-prefix-work-log-phase-repair-20261101-01/root-results-review.json)
+  in **9.56 seconds, 95.5 MiB sampled peak RSS**, with no scientific imports.
+  The blocked conftest setup and two corrected synthetic assertion failures
+  remain saved separately. Specialist owns the early-failure sealing repair.
+  No independent comparison, accepted Poisson case or automatic retry follows.
   Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,

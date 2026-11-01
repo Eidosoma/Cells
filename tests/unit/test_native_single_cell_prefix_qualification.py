@@ -1,6 +1,7 @@
 """Stdlib runner controls. No Cells, native, NumPy, Pillow or scientific entry."""
 
 import importlib.abc
+import io
 import json
 import struct
 import subprocess
@@ -654,7 +655,7 @@ def test_worklog_chains_restores_and_records_failed_attempt(tmp_path):
         if frame.f_code is namespace["action"].__code__ and event == "call":
             called.append(True)
 
-    work = runner.WorkLog(tmp_path, source)
+    work = runner.WorkLog(tmp_path, source, phases=("authentication",))
     sys.setprofile(outer)
     try:
         with pytest.raises(ValueError, match="synthetic"), work.active():
@@ -676,7 +677,7 @@ def test_observer_budget_failure_is_not_a_native_failure(tmp_path):
         compile("def action():\n    return 1\n", str(source / "src/cells/probe.py"), "exec"),
         namespace,
     )
-    work = runner.WorkLog(tmp_path, source)
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
     work.trace_count = 100000
     with work.active():
         result = runner.run_stages(
@@ -695,7 +696,7 @@ def test_swallowed_profiler_error_still_stops_diagnostic(tmp_path):
         compile("def inner():\n    return 1\n", str(source / "src/cells/probe.py"), "exec"),
         namespace,
     )
-    work = runner.WorkLog(tmp_path, source)
+    work = runner.WorkLog(tmp_path, source, phases=("native", "later"))
     work.trace_count = 100000
     later = []
 
@@ -728,7 +729,7 @@ def test_recursive_helper_work_is_counted_without_per_element_logging(tmp_path):
         ),
         namespace,
     )
-    work = runner.WorkLog(tmp_path, source)
+    work = runner.WorkLog(tmp_path, source, phases=("upstream", "authentication"))
     with work.active():
         work.phase = "upstream"
         namespace["encode"](200)
@@ -754,7 +755,9 @@ def test_literal_kernel_entries_remain_in_exact_order(tmp_path):
         ),
         namespace,
     )
-    work = runner.WorkLog(tmp_path, source)
+    work = runner.WorkLog(
+        tmp_path, source, phases=("constructor", "authentication", "continuation")
+    )
     with work.active():
         for phase in ("constructor", "authentication", "authentication", "continuation"):
             work.phase = phase
@@ -769,6 +772,155 @@ def test_literal_kernel_entries_remain_in_exact_order(tmp_path):
     assert [row["sequence"] for row in rows] == list(range(4))
     summary = runner.read(tmp_path / "work-counts.json")
     assert summary["observed_entry_attempts"] == summary["ordered_trace_entries"] == 4
+
+
+def _work_row(work, index):
+    return dict(
+        sequence=work.count,
+        phase=work.phase,
+        event="call",
+        source="src/cells/codec.py",
+        function=f"metadata_{index}",
+        line=index + 1,
+        c_callable=None,
+        entry_is_success_or_independent_case=False,
+    )
+
+
+def test_worklog_phase_reuse_does_not_spend_distinct_site_budget(tmp_path):
+    work = runner.WorkLog(tmp_path, tmp_path / "source", phases=runner.stage_names("lapENV_P_inv"))
+    stream = io.StringIO()
+    for phase in work.phases:
+        work.phase = phase
+        for index in range(400):
+            work.record(stream, _work_row(work, index))
+            work.record(stream, _work_row(work, index))
+    summary = work.summary()
+    rows = [json.loads(line) for line in stream.getvalue().splitlines()]
+    assert summary["distinct_call_sites"] == 400
+    assert summary["site_phase_counters"] == len(rows) == 4800
+    assert summary["observed_entry_attempts"] == 9600
+    assert all(row["attempts"] == 2 for row in summary["call_sites"])
+    assert [row["sequence"] for row in rows] == list(range(0, 9600, 2))
+    assert [row["phase"] for row in rows] == [phase for phase in work.phases for _ in range(400)]
+
+
+def test_worklog_true_site_limit_remains_4096(tmp_path):
+    work = runner.WorkLog(tmp_path, tmp_path / "source", phases=("native",))
+    stream = io.StringIO()
+    for index in range(4096):
+        work.record(stream, _work_row(work, index))
+    before = work.summary()
+    with pytest.raises(RuntimeError, match="distinct-call-site"):
+        work.record(stream, _work_row(work, 4096))
+    assert work.summary() == before
+    work.phase = "native"
+    work.record(stream, _work_row(work, 0))
+    assert len(work.sites) == 4096 and len(work.counts) == work.count == 4097
+
+
+def test_worklog_undeclared_phase_refuses_before_recording(tmp_path):
+    work = runner.WorkLog(tmp_path, tmp_path / "source", phases=("native",))
+    stream = io.StringIO()
+    before = work.summary()
+    work.phase = "unbounded-label"
+    with pytest.raises(RuntimeError, match="Undeclared"):
+        work.record(stream, _work_row(work, 0))
+    assert work.summary() == before and not stream.getvalue()
+
+
+@pytest.mark.parametrize(
+    "phases", [(), ("same", "same"), ("imports",), tuple(map(str, range(12))), (1,), ("x" * 65,)]
+)
+def test_worklog_requires_bounded_phase_declaration(tmp_path, phases):
+    with pytest.raises(ValueError, match="bounded, unique"):
+        runner.WorkLog(tmp_path, tmp_path / "source", phases=phases)
+
+
+@pytest.mark.parametrize("reject_capture", [False, True])
+@pytest.mark.parametrize("restore_root", [False, True])
+def test_exhausted_recorder_preserves_failure_capture_and_prior_guard(
+    tmp_path, monkeypatch, reject_capture, restore_root
+):
+    source = tmp_path / "source"
+    entered, captured, later = [], [], []
+    namespace = {"entered": entered}
+    exec(
+        compile(
+            "def action():\n    entered.append(True)\n",
+            str(source / "src/cells/probe.py"),
+            "exec",
+        ),
+        namespace,
+    )
+    capture_namespace = {"original": runner.archive.snapshot}
+    exec(
+        compile(
+            "def capture(value):\n    return original(value)\n",
+            str(source / "validation/betse/retention.py"),
+            "exec",
+        ),
+        capture_namespace,
+    )
+    monkeypatch.setattr(runner.archive, "snapshot", capture_namespace["capture"])
+    work = runner.WorkLog(tmp_path, source, phases=("native", "later"))
+    work.trace_count = 100000
+    evidence = runner.Evidence(tmp_path)
+    previous = sys.getprofile()
+
+    def outer(frame, event, arg):
+        if frame.f_code is capture_namespace["capture"].__code__ and event == "call":
+            captured.append(True)
+            if reject_capture:
+                raise ValueError("outer capture guard")
+
+    def nested_observer_action():
+        active = sys.getprofile()
+        try:
+            namespace["action"]()
+        except RuntimeError as error:
+            error.partial = {"values": [1, -0.0]}
+            raise
+        finally:
+            # Native observers can restore the Root profiler after CPython
+            # disabled it on an exception; reproduce that exact condition.
+            if restore_root:
+                sys.setprofile(active)
+
+    sys.setprofile(outer)
+    try:
+        with work.active():
+            result = runner.run_stages(
+                [("native", nested_observer_action), ("later", lambda: later.append(True))],
+                evidence,
+                work,
+            )
+        assert sys.getprofile() is outer
+    finally:
+        sys.setprofile(previous)
+    runner.write(
+        tmp_path / "retention-control.json",
+        dict(
+            result=result, entered=entered, later=later, guard_entries=captured, work=work.summary()
+        ),
+    )
+    # The original serializer recursively visits the list and both scalars;
+    # a rejecting outer guard stops at the list's first entry.
+    assert not entered and not later and captured == [True] * (1 if reject_capture else 3)
+    assert result["source_error"] is None and result["observer_error"] == work.failure
+    assert (
+        work.failure["nodes"][0]["message"] == "Source entry log exceeded its diagnostic allowance"
+    )
+    assert result["accepted_cases"] == 0 and not result["completed_stages"]
+    assert work._retaining_failure == 0
+    assert len(evidence.rows) == 1
+    row = evidence.rows[0]
+    if reject_capture:
+        assert row["status"] == "capture_failed"
+        assert row["error"]["nodes"][0]["message"] == "outer capture guard"
+    else:
+        assert row["status"] == "saved" and work.failure_retention_entries > 0
+        assert runner.read(tmp_path / row["path"]) == [1, {"float64_bits": "0000000000000080"}]
 
 
 @pytest.mark.parametrize("mode", ["source_failure", "guard_stop", "success"])
