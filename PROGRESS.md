@@ -454,6 +454,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Static inspection also found that the inherited `tex_val = str` helper differs
   from BETSE's original formatter; full cached metadata must be compared without
   normalizing that difference away. No numerical mismatch has been observed.
+  Key's [formatter prerequisite results are reviewed](/mnt/workspaces/Cells/molecule-formatter-prerequisite-development-20261101-01/root-results-review.json):
+  all five saved outcomes completed, with **47 final software controls** and
+  21 actual small text-helper calls. The [source review](/mnt/workspaces/Cells/molecule-formatter-prerequisite-development-20261101-01/root-source-review.json)
+  found one remaining binding defect: a Python function can retain a different
+  builtins dictionary from the one exposed by its current globals. Key owns
+  that repair and the three bounded formatter import/alias changes. The old
+  `str`-based reference and all earlier evidence retain their original bytes;
+  no warm INIT or scientific reference was run for these controls.
+  The [subsequent three-alias integration is reviewed](/mnt/workspaces/Cells/molecule-formatter-source-integration-20261101-01/root-source-review.json):
+  those import/alias changes are narrow, but the frozen helper still lacks the
+  cached-builtins repair, so this candidate remains held. Its [saved outcomes](/mnt/workspaces/Cells/molecule-formatter-source-integration-20261101-01/root-results-review.json)
+  verify **58 formatter controls plus one producer check**, 21 text-helper
+  calls and 24 archives. Three outcomes completed; the style-preparation
+  failure and old-reference refusal are retained. Key is correcting only the
+  remaining binding defect and its controls; no new runtime factory is needed.
   Actual exhausted INIT, source correspondence and checkpoint continuity remain
   prerequisites; the software results grant none of those qualifications.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
@@ -755,7 +770,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   its remaining AST is identical. All three outcomes are reviewed and recorded.
   These stdlib diagnostics execute no native solver, introduce no acceptance
   tolerance and provide no new physical validation. The capacity blocker is
-  resolved at source/software scope; actual operators remain unverified.
+  resolved at source/software scope; the actual operator results follow below.
   The [fresh diagnostic setup is reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-qualification-20261101-01/preparation-review.json):
   848 frozen source files and 591 external inputs, with the original 25 × 25
   grid and resource limits. Preparation took **28.64 seconds, 38.7 MiB sampled
@@ -779,12 +794,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   deselected and no native entries. Missing baseline data now preserves the
   primary error and actual parent context with `trial=None`; positive source
   execution, numerical kernels and the six-array policy are unchanged.
-  No independent comparison, accepted Poisson case or automatic retry follows.
+  The user-authorized [second actual diagnostic completed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-qualification-20261101-01/square-diagnostic-02/root-review.json)
+  in **186.08 seconds, 474.7 MiB sampled peak RSS**. All eleven stages and
+  captures completed, including both 625 × 625 Poisson operators, without
+  source or capture errors. Review verified 848 frozen source files, 591
+  external inputs, runtime producers and all matrix sidecars. The original
+  failed run remains unchanged. The [independent original-source comparison passed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-comparison-20261101-01/square-reference-01/root-review.json)
+  in **17.33 seconds, 454.4 MiB sampled peak RSS**: 22 cache pairs, eight MT
+  state records and 3,140 array comparisons match exactly through both
+  operators. These are repeated observations of one supplied input, not
+  independent biological cases; the reference did not import or replay Cells.
+  The [reviewed saved-matrix diagnosis](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-comparison-20261101-01/algebra-01/root-review.json)
+  completed in **6.03 seconds, 123.6 MiB sampled peak RSS**, with no solver
+  or numerical-library execution. Both stencils match exactly. The value
+  inverse has infinity-norm product residuals below **5.4e-13**, but the flux
+  pseudoinverse retains a large constant component: inverse row/column sums
+  reach **145.98**, and projector residuals reach **2.91** and **0.634**.
+  Small norm-scaled residuals do not remove that constant-mode finding.
+  Numerical acceptance remains held pending a separate mean-free decomposition
+  and rank/cutoff diagnosis; native equations and tolerances are unchanged.
+  Both saved masks remain zero, so this supplied single-cell case does not
+  establish a populated physical tissue domain or biological validity.
   Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
-  Positive native execution, the full Cells/simulation/picker owner chain,
-  all 11 invalidated owners and all 12 post-cut scientific cases remain
-  unqualified. No physical or checkpoint admission follows from this transport.
+  This qualifies only one normalized source comparison. The full
+  Cells/simulation/picker owner chain, all 11 invalidated owners and all 12
+  post-cut scientific cases remain unqualified. No physical or checkpoint
+  admission follows from this transport.
 
 - **Development priority updated on 28 October:** implement BETSE-parity and
   wider Cells features with scientifically adequate CPU validation. The user
