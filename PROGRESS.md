@@ -262,9 +262,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **50 blocked controls** and 17 saved diagnostics pass in **311.05 seconds,
   261.5 MiB sampled peak RSS**. All nine outcomes are checked, including the
   initial lint failure. The same parameter object retains the original ordered
-  stores and partial failures; event dynamics are not qualified. Key is building
-  the next network-file boundary; Specialist's next boundary is genuine
-  phase/object assembly.
+  stores and partial failures; event dynamics are not qualified. The
+  [network-file boundary is now reviewed](/mnt/workspaces/Cells/native-parameter-network-boundary-development-20261101-01/root-review.json):
+  **26 blocked controls pass** in **160.29 seconds, 252.2 MiB sampled peak RSS**.
+  All five outcomes are checked, including the retained lint failure. The actual
+  read frame, immutable file permission and compiled branch remain distinct
+  from parser execution and parameter advancement. Key is building that loading
+  continuation; Specialist is building the phase-construction prefix.
   No positive native parameter-load or SimPhase execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
