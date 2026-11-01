@@ -63,8 +63,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   attempt lists are empty. The overall run nevertheless **failed** its nested
   profiler-restoration check. Root fixed the three runner callbacks; **17
   metadata-only controls** pass, including exact callback restoration on success
-  and rejection. The smoke has not been rerun at those repaired bytes. Timings
-  and 14 stack samples identify repeated source parsing and nested ownership
+  and rejection. The [fresh smoke now passes at the repaired bytes](/mnt/workspaces/Cells/native-mapping-setup-diagnostic-20261101-01/smoke-02/root-review.json):
+  **one synthetic control passed, 26 deselected**, in **206.89 seconds,
+  236.4 MiB sampled peak RSS**. All four blocked-entry lists are empty; the
+  observer closed without errors and restored the prior profiling callbacks.
+  The earlier overall failure remains failed. These results precede Root's
+  subsequent source-parsing optimization and do not qualify real mapping.
+  Timings and saved stack samples identify repeated source parsing and nested ownership
   checks as an overhead target; inclusive instrumented times are non-additive
   and establish no simulation speedup. All five outcomes are reviewed, including
   one pre-worker directory failure. No native mapping acceptance is added. The
@@ -238,10 +243,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   construction guard and preserves failed constructor trials. All eight
   software/lint outcomes are checked; two pre-child failures and the earlier
   module-identity failure remain explicit. The final run's Git-drift notice is
-  preserved. Specialist's subsequent public-interface change is separate from
-  those 42 results and awaits its own focused evidence. Key is implementing the
-  contiguous event/schedule
-  declarations; Specialist's next boundary is genuine phase/object assembly.
+  preserved. The [public construction-interface successor is also reviewed](/mnt/workspaces/Cells/native-tissue-handler-attachment-20261101-01/public-lease-integration-01/root-review.json):
+  **nine blocked controls pass, 39 deselected**, comprising six new controls and
+  three continuity checks, in **74.89 seconds, 234.2 MiB sampled peak RSS**.
+  Its original 42-check image remains separate. The record-retarget control
+  proves callable-drift refusal; direct coverage of the additional record-identity
+  predicate is not claimed. The three production/test/tool files are integrated.
+  Key's [contiguous event/schedule declarations are reviewed](/mnt/workspaces/Cells/native-parameter-event-declarations-development-20261101-01/root-review.json):
+  **50 blocked controls** and 17 saved diagnostics pass in **311.05 seconds,
+  261.5 MiB sampled peak RSS**. All nine outcomes are checked, including the
+  initial lint failure. The same parameter object retains the original ordered
+  stores and partial failures; event dynamics are not qualified. Key is building
+  the next network-file boundary; Specialist's next boundary is genuine
+  phase/object assembly.
   No positive native parameter-load or SimPhase execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
@@ -259,7 +273,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [tissue-to-grid mapping review](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/root-review.json)
   retains all five named worker outcomes: the latest batch completed three
   metadata checks, timed out in parent setup and left twelve controls unrun.
-  The later observer/tracing repair and its exact evidence are reviewed above.
+  The [later S1 pilot and detached batch are now reviewed](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/s1-repair-01/root-review.json):
+  eight final isolated controls pass; the detached batch failed in synthetic
+  parent setup after **425.95 seconds** because `mem_i` was absent. No mapping
+  control body ran and fifteen controls remained unrun. This was a setup error,
+  not a wall-limit stop; complete raw failed-parent serialization is unavailable.
+  Earlier five-pass/three-failure and eight-pass images remain separately bound.
+  Newer observer/tracing repairs and their exact evidence are reviewed above.
   Specialist's [independent mapping qualification tools are reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/root-review.json):
   the final 61 blocked controls and earlier 44-control image are verified
   separately, along with the preparation refusal. The separate
