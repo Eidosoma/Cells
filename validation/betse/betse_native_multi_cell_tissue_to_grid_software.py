@@ -1,4 +1,4 @@
-"""Immutable CPU6 mapping controls; actual conversion/interpolation stays blocked."""
+"""Immutable single-CPU mapping controls; actual interpolation stays blocked."""
 
 import argparse
 import json
@@ -322,7 +322,13 @@ def run_group(output, group, *, diagnostics=False, cpu=6):
     return int(result["returncode"])
 
 
-def launch_batch(output, groups=None):
+def _require_cpu(cpu):
+    if type(cpu) is not int or cpu < 0 or os.sched_getaffinity(0) != {cpu}:
+        raise ValueError("Require the declared single software CPU")
+
+
+def launch_batch(output, groups=None, *, cpu=6):
+    _require_cpu(cpu)
     groups = BATCH_GROUPS if groups is None else tuple(groups)
     if not groups or len(set(groups)) != len(groups) or any(g not in GROUPS for g in groups):
         raise ValueError("Declare unique bounded software groups")
@@ -342,7 +348,7 @@ def launch_batch(output, groups=None):
             expected_control_ids={g: EXPECTED[g] for g in groups},
             synthetic_only=True,
             native_release=False,
-            cpu=6,
+            cpu=cpu,
             threads=1,
             memory_bytes=2**30,
             wall_per_group_seconds=480,
@@ -367,6 +373,8 @@ def launch_batch(output, groups=None):
                 "--_batch-child",
                 "--_batch-inputs-sha256",
                 inputs_sha,
+                "--cpu",
+                str(cpu),
             ],
             cwd=frozen,
             env=environment(frozen),
@@ -384,6 +392,8 @@ def launch_batch(output, groups=None):
             utc=datetime.now(timezone.utc).isoformat(),
             controller_snapshot_sha256=manifest,
             batch_inputs_sha256=inputs_sha,
+            cpu=cpu,
+            threads=1,
             result_path=str(output / "BATCH-RESULT.json"),
             failure_path=str(output / "BATCH-FAILURE.json"),
             automatic_retry=False,
@@ -401,18 +411,22 @@ def launch_batch(output, groups=None):
     return 0
 
 
-def batch_child(output, inputs_sha):
+def batch_child(output, inputs_sha, *, cpu=6):
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     rows = []
     try:
         if runner.source_snapshot.digest(output / "batch-inputs.json") != inputs_sha:
             raise RuntimeError("Detached mapping preparation changed")
         inputs = json.loads((output / "batch-inputs.json").read_text())
+        _require_cpu(cpu)
+        if type(inputs.get("cpu")) is not int or inputs["cpu"] != cpu:
+            raise ValueError("Declared batch/child CPU differs from sealed inputs")
         repo = Path(inputs["repository"])
         runner.source_snapshot.verify(
             output / "controller-source", manifest_sha256=inputs["snapshot_manifest_sha256"]
         )
         for group in inputs["groups"]:
+            _require_cpu(cpu)
             runner.source_snapshot._selected(repo, list(inputs["owned_source_sha256"]))
             if any(
                 runner.source_snapshot.digest(repo / n) != sha
@@ -435,6 +449,8 @@ def batch_child(output, inputs_sha):
                         str(directory),
                         "--group",
                         group,
+                        "--cpu",
+                        str(cpu),
                     ],
                     cwd=repo,
                     env=env,
@@ -506,19 +522,19 @@ def main():
     args = parser.parse_args()
     if args.groups and not args.batch:
         parser.error("--groups is only for an explicitly selected detached batch")
-    if (args.batch or args._batch_child) and (args.cpu != 6 or args.diagnostics):
-        parser.error("Detached batches retain the original CPU6/default observation policy")
+    if (args.batch or args._batch_child) and args.diagnostics:
+        parser.error("Detached batches retain the default observation policy")
     output = args.output.absolute()
     if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {args.cpu}:
         parser.error("Require the declared single CPU and fresh /mnt output")
     if args._batch_child:
-        return batch_child(output, args._batch_inputs_sha256)
+        return batch_child(output, args._batch_inputs_sha256, cpu=args.cpu)
     if args._child:
         return child(output, args.group, diagnostics=args.diagnostics)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     try:
         if args.batch:
-            return launch_batch(output, args.groups)
+            return launch_batch(output, args.groups, cpu=args.cpu)
         if args.group is None:
             parser.error("Require --group or --batch")
         return run_group(output, args.group, diagnostics=args.diagnostics, cpu=args.cpu)
