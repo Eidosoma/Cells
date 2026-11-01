@@ -88,6 +88,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Seventeen archives retain the four Cells and three legacy updates; the BETSE
   return remains unsaved, and Decimal/comparison work did not run.
   Production equations and checkpoint ownership restrictions remain unchanged.
+  The new [bounded array diagnosis and original-only probe](/mnt/workspaces/Cells/molecule-material-four-call-native-probe-20261101-01/source-review.json)
+  saves field paths, backing-object types and work counts even when archiving
+  refuses. **36 focused software checks passed in 27.60 seconds, 228.8 MiB
+  sampled peak RSS**. The earlier 33-pass/one-failure image is preserved; its
+  depth-test fixture did not exceed the allowed depth. No new storage type is
+  admitted by that probe image. The
+  [actual original-only diagnostic](/mnt/workspaces/Cells/molecule-material-four-call-native-probe-20261101-01/root-review.json)
+  finished with an archive refusal after **36.03 seconds, 233.2 MiB sampled
+  peak RSS**. It identified two exact builtin memoryviews backed by SciPy's
+  Cython runtime: `geometry.cell_to_grid` and `geometry.membrane_to_grid`,
+  containing 24 and 72 bytes respectively. The saved work check confirms four
+  original BETSE entry indices and no primitive, legacy or Decimal work.
+  Original source success flags and numerical returns remain unsaved, so this
+  diagnostic grants no parity credit. A subsequent evidence-only writer change
+  accepts the observed direct, contiguous native 64-bit integer buffer format,
+  checks its span before copying and retains detached bytes plus layout metadata.
+  **46 focused software checks passed in 23.22 seconds, 229.1 MiB sampled peak
+  RSS**, including ten new buffer controls. Checkpoint admission remains unchanged;
+  the full four-update comparison has not been rerun on this writer.
   Key's new Simulator and phase-callback source now have
   [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
   seven focused controls passed for each, with all eight repair outcomes retained.
@@ -106,10 +125,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   prerequisite with 32 blocked controls. The [helper-binding repair](/mnt/workspaces/Cells/native-multi-cell-post-world-operators-20261101-01/g1-repair-01/root-review.json)
   is reviewed with nine additional controls. Its earlier timed-out selection
   retains nine old pass reports and one started new fixture, without a completed
-  new control or aggregate entry certification. The next Specialist lane is the
-  literal tissue-centre-to-grid mapping on retained multi-cell objects, followed
-  by an explicit native grid-metric audit; full phase/core/profile initialization
-  remains a separate prerequisite.
+  new control or aggregate entry certification. The
+  [native grid-metric audit](/mnt/workspaces/Cells/native-grid-metric-audit-20261101-01/root-review.json)
+  is now reviewed with **26 distinct software checks**; the two saved images
+  retain their own source bindings. It distinguishes the stored scalar spacing
+  from actual coordinate spacing and preserves native boundary conventions,
+  without modifying a grid or granting physical admission. The
+  [tissue-to-grid mapping review](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/root-review.json)
+  retains all five named worker outcomes: the latest batch completed three
+  metadata checks, timed out in parent setup and left twelve controls unrun.
+  Specialist is repairing inherited-observer error retention and inspecting
+  the remaining tracing overhead before another expensive fixture attempt.
+  Full phase/core/profile initialization remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
   is source-reviewed with 29 final blocked controls and all six outcomes retained.
   It supplies selected parameter/handler construction, with full Parameters,

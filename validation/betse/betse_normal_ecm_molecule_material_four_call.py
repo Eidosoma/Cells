@@ -148,6 +148,121 @@ def data(value):
     return value
 
 
+def _diagnostic_type(value):
+    """Read builtin type slots without calling an object's repr or metaclass."""
+    kind = type(value)
+    result = {}
+    for name in ("__module__", "__qualname__"):
+        text = type.__dict__[name].__get__(kind)
+        result[name.strip("_")] = text[:256] if type(text) is str else "<non-string type slot>"
+    return result
+
+
+def array_base_diagnostics(value, limits=primitive.codec.DEFAULT_LIMITS):
+    """Bounded metadata only; unsupported storage is never read or converted."""
+    limits.check()
+    seen, bases, roots, unsupported, opaque = {}, [], [], [], []
+    base_ids, visited = {}, 0
+
+    def bounded(depth):
+        nonlocal visited
+        visited += 1
+        require(depth <= limits.depth and visited <= limits.nodes, "Array diagnosis bound")
+
+    def base_record(obj, depth):
+        bounded(depth)
+        if id(obj) in base_ids:
+            return base_ids[id(obj)]
+        require(len(bases) < limits.arrays, "Array diagnosis count bound")
+        index = len(bases)
+        base_ids[id(obj)] = index
+        row = dict(index=index, type=_diagnostic_type(obj), base=None)
+        bases.append(row)
+        if type(obj) is np.ndarray:
+            require(obj.ndim <= limits.dimensions, "Array diagnosis rank bound")
+            row.update(
+                dtype=obj.dtype.str,
+                shape=list(obj.shape),
+                strides=list(obj.strides),
+                nbytes=obj.nbytes,
+                writable=bool(obj.flags.writeable),
+                owns_data=bool(obj.flags.owndata),
+                C=bool(obj.flags.c_contiguous),
+                F=bool(obj.flags.f_contiguous),
+            )
+            if obj.base is not None:
+                row["base"] = base_record(obj.base, depth + 1)
+                if type(obj.base) is np.ndarray:
+                    row["offset_bytes"] = int(
+                        obj.__array_interface__["data"][0] - obj.base.__array_interface__["data"][0]
+                    )
+        elif type(obj) in (bytes, bytearray):
+            row["nbytes"] = len(obj)
+        else:
+            unsupported.append(index)
+            if type(obj) is memoryview:
+                try:
+                    dimensions = obj.ndim
+                except ValueError:
+                    row["memoryview"] = dict(released=True)
+                else:
+                    require(dimensions <= limits.dimensions, "Array diagnosis buffer rank bound")
+                    row["memoryview"] = dict(
+                        format=obj.format,
+                        itemsize=obj.itemsize,
+                        ndim=obj.ndim,
+                        shape=list(obj.shape),
+                        strides=list(obj.strides),
+                        suboffsets=list(obj.suboffsets),
+                        nbytes=obj.nbytes,
+                        readonly=obj.readonly,
+                        contiguous=obj.contiguous,
+                        exporter_type=_diagnostic_type(obj.obj),
+                    )
+        return index
+
+    def walk(obj, path, depth):
+        bounded(depth)
+        if type(obj) is np.ndarray:
+            roots.append(dict(path=path, base_record=base_record(obj, depth)))
+        elif type(obj) in (dict, list, tuple):
+            if id(obj) in seen:
+                return
+            seen[id(obj)] = path
+            if type(obj) is dict:
+                for position, (key, item) in enumerate(obj.items()):
+                    entry = dict(entry=position, key_type=_diagnostic_type(key))
+                    if type(key) is str:
+                        entry.update(key=key[:256], key_length=len(key))
+                    walk(key, path + [dict(entry=position, slot="key")], depth + 1)
+                    walk(item, path + [entry], depth + 1)
+            else:
+                for position, item in enumerate(obj):
+                    walk(item, path + [dict(index=position)], depth + 1)
+        elif type(obj) not in (str, bytes, bytearray, int, float, bool, type(None)):
+            opaque.append(dict(path=path, type=_diagnostic_type(obj)))
+
+    walk(value, [], 0)
+    result = dict(
+        kind="cells.array_base_diagnosis@1",
+        roots=roots,
+        bases=bases,
+        unsupported_base_records=unsupported,
+        unsupported_base_records_scope=(
+            "Outside ndarray/bytes/bytearray traversal; the separate evidence buffer policy "
+            "may allow an exact builtin memoryview. This list is not a serialization verdict."
+        ),
+        opaque_payload_nodes=opaque,
+        array_bytes_read=False,
+        live_objects_serialized=False,
+        owner_admission=False,
+    )
+    require(
+        len(primitive.codec.json_bytes(result)) <= limits.json_bytes, "Array diagnosis JSON bound"
+    )
+    return result
+
+
 class EvidenceEncoder(primitive.codec.Encoder):
     """Detached numeric observations, never writable-view checkpoint authority.
 
@@ -162,6 +277,56 @@ class EvidenceEncoder(primitive.codec.Encoder):
         self.storage_bounds = {}
         self.observed_bytes = 0
 
+    def _direct_long_buffer(self, value):
+        """Observe a direct builtin buffer, never reconstruct its exporter.
+
+        The original BETSE geometry return uses Cython-backed memoryviews for
+        its integer maps. Accept only the observed native-long ABI and direct
+        C span. Exporter labels are descriptive, not an owner/type allowlist.
+        """
+        require(type(value) is memoryview, "Exact builtin memoryview required")
+        shape, strides, suboffsets = value.shape, value.strides, value.suboffsets
+        require(
+            value.format == "l" and value.itemsize == 8 and np.dtype("l").itemsize == 8,
+            "Unsupported evidence array base: memoryview format/ABI",
+        )
+        require(
+            1 <= value.ndim <= self.limits.dimensions
+            and len(shape) == len(strides) == value.ndim
+            and all(type(n) is int and n > 0 for n in shape)
+            and value.c_contiguous
+            and (not suboffsets or all(n < 0 for n in suboffsets)),
+            "Unsupported evidence array base: non-direct/contiguous memoryview",
+        )
+        count = 1
+        for n in shape:
+            count *= n
+            require(count <= self.limits.elements, "Evidence buffer element bound")
+        require(
+            value.nbytes == count * 8
+            and value.nbytes <= self.limits.elements
+            and self.observed_bytes + value.nbytes <= self.limits.expanded_bytes,
+            "Evidence buffer byte bound",
+        )
+        metadata = dict(
+            format=value.format,
+            itemsize=value.itemsize,
+            shape=list(shape),
+            strides=list(strides),
+            suboffsets=list(suboffsets),
+            readonly=value.readonly,
+            nbytes=value.nbytes,
+            byteorder=sys.byteorder,
+            exporter_type=_diagnostic_type(value.obj),
+            exporter_authority=False,
+        )
+        # These exact builtin operations expose the checked span without copying
+        # bytes or calling exporter attributes/conversion methods. The ordinary
+        # _observe bounds and double-read checks run before/after the copy.
+        array = np.frombuffer(value.cast("B"), dtype=np.uint8)
+        require(array.nbytes == value.nbytes, "Changed evidence buffer span")
+        return array, metadata
+
     def _observe(self, value, depth):
         require(depth <= self.limits.depth, "Evidence array base depth bound")
         if id(value) in self.originals:
@@ -170,8 +335,14 @@ class EvidenceEncoder(primitive.codec.Encoder):
             return index, copied
         require(len(self.observations) < self.limits.arrays, "Evidence array count bound")
         kind = type(value)
-        require(kind in (np.ndarray, bytes, bytearray), "Unsupported evidence array base")
-        array = value if kind is np.ndarray else np.frombuffer(value, dtype=np.uint8)
+        require(
+            kind in (np.ndarray, bytes, bytearray, memoryview), "Unsupported evidence array base"
+        )
+        buffer = None
+        if kind is memoryview:
+            array, buffer = self._direct_long_buffer(value)
+        else:
+            array = value if kind is np.ndarray else np.frombuffer(value, dtype=np.uint8)
         require(
             array.dtype.kind in "biuf"
             and array.dtype.itemsize in (1, 2, 4, 8)
@@ -200,6 +371,8 @@ class EvidenceEncoder(primitive.codec.Encoder):
             offset_bytes=None,
             logical_snapshot=None,
         )
+        if buffer is not None:
+            row["buffer_contract"] = buffer
         self.observations.append(row)
         if kind is np.ndarray and value.base is not None:
             base, _ = self._observe(value.base, depth + 1)
@@ -260,7 +433,27 @@ def archive(directory, value):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
     encoder = EvidenceEncoder()
-    tree = encoder.capture(data(value))
+    try:
+        tree = encoder.capture(data(value))
+    except BaseException as primary:
+        try:
+            snapshot.write_json(
+                directory / "refusal.json",
+                dict(
+                    kind="cells.material_four_call_archive_refusal@1",
+                    archive=directory.name,
+                    error_type=_diagnostic_type(primary),
+                    arrays=array_base_diagnostics(value),
+                    complete_archive=False,
+                ),
+            )
+        except BaseException as secondary:
+            BaseException.add_note(
+                primary,
+                "Array diagnosis publication also failed: "
+                + json.dumps(_diagnostic_type(secondary), sort_keys=True),
+            )
+        raise
     encoder.write(directory, tree)
     snapshot.write_json(
         directory / "manifest.json",
@@ -593,7 +786,7 @@ def check_work(accounting):
     )
 
 
-def prepare(repository, directory):
+def prepare(repository, directory, *, cpu=0):
     repo, directory = Path(repository).resolve(strict=True), Path(directory).resolve()
     require(
         Path(__file__).resolve() == repo / FILE
@@ -601,6 +794,7 @@ def prepare(repository, directory):
         and not repo.is_relative_to(directory),
         "Current checkout and separate output required",
     )
+    require(type(cpu) is int and cpu >= 0, "Explicit nonnegative CPU required")
     directory.mkdir(parents=True, exist_ok=False)
     value, plan = program(), source_plan()
     names = set(OWNED) | {"pyproject.toml", "tests/__init__.py"}
@@ -632,7 +826,7 @@ def prepare(repository, directory):
             domain=primitive.domain_record(declared_domain()),
             release_gates=list(reference.RELEASES),
             resources=dict(
-                cpu=0,
+                cpu=cpu,
                 threads=1,
                 max_process_tree_bytes=2**30,
                 wall_seconds=480,
@@ -880,16 +1074,140 @@ def _tuples(value):
     return tuple(_tuples(v) for v in value) if type(value) is list else value
 
 
+def native_return_probe(directory, *, packet, packet_sha256, enabled=False):
+    """Original four calls only, to diagnose returned storage; never qualification."""
+    reference.released(enabled)
+    require(__debug__ and sys.flags.optimize == 0, "Assertion-enabled diagnostic required")
+    value, inputs = packet_inputs(packet, packet_sha256)
+    packet, directory = Path(packet).resolve(strict=True), Path(directory).resolve()
+    for origin in (
+        packet,
+        Path(inputs["repository"]).resolve(),
+        Path(source_plan()["native_source"]["checkout"]).resolve(),
+    ):
+        require(
+            not directory.is_relative_to(origin) and not origin.is_relative_to(directory),
+            "Output cannot modify held packet/source",
+        )
+    directory.mkdir(parents=True, exist_ok=False)
+    with (directory / "invocations.jsonl").open("x") as stream:
+        work = Work(stream)
+        work.stage = "original-four"
+        work.start()
+        phase = "original-source"
+        try:
+            returned = reference.evaluate_original(value, enabled=True)
+            phase = "return-observation"
+            try:
+                snapshot.write_json(
+                    directory / "array-bases.json", array_base_diagnostics(returned)
+                )
+                archive(directory / "original-four", dict(status="returned", returned=returned))
+            except BaseException as error:
+                raise EvidenceRejected("native-return-probe", returned) from error
+        except BaseException as primary:
+            # Independent attempts: a plain failure receipt precedes the closed
+            # data archive, whose unsupported-storage refusal must not mask it.
+            try:
+                cause = BaseException.__dict__["__cause__"].__get__(primary)
+                snapshot.write_json(
+                    directory / "failure.json",
+                    dict(
+                        phase=phase,
+                        error_type=_diagnostic_type(primary),
+                        cause_type=None if cause is None else _diagnostic_type(cause),
+                        source_partials=array_base_diagnostics(work.partials),
+                        source_partial_count=len(work.partials),
+                        capture_errors=work.capture_errors,
+                        complete_live_object_serialization=False,
+                        scientific_acceptance=False,
+                    ),
+                )
+            except BaseException as secondary:
+                BaseException.add_note(
+                    primary,
+                    "Probe failure metadata failed: " + json.dumps(_diagnostic_type(secondary)),
+                )
+            try:
+                archive(
+                    directory / "failure-partials",
+                    dict(
+                        inputs=value,
+                        source_partials=work.partials,
+                        capture_errors=work.capture_errors,
+                    ),
+                )
+            except BaseException as secondary:
+                BaseException.add_note(
+                    primary,
+                    "Probe partial archive failed: " + json.dumps(_diagnostic_type(secondary)),
+                )
+            raise
+        finally:
+            primary = sys.exception()
+            try:
+                accounting = work.stop()
+                snapshot.write_json(directory / "work.json", accounting)
+                expected = dict(
+                    primitive=[], legacy=[], native=[0, 1, 2, 3], Decimal100=[], Decimal160=[]
+                )
+                work_check = dict(
+                    expected=expected,
+                    observed=accounting["absolute_indices"],
+                    observer_complete=bool(
+                        accounting["profile_intact"]
+                        and accounting["active_invocations"] == 0
+                        and not accounting["capture_errors"]
+                    ),
+                    exact_indices=accounting["absolute_indices"] == expected,
+                    scientific_acceptance=False,
+                )
+                work_check["passed"] = (
+                    work_check["observer_complete"] and work_check["exact_indices"]
+                )
+                snapshot.write_json(directory / "work-check.json", work_check)
+                if primary is not None and not work_check["passed"]:
+                    BaseException.add_note(
+                        primary, "Native-only work check also refused; see work-check.json"
+                    )
+                snapshot.write_json(
+                    directory / "runtime.json", dict(child=identity(), loaded=inventory())
+                )
+            except BaseException as secondary:
+                if primary is None:
+                    raise
+                BaseException.add_note(
+                    primary,
+                    "Native probe accounting failed: " + json.dumps(_diagnostic_type(secondary)),
+                )
+    require(
+        work_check["passed"], "Native-only probe executed unexpected work or incomplete observer"
+    )
+    snapshot.write_json(
+        directory / "result.json",
+        dict(
+            status="native_return_probe_completed_unqualified",
+            packet=ref(packet / "inputs.json"),
+            work=ref(directory / "work.json"),
+            independent_input_sequences=1,
+            accepted_cases=0,
+            scientific_acceptance=False,
+        ),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--worker", action="store_true")
+    parser.add_argument("--native-return-probe", action="store_true")
     parser.add_argument("--released", action="store_true")
     parser.add_argument("--packet", type=Path, required=True)
     parser.add_argument("--packet-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    require(args.worker, "Only explicit Root worker mode exists; no automatic launch")
-    worker(args.output, packet=args.packet, packet_sha256=args.packet_sha256, enabled=args.released)
+    require(args.worker != args.native_return_probe, "Select exactly one explicit execution mode")
+    action = native_return_probe if args.native_return_probe else worker
+    action(args.output, packet=args.packet, packet_sha256=args.packet_sha256, enabled=args.released)
 
 
 if __name__ == "__main__":

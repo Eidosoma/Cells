@@ -177,6 +177,197 @@ def test_array_view_reader_retains_original_v1_evidence(tmp_path):
     assert observations == [] and value["original"].tobytes() == np.array([-0.0]).tobytes()
 
 
+def test_base_diagnosis_reports_nested_paths_aliases_and_memoryview_without_copy(monkeypatch):
+    storage = bytearray(32)
+    value = np.frombuffer(memoryview(storage), dtype=">f8")[::-1]
+    attempted = []
+
+    def forbidden(*args, **kwargs):
+        attempted.append("conversion")
+        raise AssertionError("Metadata must not copy or convert any buffer")
+
+    for name in ("array", "asarray", "frombuffer"):
+        monkeypatch.setattr(q.np, name, forbidden)
+    result = q.array_base_diagnostics(dict(geometry=dict(cell_to_grid=value), repeated=value))
+    first, repeated = result["roots"]
+    assert [step["key"] for step in first["path"]] == ["geometry", "cell_to_grid"]
+    assert repeated["base_record"] == first["base_record"]
+    row = result["bases"][first["base_record"]]
+    assert row["strides"] == [-8] and row["dtype"] == ">f8"
+    while row["base"] is not None:
+        row = result["bases"][row["base"]]
+    assert row["index"] in result["unsupported_base_records"]
+    assert row["type"] == dict(module="builtins", qualname="memoryview")
+    assert row["memoryview"]["exporter_type"] == dict(module="builtins", qualname="bytearray")
+    assert row["memoryview"]["nbytes"] == 32
+    assert not result["array_bytes_read"] and not result["owner_admission"]
+    assert attempted == [] and storage == bytearray(32)
+
+
+def test_base_diagnosis_never_dispatches_unknown_repr_properties_or_metaclass(monkeypatch):
+    attempted = []
+
+    def forbidden(*args, **kwargs):
+        attempted.append("unknown dispatch")
+        raise AssertionError("No unknown object dispatch")
+
+    class Meta(type):
+        __getattribute__ = forbidden
+
+    class Opaque(metaclass=Meta):
+        __repr__ = forbidden
+        __array__ = forbidden
+        base = property(forbidden)
+
+    unknown = Opaque()
+    result = q.array_base_diagnostics({"unknown": unknown})
+    assert result["opaque_payload_nodes"][0]["type"]["qualname"].endswith("Opaque")
+    # as_strided creates an unsupported DummyArray base; do not access its properties.
+    value = np.lib.stride_tricks.as_strided(np.arange(4.0), shape=(4,), strides=(8,))
+    monkeypatch.setattr(type(value.base), "__getattribute__", forbidden)
+    result = q.array_base_diagnostics(value)
+    assert result["unsupported_base_records"] == [1] and attempted == []
+
+
+@pytest.mark.parametrize("limit", ["nodes", "depth", "arrays", "dimensions", "json_bytes"])
+def test_base_diagnosis_enforces_existing_metadata_bounds(limit):
+    value = dict(geometry=dict(view=np.zeros((2, 2)), second=np.ones(2)))
+    limits = replace(q.primitive.codec.DEFAULT_LIMITS, **{limit: 1})
+    with pytest.raises(ValueError, match="bound"):
+        q.array_base_diagnostics(value, limits)
+
+
+def test_base_diagnosis_archive_refusal_saves_type_and_path_before_raising(tmp_path):
+    value = np.frombuffer(memoryview(bytearray(16)), dtype=np.float64)
+    with pytest.raises(ValueError, match="Unsupported evidence array base"):
+        q.archive(tmp_path / "unsupported", dict(geometry=dict(membrane_to_grid=value)))
+    refusal = json.loads((tmp_path / "unsupported/refusal.json").read_text())
+    assert not refusal["complete_archive"]
+    assert refusal["error_type"] == dict(module="builtins", qualname="ValueError")
+    assert [r["key"] for r in refusal["arrays"]["roots"][0]["path"]] == [
+        "geometry",
+        "membrane_to_grid",
+    ]
+    assert not (tmp_path / "unsupported/manifest.json").exists()
+    # Observation diagnostics have not expanded supported serialization types.
+    with pytest.raises(ValueError, match="Unsupported evidence array base"):
+        q.EvidenceEncoder().capture(value)
+
+
+def test_base_diagnosis_publication_failure_preserves_primary_cause(monkeypatch, tmp_path):
+    cause = OSError("original source cause")
+    primary = ValueError("original capture refusal")
+    primary.__cause__ = cause
+
+    def capture(*args):
+        raise primary
+
+    def write(*args):
+        raise OSError("secondary publication failed")
+
+    monkeypatch.setattr(q.EvidenceEncoder, "capture", capture)
+    monkeypatch.setattr(q.snapshot, "write_json", write)
+    with pytest.raises(ValueError) as caught:
+        q.archive(tmp_path / "failed-publication", {})
+    assert caught.value is primary and primary.__cause__ is cause
+    assert any("Array diagnosis publication also failed" in n for n in primary.__notes__)
+
+
+def test_base_diagnosis_released_buffer_is_metadata_only():
+    value = np.frombuffer(memoryview(bytearray(16)), dtype=np.float64)
+    value.base.release()
+    result = q.array_base_diagnostics(value)
+    assert result["bases"][1]["memoryview"] == {"released": True}
+    assert result["unsupported_base_records"] == [1] and not result["array_bytes_read"]
+
+
+def test_base_diagnosis_over_rank_buffer_refuses_without_claiming_release():
+    value = np.frombuffer(memoryview(np.zeros((2, 2))), dtype=np.float64)
+    assert value.ndim == 1 and type(value.base) is memoryview and value.base.ndim == 2
+    limits = replace(q.primitive.codec.DEFAULT_LIMITS, dimensions=1)
+    with pytest.raises(ValueError, match="buffer rank bound"):
+        q.array_base_diagnostics(value, limits)
+    assert value.base.ndim == 2
+
+
+@pytest.mark.parametrize("layout", ["contiguous", "reversed", "readonly"])
+def test_direct_long_buffer_archive_retains_full_span_bits_layout_and_identity(tmp_path, layout):
+    storage = np.array([[-9223372036854775808], [1], [9223372036854775807]], dtype="l")
+    view = memoryview(storage)
+    if layout == "readonly":
+        view = view.toreadonly()
+    value = np.frombuffer(view, dtype="l")
+    if layout == "reversed":
+        value = value[::-1]
+    before = value.tobytes(), storage.tobytes(), value.base, value.strides
+    path = q.archive(tmp_path / "long-buffer", dict(mapping=value, alias=value))
+    restored, rows = q.read_archive(path, with_array_observations=True)
+    assert restored["mapping"] is restored["alias"]
+    assert restored["mapping"].tobytes() == before[0]
+    owner = next(row for row in rows if row["category"] == "memoryview")
+    assert owner["logical_snapshot"].tobytes() == before[1]
+    contract = owner["buffer_contract"]
+    assert contract["format"] == "l" and contract["itemsize"] == 8
+    assert contract["shape"] == [3, 1] and contract["strides"] == [8, 8]
+    assert contract["readonly"] == (layout == "readonly")
+    assert not contract["exporter_authority"]
+    assert value.base is before[2] and value.strides == before[3]
+    assert value.tobytes() == before[0] and storage.tobytes() == before[1]
+    with pytest.raises(ValueError, match="unowned|Noncontiguous"):
+        q.primitive.codec.Encoder().capture(value)
+
+
+@pytest.mark.parametrize(
+    "fault", ["format", "noncontiguous", "object", "released", "rank", "bytes"]
+)
+def test_direct_long_buffer_refusals_precede_buffer_conversion_and_copy(monkeypatch, fault):
+    storage = np.arange(8, dtype="l")
+    value = memoryview(storage)
+    limits = q.primitive.codec.DEFAULT_LIMITS
+    if fault == "format":
+        value = memoryview(bytearray(64))
+    elif fault == "noncontiguous":
+        value = value[::2]
+    elif fault == "object":
+        value = memoryview(np.array([object()], dtype=object))
+    elif fault == "released":
+        value.release()
+    elif fault == "rank":
+        value = memoryview(storage.reshape(2, 4))
+        limits = replace(limits, dimensions=1)
+    else:
+        limits = replace(limits, expanded_bytes=8)
+    attempted = []
+
+    def forbidden(*args, **kwargs):
+        attempted.append("read/convert")
+        raise AssertionError("Refusal must precede buffer conversion/copy")
+
+    for name in ("array", "frombuffer"):
+        monkeypatch.setattr(q.np, name, forbidden)
+    with pytest.raises(ValueError):
+        q.EvidenceEncoder(limits)._observe(value, 0)
+    assert attempted == []
+
+
+def test_direct_long_buffer_changed_copy_refuses_without_publishing(monkeypatch, tmp_path):
+    storage = np.arange(3, dtype="l")
+    value = np.frombuffer(memoryview(storage), dtype="l")
+    original = q.np.array
+
+    def changed(array, *args, **kwargs):
+        result = original(array, *args, **kwargs)
+        if array.dtype == np.uint8:
+            storage[0] += 1
+        return result
+
+    monkeypatch.setattr(q.np, "array", changed)
+    with pytest.raises(ValueError, match="changed during evidence capture"):
+        q.archive(tmp_path / "changed", value)
+    assert not (tmp_path / "changed/manifest.json").exists()
+    assert (tmp_path / "changed/refusal.json").is_file()
+
+
 @pytest.mark.parametrize(
     "fault", ["missing", "initial", "definition", "fourth", "order", "duplicate"]
 )
@@ -419,6 +610,215 @@ def fake_work(monkeypatch, seen):
             )
 
     monkeypatch.setattr(q, "Work", Work)
+
+
+def probe_setup(monkeypatch, tmp_path):
+    packet = mock_packet(monkeypatch, tmp_path)
+    (packet / "inputs.json").write_text('{"synthetic":true}')
+    seen = []
+    accounting = dict(
+        profile_intact=True,
+        active_invocations=0,
+        capture_errors=[],
+        absolute_indices=dict(
+            primitive=[], legacy=[], native=[0, 1, 2, 3], Decimal100=[], Decimal160=[]
+        ),
+    )
+
+    class Work:
+        def __init__(self, stream):
+            self.stage = None
+            self.partials = []
+            self.capture_errors = []
+
+        def start(self):
+            assert self.stage == "original-four"
+            seen.append("observer-start")
+
+        def stop(self):
+            seen.append("observer-stop")
+            return accounting
+
+    monkeypatch.setattr(q, "Work", Work)
+    monkeypatch.setattr(q, "inventory", lambda: {"synthetic": True})
+    return packet, seen, accounting
+
+
+def test_native_probe_remains_held_before_packet_read(monkeypatch, tmp_path):
+    monkeypatch.setattr(q, "packet_inputs", lambda *a: pytest.fail("Held probe read packet"))
+    with pytest.raises(ValueError, match="remains held"):
+        q.native_return_probe(tmp_path / "output", packet=tmp_path / "none", packet_sha256="none")
+    assert not (tmp_path / "output").exists()
+
+
+def test_native_probe_output_containment_precedes_any_original_work(monkeypatch, tmp_path):
+    packet, seen, _ = probe_setup(monkeypatch, tmp_path)
+    monkeypatch.setattr(q.reference, "evaluate_original", lambda *a, **k: pytest.fail("source"))
+    with pytest.raises(ValueError, match="Output cannot modify"):
+        q.native_return_probe(
+            packet / "output", packet=packet, packet_sha256="synthetic", enabled=True
+        )
+    assert seen == []
+
+
+@pytest.mark.parametrize("unsupported", [False, True])
+def test_native_probe_is_original_only_and_saves_diagnosis_before_archive(
+    monkeypatch, tmp_path, unsupported
+):
+    packet, seen, _ = probe_setup(monkeypatch, tmp_path)
+    returned = dict(
+        geometry=dict(
+            cell_to_grid=(
+                np.frombuffer(memoryview(bytearray(16)), dtype=np.float64)
+                if unsupported
+                else np.arange(2.0)
+            )
+        )
+    )
+
+    def source(value, *, enabled):
+        assert enabled and len(value["steps"]) == 4
+        seen.append("original-only")
+        return returned
+
+    monkeypatch.setattr(q.reference, "evaluate_original", source)
+    monkeypatch.setattr(q, "compare_histories", lambda *a: pytest.fail("comparison"))
+    monkeypatch.setattr(q, "check_work", lambda *a: pytest.fail("full-work gate"))
+    original_archive = q.archive
+    output = tmp_path / "probe"
+
+    def capture(path, payload):
+        assert (output / "array-bases.json").is_file()
+        return original_archive(path, payload)
+
+    monkeypatch.setattr(q, "archive", capture)
+    if unsupported:
+        with pytest.raises(q.EvidenceRejected) as caught:
+            q.native_return_probe(output, packet=packet, packet_sha256="synthetic", enabled=True)
+        assert caught.value.returned is returned
+        assert type(caught.value.__cause__) is ValueError
+        assert (output / "original-four/refusal.json").is_file()
+        assert not (output / "result.json").exists()
+    else:
+        q.native_return_probe(output, packet=packet, packet_sha256="synthetic", enabled=True)
+        result = json.loads((output / "result.json").read_text())
+        assert result["accepted_cases"] == 0 and not result["scientific_acceptance"]
+    assert seen == ["observer-start", "original-only", "observer-stop"]
+    assert (output / "work.json").is_file() and (output / "runtime.json").is_file()
+    assert json.loads((output / "work-check.json").read_text())["passed"]
+
+
+@pytest.mark.parametrize("fault", ["primitive", "missing-native", "profile", "capture"])
+def test_native_probe_refuses_unexpected_or_incomplete_work(monkeypatch, tmp_path, fault):
+    packet, seen, accounting = probe_setup(monkeypatch, tmp_path)
+    if fault == "primitive":
+        accounting["absolute_indices"]["primitive"] = [0]
+    elif fault == "missing-native":
+        accounting["absolute_indices"]["native"].pop()
+    elif fault == "profile":
+        accounting["profile_intact"] = False
+    else:
+        accounting["capture_errors"] = ["synthetic"]
+    monkeypatch.setattr(q.reference, "evaluate_original", lambda *a, **k: dict(synthetic=True))
+    output = tmp_path / "probe"
+    with pytest.raises(ValueError, match="work|observer"):
+        q.native_return_probe(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert not (output / "result.json").exists()
+    assert seen == ["observer-start", "observer-stop"]
+
+
+@pytest.mark.parametrize("secondary", [False, True])
+def test_native_probe_source_failure_keeps_primary_when_accounting_fails(
+    monkeypatch, tmp_path, secondary
+):
+    packet, seen, _ = probe_setup(monkeypatch, tmp_path)
+    cause = TypeError("source cause")
+    primary = ValueError("source failure")
+    primary.__cause__ = cause
+
+    def source(*args, **kwargs):
+        raise primary
+
+    monkeypatch.setattr(q.reference, "evaluate_original", source)
+    if secondary:
+
+        def failed_stop(self):
+            seen.append("observer-stop")
+            raise OSError("accounting capture")
+
+        monkeypatch.setattr(q.Work, "stop", failed_stop)
+    output = tmp_path / "probe"
+    with pytest.raises(ValueError) as caught:
+        q.native_return_probe(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value is primary and primary.__cause__ is cause
+    assert seen == ["observer-start", "observer-stop"]
+    assert not (output / "result.json").exists()
+    if secondary:
+        assert any("Native probe accounting failed" in n for n in primary.__notes__)
+
+
+@pytest.mark.parametrize("modes", [[], ["--worker", "--native-return-probe"]])
+def test_native_probe_cli_requires_exactly_one_mode(monkeypatch, modes):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["probe", "--packet", "none", "--packet-sha256", "none", "--output", "none", *modes],
+    )
+    monkeypatch.setattr(q, "worker", lambda *a, **k: pytest.fail("full worker entered"))
+    monkeypatch.setattr(q, "native_return_probe", lambda *a, **k: pytest.fail("probe entered"))
+    with pytest.raises(ValueError, match="exactly one"):
+        q.main()
+
+
+@pytest.mark.parametrize("unsupported", [False, True])
+def test_native_probe_failed_partial_and_work_gate_survive_archive_refusal(
+    monkeypatch, tmp_path, unsupported
+):
+    packet, seen, accounting = probe_setup(monkeypatch, tmp_path)
+    accounting["absolute_indices"]["native"] = [0, 1]
+    live = {}
+    original_init = q.Work.__init__
+
+    def init(self, stream):
+        original_init(self, stream)
+        live["work"] = self
+
+    monkeypatch.setattr(q.Work, "__init__", init)
+    root = (
+        np.frombuffer(memoryview(bytearray(16)), dtype=np.float64)
+        if unsupported
+        else np.arange(4.0)
+    )
+    partial = dict(view=root[::-1], original_input=True)
+    primary = ValueError("primary source failed at index two")
+    primary.__cause__ = TypeError("original cause")
+
+    def source(*args, **kwargs):
+        live["work"].partials.append(partial)
+        live["work"].capture_errors.append(
+            dict(stage="synthetic", type="OSError", message="separate observer error")
+        )
+        raise primary
+
+    monkeypatch.setattr(q.reference, "evaluate_original", source)
+    output = tmp_path / "probe"
+    with pytest.raises(ValueError) as caught:
+        q.native_return_probe(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value is primary and primary.__cause__.args == ("original cause",)
+    failure = json.loads((output / "failure.json").read_text())
+    assert failure["phase"] == "original-source" and failure["source_partial_count"] == 1
+    assert failure["capture_errors"][0]["message"] == "separate observer error"
+    check = json.loads((output / "work-check.json").read_text())
+    assert not check["passed"] and check["observed"]["native"] == [0, 1]
+    assert any("work check also refused" in n for n in primary.__notes__)
+    if unsupported:
+        assert (output / "failure-partials/refusal.json").is_file()
+        assert any("partial archive failed" in n for n in primary.__notes__)
+    else:
+        saved = q.read_archive(output / "failure-partials")
+        assert saved["source_partials"][0]["view"].tobytes() == partial["view"].tobytes()
+    assert not (output / "result.json").exists()
+    assert seen == ["observer-start", "observer-stop"]
 
 
 @pytest.mark.parametrize("secondary", [False, True])
