@@ -429,9 +429,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   archives, one intentionally corrupted negative case and all 11 outcomes,
   including four preserved failures. The final software run took **13.05
   seconds, 226.7 MiB sampled peak RSS**. The [source review](/mnt/workspaces/Cells/molecule-kinetic-reload-development-20261101-01/root-source-review.json)
-  requires one recorder-forwarding fix before actual continuity work: setup
-  calls currently inherit the preceding verification-stage label. Key owns
-  that correction and a separate independent original-source reference.
+  identified a recorder-forwarding defect: setup calls inherited the preceding
+  verification-stage label. The [one-keyword repair is source reviewed](/mnt/workspaces/Cells/molecule-kinetic-reload-recorder-forwarding-repair-20261101-01/root-source-review.json)
+  and its [three saved outcomes are reviewed](/mnt/workspaces/Cells/molecule-kinetic-reload-recorder-forwarding-repair-20261101-01/root-results-review.json).
+  One focused stub control passed in **3.27 seconds, 216.8 MiB sampled peak
+  RSS**, proving that the same active recorder reaches setup and that primary
+  errors survive cleanup. This does not rerun or extend the earlier 247 checks.
+  Key's separate independent original-source reference is under review.
   Static inspection also found that the inherited `tex_val = str` helper differs
   from BETSE's original formatter; full cached metadata must be compared without
   normalizing that difference away. No numerical mismatch has been observed.
@@ -642,7 +646,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   outcomes checked. The original 17-pass/22-failure and 40-pass/one-failure
   attempts remain failed; eight empty first-attempt archives remain unusable.
   The successful controls substitute synthetic execution and do not establish
-  native geometric accuracy. Actual multi-cell execution and its downstream
+  native geometric accuracy. Positive multi-cell execution and its downstream
   geometry/ECM/environment owner continuation remain open.
   Root added the [multi-cell diagnostic runner](validation/betse/native_multi_cell_caller_qualification.py)
   for the existing square/hex core inputs, stopping at `cell_index`.
@@ -651,10 +655,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [Source review](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/source-review.json)
   and [saved software review](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/software-review.json)
   bind **54 software passes in 2.77 seconds, 45.0 MiB sampled peak RSS**, with
-  scientific imports blocked. Exact-case source release and resource limits
-  remain required; no actual multi-cell execution or independent comparison
-  was performed by these checks. The [immutable run setup is also reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/preparation-review.json),
-  binding 159 external inputs to Git `f4926b4`; no source run is released.
+  scientific imports blocked. The [immutable run setup is reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/preparation-review.json),
+  binding 159 external inputs to Git `f4926b4`.
+  The [first actual square diagnostic failed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/square-diagnostic-01/root-review.json)
+  after **368.89 seconds, 271.5 MiB sampled peak RSS**, within its resource
+  limits. Seven prerequisite actions completed; the fresh live caller failed
+  its exact cache comparison after clipping, before aliases and `cell_index`.
+  Sixteen captures survived; ten opaque live-object serialization gaps remain
+  explicit. [Saved-data comparison](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/square-diagnostic-01/saved-clipping-comparison.json)
+  isolates the difference to the image-mask token: a contiguous stored copy
+  versus the actual mask's negative-row-stride view. All 164 numeric columns,
+  remaining cache fields, occurrence IDs and RNG state match exactly.
+  Event-signature comparison was not reached during execution. A separate
+  [saved-trace comparison](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/square-diagnostic-01/saved-clipping-event-comparison.json)
+  finds all 1,250 event metadata records equal; 1,227 payloads match exactly,
+  and the other 23 differ only at that same mask-layout boundary. Specialist
+  owns the explicit repair, preserving both layouts and the live mask.
+  This failed input grants no positive multi-cell credit or independent
+  original-source comparison; no automatic retry has been launched.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)

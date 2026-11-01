@@ -347,6 +347,7 @@ def actual_continuity(
             attempts,
             changes=changes,
             provenance=provenance,
+            calls=calls,
         )
         values.update(binding=binding, parent=parent)
         fp = checkpoint.codec.fingerprint

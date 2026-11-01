@@ -644,6 +644,80 @@ def test_missing_real_parent_retains_failure_without_any_model_entry(monkeypatch
     assert len(attempts["attempts"]) == 1 and attempts["invocations"] == {}
 
 
+def test_continuity_forwards_the_existing_recorder_to_stubbed_SIM_preparation(
+    monkeypatch, tmp_path
+):
+    for name in route.RELEASES:
+        monkeypatch.setenv(name, "1")
+    recorders, verified, received = [], [], []
+    primary, cause = OSError("synthetic SIM preparation stop"), LookupError("synthetic cause")
+
+    class Recorder:
+        def __init__(self, stream):
+            self.stage, self.started, self.stopped = None, False, False
+            recorders.append(self)
+
+        def start(self):
+            self.started = True
+
+        def stop(self):
+            self.stopped = True
+            return dict(profile_intact=True, active_invocations=0, synthetic_only=True)
+
+    def verification(binding, parent):
+        verified.append((binding, parent, recorders[0].stage))
+
+    def preparation(directory, binding, parent, attempts, *, changes, provenance, calls=None):
+        assert calls is recorders[0] and calls.started
+        assert calls.stage == "actual-INIT-verification"
+        received.append(dict(same_recorder=True, previous_stage=calls.stage))
+        calls.stage = "stubbed-SIM-preparation"
+        raise primary from cause
+
+    producer = {"synthetic_only": True}
+    monkeypatch.setattr(route, "preflight", lambda *a, **k: {"numeric_admission": False})
+    monkeypatch.setattr(route, "source_plan", lambda: {"synthetic_only": True})
+    monkeypatch.setattr(route, "Calls", Recorder)
+    monkeypatch.setattr(route.checkpoint, "producer_identity", lambda: producer)
+    monkeypatch.setattr(route.run, "verify", verification)
+    monkeypatch.setattr(route, "prepare_sim", preparation)
+    path = tmp_path / "forwarding"
+    with pytest.raises(OSError) as caught:
+        route.actual_continuity(
+            path,
+            changes=[change()],
+            provenance="synthetic forwarding control",
+            cut=1,
+            expected_producer=producer,
+        )
+    assert caught.value is primary and primary.__cause__ is cause
+    assert verified == [(None, None, "actual-INIT-verification")]
+    assert received == [dict(same_recorder=True, previous_stage="actual-INIT-verification")]
+    assert recorders[0].stage == "stubbed-SIM-preparation" and recorders[0].stopped
+    assert (path / "failure/manifest.json").is_file()
+    saved = json.loads((path / "attempts.json").read_text())
+    assert saved["invocations"]["synthetic_only"] is True
+    assert [a["operation"] for a in saved["attempts"]] == [
+        "required-actual-INIT",
+        "original-source-plan",
+        "actual-INIT-verification",
+    ]
+    (tmp_path / "recorder-forwarding.json").write_text(
+        json.dumps(
+            dict(
+                same_recorder_forwarded=True,
+                original_primary_and_cause_preserved=True,
+                verification_stage=verified[0][2],
+                preparation_stage=recorders[0].stage,
+                recorder_stopped=True,
+                actual_model_native_RNG_entries=0,
+                scientific_acceptance=False,
+                synthetic_only=True,
+            )
+        )
+    )
+
+
 def test_setup_and_transition_hooks_keep_explicit_and_legacy_routes_separate():
     # Structural integration control; actual producers remain forbidden.
     from pathlib import Path
