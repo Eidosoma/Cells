@@ -641,6 +641,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   limit; they do not change production cache admission. All ten new terminal
   outcomes are linked in the central ledger, including the setup-only failure.
   No actual Poisson solve or grid-size workaround has been launched.
+  Root also implemented [independent saved-matrix algebra diagnostics](/mnt/workspaces/Cells/native-single-cell-poisson-algebra-development-20261101-01/source-software-review.json)
+  in Git: regular-grid stencil checks, both inverse/projector residuals and
+  flux-boundary constant-mode checks. The latter detect a wrong constant offset
+  that both matrix products alone would miss. **48 distinct synthetic software
+  checks passed**, including exact small inverses, deliberately incorrect
+  matrices, the default 625-point size and saved-input preservation. The final
+  full software round took **2.27 seconds, 42.7 MiB sampled peak RSS**. A later
+  reporting-only rounding clarification passed two existing analytic controls;
+  its remaining AST is identical. All three outcomes are reviewed and recorded.
+  These stdlib diagnostics execute no native solver, introduce no acceptance
+  tolerance and provide no new physical validation. The actual Poisson run
+  remains held for the production observation-capacity repair.
   Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,
