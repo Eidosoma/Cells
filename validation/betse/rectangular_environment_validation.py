@@ -34,6 +34,7 @@ FILES = (
 LIMITS = dict(timeout=480, max_rss_bytes=2**30, min_available_bytes=8 * 2**30)
 SAVED_TEST = "tests/unit/test_rectangular_environment_saved.py"
 REFERENCE_TEST = "tests/unit/test_rectangular_environment_reference.py"
+STENCIL_TEST = "tests/unit/test_rectangular_environment_stencil.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -51,6 +52,13 @@ def suite_files(suite):
         return FILES, TEST
     if suite == "saved":
         return (*[name for name in FILES if name != TEST], *SAVED_EXTRA, SAVED_TEST), SAVED_TEST
+    if suite == "stencil":
+        return (
+            *FILES,  # The existing small-test module supplies only save/spec helpers.
+            "tests/__init__.py",
+            "src/cells/processes/rectangular_environment_stencil.py",
+            STENCIL_TEST,
+        ), STENCIL_TEST
     if suite == "reference":
         return (
             OWN,
@@ -197,6 +205,8 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
         ("cells.processes.rectangular_environment", "solve"),
         ("numpy.linalg._linalg", "inv"),
         ("validation.betse.rectangular_environment_reference", "diagnose"),
+        ("cells.processes.rectangular_environment_stencil", "gradient"),
+        ("cells.processes.rectangular_environment_stencil", "divergence"),
     }
     original_profile = profile
 
@@ -412,7 +422,9 @@ def main():
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--suite", choices=("small", "saved", "reference"), default="small")
+    parser.add_argument(
+        "--suite", choices=("small", "saved", "reference", "stencil"), default="small"
+    )
     parser.add_argument("--analysis-inputs", type=Path)
     parser.add_argument("--analysis-sha256", help=argparse.SUPPRESS)
     args = parser.parse_args()

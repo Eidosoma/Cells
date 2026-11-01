@@ -299,6 +299,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   populated-tissue qualification. GPU/JIT execution and live tissue integration
   remain untested. Compatibility/finite flags do not assert residual accuracy
   or physical tissue admission.
+  [Face gradients and conservative divergence](src/cells/processes/rectangular_environment_stencil.py)
+  now operate on the same physical metric with linear temporary storage and
+  independent leading batch axes. They report net boundary flux, integrated
+  divergence and their raw balance residual. Every outer face must be zero for
+  the homogeneous-boundary flag; a zero net boundary sum alone is insufficient.
+  [Twenty-seven focused CPU checks pass](/mnt/workspaces/Cells/rectangular-environment-stencil-development-20261101-01/root-results-review.json)
+  in **2.52 seconds, 53.7 MiB peak RSS**, covering independent exact Fraction
+  fixtures, analytic interior derivatives, formal integration by parts, units,
+  invalid/nonfinite inputs and batch isolation. The old 30 checks were not
+  rerun; their fixture and evidence helpers were reused. Full solver scaling
+  still needs a sparse or matrix-free solve and GPU validation; the current
+  binding retains its dense inverse and 625-cell limit.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
