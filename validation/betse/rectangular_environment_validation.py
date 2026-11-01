@@ -36,6 +36,7 @@ SAVED_TEST = "tests/unit/test_rectangular_environment_saved.py"
 REFERENCE_TEST = "tests/unit/test_rectangular_environment_reference.py"
 STENCIL_TEST = "tests/unit/test_rectangular_environment_stencil.py"
 METRIC_TEST = "tests/unit/test_rectangular_environment_metric.py"
+ITERATIVE_TEST = "tests/unit/test_rectangular_environment_iterative.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -61,6 +62,14 @@ def suite_files(suite):
             "src/cells/processes/rectangular_environment_stencil.py",
             test,
         ), test
+    if suite == "iterative":
+        return (
+            *FILES,
+            "tests/__init__.py",
+            "src/cells/processes/rectangular_environment_stencil.py",
+            "src/cells/processes/rectangular_environment_iterative.py",
+            ITERATIVE_TEST,
+        ), ITERATIVE_TEST
     if suite == "reference":
         return (
             OWN,
@@ -210,6 +219,8 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
         ("validation.betse.rectangular_environment_reference", "diagnose"),
         ("cells.processes.rectangular_environment_stencil", "gradient"),
         ("cells.processes.rectangular_environment_stencil", "divergence"),
+        ("cells.processes.rectangular_environment_iterative", "solve"),
+        ("cells.processes.rectangular_environment_iterative", "_positive_action"),
     }
     original_profile = profile
 
@@ -426,7 +437,9 @@ def main():
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
-        "--suite", choices=("small", "saved", "reference", "stencil", "metric"), default="small"
+        "--suite",
+        choices=("small", "saved", "reference", "stencil", "metric", "iterative"),
+        default="small",
     )
     parser.add_argument("--analysis-inputs", type=Path)
     parser.add_argument("--analysis-sha256", help=argparse.SUPPRESS)

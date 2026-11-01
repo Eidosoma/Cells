@@ -417,9 +417,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   in **2.52 seconds, 53.7 MiB peak RSS**, covering independent exact Fraction
   fixtures, analytic interior derivatives, formal integration by parts, units,
   invalid/nonfinite inputs and batch isolation. The old 30 checks were not
-  rerun; their fixture and evidence helpers were reused. Full solver scaling
-  still needs a sparse or matrix-free solve and GPU validation; the dense
-  solve route retains its inverse and 625-cell limit.
+  rerun; their fixture and evidence helpers were reused. The dense solve route
+  retains its inverse and 625-cell limit; the geometry-only and iterative
+  successors below provide separate routes without dense operators.
   A [separate geometry-only binding is now implemented and reviewed](/mnt/workspaces/Cells/rectangular-metric-binding-development-20261101-01/root-review.json).
   It supplies those same face kernels without allocating a dense operator or
   inverse. **24 new metric checks, 30 dense regressions and 27 stencil
@@ -430,8 +430,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   of numerical geometry arrays** (excluding IDs/provenance), with complete
   saved batched actions and exact conservation/energy checks. The new declared
   host cap is **1,048,576 cells**, not tested-at-cap or GPU evidence. The original
-  dense solve rejects this geometry-only type. No native tissue, retained-grid
-  requalification or scalable Poisson solve is implied.
+  dense solve rejects this geometry-only type. The binding itself supplies
+  geometry, without native tissue or retained-grid requalification.
+  A [matrix-free projected conjugate-gradient solver](src/cells/processes/rectangular_environment_iterative.py)
+  now solves the same rectangular law with linear vector storage and independent
+  batch convergence/failure flags. It checks the original forcing, the final
+  physical-stencil residual and the zero-mean voltage reference; incompatible
+  forcing is refused, and iteration exhaustion never becomes a success.
+  [Source and saved-result review](/mnt/workspaces/Cells/rectangular-iterative-solver-development-20261101-01/root-review.json)
+  verifies **42 final CPU checks**, **4.54 seconds, 61.3 MiB sampled peak RSS**,
+  including independent exact Fraction solutions, dense comparisons, extreme
+  scaling and mixed successful/refused/budget-limited batches. Three analytic
+  fields on a **3,072-cell** rectangle meet the declared residual tolerances;
+  these few-mode fixtures are not a general convergence or throughput benchmark.
+  The first 37-check image is retained separately, not added to the final count.
+  The functional array-loop interface is implemented; **GPU/JAX execution,
+  larger general forcing, retained-tissue field coupling and full BETSE
+  qualification remain open**. All six terminal outcomes were checked and logged.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
