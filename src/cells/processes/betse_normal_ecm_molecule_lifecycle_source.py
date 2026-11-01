@@ -13,6 +13,7 @@ import numpy as np
 
 from cells.processes import betse_environment_field as environment
 from cells.processes import betse_normal_ecm_catalog_join_source as qualified
+from cells.processes import betse_normal_ecm_molecule_formatter_source as formatter_source
 from cells.processes import betse_normal_ecm_molecule_spatial_source as spatial_source
 
 MasterOfGenes = qualified.MasterOfGenes
@@ -515,7 +516,7 @@ def owner_evidence_general(ctx):
     )
 
 
-tex_val = str
+tex_val = formatter_source.tex_val
 BetseSimConfException = ValueError
 stb = SimpleNamespace(div_env=qualified.base.div_env)
 

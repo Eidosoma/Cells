@@ -11,11 +11,12 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from cells.processes import betse_normal_ecm_molecule_formatter_source as formatter_source
 from cells.processes import betse_normal_molecule_source as molecule_source
 from cells.processes import betse_normal_network_join_source as feedback_source
 
 logs = SimpleNamespace(log_info=lambda *_: None, log_warning=lambda *_: None)
-tex_val = str
+tex_val = formatter_source.tex_val
 types = SimpleNamespace(trim=repr)
 MappingMutableType = MutableMapping
 BetseMethodUnimplementedException = NotImplementedError

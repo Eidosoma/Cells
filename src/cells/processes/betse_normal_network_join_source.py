@@ -15,10 +15,11 @@ import numpy as np
 
 from cells.processes import betse_calcium_atp_source as calcium_source
 from cells.processes import betse_network_modulation as modulation
+from cells.processes import betse_normal_ecm_molecule_formatter_source as formatter_source
 from cells.processes import betse_normal_ion_join as ions
 
 logs = SimpleNamespace(log_info=lambda *_: None, log_warning=lambda *_: None)
-tex_val = str
+tex_val = formatter_source.tex_val
 BetseSimConfException = ValueError
 stb = SimpleNamespace(no_negs=calcium_source._no_negs)
 
