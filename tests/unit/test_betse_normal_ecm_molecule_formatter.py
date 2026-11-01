@@ -337,19 +337,36 @@ def test_actual_source_owner_class_and_inherited_methods_are_retained(role, coun
     assert formatter.lifecycle.MasterOfGenes is formatter.lifecycle.qualified.MasterOfGenes
 
 
-def test_frozen_reference_str_prerequisite_refuses_new_source_epoch_explicitly(tmp_path):
-    with pytest.raises(ValueError, match="Changed adopted formatter prerequisite") as caught:
-        reference.source_plan()
+def test_current_reference_binds_native_formatter_without_rebinding_frozen_str_evidence(
+    tmp_path, no_formatter_calls
+):
+    plan = reference.source_plan()
+    correspondence = plan["formatter_correspondence"]
+    assert correspondence["whole_executable_function_AST_equal"] is True
+    assert correspondence["actual_helper_identity_and_cached_builtins_checked"] is True
+    assert correspondence["evaluated"] is False and plan["scientific_admission"] is False
+    assert no_formatter_calls == []
     retain(
-        tmp_path / "prior-reference-prerequisite",
+        tmp_path / "current-reference-prerequisite",
         dict(
-            primary_type=type(caught.value).__name__,
-            primary_message=str(caught.value),
-            reference_source_unchanged=True,
+            current_source_plan=plan,
             reference_comparator_relaxed=False,
-            new_source_epoch_requires_explicit_successor=True,
+            frozen_str_evidence_rebound=False,
             original_reference_calls=0,
         ),
+    )
+
+
+def test_current_reference_still_refuses_old_str_without_formatter_calls(
+    monkeypatch, tmp_path, no_formatter_calls
+):
+    monkeypatch.setitem(formatter._ORIGINALS[0].__globals__, "tex_val", str)
+    with pytest.raises(ValueError) as caught:
+        reference.source_plan()
+    assert no_formatter_calls == []
+    retain(
+        tmp_path / "old-str-reference-refusal",
+        dict(primary=str(caught.value), accepted=False, frozen_evidence_rebound=False),
     )
 
 

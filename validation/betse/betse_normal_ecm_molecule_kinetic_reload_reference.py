@@ -9,6 +9,7 @@ packets alone lack this authority and refuse. No five-path producer is edited.
 import ast
 import hashlib
 import os
+import struct
 import sys
 from pathlib import Path
 from types import CodeType, FunctionType, SimpleNamespace
@@ -40,6 +41,52 @@ FORMATTER_PINS = {
     ),
     formatter_source.__name__: "830869640fc5c27652b6a3791678890393b7958157eb89394e639bfd82ec21c7",
 }
+EXECUTABLE_CODE_FIELDS = (
+    "co_argcount",
+    "co_posonlyargcount",
+    "co_kwonlyargcount",
+    "co_nlocals",
+    "co_stacksize",
+    "co_flags",
+    "co_code",
+    "co_consts",
+    "co_names",
+    "co_varnames",
+    "co_filename",
+    "co_name",
+    "co_qualname",
+    "co_firstlineno",
+    "co_linetable",
+    "co_exceptiontable",
+    "co_freevars",
+    "co_cellvars",
+)
+
+
+def executable_constant_key(value, depth=0):
+    """Closed typed code constants, including binary64 bits and nested code.
+
+    Python equality merges int/float/complex constants and opposite zero signs.
+    This key never invokes arbitrary equality, code bodies or constructors.
+    Unsupported constant objects and excessive nesting refuse explicitly.
+    """
+    require(depth <= 64, "Original formatter executable constant nesting bound")
+    kind = type(value)
+    if any(kind is allowed for allowed in (type(None), bool, int, str, bytes, type(Ellipsis))):
+        return kind, value
+    if kind is float:
+        return kind, struct.pack("<d", value)
+    if kind is complex:
+        return kind, struct.pack("<dd", value.real, value.imag)
+    if kind is tuple or kind is frozenset:
+        keys = (executable_constant_key(item, depth + 1) for item in value)
+        return kind, tuple(keys) if kind is tuple else frozenset(keys)
+    if kind is CodeType:
+        return kind, tuple(
+            (name, executable_constant_key(getattr(value, name), depth + 1))
+            for name in EXECUTABLE_CODE_FIELDS
+        )
+    raise ValueError("Unsupported original formatter executable constant category")
 
 
 def formatter_correspondence(root=native.ROOT):
@@ -112,6 +159,14 @@ def check_original_formatter(api, expected, root=native.ROOT):
         and formatter_owner._builtin_dictionary(api.namespace) is actual.__builtins__,
         "Original formatter cached builtins/current namespace mismatch",
     )
+    require(
+        all(
+            (api.namespace[name] if name in api.namespace else actual.__builtins__.get(name))
+            is original
+            for name, original in formatter_owner._BUILTINS.items()
+        ),
+        "Original formatter global builtin lookup differs from canonical source",
+    )
     # Compilers may emit position-dependent NOP/jump layouts. Compare the
     # original function against its pinned original AST/positions; adopted
     # helper AST correspondence is checked separately, without ignoring ops.
@@ -142,9 +197,9 @@ def check_original_formatter(api, expected, root=native.ROOT):
                 "co_nlocals",
                 "co_stacksize",
                 "co_exceptiontable",
-                "co_consts",
             )
-        ),
+        )
+        and executable_constant_key(code.co_consts) == executable_constant_key(canonical.co_consts),
         "Original formatter complete executable code differs from canonical source",
     )
     require(
@@ -154,6 +209,8 @@ def check_original_formatter(api, expected, root=native.ROOT):
     )
     return dict(
         actual_original_function_cache_and_dependencies_bound=True,
+        actual_global_builtin_lookups_bound=tuple(formatter_owner._BUILTINS),
+        executable_constants_type_nesting_and_binary64_bits_bound=True,
         evaluated=False,
         pinned_original_executable_code_bound=True,
         adopted_correspondence_uses_AST_without_docstrings_or_positions=True,

@@ -172,11 +172,23 @@ def prepare_SIM(
     *,
     case="zero_INIT_calls",
     event_owner_inputs=None,
+    sim_inputs=None,
+    calls=None,
 ):
-    """Use the existing complete-INIT admission and actual warm transition."""
+    """Use complete-INIT admission and the existing actual warm transition.
+
+    Explicit inputs are forwarded unchanged; omission preserves the original
+    conditional specimen route. Neither branch supplies an INIT parent.
+    """
     directory = Path(directory)
     directory.mkdir(exist_ok=False)
     retain = _retainer(directory, attempts)
+
+    def take(name, operation, **readers):
+        if calls is not None:
+            calls.stage = name
+        return retain(name, operation, **readers)
+
     supplied = None
     if event_owner_inputs is not None:
         from cells.processes import betse_normal_ecm_molecule_event_owner as owner_bridge
@@ -191,27 +203,29 @@ def prepare_SIM(
             )
             return value
 
-        supplied = retain("typed-event-owner-inputs", check_supplied, supplied=event_owner_inputs)
-    complete = retain(
+        supplied = take("typed-event-owner-inputs", check_supplied, supplied=event_owner_inputs)
+    complete = take(
         "actual-complete-INIT",
         lambda: run.complete_INIT(init_binding, init_parent),
         init_binding=init_binding,
         init_parent=init_parent,
     )
-    raw = retain(
-        "SIM-fixture",
-        lambda: fixtures.sim_inputs(case, complete.complete_init),
+    raw = take(
+        "SIM-fixture" if sim_inputs is None else "declared-SIM-inputs",
+        lambda: (
+            fixtures.sim_inputs(case, complete.complete_init) if sim_inputs is None else sim_inputs
+        ),
         complete=complete,
     )
-    component = retain(
+    component = take(
         "SIM-component-binding",
         lambda: leaf.bind(
             raw, **(dict(event_owner_inputs=supplied) if supplied is not None else {})
         ),
         raw=raw,
     )
-    declared = retain("SIM-run-inputs", lambda: fixtures.declaration(case, component))
-    return retain(
+    declared = take("SIM-run-inputs", lambda: fixtures.declaration(case, component))
+    return take(
         "actual-INIT-to-SIM",
         lambda: run.transition(
             init_binding,

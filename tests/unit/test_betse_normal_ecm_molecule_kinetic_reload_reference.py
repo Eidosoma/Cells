@@ -9,7 +9,7 @@ import copy
 import json
 import struct
 import sys
-from types import CellType, FunctionType, SimpleNamespace
+from types import CellType, CodeType, FunctionType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -1112,3 +1112,194 @@ def test_native_formatter_original_namespace_drift_refuses_without_evaluation(fa
             expected_guard="function identity/actual cached builtins/executable code/dependencies",
         ),
     )
+
+
+@pytest.mark.parametrize("name", ["type", "float", "int", "abs", "str"])
+def test_original_formatter_reached_builtin_shadow_refuses_without_a_call(name, tmp_path):
+    api, function = original_formatter_definition()
+    baseline = reference.check_original_formatter(api, function)
+    assert name in baseline["actual_global_builtin_lookups_bound"]
+    assert name in function.__code__.co_names
+    canonical, code, namespace = function.__builtins__[name], function.__code__, api.namespace
+    called = []
+
+    def foreign(*args, **kwargs):
+        called.append(name)
+        raise AssertionError("Shadowed formatter builtin must never be invoked")
+
+    # Only reached global resolution changes. Function/code/namespace/cache
+    # identities and the canonical cached builtin remain exactly retained.
+    namespace[name] = foreign
+    assert namespace["tex_val"] is function and function.__code__ is code
+    assert function.__globals__ is namespace and function.__builtins__[name] is canonical
+    with pytest.raises(ValueError, match="global builtin lookup") as caught:
+        reference.check_original_formatter(api, function)
+    assert called == []
+    del namespace[name]
+    restored = reference.check_original_formatter(api, function)
+    assert restored["evaluated"] is False
+    save_control(
+        tmp_path / "builtin-shadow-refusal",
+        dict(
+            name=name,
+            primary=str(caught.value),
+            effective_lookup_changed=True,
+            actual_function_namespace_code_cache_retained=True,
+            shadow_calls=called,
+            checks_before_and_after_metadata_change=True,
+        ),
+    )
+
+
+def test_original_formatter_explicit_canonical_builtin_aliases_preserve_reached_resolution(
+    tmp_path,
+):
+    api, function = original_formatter_definition()
+    for name, original in reference.formatter_owner._BUILTINS.items():
+        api.namespace[name] = original
+    result = reference.check_original_formatter(api, function)
+    assert result["evaluated"] is False
+    save_control(tmp_path / "canonical-lookups", result)
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "threshold-complex",
+        "threshold-float",
+        "zero-int",
+        "zero-bool",
+        "zero-negative-sign",
+    ],
+)
+def test_original_formatter_equal_valued_constant_drift_is_non_vacuous_and_refuses(fault, tmp_path):
+    api, function = original_formatter_definition()
+    baseline = reference.check_original_formatter(api, function)
+    assert baseline["executable_constants_type_nesting_and_binary64_bits_bound"] is True
+    before = function.__code__
+    constants = list(before.co_consts)
+    if fault.startswith("threshold"):
+        index = next(i for i, value in enumerate(constants) if type(value) is int and value == 3)
+        constants[index] = complex(3.0, 0.0) if fault == "threshold-complex" else 3.0
+    else:
+        index = next(
+            i for i, value in enumerate(constants) if type(value) is float and value == 0.0
+        )
+        constants[index] = {"zero-int": 0, "zero-bool": False, "zero-negative-sign": -0.0}[fault]
+    after = before.replace(co_consts=tuple(constants))
+    # Demonstrate the disclosed old guard would see no difference; no source
+    # body runs to discover the wrong-type comparison or signed-bit change.
+    assert before.co_consts == after.co_consts
+    assert before.co_code == after.co_code and before.co_names == after.co_names
+    assert reference.executable_constant_key(before.co_consts) != reference.executable_constant_key(
+        after.co_consts
+    )
+    function.__code__ = after
+    assert api.namespace["tex_val"] is function and function.__globals__ is api.namespace
+    with pytest.raises(ValueError, match="complete executable code") as caught:
+        reference.check_original_formatter(api, function)
+    save_control(
+        tmp_path / "typed-constant-refusal",
+        dict(
+            fault=fault,
+            index=index,
+            before_type=type(before.co_consts[index]).__name__,
+            after_type=type(after.co_consts[index]).__name__,
+            ordinary_tuple_equality_would_pass=True,
+            typed_key_equal=False,
+            primary=str(caught.value),
+            original_formatter_calls=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize("fault", ["nested-type", "nested-zero", "complex-zero", "set-type"])
+def test_executable_constant_keys_retain_nested_category_and_component_bits(fault, tmp_path):
+    left, right = {
+        "nested-type": ((None, (3,)), (None, (complex(3.0, 0.0),))),
+        "nested-zero": ((None, (0.0,)), (None, (-0.0,))),
+        "complex-zero": (complex(0.0, 1.0), complex(-0.0, 1.0)),
+        "set-type": (frozenset((3,)), frozenset((3.0,))),
+    }[fault]
+    assert left == right
+    assert reference.executable_constant_key(left) != reference.executable_constant_key(right)
+    assert reference.executable_constant_key(left) == reference.executable_constant_key(left)
+    save_control(
+        tmp_path / "nested-constant-refusal",
+        dict(
+            fault=fault,
+            Python_equality_merges=True,
+            typed_key_equal=False,
+            original_source_calls=0,
+        ),
+    )
+
+
+@pytest.mark.parametrize("bits", ["010000000000f87f", "020000000000f87f", "010000000000f8ff"])
+def test_executable_constant_keys_retain_nan_payload_sign_without_numeric_equality(bits, tmp_path):
+    value = struct.unpack("<d", bytes.fromhex(bits))[0]
+    same_bits = struct.unpack("<d", bytes.fromhex(bits))[0]
+    assert reference.executable_constant_key(value) == reference.executable_constant_key(same_bits)
+    keys = {
+        reference.executable_constant_key(struct.unpack("<d", bytes.fromhex(data))[0])
+        for data in ("010000000000f87f", "020000000000f87f", "010000000000f8ff")
+    }
+    assert len(keys) == 3
+    save_control(
+        tmp_path / "nan-constant-bits", dict(bits=bits, distinct_keys=3, original_source_calls=0)
+    )
+
+
+@pytest.mark.parametrize("fault", ["constant-type", "bytecode", "nested-name"])
+def test_executable_constant_keys_compare_nested_code_without_calling_it(fault, tmp_path):
+    module = compile("def synthetic():\n    return 3\n", "<synthetic-code-constant>", "exec")
+    code = next(value for value in module.co_consts if type(value) is CodeType)
+    if fault == "constant-type":
+        constants = tuple(
+            complex(3.0, 0.0) if type(value) is int and value == 3 else value
+            for value in code.co_consts
+        )
+        changed = code.replace(co_consts=constants)
+        assert code.co_consts == changed.co_consts
+    elif fault == "bytecode":
+        changed = code.replace(co_code=bytes(len(code.co_code)))
+    else:
+        changed = code.replace(co_qualname="foreign")
+    assert reference.executable_constant_key((code,)) != reference.executable_constant_key(
+        (changed,)
+    )
+    assert reference.executable_constant_key((code,)) == reference.executable_constant_key((code,))
+    save_control(tmp_path / "nested-code-refusal", dict(fault=fault, synthetic_code_called=False))
+
+
+@pytest.mark.parametrize("category", ["ordinary", "hostile-metaclass"])
+def test_executable_constant_key_refuses_unknown_objects_without_custom_equality(
+    tmp_path, category
+):
+    calls = []
+
+    class Hostile(type):
+        def __eq__(self, other):
+            calls.append("metaclass-equality")
+            raise AssertionError("Arbitrary constant category equality must not run")
+
+        def __getattribute__(self, name):
+            if name == "__name__":
+                calls.append("metaclass-name")
+                raise AssertionError("Arbitrary constant category descriptors must not run")
+            return super().__getattribute__(name)
+
+    class Ordinary:
+        def __eq__(self, other):
+            calls.append("equality")
+            raise AssertionError("Arbitrary constant equality must not run")
+
+    class Unknown(Ordinary, metaclass=Hostile):
+        pass
+
+    with pytest.raises(ValueError, match="Unsupported original formatter executable constant"):
+        reference.executable_constant_key(
+            ((Unknown if category == "hostile-metaclass" else Ordinary)(),)
+        )
+    assert calls == []
+    save_control(tmp_path / "unknown-constant-refusal", dict(custom_equality_calls=calls))

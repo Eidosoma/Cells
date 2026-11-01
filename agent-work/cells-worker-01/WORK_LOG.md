@@ -9155,3 +9155,113 @@ Source-02/SNAPSHOT.json SHA256
 Validator86112b3a292429b095aec8f750179931965550896180d8251178a0f2f8308e29;
 testb5a3c24b0792e6c485a536dd74c9ebeb9758dccbe0a6c17e2c39f7367bd4fcfe.
 
+## 2026-11-01 — held current-source ordinary continuity preparation
+
+Added current_continuity validator and unit peer. Reused the existing typed
+exhausted INIT preflight, ordinary SIM transition/preparer, accepted prefixes,
+pause/resume, closed checkpoint codec, checkpoint receipt adapter, invocation
+observer and raw evidence/journal readers. The route is one three-call ordinary
+SIM comparison: uninterrupted3 versus prefix1/save/load/resume/continue2. All6
+actual source requests and nested verification/setup/RNG work must be counted;
+they are not independent biological cases. Complete graph seals include text,
+data, aliases, original finalizer/event stores, clocks, material/gates/networks,
+sampling and retained INIT/SIM ancestry. No original warm/reference replay or
+native pickle/physical admission is claimed.
+
+Common checkpoint.prepare_SIM now optionally accepts explicit SIM inputs and a
+stage recorder. Inputs pass unchanged to the existing binder; omitted inputs
+preserve the original conditional specimen route. The new route requires the
+explicit inputs and never invokes prepare_INIT or selects a component fixture.
+The existing journal contract alone is derived from the actual bound component.
+All other common validator functions retain their previous AST. Corrected only
+the obsolete formatter unit-test expectation and added a no-call old-str
+refusal; all other formatter tests and the six production/helper/checker files
+are unchanged. Delivered kinetic reference86112b3a/testb5a3c24b/native282dffca
+remain byte-fixed; no equations, fixtures, tolerances or production files changed.
+
+Preparation freezes current Git bytes, dirty/untracked deltas and all loaded
+source dependencies; historical snapshots supply file names only. Exact producer
+and formatter correspondence are checked from the actual frozen import regime.
+SIM declaration transport uses the existing bounded closed codec, retaining
+mapping/target order, scalar bits, axes and aliases without callback execution.
+Both existing gates precede output; direct/symlink packet containment refuses
+before writes. Missing/failed/capped/paused/foreign parents, wrong phase/config,
+graph drift, uncounted work and incomplete captures refuse. Failures preserve
+primary cause/partial trials and accounting I/O notes without a success result.
+
+Final69 focused software passes,57 complete raw archives,278 guard receipts;
+no actual INIT/SIM, constructor, formatter, warm, native/reference or RNG entry.
+Three guarded processes completed (prepare15.30s,software29.09s,binding16.55s).
+Software peak263,450,624B; CPU0/one thread1GiB480s8GiB reserve,512MiB metadata.
+Initial E501 style failure and its exact source are separately preserved; no
+failed scientific trial was rerun. Final522-file snapshot has only four owned
+source changes against the520-file parent (two additions/two existing deltas).
+Current79 producer and2300 runtime pins exactly match the delivered predecessor.
+Loaded inventory is explicitly the metadata binding child's inventory.
+
+Output: /mnt/workspaces/Cells/molecule-current-source-continuity-preparation-20261101-01/results.json
+Packet01 inputs70bfe8b421f25b9544740f2395231f7c16ab8cd2c755fce61dcd1e16ab3bf759;
+snapshot029ed16bafc2a915fe1d3972ba767b45692cd59da701dcdaa58f050a4a1520fa.
+Current validator7d2b5438c6d1b5896f56f53b0a4407b49e22f2bc57263b2ef8ebdcafbaaaa8ce;
+test37eee553b2e9780a26d53d1facf7a1803bdf1bf792d04522b7dc4f4e5a6a7df8;
+common preparer5c98b645b65eeb61651bc2944a156c5f754a4961c9b22bc8b11fdaede719ea40;
+formatter test5684557f986ebb271891a11877d976dd4e31abeae8f15114fd6ac4f6f2c7c83c.
+
+Packet01 intentionally has no positive INIT authority or SIM declaration and
+remains hard-held. Root must first retain/review the genuine current exhausted
+typed headless INIT Binding/RunState, then prepare a fresh packet with its exact
+identities/evidence and explicit compatible SIM inputs, select resources and
+release both gates. The future entry imports that frozen source and receives
+actual typed owners in process; no historical source/owner rebase or fixture
+fallback is available. No qualification, old process query, shared status,
+Root/Specialist edit, staging or commit. Historical evidence/packet05 untouched.
+
+## 2026-11-01 — original formatter reached globals and typed constants
+
+Repaired only kinetic_reload_reference and its unit peer. The original fresh
+function/namespace/cache identities remain required. Effective LOAD_GLOBAL
+resolution of type/float/int/abs/str must reach the reviewed canonical builtin;
+matching cached dictionaries and np/math alone are insufficient. The original
+comparison's existing before/after guard sites are AST-unchanged. No formatter
+body is evaluated by the controls.
+
+Replaced ordinary co_consts tuple equality with a bounded closed typed key:
+exact primitive categories, binary64 float/complex component bits, nested
+tuples/frozensets and complete nested CodeType fields. Unknown objects refuse
+without instance/metaclass equality, descriptors or object rendering. New
+controls prove Python equality would merge int3/complex3, int3/float3, float0/
+int0/boolFalse and opposite zero signs. Other controls retain NaN payload/sign,
+nested constant/code structure, actual function/code/global/cache association
+and canonical builtin aliases. All new negative controls first establish the
+valid baseline and/or demonstrate the obsolete equality would pass.
+
+Final40 focused source/software cases pass (23 new finding controls+17 affected
+metadata controls),105 deselected;39 complete raw archives and162 entry-guard
+receipts. Source definitions/objects and synthetic constant-bit work only;
+zero actual formatter/constructor/warm/INIT/SIM/native/reference/RNG entries.
+Final guarded software350.54s/267,526,144B peak; CPU0/one thread1GiB480s8GiB
+reserve,512MiB metadata. All5 outcomes completed:2 preparations,2 software
+batches,1 binding. First candidate39 passes retain their own frozen bytes; the
+final candidate adds identity-only category selection plus a hostile-metaclass
+control. No earlier failure, prior40 result or frozen69 result is rebound.
+
+Prepared a fresh held current-continuity packet from Git with the guard source
+successor. Its522-file snapshot changes only the two assigned reference/test
+files (520 unchanged). All existing continuity glue/common preparer/formatter
+test bytes, native worker, producer/helper/checker and other reference functions,
+classes, complete text/data/layout/alias comparator, gates and failure paths
+are unchanged. Current79 producer/2300 runtime pins still match the prior
+packet. No ordinary69 rerun, full regression, Root/Specialist/shared edits,
+staging/commit or old-job query. No numerical tolerance or physical claim.
+
+Output: /mnt/workspaces/Cells/molecule-kinetic-formatter-source-guard-repair-20261101-01/results.json
+Final packet02 inputs1f3ebd950c79913cee662cf94a3bd6cd039ace4729bc4c44b8805a3484032148;
+snapshotc0e4260bad1be39df0c9937c71f51bb9a08afbd18b0b02d525810dc392a67152.
+Referencec28d8d0e1a0daee7689d10c7f8170ee62688566ce0d2611857392354cc0712c8;
+test935a88cf8837fcf1ec4793eb61da57830d70f796f2998f41d65233940c57b3d5.
+The current-source ordinary INIT->SIM/save/load/continue entry remains held for
+Root's genuinely completed typed headless INIT Binding/RunState, exact positive
+authority/evidence, compatible explicit SIM declaration and release/resources.
+The new packet never manufactures that parent or substitutes a component
+fixture. Historical INIT/science, frozen inputs and all failed evidence remain.
+
