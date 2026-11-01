@@ -154,10 +154,15 @@ def save_control(path, payload):
     )
 
 
-def test_pinned_original_transitive_plan_keeps_formatter_difference_explicit(tmp_path):
+def test_pinned_original_plan_binds_native_formatter_without_evaluation(tmp_path):
     plan = reference.source_plan()
     assert plan["compiled_or_executed"] is False
-    assert plan["formatter_correspondence"]["transitive_source_equal"] is False
+    assert plan["formatter_correspondence"]["transitive_source_equal"] is True
+    assert plan["formatter_correspondence"]["evaluated"] is False
+    assert (
+        plan["formatter_correspondence"]["actual_helper_identity_and_cached_builtins_checked"]
+        is True
+    )
     sites = plan["original"]["sites"]
     for name in (
         "MasterOfMolecules.reinitialize",
@@ -184,6 +189,7 @@ def test_compile_definitions_only_in_fresh_original_namespace_with_exact_formatt
             assert method.__globals__ is api.namespace
             assert method.__code__.co_filename.startswith(native.PREFIX)
     assert api.plan["source_calls"] == api.plan["actual_constructor_calls"] == 0
+    assert reference.check_original_formatter(api, api.namespace["tex_val"])["evaluated"] is False
     save_control(tmp_path / "compiled-definitions", api.plan)
 
 
@@ -969,3 +975,140 @@ def test_old_lossy_graph_version_gets_no_repair_credit():
     a["kind"] = b["kind"] = "cells.kinetic_reference_complete_data_graph@1"
     with pytest.raises(ValueError, match="version required"):
         native.compare_graphs(a, b)
+
+
+@pytest.fixture(autouse=True)
+def no_adopted_formatter_execution(tmp_path):
+    previous, attempted = sys.getprofile(), []
+    forbidden = {reference.formatter_owner._FORMATTER_CODE, *reference.formatter_owner._CODES}
+
+    def guard(frame, event, arg):
+        if event == "call" and frame.f_code in forbidden:
+            attempted.append(frame.f_code.co_name)
+            raise AssertionError("Adopted formatter/consumer evaluation forbidden")
+        if previous is not None:
+            previous(frame, event, arg)
+
+    sys.setprofile(guard)
+    yield attempted
+    sys.setprofile(previous)
+    (tmp_path / "formatter-reference-control.json").write_text(
+        json.dumps(
+            dict(
+                adopted_formatter_or_consumer_attempts=attempted,
+                source_object_inspection_only=True,
+                scientific_acceptance=False,
+                original_formatter_constructor_warm_INIT_RNG_execution=0,
+            )
+        )
+    )
+    assert attempted == []
+
+
+@pytest.mark.parametrize("fault", ["str", "equal-copy", "foreign-helper", "cached-namespace"])
+def test_native_formatter_source_plan_refuses_legacy_foreign_or_changed_cache(
+    monkeypatch, fault, tmp_path
+):
+    owner = reference.formatter_owner
+    helper = owner.source.tex_val
+    if fault == "str":
+        monkeypatch.setattr(owner.network, "tex_val", str)
+    elif fault == "equal-copy":
+        copied = FunctionType(helper.__code__, helper.__globals__, helper.__name__)
+        assert copied is not helper and copied.__code__ is helper.__code__
+        monkeypatch.setattr(owner.network, "tex_val", copied)
+    elif fault == "foreign-helper":
+        monkeypatch.setattr(owner.network, "tex_val", lambda v: "foreign")
+    else:
+        cached = helper.__builtins__
+        monkeypatch.setitem(helper.__globals__, "__builtins__", dict(cached))
+        assert helper.__builtins__ is cached
+    with pytest.raises(ValueError, match="formatter|builtins") as caught:
+        reference.source_plan()
+    save_control(
+        tmp_path / "formatter-refusal",
+        dict(
+            fault=fault,
+            primary=str(caught.value),
+            formatter_or_consumer_calls=0,
+            old_packet_or_equal_function_not_admitted=True,
+        ),
+    )
+
+
+def test_native_formatter_source_plan_requires_reviewed_F1_source(monkeypatch, tmp_path):
+    path = tmp_path / "foreign-checker.py"
+    path.write_text("# foreign source\n")
+    monkeypatch.setattr(reference.formatter_owner, "__file__", str(path))
+    with pytest.raises(ValueError, match="reviewed F1 formatter binding source"):
+        reference.source_plan()
+
+
+def original_formatter_definition():
+    """Compile just the pinned function definition; never invoke its body."""
+    _, nodes = native.source_plan()
+    node = next(n for n in nodes if isinstance(n, ast.FunctionDef) and n.name == "tex_val")
+    code = compile(ast.Module(body=[node], type_ignores=[]), native.PREFIX + "tex_val>", "exec")
+    function_code = next(c for c in code.co_consts if type(c) is type(code))
+    namespace = dict(
+        __name__="original_betse_kinetic_reload",
+        __builtins__=reference.formatter_owner._FORMATTER_BUILTINS,
+        np=reference.formatter_owner.source.np,
+        math=reference.formatter_owner.source.math,
+    )
+    function = FunctionType(function_code, namespace, "tex_val")
+    namespace["tex_val"] = function
+    return SimpleNamespace(namespace=namespace), function
+
+
+def test_native_formatter_original_definition_binds_actual_function_and_cache_without_call(
+    tmp_path,
+):
+    api, function = original_formatter_definition()
+    result = reference.check_original_formatter(api, function)
+    assert result["evaluated"] is False
+    save_control(tmp_path / "original-formatter-binding", result)
+
+
+@pytest.mark.parametrize(
+    "fault",
+    ["str", "equal-copy", "foreign-cached", "current-slot", "math", "constant", "exception-table"],
+)
+def test_native_formatter_original_namespace_drift_refuses_without_evaluation(fault, tmp_path):
+    api, function = original_formatter_definition()
+    expected = function
+    if fault == "str":
+        api.namespace["tex_val"] = str
+    elif fault == "equal-copy":
+        api.namespace["tex_val"] = FunctionType(function.__code__, api.namespace, "tex_val")
+    elif fault == "foreign-cached":
+        correct = function.__builtins__
+        foreign = dict(correct)
+        api.namespace["__builtins__"] = foreign
+        forged = FunctionType(function.__code__, api.namespace, "tex_val")
+        api.namespace["__builtins__"] = correct
+        api.namespace["tex_val"] = expected = forged
+        assert forged.__builtins__ is foreign
+        assert forged.__globals__["__builtins__"] is correct
+    elif fault == "current-slot":
+        api.namespace["__builtins__"] = dict(function.__builtins__)
+    elif fault == "math":
+        api.namespace["math"] = SimpleNamespace(log10=reference.formatter_owner._LOG10)
+    elif fault == "exception-table":
+        function.__code__ = function.__code__.replace(co_exceptiontable=b"\x00")
+    else:
+        constants = list(function.__code__.co_consts)
+        index = next(i for i, value in enumerate(constants) if type(value) is float)
+        constants[index] = 7.25
+        function.__code__ = function.__code__.replace(co_consts=tuple(constants))
+    with pytest.raises(ValueError, match="formatter") as caught:
+        reference.check_original_formatter(api, expected)
+    save_control(
+        tmp_path / "original-formatter-refusal",
+        dict(
+            fault=fault,
+            primary=str(caught.value),
+            original_formatter_calls=0,
+            expected_guard="function identity/actual cached builtins/executable code/dependencies",
+        ),
+    )

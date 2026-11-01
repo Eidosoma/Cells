@@ -28,6 +28,7 @@ _CALLER = {name: getattr(source.CellsPoisson, name) for name in METHODS}
 _LAPLACIAN = source.FiniteDiffPoisson.makeLaplacian
 _ZEROS, _PINV = source.np.zeros, source.np.linalg.pinv
 _ISSUED, _GRIDS = WeakKeyDictionary(), WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
 
 
@@ -512,6 +513,13 @@ def _authority(owner):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise PoissonRejected(
+            "Single-cell Poisson epoch was consumed by a data-tail attempt",
+            stage="poisson_epoch_consumed",
+            request=context.request,
+            trial=context.trial,
+        )
     try:
         if context.invalid or context.active or context.thread != get_ident():
             raise ValueError("Invalid completed Poisson authority")
@@ -538,6 +546,15 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_world_tail(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise PoissonRejected("Actual single-cell Poisson changed", stage="poisson_owner")
+        _FORWARDED[owner] = transition
+        return context
 
 
 @contextmanager

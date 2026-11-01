@@ -8482,3 +8482,676 @@ native storage/physical admission, independent biological credit, production/
 shared/Specialist edit, scientific/native/reference job, GPU, detached run,
 stage or commit by this agent.
 
+## 2026-10-31 — held spatial factory to membrane-event source comparison
+
+Inspected the actual next parity gap: existing qualified x/y/r kernels and
+standalone original/Decimal references do not connect complete native scalar
+arrays to molecule membrane-event assignment. Headless lifecycle admission
+still lacks actual spatial finalizer/configuration/geometry authority and
+continues to refuse; no owner or exhausted INIT was fabricated. Announced and
+delivered only two new Git paths: validation/betse/betse_normal_ecm_molecule_
+spatial_event_reference.py and its tests/unit peer, plus this log.
+
+The reusable numerical probe is separately held behind both existing releases.
+It compares pinned original spatial factories, original pulse and complete
+_fire_events_tissue/makeAllChanges bodies with the existing Cells kernels/event
+producer and existing independent Decimal spatial budget. Geometry/properties/
+initial stores are explicitly supplied normalized source-probe inputs, not
+Parameters/YAML, native finalizer, phase, publication or checkpoint ownership.
+It requires no lifecycle parent for this limited original-source comparison;
+that is not a relaxation of any actual lifecycle or checkpoint prerequisite.
+
+Full arrays, membrane axes/dtype, target occurrence order and NumPy duplicate-
+last/broadcast failures remain literal. Native radial subset output is never
+gathered or reshaped to match targets. Both legs retain every available source
+prefix, factory locals, callback order, labels and all six membrane/pressure
+stores. Matching refusals remain diagnostics. Source and evidence-writer
+exceptions are separated; recovery failure preserves the original exception
+identity/cause and refuses completion. Exact factory-frame profiling restores
+the prior profiler and preserves exception unwinds. Original/checkout/snapshot
+output containment is checked before creating output. No callback evaluation
+occurs in metadata preparation. Original factory requests, cached source
+capture, helper/recreation, contexts, source methods, callbacks and independent
+oracle work are explicitly distinct from biological cases in the held route.
+
+Final74 checks passed:73 new native/model/spatial/Decimal/RNG-blocked controls
+plus the existing pytest producer binding control. Synthetic NumPy comparisons
+and duplicate assignment executed as software only. Zero actual original
+factory, spatial kernel, Decimal oracle, event law, INIT/SIM, RNG or checkpoint
+entries. Exact original source ASTs were read/compared without compilation or
+execution. Tests cover target duplication, absent Cl/Ca, source/clock/factory
+rosters, full store/axis drift, corruption shared by both comparison legs,
+failure-prefix writes, evidence I/O/primary causes, profiled synthetic unwind,
+both release gates and direct/symlink source containment. Nineteen complete
+synthetic archives retained. Intermediate63 is separately frozen and gets no
+final-source credit.
+
+Six recorded outcomes checked: one bootstrap failure before any child (missing
+guard output-directory creation), bounded lint failure, bounded snapshot
+collection failure (omitted existing reader dependency), intermediate63 pass,
+final74 pass and metadata binding completion. Failed sources/logs remain; the
+lint-only attempt had no complete snapshot/passing credit. Snapshot selection
+was corrected to include actual imported unchanged reader dependencies. No
+historical source overlay, old-job query, detached/GPU/scientific launch, shared
+PROGRESS/ledger, Root/Specialist edit, stage or commit.
+
+CPU0/one thread,1GiB480s8GiB reserve software;512MiB metadata. Final software
+15.853s/415,756,288B sampled peak (pytest6.10s); binding6.285s/232,050,688B.
+Ruff/compile passed.502 snapshot files: all489 inherited files exactly unchanged,
+two new files and11 unchanged imported dependencies. Exact producer73/runtime
+2300 reused and actual pytest producer matched. Full loaded inventory belongs
+to binding child, not an invented pytest inventory. No scientific admission.
+
+Validator SHA256 3ffc6f9bc78901c3c9d211a028a3671af6cf6ff133cf503302b27a277b9df4fe.
+Test SHA256 a53c7823494ec71facd7518dda958bc22f3d8e17574d31bd2f3c3c358b525b62.
+Results: /mnt/workspaces/Cells/molecule-spatial-event-reference-development-20261031-01/results.json
+SHA256 f5160d9ecb8280573280bafc0edada0a93ca2e94d22394c5855ff8cdbb61bd88.
+Source-final/SNAPSHOT.json SHA256
+e93f9ac832b3382450f0fe7a64ae8c7cc9b0161423e9ae715093ef296707e141.
+All prior packets, failed evidence and callback/paired-route parent pins remain
+immutable. Root source/runtime review and coordinated resources/releases are
+required before this new source probe; genuine exhausted INIT plus complete
+typed authorities remain required before any lifecycle/checkpoint extension.
+
+## 2026-11-01 — selected spatial configuration and actual x/y owner boundary
+
+Inspected native Parameters and spatial factories/finalization. Added four
+production modules: molecule_spatial_config_source, molecule_spatial_config,
+molecule_spatial_source and molecule_spatial_authority (all with the existing
+betse_normal_ecm_ prefix). Minimal explicit hooks touch only molecule lifecycle
+source/owners/setup/phase, lifecycle, event_owner and run_lifecycle_component.
+Added validation/betse/betse_normal_ecm_molecule_spatial_checkpoint.py and its
+unit-test peer:13 owned code/test files plus this log. No other source/status
+paths edited, no staging/commit or worktree, all development directly in Git.
+
+Selected x/y/r property stores preserve the exact15 original assignments from
+Parameters948-970:3 dictionary creations,12 float lookups,9 optional get calls,
+relative order/defaults and raw failures with partial dictionaries. One fresh
+p/_conf is issued through the reviewed early context seam before finalizers.
+This remains a normalized spatial projection, not full Parameters/YAML/parser
+authority. Existing manual/selected temporal and default paths are retained.
+
+The x/y route ties actual finalizer frames to the retained typed complete INIT,
+geometry/context/array owners, p/_conf/property stores, original profile/target
+occurrences and actual source callback/scalar objects. Source arrays retain the
+native count-selected cell/membrane axis, membrane precedence in ties, dtype,
+shape and full values. No gathering, deduplication or shape repair. The original
+source finalizer/callback order and all4 original bound/typed raw owner checks
+remain. Common SIM setup has an explicitly gated full-validator copy with only
+the declared whitelist tuple changed; upstream drift refuses. Original shared
+INIT validation, material no-intervention, flags/RNG/maps/voltage and N3 guards
+are unchanged. No original equation, fixture or numerical tolerance changed.
+
+Actual selected source observations add closed store/factory records to the
+original early finalization; the distinct later Publication retains ancestry.
+The existing event/run/checkpoint graph transports full source scalar arrays,
+configuration/geometry/phase/parent epochs. No codec/vocabulary/constructor
+adapter, arbitrary callable serialization, decode evaluation or native pickle
+claim. Existing prepared constants reconstruct callbacks after load; they are
+not the same native Python callable. Live issuers are not serializable records.
+Profiler exit/unwind preserves primary exception/cause and restores its prior
+observer. Failed source prefixes retain available handler scalars and stores.
+
+Radial is deliberately refused before actual setup. Its literal factory and
+property assignments are present, but the retained phase has no original native
+cells.centre authority. Native lattice uses xypts.mean(axis=0); SVG uses
+[0.5*p.wsx,0.5*p.wsx]. No current-cell mean, grid centre, supplied probe or equal
+cache is promoted into INIT/native centre ownership. The exact source finding
+is bound in radial-prerequisite.json. A genuine retained centre owner/seam is
+the next dependency for radial. All actual x/y preparation/continuity also stays
+held for genuine exhausted INIT + typed Inputs and coordinated Root review.
+
+850 fresh final-source software controls passed:109 new spatial +741 affected
+constant/temporal/global/publication/event/codec controls.76 complete synthetic
+raw archives. The test copies of assignment AST, profiled synthetic functions,
+unowned publication/codec graphs and NumPy comparisons/assignments executed as
+software; actual production spatial construction/factory/callback, native or
+independent reference, INIT/SIM/event/RNG/trajectory execution stayed blocked.
+No independent biological cases or scientific acceptance. Source-native ASTs
+and the complete common validator were compared without executing those laws.
+
+All6 bounded outcomes terminal and checked: initial lint failure;82/27 test
+batch;109/1 batch;110 intermediate pass;850 final pass;metadata binding pass.
+All failed evidence and snapshots remain. Synthetic setup/clock/profile-map and
+phase.inputs omissions caused the retained test failures. Source02 successor
+also fixes a real mixed-x/y declaration bug (dictionary insertion order instead
+of literal Na/K/Cl/Ca order) and preflights scenario family before complete_INIT;
+that successor is not labelled wholly test-only. Metadata source-line span was
+corrected to948-970. Later owner-equality/scope comments clarify numerical value
+comparison versus byte/stride/signed-zero identity, with no guard relaxation.
+
+CPU0/one thread,1GiB480s8GiB reserve software;512MiB metadata. Final process
+101.820s/448,667,648B sampled peak, pytest90.10s. Binding8.055s/235,257,856B.
+Ruff/compile passed.508 frozen source files,495 protected parent files unchanged,
+77 Cells producer files and2300 runtime pins (runtime map exactly reused).
+Actual pytest producer matches; full loaded inventory belongs to binding child.
+No Root/Specialist/shared PROGRESS/ledger edit, old INIT/process query, GPU or
+detached/scientific job. All prior frozen packets/parents/qualification limits
+remain untouched; source presence does not grant scientific admission.
+
+Results: /mnt/workspaces/Cells/molecule-spatial-owner-development-20261101-01/results.json
+SHA256 def35493bd00dbafdc436b8202a4f8ee62f850f81cc209f4749b76d3e2c25939.
+Source-final/SNAPSHOT.json SHA256
+a76a836c57abb7f8984536374137d26eb7333f1806de0e0546f861ca2c7692a4.
+The result carries all13 exact source/test pins,11 producer changes, all6
+terminal records, final distinct case IDs/control receipts, failed batches,
+source/validator correspondence and explicit radial/release prerequisites.
+
+## 2026-11-01 — spatial-reference capture integrity repair
+
+Root identified observer-copy and failure-reader capture errors that could be
+mistaken for complete evidence in the spatial reference. Changed only the
+existing spatial_event_reference validator/test pair (betse_normal_ecm_molecule_
+prefix), plus this log. Both current files initially matched the original74
+packet byte-for-byte. The completed x/y source feature remains separately frozen
+at def35493; no production feature or historical packet was edited/rebased.
+
+Raw factory results and primary exceptions still pass through unchanged. A
+guarded reader now retains missing values as explicit None plus staged errors;
+source-return payloads preserve the result even when a reader fails. Archives
+and attempt rows explicitly mark capture_complete/evidence_complete false for
+observer or reader errors. Fully written raw byte archives do not establish
+complete source capture. A dedicated CaptureIncomplete preserves returned data
+and stops before event work; original source exceptions retain identity, cause,
+stage and existing partial, with separate capture errors/diagnostic payload.
+Both comparison legs require explicit capture completion and no recorded
+errors, including factory locals. Identical incomplete records cannot match.
+
+83 fresh blocked software controls passed: all74 original control IDs plus9
+new capture controls. Actually profiled synthetic functions exercise observer
+copy failure on source success and exception unwind. Failure/success reader
+errors preserve results/primary cause and available arrays.23 complete raw byte
+archives include4 explicitly incomplete captures:2 source returns and2 primary
+failures. Their completeness flags refuse comparison; none grants admission.
+Seventeen records have explicit complete capture flags;2 are non-operation
+records. Synthetic NumPy/profile work only; actual native/spatial/reference/
+model/RNG/continuity entrypoints remained blocked. No equation/tolerance change.
+
+Three bounded processes terminal and checked: software pass, failed metadata
+binding (wrong historical case_ids field), metadata-only corrected binding
+pass using unique_case_ids. Failed attempt/command/logs remain; no repeated
+software checks, source changes or extra qualification credit from that retry.
+CPU0/one thread,1GiB480s8GiB reserve software;512MiB metadata. Software15.590s/
+255,774,720B sampled peak, pytest6.61s; binding5.788s/232,423,424B. Ruff/compile
+passed.508 source files,506 protected context files unchanged; exact77 producer
+and2300 runtime pins reused from x/y context and actual pytest producer matched.
+Full loaded inventory belongs to binding child, not an invented pytest record.
+
+Results: /mnt/workspaces/Cells/molecule-spatial-reference-capture-repair-20261101-01/results.json
+SHA256 a8915ca2078ecf08905de4273e776768889d9ca65719d03161c31d2ea1f39088.
+Source-01/SNAPSHOT.json SHA256
+234c17d23cd66c4e3574eb484df7b32c5227b7e9cd354a4bf89113a1669a9711.
+Exact two-file successor pins, diagnostic accounting,9 new case IDs and all3
+outcomes are bound there. Original74/six outcomes and x/y850/six outcomes retain
+their own frozen bindings; no retroactive source acceptance or biological
+credit. All scientific holds, genuine exhausted INIT/typed Inputs requirements
+and radial native-centre refusal remain. No shared status, Root/Specialist edit,
+old-job query, GPU, detached/scientific job, stage or commit.
+
+## 2026-11-01 — explicit retained molecule scalar kinetic reload
+
+After the two-file spatial-reference capture repair, inspected the actual
+native molecule/SIM gaps. Native MasterOfMolecules/MasterOfGenes.reinitialize
+call tissue_init on their retained cores. That method rereads existing molecule
+production/decay rates, while check_stable_owner_scope previously rejected all
+network configuration changes. Announced the bounded five-file scope to Chief;
+implemented directly in Git, plus this log. No other lane/shared file changed.
+
+New betse_normal_ecm_molecule_kinetic_reload production helper admits only an
+explicit declaration of finite nonnegative same-category Python scalar
+production/decay edits in existing enabled growth records. Exact INIT binding,
+parent and complete-artifact associations, actual before/after values and
+native role/species/rate order are required. Every other configuration delta
+refuses. The default strict route, four original owner comparisons, flags,
+catalog, publication/temperature and latent-null/cold-owner checks remain.
+Minimal lifecycle/setup hooks surround the existing methods; no equation,
+native method body, fixture, tolerance, codec vocabulary or default changed.
+
+An observer chains/restores the active profiler and records actual dispatcher,
+general-then-GRN reinitializer, tissue and individual species growth calls.
+It checks phase/p/config association and retained owner/core/molecule plus
+concentration/flux buffer identity and values. Profile return(None) remains
+explicitly return-or-unwind; only normal context exit can finish a capture.
+Copy/retention failures stay separate from original source exception/cause.
+The closed data receipt binds source/config/INIT state and both retained copies;
+decoding performs no setup, callback, replay or arbitrary construction. Live
+object identity applies within the warm call, not across checkpoint decoding.
+
+New kinetic_reload_checkpoint validator reuses the original SIM template only
+after an actual externally retained exhausted INIT. It synchronizes declared
+rate carriers, retains every attempt/failed input/partial, and stages complete
+uninterrupted versus paused/saved/loaded/resumed graph comparison under both
+existing release gates and an exact reviewed producer. Setup, verification,
+RNG, timesteps and nested checkpoint operations remain overlapping work, not
+independent biological cases. Four whole native method AST bodies match pinned
+original source (decorators/annotations/docstrings excluded); no native source
+was imported/executed and no numerical parity is inferred from that match.
+
+Final source03:247 fresh software passes =95 new kinetic +152 directly affected
+owner/event/publication controls;2 actual handoff targets deselected/held.
+Native/model/RNG paths were blocked throughout. Controls include exact rate
+deltas and refusals, typed parent preflight, actually profiled synthetic warm
+calls/unwind, retained buffers, duplicated/reordered species calls, resealed
+receipt drift, decode-only full record/array transport, and the real setup hook
+with synthetic warm initialization, original failures and secondary retention
+errors. No actual INIT/SIM/native/reference/time-law/trajectory run occurred.
+
+All11 bounded process outcomes checked:7 completed/4 failed. Preserved initial
+lint failure; source01 software60/10 (entry-time p missing from synthetic
+dispatcher and structural check inspecting a guard stub); source02 software
+90/1 (test template kept an undeclared earlier general-rate edit, correctly
+refused); and first metadata binding failure (packager treated an intentional
+corruption control as a complete archive). Source02 also strengthened species
+ordering and resealed complete-receipt checks; source03 improved actual-work
+stage accounting/required request/receipt checks and added four setup-hook
+controls. Earlier passes bind only their own frozen bytes. Metadata-only retry
+checked original prefix plus explicit corruption suffix, retained that negative
+separately, changed no tested source and reran no software/science.
+
+Final evidence binds511 snapshot files (506 parent files unchanged; only the
+five announced paths differ),78 producer files and the exact reused2300-file
+runtime map. Actual pytest producer matched; full loaded inventory belongs to
+the metadata binding child.36 complete raw archives and1 deliberately corrupted
+negative archive are distinct; the latter has no completeness/admission credit.
+Ruff and compile passed. CPU0/one thread, software1GiB480s8GiB reserve;
+metadata512MiB. Final software13.052s/237,674,496B sampled peak; binding6.777s/
+239,001,600B. No detached/GPU job, old INIT/process query or shared status edit.
+
+Results: /mnt/workspaces/Cells/molecule-kinetic-reload-development-20261101-01/results.json
+SHA256 5467a158029f351c41f3c487681e9ddeb5c8fbd89439c4e58304c876b54fc26b.
+Source-03/SNAPSHOT.json SHA256
+df11a64d4ce11248eb4560a75a47f9b7b16d9926e7249b4c47db91f6c4593eb1.
+The result binds all five exact source pins, case/control/archive index, native
+AST plan, producer/runtime inventories and all11 process terminals. Source
+presence and software controls confer no actual/scientific admission. A genuine
+exhausted INIT, exact expected identities and current producer/resource/release
+review remain prerequisites. Original spatial74/83/x-y850 and failed evidence
+stay frozen/separate; radial still refuses absent authentic native cells.centre.
+
+## 2026-11-01 — independent original kinetic reload reference
+
+Root received5467a158 and assigned a separate independent original-BETSE warm
+reload/retained-data comparison. Added only the new validation/betse/
+betse_normal_ecm_molecule_kinetic_reload_reference.py, matching
+kinetic_reload_reference_native.py, and tests/unit/
+test_betse_normal_ecm_molecule_kinetic_reload_reference.py, plus this log.
+All five5467 producer/validator/test files remain byte-identical. No shared,
+Root Poisson/qualification, Specialist multi-cell/capacity or production edit.
+
+Inspected original molecules/gene reinitialize, tissue_init, init_growth and
+their transitive dependencies. The new native worker independently compiles
+complete selected original warm method bodies, original exception hierarchy,
+original tex_val and freshly authenticated original channel dependencies in a
+private namespace. It imports no Cells numerical implementation. Only native
+type-check decorators/annotations are removed; constructors, factories,
+formatters and numerical methods are not invoked in this assignment.
+
+Found a concrete static transitive source difference: original networks.py
+tex_val formats float LaTeX values; the actual adopted write_growth_and_decay
+method resolves tex_val from its globals to builtins.str. This may change
+gad_tex_vars/reaction/transport cached strings despite the prior four complete
+method-body AST matches. Reported to Chief immediately. The reference retains
+the original formatter and compares every such cached field without exclusion
+or normalization. No actual formatter/numerical mismatch was executed and no
+protected-source repair was made while5467 remains under review.
+
+Old conditional dictionaries omit live profile and alias/layout authority;
+they are never promoted to actual parents/owners. A new profile observer is
+bound to the exact existing warm caller, component/complete-INIT records and
+phase/p/sim/cells/view roots. It captures/copies the complete supported data
+graph into closed original classes without calling constructors or getters.
+All instance data, material stores, owners/core/molecules, profiles, config,
+catalogs, alias topology, scalar category/bits and array dtype/shape/strides/
+order/writeability are compared. Known non-scientific capture callbacks are
+explicitly recorded as excluded sidecars and never replayed. Dynamic aliases
+and ion-axis lookups retain exact backing associations. Unknown classes or
+callbacks, borrowed mutable/shared storage, unsupported numeric categories or
+layouts refuse with available partial data. No serialized code/callable or
+arbitrary constructor decoder is introduced; this is source-probe copying,
+not native live-object persistence or INIT authority.
+
+The actual entrypoint keeps both releases first and requires an externally
+retained exhausted typed INIT and exact expected binding/parent identities,
+the unchanged reviewed producer and existing ownership verification. Only then
+may it perform the existing actual transition and original warm reference.
+Original Python helper/constructor/warm calls have their own observed category;
+Cells setup/verification/RNG/nested calls and graph-copy attempts are retained
+as work, never biological cases. Graph snapshots happen with profiling
+suspended, so explicit node/array/alias copy receipts cover that plumbing.
+Individual C allocations/FLOPs are not enumerated. CPython return(None) stays
+return-or-unwind; exact closed completion marker and normal outer exit are
+required. Capture/reader/secondary errors cannot replace an active original
+source exception/cause or produce a positive comparison.
+
+Final source04:73 distinct blocked reference controls passed, plus1 separately
+executed existing producer-identity metadata control. Tests cover original
+definition compilation, independent formatter binding, full non-rate graph
+drift, mutation-association, numeric/array category and borrowed storage
+refusals, source closure/view/root inspection, actually profiled synthetic
+success/unwind/capture errors, duplicate/foreign/missing markers, profiler
+restoration and written-but-incomplete reader evidence. Missing genuine INIT
+refuses before original compilation/reconstruction. No actual constructor,
+formatter, warm method, native/model/RNG/time-law/trajectory/reference run was
+executed. Source definitions and synthetic/data plumbing only; no biological,
+physical, native, checkpoint or scientific acceptance and no new tolerance.
+
+All12 bounded processes terminal and checked:9 completed/3 failed. Initial
+lint had6 style findings. Source01 software22/27 exposed unsafe
+object.__new__(SimpleNamespace); several negatives reached that incidental
+error, so they get no intended-guard credit. Source02 software59/2 exposed an
+incorrect ultimate-base test that lost a writable ndarray backing owner.
+Both failures remain. Source03 was prepared but untested (no software credit).
+Source04 fixes backing ownership, closes scalar/array/dynamic-value classes,
+preserves the mutable lookup-axis alias and adds the focused controls. Final
+Ruff/compile passed; no historical software/science rerun for metadata sealing.
+
+Final evidence binds516 files: all511 parent files unchanged,3 new code/test
+paths and2 existing original-channel protocol/inventory inputs newly selected
+for reproducibility (not new or edited protocols). The actual pytest producer
+matches the unchanged78-file Cells producer and exact2300-file runtime map.
+Full loaded inventory belongs to the metadata binding child.25 raw archives
+are byte-complete; the explicit reader-error diagnostic remains capture-
+incomplete and has no admission credit. Failed/partial synthetic captures and
+original input/config/buffer evidence stay separate. CPU0/one thread,
+software1GiB480s8GiB reserve; metadata512MiB. Final73 software21.079s/
+258,478,080B sampled peak; producer control6.276s/230,612,992B;
+binding9.787s/252,252,160B. No detached/GPU/scientific launch, old INIT/process
+query, staging/commit or shared status edit.
+
+Results: /mnt/workspaces/Cells/molecule-kinetic-reload-reference-development-20261101-01/results.json
+SHA256 e26950d07105cbed91f71d1033ae251662ece547444be78434767b510abbeaa8.
+Source-04/SNAPSHOT.json SHA256
+358b1c42a961d90b8159b4dfc1ebbf647dccf66341bdd20b8e040ac9ca9d3b50.
+The result contains exact three-file pins, all12 terminal records, source plan,
+case/control/archive index, preserved failures, parent/producer/runtime binding
+and explicit remaining authority/release prerequisites.5467/x-y850 and all
+earlier frozen evidence stay separate. Radial still requires genuine native
+centre; no mean/SVG/supplied geometry becomes authority.
+
+## 2026-11-01 — kinetic recorder forwarding repair
+
+Root consolidated5467 review identified one missing calls=calls keyword at
+actual_continuity's prepare_sim call. Added exactly that keyword in the existing
+kinetic_reload_checkpoint validator and one stubbed forwarding control in its
+paired unit test. The control observes the existing recorder after verification,
+requires the identical started object in stubbed SIM preparation, changes its
+stage, and preserves an intentional original OSError/cause before any actual
+SIM/native/model/RNG/checkpoint work. It also checks stop/failure evidence and
+the saved stage receipt. All other source/guards remain unchanged.
+
+One focused control passed (2.56s pytest; guarded3.274s/227,315,712B sampled
+peak). No full247,73-reference or science rerun. Compile/Ruff passed. All3
+bounded processes completed and were checked;4 byte-complete synthetic raw
+archives retained. CPU0/one thread,1GiB480s8GiB reserve software;512MiB metadata.
+Snapshot511 files contains exactly2 changed files/509 unchanged parent files;
+the validator delta is mechanically checked to be one keyword insertion only.
+Original source03/result5467 and every prior failure remain immutable.
+
+Results: /mnt/workspaces/Cells/molecule-kinetic-reload-recorder-forwarding-repair-20261101-01/results.json
+SHA256 99f0097f98428bcde44f2e00fa33388f4ee27e8f1e7b9d7f53206bd2ca576535.
+Source/SNAPSHOT.json SHA256
+010e803ac9741d246c603ae55659d2b81bd8ae340fe13df90594958afb5554f1.
+Validator SHA078c01583bde1781017597dcdc1861ec1cc560b3944e086e09c8a32e0666829a;
+test SHA88f6b891d14df494aa0abe426e7eca8172527ffb3684c8e5fd3df3728886346a.
+Root source review b57fa602 is bound in the result. Separate independent
+reference e26950d0/three new files remain unchanged and frozen under their own
+pins; the result explicitly records its two dependency mismatches against this
+repaired checkout without rebinding or rerunning it. The static original
+formatter prerequisite and all genuine-parent/scientific/radial holds remain.
+No shared/other-lane edit, old-job query, detached/GPU launch, stage or commit.
+
+## 2026-11-01 — KRREF-R1/R2 retained storage and binary64 repair
+
+Repaired only the three owned kinetic_reload_reference validator/native/test
+paths. Graph schema @2 records each bounded ndarray/bytes/bytearray backing
+store once, including all backing bytes and direct base/storage references.
+It copies actual two-column GJ-style views with exact dtype, shape, offsets,
+strides, writeability, ownership and alignment, then verifies the copied base
+and alias graph. Read-only parents with pre-existing writable views remain
+distinct. Unknown storage/callback/class, structured/object/opaque-metadata
+dtype and unbounded layouts refuse. Production arrays remain unchanged.
+
+Python float tokens now retain big-endian IEEE754 binary64 bytes, including
+NaN payload/sign/signaling bits, signed zero and explicit scalar category.
+Schema @1 cannot acquire repair credit. Original source compiler, formatter,
+warm selections, complete cached text comparison and all parent/release gates
+are mechanically unchanged; the main module adds only storage work counters.
+
+Final source-02:107 focused reference controls plus1 producer metadata control
+passed in24.05s pytest (guarded24.827s,261,632,000B sampled peak). Seven GJ
+shared-storage configurations, negative alias/offset/stride/flag/backing-byte
+drift, bounded advanced views and binary64 controls are explicit.47 byte-complete
+archives INCLUDE1 incomplete reader diagnostic; byte completion grants no
+capture or scientific admission. The earlier source-01's106 passes and its
+separate producer check remain under their own exact bytes, without additional
+independent credit. Prior e269's25 byte archives also include1 incomplete.
+
+All11 new terminal processes were checked:8 completed,3 failed. Retained
+failures are one pre-freeze E501 line-length error, the binder's tuple-target
+AST assumption, and its wrong guard-receipt key. Failed binder operation.py,
+primary exceptions, process records and logs remain; retries changed metadata
+inspection only. An additional final-source guard explicitly refuses opaque
+dtype metadata rather than dropping hidden authority. No actual original
+constructor/formatter/warm/INIT/model/RNG/reference/checkpoint work executed.
+Synthetic storage/copy/profile plumbing is work, never biological cases.
+
+Final snapshot has516 files:511 unchanged relative to frozen e269,3 owned
+reference changes and the2 already accepted recorder-forwarding dependency
+deltas. All source came one-way from current Git.78 Cells producer files and
+2300 runtime pins are unchanged, with actual final pytest producer matched;
+the loaded inventory belongs explicitly to the metadata binding child.
+Bounded children used CPU0/one thread,1GiB480s8GiBreserve software and512MiB
+metadata. Genuine exhausted INIT/retained-owner authority and the separate
+original tex_val versus adopted str prerequisite remain; all science is held.
+No full247, old job query, shared/other-lane edit, stage or commit.
+
+Results: /mnt/workspaces/Cells/molecule-kinetic-reload-reference-graph-repair-20261101-01/results.json
+SHA256 f79703f8ad6b3aedbad4683a14c22096425f1d99673ce408c1f07c0f9d45d043.
+Exact three owned source pins and final snapshot pin are in that result;
+source-02-comparison.json records both current accepted forwarding deltas.
+
+## 2026-11-01 — isolated native formatter prerequisite
+
+Added four new owned formatter_source/formatter production and validator/test
+files. The literal tex_val executable function AST matches pinned original
+networks.py, excluding only docstring/source positions. No closure/defaults;
+math.log10, NumPy mean, builtins, function/code/globals and source association
+are checked without evaluating the helper. Native Python-float classification,
+truncated-log thresholds, percent text and mean fallback remain exact.
+
+Prepared private namespaces for five actual adopted consumer functions while
+retaining their complete code/defaults/closure/annotations and every other
+global object. No live method/class/module/instance is patched or activated.
+Current source pins explicitly require the original str binding; a runtime-only
+global replacement refuses. Prepared contains live function objects and is not
+codec vocabulary. Its description is plain provenance data, never authority to
+recreate callbacks or an INIT parent.
+
+47 final focused software controls passed in3.25s pytest (guarded4.020s,
+232,763,392B sampled peak).21 small synthetic Cells text-helper calls are
+explicitly counted as work, including two raw Python-float NaN/infinity errors
+with original type/message/cause/context retained. No actual original formatter,
+warm, model, INIT, reference or RNG execution.23 byte-complete archives include
+the2 raw text-error diagnostics; no biological/physical/continuity credit.
+Private function construction is5 objects per successful preparation; aggregate
+per-test constructor invocations are not enumerated.188 guard receipts retain
+zero forbidden entry attempts. Initial46 controls stay with source-01 only;
+the final source adds the legacy-global guard and its extra control.
+
+All5 bounded process outcomes completed and were checked. Compile/Ruff passed.
+CPU0/one thread,1GiB480s8GiBreserve software,512MiB metadata. Final snapshot520
+files adds exactly4 new files to516 unchanged parent inputs. The delivered
+f797 three reference files, all original formatter/prerequisite evidence and
+78-file default producer/2300 runtime pins remain unchanged. The loaded runtime
+inventory belongs explicitly to the metadata binder, not the pytest child.
+
+Actual warm activation is still unimplemented/held. Proposed hooks are the
+tex_val aliases in shared betse_normal_network_join_source.py and
+betse_ecm_grn_source.py, plus Key betse_normal_ecm_molecule_lifecycle_source.py.
+No such existing-file hook was edited. Coordinate ownership before touching
+the two shared paths; use explicit fresh source/producer pins and a separately
+scoped reference successor rather than relabeling its frozen str prerequisite.
+The alternative private-owner activation must cover both actual retained roles;
+these prepared functions alone do not implement that route. Genuine exhausted
+INIT/owner authority and every scientific gate remain. No full247, old-process
+query, shared/Specialist edit, stage or commit.
+
+Results: /mnt/workspaces/Cells/molecule-formatter-prerequisite-development-20261101-01/results.json
+SHA256 7af100960f82b72440b164287868c28bb87ade0049af3209c17a333d5120b2a6.
+Source-02/SNAPSHOT.json SHA256
+4e979c7bd0cd27535a18e5f7ba754387336d2398e2f5710ba5ce47f2f53fdc11.
+All four exact owned source pins and the activation proposal are in the result.
+
+## 2026-11-01 — declared formatter source hooks
+
+Announced exact existing-file ownership to Chief before edits: only the
+formatter_source import and tex_val alias in normal_network_join_source,
+ecm_grn_source and molecule_lifecycle_source, plus the new formatter checker,
+validator and test. These three source aliases now use the literal native
+helper. No runtime global patch, owner/class replacement, copied state or
+reinitialization was used. Full-module AST checks remove only the declared
+import and revert only the alias, then require exact pre-hook module AST pins.
+All other statements, method bodies and owner class definitions remain exact.
+
+The checker binds the new source hashes and rejects rollback to str or foreign
+helper/code/globals/defaults. It verifies five general and four GRN inherited
+formatter methods against their actual class/MRO association. New tests prove
+the frozen reference's str-specific source prerequisite refuses this new
+producer; its three f96937eb files and strict full-data/text comparator remain
+byte-identical. That intentional refusal is preserved as an archive, not
+silently changed into admission. Reference advancement requires its own
+explicit source-bound successor and genuine actual INIT/owner prerequisites.
+
+58 formatter controls plus1 existing producer metadata control passed in27.46s
+pytest (guarded28.338s,256,528,384B sampled peak).21 synthetic Cells text-helper
+calls are work; no actual original formatter/native/warm/INIT/reference/RNG
+execution.24 byte-complete archives include2 raw text-error diagnostics and1
+old-reference prerequisite refusal.233 guard receipts have zero forbidden
+attempts. All4 bounded process outcomes were checked:3 completed,1 failed.
+Failure is the initial two E501 AST-pin-table line lengths after source checks;
+exact failed source-01/logs/primary CalledProcessError remain. Source-02 wraps
+those constants only. Compile/Ruff passed. No full247 or old-job query.
+
+Final520-file snapshot changes6 parent files and retains514 unchanged. The raw
+literal helper is unchanged from isolated7af. New default producer79 explicitly
+adds that helper to the prior78-file closure and updates exactly the3 consumer
+pins;2300 runtime code pins stay exact. Actual pytest producer matches. Loaded
+inventory is separately owned by the metadata binder. CPU0/one thread,
+1GiB480s8GiBreserve software,512MiB metadata. All scientific gates, historical
+failed evidence and old packets remain; source presence is not qualification.
+No Root Poisson/logger, Specialist, shared status, staging or commit edits.
+
+Results: /mnt/workspaces/Cells/molecule-formatter-source-integration-20261101-01/results.json
+SHA256 7e9592fed89f8332b2044d2494e1490d85c3695f180234f9fee52d2b35569629.
+Source-02/SNAPSHOT.json SHA256
+1e98f6eaa5283e8ef85d792f5e079f7e626df4011bf182ea53d606fcedbd1096.
+Exact7-file pins, actual producer delta and remaining release prerequisites are
+in the result. Isolated7af and its47 controls remain separate for their bytes.
+
+## 2026-11-01 — authoritative correction and F1 cached-builtins repair
+
+The private-factory direction briefly superseded static alias activation, then
+Root's live correction01a1952f explicitly superseded that older queued scope.
+Acknowledged immediately. Let the active bounded control finish, froze/indexed
+the abandoned files/results and reconciled only my recorded edits. Restored
+the exact reviewed7e seven-file import/alias candidate, removed only my4 new
+formatter_factory/regime production/validator/test additions, and reversed only
+my lifecycle_owners hook. Its original c44f9f54 bytes are restored. Unrelated
+Root/Specialist changes remain untouched. The accepted three static imports
+and aliases are a fresh module-import regime, not a patch to issued owners.
+
+Abandoned evidence remains at
+/mnt/workspaces/Cells/molecule-native-formatter-regime-development-20261101-01/ABANDONED.json
+SHA09cd5bbdc06ddc695e1a16690ff28de0c43345fc56ea90cb588af82f785aab97.
+All8 terminal outcomes checked:7 completed/1 style-preparation failure. Frozen
+source02 had46 passes; final abandoned source04 had52 passes and one actual
+producer read reused as explicit stubs for state-machine controls. No actual
+constructor/warm/formatter/native/RNG work. Neither batch is adopted or combined
+into new qualification. Source01/style failure and source03 prepared/untested
+state remain explicit. All snapshots/logs/partial diagnostics remain immutable.
+Owned-only reconciliation is current-correction.json SHA
+1382d1cce3d37b4ad1494052bad71ba33cd23379ffeaa25cc4c47e5d949877e2.
+
+Applied only F1 to the reviewed formatter checker and its unit test. Capture
+actual original function.__builtins__ dictionary identities; require the
+construction namespace resolves to that retained dictionary before FunctionType,
+check the actual resulting cached dictionary, and repeat both checks in
+check_prepared. The literal helper's cached dictionary is also anchored.
+A restored current globals slot cannot hide a foreign cached dictionary.
+
+Seven focused no-call controls passed:dictionary/module construction, foreign,
+missing and None original slots, foreign cached dictionary with restored globals,
+and changed current slot with unchanged cached dictionary. No formatter or
+consumer function was invoked; no native/constructor/warm/INIT/reference/RNG
+entry.58 reviewed controls were deselected, not rerun. Seven complete byte
+archives/35 guard receipts retained. Compile/Ruff passed. All3 F1 processes
+completed and were checked. CPU0/one thread;1GiB480s8GiBreserve software,
+512MiB metadata. Pytest2.90s, guarded3.518s/230,068,224B sampled peak.
+
+Final source520 files changes only checker/test;518 parent inputs unchanged.
+Default79-source/2300-runtime producer exactly matches reviewed7e; checker/test
+pins advance explicitly. Strict comparator and old str reference remain fixed
+and held. No new source/default alias redesign, science, full regression/247,
+old-process query, unrelated edit, staging or commit.
+
+Results: /mnt/workspaces/Cells/molecule-formatter-cached-builtins-repair-20261101-01/results.json
+SHA256 28c722a0633506dbc25902fd70a6556536b572c764ed9bbcc5cfbbb63b214f5b.
+Source-01/SNAPSHOT.json SHA256
+196260fd21b5769dab407c6dd0758f6ad3a0ba4192219226a4414ceed1da2a68.
+Checker1834d16378631b56aebc579cd6227fd6905827662eece8da770b76c4b3ae5332;
+test76536f4c488c75e5b9fa9d09370526e4d2d3096262a6f2f8bc12757f7f20d33f.
+
+## 2026-11-01 — kinetic reference native-formatter source successor
+
+Changed only the assigned kinetic_reload_reference validator and unit test.
+Replaced obsolete str prerequisite with explicit reviewed F1 checker/helper/
+validator pins, canonical original formatter AST correspondence, and exact
+actual helper/consumer/cached-builtin identities. Old str, equal copied/foreign
+helpers and changed builtin namespace/cache refuse without function evaluation.
+The independently compiled original namespace retains its actual formatter
+object immediately after definition-only construction and checks that object,
+cached dictionary, code/constants/exception table and math/NumPy bindings before
+and after future reference work. No original/adopted formatter body was called.
+
+The native worker282dffca is unchanged. Mechanical AST checks show every other
+reference function/class, including complete text/data/alias/layout comparator,
+runtime owner/phase/axis contracts, calls and failure handling, is unchanged.
+actual_comparison adds only metadata formatter checks; removing those and the
+retained function variable exactly restores its prior AST. All genuine current
+exhausted INIT, actual retained-owner, release and failure prerequisites remain.
+All seven reviewed formatter producer/helper/checker files are byte-fixed.
+
+Final40 focused software controls passed;80 deselected.31 byte-complete archives
+and160 guard receipts retained; no original/adopted source body, constructor,
+warm, INIT, RNG, native/reference numerical execution or biological credit.
+Original class/function definitions are compiled as metadata only. No F1 rerun,
+full regression/247 or prior-result audit. Pytest142.75s, guarded143.439s,
+264,904,704B sampled peak. CPU0/one thread1GiB480s8GiBreserve software and
+512MiB metadata. All6 process outcomes checked:5 completed/1 failed.
+
+First source01 batch37/2 failed because the verifier compared original-position
+bytecode to differently positioned adopted helper bytecode despite matching AST.
+Metadata diagnosis found co_code/co_consts differences. Corrected only verifier
+template selection: compile pinned original AST at its own positions, comparing
+complete executable fields, without opcode/value/text normalization. Added
+exception-table drift refusal. First failure/code diagnostic and source01 stay
+immutable; source01 constant-drift negative gets no intended-guard credit.
+
+Final520-file snapshot changes2 files/518 unchanged. Current79-file producer
+and2300 runtime pins exactly match reviewed F1. Loaded inventory explicitly
+belongs to metadata binder. Frozen f969/e269/7af/7e/F1 evidence remains untouched.
+One downstream dependency remains recorded for Root: fixed formatter test
+test_frozen_reference_str_prerequisite_refuses_new_source_epoch_explicitly imports
+the mutable latest reference and expects its old str refusal. This explicitly
+assigned successor changes that live expectation. Per seven-file freeze I did
+not edit or rerun it; its frozen-source F1 evidence retains its original scope.
+Actual comparison/INIT/science stay held. No shared status, Root/Specialist edit,
+new factory/regime, old-job query, staging or commit.
+
+Results: /mnt/workspaces/Cells/molecule-kinetic-reload-formatter-reference-successor-20261101-01/results.json
+SHA256 2cc4571313342396b51b65aeb397ab9de4194b7dea87a003e5f639471b0f3316.
+Source-02/SNAPSHOT.json SHA256
+828d9319bec7ca868cb6dfec7959acb37c6dccd89066f07a5b522e6978a1aa75.
+Validator86112b3a292429b095aec8f750179931965550896180d8251178a0f2f8308e29;
+testb5a3c24b0792e6c485a536dd74c9ebeb9758dccbe0a6c17e2c39f7367bd4fcfe.
+

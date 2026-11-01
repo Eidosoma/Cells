@@ -6,6 +6,7 @@ warm boundary, including aliases/layout/profile/configuration. Old conditional
 packets alone lack this authority and refuse. No five-path producer is edited.
 """
 
+import ast
 import hashlib
 import os
 import sys
@@ -13,10 +14,12 @@ from pathlib import Path
 from types import CodeType, FunctionType, SimpleNamespace
 
 from cells.processes import betse_normal_ecm_molecule_checkpoint as checkpoint
+from cells.processes import betse_normal_ecm_molecule_formatter as formatter_owner
 from cells.processes import betse_normal_ecm_molecule_kinetic_reload as kinetics
 from cells.processes import betse_normal_ecm_molecule_lifecycle as lifecycle
 from cells.processes import betse_normal_ecm_molecule_run_lifecycle as run
 from validation import source_snapshot as snapshot
+from validation.betse import betse_normal_ecm_molecule_formatter as formatter_source
 from validation.betse import betse_normal_ecm_molecule_kinetic_reload_checkpoint as preparation
 from validation.betse import betse_normal_ecm_molecule_kinetic_reload_reference_native as native
 from validation.betse import betse_normal_ecm_molecule_spatial_event_reference as retention
@@ -30,29 +33,140 @@ OWNED = (
 )
 RELEASES = preparation.RELEASES
 require = native.require
+FORMATTER_PINS = {
+    formatter_owner.__name__: "1834d16378631b56aebc579cd6227fd6905827662eece8da770b76c4b3ae5332",
+    formatter_owner.source.__name__: (
+        "fd3ef2720b31746665a8fa1eee2cff9a21fd8709ae95ce0b00c0a08296116678"
+    ),
+    formatter_source.__name__: "830869640fc5c27652b6a3791678890393b7958157eb89394e639bfd82ec21c7",
+}
+
+
+def formatter_correspondence(root=native.ROOT):
+    """Bind canonical original AST and actual reviewed helper/cache identities.
+
+    Neither matching text nor a copied function/receipt supplies this source
+    authority. No formatter or original source body executes during this check.
+    """
+    for module in (formatter_owner, formatter_owner.source, formatter_source):
+        require(
+            snapshot.digest(module.__file__) == FORMATTER_PINS[module.__name__],
+            "Changed reviewed F1 formatter binding source: " + module.__name__,
+        )
+    helper = formatter_owner.check_helper()
+    methods = formatter_owner.originals()
+    for method, expected in zip(methods, formatter_owner._FUNCTION_BUILTINS, strict=True):
+        require(
+            method.__globals__["tex_val"] is helper
+            and method.__builtins__ is expected
+            and formatter_owner._builtin_dictionary(method.__globals__) is expected,
+            "Foreign formatter consumer helper/cached-builtins association",
+        )
+    plan = formatter_source.source_plan(Path(root) / "science/chemistry/networks.py")
+    require(
+        plan["entire_executable_function_AST_equal"] is True
+        and plan["live_bindings_installed"] is True,
+        "Canonical original/current native formatter correspondence required",
+    )
+    return dict(
+        original=plan["original"],
+        adopted=helper.__module__ + "." + helper.__qualname__,
+        reviewed_formatter_source_sha256=FORMATTER_PINS.copy(),
+        whole_executable_function_AST_equal=True,
+        transitive_source_equal=True,
+        scope="formatter source/dependencies only; no numerical/reference or parent admission",
+        actual_helper_identity_and_cached_builtins_checked=True,
+        actual_consumer_cached_builtin_association_checked=True,
+        method_association=plan["actual_method_association"],
+        source_declarations=plan["source_declarations"],
+        evaluated=False,
+        affected_fields=(
+            "complete cached gad_tex_vars/reaction/transport LaTeX fields; "
+            "no exclusion or normalization"
+        ),
+    )
+
+
+def check_original_formatter(api, expected, root=native.ROOT):
+    """Check a fresh original namespace without calling its formatter.
+
+    expected is the actual function retained immediately after the trusted
+    original builder returns, not a deserialized identity or caller receipt.
+    """
+    helper = formatter_owner.check_helper()
+    actual = api.namespace.get("tex_val")
+    require(
+        actual is expected
+        and type(actual) is FunctionType
+        and actual.__globals__ is api.namespace
+        and actual.__code__.co_filename == native.PREFIX + "tex_val>"
+        and actual.__name__ == actual.__qualname__ == "tex_val"
+        and actual.__closure__ is None
+        and actual.__defaults__ is None
+        and actual.__kwdefaults__ is None
+        and actual.__annotations__ == {},
+        "Foreign/equal-copied original formatter function/namespace",
+    )
+    require(
+        actual.__builtins__ is helper.__builtins__
+        and formatter_owner._builtin_dictionary(api.namespace) is actual.__builtins__,
+        "Original formatter cached builtins/current namespace mismatch",
+    )
+    # Compilers may emit position-dependent NOP/jump layouts. Compare the
+    # original function against its pinned original AST/positions; adopted
+    # helper AST correspondence is checked separately, without ignoring ops.
+    _, nodes = native.source_plan(root)
+    node = next(n for n in nodes if isinstance(n, ast.FunctionDef) and n.name == "tex_val")
+    compiled = compile(
+        ast.Module(body=[node], type_ignores=[]),
+        native.PREFIX + "tex_val>",
+        "exec",
+        dont_inherit=True,
+        optimize=0,
+    )
+    canonical = next(value for value in compiled.co_consts if type(value) is CodeType)
+    code = actual.__code__
+    require(
+        all(
+            getattr(code, n) == getattr(canonical, n)
+            for n in (
+                "co_code",
+                "co_names",
+                "co_varnames",
+                "co_argcount",
+                "co_posonlyargcount",
+                "co_kwonlyargcount",
+                "co_freevars",
+                "co_cellvars",
+                "co_flags",
+                "co_nlocals",
+                "co_stacksize",
+                "co_exceptiontable",
+                "co_consts",
+            )
+        ),
+        "Original formatter complete executable code differs from canonical source",
+    )
+    require(
+        api.namespace.get("np") is formatter_owner.source.np
+        and api.namespace.get("math") is formatter_owner.source.math,
+        "Original formatter NumPy/math namespace association differs",
+    )
+    return dict(
+        actual_original_function_cache_and_dependencies_bound=True,
+        evaluated=False,
+        pinned_original_executable_code_bound=True,
+        adopted_correspondence_uses_AST_without_docstrings_or_positions=True,
+    )
 
 
 def source_plan(root=native.ROOT):
     original, _ = native.source_plan(root)
     adopted = preparation.source_plan(Path(root) / "science/chemistry")
-    method = lifecycle.setup.source.MasterOfNetworks.write_growth_and_decay
-    formatter = method.__globals__["tex_val"]
-    require(formatter is str, "Changed adopted formatter prerequisite; inspect new correspondence")
     return dict(
         original=original,
         adopted_method_correspondence=adopted,
-        formatter_correspondence=dict(
-            original="pinned networks.py tex_val",
-            adopted="builtins.str",
-            resolved_from=method.__module__
-            + ".MasterOfNetworks.write_growth_and_decay.__globals__",
-            transitive_source_equal=False,
-            evaluated=False,
-            affected_fields=(
-                "complete cached gad_tex_vars/reaction/transport LaTeX fields; "
-                "no exclusion or normalization"
-            ),
-        ),
+        formatter_correspondence=formatter_correspondence(root),
         required_authorities=(
             "actual exhausted INIT binding/run with exact expected identities",
             "current reviewed producer and actual warm runtime roots/profile/alias/layout capture",
@@ -465,7 +579,7 @@ def actual_comparison(
     )
     directory.mkdir(parents=True, exist_ok=False)
     attempts, values, accounting = [], {}, {}
-    calls = stream = capture = api = None
+    calls = stream = capture = api = original_formatter = None
 
     def take(name, operation, **readers):
         if calls is not None:
@@ -507,9 +621,12 @@ def actual_comparison(
         take("source-plan", lambda: source_plan(root))
 
         def compile_source():
-            nonlocal api
+            nonlocal api, original_formatter
             api = native.compile_original(root)
-            return api.plan
+            original_formatter = api.namespace["tex_val"]
+            return dict(
+                api.plan, formatter_binding=check_original_formatter(api, original_formatter, root)
+            )
 
         take("original-source-compilation", compile_source)
         stream = (directory / "invocations.jsonl").open("x")
@@ -553,6 +670,11 @@ def actual_comparison(
         values.update(binding=binding, parent=parent)
         take("complete-candidate-capture", capture.finish, capture=capture.data)
         roots = capture.reference_roots
+        take("retained-formatter-source-binding", lambda: formatter_correspondence(root))
+        take(
+            "original-formatter-namespace-binding",
+            lambda: check_original_formatter(api, original_formatter, root),
+        )
         source_calls = []
         values["original_source_calls"] = source_calls
         values["original_log_observations"] = api.logs
@@ -575,6 +697,10 @@ def actual_comparison(
                 )
                 source_calls[-1]["status"] = "returned"
         original_after, _ = native.Graph(**capture.reference_contracts).capture(roots)
+        take(
+            "original-formatter-namespace-after",
+            lambda: check_original_formatter(api, original_formatter, root),
+        )
         association = dict(
             binding=component.identity,
             complete_INIT=complete.complete_init.identity,
