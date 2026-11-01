@@ -740,10 +740,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   At the final historical postcheck, all 395 selected bytes matched despite
   Git bookkeeping changes; later source changes have separate evidence.
   [Source review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-consolidated-source-review.json)
-  found one remaining guard gap: original `cell_grid` reads NumPy helpers
-  from a module namespace absent from its binding checks. Specialist owns
-  that bounded repair and focused controls, together with the runner change
-  that records checkout drift separately from immutable execution evidence.
+  identified an original-grid NumPy namespace missing from the binding
+  checks. The [repair review closes ENV-G1](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/frozen-execution-authority-01/root-env-g1-source-review.json):
+  original grid globals and wrapped helper implementations are now checked
+  before grid execution and completed-owner use. The
+  [runner review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/frozen-execution-authority-01/root-runner-source-review.json)
+  confirms immutable execution verification remains strict while later
+  checkout changes become separate integration metadata; changed selected
+  bytes require a later integration check. The
+  [new saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/frozen-execution-authority-01/root-new-results-review.json)
+  verifies **22 passes / 78 deselected in 62.53 seconds, 242.1 MiB sampled
+  peak RSS**: 11 helper-binding controls plus 11 metadata controls repeated
+  from their earlier separately saved image. Both new top-level results
+  completed; historical failed attempts and postcheck refusals remain intact.
   No native geometry, independent numerical or physical acceptance is added;
   all post-cut and checkpoint holds remain.
   Specialist implemented the two original environmental Poisson constructions
