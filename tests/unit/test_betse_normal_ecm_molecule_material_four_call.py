@@ -77,6 +77,106 @@ def test_actual_declared_fixture_graph_round_trips_without_category_or_alias_reb
     assert q.primitive.codec.fingerprint(restored) == q.primitive.codec.fingerprint(value)
 
 
+@pytest.mark.parametrize("layout", ["reshape", "fortran", "reverse", "readonly", "bytes", "empty"])
+def test_array_view_evidence_preserves_bits_layout_bases_and_repeated_identity(tmp_path, layout):
+    root = np.arange(12, dtype=">f8")
+    root.view(">u8")[:3] = [0x8000000000000000, 0x7FF8000000000017, 0x7FF0000000000000]
+    view = root.reshape(3, 4)
+    if layout == "fortran":
+        root = np.array(view, order="F", copy=True)
+        view = root[:, :2]
+    elif layout == "reverse":
+        view = view[::-1, ::-1]
+    elif layout == "readonly":
+        root.setflags(write=False)  # The previously created view remains writable.
+    elif layout == "bytes":
+        root = np.frombuffer(root.tobytes(), dtype=">f8")
+        view = root.reshape(3, 4)
+    elif layout == "empty":
+        view = view[:0]
+    before = (view.base, view.strides, view.flags.writeable, view.tobytes(), root.tobytes())
+    path = q.archive(tmp_path / "views", dict(view=view, repeated=view, root=root))
+    restored, rows = q.read_archive(path, with_array_observations=True)
+    assert restored["view"] is restored["repeated"]
+    assert restored["view"].dtype.str == view.dtype.str
+    assert restored["view"].shape == view.shape and restored["view"].tobytes() == before[3]
+    row = next(r for r in rows if r["logical_snapshot"] is restored["view"])
+    assert row["strides"] == list(view.strides) and row["writable"] == before[2]
+    assert row["owns_data"] == bool(view.flags.owndata)
+    assert row["base"] is not None
+    base = rows[row["base"]]
+    assert base["logical_snapshot"].tobytes() == view.base.tobytes()
+    assert row["offset_bytes"] == (
+        view.__array_interface__["data"][0] - view.base.__array_interface__["data"][0]
+    )
+    assert view.base is before[0] and view.strides == before[1]
+    assert view.flags.writeable == before[2] and view.tobytes() == before[3]
+    assert root.tobytes() == before[4]
+    assert not np.shares_memory(restored["view"], view)
+    assert not np.shares_memory(restored["view"], restored["root"])
+    manifest = json.loads((path / "manifest.json").read_text())
+    assert manifest["owner_admission"] is False
+    assert manifest["live_array_aliases_reconstructed"] is False
+
+
+def test_array_view_capture_does_not_relax_original_checkpoint_codec(tmp_path):
+    value = np.arange(6.0).reshape(2, 3)
+    with pytest.raises(ValueError, match="unowned aliasing"):
+        q.primitive.codec.Encoder().capture(value)
+    q.archive(tmp_path / "observation", value)
+    with pytest.raises(ValueError, match="unowned aliasing"):
+        q.primitive.codec.Encoder().capture(value)
+
+
+def test_array_view_evidence_counts_hidden_base_bytes_before_copy(tmp_path):
+    root = np.arange(24.0)
+    view = root[1:2]
+    limits = replace(q.primitive.codec.DEFAULT_LIMITS, expanded_bytes=16)
+    with pytest.raises(ValueError, match="numeric byte bound"):
+        q.EvidenceEncoder(limits).capture(view)
+    assert root.size == 24 and view.base is root
+
+
+def test_array_view_evidence_refuses_object_or_unknown_base_without_conversion(monkeypatch):
+    objects = np.array([object()], dtype=object)
+    raw = np.arange(8.0)
+    outside = np.lib.stride_tricks.as_strided(raw, shape=(2,), strides=(8,))
+    nested = outside[::1]
+    memoryview_backed = np.frombuffer(memoryview(bytearray(16)), dtype=np.float64)
+    attempted = []
+
+    def forbidden(*args, **kwargs):
+        attempted.append("array copy")
+        raise AssertionError("Unsupported storage must refuse before data copy")
+
+    monkeypatch.setattr(q.np, "array", forbidden)
+    with pytest.raises(ValueError, match="dtype"):
+        q.EvidenceEncoder().capture(objects)
+    for value in (outside, nested, memoryview_backed):
+        with pytest.raises(ValueError, match="Unsupported evidence array base"):
+            q.EvidenceEncoder().capture(value)
+    assert attempted == []
+
+
+def test_array_view_reader_retains_original_v1_evidence(tmp_path):
+    path = tmp_path / "original"
+    path.mkdir()
+    encoder = q.primitive.codec.Encoder()
+    tree = encoder.capture(dict(original=np.array([-0.0])))
+    encoder.write(path, tree)
+    q.snapshot.write_json(
+        path / "manifest.json",
+        dict(
+            kind="cells.material_four_call_evidence@1",
+            owner_admission=False,
+            fingerprint=encoder.seal(tree),
+            files={n: q.ref(path / n) for n in ("state.json", "arrays.npz")},
+        ),
+    )
+    value, observations = q.read_archive(path, with_array_observations=True)
+    assert observations == [] and value["original"].tobytes() == np.array([-0.0]).tobytes()
+
+
 @pytest.mark.parametrize(
     "fault", ["missing", "initial", "definition", "fourth", "order", "duplicate"]
 )
@@ -359,6 +459,35 @@ def test_source_failure_keeps_primary_chain_partial_and_accounting_on_secondary_
             row["available"]["source_exception_owned_fields"]["partial"]["failed_trial"]
             == "retained"
         )
+
+
+def test_array_view_failure_evidence_keeps_primary_cause_and_complete_base(monkeypatch, tmp_path):
+    packet = mock_packet(monkeypatch, tmp_path)
+    seen = []
+    fake_work(monkeypatch, seen)
+    original = np.arange(12.0)
+    view = original.reshape(3, 4)[:, ::-1]
+    cause = TypeError("original source cause")
+    primary = ValueError("synthetic failed source with array view")
+    primary.__cause__ = cause
+    primary.partial = dict(view=view, repeated=view)
+
+    def fail(*args):
+        raise primary
+
+    monkeypatch.setattr(q.primitive, "begin", fail)
+    output = tmp_path / "output"
+    with pytest.raises(ValueError) as caught:
+        q.worker(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value is primary and primary.__cause__ is cause
+    value, observations = q.read_archive(output / "primitive-begin", with_array_observations=True)
+    observed = value["available"]["source_exception_owned_fields"]["partial"]
+    assert observed["view"] is observed["repeated"]
+    row = next(r for r in observations if r["logical_snapshot"] is observed["view"])
+    assert row["strides"] == list(view.strides)
+    assert observations[row["base"]]["logical_snapshot"].tobytes() == original.tobytes()
+    assert seen == ["observer-start", "observer-stop"]
+    assert (output / "failure/manifest.json").is_file() and not (output / "result.json").exists()
 
 
 def test_successful_live_return_with_evidence_IO_error_does_not_advance_or_hide_return(

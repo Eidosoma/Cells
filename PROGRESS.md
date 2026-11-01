@@ -42,9 +42,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   returns when observation fails and preservation of prior profiling guards.
   [Source review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/stage-timing-development-01/source-review-03.json)
   is clear. Earlier 19- and 25-check images retain their own source limits.
-  No actual timing-enabled retry has run; numerical settings, evidence retention
-  and guards are unchanged.
-  Both failed attempts remain failed and grant no continuation acceptance.
+  The [third actual diagnostic and timing review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-03/root-review.json)
+  reached the same **480-second limit**, retaining seven captures and 29 timing
+  records. Completed actions took **44.03 seconds wall / 25.86 CPU** and their
+  captures **90.63 / 53.52 seconds**. The unfinished caller action took at least
+  **329.48 / 186.77 seconds**; no literal `cell_index` entry appears in the log.
+  The next optimization target is caller authentication/observation overhead;
+  entry counts alone cannot attribute CPU cost to a particular function.
+  The fresh source includes a reviewed dormant mapping-dispatch hook, without
+  qualifying the mapping feature. All three attempts remain failed and grant
+  no nine-method continuation acceptance; numerical settings and guards stayed
+  unchanged.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
@@ -54,8 +62,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   index 0 from an intentionally mutated source index 1; its summary-label error
   is documented. The [independent four-call comparison tooling](/mnt/workspaces/Cells/molecule-material-four-call-preparation-20261101-01/root-source-review.json)
   and its [68 software controls and 12 outcomes](/mnt/workspaces/Cells/molecule-material-four-call-preparation-20261101-01/root-results-review.json)
-  are reviewed. Its fresh repaired packet remains unexecuted; no fourth numerical
-  state is credited. Key is moving to the genuine Simulator/phase prerequisite.
+  are reviewed. The [first actual four-update attempt](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-01/root-review.json)
+  stopped after **70.90 seconds** when its evidence writer rejected a writable
+  NumPy view in the original BETSE return. Seventeen complete archives retain
+  the four Cells updates and three legacy updates. The original adapter returned,
+  but its success flags and return buffers were not saved; Decimal and comparison
+  work did not run. No fourth-state qualification or source match is credited.
+  Root's [evidence archive repair](/mnt/workspaces/Cells/molecule-material-four-call-evidence-repair-20261101-01/source-review-02.json)
+  now retains complete view/base data, array layout and repeated references
+  without reconstructing live ownership. The final focused image passed
+  **17 checks, 38 deselected**, in **55.15 seconds**, with **297.1 MiB sampled
+  peak RSS**. The [saved-result review](/mnt/workspaces/Cells/molecule-material-four-call-evidence-repair-20261101-01/root-software-review.json)
+  keeps the earlier 17-check image separate. Actual comparison needs a fresh
+  snapshot and later run; production equations and checkpoint ownership
+  restrictions remain unchanged. Key's new Simulator and
+  phase-callback source each need a focused inherited-observer failure-retention
+  repair. Their [43-control Simulator review](/mnt/workspaces/Cells/native-simulator-construction-development-20261101-01/root-review.json)
+  and [46-control callback review](/mnt/workspaces/Cells/native-phase-callbacks-development-20261101-01/root-review.json)
+  retain all ten and five outcomes respectively; actual INIT/phase remains held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
@@ -63,8 +87,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   is reviewed with nine additional controls. Its earlier timed-out selection
   retains nine old pass reports and one started new fixture, without a completed
   new control or aggregate entry certification. The next Specialist lane is the
-  literal tissue-centre-to-grid mapping on retained multi-cell objects; full
-  phase/core/profile initialization remains a separate prerequisite.
+  literal tissue-centre-to-grid mapping on retained multi-cell objects, followed
+  by an explicit native grid-metric audit; full phase/core/profile initialization
+  remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
   is source-reviewed with 29 final blocked controls and all six outcomes retained.
   It supplies selected parameter/handler construction, with full Parameters,

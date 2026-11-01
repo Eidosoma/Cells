@@ -148,32 +148,150 @@ def data(value):
     return value
 
 
+class EvidenceEncoder(primitive.codec.Encoder):
+    """Detached numeric observations, never writable-view checkpoint authority.
+
+    The unchanged codec writes owned copies. Original layouts, repeated array
+    identities and complete ndarray/byte-buffer bases remain separate evidence;
+    decoding does not reconstruct their live alias relationships.
+    """
+
+    def __init__(self, limits=primitive.codec.DEFAULT_LIMITS):
+        super().__init__(limits)
+        self.observations, self.originals, self.snapshots = [], {}, set()
+        self.storage_bounds = {}
+        self.observed_bytes = 0
+
+    def _observe(self, value, depth):
+        require(depth <= self.limits.depth, "Evidence array base depth bound")
+        if id(value) in self.originals:
+            original, index, copied = self.originals[id(value)]
+            require(original is value and copied is not None, "Changed or cyclic array identity")
+            return index, copied
+        require(len(self.observations) < self.limits.arrays, "Evidence array count bound")
+        kind = type(value)
+        require(kind in (np.ndarray, bytes, bytearray), "Unsupported evidence array base")
+        array = value if kind is np.ndarray else np.frombuffer(value, dtype=np.uint8)
+        require(
+            array.dtype.kind in "biuf"
+            and array.dtype.itemsize in (1, 2, 4, 8)
+            and array.dtype.metadata is None,
+            "Unsupported evidence array dtype",
+        )
+        require(
+            array.ndim <= self.limits.dimensions and array.size <= self.limits.elements,
+            "Evidence array shape bound",
+        )
+        self.observed_bytes += array.nbytes
+        require(self.observed_bytes <= self.limits.expanded_bytes, "Evidence numeric byte bound")
+        index = len(self.observations)
+        self.originals[id(value)] = (value, index, None)
+        row = dict(
+            category="ndarray" if kind is np.ndarray else kind.__name__,
+            dtype=array.dtype.str,
+            shape=list(array.shape),
+            strides=list(array.strides),
+            writable=bool(array.flags.writeable),
+            owns_data=bool(array.flags.owndata),
+            aligned=bool(array.flags.aligned),
+            C=bool(array.flags.c_contiguous),
+            F=bool(array.flags.f_contiguous),
+            base=None,
+            offset_bytes=None,
+            logical_snapshot=None,
+        )
+        self.observations.append(row)
+        if kind is np.ndarray and value.base is not None:
+            base, _ = self._observe(value.base, depth + 1)
+            original_base = value.base
+            storage = (
+                original_base
+                if type(original_base) is np.ndarray
+                else np.frombuffer(original_base, dtype=np.uint8)
+            )
+            row.update(
+                base=base,
+                offset_bytes=int(
+                    array.__array_interface__["data"][0] - storage.__array_interface__["data"][0]
+                ),
+            )
+            bounds = self.storage_bounds[id(original_base)]
+        else:
+            require(
+                kind is not np.ndarray
+                or (array.flags.owndata and (array.flags.c_contiguous or array.flags.f_contiguous)),
+                "Unsupported evidence owning storage",
+            )
+            address = array.__array_interface__["data"][0]
+            bounds = address, address + array.nbytes
+        address = array.__array_interface__["data"][0]
+        lower = address + sum(
+            min(0, (n - 1) * s) for n, s in zip(array.shape, array.strides, strict=True)
+        )
+        upper = address + sum(
+            max(0, (n - 1) * s) for n, s in zip(array.shape, array.strides, strict=True)
+        )
+        upper += array.itemsize
+        if array.size == 0:
+            lower = upper = address
+        require(bounds[0] <= lower <= upper <= bounds[1], "Evidence view exceeds source storage")
+        self.storage_bounds[id(value)] = bounds
+        # No data read from this view precedes complete base-chain/bounds checks.
+        copied = np.array(array, copy=True, order="F" if array.flags.f_contiguous else "C")
+        self.originals[id(value)] = (value, index, copied)
+        self.snapshots.add(id(copied))
+        row["logical_snapshot"] = copied
+        require(
+            array.tobytes(order="C") == copied.tobytes(order="C"),
+            "Array changed during evidence capture",
+        )
+        return index, copied
+
+    def encode(self, value, depth=0):
+        if type(value) is np.ndarray and id(value) not in self.snapshots:
+            _, value = self._observe(value, depth)
+        return super().encode(value, depth)
+
+    def capture(self, value):
+        return super().capture(dict(payload=value, array_observations=self.observations))
+
+
 def archive(directory, value):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
-    encoder = primitive.codec.Encoder()
+    encoder = EvidenceEncoder()
     tree = encoder.capture(data(value))
     encoder.write(directory, tree)
     snapshot.write_json(
         directory / "manifest.json",
         dict(
-            kind="cells.material_four_call_evidence@1",
+            kind="cells.material_four_call_evidence@2",
             fingerprint=encoder.seal(tree),
             files={name: ref(directory / name) for name in ("state.json", "arrays.npz")},
             owner_admission=False,
+            live_array_aliases_reconstructed=False,
         ),
     )
     primitive.codec._sync_directory(directory)
     return directory
 
 
-def read_archive(directory):
+def read_archive(directory, *, with_array_observations=False):
     directory = Path(directory)
     row = primitive.codec.parse_json(
         primitive_validation.checkpoint._read(
             directory / "manifest.json", primitive.codec.DEFAULT_LIMITS.json_bytes
         ),
         primitive.codec.DEFAULT_LIMITS,
+    )
+    require(
+        row.get("kind")
+        in (
+            "cells.material_four_call_evidence@1",
+            "cells.material_four_call_evidence@2",
+        )
+        and row.get("owner_admission") is False,
+        "Require data-only four-call evidence",
     )
     blobs = {}
     for name, limit in (
@@ -196,7 +314,17 @@ def read_archive(directory):
     require(
         primitive.codec.fingerprint(value) == row["fingerprint"], "Changed four-call evidence graph"
     )
-    return value
+    if row["kind"] == "cells.material_four_call_evidence@2":
+        require(
+            type(value) is dict and set(value) == {"payload", "array_observations"},
+            "Incomplete array observation envelope",
+        )
+        return (
+            (value["payload"], value["array_observations"])
+            if with_array_observations
+            else value["payload"]
+        )
+    return (value, []) if with_array_observations else value
 
 
 def partial(frame):
