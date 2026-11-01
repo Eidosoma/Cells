@@ -236,15 +236,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The later observer/tracing repair and its exact evidence are reviewed above.
   Specialist's [independent mapping qualification tools are reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/root-review.json):
   the final 61 blocked controls and earlier 44-control image are verified
-  separately, along with the preparation refusal. Three source blockers remain:
-  forwarding the genuine descriptor-backed constructor, checking the actual
-  list-to-array transition at the world tail, and retaining a returned mapping
-  array before observation can fail. The separate
+  separately, along with the preparation refusal. The separate
   [recorder compatibility repair is reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/recorder-compatibility-01/root-review.json):
   87 blocked controls pass with eleven phases and separate Poisson/tail trials.
   Its earlier reporter failure and missing case payload remain explicit. The
-  three source repairs remain separate; fresh world construction is prerequisite
-  work, not additional independent cases.
+  [three reference-source repairs are now reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/source-reference-repairs-01/root-review.json):
+  the genuine descriptor-backed constructor reaches the original delegate,
+  historical environment aliases and the actual list-to-array tail transition
+  are checked separately, and actual mapping returns survive observation failure
+  with independent forensic capture attempts. **100 blocked software controls**
+  pass at the current bytes (87 retained controls plus 13 new), in **59.68 seconds,
+  77.7 MiB sampled peak RSS**, with all saved results and producer hashes checked.
+  Native source/equations/tolerances are unchanged. Fresh world construction is
+  prerequisite work, not additional independent cases.
   Actual mapping/reference execution remains held.
   Full phase/core/profile initialization remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
