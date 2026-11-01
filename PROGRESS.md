@@ -80,8 +80,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   actual owner comparator, changed source bytes at unchanged timestamps, nested
   default changes, capacity refusal and unchanged upstream checks. All seven
   named outcomes are retained; the earlier 21-check image and native-text-only
-  comparison retain their own producer bindings. Numerical bodies are unchanged;
-  integration into a complete runtime and any speed benefit remain unmeasured. The
+  comparison retain their own producer bindings. The
+  [fresh integrated smoke is now verified](/mnt/workspaces/Cells/native-mapping-setup-diagnostic-20261101-01/smoke-03/root-review.json):
+  the same one blocked control passes, with 26 deselected, in **138.19 seconds,
+  236.5 MiB sampled peak RSS**. Its inputs, synthetic outputs, native guards and
+  observer cleanup match the preceding 206.89-second image. This instrumented
+  pair took **33.2% less wall time**; it is not a biological-simulation benchmark.
+  The two verifier modules and new helper are the only executed-source changes.
+  All 411 frozen source files match the current checkout; the original
+  concurrent Git-commit notice remains preserved separately. Numerical bodies
+  and qualification limits are unchanged, and actual mapping remains held. The
   [fourth actual diagnostic](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-04/root-review.json)
   completed caller construction in **34.89 seconds wall / 34.60 CPU**, saved
   its eighth capture, and entered literal `cellVerts`. It still reached the
