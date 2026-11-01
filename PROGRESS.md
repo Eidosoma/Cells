@@ -832,10 +832,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   image separately. The failed smoke lacks a standalone serialized raw-partial
   payload; its logs and case/JUnit records remain. A
   [detached software batch](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/software-batch-01/LAUNCH.json)
-  plans **41 distinct native-blocked controls** in bounded sequential groups.
-  Its terminal results have not been queried; completion review waits for a
-  requested status check. Smoke results do not qualify the later batch bytes,
-  and neither source nor scientific acceptance has been granted.
+  completed **41 distinct native-blocked controls across ten groups** in
+  **18 minutes 14 seconds**, with **546.8 MiB maximum sampled peak RSS**.
+  The [requested status check](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/root-requested-status-01.json)
+  verifies all group terminals, JUnit counts, resource limits and immutable
+  source bindings. Final source and per-case evidence review remain pending;
+  no actual native or scientific acceptance has been granted. Earlier smoke
+  results remain bound to their own versions.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
