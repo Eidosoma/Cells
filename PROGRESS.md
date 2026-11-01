@@ -811,8 +811,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   pseudoinverse retains a large constant component: inverse row/column sums
   reach **145.98**, and projector residuals reach **2.91** and **0.634**.
   Small norm-scaled residuals do not remove that constant-mode finding.
-  Numerical acceptance remains held pending a separate mean-free decomposition
-  and rank/cutoff diagnosis; native equations and tolerances are unchanged.
+  The [exact-arithmetic extension](/mnt/workspaces/Cells/native-single-cell-poisson-constant-mode-20261101-01/source-review.json)
+  now separates the uniform, cross-coupling and mean-free components of that
+  same saved inverse. [All 62 software checks passed](/mnt/workspaces/Cells/native-single-cell-poisson-constant-mode-20261101-01/software-review.json)
+  in **10.55 seconds, 196.8 MiB sampled peak RSS**: 48 unchanged checks and
+  14 new controls, including an independent rational oracle, extreme binary64
+  values and the full 625-point size. The [reviewed saved-buffer calculation](/mnt/workspaces/Cells/native-single-cell-poisson-constant-mode-20261101-01/analysis-01/root-review.json)
+  completed in **13.32 seconds, 277.6 MiB sampled peak RSS**, using 121-digit
+  Decimal arithmetic with exact conversion of stored binary64 values and
+  inexact-operation refusal. The uniform component is **−0.23356427 per
+  entry**; the mean-free component has infinity norm **3.41025e-10**.
+  Exact raw product residuals remain **2.90949 / 0.633187**. Removing uniform
+  and cross components reduces them to **0.00894165 / 0.00843675**, confirming
+  a remaining defect in the saved matrix rather than diagnostic rounding alone.
+  The decomposition reconstructs the saved inverse exactly; its zero sums are
+  by construction. No projected inverse was exported or adopted. Numerical
+  acceptance remains held for a separate singular-spectrum/cutoff and
+  compatible-forcing investigation; native equations and tolerances are unchanged.
   Both saved masks remain zero, so this supplied single-cell case does not
   establish a populated physical tissue domain or biological validity.
   Phase/callback and full

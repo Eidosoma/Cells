@@ -8,6 +8,7 @@ import math
 import struct
 import sys
 from dataclasses import dataclass
+from fractions import Fraction
 
 import pytest
 
@@ -446,3 +447,196 @@ def test_failed_unbound_or_partial_saved_comparison_refuses(tmp_path, monkeypatc
     with pytest.raises(ValueError):
         algebra.saved_report(root, output)
     assert not output.exists()
+
+
+def rational(record):
+    return Fraction(record["numerator"]) / record["denominator"]
+
+
+def dense_product(a, b):
+    return [
+        [sum(x * y for x, y in zip(row, col, strict=True)) for col in zip(*b, strict=True)]
+        for row in a
+    ]
+
+
+def infinity_norm(a):
+    return max(sum(map(abs, row)) for row in a)
+
+
+@pytest.mark.parametrize("regime", ["dyadic", "recurring_means", "extreme_binary64"])
+def test_exact_decomposition_and_all_products_agree_with_dense_fraction_oracle(regime):
+    if regime == "recurring_means":
+        n = 6
+        data = dict(
+            shape=(2, 3), indices=[divmod(i, 3) for i in range(n)], delta=2.0, boundary="flux"
+        )
+        a = [0.0] * (n * n)
+        for i, (row, col) in enumerate(data["indices"]):
+            neighbours = [
+                j for j, (r, c) in enumerate(data["indices"]) if abs(r - row) + abs(c - col) == 1
+            ]
+            a[i * n + i] = -len(neighbours) / 4
+            for j in neighbours:
+                a[i * n + j] = 0.25
+        data.update(
+            operator=a, inverse=[((i * 7 + j * 3) % 11 - 5) / 8 for i in range(n) for j in range(n)]
+        )
+    else:
+        data, n = flux(), 4
+        data["inverse"] = [v + 0.5 for v in data["inverse"]]
+        if regime == "extreme_binary64":
+            data["operator"][0] = sys.float_info.max
+            data["inverse"][0] = float.fromhex("0x0.0000000000001p-1022")
+            data["inverse"][1] = sys.float_info.max
+    before = copy.deepcopy(data)
+    a, g = [
+        [[Fraction.from_float(v) for v in values[i * n : (i + 1) * n]] for i in range(n)]
+        for values in (data["operator"], data["inverse"])
+    ]
+    j = [[Fraction(1, n)] * n for _ in range(n)]
+    p = [[Fraction(int(i == k)) - j[i][k] for k in range(n)] for i in range(n)]
+    pieces = {
+        "JGJ": dense_product(dense_product(j, g), j),
+        "JGP": dense_product(dense_product(j, g), p),
+        "PGJ": dense_product(dense_product(p, g), j),
+        "PGP": dense_product(dense_product(p, g), p),
+    }
+    report = algebra.diagnose_constant_mode(**data)
+    assert data == before
+    assert rational(report["decomposition_reconstruction_max_abs"]) == 0
+    assert report["exact_arithmetic_inexact_flag"] is False
+    for name, values in pieces.items():
+        assert rational(report["components"][name]["norm_inf"]) == infinity_norm(values)
+        assert rational(report["components"][name]["norm_one"]) == infinity_norm(
+            list(zip(*values, strict=True))
+        )
+    products = {
+        "AG_minus_P": dense_product(a, g),
+        "GA_minus_P": dense_product(g, a),
+        "A_PGP_minus_P": dense_product(a, pieces["PGP"]),
+        "PGP_A_minus_P": dense_product(pieces["PGP"], a),
+    }
+    for name, product in products.items():
+        errors = [
+            [x - y for x, y in zip(row, target, strict=True)]
+            for row, target in zip(product, p, strict=True)
+        ]
+        assert rational(report["products"][name]["residual_inf"]) == infinity_norm(errors)
+        assert rational(report["products"][name]["residual_max_abs"]) == max(
+            abs(x) for row in errors for x in row
+        )
+    assert report["production_repair"] is report["numerical_acceptance"] is False
+    if regime == "recurring_means":
+        assert any(
+            v["display_inexact"]
+            for component in report["components"].values()
+            for v in component.values()
+        )
+    if regime == "extreme_binary64":
+        assert report["precision_digits"] > 1000
+
+
+@pytest.mark.parametrize("component", ["constant", "right_constant", "left_constant", "both_cross"])
+def test_uniform_and_cross_contamination_are_distinguished_without_changing_source(component):
+    data = flux()
+    r, c = [0.5, -0.5, 0.0, 0.0], [0.0, 0.0, 0.25, -0.25]
+    for i in range(4):
+        for j in range(4):
+            if component == "constant":
+                data["inverse"][4 * i + j] += 0.5
+            if component in ("right_constant", "both_cross"):
+                data["inverse"][4 * i + j] += r[i]
+            if component in ("left_constant", "both_cross"):
+                data["inverse"][4 * i + j] += c[j]
+    report = algebra.diagnose_constant_mode(**data)
+    assert (rational(report["components"]["JGJ"]["norm_inf"]) > 0) == (component == "constant")
+    assert (rational(report["components"]["PGJ"]["norm_inf"]) > 0) == (
+        component in ("right_constant", "both_cross")
+    )
+    assert (rational(report["components"]["JGP"]["norm_inf"]) > 0) == (
+        component in ("left_constant", "both_cross")
+    )
+    for name in ("A_PGP_minus_P", "PGP_A_minus_P"):
+        assert rational(report["products"][name]["residual_inf"]) == 0
+    assert (rational(report["products"]["AG_minus_P"]["residual_inf"]) > 0) == (
+        component in ("right_constant", "both_cross")
+    )
+    assert (rational(report["products"]["GA_minus_P"]["residual_inf"]) > 0) == (
+        component in ("left_constant", "both_cross")
+    )
+    assert report["projected_arrays_exported"] is False
+
+
+def test_decimal_products_preserve_small_terms_lost_by_binary64_product_rounding():
+    data = flux()
+    data["operator"] = [v * 1e12 for v in data["operator"]]
+    data["inverse"] = [v / 1e12 + 0.25 for v in data["inverse"]]
+    rounded = algebra.diagnose(**data)
+    exact = algebra.diagnose_constant_mode(**data)
+    exact_residual = rational(exact["products"]["AG_minus_P"]["residual_inf"])
+    assert exact_residual != Fraction.from_float(rounded["operator_inverse_residual_inf"])
+    # Stored G already lost information when its small entries were added to0.25.
+    # Exact diagnostic multiplication must not silently repair those source bits.
+    assert exact_residual > 0
+    assert rational(exact["products"]["A_PGP_minus_P"]["residual_inf"]) > 0
+
+
+@pytest.mark.parametrize("change", ["off_stencil", "nonfinite", "wrong_boundary", "incomplete"])
+def test_constant_diagnostic_refuses_unrepresentable_or_unbounded_inputs(change):
+    data = flux()
+    if change == "off_stencil":
+        data["operator"][3] = 1e-300
+    elif change == "nonfinite":
+        data["inverse"][0] = float("nan")
+    elif change == "wrong_boundary":
+        data["boundary"] = "value"
+    else:
+        data["inverse"].pop()
+    with pytest.raises(ValueError):
+        algebra.diagnose_constant_mode(**data)
+
+
+def test_full_default_grid_constant_matrix_is_not_promoted_to_an_inverse():
+    width, n = 25, 625
+    a = [0.0] * (n * n)
+    for i in range(n):
+        row, col = divmod(i, width)
+        neighbours = [j for j in (i - width, i + width) if 0 <= j < n]
+        neighbours += ([i - 1] if col else []) + ([i + 1] if col < width - 1 else [])
+        a[i * n + i] = -len(neighbours) / 4
+        for j in neighbours:
+            a[i * n + j] = 0.25
+    report = algebra.diagnose_constant_mode(
+        shape=(width, width),
+        indices=[divmod(i, width) for i in range(n)],
+        delta=2.0,
+        operator=a,
+        inverse=[0.125] * (n * n),
+        boundary="flux",
+    )
+    assert report["full_product_entries_per_product"] == n * n
+    assert rational(report["components"]["JGJ"]["norm_inf"]) == Fraction(n, 8)
+    assert rational(report["components"]["PGP"]["norm_inf"]) == 0
+    for product in report["products"].values():
+        assert rational(product["residual_inf"]) == Fraction(2 * (n - 1), n)
+    assert report["numerical_acceptance"] is False
+
+
+def test_saved_constant_mode_report_preserves_inputs_and_separates_default_mode(
+    tmp_path, monkeypatch
+):
+    root, _, _ = packet(tmp_path, monkeypatch)
+    before = {p.name: p.read_bytes() for p in root.iterdir()}
+    output = tmp_path / "reports/constant.json"
+    report = algebra.saved_report(root, output, constant_mode=True)
+    assert report["kind"] == algebra.CONSTANT_KIND
+    assert [r["boundary"] for r in report["operators"]] == ["flux"]
+    assert report["native_source_executions"] == report["independent_biological_cases"] == 0
+    assert before == {p.name: p.read_bytes() for p in root.iterdir()}
+    with pytest.raises(ValueError):
+        algebra.saved_report(root, output, constant_mode=True)
+    with pytest.raises(ValueError):
+        algebra.saved_report(root, root / "new.json", constant_mode=True)
+    with pytest.raises(ValueError):
+        algebra.saved_report(root, tmp_path / "unwritten.json", constant_mode="yes")

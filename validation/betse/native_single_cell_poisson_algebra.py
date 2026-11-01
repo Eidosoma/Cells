@@ -10,6 +10,7 @@ no residual tolerance or numerical acceptance is introduced by this report.
 import argparse
 import math
 import struct
+from decimal import Decimal, Inexact, localcontext
 from pathlib import Path
 
 from validation.betse import native_single_cell_prefix_compare as compare
@@ -18,6 +19,7 @@ from validation.betse import native_single_cell_prefix_qualification as prior
 
 MAX_POINTS = 625
 KIND = "cells.saved_environment_poisson_algebra_diagnostic@1"
+CONSTANT_KIND = "cells.saved_environment_poisson_constant_mode_diagnostic@1"
 NO_CREDIT = dict(
     numerical_acceptance=False,
     physical_admission=False,
@@ -240,8 +242,199 @@ def _numbers(node, *, kind, shape, label):
     ]
 
 
-def analyse(reference):
+def _ratio(numerator, denominator=1):
+    """An exact finite Decimal numerator over an integer, plus a display only."""
+    with localcontext() as context:
+        context.prec = 80
+        context.traps[Inexact] = False
+        context.clear_flags()
+        display = numerator / Decimal(denominator)
+        rounded = context.flags[Inexact]
+    return dict(
+        numerator=str(numerator),
+        denominator=denominator,
+        decimal80=str(display),
+        display_inexact=rounded,
+    )
+
+
+def _exact_precision(operator, inverse, n):
+    """Cover the aligned decimal range of every integer-cleared intermediate.
+
+    Each input is an exact finite binary64 Decimal. Intermediates contain at
+    most one A factor and one G factor. Sums, projection scalings and norm
+    sums grow by at most a constant times n**4. Eight decimal digit-counts
+    of n plus16 guard digits conservatively cover those integer factors.
+    Inexact is trapped as an additional executable check, not a tolerance.
+    """
+    bounds = []
+    for values in (operator, inverse):
+        nonzero = [v for v in values if v]
+        bounds.append(
+            (
+                min(v.as_tuple().exponent for v in nonzero),
+                max(v.adjusted() for v in nonzero),
+            )
+            if nonzero
+            else (0, 0)
+        )
+    (a_low, a_high), (g_low, g_high) = bounds
+    low = min(0, a_low, g_low, a_low + g_low)
+    high = max(0, a_high, g_high, a_high + g_high + 1)
+    precision = max(32, high - low + 1 + 8 * len(str(n)) + 16)
+    if precision > 4096:
+        raise ValueError("Exact diagnostic precision bound exceeded")
+    return precision
+
+
+def _decimal_matrix_stats(values, n, denominator):
+    rows = [sum(values[i * n : (i + 1) * n], Decimal(0)) for i in range(n)]
+    columns = [sum((values[i * n + j] for i in range(n)), Decimal(0)) for j in range(n)]
+    return dict(
+        norm_inf=_ratio(
+            max(sum(map(abs, values[i * n : (i + 1) * n])) for i in range(n)), denominator
+        ),
+        norm_one=_ratio(
+            max(sum(abs(values[i * n + j]) for i in range(n)) for j in range(n)), denominator
+        ),
+        entry_min=_ratio(min(values), denominator),
+        entry_max=_ratio(max(values), denominator),
+        row_sum_inf=_ratio(max(map(abs, rows)), denominator),
+        column_sum_inf=_ratio(max(map(abs, columns)), denominator),
+    )
+
+
+def diagnose_constant_mode(*, shape, indices, delta, operator, inverse, boundary):
+    """Decompose saved G, never replace it or construct a production inverse.
+
+    J=11^T/n, P=I-J. Integer-cleared K=n^2 PGP avoids rounding the means
+    when n has prime factors other than2 and5. All four complete products
+    (AG, GA, AK, KA) use the stored A entries and exact dyadic G values.
+    Only report display divides: its rounding is separate from exact ratios.
+    """
+    if type(boundary) is not str or boundary != "flux":
+        raise ValueError("Constant-mode diagnostic requires all-flux boundaries")
+    expected = _stencil(shape, indices, boundary)
+    n, zero = len(expected), Decimal(0)
+    if _finite(delta, "spacing") <= 0:
+        raise ValueError("Require positive spacing")
+    converted = []
+    for name, values in (("operator", operator), ("inverse", inverse)):
+        if type(values) not in (list, tuple) or len(values) != n * n:
+            raise ValueError("Require the complete square " + name)
+        converted.append([Decimal.from_float(_finite(v, name + " entry")) for v in values])
+    a, g = converted
+    sparse, columns = [], [[] for _ in range(n)]
+    missing = 0
+    for i in range(n):
+        row = []
+        for j in range(n):
+            v = a[i * n + j]
+            if v:
+                if j not in expected[i]:
+                    raise ValueError("Off-stencil stored entry; no sparse substitution permitted")
+                row.append((j, v))
+                columns[j].append((i, v))
+            elif j in expected[i]:
+                missing += 1
+        sparse.append(row)
+    precision = _exact_precision(a, g, n)
+    with localcontext() as context:
+        context.prec = precision
+        context.traps[Inexact] = True
+        context.clear_flags()
+        nn = n * n
+        rows = [sum(g[i * n : (i + 1) * n], zero) for i in range(n)]
+        cols = [sum((g[i * n + j] for i in range(n)), zero) for j in range(n)]
+        total = sum(rows, zero)
+        right_constant = [n * v - total for v in rows]  # n^2 PGJ
+        left_constant = [n * v - total for v in cols]  # n^2 JGP
+        k = [
+            nn * g[i * n + j] - n * rows[i] - n * cols[j] + total
+            for i in range(n)
+            for j in range(n)
+        ]
+        reconstruction = max(
+            abs(nn * g[i * n + j] - (total + right_constant[i] + left_constant[j] + k[i * n + j]))
+            for i in range(n)
+            for j in range(n)
+        )
+        norms = {
+            name: [zero, zero]
+            for name in ("AG_minus_P", "GA_minus_P", "A_PGP_minus_P", "PGP_A_minus_P")
+        }
+        for i in range(n):
+            row_norms = dict.fromkeys(norms, zero)
+            for j in range(n):
+                target = nn * int(i == j) - n
+                errors = (
+                    nn * sum((v * g[t * n + j] for t, v in sparse[i]), zero) - target,
+                    nn * sum((g[i * n + t] * v for t, v in columns[j]), zero) - target,
+                    sum((v * k[t * n + j] for t, v in sparse[i]), zero) - target,
+                    sum((k[i * n + t] * v for t, v in columns[j]), zero) - target,
+                )
+                for name, error in zip(norms, errors, strict=True):
+                    magnitude = abs(error)
+                    row_norms[name] += magnitude
+                    norms[name][1] = max(norms[name][1], magnitude)
+            for name in norms:
+                norms[name][0] = max(norms[name][0], row_norms[name])
+        report = dict(
+            boundary=boundary,
+            shape=list(shape),
+            points=n,
+            spacing=delta,
+            precision_digits=precision,
+            arithmetic="Decimal.from_float; exact integer-cleared products/sums; Inexact trapped",
+            ratio_format="Exact Decimal numerator / integer denominator; decimal80 is display only",
+            projectors="J=11^T/n; P=I-J; K=n^2 PGP",
+            signed_inverse_row_sums=[str(v) for v in rows],
+            signed_inverse_column_sums=[str(v) for v in cols],
+            inverse_total_sum=str(total),
+            missing_stencil_nonzeros=missing,
+            source_operator=_decimal_matrix_stats(a, n, 1),
+            source_inverse=_decimal_matrix_stats(g, n, 1),
+            components=dict(
+                JGJ=dict(
+                    entry=_ratio(total, nn),
+                    norm_inf=_ratio(abs(total), n),
+                    norm_one=_ratio(abs(total), n),
+                ),
+                PGJ=dict(
+                    entry_min=_ratio(min(right_constant), nn),
+                    entry_max=_ratio(max(right_constant), nn),
+                    norm_inf=_ratio(max(map(abs, right_constant)), n),
+                    norm_one=_ratio(sum(map(abs, right_constant)), nn),
+                ),
+                JGP=dict(
+                    entry_min=_ratio(min(left_constant), nn),
+                    entry_max=_ratio(max(left_constant), nn),
+                    norm_inf=_ratio(sum(map(abs, left_constant)), nn),
+                    norm_one=_ratio(max(map(abs, left_constant)), n),
+                ),
+                PGP=_decimal_matrix_stats(k, n, nn),
+            ),
+            decomposition_reconstruction_max_abs=_ratio(reconstruction, nn),
+            products={
+                name: dict(residual_inf=_ratio(v[0], nn), residual_max_abs=_ratio(v[1], nn))
+                for name, v in norms.items()
+            },
+            full_product_entries_per_product=n * n,
+            projected_arrays_exported=False,
+            projected_zero_sums="By construction; not independent validation or an admitted solver",
+            singular_values_or_cutoff_decisions_observed=False,
+            production_repair=False,
+            **NO_CREDIT,
+        )
+        assert not context.flags[Inexact]
+        report["exact_arithmetic_inexact_flag"] = False
+    return report
+
+
+def analyse(reference, *, constant_mode=False):
     """Read authenticated wire values; never create an executable source owner."""
+    if type(constant_mode) is not bool:
+        raise ValueError("Require an explicit diagnostic mode")
     if (
         type(reference) is not dict
         or reference.get("status") != "source_completed"
@@ -278,8 +471,10 @@ def analyse(reference):
         raise ValueError("Saved operator/helper return associations disagree")
     reports = []
     for boundary, row in zip(("value", "flux"), outputs["results"]["items"], strict=True):
+        if constant_mode and boundary != "flux":
+            continue
         operator, inverse = row["items"][1]["items"]
-        result = diagnose(
+        result = (diagnose_constant_mode if constant_mode else diagnose)(
             shape=dimensions,
             indices=indices,
             delta=delta,
@@ -290,15 +485,17 @@ def analyse(reference):
         result["source_byte_hashes"] = dict(operator=operator["sha256"], inverse=inverse["sha256"])
         reports.append(result)
     return dict(
-        kind=KIND,
+        kind=CONSTANT_KIND if constant_mode else KIND,
         operators=reports,
         input_scope="one retained original-source prefix; two operators are not independent cases",
         **NO_CREDIT,
     )
 
 
-def saved_report(reference_root, output):
+def saved_report(reference_root, output, *, constant_mode=False):
     """Diagnose only the complete, hash-bound output of the existing comparator."""
+    if type(constant_mode) is not bool:
+        raise ValueError("Require an explicit diagnostic mode")
     root = Path(reference_root).absolute()
     if (
         ".." in root.parts
@@ -353,7 +550,8 @@ def saved_report(reference_root, output):
         )
     ):
         raise ValueError("Require the exact complete saved Poisson comparison report")
-    report = analyse(payload.read(root / "native.json"))
+    raw = payload.read(root / "native.json")
+    report = analyse(raw, constant_mode=True) if constant_mode else analyse(raw)
     report["inputs"] = [worker_pin, comparison_pin, *pins]
     prior.verify_pins(report["inputs"])
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -365,8 +563,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--constant-mode",
+        action="store_true",
+        help="Exact saved flux decomposition; no solver repair",
+    )
     args = parser.parse_args()
-    saved_report(args.reference_root, args.output)
+    saved_report(args.reference_root, args.output, constant_mode=args.constant_mode)
 
 
 if __name__ == "__main__":
