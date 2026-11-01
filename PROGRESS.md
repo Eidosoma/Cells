@@ -10,16 +10,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 ## Current position
 
 - **Current parallel work (1 November):** The multi-cell original-source
-  calculation completed and its final caches/random states match Cells, but
-  the run remains failed because its final runtime audit found a late `mmap`
-  import. Root has repaired preflight loading; the next image is held.
+  comparison through `cell_index` is now reviewed and accepted within that
+  construction boundary: three final caches, two random-state records and
+  five alias markers match, with runtime provenance verified. Root has prepared
+  the next fresh multi-cell geometry/grid/mask diagnostic through `make_maskM`.
   Key Dev's INIT-to-continuity bridge is delivered; review found a typed-return
   evidence-serialization blocker, which Key is fixing before longer-run work.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
-  through `make_maskM`; saved outcomes are reviewed and five source fixes are
-  assigned together with current dependency integration. Existing runners and
-  production code are reused; actual numerical
-  releases remain coordinated by Root.
+  through `make_maskM`; all five source fixes and their focused software results
+  are now reviewed. Specialist is implementing the next genuine tissue-to-field
+  ownership prerequisite. Existing runners and production code are reused;
+  actual numerical releases remain coordinated by Root.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
   BETSE through environment and mask construction: **14 cache comparisons and
@@ -525,6 +526,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
+  Key also completed the separately versioned
+  [extended-material budget/state contract](/mnt/workspaces/Cells/molecule-extended-material-contract-development-20261101-01/root-review.json).
+  **46 software controls passed** in **4.52 seconds, 227.9 MiB sampled peak RSS**;
+  all three guarded outcomes, 18 complete archives and 184 blocked-entry guards
+  were reviewed. The initial style failure is preserved. All 524 inherited
+  files and the existing three-call defaults remain unchanged in its frozen
+  image. This contract retains a fresh typed graph and records refused requests;
+  **it cannot produce a fourth numerical state**. Shared material, field,
+  calcium/catalog clocks and INIT/mechanics need an explicit extended domain
+  before longer trajectories can run. It does not resolve the separate INIT
+  evidence-serialization repair or grant numerical/checkpoint acceptance.
   Specialist completed the checkout snapshot builder and corrected INIT62
   runner. [Root's packet and saved-result review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/packet-software-review.json)
   verifies 198 snapshot files, 1,249 packet payloads and **38 passing software
@@ -844,29 +856,48 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   passed in 5.28 seconds**, including six new controls. Fresh `prepared-04`
   preserves the case, numerical settings, 184 external pins and 2,504 runtime
   files; only two selected source files and the preflight import roster change.
-  It remains unreleased. Full-package, physical and checkpoint admission remain open.
+  The user-authorized [fourth reference passed its complete runtime and saved-result review](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/square-reference-04/root-review.json)
+  in **23.86 seconds, 267.3 MiB sampled peak RSS**. One original-source execution
+  matches **three cache pairs, 191 array occurrences, two complete MT records
+  and five alias markers**; Cells was not replayed. All eight input captures,
+  866 frozen files, 184 external pins, 2,504 declared runtime files, 695 loaded
+  producers and 108 mapped-library pins verify. The three disclosed token
+  provenance scalars normalize only for comparison; input lineage is checked
+  separately. This accepts the declared final-cache construction comparison
+  through `cell_index`, not per-method trace equality, physical tissue validity,
+  full-package/phase or checkpoint admission. All three earlier failed attempts
+  remain failed with their original evidence.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid
   descriptor before parameter/caller birth, and consumes each parent once.
   Specialist's [new diagnostic and independent-reference tools](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/source-result.json)
-  have [reviewed saved outcomes and a batched source-repair assignment](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-review.json):
+  have [reviewed original saved outcomes](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-review.json):
   **57 software controls**, followed by
   [10 separate namespace-integration controls](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/runtime-integration-01/source-result.json).
   The images retain separate dependency bindings. All five outcomes are bound:
   one pre-execution failure receipt, then 48, 53, 57 and 10 passes on their
   respective versions. The pre-execution failure has no worker, guard or
-  immutable source evidence. Source review requires five fixes: preserve early
+  immutable source evidence. Source review required five fixes: preserve early
   descriptor failure evidence, restore both tracing hooks, reject incomplete
   source before comparison, include mask finiteness in domain diagnostics, and
-  distinguish post-source metadata failures from source failures. Specialist is
-  batching these with current dependency integration in the same six owned
-  files. Actual source execution remains held; software passes do not clear
-  these source findings or provide physical validation.
+  distinguish post-source metadata failures from source failures. The
+  [completed repair is now source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/source-repairs-01/root-review.json):
+  **50 controls passed / 67 deselected** in **3.77 seconds, 46.9 MiB sampled
+  peak RSS**. These comprise 34 new repair controls and 16 repeated helper
+  controls. Earlier 57/10/16 images retain their own source bindings. In-memory
+  assertions are supported by the frozen tests, JUnit and case guards; a
+  complete standalone raw graph archive is not claimed for every control.
+  The [next Root diagnostic image is prepared and held](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-01.json):
+  all 872 source files match the reviewed metadata candidate, with 609 external
+  inputs pinned, including the existing Pillow and beartype overlays. Preparation
+  took **26.89 seconds, 41.1 MiB sampled peak RSS**, with zero scientific imports.
+  CPU3 and the unchanged 1 GiB/480-second/8 GiB-reserve guard are explicit.
+  No actual multi-cell environment diagnostic or physical validation has run.
   A [separate cached-NumPy-helper integration check](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/numpy-helper-integration-01/root-review.json)
   passed **16 controls / 67 deselected** in 3.02 seconds. It binds its own
-  dependency image and does not close the five source findings or recredit
-  the earlier 57 and 10 controls.
+  dependency image and does not itself close the five source findings or
+  recredit the earlier 57 and 10 controls; the later repair above closes them.
   [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json)
   verifies the original **2-pass/64-failure** attempt, then **66 and 74 passes
   on their respective frozen versions**. The final child used **301.61 seconds
