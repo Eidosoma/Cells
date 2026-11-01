@@ -644,6 +644,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The successful controls substitute synthetic execution and do not establish
   native geometric accuracy. Actual multi-cell execution and its downstream
   geometry/ECM/environment owner continuation remain open.
+  Root added the [multi-cell diagnostic runner](validation/betse/native_multi_cell_caller_qualification.py)
+  for the existing square/hex core inputs, stopping at `cell_index`.
+  It acquires fresh typed image, initial, clipping and lifecycle prerequisites,
+  captures each stage before continuing, and constructs the genuine live caller.
+  [Source review](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/source-review.json)
+  and [saved software review](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/software-review.json)
+  bind **54 software passes in 2.77 seconds, 45.0 MiB sampled peak RSS**, with
+  scientific imports blocked. Exact-case source release and resource limits
+  remain required; no actual multi-cell execution or independent comparison
+  was performed by these checks.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
