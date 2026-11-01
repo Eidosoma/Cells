@@ -11,6 +11,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from types import MappingProxyType
 
 from cells.processes import betse_normal_ecm_molecule_checkpoint as checkpoint
 from cells.processes import betse_normal_ecm_molecule_lifecycle as lifecycle
@@ -45,6 +46,337 @@ SPEC = dict(
     comparison="complete_closed_checkpoint_graph_including_text_data_aliases_and_journals",
 )
 require = checkpoint.codec.require
+
+EVIDENCE_KIND = "cells.current_molecule_typed_observation@1"
+# Only the two composed validators use this adapter. These are observation
+# schemas, never constructors or assertions that a returned owner is admitted.
+_DICT_RETURNS = frozenset(
+    "typed-current-INIT-declaration explicit-INIT-run-contract associate-actual-run-owner "
+    "exhausted-original-INIT complete-INIT-evidence-graph actual-acquisition-record "
+    "exact-INIT-SIM-association required-genuine-INIT explicit-SIM-declaration "
+    "explicit-INIT-SIM-association actual-SIM-entry checkpoint-save checkpoint-load "
+    "loaded-phase-ancestry uninterrupted-observation continued-observation".split()
+)
+_NONE_RETURNS = frozenset(
+    "current-frozen-source current-source-runtime-and-formatter "
+    "actual-completed-INIT-verification explicit-current-input-authority".split()
+)
+_STR_RETURNS = frozenset(
+    "process-RNG-before process-RNG-after loaded-complete-graph resumed-complete-graph "
+    "final-complete-graph".split()
+)
+_TYPED_RETURNS = {
+    "actual-current-declaration-validation": lifecycle.init.Declaration,
+    "actual-run-binding": run.Binding,
+    "actual-entry-receipt": MappingProxyType,
+    "actual-run-begin": run.RunState,
+    "actual-complete-INIT": run.CompletedInitRun,
+    "actual-INIT-verification": run.RunState,
+    "pause": run.RunState,
+    "resume": run.RunState,
+}
+
+
+class EvidenceRejected(ValueError):
+    """A source return is retained live but cannot advance without evidence."""
+
+    def __init__(self, stage, returned, partial, primary):
+        super().__init__("Incomplete typed observation at " + stage)
+        self.stage, self.returned, self.partial = stage, returned, partial
+        self.primary = primary
+
+
+class _EvidenceErrors(list):
+    def __init__(self):
+        super().__init__()
+        self.primary = None
+
+    def retain(self, stage, error):
+        if self.primary is None:
+            self.primary = error
+        self.append(_evidence_error(stage, error))
+
+
+def _return_observation(name, value):
+    """Validate a fixed return schema; adapt only the operational Path result."""
+    if name in _DICT_RETURNS:
+        valid = type(value) is dict
+    elif name in _NONE_RETURNS:
+        valid = value is None
+    elif name in _STR_RETURNS:
+        valid = type(value) is str
+    elif name in _TYPED_RETURNS:
+        valid = type(value) is _TYPED_RETURNS[name]
+    elif name == "closed-INIT-inputs":
+        valid = (
+            type(value) is dict
+            and set(value) == {"declaration", "run_inputs"}
+            and type(value["declaration"]) in (type(None), lifecycle.init.Declaration)
+            and type(value["run_inputs"]) in (type(None), dict)
+        )
+    elif name == "actual-INIT-setup":
+        valid = (
+            type(value) is tuple
+            and len(value) == 2
+            and type(value[0]) is lifecycle.init.Binding
+            and type(value[1]) is lifecycle.init.State
+        )
+    elif name == "original-full-INIT-window":
+        valid = (
+            type(value) is tuple
+            and len(value) == 2
+            and type(value[0]) is run.RunState
+            and type(value[1]) is tuple
+        )
+    elif name == "pinned-acquisition-file":
+        require(type(value) is type(Path()), "Expected the pinned operational evidence Path")
+        return dict(kind="operational_evidence_path", path=str(value), owner_admission=False)
+    else:
+        raise ValueError("Unknown local typed observation operation: " + name)
+    require(valid, "Wrong typed return schema for " + name)
+    return value
+
+
+def _evidence_error(stage, error):
+    return dict(stage=stage, **checkpoint._exception_record(error))
+
+
+def _capture_graph(directory, value, errors):
+    """Keep failed capture nodes/arrays and partial writes, without decoding them."""
+    encoder = checkpoint.codec.Encoder()
+    tree, captured, written = None, False, False
+    stage = "graph-directory"
+    try:
+        directory.mkdir(exist_ok=False)
+        stage = "graph-capture"
+        tree = encoder.capture(value)
+        captured = True
+    except BaseException as error:
+        errors.retain(stage, error)
+    # A failed capture may already contain supported buffers. Its incomplete
+    # tree is diagnostic only; it is deliberately not a decodable owner graph.
+    if directory.is_dir():
+        try:
+            encoder.write(
+                directory,
+                tree
+                if captured
+                else dict(kind="incomplete_typed_observation", nodes=encoder.nodes, root=None),
+            )
+            written = True
+        except BaseException as error:
+            errors.retain("graph-write-or-fsync", error)
+    files = {}
+    for name in ("state.json", "arrays.npz"):
+        path = directory / name
+        try:
+            if path.is_file() and not path.is_symlink():
+                files[name] = dict(bytes=path.stat().st_size, sha256=snapshot.digest(path))
+        except BaseException as error:
+            errors.retain("graph-file-pin", error)
+    return dict(
+        directory=directory.name,
+        complete=captured and written and len(files) == 2,
+        capture_complete=captured,
+        fingerprint=encoder.seal(tree) if captured else None,
+        files=files,
+    )
+
+
+def _retain_typed(directory, name, payload, errors, row):
+    """Exclusive bounded codec evidence, with independent incomplete recovery.
+
+    All capture is observational. The original graph is never reconstructed for
+    a subsequent API call. A visible manifest after fsync failure is explicitly
+    uncertain; the attempt record, rather than mere visibility, admits evidence.
+    """
+    try:
+        graph = _capture_graph(directory / "graph", payload, errors)
+        sections = []
+        if not graph["complete"]:
+            # Preserve other supported roots when one missing codec/owner or I/O
+            # error interrupted the whole graph. Cross-section aliases are not
+            # claimed for these explicitly incomplete fallback observations.
+            candidates = [(key, value) for key, value in payload.items() if key != "available"]
+            candidates += [
+                ("available." + key, value) for key, value in payload["available"].items()
+            ]
+            require(len(candidates) <= 32, "Bounded local observation section count")
+            for index, (key, value) in enumerate(candidates):
+                sections.append(
+                    dict(
+                        section=key,
+                        **_capture_graph(directory / f"section-{index:02d}", value, errors),
+                    )
+                )
+        manifest = dict(
+            kind=EVIDENCE_KIND,
+            operation=name,
+            return_schema=name,
+            operation_status=row["operation_status"],
+            complete=graph["complete"] and not errors,
+            graph=graph,
+            incomplete_sections=sections,
+            capture_errors=list(errors),
+            owner_admission=False,
+            scientific_acceptance=False,
+        )
+        snapshot.write_json(directory / "manifest.json", manifest)
+        checkpoint.codec._sync_directory(directory)
+        checkpoint.codec._sync_directory(directory.parent)
+        row["manifest"] = ref(directory / "manifest.json")
+        row["evidence_complete"] = manifest["complete"]
+        row["durability"] = "fsynced"
+    except BaseException as error:
+        errors.retain("evidence-publication", error)
+        row["durability"] = "uncertain"
+        try:
+            snapshot.write_json(
+                directory / "recovery.json",
+                dict(operation=name, evidence_complete=False, capture_errors=list(errors)),
+            )
+            checkpoint.codec._sync_directory(directory)
+        except BaseException as secondary:
+            errors.retain("recovery-publication", secondary)
+    finally:
+        try:
+            row["manifest_visible"] = (directory / "manifest.json").exists()
+        except BaseException as error:
+            errors.retain("manifest-visibility", error)
+            row.update(manifest_visible=None, evidence_complete=False, durability="uncertain")
+        row["capture_errors"] = list(errors)
+
+
+def _typed_payload(name, readers, *, returned=None, error=None, errors):
+    available = {}
+    for key, read in readers.items():
+        try:
+            available[key] = read()
+        except BaseException as secondary:
+            errors.retain("reader:" + key, secondary)
+    return dict(
+        stage=name,
+        status="source_failed" if error is not None else "source_returned",
+        returned=returned,
+        failure=checkpoint._exception_record(error) if error is not None else None,
+        exception_chain=retention.failures.exception_chain(error) if error is not None else [],
+        available=available,
+    )
+
+
+def typed_take(directory, name, operation, *, attempts, work, readers):
+    """Observe supported typed returns, forwarding the identical live object."""
+    require(
+        name
+        in _DICT_RETURNS
+        | _NONE_RETURNS
+        | _STR_RETURNS
+        | set(_TYPED_RETURNS)
+        | {
+            "closed-INIT-inputs",
+            "actual-INIT-setup",
+            "original-full-INIT-window",
+            "pinned-acquisition-file",
+        },
+        "Unknown local typed observation operation",
+    )
+    path, errors = Path(directory) / name, _EvidenceErrors()
+    row = dict(
+        operation=name, path=str(path), work=work, status="attempted", evidence_complete=False
+    )
+    attempts.append(row)
+    # Refuse archive collisions before invoking even a metadata/source producer.
+    try:
+        path.mkdir(exist_ok=False)
+    except BaseException:
+        row.update(operation_status="not_entered", status="failed", failure_origin="evidence")
+        raise
+    row["operation_status"] = "attempted"
+    try:
+        result = operation()
+    except BaseException as error:
+        row.update(operation_status="failed", status="failed", failure_origin="source")
+        try:
+            payload = _typed_payload(name, readers, error=error, errors=errors)
+            _retain_typed(path, name, payload, errors, row)
+        except BaseException as secondary:
+            errors.retain("source-failure-capture", secondary)
+            row.update(evidence_complete=False, capture_errors=list(errors))
+        error.typed_evidence_operation = name
+        error.typed_evidence_complete = row["evidence_complete"]
+        error.typed_evidence_errors = list(errors)
+        if errors:
+            error.add_note("Typed evidence incomplete; see " + str(path))
+        raise
+    row["operation_status"] = "returned"
+    try:
+        observation = _return_observation(name, result)
+    except BaseException as error:
+        errors.retain("return-schema", error)
+        observation = result
+    payload = _typed_payload(name, readers, returned=observation, errors=errors)
+    _retain_typed(path, name, payload, errors, row)
+    if not row["evidence_complete"]:
+        row.update(status="failed", failure_origin="evidence")
+        raise EvidenceRejected(name, result, payload, errors.primary) from errors.primary
+    row["status"] = "returned"
+    return result
+
+
+def typed_failure(directory, name, error, *, readers):
+    """Never replace a primary exception with a diagnostic/recovery exception."""
+    errors, row = _EvidenceErrors(), dict(operation_status="failed", evidence_complete=False)
+    try:
+        path = Path(directory) / name
+        path.mkdir(exist_ok=False)
+        payload = _typed_payload(name, readers, error=error, errors=errors)
+        _retain_typed(path, name, payload, errors, row)
+    except BaseException as secondary:
+        errors.retain("failure-retention", secondary)
+    if errors:
+        error.add_note("Additional typed failure evidence errors: " + repr(errors))
+    error.typed_failure_evidence = row
+    return row
+
+
+def read_typed_observation(directory, *, manifest_sha256):
+    """Read graph integrity, never live authority or a durability admission.
+
+    Durable completeness additionally requires the successful attempt record;
+    manifest visibility alone does not establish fsync success.
+    """
+    directory = Path(directory)
+    path = directory / "manifest.json"
+    data = checkpoint._read(path, checkpoint.codec.DEFAULT_LIMITS.json_bytes)
+    import hashlib
+
+    require(hashlib.sha256(data).hexdigest() == manifest_sha256, "Changed typed evidence manifest")
+    row = checkpoint.codec.parse_json(data, checkpoint.codec.DEFAULT_LIMITS)
+    require(
+        row["kind"] == EVIDENCE_KIND
+        and row["complete"] is True
+        and not row["capture_errors"]
+        and not (directory / "recovery.json").exists(),
+        "Incomplete typed observation is diagnostic only",
+    )
+    graph = row["graph"]
+    require(graph["directory"] == "graph" and graph["complete"] is True, "Typed evidence graph")
+    blobs = {}
+    for name, maximum in (
+        ("state.json", checkpoint.codec.DEFAULT_LIMITS.json_bytes),
+        ("arrays.npz", checkpoint.codec.DEFAULT_LIMITS.archive_bytes),
+    ):
+        blob = checkpoint._read(directory / "graph" / name, maximum)
+        require(
+            len(blob) == graph["files"][name]["bytes"]
+            and hashlib.sha256(blob).hexdigest() == graph["files"][name]["sha256"],
+            "Changed typed evidence payload",
+        )
+        blobs[name] = blob
+    tree = checkpoint.codec.parse_json(blobs["state.json"], checkpoint.codec.DEFAULT_LIMITS)
+    value = checkpoint.codec.decode(tree, blobs["arrays.npz"])
+    require(checkpoint.codec.fingerprint(value) == graph["fingerprint"], "Typed evidence seal")
+    return value
 
 
 def ref(path):
@@ -386,30 +718,26 @@ def actual_continuity(directory, *, packet, packet_sha256, init_binding=None, in
     def take(name, operation, **readers):
         if calls is not None:
             calls.stage = name
-        return retention._take(
+        return typed_take(
             directory,
             name,
             operation,
             attempts=attempts,
             work="actual_or_metadata_work_never_an_independent_biological_case",
-            readers={
-                key: lambda reader=reader: run.ions.data(reader())
-                for key, reader in readers.items()
-            },
+            readers=readers,
         )
 
     def failure(error, stage):
-        record_failure(
+        typed_failure(
+            directory,
+            stage,
             error,
-            stage=stage,
             readers={
                 "inputs": lambda: inputs,
-                "available": lambda: run.ions.data(values),
+                "available": lambda: values,
                 "attempts": lambda: attempts,
                 "invocations": lambda: accounting,
-                "exception_chain": lambda: run.ions.data(retention.failures.exception_chain(error)),
             },
-            retain=lambda payload: retention.archives.write_archive(directory / stage, payload),
         )
 
     try:

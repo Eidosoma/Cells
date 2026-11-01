@@ -14,8 +14,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   construction boundary: three final caches, two random-state records and
   five alias markers match, with runtime provenance verified. Root has prepared
   the next fresh multi-cell geometry/grid/mask diagnostic through `make_maskM`.
-  Key Dev's INIT-to-continuity bridge is delivered; review found a typed-return
-  evidence-serialization blocker, which Key is fixing before longer-run work.
+  Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
+  software passes; actual INIT/SIM qualification remains held. Key is now
+  implementing an explicitly scoped material primitive beyond three calls.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist is implementing the next genuine tissue-to-field
@@ -511,8 +512,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   actual INIT lifecycle. Its [new source review](/mnt/workspaces/Cells/molecule-init-continuity-bridge-development-20261101-01/root-source-review.json)
   found that real typed declarations and later owners reach a raw evidence
   writer that rejects them, blocking execution before setup. The same adapter
-  mismatch reaches delegated continuity stages. Key is repairing evidence
-  encoding while preserving the original live return objects.
+  mismatch also reached delegated continuity stages. The
+  [typed-evidence repair is now source/software reviewed](/mnt/workspaces/Cells/molecule-init-continuity-typed-evidence-repair-20261101-01/root-review.json).
+  A closed, operation-specific adapter records supported typed evidence while
+  forwarding the identical live result to the next API. Source causes and
+  secondary capture failures stay separate; diagnostic decoding cannot supply
+  a live parent. **155 focused checks passed** in **21.07 seconds, 234.1 MiB
+  sampled peak RSS**, including all five intended refusals after successful
+  serialization. All 14 guarded processes are reviewed: 11 completed and three
+  failed. The first software image retains its 141 passes, 11 failed IDs and
+  11 teardown errors; two later metadata-classification failures are also
+  preserved. Final evidence includes 152 complete typed archives, 62 raw
+  archives, 15 explicitly incomplete/refusal/uncertain records and 620 empty
+  entry guards. This resolves the software blocker without executing real
+  INIT, SIM or the original numerical reference.
   [All five guarded bridge outcomes are reviewed](/mnt/workspaces/Cells/molecule-init-continuity-bridge-development-20261101-01/root-saved-results-review.json):
   the first software image failed with 54 passes/3 failures; the final image
   reports **61 passes**, 42 complete archives and 244 guards. Five final passes
@@ -536,7 +549,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **it cannot produce a fourth numerical state**. Shared material, field,
   calcium/catalog clocks and INIT/mechanics need an explicit extended domain
   before longer trajectories can run. It does not resolve the separate INIT
-  evidence-serialization repair or grant numerical/checkpoint acceptance.
+  qualification or grant numerical/checkpoint acceptance. Key's next component
+  work extends the standalone material primitive with a separate explicit
+  domain while retaining the legacy three-call path; the coupled long-run
+  simulation remains unavailable until its other owners are extended.
   Specialist completed the checkout snapshot builder and corrected INIT62
   runner. [Root's packet and saved-result review](/mnt/workspaces/Cells/init-checkout-qualification-20261031-01/root-review/packet-software-review.json)
   verifies 198 snapshot files, 1,249 packet payloads and **38 passing software

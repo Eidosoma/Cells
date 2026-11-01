@@ -9,7 +9,7 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -372,6 +372,378 @@ def metadata_inputs(tmp_path):
     )
 
 
+def typed_observation(path):
+    return route.read_typed_observation(
+        path, manifest_sha256=route.snapshot.digest(path / "manifest.json")
+    )
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        "actual-current-declaration-validation",
+        "actual-INIT-setup",
+        "actual-run-binding",
+        "actual-entry-receipt",
+        "actual-run-begin",
+        "original-full-INIT-window",
+        "actual-complete-INIT",
+        "actual-INIT-verification",
+        "pause",
+        "resume",
+    ],
+)
+def test_typed_API_observations_forward_exact_original_records_without_reconstruction(
+    operation, tmp_path
+):
+    binding, parent = parents()
+    a = np.array([1.0, -0.0], dtype="<f8")
+    state = replace(parent.active, stores=MappingProxyType(dict(first=a, alias=a)))
+    declared = plain_record(
+        route.lifecycle.init.Declaration,
+        inputs=MappingProxyType(dict(synthetic_only=True, array=a)),
+        calendar=binding.composition.calendar,
+        identity="unowned-declaration",
+    )
+    component = replace(binding.composition, declaration=declared)
+    receipt = MappingProxyType(dict(previous_phase=None, synthetic_only=True))
+    parent = replace(
+        parent, entry=state, active=state, entry_receipt=receipt, history=(), observations=()
+    )
+    binding = replace(binding, composition=component)
+    completed = plain_record(
+        route.run.CompletedInitRun,
+        binding=binding,
+        run=parent,
+        complete_init=None,
+        identity="unowned-complete",
+    )
+    values = {
+        "actual-current-declaration-validation": declared,
+        "actual-INIT-setup": (component, state),
+        "actual-run-binding": binding,
+        "actual-entry-receipt": receipt,
+        "actual-run-begin": parent,
+        "original-full-INIT-window": (parent, (dict(parent=parent),)),
+        "actual-complete-INIT": completed,
+        "actual-INIT-verification": parent,
+        "pause": replace(parent, status="paused"),
+        "resume": replace(parent, status="ready"),
+    }
+    value, attempts = values[operation], []
+    actual = route.typed_take(
+        tmp_path,
+        operation,
+        lambda: value,
+        attempts=attempts,
+        work="synthetic typed shapes only",
+        readers={"same": lambda: value},
+    )
+    assert actual is value  # Evidence decoding must never supply the next API.
+    saved = typed_observation(tmp_path / operation)
+    assert type(saved["returned"]) is type(value)
+    assert saved["returned"] is saved["available"]["same"]
+    assert route.checkpoint.codec.fingerprint(
+        saved["returned"]
+    ) == route.checkpoint.codec.fingerprint(value)
+    assert attempts[0]["evidence_complete"] and attempts[0]["durability"] == "fsynced"
+    assert not (tmp_path / operation / "data.json").exists()
+
+
+def test_operational_path_observation_is_explicit_metadata_and_returns_original_Path(tmp_path):
+    value = tmp_path / "acquisition.json"
+    result = route.typed_take(
+        tmp_path, "pinned-acquisition-file", lambda: value, attempts=[], work="metadata", readers={}
+    )
+    assert result is value
+    assert typed_observation(tmp_path / "pinned-acquisition-file")["returned"] == dict(
+        kind="operational_evidence_path", path=str(value), owner_admission=False
+    )
+
+
+@pytest.mark.parametrize("fault", ["wrong-record", "unknown-reader", "reader-throws"])
+def test_successful_source_cannot_advance_with_wrong_schema_or_incomplete_capture(
+    fault, monkeypatch, tmp_path
+):
+    _, parent = parents()
+    value = dict(equal_projection="not a RunState") if fault == "wrong-record" else parent
+    calls, attempts = [], []
+
+    def never_callback():
+        pytest.fail("Unknown callback must never be evaluated for evidence")
+
+    evidence_error = OSError("reader failed independently of source")
+
+    def bad_reader():
+        raise evidence_error
+
+    readers = {"good": lambda: parent, "bad": lambda: never_callback}
+    if fault == "wrong-record":
+        readers = {"good": lambda: parent}
+    elif fault == "reader-throws":
+        readers["bad"] = bad_reader
+    with pytest.raises(route.EvidenceRejected) as caught:
+        route.typed_take(
+            tmp_path,
+            "pause",
+            lambda: calls.append("source") or value,
+            attempts=attempts,
+            work="stub only",
+            readers=readers,
+        )
+    assert calls == ["source"] and caught.value.returned is value
+    assert caught.value.partial["returned"] is value
+    assert caught.value.__cause__ is caught.value.primary
+    assert not attempts[0]["evidence_complete"]
+    assert (
+        attempts[0]["operation_status"] == "returned"
+        and attempts[0]["failure_origin"] == "evidence"
+    )
+    manifest = json.loads((tmp_path / "pause/manifest.json").read_text())
+    assert not manifest["complete"]
+    if fault == "unknown-reader":
+        assert not manifest["graph"]["capture_complete"]
+        assert any(
+            row["section"] == "available.good" and row["complete"]
+            for row in manifest["incomplete_sections"]
+        )
+        partial = json.loads((tmp_path / "pause/graph/state.json").read_text())
+        assert partial["kind"] == "incomplete_typed_observation" and None in partial["nodes"]
+    if fault == "reader-throws":
+        assert caught.value.primary is evidence_error
+    with pytest.raises(ValueError, match="Incomplete typed observation"):
+        typed_observation(tmp_path / "pause")
+
+
+@pytest.mark.parametrize("source_fails", [False, True])
+def test_capture_and_recovery_IO_failures_keep_primary_cause_return_and_partial_bytes(
+    source_fails, monkeypatch, tmp_path
+):
+    _, parent = parents()
+    source = ValueError("original source refusal")
+    cause = TypeError("original source cause")
+    source.__cause__ = cause
+    source.partial = dict(accepted=parent, failed_trial=np.array([2.0, -0.0]))
+    evidence_error, writes = OSError("first observation I/O failed"), []
+
+    def broken_write(encoder, directory, tree):
+        # Simulate an exclusive writer failing after visible partial bytes.
+        (directory / "state.json").write_bytes(b'{"partial":')
+        writes.append(str(directory))
+        raise evidence_error if len(writes) == 1 else OSError("secondary fallback I/O failed")
+
+    monkeypatch.setattr(route.checkpoint.codec.Encoder, "write", broken_write)
+    attempts = []
+
+    def action():
+        if source_fails:
+            raise source
+        return parent
+
+    with pytest.raises(ValueError) as caught:
+        route.typed_take(
+            tmp_path,
+            "actual-INIT-verification",
+            action,
+            attempts=attempts,
+            work="synthetic source",
+            readers={"parent": lambda: parent},
+        )
+    if source_fails:
+        assert caught.value is source and source.__cause__ is cause
+        assert source.partial["accepted"] is parent and source.typed_evidence_complete is False
+    else:
+        assert type(caught.value) is route.EvidenceRejected
+        assert caught.value.returned is parent and caught.value.primary is evidence_error
+        assert caught.value.__cause__ is evidence_error
+    assert len(writes) > 1 and not attempts[0]["evidence_complete"]
+    assert (tmp_path / "actual-INIT-verification/graph/state.json").read_bytes() == b'{"partial":'
+    manifest = json.loads((tmp_path / "actual-INIT-verification/manifest.json").read_text())
+    assert not manifest["complete"] and len(manifest["capture_errors"]) > 1
+
+
+def test_source_failure_with_typed_partial_preserves_cross_root_alias_and_cause(tmp_path):
+    _, parent = parents()
+    source, cause = ValueError("retained source"), TypeError("retained cause")
+    source.__cause__ = cause
+    source.stage = "actual-INIT-verification"
+    source.partial = dict(accepted=parent, trial=np.array([3.0, -0.0]))
+    attempts = []
+
+    def action():
+        raise source
+
+    with pytest.raises(ValueError) as caught:
+        route.typed_take(
+            tmp_path,
+            source.stage,
+            action,
+            attempts=attempts,
+            work="stub only",
+            readers={"parent": lambda: parent},
+        )
+    assert caught.value is source and source.__cause__ is cause
+    saved = typed_observation(tmp_path / source.stage)
+    assert (
+        saved["exception_chain"][0]["attributes"]["partial"]["accepted"]
+        is saved["available"]["parent"]
+    )
+    assert [item["message"] for item in saved["exception_chain"]] == [
+        "retained source",
+        "retained cause",
+    ]
+    assert attempts[0]["evidence_complete"] and attempts[0]["operation_status"] == "failed"
+
+
+def test_failure_manifest_and_second_recovery_error_cannot_mask_source_exception(
+    monkeypatch, tmp_path
+):
+    _, parent = parents()
+    primary, cause = ValueError("original failed source"), TypeError("original cause")
+    primary.__cause__ = cause
+    primary.partial = dict(accepted=parent, trial=np.array([2.0]))
+    real_write = route.snapshot.write_json
+
+    def broken(path, value):
+        if path.name == "manifest.json":
+            path.write_bytes(b'{"partial manifest":')
+            raise OSError("primary diagnostic write error")
+        if path.name == "recovery.json":
+            raise OSError("second diagnostic recovery error")
+        real_write(path, value)
+
+    def action():
+        raise primary
+
+    monkeypatch.setattr(route.snapshot, "write_json", broken)
+    attempts = []
+    with pytest.raises(ValueError) as caught:
+        route.typed_take(
+            tmp_path,
+            "actual-INIT-verification",
+            action,
+            attempts=attempts,
+            work="stub",
+            readers={"parent": lambda: parent},
+        )
+    assert caught.value is primary and primary.__cause__ is cause
+    assert primary.partial["accepted"] is parent
+    row = attempts[0]
+    assert row["manifest_visible"] and not row["evidence_complete"]
+    assert row["durability"] == "uncertain"
+    assert [e["stage"] for e in row["capture_errors"]] == [
+        "evidence-publication",
+        "recovery-publication",
+    ]
+    assert (tmp_path / "actual-INIT-verification/graph/state.json").stat().st_size > 0
+    assert (tmp_path / "actual-INIT-verification/graph/arrays.npz").stat().st_size > 0
+
+
+@pytest.mark.parametrize("source_fails", [False, True])
+def test_manifest_status_IO_failure_is_secondary_to_the_retained_source_or_return(
+    source_fails, monkeypatch, tmp_path
+):
+    _, parent = parents()
+    primary, cause = ValueError("original source"), TypeError("original cause")
+    primary.__cause__ = cause
+    visibility_error = OSError("manifest visibility cannot be determined")
+    original = Path.exists
+
+    def exists(path):
+        if path == tmp_path / "pause/manifest.json":
+            raise visibility_error
+        return original(path)
+
+    def action():
+        if source_fails:
+            raise primary
+        return parent
+
+    monkeypatch.setattr(Path, "exists", exists)
+    attempts = []
+    with pytest.raises(ValueError) as caught:
+        route.typed_take(tmp_path, "pause", action, attempts=attempts, work="stub", readers={})
+    if source_fails:
+        assert caught.value is primary and primary.__cause__ is cause
+        assert primary.typed_evidence_complete is False
+    else:
+        assert caught.value.returned is parent and caught.value.__cause__ is visibility_error
+    assert not attempts[0]["evidence_complete"] and attempts[0]["manifest_visible"] is None
+    assert attempts[0]["capture_errors"][-1]["stage"] == "manifest-visibility"
+
+
+def test_archive_collision_refuses_before_source_entry_and_preserves_parent_bytes(tmp_path):
+    target = tmp_path / "pause"
+    target.mkdir()
+    (target / "manifest.json").write_bytes(b"frozen parent bytes")
+    attempts, calls = [], []
+    with pytest.raises(FileExistsError):
+        route.typed_take(
+            tmp_path,
+            "pause",
+            lambda: calls.append("forbidden"),
+            attempts=attempts,
+            work="metadata",
+            readers={},
+        )
+    assert not calls and (target / "manifest.json").read_bytes() == b"frozen parent bytes"
+    assert attempts[0]["operation_status"] == "not_entered"
+
+
+@pytest.mark.parametrize("fails_at", ["manifest", "directory-fsync"])
+def test_post_publication_IO_failure_reports_visible_marker_and_uncertain_durability(
+    fails_at, monkeypatch, tmp_path
+):
+    _, parent = parents()
+    real_write, real_sync = route.snapshot.write_json, route.checkpoint.codec._sync_directory
+    error = OSError("publication durability unknown")
+
+    def write(path, payload):
+        real_write(path, payload)
+        if fails_at == "manifest" and path.name == "manifest.json":
+            raise error
+
+    def sync(path):
+        if fails_at == "directory-fsync" and path.name == "pause":
+            raise error
+        real_sync(path)
+
+    monkeypatch.setattr(route.snapshot, "write_json", write)
+    monkeypatch.setattr(route.checkpoint.codec, "_sync_directory", sync)
+    attempts = []
+    with pytest.raises(route.EvidenceRejected) as caught:
+        route.typed_take(
+            tmp_path, "pause", lambda: parent, attempts=attempts, work="stub", readers={}
+        )
+    assert caught.value.primary is error and caught.value.returned is parent
+    assert attempts[0]["manifest_visible"] and attempts[0]["durability"] == "uncertain"
+    assert not attempts[0]["evidence_complete"]
+    recovery = json.loads((tmp_path / "pause/recovery.json").read_text())
+    assert not recovery["evidence_complete"]
+
+
+@pytest.mark.parametrize("fault", ["wrong-pin", "corrupt", "truncated", "symlink"])
+def test_typed_observation_reader_refuses_changed_or_foreign_payload(fault, tmp_path):
+    _, parent = parents()
+    route.typed_take(tmp_path, "pause", lambda: parent, attempts=[], work="stub", readers={})
+    target = tmp_path / "pause"
+    pin = route.snapshot.digest(target / "manifest.json")
+    if fault == "wrong-pin":
+        pin = "0" * 64
+    elif fault in {"corrupt", "truncated"}:
+        path = target / "graph/arrays.npz"
+        data = path.read_bytes()
+        path.write_bytes(b"different" if fault == "corrupt" else data[:-1])
+    else:
+        path = target / "graph/state.json"
+        foreign = tmp_path / "foreign.json"
+        foreign.write_bytes(path.read_bytes())
+        path.unlink()
+        path.symlink_to(foreign)
+    with pytest.raises((ValueError, OSError)):
+        route.read_typed_observation(target, manifest_sha256=pin)
+
+
 def test_absent_actual_INIT_is_preserved_without_fixture_or_verification(monkeypatch, tmp_path):
     for name in route.RELEASES:
         monkeypatch.setenv(name, "1")
@@ -385,7 +757,8 @@ def test_absent_actual_INIT_is_preserved_without_fixture_or_verification(monkeyp
     assert (target / "continuity-failure/manifest.json").is_file()
     assert not (target / "SIM").exists() and not (target / "result.json").exists()
     assert not (target / "invocations.jsonl").exists()
-    assert caught.value.spatial_probe_capture_complete is True
+    assert caught.value.typed_evidence_operation == "required-genuine-INIT"
+    assert caught.value.typed_evidence_complete is True
 
 
 @pytest.mark.parametrize("secondary", [False, True])
