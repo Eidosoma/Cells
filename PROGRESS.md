@@ -29,8 +29,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and is committed; its initial test-harness failure is preserved. Launch
   inputs and frozen source are verified. Terminal results have not been
   queried; Root owns their review on the next requested status check. Key's
-  network/GRN repairs are reviewed; Key is implementing the constructor
-  continuation needed by Specialist's same-phase tissue-handler attachment.
+  network/GRN repairs are reviewed; Key is completing the constructor
+  continuation and closed-claim validation needed by Specialist's same-phase
+  tissue-handler attachment. The standalone handler attachment is already
+  reviewed; its earlier scope message does not reopen that work.
   Specialist's phase-cache results remain pending their requested review. The relayed
   original mapping-tool handoff is historical; its reviewed replacements remain
   in Git, with positive native/reference executions held.
@@ -44,6 +46,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   bindings verify. Actual native construction is still unrun. The next
   boundary is phase caches and their weak references to that same phase,
   followed by tissue-handler attachment and complete initializer authority.
+  The [constructor-continuation baseline now has 52 reviewed blocked
+  controls](/mnt/workspaces/Cells/native-parameter-dyna-construction-development-20261101-01/root-review-01.json),
+  **63.20 seconds / 239.5 MiB sampled peak RSS**. All nine outcomes are
+  checked, including the preserved lint failure. Active claims retain the
+  original parameter/lease and consume failed attempts. Its closed record
+  alone does not validate later child use; Key's separate `validate_closed`
+  successor and Specialist's actual phase attachment remain pending.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
@@ -517,6 +526,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   failure remain preserved. This is small-grid numerical evidence; retained
   tissue current coupling, heterogeneous conductivity, GPU execution and full
   INIT/SIM/restart remain unqualified.
+  [Declared current-site transfer is now implemented](src/cells/processes/rectangular_current_transfer.py):
+  multiple signed site currents add at explicitly named grid cells, then
+  normalize by physical cell volume. The transpose readout returns the same
+  cells' voltages, preserving the current-voltage power pairing in exact
+  arithmetic. No nearest-neighbour choice, source balancing or membrane-state
+  authority is inferred. [Source review](/mnt/workspaces/Cells/rectangular-current-transfer-development-20261101-01/source-review.json)
+  and [saved-result review](/mnt/workspaces/Cells/rectangular-current-transfer-development-20261101-01/saved-results-review.json)
+  bind **33 NumPy and five actual compiled CPU checks**, taking **3.02 / 9.06
+  seconds** and **52.9 / 411.6 MiB sampled peak RSS**. Exact Fraction fixtures
+  check site accumulation and power; a composed transfer/field/readout case
+  matches the independent four-node solution. Batch, conversion and explicit
+  aggregate-conservation refusals retain original inputs. The final added
+  CPU control rejects a finite reduction mismatch under a requested zero
+  budget; it does not claim all individual sums are accurate. The earlier
+  32 checks and JAX's earlier helper-test image retain their own bindings;
+  production and existing solver kernels are unchanged between those images.
+  These are small declared maps, with no native membrane, retained-tissue,
+  GPU or complete simulator qualification.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
