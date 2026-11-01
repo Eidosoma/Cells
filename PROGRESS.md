@@ -20,6 +20,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   are separate requirements. This milestone does not cover every BETSE feature,
   including the still-held post-cut continuation.
 
+- **Current mapping software batch:** Root launched the [remaining 15 controls
+  in seven detached groups](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/current-owner-controls-01/LAUNCH.json)
+  on CPU 2, one thread, with **1 GiB / 480 seconds per group / 8 GiB host
+  reserve**. They cover ownership, callbacks, capture and failure retention;
+  actual native and scientific execution stays blocked. The already-passing
+  smoke is excluded. The [CPU-dispatch change passed 15 metadata controls](/mnt/workspaces/Cells/native-mapping-batch-dispatch-20261101-01/root-review.json)
+  and is committed; its initial test-harness failure is preserved. Launch
+  inputs and frozen source are verified. Terminal results have not been
+  queried; Root owns their review on the next requested status check. Key is
+  implementing native network loading, while Specialist is implementing the
+  phase assembly prerequisite in separate Git paths.
+
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
