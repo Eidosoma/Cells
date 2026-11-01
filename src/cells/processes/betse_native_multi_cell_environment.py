@@ -63,6 +63,7 @@ _HELPERS = (
 _TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
 _GRID_HELPERS = ("linspace", "meshgrid", "column_stack", "asarray")
 _ISSUED, _GRIDS, _TREES = WeakKeyDictionary(), WeakKeyDictionary(), WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
 
 
@@ -380,9 +381,9 @@ class _GridRuntime(ecm_source.FiniteDiffSolver):
         context.stage = context.prefix.stage = "makeECM"
 
     def makeLaplacian(self, *args, **kwargs):
-        raise EnvironmentRejected(
-            "Multi-cell Poisson continuation remains held", stage="Poisson_held"
-        )
+        from cells.processes import betse_native_multi_cell_poisson as poisson
+
+        return poisson._grid_call(self, *args, **kwargs)
 
     def __reduce_ex__(self, protocol):
         raise TypeError("Live grid authority cannot be serialized")
@@ -851,6 +852,13 @@ def _authority(owner):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise EnvironmentRejected(
+            "Multi-cell environment epoch was consumed by a Poisson attempt",
+            stage="environment_epoch_consumed",
+            trial=context.trial,
+            request=context.request,
+        )
     try:
         if context.invalid or context.active or context.thread != get_ident():
             raise ValueError("Invalid multi-cell environment epoch")
@@ -880,6 +888,17 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_Poisson(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise EnvironmentRejected(
+                "Actual multi-cell environment changed", stage="environment_owner"
+            )
+        _FORWARDED[owner] = transition
+        return context
 
 
 @contextmanager

@@ -755,6 +755,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   completed; historical failed attempts and postcheck refusals remain intact.
   No native geometry, independent numerical or physical acceptance is added;
   all post-cut and checkpoint holds remain.
+  A separate multi-cell Poisson continuation now preserves that same live
+  caller/grid through the original value-boundary then flux-boundary solves,
+  stopping before the final `lapGJ` stores. [Ownership/failure review](/mnt/workspaces/Cells/native-multi-cell-poisson-20261101-01/root-source-lifetime-review.json)
+  and [observation review](/mnt/workspaces/Cells/native-multi-cell-poisson-20261101-01/root-observation-source-review.json)
+  found no source blocker: the six actual Z/A/P roots, completed first inverse,
+  parent identity and primary/capture failures remain separately retained.
+  The [runner review](/mnt/workspaces/Cells/native-multi-cell-poisson-20261101-01/root-runner-source-review.json)
+  preserves immutable execution verification and the existing resource limits.
+  [All seven saved outcomes are reviewed](/mnt/workspaces/Cells/native-multi-cell-poisson-20261101-01/root-results-review.json).
+  Final evidence is **61 contract passes in 35.43 seconds, 240.8 MiB sampled
+  peak RSS**, plus **two full-size storage controls in 8.80 seconds, 410.8 MiB**,
+  on identical final source: **63 distinct blocked-source controls** and 24
+  verified full-array files. The first import failure has no native-entry
+  certificate; the 3-pass/56-failure fixture image and 58-pass/one-failure
+  inherited-method guard image remain failed. Intermediate 59-pass/two-pass
+  images retain their own coverage. No original solver, native reference or
+  physical qualification ran; original defaults and flux-rank behavior remain
+  unchanged, with numerical follow-up owned by Root.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
