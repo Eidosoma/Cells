@@ -611,3 +611,68 @@ def test_software_mid_transition_parent_epoch_and_equal_grid_edges_refuse_before
     save(evidence, "failure", caught.value)
     assert "operator_value" not in h.events and caught.value.partial["environment_consumed"]
     assert not any(c.request is caught.value.request for c in poisson._ISSUED.values())
+
+
+def test_software_early_preflight_failure_retains_primary_without_baseline_or_trial(
+    monkeypatch, evidence
+):
+    h = harness(monkeypatch)
+    request = continuation(h)
+    cause = SyntheticSourceCause("original upstream source failure")
+    primary = env.EnvironmentRejected(
+        "retained stale environment wrapper",
+        stage="environment_drift",
+        trial=h.parent.trial,
+        source_error=cause,
+    )
+
+    def stale_owner(owner):
+        assert owner is h.owner
+        try:
+            raise cause
+        except SyntheticSourceCause as original:
+            raise primary from original
+
+    forbidden_calls = []
+
+    def forbidden(*args, **kwargs):
+        forbidden_calls.append((args, kwargs))
+        raise AssertionError("No baseline/source/sealing work may follow early refusal")
+
+    monkeypatch.setattr(env, "_validate", stale_owner)
+    monkeypatch.setattr(poisson, "_snapshot", forbidden)
+    monkeypatch.setattr(core.initial, "_rng_stream", forbidden)
+    monkeypatch.setattr(poisson, "Trial", forbidden)
+    monkeypatch.setattr(poisson, "_namespace", forbidden)
+    monkeypatch.setattr(env, "_claim_for_Poisson", forbidden)
+    previous = sys.getprofile()
+    with pytest.raises(poisson.PoissonRejected) as caught:
+        poisson.prepare_continuation(request)
+    error = caught.value
+    context = error.partial["context"]
+    assert sys.getprofile() is previous
+    assert error.stage == "preflight" and error.request is request
+    assert error.source_error is primary and error.__cause__ is primary
+    assert primary.__cause__ is cause and primary.source_error is cause
+    assert error.capture_error is None and error.trial is None
+    assert context.parent is h.parent and error.partial["parent_trial"] is h.parent.trial
+    for name, raw in (
+        ("caller", h.caller),
+        ("parameters", h.p),
+        ("mesh", h.mesh),
+        ("grid", h.grid),
+        ("rng", h.rng),
+        ("trees", h.parent.trees),
+    ):
+        assert error.partial[name] is raw
+    assert not hasattr(context, "before") and not hasattr(context, "stream_before")
+    assert context.results == context.helper_results == context.stages == []
+    assert not context.active and not context.executing and not context.finished
+    assert forbidden_calls == h.events == []
+    assert error.partial["environment_consumed"] is False
+    assert error.partial["usable_Poisson_child_available"] is False
+    assert h.owner not in env._FORWARDED and h.grid not in poisson._GRIDS
+    assert ecm._GRIDS[h.grid] is h.parent.parent
+    assert not any(c.request is request for c in poisson._ISSUED.values())
+    save(evidence, "early-preflight-refusal", error)
+    save(evidence, "unchanged-parent-trial", h.parent.trial)

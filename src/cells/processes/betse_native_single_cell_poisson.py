@@ -725,6 +725,18 @@ def prepare_continuation(request, *, _work=None):
             source_error=error,
             capture_error=context.observation_error,
         ) from (error if error is not None else context.observation_error)
+    if getattr(context, "before", None) is None or getattr(context, "stream_before", None) is None:
+        # A preflight refusal has no captured baseline from which a Trial can
+        # be sealed. Retain the actual primary/parent/partial state without a
+        # second snapshot, RNG read or fabricated before/stream/trial.
+        raise PoissonRejected(
+            "Poisson attempt refused before complete baseline capture",
+            stage=context.stage,
+            request=request,
+            trial=None,
+            partial=partial,
+            source_error=error,
+        ) from error
     try:
         trial = Trial(
             request.identity,

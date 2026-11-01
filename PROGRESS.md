@@ -773,7 +773,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [All 126 software controls passed](/mnt/workspaces/Cells/native-prefix-work-log-phase-repair-20261101-01/root-results-review.json)
   in **9.56 seconds, 95.5 MiB sampled peak RSS**, with no scientific imports.
   The blocked conftest setup and two corrected synthetic assertion failures
-  remain saved separately. Specialist owns the early-failure sealing repair.
+  remain saved separately. Specialist's [early-failure repair is reviewed](/mnt/workspaces/Cells/native-single-cell-poisson-early-preflight-20261101-01/root-source-review.json).
+  Its [focused software check passed](/mnt/workspaces/Cells/native-single-cell-poisson-early-preflight-20261101-01/root-results-review.json)
+  in **4.03 seconds, 223.5 MiB sampled peak RSS**, with 53 existing checks
+  deselected and no native entries. Missing baseline data now preserves the
+  primary error and actual parent context with `trial=None`; positive source
+  execution, numerical kernels and the six-array policy are unchanged.
   No independent comparison, accepted Poisson case or automatic retry follows.
   Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
