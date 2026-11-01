@@ -48,15 +48,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
-  controls. All 25 saved outcomes are reviewed; source review requires an
-  advance-reentrancy repair and a signature/decorator correspondence check.
-  Key is addressing those findings and preparing the independent four-call
-  comparison without launching numerical execution.
+  controls. The [advance-reentrancy and constructor-signature repairs](/mnt/workspaces/Cells/molecule-material-primitive-guard-repair-20261101-01/root-source-review.json)
+  are now source-reviewed; [all eight repair outcomes and 64 blocked controls](/mnt/workspaces/Cells/molecule-material-primitive-guard-repair-20261101-01/root-results-review.json)
+  are checked. The saved archive correctly distinguishes accepted absolute
+  index 0 from an intentionally mutated source index 1; its summary-label error
+  is documented. The [independent four-call comparison tooling](/mnt/workspaces/Cells/molecule-material-four-call-preparation-20261101-01/root-source-review.json)
+  and its [68 software controls and 12 outcomes](/mnt/workspaces/Cells/molecule-material-four-call-preparation-20261101-01/root-results-review.json)
+  are reviewed. Its fresh repaired packet remains unexecuted; no fourth numerical
+  state is credited. Key is moving to the genuine Simulator/phase prerequisite.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
-  prerequisite with 32 blocked controls. Saved outcomes are reviewed; source
-  review requires one helper-binding repair. The next Specialist lane is the
+  prerequisite with 32 blocked controls. The [helper-binding repair](/mnt/workspaces/Cells/native-multi-cell-post-world-operators-20261101-01/g1-repair-01/root-review.json)
+  is reviewed with nine additional controls. Its earlier timed-out selection
+  retains nine old pass reports and one started new fixture, without a completed
+  new control or aggregate entry certification. The next Specialist lane is the
   literal tissue-centre-to-grid mapping on retained multi-cell objects; full
   phase/core/profile initialization remains a separate prerequisite.
   Existing runners and production code are reused;
@@ -70,9 +76,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and [saved-result review](/mnt/workspaces/Cells/environment-compatible-gauge-development-20261101-01/root-results-review.json)
   verify **11 small-grid checks**, including independent rational solutions,
   failure isolation and retained native-baseline separation, in **9.60 seconds,
-  182.7 MiB sampled peak RSS**. Actual Cells NumPy solver bodies ran on small
-  fixtures; no original BETSE body or retained 625-point solve ran. Full-grid
-  numerical and populated-tissue physical qualification remain open.
+  182.7 MiB sampled peak RSS**. Those checks used small fixtures and did not run
+  original BETSE. The subsequent retained-matrix calculation is described next.
+
+- **Saved 625-point operator calculation (1 November):** the new explicit
+  saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
+  Its first image's four provenance-construction failures and separate test
+  reporter error remain preserved; the equations and tolerances were unchanged.
+  The [actual calculation](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/analysis-01/result.json)
+  completed in **151.10 seconds, 474.5 MiB sampled peak RSS**;
+  [saved-result review](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/analysis-01/root-review.json)
+  verified all eleven full-array payloads, loaded producers and resource records.
+  Passing the retained
+  physical coordinates and bounds unchanged to Cells' uniform-grid validator
+  **refused**: the y-extent spans **25.3110668642** declared spacings for 25 rows.
+  A separately declared uniform operator-metric construction then used the
+  **same saved operator and spacing**, preserving the original inverse and
+  geometry. Its corrected inverse has product residual infinity norms
+  **3.73e-13 / 4.60e-13** and inverse row/column sums below **2.12e-25**;
+  the saved native inverse's corresponding sums remain about **145.98**.
+  Zero forcing and three balanced probes ran; constant nonzero forcing refused
+  without a solve or input mean subtraction. Separate exact Decimal evaluation
+  of the stored inverse gives residual maxima **5.62e-15, 3.17e-14 and 4.27e-12**
+  for the three balanced probes. These are probes of one matrix. The calculation
+  provides numerical evidence for the separate convention, not physical-grid,
+  source-equivalence, general solver or complete-simulation acceptance.
+  Explicit native-grid metric handling and populated tissue qualification remain
+  open; no corrected inverse was installed in a live tissue simulation.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
   BETSE through environment and mask construction: **14 cache comparisons and
