@@ -5,7 +5,6 @@ Poisson/environment handles stay consumed; their pre-tail caches are evidence,
 never validators against the legitimately coerced cell_i or new defaults.
 """
 
-import ast
 import builtins
 import hashlib
 import sys
@@ -18,6 +17,7 @@ from weakref import WeakKeyDictionary
 
 from cells.processes import betse_native_make_world_tail_source as source
 from cells.processes import betse_native_multi_cell_poisson as poisson
+from cells.processes import betse_native_source_structure as structure
 
 environment, multi, core, geometry, aliases = (
     poisson.environment,
@@ -82,42 +82,24 @@ class FinalizationRejected(poisson.PoissonRejected):
 def _verify_sources():
     pins = poisson._verify_sources()
     original_path = geometry.callers.NATIVE_ROOT / "betse/science/cells.py"
-    if hashlib.sha256(original_path.read_bytes()).hexdigest() != source.CELLS_SHA256:
+    raw = original_path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != source.CELLS_SHA256:
         raise ValueError("Original make_world data-tail authority changed")
-    native = next(
-        node
-        for node in ast.parse(original_path.read_text()).body
-        if isinstance(node, ast.ClassDef) and node.name == "Cells"
-    )
-    world = next(
-        node
-        for node in native.body
-        if isinstance(node, ast.FunctionDef) and node.name == "make_world"
-    )
-    selected = [node for node in world.body if node.lineno in source.STORE_LINES]
-    owned = next(
-        node
-        for node in ast.parse(Path(source.__file__).read_text()).body
-        if isinstance(node, ast.ClassDef) and node.name == "CellsWorldTail"
-    )
-    methods = [
-        next(node for node in owned.body if isinstance(node, ast.FunctionDef) and node.name == name)
-        for name in METHODS
-    ]
+    selected = structure.method(raw, "Cells", "make_world", tuple(source.STORE_LINES))[3]
+    owned = Path(source.__file__).read_bytes()
+    methods = [structure.method(owned, "CellsWorldTail", name) for name in METHODS]
     if len(selected) != 6 or source.STORE_LINES != (517, 518, 521, 522, 525, 526):
         raise ValueError("Exact six native tail statements required")
-    if tuple(node.targets[0].attr for node in selected) != STORES:
+    if tuple(structure.target_attribute(row) for row in selected) != STORES:
         raise ValueError("Native tail store roster/order changed")
     for statement, method in zip(selected, methods, strict=True):
-        if (
-            len(method.body) != 1
-            or ast.dump(statement) != ast.dump(method.body[0])
-            or [arg.arg for arg in method.args.args] != ["self"]
-        ):
+        if len(method[3]) != 1 or statement[1] != method[3][0][1] or method[2] != ("self",):
             raise ValueError("Literal make_world data store changed")
-    for module in (source, sys.modules[__name__]):
+    for module in (source, structure, sys.modules[__name__]):
         path = Path(module.__file__).resolve()
-        pins[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
+        pins[str(path)] = hashlib.sha256(
+            owned if module is source else path.read_bytes()
+        ).hexdigest()
     return pins
 
 
@@ -223,12 +205,15 @@ def _bindings():
         _check_inherited,
         _claim_for_post_world_operators,
         _scope,
+        structure.bindings,
     )
     return (
         source.np,
         STORES,
         source.STORE_NAMES,
         source.STORE_LINES,
+        structure,
+        *structure.bindings(),
         *poisson._observation_bindings(),
         *(
             atom

@@ -71,8 +71,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   subsequent source-parsing optimization and do not qualify real mapping.
   Timings and saved stack samples identify repeated source parsing and nested ownership
   checks as an overhead target; inclusive instrumented times are non-additive
-  and establish no simulation speedup. All five outcomes are reviewed, including
-  one pre-worker directory failure. No native mapping acceptance is added. The
+  and establish no simulation speedup. All five original outcomes are reviewed,
+  including one pre-worker directory failure. No native mapping acceptance is added.
+  Root's [bounded source-structure cache is now reviewed](/mnt/workspaces/Cells/native-source-structure-cache-20261101-01/root-review.json):
+  repeated Poisson/tail structural comparisons reuse immutable parsed summaries,
+  while source files are still read and hashed on every check. **23 stdlib
+  controls pass** in **0.53 seconds, 28.6 MiB sampled peak RSS**, including the
+  actual owner comparator, changed source bytes at unchanged timestamps, nested
+  default changes, capacity refusal and unchanged upstream checks. All seven
+  named outcomes are retained; the earlier 21-check image and native-text-only
+  comparison retain their own producer bindings. Numerical bodies are unchanged;
+  integration into a complete runtime and any speed benefit remain unmeasured. The
   [fourth actual diagnostic](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-04/root-review.json)
   completed caller construction in **34.89 seconds wall / 34.60 CPU**, saved
   its eighth capture, and entered literal `cellVerts`. It still reached the

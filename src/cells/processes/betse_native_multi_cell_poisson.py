@@ -5,7 +5,6 @@ after lapENV_P_inv. Live source ownership is process local; operators, numerical
 accuracy, physics and ordinary checkpoints require separate qualification.
 """
 
-import ast
 import hashlib
 import sys
 from contextlib import contextmanager
@@ -18,6 +17,7 @@ from weakref import WeakKeyDictionary
 from cells.processes import betse_native_multi_cell_environment as environment
 from cells.processes import betse_native_single_cell_poisson_observation as observation
 from cells.processes import betse_native_single_cell_poisson_source as source
+from cells.processes import betse_native_source_structure as structure
 
 multi, geometry, core, aliases = (
     environment.multi,
@@ -74,54 +74,30 @@ class PoissonRejected(environment.EnvironmentRejected):
 def _verify_sources():
     pins = environment._verify_sources()
     native = geometry.callers.NATIVE_ROOT / "betse/science"
-    trees = {}
+    sources = {}
     for key, path, expected in (
         ("cells", native / "cells.py", source.CELLS_SHA256),
         ("grid", native / "math/finitediff.py", source.GRID_SHA256),
     ):
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
             raise ValueError("Original environmental Poisson source changed")
-        trees[key] = ast.parse(path.read_text())
-    owned = ast.parse(Path(source.__file__).read_text())
-    original_grid = next(
-        n
-        for n in trees["grid"].body
-        if isinstance(n, ast.ClassDef) and n.name == "FiniteDiffSolver"
-    )
-    original_method = next(
-        n
-        for n in original_grid.body
-        if isinstance(n, ast.FunctionDef) and n.name == "makeLaplacian"
-    )
-    copied_grid = next(
-        n for n in owned.body if isinstance(n, ast.ClassDef) and n.name == "FiniteDiffPoisson"
-    )
-    copied_method = next(n for n in copied_grid.body if isinstance(n, ast.FunctionDef))
-    if ast.dump(original_method.args) != ast.dump(copied_method.args) or ast.dump(
-        ast.Module(body=original_method.body, type_ignores=[])
-    ) != ast.dump(ast.Module(body=copied_method.body, type_ignores=[])):
+        sources[key] = raw
+    owned = Path(source.__file__).read_bytes()
+    original_method = structure.method(sources["grid"], "FiniteDiffSolver", "makeLaplacian")
+    copied_method = structure.method(owned, "FiniteDiffPoisson", None)
+    if original_method[:2] != copied_method[:2]:
         raise ValueError("Literal MAC makeLaplacian signature/body changed")
-    original_cells = next(
-        n for n in trees["cells"].body if isinstance(n, ast.ClassDef) and n.name == "Cells"
-    )
-    world = next(
-        n for n in original_cells.body if isinstance(n, ast.FunctionDef) and n.name == "make_world"
-    )
-    copied_cells = next(
-        n for n in owned.body if isinstance(n, ast.ClassDef) and n.name == "CellsPoisson"
-    )
     for name, lines in zip(METHODS, source.CALLER_LINES, strict=True):
-        actual = [n for n in world.body if n.lineno in lines]
-        copied = next(
-            n for n in copied_cells.body if isinstance(n, ast.FunctionDef) and n.name == name
-        )
-        if len(actual) != 2 or ast.dump(ast.Module(body=actual, type_ignores=[])) != ast.dump(
-            ast.Module(body=copied.body, type_ignores=[])
-        ):
+        actual = structure.method(sources["cells"], "Cells", "make_world", tuple(lines))
+        copied = structure.method(owned, "CellsPoisson", name)
+        if len(actual[3]) != 2 or actual[1] != copied[1]:
             raise ValueError("Literal value/flux caller statements changed")
-    for module in (source, observation, sys.modules[__name__]):
+    for module in (source, observation, structure, sys.modules[__name__]):
         path = Path(module.__file__).resolve()
-        pins[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
+        pins[str(path)] = hashlib.sha256(
+            owned if module is source else path.read_bytes()
+        ).hexdigest()
     return pins
 
 
@@ -198,6 +174,7 @@ def _bindings():
         _observation,
         _observation_bindings,
         _stage_outputs,
+        structure.bindings,
         *(
             method
             for base in environment._GridRuntime.__mro__
@@ -208,6 +185,8 @@ def _bindings():
     return (
         source.np,
         source.np.linalg,
+        structure,
+        *structure.bindings(),
         *_observation_bindings(),
         *aliases._dispatch_bindings(environment._GridRuntime),
         *(
