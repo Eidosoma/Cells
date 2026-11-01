@@ -9,11 +9,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Current parallel work (1 November):** Root has completed the multi-cell
-  caller diagnostic; the second independent reference failed at a NumPy import
-  boundary. Its reviewed repair and fresh comparison snapshot are ready, with
-  execution held. Key Dev's continuity preparation and formatter guards are
-  reviewed and committed; Key is building the actual INIT-to-continuity bridge.
+- **Current parallel work (1 November):** The multi-cell original-source
+  calculation completed and its final caches/random states match Cells, but
+  the run remains failed because its final runtime audit found a late `mmap`
+  import. Root has repaired preflight loading; the next image is held.
+  Key Dev's INIT-to-continuity bridge is delivered; review found a typed-return
+  evidence-serialization blocker, which Key is fixing before longer-run work.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; saved outcomes are reviewed and five source fixes are
   assigned together with current dependency integration. Existing runners and
@@ -505,8 +506,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   declaration before comparing three uninterrupted steps with one step,
   save/load, then two steps. These are six source calls plus nested work, not
   independent cases. The six delivered code/test files are committed as
-  **8aca130**. Key is implementing the in-process bridge from the existing
-  actual INIT lifecycle. No actual INIT/SIM/native reference ran in these
+  **8aca130**. Key then delivered the in-process bridge from the existing
+  actual INIT lifecycle. Its [new source review](/mnt/workspaces/Cells/molecule-init-continuity-bridge-development-20261101-01/root-source-review.json)
+  found that real typed declarations and later owners reach a raw evidence
+  writer that rejects them, blocking execution before setup. The same adapter
+  mismatch reaches delegated continuity stages. Key is repairing evidence
+  encoding while preserving the original live return objects.
+  [All five guarded bridge outcomes are reviewed](/mnt/workspaces/Cells/molecule-init-continuity-bridge-development-20261101-01/root-saved-results-review.json):
+  the first software image failed with 54 passes/3 failures; the final image
+  reports **61 passes**, 42 complete archives and 244 guards. Five final passes
+  stop at the unintended serialization error, so they do not prove the intended
+  input-authority refusals. Their incomplete files and the separate initial
+  style failure remain preserved. No actual INIT/SIM/native reference ran in these
   preparations. The original style failure and mutable work-log pin exception
   are retained; its exact delivered log prefix was recovered separately.
   Actual exhausted INIT, source correspondence and checkpoint continuity remain
@@ -821,9 +832,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   helper identity and retains the private RNG proxy. Failed source/capture
   records are now rejected before strict comparison projection, after saving
   full available evidence. Fresh `prepared-03` retains 863 unchanged files
-  among 866, all 184 external inputs and 2,504 runtime files. It is unreleased;
-  the next actual reference needs a new instruction. Full-package, physical
-  and checkpoint admission remain open.
+  among 866, all 184 external inputs and 2,504 runtime files.
+  The user-authorized [third reference completed its original-source calculation](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/square-reference-03/root-review.json)
+  in **23.87 seconds, 271.2 MiB sampled peak RSS**. All three final cache pairs,
+  191 array occurrences, two MT records and five alias markers match exactly.
+  Its final runtime audit nevertheless refused the late standard-library
+  `mmap` module/extension loaded by Pillow: the run remains **failed with zero
+  accepted comparisons**. Source, comparison and partial runtime evidence are
+  retained. Root's [reviewed fix explicitly preloads this dependency](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/mmap-preload-review.json)
+  before the source baseline; module/library change checks are unchanged. **64 software controls
+  passed in 5.28 seconds**, including six new controls. Fresh `prepared-04`
+  preserves the case, numerical settings, 184 external pins and 2,504 runtime
+  files; only two selected source files and the preflight import roster change.
+  It remains unreleased. Full-package, physical and checkpoint admission remain open.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid
@@ -842,6 +863,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   batching these with current dependency integration in the same six owned
   files. Actual source execution remains held; software passes do not clear
   these source findings or provide physical validation.
+  A [separate cached-NumPy-helper integration check](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/numpy-helper-integration-01/root-review.json)
+  passed **16 controls / 67 deselected** in 3.02 seconds. It binds its own
+  dependency image and does not close the five source findings or recredit
+  the earlier 57 and 10 controls.
   [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json)
   verifies the original **2-pass/64-failure** attempt, then **66 and 74 passes
   on their respective frozen versions**. The final child used **301.61 seconds

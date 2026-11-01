@@ -32,6 +32,9 @@ IMPORTS = (
     "PIL.JpegImagePlugin",
     "PIL.PpmImagePlugin",
     "PIL.PngImagePlugin",
+    # Pillow's file-backed image path imports this lazily. Bind its module and
+    # system extension in the before-source baseline, without mapping a file.
+    "mmap",
 )
 FORBIDDEN = frozenset(("cells", "betse", "jax", "jaxlib"))
 MAX_FILES = 50000

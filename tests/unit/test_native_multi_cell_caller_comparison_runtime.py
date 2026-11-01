@@ -186,6 +186,84 @@ def test_successful_synthetic_preflight_and_finish(sandbox, monkeypatch):
     assert before["limits"] and after["limits"] == before["limits"]
 
 
+def mmap_worker(sandbox, monkeypatch):
+    observed = observations(sandbox)
+    extension = sandbox.source.parent / "mmap.synthetic.so"
+    extension.write_bytes(b"synthetic system extension, never loaded")
+    imports = []
+
+    def preload(name):
+        imports.append(name)
+        if name == "mmap":
+            observed["modules"][name] = file_module(extension, 101)
+            observed["mapped_libraries"].append(runtime._pin(extension))
+
+    monkeypatch.setattr(runtime, "_observe", lambda: copy.deepcopy(observed))
+    monkeypatch.setattr(runtime, "importlib", SimpleNamespace(import_module=preload))
+    before = runtime.preflight(sandbox.declaration, sandbox.source)
+    assert imports.count("mmap") == 1
+    assert "mmap" in sandbox.declaration["imports"]
+    assert "mmap" not in before["before_imports"]["modules"]
+    assert before["observation"]["modules"]["mmap"] == file_module(extension, 101)
+    assert runtime._pin(extension) in before["observation"]["mapped_libraries"]
+    return observed, before, extension
+
+
+def test_lazy_image_system_dependency_is_bound_before_source_without_mapping(sandbox, monkeypatch):
+    observed, before, _ = mmap_worker(sandbox, monkeypatch)
+    source, _, source_files = runtime._source_pins(sandbox.source)
+    # The same late import/mapping is still refused against the old baseline.
+    with pytest.raises(ValueError, match="New unbound Python producer after source: mmap"):
+        runtime._check_modules(
+            observed, sandbox.declaration, source, source_files, before["before_imports"]
+        )
+    with pytest.raises(ValueError, match="New or changed system library after source"):
+        runtime._check_maps(observed, sandbox.declaration, before["before_imports"])
+    after = runtime.finish(sandbox.declaration, sandbox.source, before)
+    assert after["status"] == "bound_after_source"
+    assert after["new_module_names"] == []
+    assert after["scientific_acceptance"] is False
+
+
+@pytest.mark.parametrize("change", ["module_identity", "module_bytes", "mapped_bytes", "other"])
+def test_preloaded_system_dependency_keeps_strict_finish_checks(sandbox, monkeypatch, change):
+    observed, before, extension = mmap_worker(sandbox, monkeypatch)
+    if change == "module_identity":
+        observed["modules"]["mmap"]["object_id"] += 1
+    elif change == "module_bytes":
+        extension.write_bytes(b"changed extension bytes")
+        observed["modules"]["mmap"] = file_module(extension, 101)
+    elif change == "mapped_bytes":
+        observed["mapped_libraries"][-1]["sha256"] = "0" * 64
+    else:
+        path = extension.with_name("unrelated.py")
+        path.write_text("# unbound producer\n")
+        observed["modules"]["unrelated"] = file_module(path, 102)
+    with pytest.raises(runtime.RuntimeInventoryError) as caught:
+        runtime.finish(sandbox.declaration, sandbox.source, before)
+    assert caught.value.partial["observation"] == observed
+    assert caught.value.partial["status"] == "refused"
+
+
+def test_system_dependency_import_failure_retains_before_source_attempt(sandbox, monkeypatch):
+    observed = observations(sandbox)
+    primary = ImportError("synthetic mmap load failure")
+
+    def preload(name):
+        if name == "mmap":
+            raise primary
+
+    monkeypatch.setattr(runtime, "_observe", lambda: copy.deepcopy(observed))
+    monkeypatch.setattr(runtime, "importlib", SimpleNamespace(import_module=preload))
+    with pytest.raises(runtime.RuntimeInventoryError) as caught:
+        runtime.preflight(sandbox.declaration, sandbox.source)
+    assert caught.value.__cause__ is primary
+    assert caught.value.partial["imports_attempted"][-1] == "mmap"
+    assert caught.value.partial["native_execution_attempts"] == 0
+    assert caught.value.partial["before_imports"] == observed
+    assert caught.value.partial["failure_observation"] == observed
+
+
 def test_prospectively_bound_late_package_module_and_library(sandbox, monkeypatch):
     observed, before = setup_worker(sandbox, monkeypatch)
     observed["modules"]["numpy.implementation"] = file_module(
