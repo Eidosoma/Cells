@@ -20,9 +20,12 @@ from cells.processes import betse_normal_ecm_catalog_join_source as catalog
 from cells.processes import betse_normal_ecm_event_join_source as events
 from cells.processes import betse_normal_ecm_init_phase_setup as init_setup
 from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
+from cells.processes import betse_normal_ecm_molecule_kinetic_reload as kinetic_reload
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
 from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
+from cells.processes import betse_normal_ecm_molecule_spatial_authority as spatial_authority
+from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial_config
 from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
 from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
@@ -151,7 +154,8 @@ def constant_callback_record(suffix, actual=None):
     )
 
 
-def finalized_owner(template, actual, p, *, sweep_observation=None, periodic_observation=None):
+def finalized_owner(template, actual, p, *, sweep_observation=None, periodic_observation=None,
+                    spatial_observation=None):
     owner = ions.data(template)
     owner.update(
         {
@@ -184,12 +188,22 @@ def finalized_owner(template, actual, p, *, sweep_observation=None, periodic_obs
         if row == 0:
             continue
         function = row[5]
-        if function not in ("None", "f_sweep", "periodic"):
+        if function not in ("None", "f_sweep", "periodic", "gradient_x", "gradient_y"):
             raise ValueError(
                 "Transition source setup requires actual constant/sweep/periodic finalizer authority"
             )
         if function == "None":
             constant_callback_record(suffix, actual)
+        elif function in ("gradient_x", "gradient_y"):
+            if (type(spatial_observation) is not spatial_authority.FactoryObservation
+                    or spatial_observation.owner is not actual or spatial_observation.p is not p
+                    or not spatial_observation.complete or suffix not in spatial_observation.records
+                    or getattr(actual, "dyna_"+suffix, None) is not spatial_observation.returned[suffix]
+                    or getattr(actual, "scalar_"+suffix, None) is not spatial_observation.scalars[suffix]):
+                raise ValueError("Missing actual spatial factory/geometry observation; no scalar hydration")
+            spatial_authority.inspect_callback(getattr(actual, "dyna_"+suffix),
+                getattr(actual, "scalar_"+suffix), function, getattr(actual, "targets_"+suffix),
+                spatial_observation.issuance.geometry)
         elif function == "periodic":
             if (type(periodic_observation) is not periodic_authority.FactoryObservation
                     or periodic_observation.owner is not actual or periodic_observation.p is not p
@@ -208,7 +222,7 @@ def finalized_owner(template, actual, p, *, sweep_observation=None, periodic_obs
                                              getattr(actual, "scalar_" + suffix), p)
         dynamic = (
             dict(kind="constant")
-            if function == "None"
+            if function in ("None", "gradient_x", "gradient_y")
             else dict(kind="periodic", frequency=p.periodic_properties["frequency"],
                       phase=p.periodic_properties["phase"], provenance="Actual SIM periodic finalizer result")
             if function == "periodic"
@@ -233,8 +247,9 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
     """Execute real reinitialize/setup bodies; never call a fresh cold initializer."""
     raw = legacy_setup_inputs(raw)
     cfg = ions.data(raw["source_setup"])
+    spatial = spatial_config.selection(raw)
     selected = temporal_config.selection(raw)
-    periodic = None if selected is not None else periodic_authority.configuration(raw)
+    periodic = None if selected is not None or spatial is not None else periodic_authority.configuration(raw)
     if periodic is not None:
         periodic_authority.require_source(source_binding, periodic)
     template = ions.data(raw["sim_composition_template"])
@@ -252,7 +267,10 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
             observer(name, ions.freeze(value))
 
     try:
-        if selected is not None:
+        if spatial is not None:
+            stage = "selected_spatial_parameter_issuance"
+            parameter_issuance = spatial_config.Issuance(source_binding, completed)
+        elif selected is not None:
             stage = "selected_temporal_parameter_issuance"
             parameter_issuance = temporal_config.Issuance(source_binding, completed)
         temporary = calcium.bind(
@@ -290,7 +308,7 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         p.sim_time_total = raw["time_profile"]["sim_total_s"]
         p.global_options = ions.data(packet["event_owner"]["global_options"])
         p.scheduled_options = ions.data(packet["event_owner"]["scheduled_options"])
-        if parameter_issuance is None:
+        if parameter_issuance is None or type(parameter_issuance) is spatial_config.Issuance:
             p.f_scan_properties = ions.data(cfg["frequency_sweep"])
             if periodic is not None:
                 p.periodic_properties = ions.data(periodic)
@@ -356,7 +374,9 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         )
         stage = "retained_general_then_GRN_reinitialize"
         identity = reinitialize_owners(
-            ctx, init_binding, init_parent, raw["_phase_input"]["owners"], observe
+            ctx, init_binding, init_parent, raw["_phase_input"]["owners"], observe,
+            **(dict(source_binding=source_binding, completed=completed)
+               if kinetic_reload.selection(raw) is not None else {}),
         )
         stage = "SIM_mechanics_entry"
         initial_mechanics = mechanical_entry(init_parent, template["mechanics_definition"])
@@ -370,7 +390,21 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         source._finalize_events_global(owner, ctx.phase, shuffle=python_rng.shuffle)
         sweep_observation = None
         periodic_observation = None
-        if periodic is not None:
+        spatial_observation = None
+        if spatial is not None:
+            spatial_observation = spatial_authority.FactoryObservation(owner, ctx.phase,
+                                                                       issuance=parameter_issuance)
+            try:
+                with spatial_observation:
+                    source._finalize_events_tissue(owner, ctx.phase)
+            except BaseException as error:
+                try:
+                    observe("spatial_factory_observed", spatial_observation.data())
+                except BaseException as secondary:
+                    error.add_note("Spatial observation retention also failed: " + repr(secondary))
+                raise
+            observe("spatial_factory_observed", spatial_observation.data())
+        elif periodic is not None:
             periodic_observation = periodic_authority.FactoryObservation(owner, ctx.phase, periodic, binding=source_binding,
                 **(dict(parameter_issuance=parameter_issuance) if parameter_issuance is not None else {}))
             try:
@@ -400,7 +434,8 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
             observe("sweep_factory_observed", sweep_observation.data())
         else:
             source._finalize_events_tissue(owner, ctx.phase)
-        event_owner = finalized_owner(packet["event_owner"], owner, p, sweep_observation=sweep_observation, periodic_observation=periodic_observation)
+        event_owner = finalized_owner(packet["event_owner"], owner, p, sweep_observation=sweep_observation,
+                                      periodic_observation=periodic_observation, spatial_observation=spatial_observation)
         callback_authority = {
             suffix: constant_callback_record(suffix, owner)
             for suffix, callback in event_owner["callbacks"].items()
@@ -415,8 +450,11 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                 source_phase="SIM",
                 legacy_run_sim=True,
                 event_fire_calls=0,
+                **(dict(spatial_configuration_store=parameter_issuance.receipt(spatial_observation),
+                        spatial_callback_authority=spatial_observation.records)
+                   if spatial_observation is not None else {}),
                 **(dict(temporal_configuration_store=parameter_issuance.receipt(periodic_observation or sweep_observation))
-                   if parameter_issuance is not None else {}),
+                   if parameter_issuance is not None and type(parameter_issuance) is not spatial_config.Issuance else {}),
                 **(
                     dict(constant_callback_authority=callback_authority)
                     if callback_authority
@@ -501,7 +539,7 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
         )
         template["mechanics_initial"] = material.plain(initial_mechanics)
         template["_phase_input"] = phase_input_after_setup(ctx, template, raw, initial_mechanics)
-        if source_binding is not None:
+        if source_binding is not None and source_binding.event_owner_inputs is not None:
             stage = "post_setup_event_owner_publication"
             publication = event_owner_bridge.publish(
                 source_binding,
@@ -532,7 +570,9 @@ def prepare(init_binding, init_parent, raw, observer=None, *, source_binding=Non
                 reached=reached,
                 available=available(ctx),
                 source_init_parent=init_parent,
-                **(dict(temporal_configuration_store=parameter_issuance.available())
+                **(dict(spatial_configuration_store=parameter_issuance.available())
+                   if type(parameter_issuance) is spatial_config.Issuance else
+                   dict(temporal_configuration_store=parameter_issuance.available())
                    if parameter_issuance is not None else {}),
                 root_cause=dict(type=type(error).__name__, message=str(error)),
             ),
@@ -543,7 +583,8 @@ def legacy_setup_inputs(raw):
     result = ions.data(raw)
     current = ions.data(raw["sim_phase"])
     setup = current["setup"]
-    selected_setup = temporal_config.finalizer_setup(raw)
+    spatial_setup = spatial_config.finalizer_setup(raw)
+    selected_setup = spatial_setup if spatial_setup is not None else temporal_config.finalizer_setup(raw)
     periodic_setup = None if selected_setup is not None else periodic_authority.finalizer_setup(raw)
     event_setup = (ions.data(selected_setup) if selected_setup is not None else
                    setup if periodic_setup is None else ions.data(periodic_setup))
@@ -587,7 +628,7 @@ def encoded(value):
     return value
 
 
-def reinitialize_owners(ctx, init_binding, init_parent, new_raw, observe):
+def reinitialize_owners(ctx, init_binding, init_parent, new_raw, observe, *, source_binding=None, completed=None):
     actual = {}
     old_raw = ions.data(init_binding.inputs_raw["owners"])
     old_cache = ions.data(init_parent.network.network_cache)
@@ -628,7 +669,21 @@ def reinitialize_owners(ctx, init_binding, init_parent, new_raw, observe):
         else:
             observe("owner_" + role + "_" + stage, value)
 
-    owners.initialize(ctx, hook)
+    if source_binding is not None:
+        observation = kinetic_reload.Observation(ctx, source_binding, completed)
+        observe("kinetic_reload_entered", observation.data())
+        try:
+            with observation:
+                owners.initialize(ctx, hook)
+            observe("kinetic_reload_complete", observation.finish())
+        except BaseException as error:
+            try:
+                observe("kinetic_reload_incomplete", observation.data())
+            except BaseException as secondary:
+                error.add_note("Kinetic observation retention also failed: " + repr(secondary))
+            raise
+    else:
+        owners.initialize(ctx, hook)
     identity = {}
     for role in owners.ROLES:
         old = actual[role]

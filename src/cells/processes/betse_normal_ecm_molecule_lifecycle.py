@@ -17,10 +17,13 @@ from cells.processes import betse_ecm_transport as material
 from cells.processes import betse_normal_ecm_catalog_join_source as catalog
 from cells.processes import betse_normal_ecm_field_join as fields
 from cells.processes import betse_normal_ecm_molecule_event_owner as event_owner_bridge
+from cells.processes import betse_normal_ecm_molecule_kinetic_reload as kinetic_reload
 from cells.processes import betse_normal_ecm_molecule_lifecycle_owners as owners
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as init
 from cells.processes import betse_normal_ecm_molecule_lifecycle_setup as setup
 from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
+from cells.processes import betse_normal_ecm_molecule_spatial_authority as spatial_authority
+from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial_config
 from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
 
@@ -140,8 +143,9 @@ def check_complete(value):
 
 def validate_setup_inputs(raw):
     cfg = raw["source_setup"]
+    spatial = spatial_config.selection(raw)
     selected = temporal_config.selection(raw)
-    periodic = None if selected is not None else periodic_authority.configuration(raw)
+    periodic = None if selected is not None or spatial is not None else periodic_authority.configuration(raw)
     if (
         set(cfg)
         != (({
@@ -158,7 +162,8 @@ def validate_setup_inputs(raw):
             "frequency_sweep",
         } - ({"frequency_sweep"} if selected is not None else set()))
             | ({"periodic_properties", "periodic_event_configuration", "periodic_preparation_route"}
-             if periodic is not None else temporal_config.KEYS if selected is not None else set()))
+             if periodic is not None else temporal_config.KEYS if selected is not None
+             else spatial_config.KEYS if spatial is not None else set()))
         or cfg["kind"] != "cells.supplied_SIM_reinitialization_seams@1"
     ):
         raise ValueError("Require every source SIM setup seam and process RNG owner")
@@ -233,8 +238,9 @@ def check_owners(binding, completed):
     # The binder's JSON encoding intentionally erases ndarray/scalar dtypes.
     # Keep an additional comparison of the two original declarations so that
     # this representation bridge cannot erase an array/sequence distinction.
-    # Mapping order is ignored; existing freeze/data list/tuple equivalence is
-    # retained. Arrays/scalars keep their category, dtype, shape and value checks.
+    # Mapping order is ignored; freeze/data list/tuple equivalence is retained.
+    # Arrays/scalars keep category, dtype, shape and numerical value checks.
+    # Byte layout, strides and signed-zero identity are not established here.
     def same_raw(left, right):
         if isinstance(left, Mapping) or isinstance(right, Mapping):
             return (
@@ -372,9 +378,10 @@ def binding_record(value):
 
 def bind(inputs, *, event_owner_inputs=None):
     original = ions.data(inputs)
+    kinetic = kinetic_reload.selection(original)
     if (
         set(original)
-        != {
+        != ({
             "kind",
             "case_id",
             "provenance",
@@ -382,14 +389,15 @@ def bind(inputs, *, event_owner_inputs=None):
             "sim_phase",
             "source_setup",
             "config_equality_receipt",
-        }
+        } | ({kinetic_reload.KEY} if kinetic is not None else set()))
         or original["kind"] != INPUT_KIND
     ):
         raise ValueError("Require the separately declared retained dual-owner lifecycle boundary")
     for key in ("case_id", "provenance", "expected_init_binding_identity"):
         if not isinstance(original[key], str) or not original[key].strip():
             raise ValueError("Require explicit lifecycle association " + key)
-    if temporal_config.selection(original) is not None or event_owner_inputs is not None:
+    if (temporal_config.selection(original) is not None
+            or spatial_config.selection(original) is not None or event_owner_inputs is not None):
         event_owner_bridge.check_inputs(
             event_owner_inputs, expected_INIT=original["expected_init_binding_identity"]
         )
@@ -399,6 +407,10 @@ def bind(inputs, *, event_owner_inputs=None):
             "The new SIM phase must retain its independent original three-call calendar"
         )
     raw = setup.legacy_setup_inputs(original)
+    spatial_setup = spatial_config.finalizer_setup(original)
+    if spatial_setup is not None:
+        init.validate_spatial_finalizer_setup(declaration, spatial_setup,
+                                             preparation_route=spatial_authority.ROUTE)
     selected = temporal_config.selection(original)
     selected_setup = temporal_config.finalizer_setup(original)
     if selected_setup is not None:
@@ -409,7 +421,7 @@ def bind(inputs, *, event_owner_inputs=None):
             # The original common validator already admits f_sweep. Keep its
             # full schema/RNG/map/noise guards and actual SIM N3 owner above.
             setup.init_setup.validate(selected_setup, declaration.base)
-    periodic_setup = None if selected is not None else periodic_authority.finalizer_setup(original)
+    periodic_setup = None if selected is not None or spatial_setup is not None else periodic_authority.finalizer_setup(original)
     if periodic_setup is not None:
         init.validate_periodic_finalizer_setup(declaration, periodic_setup,
                                              preparation_route=periodic_authority.ROUTE)
@@ -431,6 +443,7 @@ def bind(inputs, *, event_owner_inputs=None):
 def validate_binding(binding):
     if type(binding) is not Binding or binding.identity != ions.digest(binding_record(binding)):
         raise ValueError("Changed complete dual-owner lifecycle declaration")
+    kinetic_reload.selection(binding.inputs)
     if binding.event_owner_inputs is not None:
         event_owner_bridge.check_inputs(
             binding.event_owner_inputs, expected_INIT=binding.expected_init_identity
@@ -440,6 +453,7 @@ def validate_binding(binding):
 def check_stable_owner_scope(binding, completed):
     old = ions.data(completed.binding.inputs_raw["owners"])
     new = ions.data(binding.inputs["sim_phase"]["owners"])
+    kinetic = kinetic_reload.check(binding, completed)
     for role in owners.ROLES:
         key = "general network" if role == "molecules" else "gene regulatory network settings"
         flag = "implement network" if role == "molecules" else "gene regulatory network simulated"
@@ -455,7 +469,7 @@ def check_stable_owner_scope(binding, completed):
             after["network"]["configuration"]["transporters"][index]["max rate"] = before[
                 "network"
             ]["configuration"]["transporters"][index]["max rate"]
-        if not catalog.equal_tree(
+        if kinetic is None and not catalog.equal_tree(
             before["network"]["configuration"], after["network"]["configuration"]
         ):
             raise ValueError(
@@ -513,7 +527,7 @@ def transition(binding, completed, *, observer=None, before_field=None):
             observer,
             **(
                 dict(source_binding=binding, completed=completed)
-                if binding.event_owner_inputs is not None
+                if binding.event_owner_inputs is not None or kinetic_reload.selection(binding.inputs) is not None
                 else {}
             ),
         )
@@ -628,6 +642,7 @@ def verify(binding, parent):
     init.verify(parent.phase_binding, parent.active)
     if binding.event_owner_inputs is not None:
         event_owner_bridge.resolve(binding, parent)
+    kinetic_reload.resolve(binding, parent)
     if not catalog.equal_tree(
         parent.receipt["old_INIT_clock"], ions.data(parent.source_init.parent.clock)
     ):

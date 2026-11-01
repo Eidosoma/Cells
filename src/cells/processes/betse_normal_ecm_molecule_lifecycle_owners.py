@@ -9,6 +9,7 @@ from cells.processes import betse_ecm_grn_join as network
 from cells.processes import betse_normal_ecm_calcium_join as calcium
 from cells.processes import betse_normal_ecm_catalog_join_source as qualified
 from cells.processes import betse_normal_ecm_molecule_lifecycle_source as source
+from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial_config
 from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal_config
 from cells.processes import betse_normal_ion_join as ions
 
@@ -90,7 +91,7 @@ def make_context(component, raw, values, forcing=None, *, phase_kind, parameter_
     if parameter_issuance is None:
         ctx = network.make_context(component, values, ions.data(component.inputs["network"]), forcing)
     else:
-        if type(parameter_issuance) is not temporal_config.Issuance:
+        if type(parameter_issuance) not in (temporal_config.Issuance, spatial_config.Issuance):
             raise ValueError("Require the actual early selected parameter issuer, never saved data")
         temporal_config.context.check_original()
         ctx = temporal_config.context.construct_context(
@@ -131,7 +132,10 @@ def make_context(component, raw, values, forcing=None, *, phase_kind, parameter_
     for view in ctx.views.values():
         view.initial_transporter_fields = {}
     if parameter_issuance is not None:
-        parameter_issuance.attach(ctx)
+        if type(parameter_issuance) is spatial_config.Issuance:
+            parameter_issuance.attach(ctx, component)
+        else:
+            parameter_issuance.attach(ctx)
     return ctx
 
 

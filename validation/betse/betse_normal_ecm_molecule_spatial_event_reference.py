@@ -55,6 +55,17 @@ def released():
     require(all(os.environ.get(k) == "1" for k in RELEASES), "Spatial source probe remains held")
 
 
+def output_directory(directory, root):
+    """Resolve containment before any output or failure artifact can be created."""
+    path = Path(directory).resolve()
+    for source in (Path(root).resolve(), Path(__file__).resolve().parents[2]):
+        require(
+            not path.is_relative_to(source),
+            "Probe output may not mutate original or checkout/snapshot source",
+        )
+    return path
+
+
 def _function(tree, name):
     nodes = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name]
     require(len(nodes) == 1, "Require exactly one original source function: " + name)
@@ -63,6 +74,19 @@ def _function(tree, name):
 
 def _body(node):
     return ast.dump(event_native.Clean().visit(copy.deepcopy(node)), include_attributes=False)
+
+
+def _owned_body(node):
+    require(
+        not node.decorator_list
+        and node.returns is None
+        and all(
+            arg.annotation is None
+            for arg in (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs)
+        ),
+        "Undeclared owned event annotation/decorator",
+    )
+    return _body(node)
 
 
 def source_plan(root=NATIVE_ROOT):
@@ -89,13 +113,13 @@ def source_plan(root=NATIVE_ROOT):
     matched = {}
     for name in ("_fire_events_tissue", "makeAllChanges"):
         require(
-            _body(_function(original, name)) == _body(_function(owned, name)),
+            _body(_function(original, name)) == _owned_body(_function(owned, name)),
             "Event operational source differs: " + name,
         )
         matched[name] = True
     require(
         _body(_function(trees["betse/science/math/toolbox.py"], "pulse"))
-        == _body(_function(owned_tree, "pulse")),
+        == _owned_body(_function(owned_tree, "pulse")),
         "Pulse operational source differs",
     )
     factories = trees["betse/science/math/modulate.py"]
@@ -210,7 +234,7 @@ def declaration(programs, *, pulses, defaults, present, labels, stores, provenan
         defaults=defaults,
         present=present,
         labels=labels,
-        stores=stores,
+        stores={key: value.copy() for key, value in stores.items()},
         provenance=provenance,
         property_authority=(
             "normalized explicit probe projection, not Parameters/YAML/finalized ownership"
@@ -267,31 +291,84 @@ def _error(error):
     )
 
 
+class CaptureIncomplete(ValueError):
+    """A source return is retained but its evidence cannot admit comparison."""
+
+    def __init__(self, payload):
+        super().__init__("Spatial source capture is incomplete")
+        self.partial = payload
+
+
+def _capture_errors(payload):
+    errors = list(payload.get("capture_errors", ()))
+    available = payload.get("available", {})
+    for location, local in (
+        ("factory_locals", payload.get("factory_locals")),
+        ("available.factory_locals", available.get("factory_locals")),
+    ):
+        if isinstance(local, dict):
+            errors.extend(
+                dict(error, section=location) for error in local.get("capture_errors", ())
+            )
+    return errors
+
+
 def _take(directory, name, operation, *, attempts, work, readers):
     """Reuse complete raw evidence and preserve a source exception if capture fails."""
-    row = dict(operation=name, work=work, status="attempted")
+    row = dict(operation=name, path=str(directory / name), work=work, status="attempted")
     attempts.append(row)
     source_error = None
+    retained_payload = None
+    reader_errors = []
 
     def observed():
         nonlocal source_error
+        row["operation_status"] = "attempted"
         try:
-            return operation()
+            value = operation()
         except Exception as error:
             source_error = error
+            row["operation_status"] = "failed"
             raise
+        row["operation_status"] = "returned"
+        return value
+
+    def safe_reader(section, reader):
+        def read():
+            try:
+                return reader()
+            except Exception as error:
+                reader_errors.append(dict(section=section, stage=name, **_error(error)))
+                return None
+
+        return read
 
     def retain(payload):
+        nonlocal retained_payload
+        errors = _capture_errors(payload) + reader_errors
+        payload = dict(payload, capture_errors=errors, capture_complete=not errors)
+        retained_payload = payload
+        row["capture_errors"] = errors
+        row["capture_complete"] = not errors
+        row["evidence_complete"] = False
         try:
             archives.write_archive(directory / name, payload)
         except Exception as error:
             row["evidence_complete"] = False
             row.setdefault("recovery_errors", []).append(_error(error))
             raise
-        row["evidence_complete"] = True
+        # The raw archive can be fully written while its captured source data
+        # are explicitly incomplete. Its commit marker admits no comparison.
+        row["archive_written"] = True
+        row["evidence_complete"] = not errors
 
     try:
-        result = failures.retained_call(observed, stage=name, readers=readers, retain=retain)
+        result = failures.retained_call(
+            observed,
+            stage=name,
+            readers={name: safe_reader(name, reader) for name, reader in readers.items()},
+            retain=retain,
+        )
     except Exception as error:
         row.update(
             status="failed",
@@ -301,7 +378,13 @@ def _take(directory, name, operation, *, attempts, work, readers):
         if error is source_error:
             error.spatial_probe_source_operation = name
             error.spatial_probe_capture_complete = row.get("evidence_complete", False)
+            error.spatial_probe_capture_errors = row.get("capture_errors", [])
+        error.spatial_probe_partial = retained_payload
         raise
+    if not row["evidence_complete"]:
+        error = CaptureIncomplete(retained_payload)
+        row.update(status="failed", failure_origin="capture", failure=_error(error))
+        raise error
     row["status"] = "returned"
     return result
 
@@ -369,7 +452,9 @@ def _factory(original, program, cells, p, locals_after):
                         locals_after[key] = value.copy() if type(value) is np.ndarray else value
                 locals_after["return_or_unwind_type"] = type(arg).__name__
             except Exception as error:
-                locals_after.setdefault("capture_errors", []).append(_error(error))
+                locals_after.setdefault("capture_errors", []).append(
+                    dict(stage="factory_return_local_copy", **_error(error))
+                )
 
     sys.setprofile(observe)
     try:
@@ -381,6 +466,13 @@ def _factory(original, program, cells, p, locals_after):
 def _leg(directory, supplied, programs, *, original, attempts, original_events):
     """Execute one isolated probe; retain a failed prefix without calling it success."""
     directory.mkdir(exist_ok=False)
+    context_work = dict(
+        operation="probe-context",
+        path=str(directory),
+        work="explicit_probe_context_arrays",
+        status="attempted",
+    )
+    attempts.append(context_work)
     saved = next(iter(supplied["programs"].values()))
     cells = SimpleNamespace(
         cell_i=np.arange(len(saved["cell_ids"])),
@@ -399,6 +491,7 @@ def _leg(directory, supplied, programs, *, original, attempts, original_events):
         **{"i" + ion: i for i, ion in enumerate(IONS)},
     )
     probe = SimpleNamespace(p=p, sim=sim, cells=cells)
+    context_work["status"] = "returned"
     owner = object.__new__(original_events if original else literal.TissueHandler)
     owner.event_cut = owner._event_voltage = None
     owner.tissue_default = SimpleNamespace(
@@ -466,7 +559,10 @@ def _leg(directory, supplied, programs, *, original, attempts, original_events):
                 event = dict(ion=ion, time=t, status="attempted")
                 callbacks.append(event)
                 row = dict(
-                    operation="callback-" + ion, work="source_dynamic_callback", status="attempted"
+                    operation="callback-" + ion,
+                    path=str(directory),
+                    work="source_dynamic_callback",
+                    status="attempted",
                 )
                 attempts.append(row)
                 try:
@@ -505,6 +601,8 @@ def _leg(directory, supplied, programs, *, original, attempts, original_events):
             raise
         return dict(
             status="source_failed",
+            capture_complete=True,
+            capture_errors=[],
             stage=stage,
             failure=_error(error),
             factories=returned,
@@ -515,6 +613,8 @@ def _leg(directory, supplied, programs, *, original, attempts, original_events):
         )
     return dict(
         status="source_completed",
+        capture_complete=True,
+        capture_errors=[],
         factories=returned,
         frames=frames,
         callbacks=callbacks,
@@ -545,6 +645,22 @@ def _exact(left, right):
 
 
 def _trace(result, supplied):
+    require(
+        result.get("capture_complete") is True and not _capture_errors(result),
+        "Incomplete spatial capture cannot admit a comparison",
+    )
+    selected = [ion for ion in IONS if ion in supplied["programs"]]
+    returned = list(result["factories"])
+    require(returned == selected[: len(returned)], "Factory source order/roster differs")
+    for saved in result["factories"].values():
+        actual = _stamp(saved["values"])
+        require(
+            actual["shape"]
+            == saved["shape"]
+            == [len(next(iter(supplied["programs"].values()))["membrane_ids"])]
+            and actual["dtype"] == saved["dtype"],
+            "Factory metadata/full membrane axis differs",
+        )
     expected_frames = [
         (i, t, method)
         for i, t in enumerate(supplied["labels"])
@@ -568,9 +684,16 @@ def _trace(result, supplied):
     )
     if result["status"] == "source_completed":
         require(
-            actual_frames == expected_frames and actual_callbacks == expected_callbacks,
+            actual_frames == expected_frames
+            and actual_callbacks == expected_callbacks
+            and returned == selected,
             "Completed source trace is missing event/callback entries",
         )
+        _exact(result["frames"][-1]["after"], result["stores"])
+    previous = supplied["stores"]
+    for frame in result["frames"]:
+        _exact(previous, frame["before"])
+        previous = frame["after"]
     for row in result["callbacks"]:
         require(
             row["status"] == "returned" and type(row["value"]) is int and row["value"] == 1,
@@ -611,7 +734,7 @@ def paired_probe(
         stores=stores,
         provenance=provenance,
     )
-    directory = Path(directory)
+    directory = output_directory(directory, root)
     directory.mkdir(exist_ok=False)
     attempts, results = [], {}
     try:
@@ -622,7 +745,26 @@ def paired_probe(
             == Path(root).resolve(strict=True),
             "Original factory capture root differs",
         )
-        original_events = _original_events(root)
+        compiled = {}
+
+        def prepare_original():
+            compiled["events"] = _original_events(root)
+            return dict(
+                source_plan=results["source_plan"],
+                compiled_event_methods=2,
+                compiled_pulse_functions=1,
+                evaluated=False,
+            )
+
+        _take(
+            directory,
+            "original-event-source-compilation",
+            prepare_original,
+            attempts=attempts,
+            work="original_source_compilation_no_evaluation",
+            readers={},
+        )
+        original_events = compiled["events"]
         for name, original in (("original", True), ("candidate", False)):
             results[name] = _leg(
                 directory / name,
@@ -653,6 +795,11 @@ def paired_probe(
             independent_biological_cases=0,
             INIT_SIM_admission=False,
             checkpoint_continuity_admission=False,
+            accounting_scope=(
+                "Every leg context, factory/helper/recreation, event method, callback "
+                "and independent oracle request is work, never a biological case; "
+                "original factory requests include the existing cached capture call"
+            ),
         )
         archives.write_archive(directory / "comparison-result", results)
         return results

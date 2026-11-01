@@ -172,8 +172,12 @@ def record(value):
 def source_setup_configuration(source_binding):
     # Periodic source setup is separate from the unchanged material seam.
     from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic
+    from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial
     from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
 
+    spatial_setup = spatial.finalizer_setup(source_binding.inputs)
+    if spatial_setup is not None:
+        return spatial_setup
     selected = temporal.finalizer_setup(source_binding.inputs)
     if selected is not None:
         return selected
@@ -302,9 +306,11 @@ def publish(
         "Require the unchanged actual zero-fire SIM finalization epoch",
     )
     cfg = source_binding.inputs["source_setup"]
+    from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial
     from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
 
     temporal.validate_receipt(source_binding, event_finalized, completed=completed)
+    spatial.validate_receipt(source_binding, event_finalized, completed=completed)
     profiles = actual_profiles.tissue_name_to_profile
     require(
         list(profiles) == [row["name"] for row in cfg["tissue_profiles"]],
@@ -453,9 +459,11 @@ def resolve(source_binding, source_entry):
         "Foreign setup/config/INIT/SIM parent in event-owner publication",
     )
     early = finalization["source_fields"]
+    from cells.processes import betse_normal_ecm_molecule_spatial_config as spatial
     from cells.processes import betse_normal_ecm_molecule_temporal_config as temporal
 
     temporal.validate_receipt(source_binding, early, completed=completed)
+    spatial.validate_receipt(source_binding, early, completed=completed)
     require(
         early["source_phase"] == "SIM"
         and early["legacy_run_sim"] is True

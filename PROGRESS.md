@@ -423,6 +423,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   separate reference-probe capture repair does not qualify this owner feature.
   The 16 proposed periodic branches span eight scenarios; no actual periodic
   callback or checkpoint qualification has run.
+  Key has also implemented explicit production/decay-rate changes on retained
+  molecule owners. The [saved-result review](/mnt/workspaces/Cells/molecule-kinetic-reload-development-20261101-01/root-results-review.json)
+  verifies **247 software passes** (95 new and 152 affected), 36 complete
+  archives, one intentionally corrupted negative case and all 11 outcomes,
+  including four preserved failures. The final software run took **13.05
+  seconds, 226.7 MiB sampled peak RSS**. The [source review](/mnt/workspaces/Cells/molecule-kinetic-reload-development-20261101-01/root-source-review.json)
+  requires one recorder-forwarding fix before actual continuity work: setup
+  calls currently inherit the preceding verification-stage label. Key owns
+  that correction and a separate independent original-source reference.
+  Static inspection also found that the inherited `tex_val = str` helper differs
+  from BETSE's original formatter; full cached metadata must be compared without
+  normalizing that difference away. No numerical mismatch has been observed.
+  Actual exhausted INIT, source correspondence and checkpoint continuity remain
+  prerequisites; the software results grant none of those qualifications.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
   remain held; native BETSE pickle and physical/post-cut admission are outside
   this persistence assignment.
@@ -620,6 +634,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   helper observation-boundary checks. Both outcomes retain their own frozen
   source bindings; the original 39 checks were not rerun. Root's first actual
   environment diagnostic and subsequent logger repair are recorded above.
+  Specialist's [genuine non-SVG multi-cell caller source is reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-20261101-01/root-source-review.json):
+  fresh normalized parameters, one continuing random stream, actual mesh
+  construction/assignment, clipping/refinement, aliases and cell indexing.
+  [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-caller-20261101-01/root-results-review.json)
+  verifies **45 final synthetic controls in 9.30 seconds**, with all four
+  outcomes checked. The original 17-pass/22-failure and 40-pass/one-failure
+  attempts remain failed; eight empty first-attempt archives remain unusable.
+  The successful controls substitute synthetic execution and do not establish
+  native geometric accuracy. Actual multi-cell execution and its downstream
+  geometry/ECM/environment owner continuation remain open.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)

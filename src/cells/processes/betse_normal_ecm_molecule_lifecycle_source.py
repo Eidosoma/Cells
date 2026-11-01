@@ -13,6 +13,7 @@ import numpy as np
 
 from cells.processes import betse_environment_field as environment
 from cells.processes import betse_normal_ecm_catalog_join_source as qualified
+from cells.processes import betse_normal_ecm_molecule_spatial_source as spatial_source
 
 MasterOfGenes = qualified.MasterOfGenes
 set_net_opts = qualified.base.set_net_opts
@@ -1814,4 +1815,7 @@ def periodic(pc,cells,p):
     return scalar, y
 
 
-mod = SimpleNamespace(f_sweep=f_sweep, periodic=periodic)
+mod = SimpleNamespace(f_sweep=f_sweep, periodic=periodic,
+                      gradient_x=spatial_source.gradient_x,
+                      gradient_y=spatial_source.gradient_y,
+                      gradient_r=spatial_source.gradient_r)

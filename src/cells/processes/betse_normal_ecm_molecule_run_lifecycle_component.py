@@ -6,6 +6,7 @@ from cells.processes import betse_normal_ecm_molecule_events as events
 from cells.processes import betse_normal_ecm_molecule_lifecycle as lifecycle
 from cells.processes import betse_normal_ecm_molecule_lifecycle_phase as phase
 from cells.processes import betse_normal_ecm_molecule_periodic_authority as periodic_authority
+from cells.processes import betse_normal_ecm_molecule_spatial_authority as spatial_authority
 from cells.processes import betse_normal_ecm_molecule_sweep_authority as sweep_authority
 
 source = lifecycle.catalog
@@ -45,7 +46,7 @@ def verify_binding(binding):
 
 
 def event_scope(binding):
-    """Existing global pulses and actual finalized constant/sweep callbacks.
+    """Global pulses and finalized constant/temporal/x/y membrane callbacks.
 
     The event module still checks complete source/phase/profile ownership.
     The callback declaration must equal the actual SIM finalizer return and
@@ -83,6 +84,10 @@ def event_scope(binding):
     if not lifecycle.event_owner_bridge.same(published.event_finalized, fields):
         raise ValueError("Foreign actual finalized callback publication association")
     original = published.owner
+    if any(len(owner["scheduled_options"][key]) == 6
+           and owner["scheduled_options"][key][5] in ("gradient_x", "gradient_y", "gradient_r")
+           for key in selected):
+        spatial_authority.validate(binding.source_binding, owner, published, fields)
     if any(
         len(owner["scheduled_options"][key]) == 6
         and owner["scheduled_options"][key][5] == "periodic"
@@ -100,11 +105,11 @@ def event_scope(binding):
         row, callback = owner["scheduled_options"][key], owner["callbacks"][suffix]
         if (
             len(row) != 6
-            or row[5] not in ("None", "f_sweep", "periodic")
+            or row[5] not in ("None", "f_sweep", "periodic", "gradient_x", "gradient_y")
             or callback["source_function"] != row[5]
             or (row[5] == "None" and callback["dynamic"] != {"kind": "constant"})
-            or type(callback["source_scalar"]) is not int
-            or callback["source_scalar"] != 1
+            or (row[5] not in ("gradient_x", "gradient_y")
+                and (type(callback["source_scalar"]) is not int or callback["source_scalar"] != 1))
             or not source.equal_tree(callback, original["callbacks"].get(suffix))
             or not source.equal_tree(row, original["scheduled_options"][key])
             or (
