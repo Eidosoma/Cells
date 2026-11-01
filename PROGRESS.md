@@ -418,8 +418,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   fixtures, analytic interior derivatives, formal integration by parts, units,
   invalid/nonfinite inputs and batch isolation. The old 30 checks were not
   rerun; their fixture and evidence helpers were reused. Full solver scaling
-  still needs a sparse or matrix-free solve and GPU validation; the current
-  binding retains its dense inverse and 625-cell limit.
+  still needs a sparse or matrix-free solve and GPU validation; the dense
+  solve route retains its inverse and 625-cell limit.
+  A [separate geometry-only binding is now implemented and reviewed](/mnt/workspaces/Cells/rectangular-metric-binding-development-20261101-01/root-review.json).
+  It supplies those same face kernels without allocating a dense operator or
+  inverse. **24 new metric checks, 30 dense regressions and 27 stencil
+  regressions pass**, about **2.52 seconds per suite**, with at most **60.0 MiB
+  sampled peak process-tree RSS**. The independent source review preserves
+  every existing coordinate gate and the complete dense arithmetic/identity
+  construction. A synthetic **3,072-cell** rectangle retains **50,064 bytes
+  of numerical geometry arrays** (excluding IDs/provenance), with complete
+  saved batched actions and exact conservation/energy checks. The new declared
+  host cap is **2**20 cells**, not tested-at-cap or GPU evidence. The original
+  dense solve rejects this geometry-only type. No native tissue, retained-grid
+  requalification or scalable Poisson solve is implied.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

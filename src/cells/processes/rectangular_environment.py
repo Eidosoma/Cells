@@ -6,8 +6,10 @@ conservative five-point Laplacian with zero normal flux at the outer faces.
 It is separate from native BETSE source correspondence and from live tissue,
 material, masked-domain, phase or checkpoint admission.
 
-Binding computes one bounded dense inverse on the CPU using the same declared
+bind() computes one bounded dense inverse on the CPU using the same declared
 constant-nullspace projection as Cells' uniform-grid compatible-gauge solver.
+bind_metric() retains only validated geometry, without constructing a matrix or
+inverse. It supplies the existing face stencils, not a Poisson solver.
 The immutable kernels support batched NumPy/JAX array operations via ``xp``;
 no GPU execution or performance is asserted by their presence.
 """
@@ -23,7 +25,9 @@ import numpy as np
 from cells.processes import betse_native_grid_metric_audit as metric
 
 LAW_ID = "cells.rectangular_zero_flux_poisson@1"
+METRIC_LAW_ID = "cells.rectangular_zero_flux_metric@1"
 MAX_POINTS = 625
+MAX_METRIC_POINTS = 2**20
 RHS_RTOL = 2e-12
 COORDINATE_EPS_MULTIPLIER = 64
 
@@ -51,6 +55,26 @@ class GridBinding:
     cell_area_m2: float
     laplacian: object
     compatible_inverse: object
+    provenance_json: str
+    identity: str
+
+
+@dataclass(frozen=True)
+class MetricBinding:
+    """Immutable physical geometry with O(number of cells) storage.
+
+    No dense operator, inverse, live tissue ownership or material field is
+    attached. The point limit is a host binding bound, not GPU qualification.
+    """
+
+    environment_ids: tuple
+    shape: tuple
+    bounds_m: tuple
+    spacing_xy_m: tuple
+    coordinates_m: object
+    vertices_x_m: object
+    vertices_y_m: object
+    cell_area_m2: float
     provenance_json: str
     identity: str
 
@@ -109,13 +133,8 @@ def spec_from_observation(audit, *, environment_ids):
     )
 
 
-def bind(spec):
-    """Build physical dx/dy coefficients without altering supplied grid data.
-
-    Uniform per-axis rectangles only. Irregular spacing, holes, mixed/value
-    boundaries, heterogeneous conductivity and nonzero boundary flux are outside
-    this law. The new inverse is never substituted for a retained native inverse.
-    """
+def _validated_metric(spec, point_limit):
+    """Shared coordinate validation; neither route repairs or resamples inputs."""
     if type(spec) is not GridSpec:
         raise ValueError("Require an explicit rectangular-grid specification")
     shape = spec.shape
@@ -123,9 +142,9 @@ def bind(spec):
         type(shape) is not tuple
         or len(shape) != 2
         or any(type(n) is not int or n < 2 for n in shape)
-        or math.prod(shape) > MAX_POINTS
+        or math.prod(shape) > point_limit
     ):
-        raise ValueError("Require ny,nx>=2 with at most625 physical grid cells")
+        raise ValueError(f"Require ny,nx>=2 with at most{point_limit} physical grid cells")
     n = math.prod(shape)
     ids = spec.environment_ids
     if (
@@ -191,6 +210,57 @@ def bind(spec):
     if type(spec.provenance) is not dict or not spec.provenance:
         raise ValueError("Require explicit grid-data provenance")
     provenance = json.dumps(spec.provenance, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+    header = json.dumps(
+        dict(
+            law=METRIC_LAW_ID,
+            ids=ids,
+            shape=shape,
+            bounds=bounds,
+            spacing_xy=(dx, dy),
+            provenance=provenance,
+        ),
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode()
+    digest = hashlib.sha256(header)
+    for array in (points, vx, vy):
+        digest.update(array.tobytes(order="C"))
+    return MetricBinding(
+        ids, shape, bounds, (dx, dy), points, vx, vy, area, provenance, digest.hexdigest()
+    )
+
+
+def bind_metric(spec):
+    """Validate a complete rectangle without allocating a dense matrix/inverse.
+
+    Uses exactly the dense route's per-axis spacing, coordinate-resolution,
+    stable-ID, finiteness and provenance requirements, with a separate limit of
+    2**20 cells. Only retained geometry is issued. Use the face-stencil module
+    for gradients, divergence and Laplacian action; dense solve() refuses this
+    type. No solve, GPU execution or live-tissue admission is implied.
+    """
+    return _validated_metric(spec, MAX_METRIC_POINTS)
+
+
+def bind(spec):
+    """Build physical dx/dy coefficients without altering supplied grid data.
+
+    Uniform per-axis rectangles only. Irregular spacing, holes, mixed/value
+    boundaries, heterogeneous conductivity and nonzero boundary flux are outside
+    this law. The new inverse is never substituted for a retained native inverse.
+    The existing 625-cell bound, numerical construction and identity are retained.
+    """
+    geometry = _validated_metric(spec, MAX_POINTS)
+    ids, shape, bounds = geometry.environment_ids, geometry.shape, geometry.bounds_m
+    n = math.prod(shape)
+    ny, nx = shape
+    dx, dy = geometry.spacing_xy_m
+    area = geometry.cell_area_m2
+    points, vx, vy = geometry.coordinates_m, geometry.vertices_x_m, geometry.vertices_y_m
+    provenance = geometry.provenance_json
+    cx, cy = (1.0 / value for value in (dx * dx, dy * dy))
 
     matrix = np.zeros((n, n), dtype=np.float64)
     for i, j in np.ndindex(shape):

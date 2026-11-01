@@ -6,8 +6,10 @@ Arrays may have any leading batch axes. The cell axis is C-order and flattened,
 whereas face arrays retain their spatial axes. Arithmetic uses O(number of cells)
 temporary storage and never reads a dense Laplacian or inverse.
 
-The existing GridBinding and its 625-cell bound are unchanged. These kernels do
-not create material currents, native owners, masked domains or a tissue phase.
+The existing dense GridBinding keeps its 625-cell bound. A MetricBinding can
+supply the same physical geometry without constructing dense operators, up to
+its separate host-binding limit. These kernels do not create material currents,
+native owners, masked domains or a tissue phase.
 The xp interface permits array backends; its presence is not GPU qualification.
 """
 
@@ -37,6 +39,21 @@ class DivergenceResult(NamedTuple):
         return self.zero_boundary & self.finite_result
 
 
+def _field(values, grid, xp):
+    if type(grid) is field.GridBinding:
+        return field._field(values, grid, xp)
+    if type(grid) is not field.MetricBinding:
+        raise ValueError("Require a rectangular geometry or dense grid binding")
+    values = xp.asarray(values)
+    if (
+        values.ndim < 1
+        or values.shape[-1] != len(grid.environment_ids)
+        or str(values.dtype) != "float64"
+    ):
+        raise ValueError("Require binary64 fields with the grid axis last")
+    return values
+
+
 def gradient(values, grid, *, xp=np):
     """Cell-to-face differences with the binding's homogeneous-flux boundary.
 
@@ -44,7 +61,7 @@ def gradient(values, grid, *, xp=np):
     an electric-field sign or conductivity needs a separately specified field law.
     Nonfinite arithmetic is retained. Inputs and the grid are never modified.
     """
-    values = field._field(values, grid, xp)
+    values = _field(values, grid, xp)
     plane = values.reshape((*values.shape[:-1], *grid.shape))
     dx, dy = grid.spacing_xy_m
     x = (plane[..., 1:] - plane[..., :-1]) / dx
@@ -57,8 +74,8 @@ def gradient(values, grid, *, xp=np):
 
 
 def _faces(values, grid, xp):
-    if type(grid) is not field.GridBinding or type(values) is not Faces:
-        raise ValueError("Require the rectangular GridBinding and explicit face arrays")
+    if type(grid) not in (field.GridBinding, field.MetricBinding) or type(values) is not Faces:
+        raise ValueError("Require a rectangular binding and explicit face arrays")
     x, y = xp.asarray(values.x), xp.asarray(values.y)
     ny, nx = grid.shape
     if (
