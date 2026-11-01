@@ -46,18 +46,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
-  nine-failure** image. Source acceptance requires three fixes now assigned to
-  Key: retain raw helper returns before fallible observation, bind the actual
-  parser method, and verify the request's original source-policy identity.
-  Existing passes do not cover those repairs. Actual parsing, full parameter
-  initialization and scientific qualification remain held.
+  nine-failure** image. The [reviewed repair closes all three findings](/mnt/workspaces/Cells/native-parameter-network-load-repair-20261101-01/root-review.json):
+  raw helper returns survive fallible observation, actual parser dispatch is
+  bound, and the request's original source-policy identity is checked before
+  retirement and during use. **66 fresh blocked controls pass: 31 new and 35
+  affected**, with all seven outcomes checked, including a preserved lint
+  failure. The repaired source is accepted for explicit GRN dependency
+  adoption. Earlier results retain their original scope. Actual parsing, full
+  parameter initialization and scientific qualification remain held.
   The [GRN/variable continuation's fourteen outcomes are also reviewed](/mnt/workspaces/Cells/native-parameter-grn-variables-development-20261101-01/root-review.json):
   **41 production/ownership controls and four runner controls pass** on their
   separately bound images; one packaging and one lint failure remain preserved.
   Its original-source extent reaches temperature, junction and environment
   declarations through line 945. Acceptance still requires its own raw-return
   capture fix and explicit adoption of the repaired network/parser dependency.
-  Key owns both repairs; the existing passes do not qualify the successors.
+  Key is completing that local GRN repair and explicit dependency adoption;
+  the existing GRN passes do not qualify the successor.
 
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
