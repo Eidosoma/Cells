@@ -640,6 +640,87 @@ class SavedCallerInputsTests(unittest.TestCase):
         self.assertEqual(len(result["captures"]), 8)
         self.assertEqual(result["owned_trial"]["identity"], "6" * 64)
 
+    def large_request(self, text=None):
+        path = self.root / "capture-0006.json"
+        value = dict(
+            lifecycle_request={}, lifecycle_state={}, configuration_json="{}", identity="a" * 64
+        )
+        encoded = (json.dumps(value) if text is None else text).encode()
+        with path.open("wb") as output:
+            output.write(encoded)
+            output.write(b" " * (16 * 2**20 + 1 - len(encoded)))
+        row = dict(
+            label="multi_cell_request",
+            path=path.name,
+            status="saved",
+            sha256=digest(path.read_bytes()),
+        )
+        return path, row, value
+
+    def test_large_legacy_request_exact_read_and_pins_leave_general_limit_unchanged(self):
+        path, row, value = self.large_request()
+        self.assertEqual(reader.read_capture(path, row), value)
+        self.assertEqual(reader.capture_files(path, row), [reader.shared.pin(path)])
+        with self.assertRaisesRegex(ValueError, "JSON size bound"):
+            reader.payload.read(path)
+        self.assertEqual(reader.CAPTURE_READ_POLICY["ordinary_json_bytes"], 16 * 2**20)
+        self.assertEqual(reader.CAPTURE_READ_POLICY["legacy_multi_cell_request_bytes"], 24 * 2**20)
+
+    def test_large_request_requires_exact_role_path_and_bytes(self):
+        path, row, _ = self.large_request()
+        for field, value in (
+            ("label", "cell_index"),
+            ("path", "capture-0007.json"),
+            ("status", "capture_failed"),
+            ("sha256", "b" * 64),
+        ):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                reader.read_capture(path, dict(row, **{field: value}))
+        other = path.with_name("capture-0007.json")
+        path.rename(other)
+        with self.assertRaisesRegex(ValueError, "not the declared multi-cell request"):
+            reader.read_capture(other, dict(row, label="cell_index", path=other.name))
+        other.rename(path)
+        with path.open("ab") as output:
+            output.write(b" ")
+        with self.assertRaisesRegex(ValueError, "Changed saved legacy request bytes"):
+            reader.read_capture(path, row)
+
+    def test_large_request_cap_is_on_actual_bounded_read(self):
+        path, row, _ = self.large_request()
+        with path.open("r+b") as output:
+            output.truncate(24 * 2**20 + 1)
+        row["sha256"] = digest(path.read_bytes())
+        with self.assertRaisesRegex(ValueError, "request JSON size bound"):
+            reader.read_capture(path, row)
+
+    def test_large_request_strict_json_and_exact_top_level_schema(self):
+        for text, diagnostic in (
+            ('{"identity":0,"identity":1}', "Duplicate"),
+            ('{"identity":NaN}', "Nonstandard"),
+            ('{"identity":Infinity}', "Nonstandard"),
+            (
+                '{"kind":"cells.single_cell_prefix_capture@1","payload":{},"blobs":[]}',
+                "legacy multi-cell request",
+            ),
+            (
+                '{"lifecycle_request":{},"lifecycle_state":{},"configuration_json":"{}","identity":"a","extra":0}',
+                "legacy multi-cell request",
+            ),
+        ):
+            with self.subTest(text=text):
+                path, row, _ = self.large_request(text)
+                with self.assertRaisesRegex(ValueError, diagnostic):
+                    reader.read_capture(path, row)
+
+    def test_large_request_linked_path_refuses(self):
+        path, row, _ = self.large_request()
+        actual = path.with_name("retained.json")
+        path.rename(actual)
+        path.symlink_to(actual)
+        with self.assertRaisesRegex(ValueError, "Linked evidence path"):
+            reader.read_capture(path, row)
+
     def test_capture_bytes_or_missing_file_are_rejected(self):
         parent, diagnostic = self.saved()
         path = diagnostic / "capture-0003.json"

@@ -127,7 +127,11 @@ def _saved_bindings(diagnostic, parent, saved):
         for name in ("result.json", "diagnostic.json", "root-review.json")
     ]
     rows += [shared.pin(parent / "plan.json"), shared.pin(parent / "source/SNAPSHOT.json")]
-    rows += [pin for row in saved["captures"] for pin in payload.files(diagnostic / row["path"])]
+    rows += [
+        pin
+        for row in saved["captures"]
+        for pin in inputs.capture_files(diagnostic / row["path"], row)
+    ]
     _, _, image_path = native.inputs(saved["raw"], saved["configuration"])
     rows.append(shared.pin(image_path))
     rows += [
@@ -212,6 +216,7 @@ def prepare(destination, diagnostic, parent, *, cpu=3):
             native_package_imports=[],
             normalized_parameters_phase_callbacks_only=True,
             capture_transport=payload.KIND,
+            capture_read_policy=inputs.CAPTURE_READ_POLICY,
             **NO_CREDIT,
         )
         source_snapshot.assert_checkout_unchanged(destination / "source")
@@ -246,6 +251,7 @@ def verify_plan(prepared, plan_sha256):
         native_package_imports=[],
         normalized_parameters_phase_callbacks_only=True,
         capture_transport=payload.KIND,
+        capture_read_policy=inputs.CAPTURE_READ_POLICY,
         comparison="exact_final_three_caches_two_MT_streams_five_alias_observations",
         **NO_CREDIT,
     )

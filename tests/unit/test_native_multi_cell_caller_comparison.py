@@ -105,6 +105,7 @@ def context(tmp_path, monkeypatch):
         native_package_imports=[],
         normalized_parameters_phase_callbacks_only=True,
         capture_transport=runner.payload.KIND,
+        capture_read_policy=runner.inputs.CAPTURE_READ_POLICY,
         **runner.NO_CREDIT,
     )
     monkeypatch.setattr(runner.source_snapshot, "verify", lambda *a, **k: {})
@@ -209,6 +210,15 @@ def test_changed_saved_binding_refuses(context, target):
         plan["original_source_sites"] = {}
     digest = save_plan(context)
     with pytest.raises(ValueError):
+        runner.verify_plan(context["prepared"], digest)
+
+
+def test_changed_large_legacy_capture_policy_refuses(context):
+    policy = dict(context["plan"]["capture_read_policy"])
+    policy["legacy_multi_cell_request_bytes"] += 1
+    context["plan"]["capture_read_policy"] = policy
+    digest = save_plan(context)
+    with pytest.raises(ValueError, match="plan"):
         runner.verify_plan(context["prepared"], digest)
 
 

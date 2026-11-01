@@ -9,6 +9,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Current parallel work (1 November):** Root has completed the corrected
+  multi-cell caller diagnostic and prepared the repaired reference runtime.
+  Key Dev owns the current initialization/simulation/restart qualification path, including
+  two newly reviewed formatter-reference guards. Specialist owns the extended
+  multi-cell geometry/ECM/environment diagnostic and reference through
+  `make_maskM`. Existing runners and production code are reused; actual
+  numerical releases remain coordinated by Root.
+
 - **BETSE source comparisons (1 November):** the square input now matches original
   BETSE through environment and mask construction: **14 cache comparisons and
   six MT random-state records**, with no mismatches. Both implementations
@@ -476,9 +484,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   successor outcomes and eight superseded-development outcomes are accounted
   for, including the preserved style failure. The abandoned factory changes
   remain archived and grant no qualification. The three static helper imports
-  are retained; the lifecycle owner is unchanged. Key now owns the source-only
-  reference update for this formatter, preserving the actual INIT prerequisites
-  and full text/data comparison. No actual warm/native reference was run.
+  are retained; the lifecycle owner is unchanged. Key's
+  [native-formatter reference successor has now been reviewed](/mnt/workspaces/Cells/molecule-kinetic-reload-formatter-reference-successor-20261101-01/root-source-results-review.json):
+  **40 focused software checks passed / 80 deselected**, in **143.44 seconds,
+  252.6 MiB sampled peak RSS**. All six process outcomes are retained, including
+  the earlier 37-pass/two-failure image. The strict text/data comparator and
+  actual INIT prerequisites are unchanged. Source review found two remaining
+  guards: global names can shadow formatter builtins, and equal-valued constants
+  of different types can pass the code-constant comparison. Key is repairing
+  these within the existing reference files and connecting the current
+  initialization/simulation/restart qualification route. No actual warm/native
+  reference was run.
   Actual exhausted INIT, source correspondence and checkpoint continuity remain
   prerequisites; the software results grant none of those qualifications.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
@@ -686,8 +702,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   outcomes checked. The original 17-pass/22-failure and 40-pass/one-failure
   attempts remain failed; eight empty first-attempt archives remain unusable.
   The successful controls substitute synthetic execution and do not establish
-  native geometric accuracy. Positive multi-cell execution and its downstream
-  geometry/ECM/environment owner continuation remain open.
+  native geometric accuracy. Actual multi-cell execution through `cell_index`
+  has since completed below; downstream geometry/ECM/environment qualification
+  remains open.
   Root added the [multi-cell diagnostic runner](validation/betse/native_multi_cell_caller_qualification.py)
   for the existing square/hex core inputs, stopping at `cell_index`.
   It acquires fresh typed image, initial, clipping and lifecycle prerequisites,
@@ -717,8 +734,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   11.06 seconds** (45 repeated controls plus 29 new); the preceding
   73-pass/one-fixture-failure attempt remains separate. A later
   [integration check passed four controls with 74 deselected](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json).
-  This failed input grants no positive multi-cell credit or independent
-  original-source comparison; no automatic retry has been launched.
+  The first failed attempt retains zero positive credit. The separately
+  reviewed [second preparation](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/preparation-review-02.json)
+  binds the corrected source and unchanged case, numerical settings and
+  resource guards. Its [reviewed actual square diagnostic completed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/square-diagnostic-02/root-review.json)
+  through `cell_index` in **442.25 seconds, 267.4 MiB sampled peak RSS**.
+  All eight stage captures were saved, with no source or observer error.
+  Completion is source execution evidence; independent comparison and physical
+  qualification are separate requirements.
   Root has now implemented the independent original-source runtime, driver and
   exact final-data comparator through `cell_index` directly in Git.
   [Source/software integration review](/mnt/workspaces/Cells/native-multi-cell-native-development-20261101-01/review.json)
@@ -750,9 +773,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   runtime or output failures retain zero comparison credit. Prospective library
   provenance does not repair missing historical library evidence. Earlier
   66/41-control images and lint/metadata failures retain their own bindings.
-  Next are a fresh Cells diagnostic after the mask repair and the actual
-  original-source comparison. Neither was launched by this implementation;
-  full-package, physical and checkpoint admission remain open.
+  The completed Cells evidence exposed a transport-reader limit: the nested
+  legacy caller request is **22,947,850 bytes**, above the generic 16 MiB JSON
+  limit. The [narrow reader repair is reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/legacy-request-reader-source-review.json):
+  only the pinned `multi_cell_request/capture-0006.json` may use a 24 MiB cap;
+  its exact bounded bytes, strict JSON and request fields are checked. General
+  parser, sidecar and numerical limits remain unchanged. **90 software tests
+  and 42 subtests passed in 4.53 seconds**, and a separate metadata-only read
+  authenticated the eight actual captures and lineage without source replay.
+  The [first independent-reference attempt stopped in dependency preflight](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/square-reference-01/root-review.json)
+  after **11.06 seconds, 151.4 MiB sampled peak RSS**. The checker rejected
+  SciPy's fileless `_external` namespace; **zero native source calls** occurred,
+  so this is neither a numerical mismatch nor an accepted comparison. Its
+  consumed release, failure and complete partial runtime inventory are retained.
+  Root's [reviewed namespace repair](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/namespace-repair-review.json)
+  binds exact namespace-directory provenance; **58 synthetic controls passed**,
+  and metadata-only reinspection accepts the two recorded namespaces against
+  unchanged package files. The general file/library checks remain strict.
+  Fresh `prepared-02` retains 864 unchanged source files, the 184 external
+  inputs and all 2,504 runtime files; only the checker and its test changed.
+  It is prepared but unreleased, with no automatic reference retry. A fresh
+  reference attempt is next; full-package, physical and checkpoint admission
+  remain open.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid
@@ -836,8 +878,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **18 minutes 14 seconds**, with **546.8 MiB maximum sampled peak RSS**.
   The [requested status check](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/root-requested-status-01.json)
   verifies all group terminals, JUnit counts, resource limits and immutable
-  source bindings. Final source and per-case evidence review remain pending;
-  no actual native or scientific acceptance has been granted. Earlier smoke
+  source bindings. [Source review](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/root-source-review.json)
+  and [saved-evidence review](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/root-batch-results-review.json)
+  are complete: all 404 selected source hashes agree across the ten groups,
+  and all 12 complete array files verify. Nine retention controls establish
+  partial-object identity in process; their serialized exceptions omit custom
+  partial/trial attributes, so complete failed-owner reconstruction is not
+  claimed. Root corrected one work-record label from multi-cell to single-cell
+  with an exact one-string delta; the 41 results retain their original bytes.
+  No actual native or scientific acceptance is added, and earlier smoke
   results remain bound to their own versions.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both

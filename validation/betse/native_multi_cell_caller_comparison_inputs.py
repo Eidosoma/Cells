@@ -15,6 +15,13 @@ from validation.betse import native_multi_cell_caller_qualification as prior
 from validation.betse import native_single_cell_prefix_payload as payload
 
 shared = prior.shared
+CAPTURE_READ_POLICY = dict(
+    ordinary_json_bytes=16 * 2**20,
+    legacy_multi_cell_request_bytes=24 * 2**20,
+    large_legacy_label="multi_cell_request",
+    large_legacy_filename="capture-0006.json",
+    large_legacy_fields=["lifecycle_request", "lifecycle_state", "configuration_json", "identity"],
+)
 RAW_FIELDS = ("seed_recipe", "seed_stream_before", "controls", "image_recipe")
 INITIAL_REQUEST_FIELDS = (
     "origin",
@@ -87,6 +94,70 @@ def _keys(value, names, label):
 def _identity(value):
     comparison.wire._digest(value, "saved identity")
     return value
+
+
+def _capture(path, row, *, expand):
+    """Read one pinned capture; only the nested legacy request has a larger cap.
+
+    The request repeats retained upstream trials and may exceed the ordinary
+    wire's metadata limit without containing large individual arrays. Preserve
+    those original bytes. This exception neither admits a large sidecar envelope
+    nor changes the generic payload/parser limits or numerical array limits.
+    """
+    path = payload._regular(path)
+    _keys(row, ("label", "path", "status", "sha256"), "capture record")
+    if (
+        row["status"] != "saved"
+        or row["label"] not in prior.STAGES
+        or row["path"] != f"capture-{prior.STAGES.index(row['label']):04d}.json"
+        or path.name != row["path"]
+        or not path.is_file()
+    ):
+        raise ValueError("Changed capture role or path")
+    expected = _identity(row["sha256"])
+    if path.stat().st_size <= CAPTURE_READ_POLICY["ordinary_json_bytes"]:
+        if shared.pin(path)["sha256"] != expected:
+            raise ValueError("Changed saved capture bytes")
+        value = payload.read(path, expand=expand)
+        pins = payload.files(path)
+        if pins[0]["sha256"] != expected:
+            raise ValueError("Changed saved capture bytes")
+        return value, pins
+    if (
+        row["label"] != CAPTURE_READ_POLICY["large_legacy_label"]
+        or path.name != CAPTURE_READ_POLICY["large_legacy_filename"]
+    ):
+        raise ValueError("Large legacy capture is not the declared multi-cell request")
+    # Hash exactly the bounded bytes being decoded, not an earlier file read.
+    with path.open("rb") as stream:
+        raw = stream.read(CAPTURE_READ_POLICY["legacy_multi_cell_request_bytes"] + 1)
+    if len(raw) > CAPTURE_READ_POLICY["legacy_multi_cell_request_bytes"]:
+        raise ValueError("Legacy multi-cell request JSON size bound")
+    if hashlib.sha256(raw).hexdigest() != expected:
+        raise ValueError("Changed saved legacy request bytes")
+
+    def invalid(value):
+        raise ValueError("Nonstandard legacy request JSON constant: " + value)
+
+    def pairs(rows):
+        result = {}
+        for key, value in rows:
+            if key in result:
+                raise ValueError("Duplicate legacy request JSON key")
+            result[key] = value
+        return result
+
+    value = json.loads(raw, parse_constant=invalid, object_pairs_hook=pairs)
+    _keys(value, CAPTURE_READ_POLICY["large_legacy_fields"], "legacy multi-cell request")
+    return value, [dict(path=str(path), sha256=expected)]
+
+
+def read_capture(path, row, *, expand=False):
+    return _capture(path, row, expand=expand)[0]
+
+
+def capture_files(path, row):
+    return _capture(path, row, expand=False)[1]
 
 
 def _same(left, right):
@@ -460,7 +531,7 @@ def saved_caller(diagnostic, parent):
         ):
             raise ValueError("Incomplete, changed, duplicated or reordered saved capture")
         paths.add(path)
-        values.append(payload.read(diagnostic / path, expand=False))
+        values.append(read_capture(diagnostic / path, row, expand=False))
     raw = capture_lineage(values, plan["configuration"], case)
     return dict(
         case=case,

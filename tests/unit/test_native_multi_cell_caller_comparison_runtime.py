@@ -198,6 +198,122 @@ def test_prospectively_bound_late_package_module_and_library(sandbox, monkeypatc
     assert after["new_module_names"] == ["numpy.implementation"]
 
 
+def namespace_observation(sandbox):
+    directory = sandbox.site / "scipy" / "_external" / "packaging_version"
+    directory.mkdir(parents=True)
+    (directory / "version.py").write_text("# inventoried, never executed\n")
+    sandbox.declaration = runtime.prepare_inventory([str(sandbox.overlay)])
+    observed = observations(sandbox)
+    for index, (name, path) in enumerate(
+        (("scipy._external", directory.parent), ("scipy._external.packaging_version", directory))
+    ):
+        observed["modules"][name] = dict(
+            kind="namespace", object_id=70 + index, origin=None, paths=[str(path)]
+        )
+    return observed
+
+
+def test_declared_nested_package_namespaces_preflight_and_finish(sandbox, monkeypatch):
+    observed = namespace_observation(sandbox)
+    monkeypatch.setattr(runtime, "_modules", lambda: copy.deepcopy(observed["modules"]))
+    monkeypatch.setattr(runtime, "_observe", lambda: copy.deepcopy(observed))
+    calls = []
+    monkeypatch.setattr(runtime, "importlib", SimpleNamespace(import_module=calls.append))
+    before = runtime.preflight(sandbox.declaration, sandbox.source)
+    assert calls == list(runtime.IMPORTS)
+    assert before["native_execution_attempts"] == before["scientific_api_calls"] == 0
+    assert (
+        runtime.finish(sandbox.declaration, sandbox.source, before)["status"]
+        == "bound_after_source"
+    )
+    assert sandbox.declaration["namespace_policy"] == runtime.NAMESPACE_POLICY
+
+
+def test_late_namespace_uses_prospectively_bound_directory(sandbox, monkeypatch):
+    namespaces = namespace_observation(sandbox)["modules"]
+    observed, before = setup_worker(sandbox, monkeypatch)
+    observed["modules"]["scipy._external"] = namespaces["scipy._external"]
+    assert runtime.finish(sandbox.declaration, sandbox.source, before)["new_module_names"] == [
+        "scipy._external"
+    ]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "opaque",
+        "origin",
+        "empty",
+        "multiple",
+        "foreign",
+        "wrong_name",
+        "unlisted",
+        "symlink",
+        "initializer",
+        "extension_initializer",
+        "root",
+    ],
+)
+def test_numerical_namespace_rejects_unowned_paths_and_kinds(sandbox, change):
+    observed = namespace_observation(sandbox)
+    name = "scipy._external"
+    row = observed["modules"][name]
+    directory = Path(row["paths"][0])
+    if change == "opaque":
+        row["kind"] = "opaque"
+    elif change == "origin":
+        row["origin"] = "generated"
+    elif change == "empty":
+        row["paths"] = []
+    elif change == "multiple":
+        row["paths"].append(str(directory))
+    elif change == "foreign":
+        row["paths"] = [str(sandbox.overlay)]
+    elif change == "wrong_name":
+        observed["modules"]["scipy.somewhere_else"] = observed["modules"].pop(name)
+    elif change == "unlisted":
+        unknown = directory.parent / "new_namespace"
+        unknown.mkdir()
+        row["paths"] = [str(unknown)]
+        observed["modules"]["scipy.new_namespace"] = observed["modules"].pop(name)
+    elif change == "symlink":
+        actual = directory.with_name("retained_namespace")
+        directory.rename(actual)
+        directory.symlink_to(actual, target_is_directory=True)
+    elif change in ("initializer", "extension_initializer"):
+        suffix = ".py" if change == "initializer" else ".so"
+        (directory / ("__init__" + suffix)).write_text("raise AssertionError('never import')\n")
+    else:
+        observed["modules"]["scipy"] = dict(row, paths=[str(directory.parent)])
+    source, _, source_files = runtime._source_pins(sandbox.source)
+    with pytest.raises(ValueError, match="Unbound numerical package"):
+        runtime._check_modules(observed, sandbox.declaration, source, source_files)
+
+
+def test_namespace_identity_drift_after_source_refuses(sandbox, monkeypatch):
+    observed = namespace_observation(sandbox)
+    monkeypatch.setattr(runtime, "_modules", lambda: copy.deepcopy(observed["modules"]))
+    monkeypatch.setattr(runtime, "_observe", lambda: copy.deepcopy(observed))
+    monkeypatch.setattr(runtime, "importlib", SimpleNamespace(import_module=lambda name: None))
+    before = runtime.preflight(sandbox.declaration, sandbox.source)
+    observed["modules"]["scipy._external"]["object_id"] += 1
+    with pytest.raises(runtime.RuntimeInventoryError, match="removed or changed"):
+        runtime.finish(sandbox.declaration, sandbox.source, before)
+
+
+def test_actual_namespace_module_record_retains_paths(sandbox, monkeypatch):
+    observed = namespace_observation(sandbox)
+    namespace = ModuleType("scipy._external")
+    namespace.__spec__ = SimpleNamespace(origin=None)
+    namespace.__path__ = list(observed["modules"]["scipy._external"]["paths"])
+    monkeypatch.setattr(runtime, "sys", SimpleNamespace(modules={namespace.__name__: namespace}))
+    assert runtime._modules() == {
+        namespace.__name__: dict(
+            kind="namespace", object_id=id(namespace), origin=None, paths=namespace.__path__
+        )
+    }
+
+
 @pytest.mark.parametrize(
     "change",
     [

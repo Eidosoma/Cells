@@ -1020,7 +1020,7 @@ def prepare(request):
     try:
         work.parent = poisson.prepare(request.poisson_request)
         work.work[:] = [
-            dict(row, sequence=index, component="multi_Poisson_prefix")
+            dict(row, sequence=index, component="single_Poisson_prefix")
             for index, row in enumerate(work.parent.trial.work)
         ]
         with _account(work):

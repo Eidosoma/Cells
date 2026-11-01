@@ -14,7 +14,7 @@ import os
 import re
 import sys
 import sysconfig
-from importlib.machinery import PathFinder
+from importlib.machinery import PathFinder, all_suffixes
 from pathlib import Path
 
 KIND = "cells.multi_cell_reference_runtime@1"
@@ -47,6 +47,7 @@ THREAD_VARIABLES = (
     "VECLIB_MAXIMUM_THREADS",
 )
 LOADER_VARIABLES = ("LD_LIBRARY_PATH", "LD_PRELOAD", "LD_AUDIT")
+NAMESPACE_POLICY = "exact_single_unlinked_package_subdirectory_with_declared_files_no_initializer"
 
 
 class RuntimeInventoryError(ValueError):
@@ -166,6 +167,7 @@ def prepare_inventory(runtime_paths):
         limits=dict(files=MAX_FILES, bytes=MAX_BYTES, file_bytes=MAX_FILE_BYTES),
         scope="Declared package bytes; system mapped dependencies bound before source only",
         bytecode_cache_excluded=True,
+        namespace_policy=NAMESPACE_POLICY,
         scientific_execution=False,
     )
 
@@ -274,6 +276,30 @@ def _observe():
     return dict(modules=_modules(), mapped_libraries=_mapped_libraries())
 
 
+def _check_package_namespace(name, row, package_root, declared):
+    """Bind a fileless package container to its already inventoried directory.
+
+    SciPy uses namespace containers for vendored helpers. They have no source
+    file to pin; their exact single search path and contained producers must
+    belong to the prospective package inventory. This does not admit generated
+    modules, arbitrary search roots or a namespace replacing a regular package.
+    """
+    parts = name.split(".")[1:]
+    expected = package_root.joinpath(*parts)
+    if (
+        not parts
+        or any(not part.isidentifier() for part in parts)
+        or row["kind"] != "namespace"
+        or row.get("origin") is not None
+        or row.get("paths") != [str(expected)]
+        or not expected.is_dir()
+        or any(path.is_symlink() for path in (expected, *expected.parents))
+        or any((expected / ("__init__" + suffix)).exists() for suffix in all_suffixes())
+        or not any(Path(path).is_relative_to(expected) for path in declared)
+    ):
+        raise ValueError("Unbound numerical package namespace: " + name)
+
+
 def _check_modules(observed, declaration, source, source_files, baseline=None):
     declared = {row["path"]: row for row in declaration["files"]}
     numeric_roots = [Path(row["root"]) for row in declaration["packages"].values()]
@@ -283,18 +309,23 @@ def _check_modules(observed, declaration, source, source_files, baseline=None):
     }
     for name, row in observed["modules"].items():
         root = name.split(".", 1)[0]
+        bound_namespace = False
         if root in FORBIDDEN:
             raise ValueError("Forbidden cached package: " + name)
         if root in PACKAGES:
-            if row["kind"] != "file":
-                raise ValueError("Unbound numerical package module: " + name)
-            pin = row["file"]
             package_root = Path(declaration["packages"][root]["root"])
-            if (
-                not Path(pin["path"]).is_relative_to(package_root)
-                or declared.get(pin["path"]) != pin
-            ):
-                raise ValueError("Foreign or changed numerical module: " + name)
+            if row["kind"] == "namespace":
+                _check_package_namespace(name, row, package_root, declared)
+                bound_namespace = True
+            elif row["kind"] != "file":
+                raise ValueError("Unbound numerical package module: " + name)
+            else:
+                pin = row["file"]
+                if (
+                    not Path(pin["path"]).is_relative_to(package_root)
+                    or declared.get(pin["path"]) != pin
+                ):
+                    raise ValueError("Foreign or changed numerical module: " + name)
         if row["kind"] == "file":
             pin, path = row["file"], Path(row["file"]["path"])
             if (
@@ -323,6 +354,7 @@ def _check_modules(observed, declaration, source, source_files, baseline=None):
         elif (
             baseline is not None
             and name not in before
+            and not bound_namespace
             and row["kind"] not in ("builtin_or_frozen", "negative_import_cache")
         ):
             raise ValueError("New opaque/namespace Python producer after source: " + name)
