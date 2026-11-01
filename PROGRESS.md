@@ -105,8 +105,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   accepts the observed direct, contiguous native 64-bit integer buffer format,
   checks its span before copying and retains detached bytes plus layout metadata.
   **46 focused software checks passed in 23.22 seconds, 229.1 MiB sampled peak
-  RSS**, including ten new buffer controls. Checkpoint admission remains unchanged;
-  the complete original-return archive remains unqualified. The
+  RSS**, including ten new buffer controls. Checkpoint admission remains unchanged.
+  The
   [third full-comparison attempt](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-03/root-review.json)
   refused after **10.10 seconds**, before material binding or any update:
   its outer runner selected CPU 3 while the primitive still required CPU 0.
@@ -114,12 +114,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   A [source-reviewed CPU-policy repair](/mnt/workspaces/Cells/molecule-material-cpu-binding-repair-20261101-01/source-review.json)
   carries the explicit CPU through the packet and primitive domain; exact
   singleton affinity, one thread and all memory, time and reserve limits remain
-  enforced. The final focused image passed **73 software checks** (24 new,
+  enforced. The [final focused image and saved-result review](/mnt/workspaces/Cells/molecule-material-cpu-binding-repair-20261101-01/software-review.json)
+  verify **73 software passes** (24 new,
   49 affected) in **36.49 seconds, 233.2 MiB sampled peak RSS**. Its initial
   setup failure and later 66-pass/seven-failure image are retained: those seven
   older synthetic controls still assumed CPU 0, and their fixture now explicitly
   uses the assigned singleton CPU. No equations or tolerances changed. The
   failed actual attempt grants no numerical comparison or fourth-state credit.
+  The [fourth actual comparison attempt](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-04/root-review.json)
+  finished all four Cells updates, the three-update legacy replay, four original
+  BETSE updates and both four-update Decimal references. All **22 individual
+  output archives** are complete, including the original Cython-backed return
+  and the exact Decimal coefficients. This is overlapping work on **one
+  manufactured input sequence**, with no independent biological cases.
+  It stopped after **247.91 seconds, 268.9 MiB sampled peak RSS**, at the first
+  comparison: the full Cells geometry record has sixteen flattened fields
+  absent from the original adapter's selected record. No per-step numerical
+  comparisons ran. Both aggregate failure archives also exceeded the existing
+  array-count limit; their incomplete status is explicit, and the individual
+  archives, primary traceback and work log remain intact. The next repair is
+  the established nine-field, exact native geometry comparison and bounded
+  failure evidence referencing completed archives. Equations, tolerances and
+  storage limits remain unchanged; this attempt grants no qualification.
   Key's new Simulator and phase-callback source now have
   [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
   seven focused controls passed for each, with all eight repair outcomes retained.
