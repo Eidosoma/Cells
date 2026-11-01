@@ -738,10 +738,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Two runtime files received formatting-only changes with complete AST equality;
   saved tests were not relabelled to those new bytes. The
   [earlier 22 AST checks](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/root-results-review.json)
-  remain historical. Execution orchestration and numerical-library inventory,
-  a fresh Cells diagnostic after the mask repair, and the actual independent
-  comparison remain next. This adds no full-package, physical or checkpoint
-  admission.
+  remain historical. The [comparison runner](validation/betse/native_multi_cell_caller_comparison.py),
+  saved-input reader and numerical-library inventory are now implemented in
+  Git. Their [source/software review](/mnt/workspaces/Cells/native-multi-cell-comparison-runner-development-20261101-01/review.json)
+  binds **67 final orchestration controls, 17 saved-input tests with 33 subtests,
+  and 43 runtime-inventory controls**; all scientific imports were blocked.
+  The final runner took **1.77 seconds, 42.5 MiB sampled peak RSS**. Preparation
+  requires a completed eight-capture Cells diagnostic; a separately bound
+  release allows one original-source attempt from immutable source. Complete
+  native evidence precedes the strict comparison, and source, observation,
+  runtime or output failures retain zero comparison credit. Prospective library
+  provenance does not repair missing historical library evidence. Earlier
+  66/41-control images and lint/metadata failures retain their own bindings.
+  Next are a fresh Cells diagnostic after the mask repair and the actual
+  original-source comparison. Neither was launched by this implementation;
+  full-package, physical and checkpoint admission remain open.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid
@@ -813,6 +824,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the earlier 72 controls retain their original source coverage. No actual
   native body, independent reference, physical or checkpoint qualification
   is added.
+  The corresponding single-cell data tail is now implemented in the checkout.
+  Its [preparation](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/PREPARATION.json)
+  retains the actual single-cell owner chain through the same six stores.
+  [Smoke-result review](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/root-smoke-results-review.json)
+  records the original **two-pass/one-error** image and corrected **three-pass**
+  image separately. The failed smoke lacks a standalone serialized raw-partial
+  payload; its logs and case/JUnit records remain. A
+  [detached software batch](/mnt/workspaces/Cells/native-single-cell-world-finalization-20261101-01/software-batch-01/LAUNCH.json)
+  plans **41 distinct native-blocked controls** in bounded sequential groups.
+  Its terminal results have not been queried; completion review waits for a
+  requested status check. Smoke results do not qualify the later batch bytes,
+  and neither source nor scientific acceptance has been granted.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
