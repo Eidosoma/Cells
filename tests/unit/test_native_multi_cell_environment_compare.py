@@ -90,6 +90,7 @@ def test_exact_eleven_pairs_and_two_complete_mt_records_preserve_negative_mask_l
     )
     assert result["arrays_compared"] == 44 and result["physical_geometry_admitted"] is False
     assert result["reference_diagnostics"]["domain_gate_passed"] is False
+    assert result["all_numerical_bits_and_layouts_exact"] is True
     assert (owned, reference) == before
 
 
@@ -147,6 +148,7 @@ def test_non_provenance_changes_never_gain_exact_match(mutation):
     except ValueError:
         return
     assert not result["exact_match"] and result["differences"]
+    assert result.get("all_numerical_bits_and_layouts_exact", False) is False
 
 
 def descriptor_proof():

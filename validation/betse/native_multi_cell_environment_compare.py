@@ -441,7 +441,7 @@ def compare(owned, reference):
         exact_match=not differences,
         finite_observations=finite,
         provenance_normalization="only direct mesh.image_mask kind/identity/image_identity",
-        all_numerical_bits_and_layouts_exact=True,
+        all_numerical_bits_and_layouts_exact=not differences,
         physical_gate_independent=True,
         owned_diagnostics=diagnostics_from_cache(owned["cache"]),
         reference_cache_diagnostics=diagnostics_from_cache(reference["cache"], owned=False),

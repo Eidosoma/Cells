@@ -53,11 +53,29 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   skips image-observer setup on irrelevant line/opcode events, while preserving
   inherited tracing, source checks and call/return/exception evidence. Thirteen
   focused controls passed in **3.04 seconds, 41.6 MiB sampled peak RSS**.
-  End-to-end speedup and completion within 480 seconds remain unmeasured.
+  The subsequent [image tracing and mapping-observer repair](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/observer-metadata-01/root-source-review.json)
+  is source-reviewed, and its [seven saved outcomes](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/observer-metadata-01/root-results-review.json)
+  are checked: 18 isolated and four owner controls pass at their final bytes;
+  earlier failures and twelve unrun owner controls remain explicit. The
+  [fourth actual diagnostic](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-04/root-review.json)
+  completed caller construction in **34.89 seconds wall / 34.60 CPU**, saved
+  its eighth capture, and entered literal `cellVerts`. It still reached the
+  **480-second limit**, with **340.9 MiB sampled peak RSS**, before that first
+  geometry method finished. The unfinished continuation used at least
+  **378.46 seconds wall / 366.10 CPU**. No later geometry/grid/mask completion
+  or independent comparison is credited. The final runtime inventory and
+  active partial geometry are unavailable after the forced stop. Repeated
+  full authority checks around tree queries and per-entry work-log allocation
+  are the next overhead candidates; event counts alone do not attribute CPU
+  time. A complete simulation speedup remains unmeasured.
   The fresh source includes a reviewed dormant mapping-dispatch hook, without
-  qualifying the mapping feature. All three attempts remain failed and grant
+  qualifying the mapping feature. All four attempts remain failed and grant
   no nine-method continuation acceptance; numerical settings and guards stayed
   unchanged.
+  Root also [corrected the comparison summary flag](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/comparison-report-repair-01/root-review.json):
+  a detected mismatch can no longer report all bits/layouts exact. Nine focused
+  software checks pass; the preceding seven-pass/two-failure demonstration is
+  retained. No comparison rule, numerical value or tolerance changed.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
