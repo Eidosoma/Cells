@@ -1303,6 +1303,12 @@ def _capture(context):
     previous = sys.gettrace()
 
     def trace(frame, event, arg):
+        # The retained tapes consume only these events. Keep inherited tracing
+        # intact without rebuilding image metadata for every Python line.
+        if event not in ("call", "return", "exception"):
+            if previous is not None:
+                previous(frame, event, arg)
+            return trace
         try:
             if frame.f_code in context.tape.codes:
                 context.tape.trace(frame, event, arg)
