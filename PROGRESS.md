@@ -653,7 +653,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   bind **54 software passes in 2.77 seconds, 45.0 MiB sampled peak RSS**, with
   scientific imports blocked. Exact-case source release and resource limits
   remain required; no actual multi-cell execution or independent comparison
-  was performed by these checks.
+  was performed by these checks. The [immutable run setup is also reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/preparation-review.json),
+  binding 159 external inputs to Git `f4926b4`; no source run is released.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
