@@ -106,7 +106,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   checks its span before copying and retains detached bytes plus layout metadata.
   **46 focused software checks passed in 23.22 seconds, 229.1 MiB sampled peak
   RSS**, including ten new buffer controls. Checkpoint admission remains unchanged;
-  the full four-update comparison has not been rerun on this writer.
+  the full four-update comparison has not been rerun on this writer. Its
+  [fresh CPU 3 packet is prepared and held](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-03/preparation-review.json),
+  with the same input graph, equations and 480-second resource guard.
   Key's new Simulator and phase-callback source now have
   [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
   seven focused controls passed for each, with all eight repair outcomes retained.
@@ -115,10 +117,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retain all ten and five outcomes respectively; actual INIT/phase remains held.
   The [unloaded parameter prerequisite review](/mnt/workspaces/Cells/native-parameters-observer-successor-20261101-01/root-review.json)
   retains nine completed outcomes, with 32 earlier controls and seven successor
-  controls separately bound. Two source repairs remain: preserve the primary
-  exception when an internal stop signal coincides with an observer failure,
-  and retain the exact types of nested YAML objects. No YAML loading or native
-  phase authority is admitted.
+  controls separately bound. The
+  [two parameter repairs are now reviewed](/mnt/workspaces/Cells/native-parameters-contract-repair-20261101-01/root-review.json):
+  **25 focused checks passed** (five new, twenty affected), with all four
+  guarded outcomes and fourteen diagnostics retained. Source exceptions remain
+  primary when observation also fails, and nested objects retain exact type
+  identity. Key is continuing the separate YAML-read prefix; these repairs
+  grant no YAML loading or native phase authority.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
