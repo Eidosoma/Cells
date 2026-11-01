@@ -208,8 +208,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [source review found two blockers](/mnt/workspaces/Cells/native-parameter-subconfigurations-development-20261101-01/root-source-review.json):
   final capture receives the wrong parent context, and fresh wrappers around
   repeated input rows need construction-order identity checks. Key owns those
-  repairs and the next contiguous numeric-parameter prefix; no positive native
-  parameter-load execution is credited.
+  repairs. The [next contiguous numeric-parameter prefix is source-reviewed](/mnt/workspaces/Cells/native-parameter-numeric-prefix-development-20261101-01/root-review.json):
+  39 final blocked controls and all nine terminal outcomes are checked, with
+  the earlier 35-pass/four-failure image preserved. It remains bound to its
+  original subconfiguration predecessor; later repairs require explicit
+  adoption. No positive native parameter-load execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
@@ -232,8 +235,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   separately, along with the preparation refusal. Three source blockers remain:
   forwarding the genuine descriptor-backed constructor, checking the actual
   list-to-array transition at the world tail, and retaining a returned mapping
-  array before observation can fail. Specialist is repairing these and the
-  recorder phase-count preflight; fresh world construction remains prerequisite
+  array before observation can fail. The separate
+  [recorder compatibility repair is reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/recorder-compatibility-01/root-review.json):
+  87 blocked controls pass with eleven phases and separate Poisson/tail trials.
+  Its earlier reporter failure and missing case payload remain explicit. The
+  three source repairs remain separate; fresh world construction is prerequisite
   work, not additional independent cases.
   Actual mapping/reference execution remains held.
   Full phase/core/profile initialization remains a separate prerequisite.
@@ -269,8 +275,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   preserved. Final execution took **3.79 seconds, 59.5 MiB sampled peak RSS**
   under the existing CPU/1 GiB/480-second/8 GiB-reserve guard. The
   [saved-result review](/mnt/workspaces/Cells/rectangular-environment-development-20261101-01/root-results-review.json)
-  binds the tested arrays and sources. Batched array kernels are implemented;
-  GPU/JIT execution, the retained 625-point geometry and live tissue integration
+  binds the tested arrays and sources. Batched array kernels are implemented.
+  The subsequent [saved 625-point calculation is reviewed](/mnt/workspaces/Cells/rectangular-environment-saved-20261101-01/root-results-review.json):
+  it retains the original coordinates with **dx = 1.804173 micrometres and
+  dy = 1.826622 micrometres**, rather than assigning both axes the stored scalar
+  spacing. One new binding and one five-row solve completed in **26.63 seconds,
+  262.8 MiB peak RSS**. The independent exact-arithmetic reference checks all
+  matrix entries: maximum errors in the two inverse identities are
+  **1.41e-14 and 1.53e-14**. Four balanced probes retain finite candidates;
+  their maximum absolute residual is **6.13e-12** (that probe's maximum forcing
+  is 24). The incompatible constant input is flagged unusable, with its raw
+  candidate and residual preserved. Original BETSE matrices remain separate.
+  [Twenty-four orchestration controls](/mnt/workspaces/Cells/rectangular-environment-saved-20261101-01/software-review-01.json)
+  and [sixty independent small reference controls](/mnt/workspaces/Cells/rectangular-environment-reference-development-20261101-01/root-results-review.json)
+  are separately bound; historical images are not added to these counts.
+  The [saved numerical observations review](/mnt/workspaces/Cells/rectangular-environment-saved-20261101-01/numerical-observations-review.json)
+  retains coefficient-rounding and constant-mode errors explicitly.
+  This is a bounded numerical diagnostic, with no new acceptance tolerance or
+  populated-tissue qualification. GPU/JIT execution and live tissue integration
   remain untested. Compatibility/finite flags do not assert residual accuracy
   or physical tissue admission.
 
