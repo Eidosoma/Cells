@@ -31,6 +31,7 @@ from cells.processes import betse_native_single_cell_initial_geometry as capture
 
 callers, core, clipped, initial = images.callers, images.core, lifecycle.clipped, lifecycle.initial
 LAW_ID = "betse_owned_non_SVG_multi_cell_caller@1"
+ORDINARY_LAW_ID = "betse_owned_non_SVG_multi_cell_caller_grid_descriptor@1"
 INVALIDATED_OWNERS = core.INVALIDATED_OWNERS
 HELD_UNQUALIFIED_SOURCE_STAGE = True
 _CELL_INIT = callers.source.CellsKernel.__init__
@@ -54,7 +55,18 @@ _TOOL_METHODS = {
     if callable(method)
 }
 _ACTIVE, _ISSUED = WeakKeyDictionary(), WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
+_MASK_TOKEN_FIELDS = (
+    "kind",
+    "identity",
+    "image_identity",
+    "xpts_m",
+    "ypts_m",
+    "clipping_matrix",
+    "clipcurve_m",
+)
+_MASK_BRIDGE = "cells.owned_image_mask_token_flipud_to_frozen_comparison@1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +75,11 @@ class Request:
     lifecycle_state: lifecycle.State
     configuration_json: str
     identity: str
+
+
+@dataclass(frozen=True, slots=True)
+class OrdinaryRequest(Request):
+    grid_descriptor: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +104,11 @@ class Trial:
     failure_type: str | None
     failure_message: str | None
     identity: str
+
+
+@dataclass(frozen=True, slots=True)
+class OrdinaryTrial(Trial):
+    descriptor_proof: tuple
 
 
 class MultiCellRejected(ValueError):
@@ -117,11 +139,18 @@ def _parents(request):
 
 
 def _precheck(request):
-    if type(request) is not Request or type(request.lifecycle_request) is not lifecycle.Request:
+    if (
+        type(request) not in (Request, OrdinaryRequest)
+        or type(request.lifecycle_request) is not lifecycle.Request
+    ):
         raise MultiCellRejected(
             "Typed retained multi-cell source chain required",
             stage="upstream_owner",
             request=request,
+        )
+    if type(request) is OrdinaryRequest and request.grid_descriptor != atoms.SELECTOR:
+        raise MultiCellRejected(
+            "Exact native grid descriptor selection required", stage="descriptor", request=request
         )
     lr, ls = request.lifecycle_request, request.lifecycle_state
     if (
@@ -190,7 +219,7 @@ def _precheck(request):
 
 def request_record(request):
     ir, state, cr, cs = _parents(request)
-    return dict(
+    record = dict(
         law=LAW_ID,
         initial_request=ir.identity,
         initial_state=state.identity,
@@ -207,6 +236,13 @@ def request_record(request):
         invalidated_owners=INVALIDATED_OWNERS,
         full_Parameters_YAML_phase_physical_checkpoint_admitted=False,
     )
+    if type(request) is OrdinaryRequest:
+        record.update(
+            law=ORDINARY_LAW_ID,
+            projection_mode="ordinary_environment",
+            selected_descriptor=atoms.specification(),
+        )
+    return record
 
 
 def from_lifecycle(request, state, configuration, *, law_id):
@@ -224,6 +260,19 @@ def from_lifecycle(request, state, configuration, *, law_id):
     return replace(value, identity=core.records._digest(request_record(value)))
 
 
+def from_lifecycle_ordinary(request, state, configuration, *, law_id):
+    if type(law_id) is not str or law_id != ORDINARY_LAW_ID:
+        raise MultiCellRejected(
+            "Explicit descriptor-bearing multi-cell law required", stage="opt_in"
+        )
+    base = from_lifecycle(request, state, configuration, law_id=LAW_ID)
+    value = OrdinaryRequest(
+        base.lifecycle_request, base.lifecycle_state, base.configuration_json, "", atoms.SELECTOR
+    )
+    _precheck(value)
+    return replace(value, identity=core.records._digest(request_record(value)))
+
+
 def _verify_sources():
     pins = images._verify_sources()
     for module in (
@@ -236,6 +285,7 @@ def _verify_sources():
         source,
         sys.modules[__name__],
         accounting,
+        atoms,
     ):
         path = Path(module.__file__).resolve()
         pins[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -476,6 +526,204 @@ def _mesh_cache(context):
     return core.caches.snapshot(_project(context, initial._public_cache(context.kernel)))
 
 
+def _token_fields(node):
+    if node.get("kind") != "dict":
+        return None
+    fields = {}
+    for key, value in node["items"]:
+        if key.get("kind") != "str" or key["value"] in fields:
+            return None
+        fields[key["value"]] = value
+    if tuple(fields) != _MASK_TOKEN_FIELDS or fields["kind"] != dict(
+        kind="str", value="owned_image_prelude_mask_token"
+    ):
+        return None
+    return fields
+
+
+def _token_signature(node):
+    # Standalone tokens and embedded tokens have different column numbers.
+    # Remove those numbers only for authenticating a complete token against
+    # this same owner's token. Full-cache comparison retains every number.
+    if isinstance(node, dict):
+        return {
+            key: _token_signature(value)
+            for key, value in node.items()
+            if not (node.get("kind") == "numeric_array" and key == "column")
+        }
+    if isinstance(node, list):
+        return [_token_signature(value) for value in node]
+    return node
+
+
+def _mask_layout_bridge(context):
+    """Prove only the native flipud view -> frozen Prelude token boundary.
+
+    This reads actual references and typed bytes. It never copies/replaces the
+    live matrix, hydrates a mask, changes a saved cache or grants other layouts
+    permission to differ. The two raw token descriptors remain available.
+    """
+    ir = context.request.lifecycle_request.clip_request.initial_request
+    prelude, tape, mask = context.prelude, context.image_tape, context.mask
+    local = tape.locals["TissuePickerImageMask.__init__"]
+    if (
+        prelude is not ir.upstream[2]
+        or tape.image is not prelude.image
+        or tape.mask is not mask
+        or local.get("self") is not mask
+    ):
+        raise ValueError("Mask token lacks its actual retained constructor/Prelude owner")
+    live, stored = mask.clipping_matrix, prelude.values.clipping_matrix
+    n = mask.msize
+    if (
+        type(n) is not int
+        or n < 1
+        or type(live) is not np.ndarray
+        or type(stored) is not np.ndarray
+        or live.dtype != np.dtype(float)
+        or stored.dtype != live.dtype
+        or live.shape != (n, n)
+        or stored.shape != (n, n)
+    ):
+        raise ValueError("Mask token bridge requires the exact native square float64 buffers")
+    base, width = live.base, live.dtype.itemsize
+    if (
+        type(base) is not np.ndarray
+        or base.base is not None
+        or base.shape != (n, n)
+        or base.dtype != live.dtype
+        or not base.flags.owndata
+        or not base.flags.c_contiguous
+        or base.strides != (n * width, width)
+        or live.flags.owndata
+        or live.strides != (-n * width, width)
+        or bool(live.flags.c_contiguous) != (n == 1)
+        or bool(live.flags.f_contiguous) != (n == 1)
+        or not live.flags.writeable
+        or not base.flags.writeable
+        or not stored.flags.c_contiguous
+        or stored.strides != (n * width, width)
+        or stored.flags.writeable
+        or live.__array_interface__["data"][0] - base.__array_interface__["data"][0]
+        != (n - 1) * n * width
+    ):
+        raise ValueError("Mask token bridge refuses a view other than the original row flip")
+    callers._equal(local["bitmap"], prelude.image.bitmap, "mask token original bitmap")
+    callers._equal(live, stored, "mask token exact logical pixel bytes")
+    raw = core.caches.snapshot(_mask_record(context))
+    retained = core.caches.snapshot(
+        clipped.mask_record(context.request.lifecycle_request.clip_request)
+    )
+    actual_descriptor, expected_descriptor = raw.descriptor, retained.descriptor
+    actual_fields, expected_fields = (
+        _token_fields(actual_descriptor),
+        _token_fields(expected_descriptor),
+    )
+    if actual_fields is None or expected_fields is None:
+        raise ValueError("Exact owned image token schema unavailable")
+    patched = raw.descriptor
+    _token_fields(patched)["clipping_matrix"]["source_layout"] = expected_fields["clipping_matrix"][
+        "source_layout"
+    ]
+    if patched != expected_descriptor:
+        raise ValueError("Mask tokens differ beyond their declared row-flip storage boundary")
+    return SimpleNamespace(
+        actual=actual_descriptor,
+        expected=expected_descriptor,
+        actual_signature=_token_signature(actual_descriptor),
+        expected_signature=_token_signature(expected_descriptor),
+        stored_layout=expected_fields["clipping_matrix"]["source_layout"],
+        proof=dict(
+            kind=_MASK_BRIDGE,
+            prelude=prelude.identity,
+            image=prelude.image.identity,
+            actual_token_cache=raw.identity,
+            retained_token_cache=retained.identity,
+            actual_matrix_layout=core.caches.layout(live),
+            retained_matrix_layout=core.caches.layout(stored),
+            base_layout=core.caches.layout(base),
+            actual_base_offset_bytes=(n - 1) * n * width,
+            logical_pixels_sha256=hashlib.sha256(live.tobytes(order="C")).hexdigest(),
+            live_mask_or_array_replaced=False,
+            native_or_physical_credit=False,
+        ),
+    )
+
+
+def _comparison_descriptor(cache, bridge, *, actual):
+    descriptor, paths, count = cache.descriptor, [], 0
+    expected_signature = bridge.actual_signature if actual else bridge.expected_signature
+
+    def visit(node, path=(), depth=0):
+        nonlocal count
+        count += 1
+        if count > core.caches.MAX_TREE_NODES or depth > core.caches.MAX_TREE_DEPTH:
+            raise ValueError("Bounded mask-token comparison tree exhausted")
+        fields = _token_fields(node)
+        if fields is not None:
+            if _token_signature(node) != expected_signature:
+                raise ValueError("Embedded mask token differs from its exact live/retained owner")
+            if actual:
+                fields["clipping_matrix"]["source_layout"] = bridge.stored_layout
+            paths.append(path)
+            return
+        if node["kind"] == "dict":
+            for index, (key, value) in enumerate(node["items"]):
+                visit(key, (*path, "key", index), depth + 1)
+                visit(value, (*path, "value", index), depth + 1)
+        elif "items" in node:
+            for index, value in enumerate(node["items"]):
+                visit(value, (*path, "item", index), depth + 1)
+
+    visit(descriptor)
+    return descriptor, tuple(paths)
+
+
+def _same_source_cache(context, actual, expected):
+    if actual.identity == expected.identity:
+        # Retain the existing exact immutable-identity path. Upstream typed
+        # records are authenticated/validated separately; fresh payloads are
+        # issued by snapshot. Only the declared differing-token path below
+        # needs descriptor/column comparison and its own byte validation.
+        return True
+    core.caches.validate(actual)
+    core.caches.validate(expected)
+    bridge = _mask_layout_bridge(context)
+    left, paths = _comparison_descriptor(actual, bridge, actual=True)
+    right, expected_paths = _comparison_descriptor(expected, bridge, actual=False)
+    if left != right or not paths or paths != expected_paths:
+        return False
+    proof = dict(
+        bridge.proof,
+        actual_cache=actual.identity,
+        retained_cache=expected.identity,
+        token_descriptor_paths=paths,
+    )
+    try:
+        if len(context.work_context.work) >= 100000:
+            raise ValueError("Bounded prefix work ledger exhausted")
+        context.work_context.work.append(
+            dict(
+                sequence=len(context.work_context.work),
+                phase=context.stage,
+                execution="comparison_metadata",
+                layer="owned_mask_token_layout_bridge",
+                module=__name__,
+                method="_same_source_cache",
+                entry_method="_same_source_cache",
+                status="exact_owned_token_comparison_only",
+                **proof,
+            )
+        )
+        context.mask_token_comparisons.append(proof)
+    except Exception as capture:
+        captures._remember_observation_error(
+            context, capture, origin="mask_token_comparison", raw=proof
+        )
+        raise _CaptureStop() from capture
+    return True
+
+
 def _stage_snapshot(context, name, *, caller=False, cache=None):
     try:
         value = (
@@ -502,7 +750,7 @@ def _compare_mesh(context, state, *, initial_stage=False):
         else state.point_ids_after
     )
     if (
-        _mesh_cache(context).identity != state.cache.identity
+        not _same_source_cache(context, _mesh_cache(context), state.cache)
         or context.observer.ids != expected_ids
         or initial._rng_stream(context.rng).identity != state.stream_after.identity
     ):
@@ -510,13 +758,12 @@ def _compare_mesh(context, state, *, initial_stage=False):
             "Actual continuing mesh cache/occurrence lineage/RNG differs from source trial"
         )
     if initial_stage or isinstance(state, clipped.State):
-
-        def signature(events):
-            return tuple(
-                (e.sequence, e.kind, e.method, e.depth, e.payload.identity) for e in events
-            )
-
-        if signature(context.observer.events) != signature(state.events):
+        actual_events, expected_events = context.observer.events, state.events
+        if len(actual_events) != len(expected_events) or any(
+            (a.sequence, a.kind, a.method, a.depth) != (b.sequence, b.kind, b.method, b.depth)
+            or not _same_source_cache(context, a.payload, b.payload)
+            for a, b in zip(actual_events, expected_events, strict=True)
+        ):
             raise ValueError("Actual initial/clip event prefix differs from retained source")
     warnings_seen = tuple(str(w.message) for w in context.caught[context.mesh_warning_offset :])
     if warnings_seen != state.warnings:
@@ -618,6 +865,16 @@ def _bindings():
         _helper_bindings,
         _entry_codes,
         _compare_mesh,
+        _same_source_cache,
+        _mask_layout_bridge,
+        _comparison_descriptor,
+        _token_fields,
+        _token_signature,
+        core.caches.snapshot,
+        core.caches.validate,
+        core.caches.layout,
+        callers._equal,
+        np.dtype,
         _verify_sources,
         _Runtime.clip_and_refine,
         _Caller.__init__,
@@ -629,6 +886,13 @@ def _bindings():
         _Parameters.initialize_source_stores,
         _Observer.__init__,
         _Observer.add,
+        atoms.prepare_runtime,
+        atoms._descriptor_from_source,
+        atoms.validate,
+        atoms._GridAlias.__get__,
+        atoms._GridAlias.__set__,
+        _new_parameters,
+        _claim_for_environment,
         *[getattr(_Runtime, name) for name in _NATIVE],
         *[getattr(_Tools, name) for name in _TOOL_METHODS],
         callers._Tape.rand,
@@ -651,6 +915,9 @@ def _bindings():
         initial._Tree,
     )
     return (
+        _MASK_TOKEN_FIELDS,
+        _MASK_BRIDGE,
+        np.ndarray,
         *[atom for cls in classes for atom in atoms._dispatch_bindings(cls)],
         *[atom for fn in functions for atom in atoms._atoms(fn)],
         *[
@@ -821,6 +1088,11 @@ def _check(context):
     if _verify_sources() != context.producers:
         raise ValueError("Multi-cell source producer changed")
     accounting._check_binding_identity(_bindings(), context.bindings)
+    if type(context.request) is OrdinaryRequest:
+        info = context.parameter_info
+        if info is None or context.p is None or type(context.p) is not info.runtime:
+            raise ValueError("Fresh descriptor-bearing parameter birth authority unavailable")
+        atoms.validate(info)
     retained, signature = _lineage(context.request)
     if (
         signature != context.parent_signature
@@ -874,7 +1146,7 @@ def _graphs(context):
 
 
 def trial_record(trial):
-    return dict(
+    record = dict(
         law=LAW_ID,
         request=trial.request_identity,
         parents=trial.parent_identities,
@@ -902,6 +1174,13 @@ def trial_record(trial):
         normalized_parameters_only=True,
         physical_checkpoint_DEC_admitted=False,
     )
+    if type(trial) is OrdinaryTrial:
+        record.update(
+            law=ORDINARY_LAW_ID,
+            projection_mode="ordinary_environment",
+            descriptor_proof=trial.descriptor_proof,
+        )
+    return record
 
 
 class MultiCellOwner:
@@ -930,10 +1209,23 @@ def _authority(owner):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise MultiCellRejected(
+            "Multi-cell epoch was consumed by an ordinary-environment attempt",
+            stage="caller_epoch_consumed",
+            trial=context.trial,
+            request=context.request,
+        )
     try:
         if context.invalid or context.active or context.thread != get_ident():
             raise ValueError("Stale or active multi-cell owner")
         _check(context)
+        if type(context.request) is OrdinaryRequest:
+            if (
+                type(context.trial) is not OrdinaryTrial
+                or context.trial.descriptor_proof != context.descriptor_proof
+            ):
+                raise ValueError("Sealed native descriptor birth proof changed")
         if (
             _public_cache(context).identity != context.trial.caller_cache.identity
             or _mesh_cache(context).identity != context.trial.mesh_cache.identity
@@ -970,6 +1262,15 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_environment(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise MultiCellRejected("Actual multi-cell owner changed", stage="caller_owner")
+        _FORWARDED[owner] = transition
+        return context
 
 
 def _authenticate(request):
@@ -1066,7 +1367,8 @@ def _work(context):
             source,
             images.source,
             callers.source,
-        ),
+        )
+        + ((atoms,) if getattr(context, "descriptor_enabled", False) else ()),
         _entry_names=(
             "__init__",
             "make_voronoi_non_svg",
@@ -1080,6 +1382,27 @@ def _work(context):
         previous = sys.getprofile()
 
         def profile(frame, event, arg):
+            module = frame.f_globals.get("__name__", "")
+            if (
+                getattr(context, "descriptor_enabled", False)
+                and event == "call"
+                and (module == "betse" or module.startswith("betse."))
+            ):
+                if len(context.work) >= 100000:
+                    raise ValueError("Bounded prefix work ledger exhausted")
+                context.work.append(
+                    dict(
+                        sequence=len(context.work),
+                        phase=context.stage,
+                        execution="source",
+                        layer="native_descriptor_factory_or_read",
+                        module=module,
+                        method=frame.f_code.co_qualname,
+                        entry_method=frame.f_code.co_name,
+                        source_file=frame.f_code.co_filename,
+                        status="entered_not_success_credit",
+                    )
+                )
             if (
                 event == "call"
                 and frame.f_globals.get("__name__") == __name__
@@ -1131,11 +1454,7 @@ def _execute(context):
     context.stage = context.work_context.stage = "isolated_authentication"
     _authenticate(request)
     _stop(context)
-    context.stage = context.work_context.stage = "fresh_parameters"
-    p = object.__new__(_Parameters)
-    context.p = p
-    _ACTIVE[p] = context
-    p.__init__(binding.definition, json.loads(request.configuration_json))
+    p = _new_parameters(context, binding.definition)
     _controls(context)
     context.parameter_cache = core.caches.snapshot(callers._parameters(p))
     _stage_snapshot(context, "fresh_parameters", cache=context.parameter_cache)
@@ -1207,6 +1526,36 @@ def _execute(context):
     _check(context)
 
 
+def _new_parameters(context, recipe):
+    """Construct the selected descriptor before allocating this fresh instance."""
+    if (
+        context.p is not None
+        or context.parameter_info is not None
+        or getattr(context, "parameter_birth_started", False)
+    ):
+        raise ValueError("Fresh parameter birth was already attempted")
+    if not context.active or context.thread != get_ident():
+        raise ValueError("Fresh parameter birth lacks the active source driver")
+    context.parameter_birth_started = True
+    runtime = _Parameters
+    request = context.request
+    if type(request) is OrdinaryRequest:
+        context.stage = context.work_context.stage = "grid_descriptor_factory_before_birth"
+        context.parameter_info = atoms.prepare_runtime(_Parameters)
+        runtime = context.parameter_info.runtime
+        context.descriptor_proof = (
+            atoms.SELECTOR,
+            context.parameter_info.occurrence,
+            tuple(sorted(context.parameter_info.pins.items())),
+        )
+    context.stage = context.work_context.stage = "fresh_parameters"
+    p = object.__new__(runtime)
+    context.p = p
+    _ACTIVE[p] = context
+    p.__init__(recipe, json.loads(request.configuration_json))
+    return p
+
+
 def prepare(request):
     _precheck(request)
     if core.records._digest(request_record(request)) != request.identity:
@@ -1248,8 +1597,13 @@ def prepare(request):
         parameter_cache=None,
         lattice_audit=None,
         image_audit=None,
+        parameter_info=None,
+        descriptor_proof=(),
+        mask_token_comparisons=[],
     )
-    work = context.work_context = SimpleNamespace(stage="preflight", work=[])
+    work = context.work_context = SimpleNamespace(
+        stage="preflight", work=[], descriptor_enabled=type(request) is OrdinaryRequest
+    )
     error = None
     context.producers, context.bindings = _verify_sources(), _bindings()
     context.parent_references, context.parent_signature = _lineage(request)
@@ -1272,6 +1626,9 @@ def prepare(request):
         rng=context.rng,
         image_tape=context.image_tape,
         mask=context.mask,
+        parameter_info=context.parameter_info,
+        descriptor_proof=context.descriptor_proof,
+        mask_token_comparisons=context.mask_token_comparisons,
         observer=context.observer,
         events=context.events,
         raw_locals=context.locals,
@@ -1299,7 +1656,8 @@ def prepare(request):
     try:
         ir = request.lifecycle_request.clip_request.initial_request
         empty = core.caches.snapshot({})
-        trial = Trial(
+        trial_type = OrdinaryTrial if type(request) is OrdinaryRequest else Trial
+        trial = trial_type(
             request.identity,
             tuple(state.identity for state in partial["parent_trials"]),
             context.parameter_cache if context.parameter_cache is not None else empty,
@@ -1322,6 +1680,11 @@ def prepare(request):
             None if error is None else type(error).__name__,
             None if error is None else str(error),
             "",
+            **(
+                dict(descriptor_proof=context.descriptor_proof)
+                if trial_type is OrdinaryTrial
+                else {}
+            ),
         )
         trial = replace(trial, identity=core.records._digest(trial_record(trial)))
     except Exception as capture:

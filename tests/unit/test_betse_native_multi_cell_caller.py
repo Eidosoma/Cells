@@ -320,7 +320,9 @@ def harness(monkeypatch, *, failure=None):
         context.image_tape.picker = SimpleNamespace(filename="synthetic-owned-image")
         context.mask = context.image_tape.mask = h.mask
         context.image_tape.locals["TissuePickerImageMask.__init__"] = dict(
-            xpts=h.mask_record["xpts_m"], ypts=h.mask_record["ypts_m"]
+            xpts=h.mask_record["xpts_m"],
+            ypts=h.mask_record["ypts_m"],
+            **getattr(h, "synthetic_constructor_locals", {}),
         )
         context.lattice_audit = multi.core.caches.snapshot(dict(synthetic=True))
         context.image_audit = image_state(context)
@@ -684,3 +686,295 @@ def test_software_stage_snapshot_capture_stops_next_source_and_keeps_previous_bu
         assert "core" not in h.events and len(error.partial["last_successful_snapshots"]) == 2
     else:
         assert error.partial["caller"].cell_centres is error.partial["kernel"].vor_cents
+
+
+def mask_token_fixture(h=None, *, side=4):
+    h = inputs() if h is None else h
+    # Real NumPy storage/view fixtures only; no image, spline or native work.
+    base = np.zeros((side, side))
+    base[0, 0] = base[-1, -1] = 1.0
+    live = base[::-1]
+
+    def frozen(value):
+        return multi.core.caches.snapshot(value).columns[0].values
+
+    stored = frozen(live)
+    if not hasattr(h, "mask"):
+        h.mask = SimpleNamespace(
+            clipping_matrix=live,
+            msize=side,
+            clipcurve=np.asarray([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]]),
+        )
+        h.mask_record = dict(xpts_m=np.linspace(0.0, 1.0, side), ypts_m=np.linspace(0.0, 1.0, side))
+    else:
+        # Keep the old synthetic token pixel bytes exactly, while giving the
+        # actual live mask its original row-flip allocation/view relationship.
+        base[:] = h.mask.clipping_matrix[::-1]
+        stored = frozen(live)
+    h.mask.clipping_matrix = live
+    bitmap = frozen(np.asarray((base == 0) * 255, dtype=float))
+    prelude = h.ir.upstream[2]
+    image = replace(prelude.image, bitmap=bitmap)
+    values = dict.fromkeys(multi.initial.image_stage.MaskValues._fields, frozen(np.asarray([])))
+    values.update(
+        bitmap=bitmap,
+        clipping_matrix=stored,
+        xpts_m=frozen(h.mask_record["xpts_m"]),
+        ypts_m=frozen(h.mask_record["ypts_m"]),
+        clipcurve_m=frozen(h.mask.clipcurve),
+    )
+    prelude = replace(prelude, image=image, values=multi.initial.image_stage.MaskValues(**values))
+    h.ir = replace(h.ir, upstream=(*h.ir.upstream[:2], prelude))
+    h.cr = replace(h.cr, initial_request=h.ir)
+    h.lr = replace(h.lr, clip_request=h.cr)
+    h.request = multi.from_lifecycle(h.lr, h.ls, h.conf, law_id=multi.LAW_ID)
+    h.synthetic_constructor_locals = dict(self=h.mask, bitmap=bitmap)
+    local = dict(
+        h.synthetic_constructor_locals, xpts=h.mask_record["xpts_m"], ypts=h.mask_record["ypts_m"]
+    )
+    context = SimpleNamespace(
+        request=h.request,
+        prelude=prelude,
+        mask=h.mask,
+        image_tape=SimpleNamespace(
+            image=image, mask=h.mask, locals={"TissuePickerImageMask.__init__": local}
+        ),
+        work_context=SimpleNamespace(work=[]),
+        mask_token_comparisons=[],
+        stage="clip_to_curve",
+        observation_error=None,
+        observation_errors=(),
+        observation_origin=None,
+        observation_raw=None,
+    )
+    actual = multi.core.caches.snapshot(dict(image_mask=multi._mask_record(context)))
+    expected = multi.core.caches.snapshot(dict(image_mask=multi.clipped.mask_record(h.cr)))
+    h.bridge_context, h.live_base, h.live_view, h.stored = context, base, live, stored
+    h.actual_token_cache, h.retained_token_cache = actual, expected
+    return h
+
+
+@pytest.mark.parametrize("side", [1, 2, 4])
+def test_software_mask_token_bridge_exact_distinct_layouts_keep_actual_view_and_raw_caches(
+    side, evidence
+):
+    h = mask_token_fixture(side=side)
+    context, actual, expected = h.bridge_context, h.actual_token_cache, h.retained_token_cache
+    original = (actual.descriptor_json, expected.descriptor_json)
+    assert actual.identity != expected.identity
+    assert h.live_view.base is h.live_base and h.live_view.strides == (-8 * side, 8)
+    assert multi._same_source_cache(context, actual, expected)
+    assert context.mask.clipping_matrix is h.live_view
+    assert (actual.descriptor_json, expected.descriptor_json) == original
+    assert len(context.mask_token_comparisons) == 1
+    proof = context.mask_token_comparisons[0]
+    assert proof["actual_matrix_layout"]["strides_bytes"] == [-8 * side, 8]
+    assert proof["retained_matrix_layout"]["strides_bytes"] == [8 * side, 8]
+    assert proof["actual_cache"] == actual.identity and proof["retained_cache"] == expected.identity
+    assert proof["live_mask_or_array_replaced"] is False
+    assert multi._same_source_cache(context, expected, expected)
+    assert len(context.mask_token_comparisons) == 1  # Exact path needs no bridge.
+    save(
+        evidence,
+        "comparison",
+        dict(
+            actual=actual,
+            retained=expected,
+            proof=proof,
+            live_layout=multi.core.caches.layout(h.live_view),
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "live_pixels",
+        "stored_signed_zero",
+        "column_flip",
+        "transpose",
+        "contiguous_copy",
+        "flattened_base",
+        "local_owner",
+        "tape_owner",
+        "prelude_owner",
+        "live_readonly",
+        "base_readonly",
+    ],
+)
+def test_software_mask_token_bridge_refuses_other_views_bits_or_constructor_owners(
+    change, evidence
+):
+    h = mask_token_fixture()
+    context = h.bridge_context
+    if change == "live_pixels":
+        h.live_view[0, 0] += 1.0
+    elif change == "stored_signed_zero":
+        new = h.stored.copy()
+        new[0, 0] = -0.0
+        assert np.array_equal(new, h.stored)
+        values = context.prelude.values._replace(
+            clipping_matrix=multi.core.caches.snapshot(new).columns[0].values
+        )
+        object.__setattr__(context.prelude, "values", values)
+    elif change == "column_flip":
+        context.mask.clipping_matrix = h.live_base[:, ::-1]
+    elif change == "transpose":
+        context.mask.clipping_matrix = h.live_base.T[::-1]
+    elif change == "contiguous_copy":
+        context.mask.clipping_matrix = h.live_view.copy()
+    elif change == "flattened_base":
+        context.mask.clipping_matrix = np.arange(16.0).reshape(4, 4)[::-1]
+    elif change == "local_owner":
+        context.image_tape.locals["TissuePickerImageMask.__init__"]["self"] = SimpleNamespace()
+    elif change == "tape_owner":
+        context.image_tape.mask = SimpleNamespace()
+    elif change == "prelude_owner":
+        context.prelude = replace(context.prelude)
+    elif change == "live_readonly":
+        h.live_view.setflags(write=False)
+    else:
+        h.live_base.setflags(write=False)
+    with pytest.raises(ValueError) as caught:
+        multi._mask_layout_bridge(context)
+    assert context.mask_token_comparisons == []
+    save(
+        evidence,
+        "refusal",
+        dict(
+            change=change,
+            error=caught.value,
+            live=multi.core.caches.snapshot(context.mask.clipping_matrix),
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "other_array_layout",
+        "token_pixels",
+        "token_layout",
+        "token_identity",
+        "token_extra",
+        "token_missing",
+        "stranger_token",
+    ],
+)
+def test_software_mask_token_bridge_changes_only_the_exact_owned_matrix_descriptor(
+    change, evidence
+):
+    h = mask_token_fixture()
+    context = h.bridge_context
+    actual_token, expected_token = multi._mask_record(context), multi.clipped.mask_record(h.cr)
+    other = np.arange(4.0).reshape(2, 2)[::-1]
+    actual, expected = dict(image_mask=actual_token), dict(image_mask=expected_token)
+    if change == "other_array_layout":
+        actual["unrelated"] = other
+        expected["unrelated"] = other.copy()
+    elif change == "token_pixels":
+        altered = h.live_base.copy()[::-1]
+        altered[0, 0] = 1.0
+        actual_token["clipping_matrix"] = altered
+    elif change == "token_layout":
+        actual_token["clipping_matrix"] = np.array(h.live_view, order="F")
+    elif change == "token_identity":
+        actual_token["identity"] = "unrelated"
+    elif change == "token_extra":
+        actual_token["extra"] = expected_token["extra"] = 1
+    elif change == "token_missing":
+        del actual_token["xpts_m"]
+        del expected_token["xpts_m"]
+    else:
+        actual_token["kind"] = expected_token["kind"] = "unowned_mask_token"
+    actual_cache, expected_cache = map(multi.core.caches.snapshot, (actual, expected))
+    try:
+        matched = multi._same_source_cache(context, actual_cache, expected_cache)
+    except ValueError as error:
+        matched = False
+        save(evidence, "error", error)
+    assert matched is False and context.mask_token_comparisons == []
+    save(
+        evidence,
+        "refused-caches",
+        dict(actual=actual_cache, retained=expected_cache, change=change),
+    )
+
+
+@pytest.mark.parametrize(
+    "change", [None, "header", "payload_pixels", "payload_other_layout", "IDs", "RNG", "warning"]
+)
+def test_software_mask_token_bridge_events_preserve_headers_ids_rng_and_warnings(
+    change, monkeypatch, evidence
+):
+    h = mask_token_fixture()
+    context = h.bridge_context
+    stream = multi.core.caches.snapshot(dict(synthetic_epoch=1))
+    context.rng, context.caught, context.mesh_warning_offset = SimpleNamespace(), [], 0
+    monkeypatch.setattr(multi.initial, "_rng_stream", lambda rng: stream)
+    monkeypatch.setattr(multi, "_mesh_cache", lambda ctx: h.actual_token_cache)
+    actual_payload = dict(call_parameters=dict(imagemask=multi._mask_record(context)))
+    expected_payload = dict(call_parameters=dict(imagemask=multi.clipped.mask_record(h.cr)))
+    if change == "payload_pixels":
+        actual_payload["call_parameters"]["imagemask"]["clipping_matrix"] = np.ones((4, 4))
+    elif change == "payload_other_layout":
+        view = np.zeros((2, 2))[::-1]
+        actual_payload["other"] = view
+        expected_payload["other"] = view.copy()
+    actual_event = multi.initial.Event(
+        0, "method_enter", "clip_to_curve", 1, multi.core.caches.snapshot(actual_payload)
+    )
+    expected_event = replace(actual_event, payload=multi.core.caches.snapshot(expected_payload))
+    if change == "header":
+        actual_event = replace(actual_event, depth=2)
+    context.observer = SimpleNamespace(ids=("v0",), events=[actual_event])
+    state = typed(
+        multi.clipped.State,
+        cache=h.retained_token_cache,
+        retained_point_ids=("v0",),
+        stream_after=stream,
+        warnings=(),
+        events=(expected_event,),
+    )
+    if change == "IDs":
+        context.observer.ids = ("wrong",)
+    elif change == "RNG":
+        state = replace(state, stream_after=multi.core.caches.snapshot(dict(synthetic_epoch=2)))
+    elif change == "warning":
+        state = replace(state, warnings=("different warning",))
+    if change is None:
+        multi._compare_mesh(context, state)
+        assert len(context.mask_token_comparisons) == 2
+    else:
+        with pytest.raises(ValueError) as caught:
+            multi._compare_mesh(context, state)
+        save(evidence, "refusal", caught.value)
+    save(
+        evidence,
+        "events",
+        dict(
+            actual=actual_event, retained=expected_event, comparisons=context.mask_token_comparisons
+        ),
+    )
+
+
+def test_software_mask_token_bridge_full_blocked_caller_keeps_actual_mask_and_seals_comparison_work(
+    monkeypatch, evidence
+):
+    h = mask_token_fixture(harness(monkeypatch), side=2)
+    child = multi.prepare(h.request)
+    context = multi._authority(child)
+    assert child.cells.mesh.image_mask is h.mask
+    assert child.cells.cluster_mask is h.live_view
+    assert context.mask.clipping_matrix.base is h.live_base
+    assert len(context.mask_token_comparisons) >= 2
+    assert any(row["layer"] == "owned_mask_token_layout_bridge" for row in child.trial.work)
+    # Snapshot retains original negative strides; only comparison descriptors
+    # use the stored token's positive layout, never the source computation.
+    raw = multi.core.caches.plain(child.trial.mesh_cache)
+    assert raw["image_mask"]["clipping_matrix"] == h.stored.tolist()
+    save(evidence, "trial", child.trial)
+    save(evidence, "bridge-proofs", context.mask_token_comparisons)
+    save(
+        evidence, "live-view", dict(layout=multi.core.caches.layout(h.live_view), base=h.live_base)
+    )

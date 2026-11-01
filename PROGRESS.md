@@ -709,8 +709,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Event-signature comparison was not reached during execution. A separate
   [saved-trace comparison](/mnt/workspaces/Cells/native-multi-cell-caller-qualification-20261101-01/square-diagnostic-01/saved-clipping-event-comparison.json)
   finds all 1,250 event metadata records equal; 1,227 payloads match exactly,
-  and the other 23 differ only at that same mask-layout boundary. Specialist
-  owns the explicit repair, preserving both layouts and the live mask.
+  and the other 23 differ only at that same mask-layout boundary. The
+  [comparison repair is source/software reviewed](/mnt/workspaces/Cells/native-multi-cell-mask-token-bridge-20261101-01/root-source-results-review.json):
+  it authenticates the original row-flipped view and retained contiguous
+  evidence, preserves both layouts and the actual mask, and permits only
+  that exact descriptor difference. **74 blocked-source controls passed in
+  11.06 seconds** (45 repeated controls plus 29 new); the preceding
+  73-pass/one-fixture-failure attempt remains separate. A later
+  [integration check passed four controls with 74 deselected](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json).
   This failed input grants no positive multi-cell credit or independent
   original-source comparison; no automatic retry has been launched.
   Root prepared the independent original-source boundary through `cell_index`,
@@ -722,6 +728,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   These controls compile ASTs without executing them; the earlier nine checks
   retain their own source. Runtime/import bindings, the complete comparison
   driver and actual multi-cell reference execution remain to be built/verified.
+  The ordinary multi-cell geometry/ECM/environment continuation is implemented
+  through `make_maskM`, stopping before Poisson. It retains the same live
+  caller, mesh, image, parameters and random stream, constructs the grid
+  descriptor before parameter/caller birth, and consumes each parent once.
+  [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json)
+  verifies the original **2-pass/64-failure** attempt, then **66 and 74 passes
+  on their respective frozen versions**. The final child used **301.61 seconds
+  and 290.3 MiB sampled peak RSS**. Both passing children retain their parent
+  Git-postcheck refusals; neither is a successful top-level runner result.
+  At the final historical postcheck, all 395 selected bytes matched despite
+  Git bookkeeping changes; later source changes have separate evidence.
+  [Source review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-consolidated-source-review.json)
+  found one remaining guard gap: original `cell_grid` reads NumPy helpers
+  from a module namespace absent from its binding checks. Specialist owns
+  that bounded repair and focused controls, together with the runner change
+  that records checkout drift separately from immutable execution evidence.
+  No native geometry, independent numerical or physical acceptance is added;
+  all post-cut and checkpoint holds remain.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
