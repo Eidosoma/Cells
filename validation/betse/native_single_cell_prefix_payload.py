@@ -2,7 +2,8 @@
 
 The existing typed archive schema is preserved on read. Large raw-byte strings
 move to hash-bound binary sidecars; repeated observations share storage, never
-case credit. Metadata stays under its original 16 MiB limit. This transport
+case credit. Metadata defaults to its original 16 MiB limit; an explicitly
+declared nested-request capture may select the bounded 24 MiB envelope. This transport
 does not change production cache admission, numerical arrays or source methods.
 """
 
@@ -11,7 +12,6 @@ import json
 from pathlib import Path
 
 from validation import source_snapshot
-from validation.geometry.qualification_typed_evidence import read_json
 
 KIND = "cells.single_cell_prefix_capture@1"
 TOKEN = "__prefix_raw_bytes__"
@@ -21,6 +21,41 @@ MAX_UNIQUE = 64 * 2**20
 MAX_EXPANDED = 128 * 2**20
 MAX_NODES = 262144
 MAX_DEPTH = 64
+MAX_METADATA = 16 * 2**20
+REQUEST_METADATA = 24 * 2**20
+
+
+def _metadata_limit(value):
+    if type(value) is not int or value not in (MAX_METADATA, REQUEST_METADATA):
+        raise ValueError("Unsupported evidence metadata bound")
+    return value
+
+
+def _metadata(path, limit, expected_sha256):
+    """Hash and decode the same bounded read, including legacy JSON."""
+    limit = _metadata_limit(limit)
+    if not path.is_file() or path.stat().st_size > limit:
+        raise ValueError("Evidence metadata bound")
+    with path.open("rb") as stream:
+        raw = stream.read(limit + 1)
+    if len(raw) > limit:
+        raise ValueError("Evidence metadata bound")
+    digest = hashlib.sha256(raw).hexdigest()
+    if expected_sha256 is not None and digest != expected_sha256:
+        raise ValueError("Changed saved capture bytes")
+
+    def invalid(value):
+        raise ValueError("Nonstandard JSON constant: " + value)
+
+    def pairs(rows):
+        result = {}
+        for key, value in rows:
+            if key in result:
+                raise ValueError("Duplicate JSON key")
+            result[key] = value
+        return result
+
+    return json.loads(raw.decode("utf-8"), parse_constant=invalid, object_pairs_hook=pairs), digest
 
 
 def _regular(path):
@@ -38,8 +73,9 @@ def _digest(path):
     return h.hexdigest()
 
 
-def write(path, serialized):
+def write(path, serialized, *, metadata_bytes=MAX_METADATA):
     """Store already typed JSON data; no source object is decoded or replayed."""
+    metadata_bytes = _metadata_limit(metadata_bytes)
     path = _regular(path)
     folder = _regular(path.with_name(path.name + ".arrays"))
     if path.exists() or folder.exists():
@@ -84,22 +120,28 @@ def write(path, serialized):
 
     tree = visit(serialized)
     record = dict(kind=KIND, payload=tree, blobs=list(blobs.values()))
-    if len(json.dumps(record, indent=2, sort_keys=True, allow_nan=False).encode()) + 1 > 16 * 2**20:
+    if (
+        len(json.dumps(record, indent=2, sort_keys=True, allow_nan=False).encode()) + 1
+        > metadata_bytes
+    ):
         raise ValueError("Evidence metadata bound")
     source_snapshot.write_json(path, record)
     # Verify the bytes just written, not only the in-memory producer record.
-    return files(path)
+    return files(path, metadata_bytes=metadata_bytes)
 
 
-def _read(path, *, expand):
+def _read(path, *, expand, metadata_bytes, expected_sha256):
     path = _regular(path)
-    record = read_json(path)
+    record, digest = _metadata(path, metadata_bytes, expected_sha256)
+    metadata_pin = dict(path=str(path), sha256=digest)
     if type(record) is not dict or record.get("kind") != KIND:
-        return record, []
+        if metadata_bytes != MAX_METADATA:
+            raise ValueError("Larger metadata requires the declared evidence envelope")
+        return record, [metadata_pin]
     if set(record) != {"kind", "payload", "blobs"} or type(record["blobs"]) is not list:
         raise ValueError("Incomplete evidence envelope")
     folder = _regular(path.with_name(path.name + ".arrays"))
-    blobs, pins, unique = {}, [], 0
+    blobs, pins, unique = {}, [metadata_pin], 0
     for row in record["blobs"]:
         if type(row) is not dict or set(row) != {"name", "sha256", "size"}:
             raise ValueError("Malformed evidence sidecar")
@@ -160,17 +202,19 @@ def _read(path, *, expand):
     return tree, pins
 
 
-def read(path, *, expand=True):
+def read(path, *, expand=True, metadata_bytes=MAX_METADATA, expected_sha256=None):
     """Read legacy JSON or a fully authenticated sidecar capture.
 
     expand=False validates every byte but leaves tokens for metadata-only
     lineage checks. It must not be used for a numerical comparison.
     """
-    return _read(path, expand=expand)[0]
+    return _read(
+        path, expand=expand, metadata_bytes=metadata_bytes, expected_sha256=expected_sha256
+    )[0]
 
 
-def files(path):
+def files(path, *, metadata_bytes=MAX_METADATA, expected_sha256=None):
     """Return all required input pins, including payloads outside the JSON file."""
-    path = _regular(path)
-    _, pins = _read(path, expand=False)
-    return [dict(path=str(path), sha256=_digest(path)), *pins]
+    return _read(
+        path, expand=False, metadata_bytes=metadata_bytes, expected_sha256=expected_sha256
+    )[1]

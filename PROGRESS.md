@@ -12,8 +12,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
-  five alias markers match, with runtime provenance verified. Root has prepared
-  the next fresh multi-cell geometry/grid/mask diagnostic through `make_maskM`.
+  five alias markers match, with runtime provenance verified. Root's first
+  multi-cell geometry/grid/mask diagnostic stopped while saving the nested
+  request, before the new continuation ran. The six prerequisite captures are
+  intact. A narrowly scoped save/read repair has passed 57 software checks;
+  the failed run remains failed and the next actual attempt is held.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key is now
   implementing an explicitly scoped material primitive beyond three calls.
@@ -904,12 +907,36 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   controls. Earlier 57/10/16 images retain their own source bindings. In-memory
   assertions are supported by the frozen tests, JUnit and case guards; a
   complete standalone raw graph archive is not claimed for every control.
-  The [next Root diagnostic image is prepared and held](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-01.json):
+  The [first Root diagnostic image was prepared](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-01.json):
   all 872 source files match the reviewed metadata candidate, with 609 external
   inputs pinned, including the existing Pillow and beartype overlays. Preparation
   took **26.89 seconds, 41.1 MiB sampled peak RSS**, with zero scientific imports.
   CPU3 and the unchanged 1 GiB/480-second/8 GiB-reserve guard are explicit.
-  No actual multi-cell environment diagnostic or physical validation has run.
+  The user-authorized [first actual diagnostic failed during request capture](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-01/root-review.json)
+  after **48.24 seconds, 296.9 MiB sampled peak RSS**, without a resource breach.
+  Six prerequisite captures were saved. Construction of `ordinary_request`
+  returned, but its metadata exceeded the writer's 16 MiB limit; the complete
+  rejected request and its exact size were not saved. The continuing caller
+  and nine geometry/grid/mask methods were not executed. This is an evidence
+  capture failure, with zero acceptance, not an observed numerical mismatch.
+  A [plain-JSON size witness from the retained parents](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/request-capture-capacity-review-01.json)
+  is **24,310,167 bytes**, below a 24 MiB cap. It is not a recovered live request.
+  The [reviewed repair](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/request-capture-repair-01/root-source-review.json)
+  grants that cap only to the exact descriptor-bearing `ordinary_request`
+  occurrence, with matching producer, reader and pin-collection rules. Generic
+  metadata remains limited to 16 MiB; array/tree/resource limits, source
+  equations, fixtures and tolerances are unchanged. **57 native-blocked checks
+  passed in 9.07 seconds, 180.2 MiB sampled peak RSS**, including 23 new metadata
+  controls and repeated transport/failure controls. The earlier 53-pass image
+  remains separately bound; the final four controls preserve UTF-8 rejection
+  behavior. No actual source or reference retry was launched.
+  The [fresh reviewed execution image](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-02.json)
+  contains 822 files, exactly matching the final software image, with all
+  609 external inputs unchanged. Only five Root files differ from the failed
+  diagnostic; removing the old parser import drops its unused closure files.
+  Preparation took 41.82 seconds and 40.0 MiB sampled RSS. The case,
+  numerical settings and CPU3 execution guards are unchanged; this image has
+  no release or scientific execution yet.
   A [separate cached-NumPy-helper integration check](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/numpy-helper-integration-01/root-review.json)
   passed **16 controls / 67 deselected** in 3.02 seconds. It binds its own
   dependency image and does not itself close the five source findings or

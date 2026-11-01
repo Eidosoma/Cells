@@ -1,6 +1,9 @@
 """Native-blocked orchestration controls for the fresh ordinary diagnostic."""
 
 import copy
+import hashlib
+import io
+import json
 from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -8,6 +11,202 @@ from types import SimpleNamespace as NS
 import pytest
 
 from validation.betse import native_multi_cell_environment_qualification as q
+
+
+def capture_metadata_request(text="{}"):
+    return dict(
+        identity="a" * 64,
+        caller_request=dict(
+            identity="b" * 64,
+            lifecycle_request={},
+            lifecycle_state={"descriptor_json": text},
+            configuration_json="{}",
+            grid_descriptor="native_grid_size_yaml_alias@1",
+        ),
+    )
+
+
+def capture_metadata_row(path):
+    return dict(
+        label="ordinary_request",
+        path=path.name,
+        status="saved",
+        sha256=q.source_snapshot.digest(path),
+    )
+
+
+def test_capture_metadata_nested_request_roundtrip_and_default_bound(tmp_path):
+    value = capture_metadata_request("x" * (17 * 2**20))
+    value["caller_request"]["lifecycle_state"]["raw_bytes_hex"] = "00" * q.payload.THRESHOLD
+    path = tmp_path / "capture-0006.json"
+    pins = q._write_capture("ordinary_request", path, value)
+    assert q.payload.MAX_METADATA < path.stat().st_size < q.payload.REQUEST_METADATA
+    row = capture_metadata_row(path)
+    assert q.read_capture(path, row) == value
+    assert q.capture_files(path, row) == pins and len(pins) == 2
+    with pytest.raises(ValueError, match="metadata bound"):
+        q.payload.read(path)
+    with pytest.raises(ValueError, match="metadata bound"):
+        q.payload.write(tmp_path / "default.json", value)
+    with pytest.raises(ValueError, match="metadata bound"):
+        q._write_capture("cell_index", tmp_path / "capture-0007.json", value)
+    assert q.payload.MAX_NODES == 262144 and q.payload.MAX_DEPTH == 64
+    assert q.payload.MAX_BLOB == 16 * 2**20 and q.shared.LIMITS["max_rss_bytes"] == 2**30
+
+
+@pytest.mark.parametrize("change", ["outer", "inner", "descriptor", "identity", "shape"])
+def test_capture_metadata_closed_request_shape_on_producer_and_reader(tmp_path, change):
+    value = capture_metadata_request()
+    if change == "outer":
+        value["extra"] = None
+    elif change == "inner":
+        value["caller_request"]["extra"] = None
+    elif change == "descriptor":
+        value["caller_request"]["grid_descriptor"] = "supplied"
+    elif change == "identity":
+        value["identity"] = "not a digest"
+    else:
+        value["caller_request"]["lifecycle_state"] = []
+    path = tmp_path / "capture-0006.json"
+    with pytest.raises(ValueError, match="schema"):
+        q._write_capture("ordinary_request", path, value)
+    q.payload.write(path, value)
+    with pytest.raises(ValueError, match="schema"):
+        q.read_capture(path, capture_metadata_row(path))
+
+
+@pytest.mark.parametrize("change", ["label", "path", "status", "hash", "fields"])
+def test_capture_metadata_exact_role_path_and_hash(tmp_path, change):
+    path = tmp_path / "capture-0006.json"
+    q._write_capture("ordinary_request", path, capture_metadata_request())
+    row = capture_metadata_row(path)
+    if change == "label":
+        row["label"] = "cell_index"
+    elif change == "path":
+        row["path"] = "capture-0007.json"
+    elif change == "status":
+        row["status"] = "capture_failed"
+    elif change == "hash":
+        row["sha256"] = "0" * 64
+    else:
+        row["extra"] = None
+    for reader in (q.read_capture, q.capture_files):
+        with pytest.raises(ValueError, match="Changed"):
+            reader(path, row)
+    with pytest.raises(ValueError, match="occurrence"):
+        q._write_capture(
+            "ordinary_request", tmp_path / "capture-0007.json", capture_metadata_request()
+        )
+
+
+def test_capture_metadata_over_cap_preserves_capture_failure_and_stops(tmp_path):
+    evidence = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    evidence.rows.extend(dict(label="retained") for _ in range(6))
+    calls = []
+    value = capture_metadata_request("x" * q.payload.REQUEST_METADATA)
+    result = q.shared.run_stages(
+        (("ordinary_request", lambda: value), ("cell_index", lambda: calls.append("caller"))),
+        evidence,
+        NS(phase=None, count=0, failure=None),
+    )
+    assert result["failed_stage"] == "ordinary_request:capture"
+    assert result["source_error"] is None and result["accepted_cases"] == 0
+    assert evidence.rows[-1]["status"] == "capture_failed" and calls == []
+    assert "Evidence metadata bound" in json.dumps(evidence.rows[-1])
+    assert not (tmp_path / "capture-0006.json").exists()
+
+
+@pytest.mark.parametrize("change", ["replacement", "growth"])
+def test_capture_metadata_hashes_the_actual_bounded_read(tmp_path, monkeypatch, change):
+    path = tmp_path / "capture-0006.json"
+    q._write_capture("ordinary_request", path, capture_metadata_request())
+    row = capture_metadata_row(path)
+    raw = path.read_bytes()
+    replacement = raw.replace(b"aaaaaaaa", b"cccccccc", 1)
+    assert hashlib.sha256(replacement).hexdigest() != row["sha256"]
+    original, sizes = Path.open, []
+
+    class Stream(io.BytesIO):
+        def read(self, size=-1):
+            sizes.append(size)
+            return super().read(size)
+
+    def changed(self, *args, **kwargs):
+        if self == path:
+            return Stream(
+                replacement if change == "replacement" else b" " * (q.payload.REQUEST_METADATA + 1)
+            )
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", changed)
+    with pytest.raises(ValueError, match="Changed|metadata bound"):
+        q.read_capture(path, row)
+    assert sizes == [q.payload.REQUEST_METADATA + 1]
+
+
+@pytest.mark.parametrize("text", ['{"a":1,"a":2}', '{"a":NaN}'])
+def test_capture_metadata_rejects_ambiguous_json(tmp_path, text):
+    path = tmp_path / "capture-0006.json"
+    path.write_text(text)
+    with pytest.raises(ValueError, match="Duplicate|Nonstandard"):
+        q.read_capture(path, capture_metadata_row(path))
+
+
+@pytest.mark.parametrize("encoding", ["utf-16", "utf-8-sig"])
+@pytest.mark.parametrize("limit", [q.payload.MAX_METADATA, q.payload.REQUEST_METADATA])
+def test_capture_metadata_retains_utf8_without_bom_contract(tmp_path, encoding, limit):
+    path = tmp_path / "capture-0006.json"
+    q._write_capture("ordinary_request", path, capture_metadata_request())
+    path.write_bytes(path.read_text().encode(encoding))
+    with pytest.raises(ValueError):
+        q.payload.read(path, metadata_bytes=limit)
+
+
+def test_capture_metadata_exception_cannot_read_plain_legacy_or_arbitrary_cap(tmp_path):
+    path = tmp_path / "capture-0006.json"
+    q.shared.write(path, capture_metadata_request())
+    with pytest.raises(ValueError, match="envelope"):
+        q.read_capture(path, capture_metadata_row(path))
+    for limit in (True, 24.0 * 2**20, 32 * 2**20):
+        with pytest.raises(ValueError, match="Unsupported"):
+            q.payload.read(path, metadata_bytes=limit)
+
+
+@pytest.mark.parametrize("policy", [None, {"request_metadata_bytes": 32 * 2**20}])
+def test_capture_metadata_plan_cannot_drop_or_widen_policy(tmp_path, monkeypatch, policy):
+    plan = dict(
+        kind=q.KINDS[0],
+        purpose=q.PURPOSE,
+        cases=list(q.CASES),
+        configuration=q.configuration(),
+        fixture_controls=q.CONTROLS,
+        limits=q.shared.LIMITS,
+        stop_after=q.ENDPOINT,
+        execution_stages=list(q.STAGES),
+        ordinary_methods=list(q.native.METHODS),
+        capture_transport=q.payload.KIND,
+        capture_policy=q.CAPTURE_POLICY,
+        source_review_required_before_release=True,
+        automatic_retry=False,
+        cpu=3,
+        snapshot_sha256="a" * 64,
+        runner_sha256="a" * 64,
+        external_inputs=[],
+        **q.shared.NO_CREDIT,
+    )
+    snapshots = []
+    monkeypatch.setattr(q.shared, "output_path", lambda p: p)
+    monkeypatch.setattr(q.source_snapshot, "digest", lambda p: "a" * 64)
+    monkeypatch.setattr(q.shared, "read", lambda p: plan)
+    monkeypatch.setattr(q.source_snapshot, "verify", lambda *a, **k: snapshots.append("verified"))
+    monkeypatch.setattr(q.shared, "verify_pins", lambda p: None)
+    monkeypatch.setattr(q, "_native_inputs", lambda p: {})
+    assert q.verify_plan(tmp_path, "a" * 64) == plan
+    assert snapshots == ["verified"]
+    plan["capture_policy"] = policy
+    with pytest.raises(ValueError, match="widened"):
+        q.verify_plan(tmp_path, "a" * 64)
+    assert snapshots == ["verified"]
 
 
 def chain(fail=None):

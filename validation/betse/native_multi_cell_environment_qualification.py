@@ -32,17 +32,100 @@ TESTS = tuple(
     "tests/unit/test_native_multi_cell_environment_" + name + ".py"
     for name in ("qualification", "native", "compare")
 )
+PAYLOAD_TEST = "tests/unit/test_native_single_cell_prefix_payload.py"
 CASES, ENDPOINT = prior.CASES, native.ENDPOINT
 STAGES = (*prior.STAGES[:6], "ordinary_request", "cell_index", "make_maskM")
 KINDS = ("cells.multi_environment_diagnostic_plan@1", "cells.multi_environment_release@1")
 PURPOSE = "fresh_multi_cell_ordinary_source_diagnostic_only"
 CONTROLS = prior.CONTROLS
+CAPTURE_POLICY = dict(
+    ordinary_metadata_bytes=payload.MAX_METADATA,
+    request_metadata_bytes=payload.REQUEST_METADATA,
+    request_label="ordinary_request",
+    request_filename="capture-0006.json",
+    request_fields=["caller_request", "identity"],
+    caller_request_fields=[
+        "lifecycle_request",
+        "lifecycle_state",
+        "configuration_json",
+        "identity",
+        "grid_descriptor",
+    ],
+)
 SOFTWARE_GROUPS = {
     "all": "",
     "runtime-integration": "runtime_namespace",
     "numpy-integration": "numpy_helper",
     "source-repairs": "repair_c or numpy_helper",
+    "capture-metadata": "capture_metadata or failed_capture_stops or repair_c5 or prefix_payload",
 }
+
+
+def _request_capture_schema(value):
+    """Closed wire shape only; full lineage is checked by the comparison reader."""
+    if type(value) is not dict or set(value) != set(CAPTURE_POLICY["request_fields"]):
+        raise ValueError("Changed ordinary request capture schema")
+    request = value["caller_request"]
+    if (
+        type(request) is not dict
+        or set(request) != set(CAPTURE_POLICY["caller_request_fields"])
+        or type(request["lifecycle_request"]) is not dict
+        or type(request["lifecycle_state"]) is not dict
+        or type(request["configuration_json"]) is not str
+        or request["grid_descriptor"] != "native_grid_size_yaml_alias@1"
+        or any(
+            type(identity) is not str
+            or len(identity) != 64
+            or any(c not in "0123456789abcdef" for c in identity)
+            for identity in (value["identity"], request["identity"])
+        )
+    ):
+        raise ValueError("Changed descriptor-bearing request capture schema")
+
+
+def _capture_limit(label, path):
+    if label != CAPTURE_POLICY["request_label"]:
+        return CAPTURE_POLICY["ordinary_metadata_bytes"]
+    if Path(path).name != CAPTURE_POLICY["request_filename"]:
+        raise ValueError("Nested request capture has the wrong occurrence")
+    return CAPTURE_POLICY["request_metadata_bytes"]
+
+
+def _write_capture(label, path, serialized):
+    limit = _capture_limit(label, path)
+    if label == CAPTURE_POLICY["request_label"]:
+        _request_capture_schema(serialized)
+    return payload.write(path, serialized, metadata_bytes=limit)
+
+
+def _read_capture(path, row, *, expand, pins_only=False):
+    """Authenticate role, occurrence and the same bytes decoded under its cap."""
+    path = Path(path)
+    if (
+        type(row) is not dict
+        or set(row) != {"label", "path", "status", "sha256"}
+        or row["label"] not in STAGES
+        or row["path"] != f"capture-{STAGES.index(row['label']):04d}.json"
+        or path.name != row["path"]
+        or row["status"] != "saved"
+        or type(row["sha256"]) is not str
+        or len(row["sha256"]) != 64
+        or any(c not in "0123456789abcdef" for c in row["sha256"])
+    ):
+        raise ValueError("Changed ordinary capture role or binding")
+    kwargs = dict(metadata_bytes=_capture_limit(row["label"], path), expected_sha256=row["sha256"])
+    value = payload.read(path, expand=expand, **kwargs)
+    if row["label"] == CAPTURE_POLICY["request_label"]:
+        _request_capture_schema(value)
+    return payload.files(path, **kwargs) if pins_only else value
+
+
+def read_capture(path, row, *, expand=True):
+    return _read_capture(path, row, expand=expand)
+
+
+def capture_files(path, row):
+    return _read_capture(path, row, expand=False, pins_only=True)
 
 
 def configuration():
@@ -68,7 +151,7 @@ def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=()):
     destination.mkdir(parents=True, exist_ok=False)
     try:
         closure = runpy.run_path(str(repository / shared.CLOSURE))["closure"]
-        files = closure(repository, [*FILES, *TESTS])
+        files = closure(repository, [*FILES, *TESTS, PAYLOAD_TEST])
         files[shared.CLOSURE] = source_snapshot.digest(repository / shared.CLOSURE)
         for parent in {Path(name).parent for name in files}:
             for path in (repository / parent).glob("*.json"):
@@ -106,6 +189,7 @@ def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=()):
             execution_stages=list(STAGES),
             ordinary_methods=list(native.METHODS),
             capture_transport=payload.KIND,
+            capture_policy=CAPTURE_POLICY,
             source_review_required_before_release=True,
             automatic_retry=False,
             **shared.NO_CREDIT,
@@ -139,6 +223,7 @@ def verify_plan(prepared, expected_sha256):
         execution_stages=list(STAGES),
         ordinary_methods=list(native.METHODS),
         capture_transport=payload.KIND,
+        capture_policy=CAPTURE_POLICY,
         source_review_required_before_release=True,
         automatic_retry=False,
         **shared.NO_CREDIT,
@@ -268,7 +353,7 @@ def worker(prepared, digest, release, case, output):
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     output = shared.execution_output(output, prepared, plan)
     evidence, work = (
-        shared.Evidence(output, sidecars=True),
+        shared.Evidence(output, sidecars=True, capture_writer=_write_capture),
         shared.WorkLog(output, source, phases=STAGES),
     )
     result = None
@@ -481,6 +566,8 @@ def software_child(output, group="all"):
         ]
         if SOFTWARE_GROUPS[group]:
             arguments += ["-k", SOFTWARE_GROUPS[group]]
+        if group == "capture-metadata":
+            arguments.append(str(ROOT / PAYLOAD_TEST))
         code = pytest.main(arguments, plugins=[Reports()])
     finally:
         sys.setprofile(previous)
@@ -493,12 +580,12 @@ def software_child(output, group="all"):
     return int(code) if not attempts else 1
 
 
-def software(output, group="all"):
+def software(output, group="all", *, cpu=6):
     if group not in SOFTWARE_GROUPS:
         raise ValueError("Unknown focused software group")
     output = shared.execution_output(output, ROOT, {"runtime_paths": []})
     output.mkdir(parents=True, exist_ok=False)
-    plan = prepare(output / "prepared", cpu=6)
+    plan = prepare(output / "prepared", cpu=cpu)
     source = output / "prepared/source"
     (output / "process").mkdir()
     env = shared.environment(source, plan)

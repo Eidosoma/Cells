@@ -529,7 +529,7 @@ def saved(diagnostic_path, parent):
         paths.add(relative)
         # Expand lossless sidecars before strict byte comparison, under their
         # existing bounds. No arrays or owners are reconstructed.
-        values.append(payload.read(path / relative))
+        values.append(diagnostic.read_capture(path / relative, row))
     raw = capture_lineage(values, plan["configuration"], case)
     shared.pin(path / "root-review.json")
     return dict(
@@ -580,7 +580,11 @@ def _bindings(path, parent, value):
             ),
             shared.pin(parent / "plan.json"),
             shared.pin(parent / "source/SNAPSHOT.json"),
-            *(pin for row in value["captures"] for pin in payload.files(path / row["path"])),
+            *(
+                pin
+                for row in value["captures"]
+                for pin in diagnostic.capture_files(path / row["path"], row)
+            ),
             *value["parent_plan"]["external_inputs"],
             *(dict(path=str(shared.NATIVE / p), sha256=h) for p, h in native.pins_for().items()),
         ]

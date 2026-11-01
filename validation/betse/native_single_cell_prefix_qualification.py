@@ -358,15 +358,18 @@ def exception_record(error):
 class Evidence:
     """Separate typed capture failures from source failures; never repair data."""
 
-    def __init__(self, output, *, sidecars=False):
+    def __init__(self, output, *, sidecars=False, capture_writer=None):
         self.output, self.rows, self.sidecars = output, [], sidecars
+        self.capture_writer = capture_writer
 
     def save(self, label, value):
         name = f"capture-{len(self.rows):04d}.json"
         row = dict(label=label, path=name)
         try:
             serialized = archive.snapshot(value)
-            if self.sidecars:
+            if self.capture_writer is not None:
+                self.capture_writer(label, self.output / name, serialized)
+            elif self.sidecars:
                 payload.write(self.output / name, serialized)
             else:
                 write(self.output / name, serialized)
