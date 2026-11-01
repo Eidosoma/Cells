@@ -29,6 +29,7 @@ _GRIDDATA, _GAUSSIAN = source.interp.griddata, source.gaussian_filter
 _HELPERS = ("column_stack", "zeros", "ones", "sum", "asarray", "linspace", "meshgrid", "round")
 _TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
 _ISSUED, _TREES = WeakKeyDictionary(), WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
 
 
@@ -535,6 +536,12 @@ def _authority(owner):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise EnvironmentRejected(
+            "Environment epoch was consumed by a Poisson attempt",
+            stage="environment_epoch_consumed",
+            trial=context.trial,
+        )
     try:
         if context.invalid or context.active or context.thread != get_ident():
             raise ValueError("Invalid environment source owner")
@@ -561,6 +568,15 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_Poisson(owner, *, expected, transition):
+    with _LOCK:
+        context = _validate(owner)
+        if context is not expected:
+            raise EnvironmentRejected("Actual environment owner changed", stage="environment_owner")
+        _FORWARDED[owner] = transition
+        return context
 
 
 @contextmanager

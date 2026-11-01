@@ -128,6 +128,7 @@ def _bindings():
         _GRID,
         _GridRuntime.__init__,
         _GridRuntime.cell_grid,
+        _GridRuntime.makeLaplacian,
         _construct_grid,
         _active,
         _require_descriptor_read,
@@ -313,6 +314,11 @@ class _GridRuntime(source.FiniteDiffSolver):
         _stop_observation(context)
         context.stage = "makeECM"
         context.prefix.stage = "makeECM"
+
+    def makeLaplacian(self, *args, **kwargs):
+        from cells.processes import betse_native_single_cell_poisson as poisson
+
+        return poisson._grid_call(self, *args, **kwargs)
 
     def __reduce_ex__(self, protocol):
         raise TypeError("Native live grid authority cannot be serialized")

@@ -688,10 +688,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   remains separate. [Source review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-source-review.json)
   found a concrete release blocker: the default grid produces 625 × 625
   operators, exceeding the existing 262,144-element snapshot and graph limits.
-  This is a predicted observation failure after the first inverse assignment,
-  not an observed numerical failure. Specialist owns the bounded capacity
-  repair. Root implemented the independent reference, comparison and lossless
-  large-output transport.
+  This was a predicted observation failure after the first inverse assignment,
+  not an observed numerical failure. The bounded capacity repair is now source
+  and software reviewed below. Root implemented the independent reference,
+  comparison and lossless large-output transport.
   That [tooling is now implemented and source/software reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-extension-20261101-01/source-software-review.json):
   **112 distinct runner/transport controls plus 116 subtests**, **54 independent
   driver controls**, and **62 comparator tests plus 193 subtests** passed.
@@ -706,13 +706,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   found that original `A = A / delta**2` creates a separate scaled matrix.
   The two solves require six distinct retained arrays: both zeros allocations,
   both returned operators and both inverses. The initial repair's four-object
-  synthetic path misses this distinction; Specialist owns its correction.
+  synthetic path missed this distinction.
   The [capacity source review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/observation-capacity-01/root-source-review.json)
   confirms that blocker. [Both saved software outcomes are reviewed](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/observation-capacity-01/root-results-review.json):
   **13 then 14 passes**, at separate source versions, with all 26 binary array
   files verified. The final run took **6.54 seconds, 349.4 MiB sampled peak
   RSS**. These controls used an aliased allocation/operator and cannot establish
   real six-array capacity; neither run executed native numerical bodies.
+  The [six-array successor passes source review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/observation-capacity-02/root-source-review.json).
+  Its [saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/observation-capacity-02/root-results-review.json)
+  verifies **17 native-blocked software passes in 8.30 seconds, 459.2 MiB
+  sampled peak RSS**, including distinct full-size allocation/operator/inverse
+  objects and three failure prefixes. All 27 array files are intact. Failed
+  inversion retains its input even without a returned pair. Ordinary cache
+  limits, numerical bodies, grid size and tolerances remain unchanged; the
+  existing 13/14/53-check evidence retains its original source bindings.
   Root's [comparison metadata extension is reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-policy-20261101-01/root-review.json):
   **30 software controls and 148 subtests passed in 0.76 seconds, 39.3 MiB
   sampled peak RSS**. It accepts only the exact typed six-array policy while
@@ -729,8 +737,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   reporting-only rounding clarification passed two existing analytic controls;
   its remaining AST is identical. All three outcomes are reviewed and recorded.
   These stdlib diagnostics execute no native solver, introduce no acceptance
-  tolerance and provide no new physical validation. The actual Poisson run
-  remains held for the production observation-capacity repair.
+  tolerance and provide no new physical validation. Actual Poisson execution
+  remains unrun; the capacity blocker is resolved at source/software scope.
+  The [fresh diagnostic setup is reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-qualification-20261101-01/preparation-review.json):
+  848 frozen source files and 591 external inputs, with the original 25 × 25
+  grid and resource limits. Preparation took **28.64 seconds, 38.7 MiB sampled
+  peak RSS**. It remains unreleased; this round performed no native numerical
+  or independent-reference execution.
   Phase/callback and full
   Parameters/YAML/SimPhase authority remain outside the normalized source scope.
   Positive native execution, the full Cells/simulation/picker owner chain,
