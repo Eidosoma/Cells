@@ -15,8 +15,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   execution held. Key Dev's continuity preparation and formatter guards are
   reviewed and committed; Key is building the actual INIT-to-continuity bridge.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
-  through `make_maskM` for review and is checking the current dependency
-  integration. Existing runners and production code are reused; actual numerical
+  through `make_maskM`; saved outcomes are reviewed and five source fixes are
+  assigned together with current dependency integration. Existing runners and
+  production code are reused; actual numerical
   releases remain coordinated by Root.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
@@ -828,10 +829,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   caller, mesh, image, parameters and random stream, constructs the grid
   descriptor before parameter/caller birth, and consumes each parent once.
   Specialist's [new diagnostic and independent-reference tools](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/source-result.json)
-  are delivered for Root review: **57 software controls**, followed by
+  have [reviewed saved outcomes and a batched source-repair assignment](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-review.json):
+  **57 software controls**, followed by
   [10 separate namespace-integration controls](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/runtime-integration-01/source-result.json).
-  The images retain separate dependency bindings. Actual source execution
-  remains held while source and saved-result review proceeds.
+  The images retain separate dependency bindings. All five outcomes are bound:
+  one pre-execution failure receipt, then 48, 53, 57 and 10 passes on their
+  respective versions. The pre-execution failure has no worker, guard or
+  immutable source evidence. Source review requires five fixes: preserve early
+  descriptor failure evidence, restore both tracing hooks, reject incomplete
+  source before comparison, include mask finiteness in domain diagnostics, and
+  distinguish post-source metadata failures from source failures. Specialist is
+  batching these with current dependency integration in the same six owned
+  files. Actual source execution remains held; software passes do not clear
+  these source findings or provide physical validation.
   [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json)
   verifies the original **2-pass/64-failure** attempt, then **66 and 74 passes
   on their respective frozen versions**. The final child used **301.61 seconds
