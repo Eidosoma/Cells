@@ -76,6 +76,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   a detected mismatch can no longer report all bits/layouts exact. Nine focused
   software checks pass; the preceding seven-pass/two-failure demonstration is
   retained. No comparison rule, numerical value or tolerance changed.
+  The [recorder optimization and supervised-launch review](/mnt/workspaces/Cells/worklog-repetition-optimization-20261101-01/root-review.json)
+  now preserve exact event counts, native-entry order, prior guard callbacks
+  and failure behavior while avoiding repeated metadata-row allocation.
+  **47 recorder/timing controls** and **29 controller/resource controls** pass
+  in separate final images. Earlier images remain bound separately, including
+  an overly broad 240-case software selection and a retained reporter failure.
+  The [fifth tissue diagnostic is launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-05-controller/LAUNCH.json)
+  with an explicit **1,800-second wall limit**, CPU 3, one thread, **1 GiB**
+  worker memory and **8 GiB** host reserve. Its numerical source, inputs and
+  nine-method endpoint are unchanged. This is an explicitly longer run,
+  not a reclassification of the previous timeouts. No terminal result has
+  been queried; result review is pending the next requested status check.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
@@ -186,8 +198,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   separate from earlier 65- and 72-control images. Actual YAML reading remains
   unqualified. Key delivered the same parameter object's
   [configuration upgrade and path setup](/mnt/workspaces/Cells/native-parameter-paths-development-20261101-01/results.json),
-  reporting 48 blocked controls and nine terminal outcomes; Root's source and
-  saved-result reviews are pending. Key is now inspecting the next genuine
+  with [source review](/mnt/workspaces/Cells/native-parameter-paths-development-20261101-01/root-source-review.json)
+  and [all nine outcomes checked](/mnt/workspaces/Cells/native-parameter-paths-development-20261101-01/root-results-review.json):
+  **48 blocked controls** and 17 diagnostics are retained; the original lint
+  failure remains failed. Seven reviewed YAML/path files are committed, with
+  Key's newer working hook preserved. Key is now implementing the next genuine
   subconfiguration construction/load boundary on that same parameter object.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
