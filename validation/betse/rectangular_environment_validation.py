@@ -37,6 +37,7 @@ REFERENCE_TEST = "tests/unit/test_rectangular_environment_reference.py"
 STENCIL_TEST = "tests/unit/test_rectangular_environment_stencil.py"
 METRIC_TEST = "tests/unit/test_rectangular_environment_metric.py"
 ITERATIVE_TEST = "tests/unit/test_rectangular_environment_iterative.py"
+JAX_TEST = "tests/unit/test_rectangular_environment_jax.py"
 SAVED_EXTRA = (
     "validation/betse/rectangular_environment_saved.py",
     "validation/betse/rectangular_environment_reference.py",
@@ -70,6 +71,14 @@ def suite_files(suite):
             "src/cells/processes/rectangular_environment_iterative.py",
             ITERATIVE_TEST,
         ), ITERATIVE_TEST
+    if suite == "jax":
+        return (
+            *FILES,
+            "tests/__init__.py",
+            "src/cells/processes/rectangular_environment_stencil.py",
+            "src/cells/processes/rectangular_environment_iterative.py",
+            JAX_TEST,
+        ), JAX_TEST
     if suite == "reference":
         return (
             OWN,
@@ -220,6 +229,7 @@ def child(output, suite="small", analysis_inputs=None, analysis_sha256=None):
         ("cells.processes.rectangular_environment_stencil", "gradient"),
         ("cells.processes.rectangular_environment_stencil", "divergence"),
         ("cells.processes.rectangular_environment_iterative", "solve"),
+        ("cells.processes.rectangular_environment_iterative", "compile_jax_solver"),
         ("cells.processes.rectangular_environment_iterative", "_positive_action"),
     }
     original_profile = profile
@@ -338,6 +348,9 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
             threads=1,
             source_manifest_sha256=manifest_sha,
             suite=suite,
+            jax_execution_policy=(
+                dict(platform="cpu", enable_x64=True, disable_jit=False) if suite == "jax" else None
+            ),
             analysis_inputs=numerical_inputs,
             analysis_inputs_copy=numerical_copy,
             command=command,
@@ -369,6 +382,8 @@ def prepare(output, run, *, suite="small", analysis_inputs=None):
         CELLS_RECTANGULAR_EVIDENCE=str(output / "evidence"),
         TMPDIR=str(output / "tmp"),
     )
+    if suite == "jax":
+        env["JAX_DISABLE_JIT"] = "0"
     (output / "tmp").mkdir()
     try:
         process = guard.run_bounded(
@@ -438,7 +453,7 @@ def main():
     parser.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
         "--suite",
-        choices=("small", "saved", "reference", "stencil", "metric", "iterative"),
+        choices=("small", "saved", "reference", "stencil", "metric", "iterative", "jax"),
         default="small",
     )
     parser.add_argument("--analysis-inputs", type=Path)

@@ -30,8 +30,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   inputs and frozen source are verified. Terminal results have not been
   queried; Root owns their review on the next requested status check. Key is
   repairing network/GRN authority and failure retention. Specialist is finishing
-  phase caches, then preparing the separate mapping qualification tools; their
-  positive native/reference executions remain held.
+  phase caches before the next genuine tissue-handler attachment. The relayed
+  original mapping-tool handoff is historical; its reviewed replacements remain
+  in Git, with positive native/reference executions held.
 
 - **Phase constructor prefix:** [Source and saved results are reviewed](/mnt/workspaces/Cells/native-phase-assembly-20261101-01/root-review.json)
   for the original statements through `self.sim`: prepared callbacks and a
@@ -452,8 +453,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   fields on a **3,072-cell** rectangle meet the declared residual tolerances;
   these few-mode fixtures are not a general convergence or throughput benchmark.
   The first 37-check image is retained separately, not added to the final count.
-  The functional array-loop interface is implemented; **GPU/JAX execution,
-  larger general forcing, retained-tissue field coupling and full BETSE
+  The functional array-loop interface is implemented; **GPU execution,
+  larger compiled forcing, retained-tissue field coupling and full BETSE
   qualification remain open**. All six terminal outcomes were checked and logged.
   [Optional reuse of the previous voltage is now source- and CPU-reviewed](/mnt/workspaces/Cells/rectangular-iterative-warm-start-development-20261101-01/root-review.json).
   It solves a correction while retaining the original forcing/tolerance and
@@ -464,6 +465,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the previous voltage versus 177 from zero**, at the same residual target;
   unchanged input needed zero iterations. This is a fixture result, not a GPU
   or coupled-simulation benchmark. All five new terminal outcomes are reviewed.
+  The reusable `compile_jax_solver` entry now has
+  [15 reviewed CPU JIT checks](/mnt/workspaces/Cells/rectangular-iterative-jax-cpu-development-20261101-01/root-review.json),
+  **29.51 seconds, 359.3 MiB sampled peak RSS**, using JAX/JAXlib 0.11.1 and
+  binary64. Exact four-node references, a 48-cell general fixture, warm reuse,
+  mixed refusals, budgets and compiled-loop reuse pass. The factory rejects
+  disabled JIT; the worker records CPU, precision and JIT settings. Every
+  pre-existing numerical method is AST-unchanged. The earlier 14-check image
+  remains separately scoped because ordinary-call JIT enablement was not recorded.
+  All six terminal outcomes are reviewed. No GPU run, large compiled-grid
+  qualification or simulation throughput claim is added.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

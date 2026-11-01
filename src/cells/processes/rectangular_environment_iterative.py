@@ -265,3 +265,47 @@ def solve(
         tolerance,
         gauge_mean,
     )
+
+
+def compile_jax_solver(grid, *, max_iterations, rtol, atol=0.0):
+    """Create a reusable binary64 JAX entry for one fixed metric and policy.
+
+    The callable accepts ``(rhs, initial_potential=None)`` and returns the same
+    complete SolveResult as solve(). The iteration loop is compiled, not a Python
+    per-step callback. Numerical options and array contracts are checked by the
+    original solve during tracing. Different array shapes or warm/cold signatures
+    can require separate compilation; reuse this callable between timesteps.
+
+    The caller must enable JAX binary64 and JIT, and controls device placement.
+    This factory changes no global precision/platform settings and performs no
+    solve at construction. Returned device arrays may be asynchronous: consumers
+    must synchronize before timing or accepting saved results. No GPU throughput,
+    differentiation, physical tissue or checkpoint authority is implied.
+    """
+    if type(grid) not in (field.GridBinding, field.MetricBinding):
+        raise ValueError("Require an existing rectangular metric or dense grid binding")
+    import jax
+    import jax.numpy as jnp
+
+    if not jax.config.x64_enabled:
+        raise ValueError("Enable JAX binary64 before constructing a rectangular solver")
+    if jax.config.jax_disable_jit:
+        raise ValueError("JAX JIT must be enabled for a compiled rectangular solver")
+
+    def run(rhs, initial_potential=None):
+        if not jax.config.x64_enabled:
+            raise ValueError("JAX binary64 must remain enabled when tracing the solver")
+        if jax.config.jax_disable_jit:
+            raise ValueError("JAX JIT must remain enabled for compiled solver calls")
+        return solve(
+            rhs,
+            grid,
+            max_iterations=max_iterations,
+            rtol=rtol,
+            atol=atol,
+            initial_potential=initial_potential,
+            xp=jnp,
+            iteration_loop=jax.lax.while_loop,
+        )
+
+    return jax.jit(run)
