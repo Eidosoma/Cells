@@ -232,9 +232,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the initial lint failure remains preserved. Construction and numeric advance
   now share one exclusive claim on the actual parameter object, retain original
   exceptions, and refuse runtime changes without refreshing its authority.
-  Specialist is integrating this interface into the tissue-handler constructor;
-  Key's next scope is the contiguous event/schedule declarations. No positive
-  native parameter-load execution is credited.
+  The [same-parameter tissue-handler attachment is now reviewed](/mnt/workspaces/Cells/native-tissue-handler-attachment-20261101-01/root-review.json):
+  **42 blocked controls** pass in **292.39 seconds, 239.1 MiB sampled peak RSS**.
+  It retains the actual parameter/configuration objects under the shared
+  construction guard and preserves failed constructor trials. All eight
+  software/lint outcomes are checked; two pre-child failures and the earlier
+  module-identity failure remain explicit. The final run's Git-drift notice is
+  preserved. Specialist's subsequent public-interface change is separate from
+  those 42 results and awaits its own focused evidence. Key is implementing the
+  contiguous event/schedule
+  declarations; Specialist's next boundary is genuine phase/object assembly.
+  No positive native parameter-load or SimPhase execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
