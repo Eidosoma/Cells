@@ -57,6 +57,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   is source-reviewed, and its [seven saved outcomes](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/observer-metadata-01/root-results-review.json)
   are checked: 18 isolated and four owner controls pass at their final bytes;
   earlier failures and twelve unrun owner controls remain explicit. The
+  [instrumented mapping smoke and runner cleanup](/mnt/workspaces/Cells/native-mapping-setup-diagnostic-20261101-01/root-review.json)
+  now provide a completed synthetic path: one test passed, with **221.62 seconds**
+  guarded wall time and **236.0 MiB** sampled peak RSS. All four native-entry
+  attempt lists are empty. The overall run nevertheless **failed** its nested
+  profiler-restoration check. Root fixed the three runner callbacks; **17
+  metadata-only controls** pass, including exact callback restoration on success
+  and rejection. The smoke has not been rerun at those repaired bytes. Timings
+  and 14 stack samples identify repeated source parsing and nested ownership
+  checks as an overhead target; inclusive instrumented times are non-additive
+  and establish no simulation speedup. All five outcomes are reviewed, including
+  one pre-worker directory failure. No native mapping acceptance is added. The
   [fourth actual diagnostic](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-04/root-review.json)
   completed caller construction in **34.89 seconds wall / 34.60 CPU**, saved
   its eighth capture, and entered literal `cellVerts`. It still reached the

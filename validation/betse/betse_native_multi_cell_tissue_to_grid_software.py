@@ -87,7 +87,7 @@ EXPECTED = {
 }
 
 
-def closure():
+def closure(*, diagnostics=False):
     tool = runpy.run_path(str(ROOT / runner.CLOSURE_TOOL))["closure"]
     files = tool(
         ROOT,
@@ -101,6 +101,9 @@ def closure():
         ],
     )
     files[runner.CLOSURE_TOOL] = runner.source_snapshot.digest(ROOT / runner.CLOSURE_TOOL)
+    if diagnostics:
+        name = "validation/betse/native_mapping_setup_diagnostic.py"
+        files[name] = runner.source_snapshot.digest(ROOT / name)
     return files
 
 
@@ -127,7 +130,12 @@ def environment(source_root):
     return env
 
 
-def child(output, group):
+def child(output, group, *, diagnostics=False):
+    if diagnostics:
+        from validation.betse.native_mapping_setup_diagnostic import Observer
+
+        with Observer(output / "setup-diagnostic"):
+            return child(output, group)
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     from cells.processes import betse_native_multi_cell_tissue_to_grid as mapping
 
@@ -138,7 +146,7 @@ def child(output, group):
     previous, trace = sys.getprofile(), sys.gettrace()
 
     def setprofile(delegate):
-        if delegate is None:
+        if delegate is None or delegate is previous:
             sys.setprofile(previous)
             return
 
@@ -190,12 +198,16 @@ def child(output, group):
     return code
 
 
-def run_group(output, group):
+def run_group(output, group, *, diagnostics=False, cpu=6):
+    if os.sched_getaffinity(0) != {cpu}:
+        raise ValueError("Actual CPU differs from declared software CPU")
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     output.mkdir(parents=True, exist_ok=False)
     (output / "process").mkdir()
     frozen = output / "tested-source"
-    snap = runner.source_snapshot.freeze(ROOT, frozen, {name: name for name in closure()})
+    snap = runner.source_snapshot.freeze(
+        ROOT, frozen, {name: name for name in closure(diagnostics=diagnostics)}
+    )
     manifest = runner.source_snapshot.digest(frozen / "SNAPSHOT.json")
     expected = json.loads(os.environ.get("CELLS_MAPPING_EXPECTED_OWNED", "null"))
     if expected is not None and (
@@ -214,6 +226,8 @@ def run_group(output, group):
             pytest_selection=GROUPS[group],
             synthetic_only=True,
             native_release=False,
+            cpu=cpu,
+            metadata_diagnostic=diagnostics,
         ),
     )
     env = environment(frozen)
@@ -230,6 +244,9 @@ def run_group(output, group):
                 "--group",
                 group,
                 "--_child",
+                "--cpu",
+                str(cpu),
+                *(["--diagnostics"] if diagnostics else []),
             ],
             directory=output / "process",
             cwd=frozen,
@@ -479,6 +496,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--group", choices=GROUPS)
+    parser.add_argument("--cpu", type=int, default=6)
+    parser.add_argument("--diagnostics", action="store_true")
     parser.add_argument("--batch", action="store_true")
     parser.add_argument("--groups", nargs="+", choices=GROUPS)
     parser.add_argument("--_child", action="store_true", help=argparse.SUPPRESS)
@@ -487,20 +506,22 @@ def main():
     args = parser.parse_args()
     if args.groups and not args.batch:
         parser.error("--groups is only for an explicitly selected detached batch")
+    if (args.batch or args._batch_child) and (args.cpu != 6 or args.diagnostics):
+        parser.error("Detached batches retain the original CPU6/default observation policy")
     output = args.output.absolute()
-    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {6}:
-        parser.error("Require CPU6 and fresh /mnt output")
+    if not output.is_relative_to(runner.BASE) or os.sched_getaffinity(0) != {args.cpu}:
+        parser.error("Require the declared single CPU and fresh /mnt output")
     if args._batch_child:
         return batch_child(output, args._batch_inputs_sha256)
     if args._child:
-        return child(output, args.group)
+        return child(output, args.group, diagnostics=args.diagnostics)
     resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
     try:
         if args.batch:
             return launch_batch(output, args.groups)
         if args.group is None:
             parser.error("Require --group or --batch")
-        return run_group(output, args.group)
+        return run_group(output, args.group, diagnostics=args.diagnostics, cpu=args.cpu)
     except Exception as error:
         if output.is_dir():
             runner.write(

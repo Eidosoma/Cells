@@ -45,7 +45,7 @@ def child(output, group):
     previous, trace = sys.getprofile(), sys.gettrace()
 
     def setprofile(delegate):
-        if delegate is None:
+        if delegate is None or delegate is previous:
             sys.setprofile(previous)
             return
 
