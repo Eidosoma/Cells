@@ -458,8 +458,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   all five saved outcomes completed, with **47 final software controls** and
   21 actual small text-helper calls. The [source review](/mnt/workspaces/Cells/molecule-formatter-prerequisite-development-20261101-01/root-source-review.json)
   found one remaining binding defect: a Python function can retain a different
-  builtins dictionary from the one exposed by its current globals. Key owns
-  that repair and the three bounded formatter import/alias changes. The old
+  builtins dictionary from the one exposed by its current globals. That frozen
+  packet retains this limitation. The old
   `str`-based reference and all earlier evidence retain their original bytes;
   no warm INIT or scientific reference was run for these controls.
   The [subsequent three-alias integration is reviewed](/mnt/workspaces/Cells/molecule-formatter-source-integration-20261101-01/root-source-review.json):
@@ -467,8 +467,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   cached-builtins repair, so this candidate remains held. Its [saved outcomes](/mnt/workspaces/Cells/molecule-formatter-source-integration-20261101-01/root-results-review.json)
   verify **58 formatter controls plus one producer check**, 21 text-helper
   calls and 24 archives. Three outcomes completed; the style-preparation
-  failure and old-reference refusal are retained. Key is correcting only the
-  remaining binding defect and its controls; no new runtime factory is needed.
+  failure and old-reference refusal are retained.
+  The [cached-builtins successor is now reviewed](/mnt/workspaces/Cells/molecule-formatter-cached-builtins-repair-20261101-01/root-source-results-review.json)
+  and committed as **96a3f02**. Construction and later checks bind the function's
+  actual cached builtins dictionary. **Seven focused no-call controls passed**
+  in **3.52 seconds, 219.4 MiB sampled peak RSS**; 58 other controls were
+  deselected. Seven archives and 35 guard receipts were checked. All three
+  successor outcomes and eight superseded-development outcomes are accounted
+  for, including the preserved style failure. The abandoned factory changes
+  remain archived and grant no qualification. The three static helper imports
+  are retained; the lifecycle owner is unchanged. Key now owns the source-only
+  reference update for this formatter, preserving the actual INIT prerequisites
+  and full text/data comparison. No actual warm/native reference was run.
   Actual exhausted INIT, source correspondence and checkpoint continuity remain
   prerequisites; the software results grant none of those qualifications.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
@@ -826,8 +836,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   a remaining defect in the saved matrix rather than diagnostic rounding alone.
   The decomposition reconstructs the saved inverse exactly; its zero sums are
   by construction. No projected inverse was exported or adopted. Numerical
-  acceptance remains held for a separate singular-spectrum/cutoff and
-  compatible-forcing investigation; native equations and tolerances are unchanged.
+  acceptance remains held; native equations and tolerances are unchanged.
+  The [singular-spectrum diagnostic passed source and software review](/mnt/workspaces/Cells/native-single-cell-poisson-spectrum-20261101-01/software-review.json):
+  **61 controls passed** in **1.76 seconds, 52.2 MiB sampled peak RSS**.
+  Its first attempt stopped before test collection because of an inherited
+  supervisor memory ceiling; the failed receipt remains, and the declared
+  worker/resource limits are unchanged. The [saved-matrix calculation](/mnt/workspaces/Cells/native-single-cell-poisson-spectrum-20261101-01/analysis-01/root-review.json)
+  completed in **9.05 seconds, 290.9 MiB sampled peak RSS**. One unchanged
+  default NumPy pseudoinverse call and its captured full-vector SVD reproduce
+  the saved inverse **bit for bit**. The exact stored graph matrix has rank
+  **624**, but the default cutoff retains all **625** modes: its smallest
+  computed singular value, **0.00685036**, exceeds the cutoff **0.00244804**.
+  Both singular vectors align with the constant mode, explaining the reproduced
+  large constant component. A separate reconstruction from the same factors,
+  discarding that mode, reduces exact balanced-input residual maxima from
+  **6.82e-5 to 2.09e-14** (corner dipole), **4.43e-4 to 4.85e-13** (opposing
+  edges), and **0.01645 to 5.09e-11** (centred coordinate). These are three probes
+  of one matrix, not independent cases. Full factors and both inverses are
+  retained; the alternative is diagnostic only. Current BLAS identity and
+  one-thread execution are recorded, without filling the older run's missing
+  library-hash provenance retroactively. Next is an explicit nullspace-aware
+  solver option with separate qualification; the BETSE-matching path remains
+  unchanged and no numerical or physical acceptance is granted yet.
   Both saved masks remain zero, so this supplied single-cell case does not
   establish a populated physical tissue domain or biological validity.
   Phase/callback and full
