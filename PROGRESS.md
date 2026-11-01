@@ -18,12 +18,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   intact. A narrowly scoped save/read repair has passed 57 software checks;
   the failed run remains failed and the next actual attempt is held.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
-  software passes; actual INIT/SIM qualification remains held. Key is now
-  implementing an explicitly scoped material primitive beyond three calls.
+  software passes; actual INIT/SIM qualification remains held. Key delivered
+  the standalone material primitive beyond three calls with 51 arithmetic-blocked
+  controls. Source/result review is pending; Key is preparing its independent
+  four-call comparison without launching numerical execution.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
-  are now reviewed. Specialist is implementing the next genuine tissue-to-field
-  ownership prerequisite. Existing runners and production code are reused;
+  are now reviewed. Specialist delivered the post-world contact-operator
+  prerequisite with 32 blocked controls. Saved outcomes are reviewed; source
+  review requires one helper-binding repair. Tissue-profile ownership work
+  continues in parallel. Existing runners and production code are reused;
   actual numerical releases remain coordinated by Root.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
