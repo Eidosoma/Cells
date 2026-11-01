@@ -665,6 +665,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   limit; they do not change production cache admission. All ten new terminal
   outcomes are linked in the central ledger, including the setup-only failure.
   No actual Poisson solve or grid-size workaround has been launched.
+  Further [static capacity review](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-policy-20261101-01/capacity-preflight-findings.json)
+  found that original `A = A / delta**2` creates a separate scaled matrix.
+  The two solves require six distinct retained arrays: both zeros allocations,
+  both returned operators and both inverses. The initial repair's four-object
+  synthetic path misses this distinction; Specialist owns its correction.
+  Root's [comparison metadata extension is reviewed](/mnt/workspaces/Cells/native-single-cell-prefix-poisson-policy-20261101-01/root-review.json):
+  **30 software controls and 148 subtests passed in 0.76 seconds, 39.3 MiB
+  sampled peak RSS**. It accepts only the exact typed six-array policy while
+  preserving historical request identities and existing lineage checks.
+  These controls do not qualify the production capacity repair or execute a
+  Poisson solve.
   Root also implemented [independent saved-matrix algebra diagnostics](/mnt/workspaces/Cells/native-single-cell-poisson-algebra-development-20261101-01/source-software-review.json)
   in Git: regular-grid stencil checks, both inverse/projector residuals and
   flux-boundary constant-mode checks. The latter detect a wrong constant offset

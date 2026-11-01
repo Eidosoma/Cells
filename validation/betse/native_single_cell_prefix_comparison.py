@@ -55,6 +55,18 @@ ENVIRONMENT_STORE_ROSTER = (
     "wsy",
 )
 ENVIRONMENT_INLINE_SITE = "betse/science/cells.py:make_world.grid_len"
+POISSON_OBSERVATION_POLICY = dict(
+    kind="cells.single_cell_Poisson_observation_capacity@1",
+    max_matrix_side=625,
+    max_operator_array_elements=390625,
+    # Both returned pairs plus the two distinct pre-scaling zeros allocations.
+    max_issued_operator_arrays=6,
+    numeric_operator_roots_and_actual_bases_only=True,
+    ordinary_array_elements=262144,
+    ordinary_tree_nodes=262144,
+    ordinary_tree_depth=32,
+    typed_cache_format="unchanged complete numeric_array columns",
+)
 
 
 def endpoint(value):
@@ -217,7 +229,7 @@ def capture_lineage(values, configuration, stop_after):
         if stop_after == "lapENV_P_inv":
             poisson_request, poisson = values[9:11]
             _completed_trial(poisson)
-            if type(poisson_request) is not dict or set(poisson_request) != {
+            poisson_fields = {
                 "law",
                 "parent",
                 "methods",
@@ -225,8 +237,19 @@ def capture_lineage(values, configuration, stop_after):
                 "boundary",
                 "invalidated_owners",
                 "full_make_world_phase_physical_checkpoint",
-            }:
+            }
+            if type(poisson_request) is not dict or set(poisson_request) not in (
+                poisson_fields,
+                poisson_fields | {"observation_policy"},
+            ):
                 raise ValueError("Incomplete saved Poisson continuation record")
+            # Historical records retain their original seven-field identity.
+            # New capacity is explicit and bounded, never inferred from a large
+            # saved array or accepted through arbitrary extra request metadata.
+            if "observation_policy" in poisson_request and not _same(
+                poisson_request["observation_policy"], POISSON_OBSERVATION_POLICY
+            ):
+                raise ValueError("Changed bounded Poisson observation policy")
             request_digest = hashlib.sha256(
                 json.dumps(
                     poisson_request, sort_keys=True, separators=(",", ":"), allow_nan=False

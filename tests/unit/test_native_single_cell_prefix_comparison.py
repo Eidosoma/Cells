@@ -155,6 +155,21 @@ def source_sites(stop="make_maskM"):
     return result
 
 
+def poisson_capacity_policy():
+    # Independent metadata fixture. No production owner/module is imported.
+    return dict(
+        kind="cells.single_cell_Poisson_observation_capacity@1",
+        max_matrix_side=625,
+        max_operator_array_elements=625 * 625,
+        max_issued_operator_arrays=6,
+        numeric_operator_roots_and_actual_bases_only=True,
+        ordinary_array_elements=262144,
+        ordinary_tree_nodes=262144,
+        ordinary_tree_depth=32,
+        typed_cache_format="unchanged complete numeric_array columns",
+    )
+
+
 class ComparisonContracts(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
@@ -950,6 +965,82 @@ class ComparisonContracts(unittest.TestCase):
             changed[index][key] = value
             with self.subTest(index=index, key=key), self.assertRaises(ValueError):
                 runner.capture_lineage(changed, {}, "lapENV_P_inv")
+
+    def test_poisson_scoped_capacity_preserves_exact_request_and_parent_lineage(self):
+        values = captures("lapENV_P_inv")
+        legacy = copy.deepcopy(values)
+        request, trial = values[9:11]
+        request["observation_policy"] = poisson_capacity_policy()
+        with self.assertRaises(ValueError):
+            runner.capture_lineage(values, {}, "lapENV_P_inv")
+        trial["request_identity"] = digest(request)
+        runner.capture_lineage(values, {}, "lapENV_P_inv")
+        self.assertNotEqual(trial["request_identity"], legacy[10]["request_identity"])
+        self.assertEqual(trial["parent_identity"], legacy[10]["parent_identity"])
+        runner.capture_lineage(legacy, {}, "lapENV_P_inv")
+        for index, key, value in (
+            (9, "unbound_extra_field", True),
+            (9, "parent", "0" * 64),
+            (9, "boundaries", ["N,S,E,W=flux", "N,S,E,W=value"]),
+            (10, "source_completed", False),
+            (10, "capture_error", {"retained": True}),
+            (10, "stages", []),
+            (10, "stream_before", {"synthetic_stream": "changed"}),
+        ):
+            changed = copy.deepcopy(values)
+            changed[index][key] = value
+            changed[10]["request_identity"] = digest(changed[9])
+            with self.subTest(index=index, key=key), self.assertRaises(ValueError):
+                runner.capture_lineage(changed, {}, "lapENV_P_inv")
+
+    def test_poisson_scoped_capacity_refuses_broader_or_retyped_policy(self):
+        invalid = [None, {}, "unbound policy"]
+        policy = poisson_capacity_policy()
+        for key in policy:
+            invalid.append({k: v for k, v in policy.items() if k != key})
+        for key, value in (
+            ("kind", "future_unreviewed_version"),
+            ("max_matrix_side", 626),
+            ("max_matrix_side", 625.0),
+            ("max_operator_array_elements", 625 * 625 + 1),
+            ("max_issued_operator_arrays", 4),
+            ("max_issued_operator_arrays", 7),
+            ("numeric_operator_roots_and_actual_bases_only", 1),
+            ("numeric_operator_roots_and_actual_bases_only", False),
+            ("ordinary_array_elements", 625 * 625),
+            ("ordinary_tree_nodes", 262145),
+            ("ordinary_tree_depth", 48),
+            ("typed_cache_format", "flattened_columns"),
+            ("unbound_policy_field", True),
+        ):
+            invalid.append(dict(policy, **{key: value}))
+        for index, candidate in enumerate(invalid):
+            values = captures("lapENV_P_inv")
+            values[9]["observation_policy"] = candidate
+            values[10]["request_identity"] = digest(values[9])
+            with self.subTest(policy=index), self.assertRaises(ValueError):
+                runner.capture_lineage(values, {}, "lapENV_P_inv")
+
+    def test_saved_poisson_scoped_capacity_binds_all_eleven_captures(self):
+        root, recorded, result, _ = self.diagnostic("lapENV_P_inv")
+        request = runner.prior.read(root / "capture-0009.json")
+        trial = runner.prior.read(root / "capture-0010.json")
+        request["observation_policy"] = poisson_capacity_policy()
+        trial["request_identity"] = digest(request)
+        for index, value in ((9, request), (10, trial)):
+            path = self.write(root / f"capture-{index:04d}.json", value)
+            recorded["captures"][index]["sha256"] = runner.prior.pin(path)["sha256"]
+        self.write(root / "diagnostic.json", recorded)
+        result["diagnostic"] = runner.prior.pin(root / "diagnostic.json")
+        self.write(root / "result.json", result)
+        stop, _, _, rows, _ = runner.saved_prefix(root, self.root / "parent")
+        self.assertEqual(stop, "lapENV_P_inv")
+        self.assertEqual(len(rows), 11)
+        self.assertEqual(rows[9]["sha256"], runner.prior.pin(root / "capture-0009.json")["sha256"])
+        request["observation_policy"]["max_issued_operator_arrays"] = 7
+        self.write(root / "capture-0009.json", request)
+        with self.assertRaises(ValueError):
+            runner.saved_prefix(root, self.root / "parent")
 
     def test_poisson_exact_plan_and_release(self):
         plan, grant, save = self.grant("lapENV_P_inv")
