@@ -65,6 +65,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   new control or aggregate entry certification. The next Specialist lane is the
   literal tissue-centre-to-grid mapping on retained multi-cell objects; full
   phase/core/profile initialization remains a separate prerequisite.
+  The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
+  is source-reviewed with 29 final blocked controls and all six outcomes retained.
+  It supplies selected parameter/handler construction, with full Parameters,
+  phase and profile mapping still unavailable. Its interrupted software image
+  has incomplete failure evidence and no final entry certification.
   Existing runners and production code are reused;
   actual numerical releases remain coordinated by Root.
 
