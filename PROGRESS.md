@@ -29,8 +29,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and is committed; its initial test-harness failure is preserved. Launch
   inputs and frozen source are verified. Terminal results have not been
   queried; Root owns their review on the next requested status check. Key is
-  implementing native network loading, while Specialist is implementing the
-  phase assembly prerequisite in separate Git paths.
+  repairing network/GRN authority and failure retention. Specialist is finishing
+  phase caches, then preparing the separate mapping qualification tools; their
+  positive native/reference executions remain held.
 
 - **Phase constructor prefix:** [Source and saved results are reviewed](/mnt/workspaces/Cells/native-phase-assembly-20261101-01/root-review.json)
   for the original statements through `self.sim`: prepared callbacks and a
@@ -49,6 +50,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   parser method, and verify the request's original source-policy identity.
   Existing passes do not cover those repairs. Actual parsing, full parameter
   initialization and scientific qualification remain held.
+  The [GRN/variable continuation's fourteen outcomes are also reviewed](/mnt/workspaces/Cells/native-parameter-grn-variables-development-20261101-01/root-review.json):
+  **41 production/ownership controls and four runner controls pass** on their
+  separately bound images; one packaging and one lint failure remain preserved.
+  Its original-source extent reaches temperature, junction and environment
+  declarations through line 945. Acceptance still requires its own raw-return
+  capture fix and explicit adoption of the repaired network/parser dependency.
+  Key owns both repairs; the existing passes do not qualify the successors.
 
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
@@ -447,6 +455,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   The functional array-loop interface is implemented; **GPU/JAX execution,
   larger general forcing, retained-tissue field coupling and full BETSE
   qualification remain open**. All six terminal outcomes were checked and logged.
+  [Optional reuse of the previous voltage is now source- and CPU-reviewed](/mnt/workspaces/Cells/rectangular-iterative-warm-start-development-20261101-01/root-review.json).
+  It solves a correction while retaining the original forcing/tolerance and
+  explicit failed-input gates. **15 new checks plus 42 zero-start regressions
+  pass** in **3.52 seconds, 55.1 MiB sampled peak RSS**; all saved zero-start
+  arrays match the preceding image exactly. On a deterministic **768-cell**
+  forcing sequence, the changed-input solve took **40 active iterations with
+  the previous voltage versus 177 from zero**, at the same residual target;
+  unchanged input needed zero iterations. This is a fixture result, not a GPU
+  or coupled-simulation benchmark. All five new terminal outcomes are reviewed.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).

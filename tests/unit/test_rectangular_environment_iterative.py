@@ -381,3 +381,237 @@ def test_invalid_geometry_field_or_backend_refuses(case):
     with pytest.raises(ValueError) as caught:
         iterative.solve(rhs, grid, max_iterations=12, rtol=1e-12, **options)
     save("invalid-field-" + case, error=str(caught.value))
+
+
+def test_warm_exact_guess_removes_only_voltage_reference_without_iteration():
+    grid = field.bind_metric(spec(dy=1.0))
+    expected = np.array([1.0, -2.0, 3.0, -2.0])
+    rhs = np.array(list(map(float, rational_action(expected, grid.shape, 1.0, 1.0))))
+    initial = expected + 128.0
+    before = initial.tobytes(), rhs.tobytes()
+    result = iterative.solve(rhs, grid, max_iterations=0, rtol=2e-12, initial_potential=initial)
+    save("warm-exact", grid, result, rhs=rhs, initial=initial, expected=expected)
+    assert result.converged and result.iterations == result.loop_iterations == 0
+    np.testing.assert_allclose(result.potential, expected, rtol=0, atol=2e-13)
+    assert before == (initial.tobytes(), rhs.tobytes())
+
+
+def test_warm_wrong_guess_with_zero_budget_retains_uncorrected_residual():
+    grid = field.bind_metric(spec(dy=1.0))
+    rhs = np.array([1.0, -1.0, 2.0, -2.0])
+    initial = np.array([2.0, 0.0, -2.0, 0.0])
+    result = iterative.solve(rhs, grid, max_iterations=0, rtol=2e-12, initial_potential=initial)
+    save("warm-budget", grid, result, rhs=rhs, initial=initial)
+    assert not result.converged and result.iterations == 0 and not result.breakdown
+    np.testing.assert_array_equal(result.potential, initial)
+    np.testing.assert_array_equal(result.residual, stencil.apply(initial, grid) - rhs)
+
+
+def test_warm_batch_separates_bad_guesses_and_incompatible_original_source():
+    grid = field.bind_metric(spec(dy=1.0))
+    rhs = np.array([[1.0, -1.0, 2.0, -2.0]] * 5)
+    rhs[3] = 1.0
+    initial = np.array(
+        [
+            [3.0, 0.0, -1.0, -2.0],
+            [np.nan, 0, 0, 0],
+            [np.inf, 0, 0, 0],
+            [2.0, -2.0, 2.0, -2.0],
+            [0.0] * 4,
+        ]
+    )
+    before = initial.tobytes(), rhs.tobytes()
+    with np.errstate(all="ignore"):
+        result = iterative.solve(
+            rhs, grid, max_iterations=20, rtol=2e-12, initial_potential=initial
+        )
+    save("warm-batch", grid, result, rhs=rhs, initial=initial)
+    np.testing.assert_array_equal(result.converged, [True, False, False, False, True])
+    np.testing.assert_array_equal(result.rhs_compatible, [True, True, True, False, True])
+    np.testing.assert_array_equal(result.iterations[1:4], [0, 0, 0])
+    assert not result.finite_result[1] and not result.finite_result[2]
+    assert np.isnan(result.potential[1]).any() and np.isnan(result.potential[2]).any()
+    np.testing.assert_array_equal(result.potential[3], initial[3])
+    np.testing.assert_array_equal(result.residual[3], stencil.apply(initial[3], grid) - rhs[3])
+    assert before == (initial.tobytes(), rhs.tobytes())
+
+
+def test_warm_nonzero_guess_for_zero_source_uses_original_absolute_tolerance():
+    grid = field.bind_metric(spec(dy=1.0))
+    rhs = np.zeros(4)
+    initial = np.array([2.0, -1.0, 3.0, -4.0])
+    result = iterative.solve(
+        rhs, grid, max_iterations=12, rtol=0.0, atol=1e-13, initial_potential=initial
+    )
+    save("warm-zero-source", grid, result, rhs=rhs, initial=initial)
+    assert result.converged and result.iterations > 0 and result.tolerance == 1e-13
+    np.testing.assert_allclose(result.potential, 0.0, rtol=0, atol=1e-13)
+
+
+def test_warm_tolerance_is_based_on_original_forcing_not_correction():
+    grid = field.bind_metric(spec(dy=1.0))
+    exact = np.array([1.0, -1.0, 1.0, -1.0])
+    rhs = np.array([-2.0, 2.0, -2.0, 2.0])
+    initial = exact * (1 + 1e-8)
+    result = iterative.solve(rhs, grid, max_iterations=0, rtol=2e-8, initial_potential=initial)
+    save("warm-original-tolerance", grid, result, rhs=rhs, initial=initial)
+    assert result.converged and result.iterations == 0
+    assert result.tolerance == 2e-8 * max(abs(rhs))
+    assert result.residual_inf > 0 and result.residual_inf <= result.tolerance
+
+
+def test_warm_finite_guess_with_overflowed_operator_remains_failed():
+    grid = field.bind_metric(spec(dy=1.0))
+    rhs = np.array([1.0, -1.0, 2.0, -2.0])
+    initial = np.array([1e308, -1e308, 1e308, -1e308])
+    before = initial.tobytes()
+    with np.errstate(all="ignore"):
+        result = iterative.solve(
+            rhs, grid, max_iterations=12, rtol=2e-12, initial_potential=initial
+        )
+    save("warm-operator-overflow", grid, result, rhs=rhs, initial=initial)
+    assert result.rhs_compatible and not result.converged and not result.finite_result
+    assert result.iterations == 0 and initial.tobytes() == before
+    assert not np.all(np.isfinite(result.residual))
+
+
+def test_warm_failed_setup_is_not_readmitted_by_finite_final_observation(monkeypatch):
+    grid = field.bind_metric(spec())
+    rhs = np.array([1.0, -1.0, 2.0, -2.0])
+    initial = np.zeros(4)
+    observations = []
+
+    def action(values, grid, *, xp):
+        result = np.full(4, np.inf) if not observations else rhs.copy()
+        observations.append(result.copy())
+        return result
+
+    monkeypatch.setattr(stencil, "apply", action)
+    with np.errstate(all="ignore"):
+        result = iterative.solve(
+            rhs, grid, max_iterations=12, rtol=2e-12, initial_potential=initial
+        )
+    save(
+        "warm-setup-failure-retained",
+        grid,
+        result,
+        rhs=rhs,
+        initial=initial,
+        observed_actions=np.stack(observations),
+    )
+    assert len(observations) == 2 and result.iterations == 0
+    assert result.residual_ok and result.gauge_ok and result.rhs_compatible
+    assert not result.finite_result and not result.converged
+
+
+def test_warm_functional_loop_preserves_shapes_dtypes_and_batch_masks():
+    grid = field.bind_metric(spec(dy=1.0))
+    rhs = np.array([[-2.0, 2.0, -2.0, 2.0]] * 2)
+    initial = np.array([[1.0, -1.0, 1.0, -1.0], [3.0, 0.0, -1.0, -2.0]])
+    counts = []
+
+    def loop(condition, body, state):
+        schema = tuple((x.shape, x.dtype) for x in state)
+        while condition(state):
+            state = body(state)
+            assert tuple((x.shape, x.dtype) for x in state) == schema
+            counts.append(state.iterations.copy())
+        return state
+
+    result = iterative.solve(
+        rhs, grid, max_iterations=12, rtol=2e-12, initial_potential=initial, iteration_loop=loop
+    )
+    save("warm-functional", grid, result, rhs=rhs, initial=initial, counts=np.asarray(counts))
+    assert np.all(result.converged) and result.iterations[0] == 0
+    assert len(counts) == result.loop_iterations == result.iterations[1]
+    assert all(row[0] == 0 for row in counts)
+
+
+def test_general_forcing_and_repeated_perturbed_solve_keep_original_accuracy(monkeypatch):
+    forbid_dense(monkeypatch)
+    grid = field.bind_metric(spec((24, 32), dx=2.0, dy=0.5))
+    ny, nx = grid.shape
+    n = ny * nx
+    half = ((np.arange(n // 2) * 37) % 101) - 50
+    exact = np.concatenate((half, -half)).astype(np.float64)
+    rhs_exact = rational_action(exact, grid.shape, 2.0, 0.5)
+    rhs = np.array(list(map(float, rhs_exact)))
+    assert sum(rhs_exact) == 0
+    cold = iterative.solve(rhs, grid, max_iterations=800, rtol=2e-11)
+    previous = cold.potential.copy()
+    before = previous.tobytes()
+    repeated = iterative.solve(
+        rhs, grid, max_iterations=800, rtol=2e-11, initial_potential=previous
+    )
+    # A known smooth perturbation is superposed on a general rational fixture.
+    mode = np.broadcast_to(np.cos(np.pi * (np.arange(nx) + 0.5) / nx), grid.shape).reshape(-1)
+    eigenvalue = 4 * np.sin(np.pi / (2 * nx)) ** 2 / 2.0**2
+    delta = 0.125 * mode
+    changed_rhs = rhs - eigenvalue * delta
+    warm = iterative.solve(
+        changed_rhs, grid, max_iterations=800, rtol=2e-11, initial_potential=previous
+    )
+    changed_cold = iterative.solve(changed_rhs, grid, max_iterations=800, rtol=2e-11)
+    # Spectral inverse bound for a connected rectangle: ||error||inf <=
+    # sqrt(N)*||residual||inf/lambda_min, plus the independently bounded
+    # binary64 construction roundoff of the small perturbation.
+    lambda_min = min(eigenvalue, 4 * np.sin(np.pi / (2 * ny)) ** 2 / 0.5**2)
+    forcing_roundoff = 8 * np.finfo(float).eps * max(abs(changed_rhs))
+    bound = np.sqrt(n) * (warm.tolerance + forcing_roundoff) / lambda_min
+    save(
+        "warm-general",
+        grid,
+        warm,
+        rhs=changed_rhs,
+        original_rhs=rhs,
+        initial=previous,
+        expected=exact + delta,
+        cold_potential=changed_cold.potential,
+        cold_residual=changed_cold.residual,
+        first_iterations=np.asarray(cold.iterations),
+        repeated_iterations=np.asarray(repeated.iterations),
+        repeated_residual=repeated.residual,
+        changed_cold_iterations=np.asarray(changed_cold.iterations),
+        spectral_error_bound=float(bound),
+        minimum_eigenvalue=float(lambda_min),
+        scope="768-cell deterministic forcing sequence; no general performance claim",
+    )
+    assert cold.converged and repeated.converged and warm.converged and changed_cold.converged
+    assert repeated.iterations == 0
+    assert warm.iterations < changed_cold.iterations  # This declared sequence only.
+    assert previous.tobytes() == before
+    assert np.max(abs(warm.potential - (exact + delta))) <= bound
+    assert np.max(abs(changed_cold.potential - (exact + delta))) <= bound
+    assert np.max(abs(warm.potential - changed_cold.potential)) <= 2 * bound
+
+
+@pytest.mark.parametrize("kind", ["float32", "integer", "scalar", "last_axis", "broadcast"])
+def test_warm_invalid_guess_contract_refuses(kind):
+    grid = field.bind_metric(spec())
+    rhs = np.array([[1.0, -1.0, 2.0, -2.0]] * 2)
+    initial = np.zeros_like(rhs)
+    if kind == "float32":
+        initial = initial.astype(np.float32)
+    elif kind == "integer":
+        initial = initial.astype(np.int64)
+    elif kind == "scalar":
+        initial = np.asarray(0.0)
+    elif kind == "last_axis":
+        initial = np.zeros((2, 5))
+    else:
+        initial = np.zeros(4)
+    with pytest.raises(ValueError) as caught:
+        iterative.solve(rhs, grid, max_iterations=12, rtol=2e-12, initial_potential=initial)
+    save("warm-invalid-" + kind, error=str(caught.value))
+
+
+def test_warm_noncontiguous_readonly_input_is_never_mutated():
+    grid = field.bind_metric(spec())
+    rhs = np.array([1.0, -1.0, 2.0, -2.0])
+    storage = np.arange(8, dtype=np.float64)
+    initial = storage[6::-2]
+    initial.setflags(write=False)
+    before = storage.tobytes()
+    result = iterative.solve(rhs, grid, max_iterations=12, rtol=2e-12, initial_potential=initial)
+    save("warm-strided", grid, result, rhs=rhs, initial=initial)
+    assert result.converged and storage.tobytes() == before and not initial.flags.writeable

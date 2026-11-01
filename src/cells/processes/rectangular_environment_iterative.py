@@ -95,7 +95,17 @@ def _python_loop(condition, body, state):
     return state
 
 
-def solve(rhs, grid, *, max_iterations, rtol, atol=0.0, xp=np, iteration_loop=None):
+def solve(
+    rhs,
+    grid,
+    *,
+    max_iterations,
+    rtol,
+    atol=0.0,
+    initial_potential=None,
+    xp=np,
+    iteration_loop=None,
+):
     """Return a candidate plus explicit numerical acceptance gates.
 
     ``max_iterations`` is an explicit nonnegative int32-sized budget. Tolerances
@@ -103,6 +113,13 @@ def solve(rhs, grid, *, max_iterations, rtol, atol=0.0, xp=np, iteration_loop=No
     max(abs(L phi - rhs)) <= max(atol, rtol * max(abs(rhs))).
     No retry, tolerance relaxation, constant-source repair or rank heuristic is
     applied. Nonfinite/incompatible rows do no iterative work and remain refused.
+    An optional binary64 ``initial_potential`` must have exactly the rhs shape.
+    Its constant offset is removed, then CG solves the correction equation using
+    the ORIGINAL rhs tolerance and compatibility gate. A supplied guess is only
+    numerical input, not native ownership or a qualified checkpoint. Its bytes
+    are never modified. Nonfinite guesses retain failed candidates, without a
+    silent restart from zero. Without a guess the original zero-start path is
+    unchanged.
     A non-NumPy backend must provide a callable ``(condition, body, state)`` loop;
     the Python default is intended only for the CPU implementation.
     """
@@ -135,6 +152,23 @@ def solve(rhs, grid, *, max_iterations, rtol, atol=0.0, xp=np, iteration_loop=No
     )
     tolerance = xp.maximum(atol, rtol * magnitude)
     eligible = compatible & xp.isfinite(tolerance)
+    warm_input_finite = xp.ones_like(compatible)
+    if initial_potential is not None:
+        initial = stencil._field(initial_potential, grid, xp)
+        if initial.shape != rhs.shape:
+            raise ValueError("Initial potential must have exactly the rhs shape; no broadcasting")
+        base = _zero_mean(initial, xp)
+        correction_rhs = rhs - stencil.apply(base, grid, xp=xp)
+        finite_correction = xp.all(xp.isfinite(correction_rhs), axis=-1)
+        warm_input_finite = (
+            xp.all(xp.isfinite(initial), axis=-1)
+            & xp.all(xp.isfinite(base), axis=-1)
+            & finite_correction
+        )
+        magnitude = xp.max(xp.abs(correction_rhs), axis=-1)
+        divisor = xp.where(finite_correction & (magnitude > 0), magnitude, 1.0)
+        scaled = xp.where(finite_correction[..., None], correction_rhs, 0.0) / divisor[..., None]
+        eligible = eligible & warm_input_finite
     b = xp.where(eligible[..., None], -scaled, 0.0)
     scaled_tolerance = tolerance / divisor
     r = _zero_mean(b, xp)
@@ -196,7 +230,10 @@ def solve(rhs, grid, *, max_iterations, rtol, atol=0.0, xp=np, iteration_loop=No
     # Overflow/underflow in this conversion is a failed numerical result, not a
     # reason to rescale a grid, relax a tolerance or hide the raw residual.
     scale = xp.where(eligible, magnitude / operator_scale, 0.0)
-    potential = _zero_mean(final.x * scale[..., None], xp)
+    candidate = final.x * scale[..., None]
+    if initial_potential is not None:
+        candidate = base + candidate
+    potential = _zero_mean(candidate, xp)
     residual = stencil.apply(potential, grid, xp=xp) - rhs
     residual_inf = xp.max(xp.abs(residual), axis=-1)
     voltage_scale = xp.max(xp.abs(potential), axis=-1)
@@ -208,6 +245,7 @@ def solve(rhs, grid, *, max_iterations, rtol, atol=0.0, xp=np, iteration_loop=No
     )
     finite_result = (
         finite_rhs
+        & warm_input_finite
         & xp.isfinite(tolerance)
         & xp.all(xp.isfinite(potential), axis=-1)
         & xp.all(xp.isfinite(residual), axis=-1)
