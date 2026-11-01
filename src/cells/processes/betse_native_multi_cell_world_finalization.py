@@ -41,6 +41,7 @@ STORES = source.STORE_NAMES
 _NATIVE = {name: getattr(source.CellsWorldTail, name) for name in METHODS}
 _ASARRAY, _ONES, _LEN = source.np.asarray, source.np.ones, builtins.len
 _ISSUED = WeakKeyDictionary()
+_FORWARDED = WeakKeyDictionary()
 _LOCK = RLock()
 
 
@@ -219,6 +220,8 @@ def _bindings():
         _immutable_state,
         _immutable_graphs,
         _check_fields,
+        _check_inherited,
+        _claim_for_post_world_operators,
         _scope,
     )
     return (
@@ -489,7 +492,7 @@ def _check_fields(context):
             raise ValueError("Completed tail output bytes changed: " + name)
 
 
-def _check(context):
+def _check_inherited(context):
     parent, env, prefix = _contexts(context)
     if (
         poisson._authority(context.request.poisson_owner) is not parent
@@ -535,6 +538,11 @@ def _check(context):
         )
     if _verify_sources() != context.producers:
         raise ValueError("Native data-tail/inherited source authority changed")
+
+
+def _check(context):
+    _check_inherited(context)
+    parent = context.parent
     if _immutable_state(context).identity != context.immutable_state.identity:
         raise ValueError("Preexisting caller/mesh/grid/parameter/image/RNG/operator bytes changed")
     geometry.meshes._same_graphs(_immutable_graphs(context), context.immutable_graphs)
@@ -606,6 +614,13 @@ def _authority(owner):
 
 def _validate(owner):
     context = _authority(owner)
+    if owner in _FORWARDED:
+        raise FinalizationRejected(
+            "World data epoch was consumed by a post-world operator attempt",
+            stage="world_data_epoch_consumed",
+            request=context.request,
+            trial=context.trial,
+        )
     try:
         if context.invalid or context.active or context.thread != get_ident():
             raise ValueError("Invalid completed data-tail epoch")
@@ -632,6 +647,18 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _claim_for_post_world_operators(owner, *, expected, transition):
+    """Irreversible claim after validating this exact source owner once."""
+    with _LOCK:
+        if transition is None or owner in _FORWARDED or _validate(owner) is not expected:
+            raise FinalizationRejected(
+                "World data continuation already claimed or changed",
+                stage="world_data_epoch_consumed",
+                trial=getattr(expected, "trial", None),
+            )
+        _FORWARDED[owner] = transition
 
 
 @contextmanager

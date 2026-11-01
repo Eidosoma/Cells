@@ -169,6 +169,51 @@ def _check_modules():
             raise ValueError("Native descriptor module callable/code authority changed")
 
 
+@contextmanager
+def issuing_native_imports(pins):
+    """Authenticate additional pinned native factories without patching modules.
+
+    This is import issuance, not factory/body success or Parameters admission.
+    A failed import leaves its actual partial namespace unissued and refuses
+    subsequent native owner use; it is never silently removed or authorized.
+    """
+    _check_modules()
+    before = _module_records()
+    for relative, expected in pins.items():
+        path = (NATIVE / relative).resolve()
+        if (
+            not path.is_relative_to(NATIVE)
+            or hashlib.sha256(path.read_bytes()).hexdigest() != expected
+        ):
+            raise ValueError("Selected native import producer unavailable or changed")
+    old_path = list(sys.path)
+    sys.path.insert(0, str(NATIVE))
+    try:
+        yield
+        after = _module_records()
+        for name, record in after.items():
+            relative = str(record[1].relative_to(NATIVE))
+            if pins.get(relative) != record[2]:
+                if before.get(name) != record:
+                    raise ValueError("Native import escaped its exact pinned source closure")
+            if name in before and before[name] != record:
+                raise ValueError("Existing native import identity or bytes changed")
+            if name in before:
+                current, retained = _module_bindings(record[0]), _MODULE_AUTH[name][1]
+                if len(current) != len(retained) or any(
+                    a != b or len(x) != len(y) or any(i is not j for i, j in zip(x, y, strict=True))
+                    for (a, x), (b, y) in zip(current, retained, strict=True)
+                ):
+                    raise ValueError("Existing native callable/code changed during import")
+        for relative, expected in pins.items():
+            if hashlib.sha256((NATIVE / relative).read_bytes()).hexdigest() != expected:
+                raise ValueError("Native source changed during import issuance")
+        issued = {name: (record, _module_bindings(record[0])) for name, record in after.items()}
+        _MODULE_AUTH.update(issued)
+    finally:
+        sys.path[:] = old_path
+
+
 def _bindings(info):
     native = info.native
     cls = type(native)
@@ -180,6 +225,7 @@ def _bindings(info):
         _GridAlias.__get__,
         _GridAlias.__set__,
         _descriptor_from_source,
+        issuing_native_imports,
         _check_modules,
         _module_bindings,
         _module_records,

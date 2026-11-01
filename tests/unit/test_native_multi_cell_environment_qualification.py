@@ -4,6 +4,7 @@ import copy
 import hashlib
 import io
 import json
+import sys
 from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -11,6 +12,392 @@ from types import SimpleNamespace as NS
 import pytest
 
 from validation.betse import native_multi_cell_environment_qualification as q
+
+
+def timing_fixture(tmp_path):
+    work = NS(failure=None, count=0, phase=None)
+    timings = q.StageTimings(tmp_path, work)
+    base = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    return timings, q.TimedEvidence(base, timings), work
+
+
+def timing_rows(tmp_path):
+    return [q.shared.read(p) for p in sorted((tmp_path / "stage-timings").glob("*.json"))]
+
+
+def test_stage_timing_action_and_capture_separate_wall_and_CPU(tmp_path, monkeypatch):
+    walls, cpus = iter((100, 160, 200, 280)), iter((10, 20, 30, 50))
+    monkeypatch.setattr(q.time, "monotonic_ns", lambda: next(walls))
+    monkeypatch.setattr(q.time, "process_time_ns", lambda: next(cpus))
+    timings, evidence, work = timing_fixture(tmp_path)
+    value = {"actual_return": "unchanged"}
+    result = q.shared.run_stages(timings.steps(((q.STAGES[0], lambda: value),)), evidence, work)
+    rows = timing_rows(tmp_path)
+    assert [r["position"] for r in rows] == ["start", "returned", "start", "capture_saved"]
+    assert [(r["elapsed_wall_ns"], r["elapsed_process_cpu_ns"]) for r in rows] == [
+        (None, None),
+        (60, 10),
+        (None, None),
+        (80, 20),
+    ]
+    assert [r["operation"] for r in rows] == ["action", "action", "capture", "capture"]
+    assert all(
+        r["entry_is_source_success"] is False and r["independent_case_credit"] == 0 for r in rows
+    )
+    assert q.payload.read(tmp_path / evidence.rows[0]["path"]) == value
+    assert result["completed_stages"] == [q.STAGES[0]] and result["accepted_cases"] == 0
+
+
+@pytest.mark.parametrize("timing_fails", [False, True])
+def test_stage_timing_preserves_primary_cause_even_if_unwind_record_fails(
+    tmp_path, monkeypatch, timing_fails
+):
+    timings, _, work = timing_fixture(tmp_path)
+    writer = q.shared.write
+    primary, cause = ValueError("original source"), RuntimeError("original cause")
+
+    def write(path, row):
+        if timing_fails and Path(path).parent == timings.folder and row["position"] == "raised":
+            raise OSError("timing disk failure")
+        return writer(path, row)
+
+    def source():
+        raise primary from cause
+
+    monkeypatch.setattr(q.shared, "write", write)
+    with pytest.raises(ValueError) as caught:
+        timings.run(q.STAGES[0], "action", source)
+    assert caught.value is primary and caught.value.__cause__ is cause
+    assert bool(timings.failures) is timing_fails
+    assert (work.failure is not None) is timing_fails
+    assert timing_rows(tmp_path)[0]["position"] == "start"
+
+
+@pytest.mark.parametrize("position", ["start", "returned"])
+def test_stage_timing_observer_failure_stops_continuation_and_retains_return(
+    tmp_path, monkeypatch, position
+):
+    timings, evidence, work = timing_fixture(tmp_path)
+    writer, calls, value = q.shared.write, [], {"retained": "source return"}
+
+    def write(path, row):
+        if Path(path).parent == timings.folder and row["position"] == position:
+            raise OSError("timing checkpoint refused")
+        return writer(path, row)
+
+    def action():
+        calls.append("first")
+        return value
+
+    monkeypatch.setattr(q.shared, "write", write)
+    result = q.shared.run_stages(
+        timings.steps(((q.STAGES[0], action), (q.STAGES[1], lambda: calls.append("later")))),
+        evidence,
+        work,
+    )
+    assert calls == ([] if position == "start" else ["first"])
+    assert result["source_error"] is None and result["observer_error"] is not None
+    assert result["completed_stages"] == [] and result["accepted_cases"] == 0
+    if position == "returned":
+        row = next(
+            r for r in evidence.rows if r["label"] == "TimingObservationFailed.partial.returned"
+        )
+        assert q.payload.read(tmp_path / row["path"]) == value
+
+
+def test_stage_timing_capture_failure_stays_distinct_from_source_error(tmp_path):
+    timings, _, work = timing_fixture(tmp_path)
+    calls = []
+    original = NS(rows=[], save=lambda label, value: False, failure=lambda error: None)
+    evidence = q.TimedEvidence(original, timings)
+    result = q.shared.run_stages(
+        timings.steps(
+            (
+                (q.STAGES[0], lambda: {"source_completed": True}),
+                (q.STAGES[1], lambda: calls.append("later")),
+            )
+        ),
+        evidence,
+        work,
+    )
+    assert calls == [] and result["failed_stage"] == q.STAGES[0] + ":capture"
+    assert result["source_error"] is None and work.failure is None
+    assert timing_rows(tmp_path)[-1]["position"] == "capture_failed"
+
+
+def test_stage_timing_capture_end_observation_failure_preserves_saved_bytes(tmp_path, monkeypatch):
+    timings, evidence, work = timing_fixture(tmp_path)
+    writer, calls = q.shared.write, []
+
+    def write(path, row):
+        if Path(path).parent == timings.folder and row["position"] == "capture_saved":
+            raise OSError("end checkpoint failure")
+        return writer(path, row)
+
+    monkeypatch.setattr(q.shared, "write", write)
+    value = {"complete": True}
+    result = q.shared.run_stages(
+        timings.steps(((q.STAGES[0], lambda: value), (q.STAGES[1], lambda: calls.append("later")))),
+        evidence,
+        work,
+    )
+    assert evidence.rows[0]["status"] == "saved" and calls == []
+    assert q.payload.read(tmp_path / evidence.rows[0]["path"]) == value
+    assert result["accepted_cases"] == 0 and result["observer_error"] is not None
+
+
+def test_stage_timing_unfinished_start_does_not_invent_elapsed_work(tmp_path):
+    timings, _, _ = timing_fixture(tmp_path)
+    timings._checkpoint(q.STAGES[0], "action", "start")
+    rows = timing_rows(tmp_path)
+    assert len(rows) == 1 and rows[0]["position"] == "start"
+    assert rows[0]["elapsed_wall_ns"] is None and rows[0]["elapsed_process_cpu_ns"] is None
+
+
+@pytest.mark.parametrize("label, operation", [("unknown", "action"), (q.STAGES[0], "unknown")])
+def test_stage_timing_unknown_boundaries_refuse_before_delegate(tmp_path, label, operation):
+    timings, _, work = timing_fixture(tmp_path)
+    calls = []
+    with pytest.raises(q.TimingObservationFailed):
+        timings.run(label, operation, lambda: calls.append("forbidden"))
+    assert calls == [] and work.failure is not None
+
+
+def test_stage_timing_forensic_capture_keeps_existing_separate_path(tmp_path):
+    timings, _, _ = timing_fixture(tmp_path)
+    calls = []
+    primary = ValueError("source")
+    base = NS(
+        rows=[],
+        save=lambda label, value: calls.append((label, value)),
+        failure=lambda error: calls.append(error),
+    )
+    evidence = q.TimedEvidence(base, timings)
+    evidence.failure(primary)
+    evidence.save(q.STAGES[0] + ":interrupted-return", "retained")
+    assert calls == [primary, (q.STAGES[0] + ":interrupted-return", "retained")]
+    assert timing_rows(tmp_path) == []
+
+
+@pytest.mark.parametrize("failure_kind", ["write", "profile_entry"])
+def test_stage_timing_capture_start_failure_retains_exact_request_once(
+    tmp_path, monkeypatch, failure_kind
+):
+    work = q.shared.WorkLog(tmp_path, q.ROOT, phases=q.STAGES)
+    timings = q.StageTimings(tmp_path, work)
+    base = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    for label in q.STAGES[:6]:
+        assert base.save(label, {"retained": label})
+    evidence = q.TimedEvidence(base, timings)
+    value = capture_metadata_request("x" * (17 * 2**20))
+    writer, calls, saves = q.shared.write, [], []
+    error = OSError("capture start observation")
+    previous = sys.getprofile()
+
+    def write(path, row):
+        if (
+            failure_kind == "write"
+            and Path(path).parent == timings.folder
+            and row["operation"] == "capture"
+            and row["position"] == "start"
+        ):
+            raise error
+        return writer(path, row)
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if event == "call" and frame.f_code is q.StageTimings._checkpoint.__code__:
+            if (
+                failure_kind == "profile_entry"
+                and frame.f_locals["operation"] == "capture"
+                and frame.f_locals["position"] == "start"
+            ):
+                raise error
+        if event == "call" and frame.f_code is q.shared.Evidence.save.__code__:
+            saves.append(
+                (frame.f_locals["label"], frame.f_locals["value"], work._retaining_failure)
+            )
+
+    monkeypatch.setattr(q.shared, "write", write)
+    sys.setprofile(profile)
+    try:
+        with work.active():
+            result = q.shared.run_stages(
+                timings.steps(
+                    (("ordinary_request", lambda: value), ("cell_index", lambda: calls.append(1)))
+                ),
+                evidence,
+                work,
+            )
+        assert sys.getprofile() is profile
+    finally:
+        sys.setprofile(previous)
+    assert calls == [] and len(saves) == 1
+    assert saves[0][0] == "ordinary_request" and saves[0][1] is value and saves[0][2] > 0
+    assert len(evidence.rows) == 7 and evidence.rows[-1]["status"] == "saved"
+    path = tmp_path / "capture-0006.json"
+    assert q.payload.MAX_METADATA < path.stat().st_size < q.payload.REQUEST_METADATA
+    assert q.read_capture(path, evidence.rows[-1]) == value
+    assert result["observer_error"] is not None and result["source_error"] is None
+    assert result["completed_stages"] == [] and result["accepted_cases"] == 0
+    assert len(timings.failures) == 1 and work.failure_retention_entries > 0
+
+
+@pytest.mark.parametrize("position", ["start", "returned", "raised"])
+def test_stage_timing_checkpoint_entry_guard_preserves_return_or_primary(tmp_path, position):
+    work = q.shared.WorkLog(tmp_path, q.ROOT, phases=q.STAGES)
+    timings = q.StageTimings(tmp_path, work)
+    base = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    evidence = q.TimedEvidence(base, timings)
+    value, calls, guarded_captures = {"returned_bits": "8000000000000000"}, [], []
+    observation = RuntimeError("prior guard rejected checkpoint entry")
+    primary, cause = ValueError("primary source"), RuntimeError("primary cause")
+    previous = sys.getprofile()
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if (
+            event == "call"
+            and frame.f_code is q.StageTimings._checkpoint.__code__
+            and frame.f_locals["position"] == position
+        ):
+            raise observation
+        if event == "call" and frame.f_code is q.shared.Evidence.save.__code__:
+            guarded_captures.append(work._retaining_failure)
+
+    def source():
+        calls.append("source")
+        if position == "raised":
+            raise primary from cause
+        return value
+
+    sys.setprofile(profile)
+    try:
+        with work.active():
+            result = q.shared.run_stages(
+                timings.steps(
+                    ((q.STAGES[0], source), (q.STAGES[1], lambda: calls.append("later")))
+                ),
+                evidence,
+                work,
+            )
+        assert sys.getprofile() is profile
+    finally:
+        sys.setprofile(previous)
+    assert calls == ([] if position == "start" else ["source"])
+    assert result["observer_error"] is not None and result["accepted_cases"] == 0
+    assert len(timings.failures) == 1
+    if position == "returned":
+        assert guarded_captures and all(n > 0 for n in guarded_captures)
+        row = next(
+            r for r in evidence.rows if r["label"] == "TimingObservationFailed.partial.returned"
+        )
+        assert q.payload.read(tmp_path / row["path"]) == value
+        assert observation is not None and work.failure_retention_entries > 0
+        graph = result["interrupted_exception_graph"]
+        assert "prior guard rejected checkpoint entry" in json.dumps(graph)
+    elif position == "raised":
+        assert primary.__cause__ is cause
+        assert "primary source" in json.dumps(result["interrupted_exception_graph"])
+        assert "primary cause" in json.dumps(result["interrupted_exception_graph"])
+
+
+def test_stage_timing_forensic_fallback_still_enforces_prior_guard(tmp_path):
+    work = q.shared.WorkLog(tmp_path, q.ROOT, phases=q.STAGES)
+    timings = q.StageTimings(tmp_path, work)
+    base = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    evidence = q.TimedEvidence(base, timings)
+    previous, calls = sys.getprofile(), []
+    refusal = RuntimeError("prior guard forbids evidence writer")
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if (
+            event == "call"
+            and frame.f_code is q.StageTimings._checkpoint.__code__
+            and frame.f_locals["operation"] == "capture"
+            and frame.f_locals["position"] == "start"
+        ):
+            raise RuntimeError("capture timing refused")
+        if event == "call" and frame.f_code is q.shared.Evidence.save.__code__:
+            calls.append(work._retaining_failure)
+            raise refusal
+
+    sys.setprofile(profile)
+    try:
+        with work.active(), pytest.raises(RuntimeError) as caught:
+            evidence.save(q.STAGES[0], {"already_returned": True})
+        assert caught.value is refusal and sys.getprofile() is profile
+    finally:
+        sys.setprofile(previous)
+    assert len(calls) == 1 and calls[0] > 0 and base.rows == []
+    assert work.failure is not None
+
+
+@pytest.mark.parametrize("failure_kind", ["write", "profile_entry"])
+def test_stage_timing_large_action_return_keeps_declared_capture_budget(
+    tmp_path, monkeypatch, failure_kind
+):
+    work = q.shared.WorkLog(tmp_path, q.ROOT, phases=q.STAGES)
+    timings = q.StageTimings(tmp_path, work)
+    base = q.shared.Evidence(tmp_path, sidecars=True, capture_writer=q._write_capture)
+    for label in q.STAGES[:6]:
+        assert base.save(label, {"retained": label})
+    evidence = q.TimedEvidence(base, timings)
+    value = capture_metadata_request("x" * (17 * 2**20))
+    writer, calls, saves = q.shared.write, [], []
+    observation = RuntimeError("timing after large request returned")
+    previous = sys.getprofile()
+
+    def write(path, row):
+        if failure_kind == "write" and Path(path).parent == timings.folder:
+            if row["operation"] == "action" and row["position"] == "returned":
+                raise observation
+        return writer(path, row)
+
+    def profile(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if event == "call" and frame.f_code is q.StageTimings._checkpoint.__code__:
+            if failure_kind == "profile_entry" and frame.f_locals["position"] == "returned":
+                raise observation
+        if event == "call" and frame.f_code is q.shared.Evidence.save.__code__:
+            saves.append(
+                (frame.f_locals["label"], frame.f_locals["value"], work._retaining_failure)
+            )
+
+    monkeypatch.setattr(q.shared, "write", write)
+    sys.setprofile(profile)
+    try:
+        with work.active():
+            result = q.shared.run_stages(
+                timings.steps(
+                    (("ordinary_request", lambda: value), ("cell_index", lambda: calls.append(1)))
+                ),
+                evidence,
+                work,
+            )
+        assert sys.getprofile() is profile
+    finally:
+        sys.setprofile(previous)
+    assert calls == [] and len(saves) == 2
+    assert saves[0][0] == "ordinary_request" and saves[0][1] is value and saves[0][2] > 0
+    assert saves[1][0] == "TimingObservationFailed.partial.returned" and saves[1][2] > 0
+    assert len(evidence.rows) == 8 and evidence.rows[6]["status"] == "saved"
+    path = tmp_path / "capture-0006.json"
+    assert q.payload.MAX_METADATA < path.stat().st_size < q.payload.REQUEST_METADATA
+    assert q.read_capture(path, evidence.rows[6]) == value
+    assert evidence.rows[7]["status"] == "capture_failed"
+    assert "metadata bound" in json.dumps(evidence.rows[7])
+    assert result["observer_error"] is not None and result["source_error"] is None
+    assert result["completed_stages"] == [] and result["accepted_cases"] == 0
+    assert "timing after large request returned" in json.dumps(
+        result["interrupted_exception_graph"]
+    )
+    assert len(timings.failures) == 1 and work.failure_retention_entries > 0
 
 
 def capture_metadata_request(text="{}"):

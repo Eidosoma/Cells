@@ -13,7 +13,9 @@ import os
 import resource
 import runpy
 import sys
+import time
 import traceback
+from contextlib import nullcontext
 from pathlib import Path
 
 from validation import source_snapshot
@@ -58,7 +60,170 @@ SOFTWARE_GROUPS = {
     "numpy-integration": "numpy_helper",
     "source-repairs": "repair_c or numpy_helper",
     "capture-metadata": "capture_metadata or failed_capture_stops or repair_c5 or prefix_payload",
+    "stage-timing": "stage_timing or failed_capture_stops or repair_c5",
 }
+
+
+class TimingObservationFailed(RuntimeError):
+    def __init__(self, primary, *, label, operation, returned=None):
+        super().__init__(str(primary))
+        self.capture_error = primary
+        self.label, self.operation = label, operation
+        self.stage = label + ":" + operation + ":timing"
+        self.partial = {"returned": returned} if returned is not None else {}
+
+
+class StageTimings:
+    """Durable wall/process-CPU checkpoints, with no source success inference.
+
+    Each interval includes writing its start checkpoint. Forensic failure
+    capture remains outside these ordinary action/capture intervals. An abrupt
+    termination can leave a start without an end; no duration is then inferred.
+    """
+
+    def __init__(self, output, work):
+        self.output, self.work, self.sequence = Path(output), work, 0
+        self.folder = self.output / "stage-timings"
+        self.folder.mkdir()
+        self.failures = []
+
+    def _checkpoint(self, label, operation, position, *, started=None, error=None, returned=None):
+        try:
+            if label not in STAGES or operation not in ("action", "capture"):
+                raise ValueError("Undeclared timed diagnostic boundary")
+            wall, cpu = time.monotonic_ns(), time.process_time_ns()
+            row = dict(
+                kind="cells.diagnostic_stage_timing@1",
+                sequence=self.sequence,
+                label=label,
+                operation=operation,
+                position=position,
+                monotonic_ns=wall,
+                process_cpu_ns=cpu,
+                elapsed_wall_ns=None if started is None else wall - started[0],
+                elapsed_process_cpu_ns=None if started is None else cpu - started[1],
+                interval_includes_start_checkpoint_write=True,
+                independent_case_credit=0,
+                entry_is_source_success=False,
+                error=None if error is None else shared.exception_record(error),
+            )
+            if any(type(n) is not int or n < 0 for n in (wall, cpu)) or (
+                started is not None and (wall < started[0] or cpu < started[1])
+            ):
+                raise ValueError("Invalid monotonic/process timing observation")
+            path = self.folder / f"{self.sequence:04d}.json"
+            self.sequence += 1
+            shared.write(path, row)
+            return wall, cpu
+        except Exception as failure:
+            record = dict(
+                label=label,
+                operation=operation,
+                position=position,
+                error=shared.exception_record(failure),
+            )
+            self.failures.append(record)
+            if self.work.failure is None:
+                self.work.failure = record
+            raise TimingObservationFailed(
+                failure, label=label, operation=operation, returned=returned
+            ) from failure
+
+    def run(self, label, operation, action):
+        # Protect the CALL event as well as the body: a chained profiler can
+        # reject entry before _checkpoint's own exception handler runs.
+        try:
+            started = self._checkpoint(label, operation, "start")
+        except TimingObservationFailed:
+            raise
+        except Exception as failure:
+            raise self._entry_failure(failure, label, operation, "start") from failure
+        try:
+            value = action()
+        except BaseException as primary:
+            try:
+                self._checkpoint(label, operation, "raised", started=started, error=primary)
+            except TimingObservationFailed:
+                pass  # Keep the original source/capture exception and cause.
+            except Exception as failure:
+                self._entry_failure(failure, label, operation, "raised")
+            raise
+        position = "capture_saved" if operation == "capture" and value is True else "returned"
+        if operation == "capture" and value is False:
+            position = "capture_failed"
+        try:
+            self._checkpoint(label, operation, position, started=started, returned=value)
+        except TimingObservationFailed:
+            raise
+        except Exception as failure:
+            raise self._entry_failure(failure, label, operation, position, value) from failure
+        return value
+
+    def _entry_failure(self, failure, label, operation, position, returned=None):
+        record = dict(
+            label=label,
+            operation=operation,
+            position=position,
+            error=shared.exception_record(failure),
+        )
+        self.failures.append(record)
+        if self.work.failure is None:
+            self.work.failure = record
+        return TimingObservationFailed(failure, label=label, operation=operation, returned=returned)
+
+    def steps(self, steps):
+        return tuple(
+            (label, lambda label=label, action=action: self.run(label, "action", action))
+            for label, action in steps
+        )
+
+
+class TimedEvidence:
+    """Preserve the existing typed writer and its separate failure handling."""
+
+    def __init__(self, evidence, timings):
+        self.evidence, self.timings = evidence, timings
+
+    @property
+    def rows(self):
+        return self.evidence.rows
+
+    def save(self, label, value):
+        if label not in STAGES:
+            return self.evidence.save(label, value)
+        entered = False
+
+        def save():
+            nonlocal entered
+            entered = True
+            return self.evidence.save(label, value)
+
+        try:
+            return self.timings.run(label, "capture", save)
+        except TimingObservationFailed:
+            if not entered:
+                # The source already returned. Make one forensic attempt with
+                # the original label/occurrence, including its scoped cap.
+                # Never retry an entered writer or resume source continuation.
+                work = self.timings.work
+                with work.retain_failure() if isinstance(work, shared.WorkLog) else nullcontext():
+                    self.evidence.save(label, value)
+            return False
+
+    def failure(self, error):
+        if (
+            isinstance(error, TimingObservationFailed)
+            and error.operation == "action"
+            and error.label in STAGES
+            and "returned" in error.partial
+        ):
+            # A completed action may need its declared capture budget. Keep
+            # that exact occurrence before generic forensic traversal, whose
+            # ordinary cap remains unchanged (and can still fail explicitly).
+            work = self.timings.work
+            with work.retain_failure() if isinstance(work, shared.WorkLog) else nullcontext():
+                self.evidence.save(error.label, error.partial["returned"])
+        return self.evidence.failure(error)
 
 
 def _request_capture_schema(value):
@@ -356,11 +521,13 @@ def worker(prepared, digest, release, case, output):
         shared.Evidence(output, sidecars=True, capture_writer=_write_capture),
         shared.WorkLog(output, source, phases=STAGES),
     )
+    timings = StageTimings(output, work)
+    evidence = TimedEvidence(evidence, timings)
     result = None
     stage = "source_execution"
     try:
         with work.active():
-            result = shared.run_stages(_steps(case, output), evidence, work)
+            result = shared.run_stages(timings.steps(_steps(case, output)), evidence, work)
             stage = "postprocessing.source_observer_finalization"
         stage = "postprocessing.saved_geometry_diagnostics"
         if result["status"] == "source_completed_unqualified":
@@ -422,7 +589,13 @@ def worker(prepared, digest, release, case, output):
             result["failure_capture_error"] = recording_error
     shared.write(
         output / "diagnostic.json",
-        dict(case=case, plan_sha256=digest, stop_after=ENDPOINT, **result),
+        dict(
+            case=case,
+            plan_sha256=digest,
+            stop_after=ENDPOINT,
+            timing_observation_failures=timings.failures,
+            **result,
+        ),
     )
     return int(result["status"] != "source_completed_unqualified")
 

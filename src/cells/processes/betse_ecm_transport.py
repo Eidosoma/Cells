@@ -312,6 +312,10 @@ def state(binding, raw, *, step_index=0):
         or not 0 <= step_index <= MAX_STEPS
     ):
         raise ValueError("Declare every source state buffer and bounded step index [0,3]")
+    return _state_values(binding, raw, step_index=step_index)
+
+
+def _state_values(binding, raw, *, step_index):
     values = Values(
         *(
             current._array(raw[key], shape, key)
@@ -397,6 +401,21 @@ def step(binding, parent, forcing):
             or any(isinstance(v, np.ndarray) and v.flags.writeable for v in forcing)
         ):
             raise ValueError("Require complete immutable typed ECM source drive")
+    except Exception as error:
+        raise ECMTransportRejected(
+            error,
+            stage="material_trial" if trial is not None else "source",
+            parent=parent,
+            drive=forcing,
+            trial=trial,
+        ) from error
+    return _step_source(binding, parent, forcing)
+
+
+@np.errstate(all="ignore")
+def _step_source(binding, parent, forcing):
+    trial = None
+    try:
         gb, k = binding.geometry_binding, binding.kernel
         cb, g = gb.current_binding, gb.geometry
         ck, p = cb.kernel, gb.definition["parameters"]

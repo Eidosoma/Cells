@@ -9,26 +9,64 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
+- **Basic BETSE bioelectric milestone:** substantial component comparisons are
+  established; complete tissue simulation qualification remains open. The next
+  target is a small, populated tissue that initializes, evolves, responds to a
+  controlled perturbation and restarts consistently. Priorities are populated
+  multi-cell geometry/grid/masks; a separately qualified electrical solver;
+  genuine tissue/parameter/Simulator/phase and ion-profile initialization;
+  profile-to-junction-to-field connection; sustained SIM updates; and complete
+  restart equivalence. Source correspondence and physical/numerical validity
+  are separate requirements. This milestone does not cover every BETSE feature,
+  including the still-held post-cut continuation.
+
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
   five alias markers match, with runtime provenance verified. Root's first
   multi-cell geometry/grid/mask diagnostic stopped while saving the nested
   request, before the new continuation ran. The six prerequisite captures are
-  intact. A narrowly scoped save/read repair has passed 57 software checks;
-  the failed run remains failed and the next actual attempt is held.
+  intact. A narrowly scoped save/read repair passed 57 software checks.
+  The [second actual diagnostic](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-02/root-review.json)
+  saved the complete request and all seven prerequisite captures, then reached
+  the unchanged **480-second wall limit** before completing the caller action.
+  Peak sampled RSS was **339.3 MiB**; the nine new geometry/grid/mask methods
+  did not run. The saved trace does not establish entry into the literal final
+  caller/index methods, despite the enclosing phase name `cell_index`.
+  [Timing inspection](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-02/root-timing-inspection.json)
+  records about **272 CPU seconds over 480 wall seconds** and extra observed
+  request-processing work. It cannot assign the elapsed time to one cause.
+  Root is adding durable action/capture wall and CPU checkpoints before another
+  actual attempt; numerical settings, evidence retention and guards are unchanged.
+  Both failed attempts remain failed and grant no continuation acceptance.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
-  controls. Source/result review is pending; Key is preparing its independent
-  four-call comparison without launching numerical execution.
+  controls. All 25 saved outcomes are reviewed; source review requires an
+  advance-reentrancy repair and a signature/decorator correspondence check.
+  Key is addressing those findings and preparing the independent four-call
+  comparison without launching numerical execution.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
   prerequisite with 32 blocked controls. Saved outcomes are reviewed; source
-  review requires one helper-binding repair. Tissue-profile ownership work
-  continues in parallel. Existing runners and production code are reused;
+  review requires one helper-binding repair. The next Specialist lane is the
+  literal tissue-centre-to-grid mapping on retained multi-cell objects; full
+  phase/core/profile initialization remains a separate prerequisite.
+  Existing runners and production code are reused;
   actual numerical releases remain coordinated by Root.
+
+- **Separate compatible-gauge diagnostic:** Root added a saved-grid adapter for
+  the existing Cells nullspace-aware solver directly in Git. It preserves the
+  retained original operator/inverse, checks the exact supplied grid/stencil,
+  refuses incompatible right-hand sides and reports residual and voltage-gauge
+  checks without silently subtracting the input mean. [Source review](/mnt/workspaces/Cells/environment-compatible-gauge-development-20261101-01/source-review.json)
+  and [saved-result review](/mnt/workspaces/Cells/environment-compatible-gauge-development-20261101-01/root-results-review.json)
+  verify **11 small-grid checks**, including independent rational solutions,
+  failure isolation and retained native-baseline separation, in **9.60 seconds,
+  182.7 MiB sampled peak RSS**. Actual Cells NumPy solver bodies ran on small
+  fixtures; no original BETSE body or retained 625-point solve ran. Full-grid
+  numerical and populated-tissue physical qualification remain open.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
   BETSE through environment and mask construction: **14 cache comparisons and
