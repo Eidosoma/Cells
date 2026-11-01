@@ -719,15 +719,29 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [integration check passed four controls with 74 deselected](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json).
   This failed input grants no positive multi-cell credit or independent
   original-source comparison; no automatic retry has been launched.
-  Root prepared the independent original-source boundary through `cell_index`,
-  including 20 original parameter statements and eight clipping helpers from
-  24 pinned BETSE files. [Source review](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/source-review-02.json)
-  and [22 software controls](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/root-results-review.json)
-  verify the literal caller prefix, helper bodies and separate identities of
-  the two `to_iterable` functions (**11.56 seconds, 67.2 MiB sampled peak RSS**).
-  These controls compile ASTs without executing them; the earlier nine checks
-  retain their own source. Runtime/import bindings, the complete comparison
-  driver and actual multi-cell reference execution remain to be built/verified.
+  Root has now implemented the independent original-source runtime, driver and
+  exact final-data comparator through `cell_index` directly in Git.
+  [Source/software integration review](/mnt/workspaces/Cells/native-multi-cell-native-development-20261101-01/review.json)
+  binds **25 original-source preparation checks, 24 namespace controls,
+  57 final driver controls, and 19 comparator tests with 136 subtests**. These
+  are software evidence, with no actual BETSE trajectory or numerical reference
+  executed. The 25 original files retain 20 parameter statements, clipping
+  helpers and the genuine `PI`/`TWO_PI` assignments. Private original-file
+  globals preserve the two distinct `to_iterable` functions. The comparator
+  checks three final caches, two MT streams and five identity observations;
+  only three explicitly disclosed mask-token provenance scalars normalize.
+  Array bits, negative-row strides and field ordering remain exact.
+  Review found and closed a late-capture profiler/trace restoration gap; the
+  final driver checks passed in **1.01 seconds, 40.4 MiB sampled peak RSS**.
+  Earlier source/driver results, lint/setup failures and a controller-only
+  duplicate-result-write refusal remain preserved with their own producers.
+  Two runtime files received formatting-only changes with complete AST equality;
+  saved tests were not relabelled to those new bytes. The
+  [earlier 22 AST checks](/mnt/workspaces/Cells/native-multi-cell-reference-source-development-20261101-01/root-results-review.json)
+  remain historical. Execution orchestration and numerical-library inventory,
+  a fresh Cells diagnostic after the mask repair, and the actual independent
+  comparison remain next. This adds no full-package, physical or checkpoint
+  admission.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid

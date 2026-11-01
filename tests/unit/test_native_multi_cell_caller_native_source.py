@@ -105,7 +105,10 @@ def test_mesh_picker_helpers_are_literal_and_only_expected_ast_groups_differ():
     before, _ = native.shared.source_nodes(ROOT)
     after, _ = native.source_nodes(ROOT)
     assert [file for file, _ in before] == [file for file, _ in after[: len(before)]]
-    assert [file for file, _ in after[len(before) :]] == list(native.CLIPPING_FUNCTIONS)
+    assert [file for file, _ in after[len(before) :]] == [
+        *native.CLIPPING_FUNCTIONS,
+        *native.CLIPPING_CONSTANTS,
+    ]
     changed = []
     for (file, left), (_, right) in zip(before, after[: len(before)], strict=True):
         if [dump(node) for node in left] != [dump(node) for node in right]:
@@ -203,4 +206,24 @@ def test_same_named_iterable_helpers_retain_distinct_module_identity():
     assert dump(array_helper) != dump(iterable_helper)
     assert "betse/lib/numpy/nparray.py:to_iterable" in sites
     assert "betse/util/type/iterable/iterables.py:to_iterable" in sites
-    assert len(native.pins_for()) == 24
+    assert len(native.pins_for()) == 25
+
+
+@pytest.mark.parametrize("name", ["PI", "TWO_PI"])
+def test_convex_merge_constants_are_original_ordered_assignments(name):
+    relative = "betse/util/type/numeric/floats.py"
+    groups, sites = native.source_nodes(ROOT)
+    assignments = next(nodes for file, nodes in groups if file == relative)
+    assert [node.targets[0].id for node in assignments] == ["PI", "TWO_PI"]
+    copied = next(node for node in assignments if node.targets[0].id == name)
+    original_node = next(
+        node
+        for node in ast.parse((ROOT / relative).read_bytes()).body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == name for target in node.targets)
+    )
+    assert dump(copied) == dump(original_node)
+    assert (
+        sites[relative + ":assignment_" + str(copied.lineno)]["ast_sha256"]
+        == hashlib.sha256(dump(original_node).encode()).hexdigest()
+    )

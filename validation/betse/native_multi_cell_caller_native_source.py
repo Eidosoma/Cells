@@ -31,7 +31,11 @@ CLIPPING_PINS = {
     "betse/util/type/cls/classes.py": (
         "518cf58a45b621fae925595c3e3ed48dcba8c1f71df6718b10ffbe253710aab4"
     ),
+    "betse/util/type/numeric/floats.py": (
+        "4bc44d057523606dbdea4be47d9b42af5be748d0d4482832bf2695c3632cdb84"
+    ),
 }
+CLIPPING_CONSTANTS = {"betse/util/type/numeric/floats.py": ("PI", "TWO_PI")}
 # Keep source-module identity: the two different to_iterable functions must
 # never be flattened into one name by a future execution namespace builder.
 CLIPPING_FUNCTIONS = {
@@ -149,6 +153,23 @@ def source_nodes(root):
         tree = _tree(root, relative)
         helpers = [copy.deepcopy(_one(tree.body, ast.FunctionDef, name)) for name in names]
         groups.append((relative, helpers))
+
+    for relative, names in CLIPPING_CONSTANTS.items():
+        tree = _tree(root, relative)
+        constants = []
+        for name in names:
+            matches = [
+                node
+                for node in tree.body
+                if isinstance(node, ast.Assign)
+                and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == name
+            ]
+            if len(matches) != 1:
+                raise ValueError("Require one original constant: " + name)
+            constants.append(copy.deepcopy(matches[0]))
+        groups.append((relative, constants))
 
     sites = {}
     for file, nodes in groups:
