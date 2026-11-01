@@ -42,6 +42,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   boundary is phase caches and their weak references to that same phase,
   followed by tissue-handler attachment and complete initializer authority.
 
+- **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
+  including the final **35 blocked controls** and the earlier **20-pass,
+  nine-failure** image. Source acceptance requires three fixes now assigned to
+  Key: retain raw helper returns before fallible observation, bind the actual
+  parser method, and verify the request's original source-policy identity.
+  Existing passes do not cover those repairs. Actual parsing, full parameter
+  initialization and scientific qualification remain held.
+
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
