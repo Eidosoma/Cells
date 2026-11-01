@@ -773,6 +773,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   images retain their own coverage. No original solver, native reference or
   physical qualification ran; original defaults and flux-rank behavior remain
   unchanged, with numerical follow-up owned by Root.
+  The remaining six native `make_world` data stores are implemented in the checkout,
+  preserving the original `cell_i` list behind `all_points_cell_i`, the actual
+  array conversion/new weights, and both completed Poisson pairs. They set
+  defaults and do not construct a gap-junction Laplacian. The
+  [literal/runner review](/mnt/workspaces/Cells/native-multi-cell-world-finalization-20261101-01/root-runner-source-review.json)
+  and [alias/observation review](/mnt/workspaces/Cells/native-multi-cell-world-finalization-20261101-01/root-observation-source-review.json)
+  are clear within scope. [Lifetime review](/mnt/workspaces/Cells/native-multi-cell-world-finalization-20261101-01/root-source-lifetime-review.json)
+  found one blocker: two original caller issuance/retirement links must remain
+  checked after consuming the parent. Specialist owns that narrow driver/test
+  repair; source acceptance remains held.
+  [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-multi-cell-world-finalization-20261101-01/root-results-review.json):
+  final **70 contract passes in 347.80 seconds, 265.4 MiB sampled peak RSS**,
+  plus **two full-size storage controls in 28.40 seconds, 669.7 MiB**, give
+  **72 distinct blocked-source controls**. The final four chain checks repeat
+  within those 70; 16 complete array files were verified. Earlier fixture
+  failures remain failed, including missing target payloads when setup never
+  reached the save. Two author-reported deselection counts are corrected to
+  68 in the review without altering the original receipts. No actual native
+  body, independent reference, physical or checkpoint qualification is added.
   Specialist implemented the two original environmental Poisson constructions
   on the same retained grid, preserving value- then flux-boundary order, both
   original matrix/inverse returns and partial failures. [Saved-result review](/mnt/workspaces/Cells/native-single-cell-environment-poisson-20261031-01/root-results-review.json)
