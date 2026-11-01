@@ -184,8 +184,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   are now source-reviewed: all fifteen outcomes are checked, including the
   retained lint and two-case failures. The final **21 focused controls** are
   separate from earlier 65- and 72-control images. Actual YAML reading remains
-  unqualified. Key is implementing the same parameter object's configuration
-  upgrade and path setup, stopping before ion stores and phase initialization.
+  unqualified. Key delivered the same parameter object's
+  [configuration upgrade and path setup](/mnt/workspaces/Cells/native-parameter-paths-development-20261101-01/results.json),
+  reporting 48 blocked controls and nine terminal outcomes; Root's source and
+  saved-result reviews are pending. Key is now inspecting the next genuine
+  subconfiguration construction/load boundary on that same parameter object.
+  Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
@@ -201,8 +205,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [tissue-to-grid mapping review](/mnt/workspaces/Cells/native-multi-cell-tissue-to-grid-20261101-01/root-review.json)
   retains all five named worker outcomes: the latest batch completed three
   metadata checks, timed out in parent setup and left twelve controls unrun.
-  Specialist is repairing inherited-observer error retention and inspecting
-  the remaining tracing overhead before another expensive fixture attempt.
+  The later observer/tracing repair and its exact evidence are reviewed above.
+  Specialist is now building independent original-source mapping qualification
+  tools, with fresh caller/world construction counted as prerequisite work.
+  Actual mapping/reference execution remains held.
   Full phase/core/profile initialization remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
   is source-reviewed with 29 final blocked controls and all six outcomes retained.
