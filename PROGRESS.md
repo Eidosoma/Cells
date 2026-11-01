@@ -28,9 +28,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   smoke is excluded. The [CPU-dispatch change passed 15 metadata controls](/mnt/workspaces/Cells/native-mapping-batch-dispatch-20261101-01/root-review.json)
   and is committed; its initial test-harness failure is preserved. Launch
   inputs and frozen source are verified. Terminal results have not been
-  queried; Root owns their review on the next requested status check. Key is
-  repairing network/GRN authority and failure retention. Specialist is finishing
-  phase caches before the next genuine tissue-handler attachment. The relayed
+  queried; Root owns their review on the next requested status check. Key's
+  network/GRN repairs are reviewed; Key is implementing the constructor
+  continuation needed by Specialist's same-phase tissue-handler attachment.
+  Specialist's phase-cache results remain pending their requested review. The relayed
   original mapping-tool handoff is historical; its reviewed replacements remain
   in Git, with positive native/reference executions held.
 
@@ -58,10 +59,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **41 production/ownership controls and four runner controls pass** on their
   separately bound images; one packaging and one lint failure remain preserved.
   Its original-source extent reaches temperature, junction and environment
-  declarations through line 945. Acceptance still requires its own raw-return
-  capture fix and explicit adoption of the repaired network/parser dependency.
-  Key is completing that local GRN repair and explicit dependency adoption;
-  the existing GRN passes do not qualify the successor.
+  declarations through line 945. The [successor's raw-return repair and explicit
+  network dependency adoption are now reviewed](/mnt/workspaces/Cells/native-parameter-grn-return-repair-20261101-01/root-review.json):
+  **34 final blocked controls pass, 27 new and seven affected**. All nine
+  terminal outcomes are checked; the first 21-pass/six-failure image and six
+  incomplete diagnostics remain preserved. Raw return/None/unwind evidence
+  survives observation failures, and parser receiver/dispatch authority uses
+  the reviewed network dependency. This accepts the source/software contracts;
+  genuine parameter construction and complete native initialization remain open.
 
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
