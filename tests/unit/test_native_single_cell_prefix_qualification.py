@@ -150,7 +150,7 @@ def test_prepare_freezes_git_and_native_inputs_without_model_imports(packet):
     assert not (packet.prepared / "source" / runner.OWN).stat().st_mode & 0o222
 
 
-@pytest.mark.parametrize("endpoint", ["makeECM", "make_maskM"])
+@pytest.mark.parametrize("endpoint", ["makeECM", "make_maskM", "lapENV_P_inv"])
 @pytest.mark.parametrize("changed_path", ["betse/science/math/finitediff.py", "betse/__init__.py"])
 def test_extended_preparation_binds_fresh_configuration_native_grid_and_endpoint(
     packet, endpoint, changed_path
@@ -296,6 +296,7 @@ def pipeline_control(output, endpoint):
 
     er, em, ep = transition("ecm", "geometry")
     vr, vm, vp = transition("environment", "ecm")
+    pr, pm, pp = transition("poisson", "environment")
     steps = runner._pipeline(
         runner.CASES[0],
         output,
@@ -321,6 +322,9 @@ def pipeline_control(output, endpoint):
             request_record=vm,
             prepare_continuation=vp,
         ),
+        poisson=SimpleNamespace(
+            LAW_ID="poisson", from_environment=pr, request_record=pm, prepare_continuation=pp
+        ),
     )
     return steps, calls, values
 
@@ -332,22 +336,69 @@ def test_pipeline_captures_distinct_trials_on_same_owners_without_rehydration(tm
     result = runner.run_stages(steps, runner.Evidence(tmp_path), SimpleNamespace(count=0, phase=""))
     assert result["status"] == "source_completed_unqualified"
     assert result["completed_stages"] == list(runner.stage_names(endpoint))
-    mode = dict(near_neigh="geometry", makeECM="ecm", make_maskM="environment")[endpoint]
+    mode = dict(
+        near_neigh="geometry", makeECM="ecm", make_maskM="environment", lapENV_P_inv="environment"
+    )[endpoint]
     expected = ["fixture", "pre_mesh", "core_request", "projection:" + mode, "geometry"]
     if endpoint != "near_neigh":
         expected += ["ecm_request", "ecm_record", "ecm"]
-    if endpoint == "make_maskM":
+    if endpoint in ("make_maskM", "lapENV_P_inv"):
         expected += ["environment_request", "environment_record", "environment"]
+    if endpoint == "lapENV_P_inv":
+        expected += ["poisson_request", "poisson_record", "poisson"]
     assert calls == expected
     captured = {r["label"]: runner.read(tmp_path / r["path"]) for r in result["captures"]}
     assert captured["geometry"] == values["geometry_owner"].trial
     if endpoint != "near_neigh":
         assert captured["makeECM"] == values["ecm_owner"].trial
         assert captured["ecm_request"] == {"parent_stage": "geometry"}
-    if endpoint == "make_maskM":
+    if endpoint in ("make_maskM", "lapENV_P_inv"):
         assert captured["make_maskM"] == values["environment_owner"].trial
         assert captured["environment_request"] == {"parent_stage": "ecm"}
+    if endpoint == "lapENV_P_inv":
+        assert captured["lapENV_P_inv"] == values["poisson_owner"].trial
+        assert captured["poisson_request"] == {"parent_stage": "environment"}
     assert result["accepted_cases"] == 0
+
+
+def test_poisson_requires_explicit_bounded_capture_transport(packet):
+    prepared = packet.root / "poisson"
+    plan = runner.prepare(
+        prepared, repository=packet.repository, cpu=packet.cpu, stop_after="lapENV_P_inv"
+    )
+    assert plan["capture_transport"] == runner.payload.KIND
+    assert plan["configuration"]["general options"]["comp grid size"] == 25
+    assert plan["limits"] == runner.LIMITS
+    plan.pop("capture_transport")
+    path = prepared / "plan.json"
+    path.chmod(0o644)
+    path.write_text(json.dumps(plan))
+    with pytest.raises(ValueError, match="Incomplete"):
+        runner.verify_plan(prepared, runner.pin(path)["sha256"])
+
+
+def test_poisson_predecessor_capture_failure_prevents_operator_entry(tmp_path):
+    steps, calls, _ = pipeline_control(tmp_path, "lapENV_P_inv")
+
+    class CaptureFailure(runner.Evidence):
+        def save(self, label, value):
+            return super().save(label, object() if label == "make_maskM" else value)
+
+    result = runner.run_stages(steps, CaptureFailure(tmp_path), SimpleNamespace(count=0, phase=""))
+    assert result["failed_stage"] == "make_maskM:capture"
+    assert "poisson_request" not in calls and "poisson" not in calls
+    assert result["accepted_cases"] == 0
+
+
+def test_sidecar_capture_preserves_failed_partial_matrix_bytes(tmp_path):
+    raw = bytes.fromhex("030000000000f87f") * (runner.payload.THRESHOLD // 8)
+    error = RuntimeError("original operator failed")
+    error.partial = {"raw_result": {"raw_bytes_hex": raw.hex()}, "live_grid": object()}
+    evidence = runner.Evidence(tmp_path, sidecars=True)
+    evidence.failure(error)
+    assert [row["status"] for row in evidence.rows] == ["saved", "capture_failed"]
+    assert runner.payload.read(tmp_path / evidence.rows[0]["path"]) == {"raw_bytes_hex": raw.hex()}
+    assert len(runner.payload.files(tmp_path / evidence.rows[0]["path"])) == 2
 
 
 @pytest.mark.parametrize("stop", ["geometry", "makeECM", "make_maskM"])

@@ -13,6 +13,8 @@ import struct
 
 STAGES = ("before", "cellVerts", "cellMatrices", "cell_vols", "mem_processing", "near_neigh")
 ENVIRONMENT_STAGES = ("environment", "assign_grid_len", "make_maskM")
+POISSON_STAGES = ("environment_voltage", "environment_current")
+POISSON_GRID_POINTS = 625
 TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
 RNG_ID = "numpy_mt19937_legacy_state_with_gaussian_cache@1"
 MAX_ELEMENTS = 262144
@@ -67,13 +69,15 @@ def _dtype(value, path, *, objects=False):
     return value[1], int(value[2:]), "big" if value[0] == ">" else "little"
 
 
-def _shape(value, path):
+def _shape(value, path, *, poisson_shape=None):
     if type(value) is not list or len(value) > 64:
         _bad(path, "require a dimension list of rank at most 64")
     if any(type(v) is not int or not 0 <= v < 2**63 for v in value):
         _bad(path, "dimensions must be nonnegative int64 values, not bools")
     size = math.prod(value)
-    if size > MAX_ELEMENTS:
+    if size > MAX_ELEMENTS and not (
+        poisson_shape is not None and value == poisson_shape and size <= POISSON_GRID_POINTS**2
+    ):
         _bad(path, "array exceeds the source element bound")
     return size
 
@@ -105,12 +109,16 @@ def _contiguous(shape, strides, itemsize, *, reverse):
     return True
 
 
-def _layout(value, path, *, objects=False):
+def _layout(value, path, *, objects=False, poisson_shape=None):
     _keys(value, ("dtype", "shape", "strides_bytes", "C_contiguous", "F_contiguous"), path)
     kind, itemsize, _ = _dtype(value["dtype"], path + ".dtype", objects=objects)
     if objects and kind != "O":
         _bad(path, "object array requires the object dtype")
-    size = _shape(value["shape"], path + ".shape")
+    size = _shape(
+        value["shape"],
+        path + ".shape",
+        poisson_shape=poisson_shape if kind == "f" and itemsize == 8 else None,
+    )
     _strides(value["strides_bytes"], value["shape"], itemsize, path + ".strides_bytes")
     for name, reverse in (("C_contiguous", True), ("F_contiguous", False)):
         if type(value[name]) is not bool or value[name] != _contiguous(
@@ -143,12 +151,16 @@ def _finite(raw, kind, itemsize, byteorder):
     )
 
 
-def _column(value, path):
+def _column(value, path, *, poisson_shape=None):
     _keys(value, ("__ndarray__", "dtype", "shape", "strides", "raw_bytes_hex"), path)
     if value["__ndarray__"] is not True:
         _bad(path, "array marker must be true")
     kind, itemsize, byteorder = _dtype(value["dtype"], path + ".dtype")
-    size = _shape(value["shape"], path + ".shape")
+    size = _shape(
+        value["shape"],
+        path + ".shape",
+        poisson_shape=poisson_shape if kind == "f" and itemsize == 8 else None,
+    )
     _strides(value["strides"], value["shape"], itemsize, path + ".strides")
     # These are copied storage columns, not arbitrary views. K-order copies can
     # have a dense axis permutation which is neither C nor F contiguous.
@@ -165,8 +177,16 @@ def _column(value, path):
 
 
 class _Cache:
-    def __init__(self, value, path, owned):
+    def __init__(self, value, path, owned, *, poisson_shape=None):
         self.path, self.owned = path, owned
+        if poisson_shape is not None and (
+            type(poisson_shape) is not list
+            or len(poisson_shape) != 2
+            or any(type(n) is not int or not 1 <= n <= POISSON_GRID_POINTS for n in poisson_shape)
+            or poisson_shape[0] != poisson_shape[1]
+        ):
+            _bad(path, "invalid bounded Poisson matrix shape")
+        self.poisson_shape = poisson_shape
         self.nodes, self.arrays, self.byte_count = 0, 0, 0
         self.finite, self.active, self.seen = True, set(), set()
         self.columns = {}
@@ -221,13 +241,15 @@ class _Cache:
             _bad(path, "typed node requires a string tag")
         if kind == ("numeric_array" if self.owned else "array"):
             _keys(node, (tag, layout, "column", "sha256"), path)
-            _layout(node[layout], path + ".layout")
+            _layout(node[layout], path + ".layout", poisson_shape=self.poisson_shape)
             name = node["column"]
             if type(name) is not str or name not in self.columns or name in self.seen:
                 _bad(path + ".column", "missing or multiply referenced column")
             self.seen.add(name)
             column = self.columns[name]
-            digest, finite, size = _column(column, path + ".column[" + repr(name) + "]")
+            digest, finite, size = _column(
+                column, path + ".column[" + repr(name) + "]", poisson_shape=self.poisson_shape
+            )
             if column["dtype"] != node[layout]["dtype"] or column["shape"] != node[layout]["shape"]:
                 _bad(path, "storage column dtype/shape differs from source layout")
             _digest(node["sha256"], path + ".sha256")
@@ -646,7 +668,13 @@ def _environment_cache(value, path, owned, stage):
 
 def compare_environment(owned_geometry, owned_ecm, owned_environment, native):
     """Compare saved environment maps/masks and their ECM handoff, without hydration."""
-    result = _compare_ecm(owned_geometry, owned_ecm, native, stop_after="make_maskM")
+    return _compare_environment(
+        owned_geometry, owned_ecm, owned_environment, native, stop_after="make_maskM"
+    )
+
+
+def _compare_environment(owned_geometry, owned_ecm, owned_environment, native, *, stop_after):
+    result = _compare_ecm(owned_geometry, owned_ecm, native, stop_after=stop_after)
     result.update(
         kind="cells.single_cell_saved_environment_exact_comparison@1",
         environment_cache_pairs_compared=0,
@@ -770,6 +798,293 @@ def compare_environment(owned_geometry, owned_ecm, owned_environment, native):
             _stream(owned_environment[name], "owned.environment." + name),
             _stream(native["environment"][name], "native.environment." + name),
             "environment." + name,
+            differences,
+        )
+        result["streams_compared"] += 1
+    result["exact_match"] = not differences
+    return result
+
+
+def _canonical_owned_identity(tree):
+    """Hash the source descriptor without importing its cache implementation.
+
+    The normalized tree has already been validated by _Cache. Array columns
+    follow traversal order, including separate occurrences of aliased arrays.
+    Authenticated raw bytes do not enter the descriptor.
+    """
+    columns = 0
+
+    def encode(node):
+        nonlocal columns
+        kind = node["type"]
+        if kind == "array":
+            name = f"column_{columns:05d}"
+            columns += 1
+            return dict(
+                kind="numeric_array",
+                source_layout=node["layout"],
+                column=name,
+                sha256=node["sha256"],
+            )
+        if kind == "dict":
+            return dict(kind=kind, items=[[encode(k), encode(v)] for k, v in node["items"]])
+        if kind in ("object_array", "tuple", "list", "set", "frozenset"):
+            encoded = dict(kind=kind, items=[encode(v) for v in node["items"]])
+            if kind == "object_array":
+                encoded["source_layout"] = node["layout"]
+            return encoded
+        return {"kind": kind, **{k: v for k, v in node.items() if k != "type"}}
+
+    descriptor = json.dumps(encode(tree), sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(descriptor.encode()).hexdigest()
+
+
+def _poisson_shape(environment):
+    fields = _fields(
+        environment, "Poisson parent", ("caller", "grid", "mesh", "parameters", "trees")
+    )
+    grid = _fields(fields["grid"], "Poisson parent.grid")
+    shape = grid.get("cents_shape")
+    if (
+        not shape
+        or shape["type"] != "tuple"
+        or len(shape["items"]) != 2
+        or any(v["type"] != "int" or v["value"] <= 0 for v in shape["items"])
+    ):
+        _bad("Poisson parent.grid.cents_shape", "require the native positive two-int tuple")
+    size = math.prod(v["value"] for v in shape["items"])
+    caller = _fields(fields["caller"], "Poisson parent.caller")
+    if size > POISSON_GRID_POINTS or caller.get("grid_len") != dict(type="int", value=size):
+        _bad("Poisson parent.grid.cents_shape", "require the retained grid within 625 points")
+    if any(name in caller for name in ("lapENVinv", "lapENV_P_inv")):
+        _bad("Poisson parent.caller", "inverse assignments must be absent before Poisson")
+    return [size, size]
+
+
+def _poisson_outputs(tree, path, count, shape, differences):
+    fields = _fields(tree, path, ("results", "helpers"))
+    results, helpers = fields["results"], fields["helpers"]
+    if results["type"] != "list" or len(results["items"]) != count:
+        _bad(path + ".results", "require exactly the completed source result prefix")
+    if helpers["type"] != "list" or len(helpers["items"]) != 2 * count:
+        _bad(path + ".helpers", "require zeros then pinv for each completed source call")
+
+    def matrix(node, at):
+        if (
+            node["type"] != "array"
+            or node["layout"]["shape"] != shape
+            or node["layout"]["dtype"] not in ("<f8", ">f8")
+        ):
+            _bad(at, "require the complete float64 matrix of the retained grid shape")
+
+    for i, stage in enumerate(POISSON_STAGES[:count]):
+        row = results["items"][i]
+        if (
+            row["type"] != "tuple"
+            or len(row["items"]) != 2
+            or row["items"][0] != dict(type="str", value=stage)
+            or row["items"][1]["type"] != "tuple"
+            or len(row["items"][1]["items"]) != 2
+        ):
+            _bad(path + f".results[{i}]", "require the source-ordered (stage,(A,Ainv)) tuple")
+        for j, node in enumerate(row["items"][1]["items"]):
+            matrix(node, path + f".results[{i}][1][{j}]")
+        for j, helper in enumerate(("zeros", "pinv")):
+            saved = helpers["items"][2 * i + j]
+            if (
+                saved["type"] != "tuple"
+                or len(saved["items"]) != 3
+                or saved["items"][:2]
+                != [dict(type="str", value=stage), dict(type="str", value=helper)]
+            ):
+                _bad(path + ".helpers", "wrong helper phase, order or tuple")
+            matrix(saved["items"][2], path + f".helpers[{2 * i + j}][2]")
+            if helper == "pinv":
+                _difference(
+                    saved["items"][2],
+                    row["items"][1]["items"][1],
+                    path + f".results[{i}].pinv_return",
+                    differences,
+                )
+    return fields
+
+
+def _poisson_environment(parent, outputs):
+    caller = _fields(parent, "Poisson parent")["caller"]
+    assignments = []
+    for name, row in zip(("lapENVinv", "lapENV_P_inv"), outputs["results"]["items"], strict=False):
+        assignments.append([dict(type="str", value=name), row["items"][1]["items"][1]])
+    return dict(
+        type="dict",
+        items=[
+            [key, dict(type="dict", items=[*caller["items"], *assignments])]
+            if key == dict(type="str", value="caller")
+            else [key, value]
+            for key, value in parent["items"]
+        ],
+    )
+
+
+def compare_poisson(owned_geometry, owned_ecm, owned_environment, owned_poisson, native):
+    """Compare the two selected Poisson calls; no operator or physics is evaluated.
+
+    Only matrices of the parent grid's exact shape receive the Poisson-specific
+    625-point allowance. All older entry points retain their original bounds.
+    Each before/stage/final observation is repeated evidence of one input.
+    """
+    result = _compare_environment(
+        owned_geometry, owned_ecm, owned_environment, native, stop_after="lapENV_P_inv"
+    )
+    result.update(
+        kind="cells.single_cell_saved_poisson_exact_comparison@1",
+        poisson_boundaries_compared=0,
+        poisson_output_cache_pairs_compared=0,
+        poisson_environment_checks=0,
+        poisson_stages_compared=0,
+        poisson_retained_prefix_checks=0,
+    )
+    if not result["exact_match"]:
+        return result
+    differences = result["mismatches"]
+    _required(
+        owned_poisson,
+        ("source_completed", "failure_stage", "failure_type", "failure_message", "parent_identity"),
+        "owned.poisson",
+    )
+    if type(owned_poisson["source_completed"]) is not bool:
+        _bad("owned.poisson.source_completed", "require exact boolean completion")
+    for key, expected in (
+        ("source_completed", True),
+        ("failure_stage", None),
+        ("failure_type", None),
+        ("failure_message", None),
+        ("source_error", None),
+        ("capture_error", None),
+    ):
+        if owned_poisson.get(key) != expected:
+            differences.append(
+                dict(
+                    path="owned.poisson." + key,
+                    reason="source_not_completed",
+                    observed=owned_poisson.get(key),
+                )
+            )
+    if differences:
+        result["exact_match"] = False
+        return result
+    _required(owned_environment, ("identity",), "owned.environment")
+    _digest(owned_environment["identity"], "owned.environment.identity")
+    _digest(owned_poisson["parent_identity"], "owned.poisson.parent_identity")
+    _difference(
+        owned_environment["identity"],
+        owned_poisson["parent_identity"],
+        "owned.poisson.parent_identity",
+        differences,
+    )
+    result["lineage_checks"] += 1
+    _required(native, ("poisson",), "native")
+    _keys(
+        native["poisson"],
+        ("before", "stages", "cache", "stream_before", "stream_after"),
+        "native.poisson",
+    )
+    parents = {
+        side: _Cache(value["cache"], side + ".environment.cache", owned).tree
+        for side, value, owned in (
+            ("owned", owned_environment, True),
+            ("native", native["environment"], False),
+        )
+    }
+    shape = _poisson_shape(parents["owned"])
+    _difference(shape, _poisson_shape(parents["native"]), "poisson.parent_shape", differences)
+    _difference(
+        _canonical_owned_identity(parents["owned"]),
+        owned_environment["cache"]["identity"],
+        "owned.environment.canonical_identity",
+        differences,
+    )
+    boundaries = {}
+    for side, value in (("owned", owned_poisson), ("native", native["poisson"])):
+        _required(
+            value,
+            ("before", "stages", "cache", "stream_before", "stream_after"),
+            side + ".poisson",
+        )
+        if type(value["stages"]) is not list or len(value["stages"]) != 2:
+            _bad(side + ".poisson.stages", "require both ordered Poisson stages")
+        for expected, row in zip(POISSON_STAGES, value["stages"], strict=True):
+            if type(row) is not list or len(row) != 2 or row[0] != expected:
+                _bad(side + ".poisson.stages", "missing, duplicate or reordered Poisson stage")
+        boundaries[side] = [value["before"], *(row[1] for row in value["stages"]), value["cache"]]
+        before = _stream(value["stream_before"], side + ".poisson.stream_before")
+        after = _stream(value["stream_after"], side + ".poisson.stream_after")
+        parent = owned_environment if side == "owned" else native["environment"]
+        _difference(
+            _stream(parent["stream_after"], side + ".environment.stream_after"),
+            before,
+            side + ".poisson.rng_handoff",
+            differences,
+        )
+        _difference(before, after, side + ".poisson.rng_unchanged", differences)
+        result["handoff_checks"] += 2
+    previous = {}
+    for index, (name, count) in enumerate(
+        zip(("before", *POISSON_STAGES, "final"), (0, 1, 2, 2), strict=True)
+    ):
+        at = "poisson." + name
+        left = _Cache(boundaries["owned"][index], "owned." + at, True, poisson_shape=shape)
+        left_fields = _fields(left.tree, "owned." + at, ("environment", "results", "helpers"))
+        if left_fields["environment"]["type"] != "str":
+            _bad("owned." + at + ".environment", "require the source environment digest")
+        _digest(left_fields["environment"]["value"], "owned." + at + ".environment")
+        left_outputs = dict(type="dict", items=left.tree["items"][1:])
+        saved_native = boundaries["native"][index]
+        _keys(saved_native, ("environment", "outputs"), "native." + at)
+        right = _Cache(
+            saved_native["outputs"], "native." + at + ".outputs", False, poisson_shape=shape
+        )
+        environment = _Cache(
+            saved_native["environment"],
+            "native." + at + ".environment",
+            False,
+            poisson_shape=shape,
+        )
+        output_fields = {}
+        for side, tree in (("owned", left_outputs), ("native", right.tree)):
+            fields = _poisson_outputs(tree, side + "." + at + ".outputs", count, shape, differences)
+            output_fields[side] = fields
+            if side in previous:
+                for key in ("results", "helpers"):
+                    old = previous[side][key]["items"]
+                    _difference(
+                        old,
+                        fields[key]["items"][: len(old)],
+                        side + "." + at + ".retained_" + key,
+                        differences,
+                    )
+                    result["poisson_retained_prefix_checks"] += 1
+            previous[side] = fields
+        expected_environment = _poisson_environment(parents["owned"], output_fields["owned"])
+        _difference(
+            _canonical_owned_identity(expected_environment),
+            left_fields["environment"]["value"],
+            "owned." + at + ".environment_identity",
+            differences,
+        )
+        _difference(expected_environment, environment.tree, at + ".environment", differences)
+        _difference(left_outputs, right.tree, at + ".outputs", differences)
+        result["poisson_boundaries_compared"] += 1
+        result["poisson_output_cache_pairs_compared"] += 1
+        result["poisson_environment_checks"] += 1
+        result["cache_pairs_compared"] += 2
+        result["arrays_compared"] += left.arrays + environment.arrays
+        if name in POISSON_STAGES:
+            result["poisson_stages_compared"] += 1
+    for name in ("stream_before", "stream_after"):
+        _difference(
+            _stream(owned_poisson[name], "owned.poisson." + name),
+            _stream(native["poisson"][name], "native.poisson." + name),
+            "poisson." + name,
             differences,
         )
         result["streams_compared"] += 1

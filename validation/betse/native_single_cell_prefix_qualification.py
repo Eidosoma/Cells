@@ -24,6 +24,7 @@ from pathlib import Path
 from validation import source_snapshot
 from validation.betse import betse_mesh_lifecycle_preparation_guard as guard
 from validation.betse import betse_native_membrane_initialization_archive as archive
+from validation.betse import native_single_cell_prefix_payload as payload
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = Path("/mnt/workspaces/Cells")
@@ -33,7 +34,7 @@ CLOSURE = "agent-work/cells-worker-01/workfiles/betse_normal_ecm_reviewed_succes
 CASES = ("caller-single-square-cache", "caller-single-hex-cache")
 KINDS = ("cells.single_cell_prefix_diagnostic_plan@1", "cells.single_cell_prefix_release@1")
 STAGES = ("owned_image_request", "initial_pre_mesh", "core_request", "geometry_request", "geometry")
-ENDPOINTS = ("near_neigh", "makeECM", "make_maskM")
+ENDPOINTS = ("near_neigh", "makeECM", "make_maskM", "lapENV_P_inv")
 LIMITS = dict(timeout=480, max_rss_bytes=2**30, min_available_bytes=8 * 2**30)
 NATIVE = BASE / "betse-v1.5.0"
 DEFAULTS = NATIVE / "betse/data/yaml/sim_config.yaml"
@@ -55,8 +56,10 @@ def stage_names(stop_after):
     stages = STAGES
     if stop_after != "near_neigh":
         stages += ("ecm_request", "makeECM")
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         stages += ("environment_request", "make_maskM")
+    if stop_after == "lapENV_P_inv":
+        stages += ("poisson_request", "lapENV_P_inv")
     return stages
 
 
@@ -148,7 +151,10 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=(), stop_after
     destination.mkdir(parents=True, exist_ok=False)
     try:
         closure = runpy.run_path(str(repository / CLOSURE))["closure"]
-        files = closure(repository, [OWN, TEST])
+        starts = [OWN, TEST]
+        if stop_after == "lapENV_P_inv":
+            starts.append("tests/unit/test_native_single_cell_prefix_payload.py")
+        files = closure(repository, starts)
         files[CLOSURE] = source_snapshot.digest(repository / CLOSURE)
         # Include declared JSON sidecars alongside imported Python modules.
         # This is intentionally not described as a general resource resolver.
@@ -228,6 +234,8 @@ def prepare(destination, *, repository=ROOT, cpu=3, runtime_paths=(), stop_after
             automatic_retry=False,
             **NO_CREDIT,
         )
+        if stop_after == "lapENV_P_inv":
+            plan["capture_transport"] = payload.KIND
         source_snapshot.assert_checkout_unchanged(frozen)
         verify_pins(pins)
         write(destination / "plan.json", plan)
@@ -257,6 +265,7 @@ def verify_plan(prepared, expected_sha256):
         or plan.get("execution_stages", list(STAGES)) != list(stages)
         or any(plan.get(key) != value for key, value in NO_CREDIT.items())
         or type(plan.get("cpu")) is not int
+        or (plan["stop_after"] == "lapENV_P_inv" and plan.get("capture_transport") != payload.KIND)
     ):
         raise ValueError("Incomplete or widened diagnostic plan")
     source = prepared / "source"
@@ -349,14 +358,18 @@ def exception_record(error):
 class Evidence:
     """Separate typed capture failures from source failures; never repair data."""
 
-    def __init__(self, output):
-        self.output, self.rows = output, []
+    def __init__(self, output, *, sidecars=False):
+        self.output, self.rows, self.sidecars = output, [], sidecars
 
     def save(self, label, value):
         name = f"capture-{len(self.rows):04d}.json"
         row = dict(label=label, path=name)
         try:
-            write(self.output / name, archive.snapshot(value))
+            serialized = archive.snapshot(value)
+            if self.sidecars:
+                payload.write(self.output / name, serialized)
+            else:
+                write(self.output / name, serialized)
             row.update(status="saved", sha256=source_snapshot.digest(self.output / name))
         except Exception as error:
             # A partial JSON file, if any, is retained and never overwritten.
@@ -499,11 +512,13 @@ def _steps(case, output, configuration, stop_after="near_neigh"):
     from cells.processes import betse_native_single_cell_initial_geometry as geometry
     from validation.betse import betse_initial_mesh_preparation_fixtures as fixtures
 
-    ecm = environment_source = None
+    ecm = environment_source = poisson = None
     if stop_after != "near_neigh":
         from cells.processes import betse_native_single_cell_make_ecm as ecm
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         from cells.processes import betse_native_single_cell_environment as environment_source
+    if stop_after == "lapENV_P_inv":
+        from cells.processes import betse_native_single_cell_poisson as poisson
     return _pipeline(
         case,
         output,
@@ -515,6 +530,7 @@ def _steps(case, output, configuration, stop_after="near_neigh"):
         geometry=geometry,
         ecm=ecm,
         environment_source=environment_source,
+        poisson=poisson,
     )
 
 
@@ -530,6 +546,7 @@ def _pipeline(
     geometry,
     ecm=None,
     environment_source=None,
+    poisson=None,
 ):
     """Capture each sealed trial before consuming its live owner downstream.
 
@@ -601,11 +618,23 @@ def _pipeline(
         )
         return values["environment_owner"].trial
 
+    def poisson_request():
+        values["poisson_request"] = poisson.from_environment(
+            values["environment_owner"], law_id=poisson.LAW_ID
+        )
+        return poisson.request_record(values["poisson_request"])
+
+    def make_poisson():
+        values["poisson_owner"] = poisson.prepare_continuation(values["poisson_request"])
+        return values["poisson_owner"].trial
+
     actions = [fixture, pre_mesh, core_request, geometry_request, execute]
     if stop_after != "near_neigh":
         actions += [ecm_request, make_ecm]
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         actions += [environment_request, make_mask]
+    if stop_after == "lapENV_P_inv":
+        actions += [poisson_request, make_poisson]
     return tuple(zip(stages, actions, strict=True))
 
 
@@ -669,7 +698,8 @@ def worker(prepared, plan_sha256, release, case, output):
         raise ValueError("Worker must use the declared interpreter and immutable source")
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
     output = execution_output(output, prepared, plan)
-    evidence, work = Evidence(output), WorkLog(output, source)
+    evidence = Evidence(output, sidecars=plan["stop_after"] == "lapENV_P_inv")
+    work = WorkLog(output, source)
     result = None
     try:
         with work.active():

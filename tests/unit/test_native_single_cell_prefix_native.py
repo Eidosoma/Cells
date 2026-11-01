@@ -816,7 +816,7 @@ def test_environment_input_and_import_closure_share_only_existing_declared_helpe
         n
         for n in evaluate.body
         if isinstance(n, ast.If)
-        and ast.unparse(n.test) == "stop_after == 'make_maskM'"
+        and ast.unparse(n.test) == "stop_after in ('make_maskM', 'lapENV_P_inv')"
         and any(isinstance(a, ast.ImportFrom) for a in n.body)
     )
     assert [(n.module, [a.name for a in n.names]) for n in optional.body] == [
@@ -1125,3 +1125,420 @@ def test_environment_completion_refuses_partial_stages_or_tree_rosters(mutation)
         compile(ast.Expression(assignment.value), "synthetic-completion", "eval"), scope
     )
     assert observed is (mutation is None)
+
+
+def test_poisson_literal_methods_default_and_four_caller_sites_are_original():
+    groups, sites = native.source_nodes(ROOT, stop_after="lapENV_P_inv")
+    cells = next(nodes[0] for file, nodes in groups if file == "betse/science/cells.py")
+    world = next(n for n in cells.body if n.name == "make_world")
+    original = next(
+        n
+        for n in original_class("betse/science/cells.py", "Cells").body
+        if getattr(n, "name", None) == "make_world"
+    )
+    assert native.POISSON_STAGES == ("environment_voltage", "environment_current")
+    assert native.methods_for("lapENV_P_inv") == native.methods_for("make_maskM")
+    assert "makeLaplacian" not in native.methods_for("lapENV_P_inv")
+    assert [node_dump(n) for n in world.body] == [
+        node_dump(n) for n in original.body[: len(world.body)]
+    ]
+    assert node_dump(world.body[-1]) == node_dump(
+        ast.parse("_, self.lapENV_P_inv = self.grid_obj.makeLaplacian(bound=bdic)").body[0]
+    )
+    assert "lapGJ" not in ast.unparse(world)
+    for line in (503, 504, 511, 512):
+        node = next(n for n in original.body if n.lineno == line)
+        assert sites[f"betse/science/cells.py:make_world.assignment_{line}"] == {
+            "first_line": line,
+            "last_line": node.end_lineno,
+            "ast_sha256": hashlib.sha256(node_dump(node).encode()).hexdigest(),
+        }
+    grid = next(nodes[0] for file, nodes in groups if file == "betse/science/math/finitediff.py")
+    source = original_class("betse/science/math/finitediff.py", "FiniteDiffSolver")
+    assert [n.name for n in grid.body] == ["__init__", "cell_grid", "makeLaplacian"]
+    for method in grid.body:
+        assert node_dump(method) == node_dump(
+            next(n for n in source.body if getattr(n, "name", None) == method.name)
+        )
+    laplacian = grid.body[-1]
+    assert sites["betse/science/math/finitediff.py:FiniteDiffSolver.makeLaplacian"] == {
+        "first_line": laplacian.lineno,
+        "last_line": laplacian.end_lineno,
+        "ast_sha256": hashlib.sha256(node_dump(laplacian).encode()).hexdigest(),
+    }
+    assert (
+        ast.unparse(laplacian.args.defaults[0])
+        == "{'N': 'value', 'S': 'value', 'E': 'value', 'W': 'value'}"
+    )
+    assert [
+        ast.unparse(n.func)
+        for n in ast.walk(laplacian)
+        if isinstance(n, ast.Call) and ast.unparse(n.func) in ("np.zeros", "np.linalg.pinv")
+    ] == ["np.zeros", "np.linalg.pinv"]
+    for file, nodes in groups:
+        compile(ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[])), file, "exec")
+
+
+def test_poisson_endpoint_keeps_environment_stores_inputs_and_metadata_closure(declared):
+    raw, conf = declared
+    conf["general options"] = {"comp grid size": 25}
+    assert native.inputs(raw, conf, stop_after="lapENV_P_inv") == native.inputs(
+        raw, conf, stop_after="make_maskM"
+    )
+    assert native.pins_for("lapENV_P_inv") == native.pins_for("make_maskM")
+    assert native.metadata_imports_for("lapENV_P_inv") == native.metadata_imports_for("make_maskM")
+    old, old_sites = native.source_nodes(ROOT, stop_after="make_maskM")
+    new, new_sites = native.source_nodes(ROOT, stop_after="lapENV_P_inv")
+    for (old_file, old_nodes), (new_file, new_nodes) in zip(old, new, strict=True):
+        assert old_file == new_file
+        if old_file not in ("betse/science/cells.py", "betse/science/math/finitediff.py"):
+            assert [node_dump(n) for n in old_nodes] == [node_dump(n) for n in new_nodes]
+    assert (
+        new_sites["betse/science/cells.py:make_world.grid_len"]
+        == old_sites["betse/science/cells.py:make_world.grid_len"]
+    )
+    conf["general options"]["comp grid size"] = 24
+    with pytest.raises(ValueError, match="integer computational grid size 25"):
+        native.inputs(raw, conf, stop_after="lapENV_P_inv")
+
+
+def test_poisson_helper_observes_once_and_keeps_immediate_and_mutated_return_distinct():
+    calls, helpers, events = [], [], []
+    value = [0, 0]
+    args, kwargs = ((2, 2),), {"synthetic": True}
+
+    def source(*actual, **options):
+        calls.append((actual, options))
+        return value
+
+    result = native.observe_poisson_helper(
+        source,
+        "zeros",
+        "environment_voltage",
+        args,
+        kwargs,
+        helpers,
+        events,
+        copy.deepcopy,
+        runner.prior.exception_record,
+    )
+    assert result is value and helpers[0][2] is value
+    assert calls == [(args, kwargs)]
+    assert events[0]["request"] == {"args": args, "kwargs": kwargs}
+    assert events[0]["output"] == [0, 0]
+    value[0] = -4
+    assert helpers[0][2] == [-4, 0] and events[0]["output"] == [0, 0]
+    assert events[0]["outcome"] == "returned"
+
+
+@pytest.mark.parametrize("recorder_fails", [False, True])
+def test_poisson_helper_source_failure_keeps_primary_cause_and_earlier_returns(recorder_fails):
+    previous = object()
+    helpers, events = [("environment_voltage", "zeros", previous)], []
+    primary, cause = RuntimeError("synthetic pinv failed"), ValueError("original cause")
+
+    def source(*args, **kwargs):
+        raise primary from cause
+
+    def record(error):
+        if recorder_fails:
+            raise OSError("synthetic error recorder failed")
+        return runner.prior.exception_record(error)
+
+    with pytest.raises(RuntimeError) as caught:
+        native.observe_poisson_helper(
+            source,
+            "pinv",
+            "environment_voltage",
+            ([1],),
+            {},
+            helpers,
+            events,
+            copy.deepcopy,
+            record,
+        )
+    assert caught.value is primary and caught.value.__cause__ is cause
+    assert helpers[0][2] is previous and len(helpers) == 1
+    assert events[0]["outcome"] == "raised" and "output" not in events[0]
+    if recorder_fails:
+        assert events[0]["error_capture_failure"]["type"] == "OSError"
+    else:
+        assert "original cause" in json.dumps(events[0]["source_error"])
+
+
+@pytest.mark.parametrize("failed_capture", ["request", "output"])
+def test_poisson_helper_capture_failure_has_no_extra_delegate_call(failed_capture):
+    calls, helpers, events = [], [], []
+    value = [0]
+
+    def source(*args, **kwargs):
+        calls.append(True)
+        return value
+
+    def capture(item):
+        if (type(item) is dict) == (failed_capture == "request"):
+            raise OSError("synthetic capture failure")
+        return copy.deepcopy(item)
+
+    with pytest.raises(OSError, match="capture failure"):
+        native.observe_poisson_helper(
+            source,
+            "zeros",
+            "environment_voltage",
+            ((1, 1),),
+            {},
+            helpers,
+            events,
+            capture,
+            runner.prior.exception_record,
+        )
+    if failed_capture == "request":
+        assert calls == helpers == events == []
+    else:
+        assert calls == [True] and helpers[0][2] is value
+        assert events[0]["outcome"] == "returned" and "output" not in events[0]
+
+
+@pytest.mark.parametrize("stage", native.POISSON_STAGES)
+def test_poisson_assignment_requires_exact_original_inverse_object(stage):
+    index = native.POISSON_STAGES.index(stage)
+    A, Ainv = [1], [2]
+    caller = SimpleNamespace(**{native.POISSON_ASSIGNMENTS[index]: Ainv})
+    native.poisson_assignment(caller, stage, (A, Ainv))
+    with pytest.raises(ValueError, match="identity"):
+        native.poisson_assignment(caller, stage, (A, list(Ainv)))
+    with pytest.raises(ValueError, match="return pair"):
+        native.poisson_assignment(caller, stage, [A, Ainv])
+    assert getattr(caller, native.POISSON_ASSIGNMENTS[index]) is Ainv
+
+
+def poisson_synthetic_scope():
+    """Execute only normalized observer functions with Python-list delegates."""
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    names = (
+        "poisson_snapshot",
+        "finish_poisson_assignment",
+        "poisson_helper",
+        "poisson_zeros",
+        "poisson_pinv",
+        "observed_laplacian",
+        "callback",
+    )
+    functions = [
+        copy.deepcopy(
+            next(n for n in ast.walk(evaluate) if isinstance(n, ast.FunctionDef) and n.name == name)
+        )
+        for name in names
+    ]
+
+    class CaptureFailure(Exception):
+        pass
+
+    grid = SimpleNamespace()
+    caller = SimpleNamespace(grid_obj=grid, retained_env=[7])
+    namespace = {"np": object()}
+    state = dict(caller=caller, stage="make_maskM", capture_error=None)
+    helpers, results, events, calls = [], [], [], []
+    scope = dict(
+        state=state,
+        namespace=namespace,
+        events=events,
+        stop_after="lapENV_P_inv",
+        poisson=dict(before=None, stages=[], cache=None, stream_before=None, stream_after=None),
+        poisson_results=results,
+        poisson_helpers=helpers,
+        POISSON_STAGES=native.POISSON_STAGES,
+        poisson_assignment=native.poisson_assignment,
+        observe_poisson_helper=native.observe_poisson_helper,
+        SimpleNamespace=SimpleNamespace,
+        CaptureFailure=CaptureFailure,
+        wire=SimpleNamespace(capture=copy.deepcopy),
+        capture_environment=copy.deepcopy,
+        public_environment=lambda: {k: v for k, v in vars(caller).items() if k != "grid_obj"},
+        stream=lambda: {"unchanged_synthetic_stream": True},
+        record_exception=runner.prior.exception_record,
+        sites={
+            f"betse/science/cells.py:make_world.assignment_{line}": {"first_line": line}
+            for line in (504, 512)
+        },
+    )
+
+    def zeros(*args, **kwargs):
+        calls.append(("zeros", args, kwargs))
+        return [0]
+
+    def pinv(value):
+        calls.append(("pinv", value))
+        return ["inverse", *value]
+
+    def original(owner, *, bound):
+        assert owner is grid
+        calls.append(("method", bound))
+        numeric = namespace["np"]
+        A = numeric.zeros((1, 1))
+        A[0] = bound["N"]
+        # The real method divides into a new A; use a distinct symbolic list.
+        scaled = ["scaled", *A]
+        return scaled, numeric.linalg.pinv(scaled)
+
+    scope.update(original_zeros=zeros, original_pinv=pinv, original_grid_method=original)
+    exec(
+        compile(
+            ast.fix_missing_locations(ast.Module(body=functions, type_ignores=[])),
+            "synthetic-poisson-observers",
+            "exec",
+        ),
+        scope,
+    )
+    return scope, caller, grid, calls
+
+
+def test_poisson_observers_keep_single_calls_return_aliases_boundaries_and_environment():
+    scope, caller, grid, calls = poisson_synthetic_scope()
+    original_numpy = scope["namespace"]["np"]
+    env_before = copy.deepcopy(vars(caller)["retained_env"])
+    returned = []
+    scope["callback"](status="before voltage")
+    for index, (stage, boundary) in enumerate(
+        zip(native.POISSON_STAGES, ("value", "flux"), strict=True)
+    ):
+        options = dict.fromkeys(("N", "S", "E", "W"), boundary)
+        value = scope["observed_laplacian"](grid, bound=options)
+        returned.append(value)
+        assert calls[index * 3][1] is options
+        assert scope["namespace"]["np"] is original_numpy
+        assert scope["poisson_results"][-1][1] is value
+        # The original AST assignment is separately exact-checked above.
+        setattr(caller, native.POISSON_ASSIGNMENTS[index], value[1])
+        if index == 0:
+            scope["callback"](status="before current")
+        else:
+            scope["finish_poisson_assignment"]()
+        assert scope["poisson"]["stages"][-1][0] == stage
+    data = scope["poisson"]
+    assert data["before"]["outputs"] == {"results": [], "helpers": []}
+    assert len(calls) == 6
+    assert data["cache"] is data["stages"][-1][1]
+    first, final = (row[1] for row in data["stages"])
+    assert len(first["outputs"]["results"]) == 1 and len(final["outputs"]["results"]) == 2
+    assert [(s, n) for s, n, _ in final["outputs"]["helpers"]] == [
+        (s, n) for s in native.POISSON_STAGES for n in ("zeros", "pinv")
+    ]
+    assert first["outputs"]["helpers"][0][2] == ["value"]
+    immediate = [e for e in scope["events"] if e["kind"] == "poisson_helper"]
+    assert immediate[0]["output"] == immediate[2]["output"] == [0]
+    assert caller.lapENVinv is returned[0][1] and caller.lapENV_P_inv is returned[1][1]
+    assert caller.retained_env == env_before
+    assert "lapENVinv" not in data["before"]["environment"]
+    assert "lapENV_P_inv" not in first["environment"]
+    assert scope["state"]["capture_error"] is None
+
+
+def test_poisson_observer_source_failure_restores_namespace_and_preserves_helpers():
+    scope, caller, grid, calls = poisson_synthetic_scope()
+    original_numpy = scope["namespace"]["np"]
+    primary = RuntimeError("synthetic inverse source failure")
+
+    def failed(*args, **kwargs):
+        raise primary
+
+    scope["original_pinv"] = failed
+    with pytest.raises(RuntimeError) as caught:
+        scope["observed_laplacian"](grid, bound=dict.fromkeys(("N", "S", "E", "W"), "value"))
+    assert caught.value is primary
+    assert scope["namespace"]["np"] is original_numpy
+    assert scope["poisson_results"] == [] and scope["poisson"]["stages"] == []
+    assert [name for _, name, _ in scope["poisson_helpers"]] == ["zeros"]
+    assert scope["events"][-1]["outcome"] == "raised"
+    assert not hasattr(caller, "lapENVinv")
+    assert scope["state"]["capture_error"] is None
+
+
+@pytest.mark.parametrize("failure", ["assignment", "snapshot"])
+def test_poisson_boundary_capture_failure_is_not_a_source_failure(failure):
+    scope, caller, grid, _ = poisson_synthetic_scope()
+    returned = scope["observed_laplacian"](grid, bound=dict.fromkeys(("N", "S", "E", "W"), "value"))
+    caller.lapENVinv = list(returned[1]) if failure == "assignment" else returned[1]
+    if failure == "snapshot":
+
+        def capture(value):
+            raise OSError("synthetic boundary writer failed")
+
+        scope["wire"].capture = capture
+    with pytest.raises(scope["CaptureFailure"]):
+        scope["finish_poisson_assignment"]()
+    assert scope["poisson"]["stages"] == []
+    assert scope["poisson_results"][0][1] is returned
+    assert scope["state"]["capture_error"] is not None
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        None,
+        "missing_stage",
+        "wrong_order",
+        "missing_cache",
+        "missing_result",
+        "missing_helper",
+        "wrong_helper",
+        "source_error",
+        "capture_error",
+    ],
+)
+def test_poisson_completion_requires_two_full_stages_and_exact_helpers(mutation):
+    tree = ast.parse(Path(native.__file__).read_text())
+    evaluate = next(n for n in tree.body if getattr(n, "name", None) == "evaluate")
+    expression = next(
+        n.value
+        for n in evaluate.body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "completed" for t in n.targets)
+    )
+    scope = dict(
+        stop_after="lapENV_P_inv",
+        error=None,
+        state={"capture_error": None},
+        METHODS=native.METHODS,
+        ENVIRONMENT_STAGES=native.ENVIRONMENT_STAGES,
+        POISSON_STAGES=native.POISSON_STAGES,
+        stages=[(n, {}) for n in ("before", *native.METHODS)],
+        ecm=dict(before={}, cache={}, stream_before={}, stream_after={}),
+        environment=dict(
+            before={},
+            cache={},
+            stream_before={},
+            stream_after={},
+            stages=[(n, {}) for n in native.ENVIRONMENT_STAGES],
+        ),
+        environment_trees=[object() for _ in range(3)],
+        poisson=dict(
+            before={},
+            cache={},
+            stream_before={},
+            stream_after={},
+            stages=[(n, {}) for n in native.POISSON_STAGES],
+        ),
+        poisson_results=[(n, ([], [])) for n in native.POISSON_STAGES],
+        poisson_helpers=[(s, n, []) for s in native.POISSON_STAGES for n in ("zeros", "pinv")],
+    )
+    if mutation == "missing_stage":
+        scope["poisson"]["stages"].pop()
+    elif mutation == "wrong_order":
+        scope["poisson"]["stages"].reverse()
+    elif mutation == "missing_cache":
+        scope["poisson"]["cache"] = None
+    elif mutation == "missing_result":
+        scope["poisson_results"].pop()
+    elif mutation == "missing_helper":
+        scope["poisson_helpers"].pop()
+    elif mutation == "wrong_helper":
+        scope["poisson_helpers"][-1] = ("environment_current", "zeros", [])
+    elif mutation == "source_error":
+        scope["error"] = {"failed": "source"}
+    elif mutation == "capture_error":
+        scope["state"]["capture_error"] = {"failed": "capture"}
+    assert eval(
+        compile(ast.Expression(expression), "synthetic-poisson-completion", "eval"), scope
+    ) is (mutation is None)

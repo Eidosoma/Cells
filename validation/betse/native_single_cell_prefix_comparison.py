@@ -18,6 +18,7 @@ from pathlib import Path
 
 from validation import source_snapshot
 from validation.betse import native_single_cell_prefix_native as native
+from validation.betse import native_single_cell_prefix_payload as payload
 from validation.betse import native_single_cell_prefix_qualification as prior
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,7 +32,7 @@ KINDS = (
     "cells.single_cell_prefix_comparison_release@1",
 )
 METHODS = ("before", *native.METHODS)
-ENDPOINTS = ("near_neigh", "makeECM", "make_maskM")
+ENDPOINTS = ("near_neigh", "makeECM", "make_maskM", "lapENV_P_inv")
 ENVIRONMENT_STORE_LINES = (521, 533, 534, 535, 536, 1118, 1119, 1122, 1127, 1128, 1129, 1130, 1131)
 ENVIRONMENT_STORE_ROSTER = (
     "_conf",
@@ -58,7 +59,7 @@ ENVIRONMENT_INLINE_SITE = "betse/science/cells.py:make_world.grid_len"
 
 def endpoint(value):
     if type(value) is not str or value not in ENDPOINTS:
-        raise ValueError("Comparison supports only near_neigh, makeECM or make_maskM")
+        raise ValueError("Unknown comparison endpoint")
     return value
 
 
@@ -127,7 +128,11 @@ def capture_lineage(values, configuration, stop_after):
             not _same(parameters["core_request"], core)
             or not _same(json.loads(parameters["configuration_json"]), configuration)
             or parameters["projection"]
-            != ("environment_mask" if stop_after == "make_maskM" else "initial_geometry")
+            != (
+                "environment_mask"
+                if stop_after in ("make_maskM", "lapENV_P_inv")
+                else "initial_geometry"
+            )
             or parameters.get("grid_descriptor")
             != ("native_grid_size_yaml_alias@1" if stop_after != "near_neigh" else None)
         ):
@@ -166,7 +171,7 @@ def capture_lineage(values, configuration, stop_after):
             ):
                 raise ValueError("Changed saved geometry/ECM request, parent or stream lineage")
             _identity(continuation["parameter_trial"])
-        if stop_after == "make_maskM":
+        if stop_after in ("make_maskM", "lapENV_P_inv"):
             environment_request, environment = values[7:9]
             _completed_trial(environment)
             if (
@@ -208,6 +213,42 @@ def capture_lineage(values, configuration, stop_after):
             ):
                 raise ValueError(
                     "Changed saved ECM/environment request, parent, stage or stream lineage"
+                )
+        if stop_after == "lapENV_P_inv":
+            poisson_request, poisson = values[9:11]
+            _completed_trial(poisson)
+            if type(poisson_request) is not dict or set(poisson_request) != {
+                "law",
+                "parent",
+                "methods",
+                "boundaries",
+                "boundary",
+                "invalidated_owners",
+                "full_make_world_phase_physical_checkpoint",
+            }:
+                raise ValueError("Incomplete saved Poisson continuation record")
+            request_digest = hashlib.sha256(
+                json.dumps(
+                    poisson_request, sort_keys=True, separators=(",", ":"), allow_nan=False
+                ).encode()
+            ).hexdigest()
+            if (
+                poisson_request["law"] != "betse_owned_single_cell_environment_Poisson@1"
+                or poisson_request["parent"] != environment["identity"]
+                or poisson_request["methods"] != list(native.POISSON_STAGES)
+                or poisson_request["boundaries"] != ["N,S,E,W=value", "N,S,E,W=flux"]
+                or poisson_request["boundary"] != "before lapGJ stores after second makeLaplacian"
+                or poisson_request["full_make_world_phase_physical_checkpoint"] is not False
+                or not _same(
+                    poisson_request["invalidated_owners"], environment_request["invalidated_owners"]
+                )
+                or poisson["parent_identity"] != environment["identity"]
+                or poisson["request_identity"] != request_digest
+                or not _same(poisson["stream_before"], environment["stream_after"])
+                or [row[0] for row in poisson["stages"]] != list(native.POISSON_STAGES)
+            ):
+                raise ValueError(
+                    "Changed saved environment/Poisson request, parent, stage or stream lineage"
                 )
     except (KeyError, TypeError, IndexError) as error:
         raise ValueError("Malformed saved prefix lineage") from error
@@ -256,7 +297,7 @@ def saved_prefix(diagnostic, parent):
         if relative in paths or prior.pin(path)["sha256"] != row["sha256"]:
             raise ValueError("Duplicated or changed saved stage capture")
         paths.add(relative)
-        values.append(prior.read(path))
+        values.append(payload.read(path, expand=False))
     capture_lineage(values, parent_plan["configuration"], stop)
     return stop, case, parent_plan, captures, values[0]["native_comparison_inputs"]
 
@@ -331,14 +372,16 @@ def retained_inputs(plan):
         if stop == "near_neigh"
         else ("input_capture", "owned_geometry", "owned_ecm")
     )
-    if stop == "make_maskM":
+    if stop in ("make_maskM", "lapENV_P_inv"):
         names += ("owned_environment",)
+    if stop == "lapENV_P_inv":
+        names += ("owned_poisson",)
     return [plan[name] for name in names]
 
 
 def inline_assignment_sites(sites, stop_after):
     """Bind the actual make_world assignment separately from callable methods."""
-    if endpoint(stop_after) != "make_maskM":
+    if endpoint(stop_after) not in ("make_maskM", "lapENV_P_inv"):
         return {}
     if type(sites) is not dict:
         raise ValueError("Missing original inline source roster")
@@ -353,7 +396,23 @@ def inline_assignment_sites(sites, stop_after):
     ):
         raise ValueError("Missing exact original inline grid_len assignment site")
     _identity(site["ast_sha256"])
-    return {ENVIRONMENT_INLINE_SITE: dict(site)}
+    result = {ENVIRONMENT_INLINE_SITE: dict(site)}
+    if stop_after == "lapENV_P_inv":
+        for line in (503, 504, 511, 512):
+            name = f"betse/science/cells.py:make_world.assignment_{line}"
+            row = sites.get(name)
+            if (
+                type(row) is not dict
+                or set(row) != {"first_line", "last_line", "ast_sha256"}
+                or type(row["first_line"]) is not int
+                or type(row["last_line"]) is not int
+                or row["first_line"] != line
+                or row["last_line"] != line
+            ):
+                raise ValueError("Missing exact original inline Poisson statement site")
+            _identity(row["ast_sha256"])
+            result[name] = dict(row)
+    return result
 
 
 def protected_output(output, prepared, plan):
@@ -393,7 +452,7 @@ def prepare(destination, diagnostic, parent, *, cpu=3):
         prior.pin(diagnostic / name)
         for name in ("result.json", "diagnostic.json", "root-review.json")
     ]
-    external += [prior.pin(diagnostic / row["path"]) for row in captures]
+    external += [pin for row in captures for pin in payload.files(diagnostic / row["path"])]
     external += [prior.pin(image_path), prior.pin(parent / "plan.json")]
     external += [
         dict(path=str(prior.NATIVE / name), sha256=h) for name, h in native.pins_for(stop).items()
@@ -415,6 +474,7 @@ def prepare(destination, diagnostic, parent, *, cpu=3):
                 TEST,
                 ORCHESTRATION_TEST,
                 "tests/unit/test_native_single_cell_prefix_compare.py",
+                "tests/unit/test_native_single_cell_prefix_payload.py",
             ],
         )
         files[prior.CLOSURE] = source_snapshot.digest(ROOT / prior.CLOSURE)
@@ -464,11 +524,17 @@ def prepare(destination, diagnostic, parent, *, cpu=3):
             )
         else:
             plan["owned_trial"] = prior.pin(diagnostic / captures[4]["path"])
-        if stop == "make_maskM":
+        if stop in ("make_maskM", "lapENV_P_inv"):
             plan.update(
                 owned_environment=prior.pin(diagnostic / captures[8]["path"]),
                 environment_stages=list(native.ENVIRONMENT_STAGES),
                 inline_assignment_sites=inline_assignment_sites(sites, stop),
+            )
+        if stop == "lapENV_P_inv":
+            plan.update(
+                owned_poisson=prior.pin(diagnostic / captures[10]["path"]),
+                poisson_stages=list(native.POISSON_STAGES),
+                capture_transport=payload.KIND,
             )
         source_snapshot.assert_checkout_unchanged(destination / "source")
         prior.verify_pins(external)
@@ -523,6 +589,7 @@ def verify(prepared, plan_sha256, release):
         ]
         required += retained_inputs(plan)
         required += [dict(path=row["path"], sha256=row["sha256"]) for row in captures]
+        required += [pin for row in captures for pin in payload.files(row["path"])]
         if any(row not in plan["external_inputs"] for row in required):
             raise ValueError("Missing endpoint input, native or metadata-helper source pin")
         if (
@@ -533,12 +600,16 @@ def verify(prepared, plan_sha256, release):
                 and retained_inputs(plan)[2] != {k: captures[6][k] for k in ("path", "sha256")}
             )
             or (
-                stop == "make_maskM"
+                stop in ("make_maskM", "lapENV_P_inv")
                 and retained_inputs(plan)[3] != {k: captures[8][k] for k in ("path", "sha256")}
+            )
+            or (
+                stop == "lapENV_P_inv"
+                and retained_inputs(plan)[4] != {k: captures[10][k] for k in ("path", "sha256")}
             )
         ):
             raise ValueError("Retained comparison inputs do not match declared captures")
-        if stop == "make_maskM" and (
+        if stop in ("make_maskM", "lapENV_P_inv") and (
             plan.get("environment_stages") != list(native.ENVIRONMENT_STAGES)
             or not _same(
                 plan.get("inline_assignment_sites"),
@@ -546,7 +617,16 @@ def verify(prepared, plan_sha256, release):
             )
         ):
             raise ValueError("Incomplete environment stages or inline source binding")
-        capture_lineage([prior.read(row["path"]) for row in captures], plan["configuration"], stop)
+        if stop == "lapENV_P_inv" and (
+            plan.get("poisson_stages") != list(native.POISSON_STAGES)
+            or plan.get("capture_transport") != payload.KIND
+        ):
+            raise ValueError("Incomplete Poisson stages or capture transport")
+        capture_lineage(
+            [payload.read(row["path"], expand=False) for row in captures],
+            plan["configuration"],
+            stop,
+        )
         metadata_modules(plan)
     grant = prior.read(release)
     if (
@@ -589,7 +669,7 @@ def worker(prepared, plan_sha256, release, output):
     )
     try:
         verify_metadata_modules(plan)
-        declared = prior.read(plan["input_capture"]["path"])["native_comparison_inputs"]
+        declared = payload.read(plan["input_capture"]["path"])["native_comparison_inputs"]
         outcome["native_executions"] = 1
         reference = native.evaluate(
             declared,
@@ -600,10 +680,23 @@ def worker(prepared, plan_sha256, release, output):
         )
         # Existing independent archive transport only; no production decoder.
         serialized = prior.archive.snapshot(reference)
-        prior.write(output / "native.json", serialized)
+        if stop == "lapENV_P_inv":
+            payload.write(output / "native.json", serialized)
+        else:
+            prior.write(output / "native.json", serialized)
         from validation.betse.native_single_cell_prefix_compare import compare, compare_ecm
 
-        if stop == "make_maskM":
+        if stop == "lapENV_P_inv":
+            from validation.betse.native_single_cell_prefix_compare import compare_poisson
+
+            comparison = compare_poisson(
+                payload.read(plan["owned_geometry"]["path"]),
+                payload.read(plan["owned_ecm"]["path"]),
+                payload.read(plan["owned_environment"]["path"]),
+                payload.read(plan["owned_poisson"]["path"]),
+                serialized,
+            )
+        elif stop == "make_maskM":
             from validation.betse.native_single_cell_prefix_compare import compare_environment
 
             comparison = compare_environment(
@@ -629,6 +722,7 @@ def worker(prepared, plan_sha256, release, output):
             status="exact_source_match" if comparison["exact_match"] else "source_mismatch",
             accepted_source_comparisons=int(comparison["exact_match"]),
             native=prior.pin(output / "native.json"),
+            native_files=payload.files(output / "native.json"),
             comparison=prior.pin(output / "comparison.json"),
         )
     except Exception as error:

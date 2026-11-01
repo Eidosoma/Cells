@@ -41,7 +41,9 @@ def captures(stop="makeECM"):
         identity="4" * 64,
         core_request=copy.deepcopy(core),
         configuration_json="{}",
-        projection="environment_mask" if stop == "make_maskM" else "initial_geometry",
+        projection="environment_mask"
+        if stop in ("make_maskM", "lapENV_P_inv")
+        else "initial_geometry",
         grid_descriptor="native_grid_size_yaml_alias@1" if stop != "near_neigh" else None,
     )
     request = dict(
@@ -59,7 +61,7 @@ def captures(stop="makeECM"):
         stream_after=stream,
         stages=[[name, {"synthetic_cache": name}] for name in runner.METHODS],
     )
-    if stop == "make_maskM":
+    if stop in ("make_maskM", "lapENV_P_inv"):
         geometry.update(
             parameter_projection="environment_mask",
             parameter_store_roster=list(runner.ENVIRONMENT_STORE_ROSTER),
@@ -88,7 +90,7 @@ def captures(stop="makeECM"):
     values = [first, initial, core, request, geometry]
     if stop != "near_neigh":
         values += [continuation, ecm]
-    if stop == "make_maskM":
+    if stop in ("make_maskM", "lapENV_P_inv"):
         environment_request = dict(
             law="betse_owned_single_cell_environment_mask@1",
             parent=ecm["identity"],
@@ -111,13 +113,46 @@ def captures(stop="makeECM"):
             stages=[[name, {"synthetic_cache": name}] for name in runner.native.ENVIRONMENT_STAGES],
         )
         values += [environment_request, environment]
+    if stop == "lapENV_P_inv":
+        poisson_request = dict(
+            law="betse_owned_single_cell_environment_Poisson@1",
+            parent=environment["identity"],
+            methods=list(runner.native.POISSON_STAGES),
+            boundaries=["N,S,E,W=value", "N,S,E,W=flux"],
+            boundary="before lapGJ stores after second makeLaplacian",
+            invalidated_owners=environment_request["invalidated_owners"],
+            full_make_world_phase_physical_checkpoint=False,
+        )
+        poisson = dict(
+            identity="f" * 64,
+            parent_identity=environment["identity"],
+            request_identity=digest(poisson_request),
+            source_completed=True,
+            failure_stage=None,
+            failure_type=None,
+            failure_message=None,
+            stream_before=stream,
+            stream_after=stream,
+            stages=[[name, {"synthetic_cache": name}] for name in runner.native.POISSON_STAGES],
+        )
+        values += [poisson_request, poisson]
     return values
 
 
-def source_sites():
-    return {
+def source_sites(stop="make_maskM"):
+    result = {
         runner.ENVIRONMENT_INLINE_SITE: dict(first_line=494, last_line=494, ast_sha256="e" * 64)
     }
+    if stop == "lapENV_P_inv":
+        result.update(
+            {
+                f"betse/science/cells.py:make_world.assignment_{line}": dict(
+                    first_line=line, last_line=line, ast_sha256="f" * 64
+                )
+                for line in (503, 504, 511, 512)
+            }
+        )
+    return result
 
 
 class ComparisonContracts(unittest.TestCase):
@@ -145,11 +180,17 @@ class ComparisonContracts(unittest.TestCase):
         )
         self.patch(
             runner.native,
+            "POISSON_STAGES",
+            ("environment_voltage", "environment_current"),
+            create=True,
+        )
+        self.patch(
+            runner.native,
             "methods_for",
             lambda stop: (
                 runner.native.METHODS
                 + (() if runner.endpoint(stop) == "near_neigh" else ("makeECM",))
-                + (("environment", "make_maskM") if stop == "make_maskM" else ())
+                + (("environment", "make_maskM") if stop in ("make_maskM", "lapENV_P_inv") else ())
             ),
             create=True,
         )
@@ -252,12 +293,18 @@ class ComparisonContracts(unittest.TestCase):
             )
         else:
             plan["owned_trial"] = {k: rows[4][k] for k in ("path", "sha256")}
-        if stop == "make_maskM":
+        if stop in ("make_maskM", "lapENV_P_inv"):
             plan.update(
                 owned_environment={k: rows[8][k] for k in ("path", "sha256")},
                 environment_stages=list(runner.native.ENVIRONMENT_STAGES),
-                original_source_sites=source_sites(),
-                inline_assignment_sites=source_sites(),
+                original_source_sites=source_sites(stop),
+                inline_assignment_sites=source_sites(stop),
+            )
+        if stop == "lapENV_P_inv":
+            plan.update(
+                owned_poisson={k: rows[10][k] for k in ("path", "sha256")},
+                poisson_stages=list(runner.native.POISSON_STAGES),
+                capture_transport=runner.payload.KIND,
             )
         if not legacy:
             plan.update(
@@ -514,8 +561,19 @@ class ComparisonContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             runner.unique_pins([row, dict(row, sha256="b" * 64)])
 
-    def prepare_synthetic(self, stop):
-        diagnostic, _, _, parent_plan = self.diagnostic(stop)
+    def prepare_synthetic(self, stop, *, sidecar=False):
+        diagnostic, recorded, result, parent_plan = self.diagnostic(stop)
+        if sidecar:
+            row = recorded["captures"][-1]
+            path = diagnostic / row["path"]
+            value = runner.prior.read(path)
+            value["synthetic_evidence"] = {"raw_bytes_hex": "00" * runner.payload.THRESHOLD}
+            path.unlink()
+            runner.payload.write(path, value)
+            row["sha256"] = runner.prior.pin(path)["sha256"]
+            self.write(diagnostic / "diagnostic.json", recorded)
+            result["diagnostic"] = runner.prior.pin(diagnostic / "diagnostic.json")
+            self.write(diagnostic / "result.json", result)
         parent = self.root / "parent"
         self.write(parent / "plan.json", {"synthetic_parent": True})
         self.write(diagnostic / "root-review.json", {"synthetic_review": True})
@@ -533,6 +591,7 @@ class ComparisonContracts(unittest.TestCase):
             runner.TEST,
             runner.ORCHESTRATION_TEST,
             "tests/unit/test_native_single_cell_prefix_compare.py",
+            "tests/unit/test_native_single_cell_prefix_payload.py",
             runner.prior.CLOSURE,
         ]
         for name in paths:
@@ -552,7 +611,9 @@ class ComparisonContracts(unittest.TestCase):
         self.patch(
             runner.native,
             "source_nodes",
-            lambda root, **kw: source_calls.append(("source_nodes", kw)) or ([], source_sites()),
+            lambda root, **kw: (
+                source_calls.append(("source_nodes", kw)) or ([], source_sites(stop))
+            ),
         )
         self.patch(
             runner.runpy,
@@ -574,7 +635,7 @@ class ComparisonContracts(unittest.TestCase):
         prepared = self.root / "new-prepared"
         plan = runner.prepare(prepared, diagnostic, parent, cpu=2)
         self.assertEqual(plan["stop_after"], stop)
-        self.assertEqual(len(plan["saved_captures"]), 9 if stop == "make_maskM" else 7)
+        self.assertEqual(len(plan["saved_captures"]), len(runner.prior.stage_names(stop)))
         self.assertEqual(plan["owned_geometry"], runner.prior.pin(diagnostic / "capture-0004.json"))
         self.assertEqual(plan["owned_ecm"], runner.prior.pin(diagnostic / "capture-0006.json"))
         self.assertNotIn("owned_trial", plan)
@@ -799,7 +860,24 @@ class ComparisonContracts(unittest.TestCase):
             lambda *a, **kw: calls.append(kw) or {"stop_after": stop, "synthetic_only": True},
         )
         self.patch(comparator, "compare", self.forbidden)
-        if stop == "make_maskM":
+        if stop == "lapENV_P_inv":
+            self.patch(comparator, "compare_ecm", self.forbidden)
+            self.patch(comparator, "compare_environment", self.forbidden)
+            self.patch(
+                comparator,
+                "compare_poisson",
+                lambda geometry, ecm, environment, poisson, native: dict(
+                    exact_match=(
+                        geometry["identity"] == "7" * 64
+                        and ecm["identity"] == "b" * 64
+                        and environment["identity"] == "d" * 64
+                        and poisson["identity"] == "f" * 64
+                        and native["stop_after"] == "lapENV_P_inv"
+                    )
+                ),
+                create=True,
+            )
+        elif stop == "make_maskM":
             self.patch(comparator, "compare_ecm", self.forbidden)
             self.patch(
                 comparator,
@@ -838,6 +916,90 @@ class ComparisonContracts(unittest.TestCase):
 
     def test_worker_dispatches_three_distinct_saved_inputs_without_science(self):
         self.worker_synthetic("make_maskM")
+
+    def test_worker_dispatches_four_distinct_saved_inputs_without_science(self):
+        self.worker_synthetic("lapENV_P_inv")
+        outcome = runner.prior.read(self.root / "output/worker-result.json")
+        self.assertEqual(
+            outcome["native_files"], runner.payload.files(self.root / "output/native.json")
+        )
+
+    def test_poisson_lineage_and_five_inline_assignments_are_required(self):
+        values = captures("lapENV_P_inv")
+        runner.capture_lineage(values, {}, "lapENV_P_inv")
+        sites = source_sites("lapENV_P_inv")
+        self.assertEqual(runner.inline_assignment_sites(sites, "lapENV_P_inv"), sites)
+        for key in sites:
+            with self.subTest(missing=key), self.assertRaises(ValueError):
+                runner.inline_assignment_sites(
+                    {k: v for k, v in sites.items() if k != key}, "lapENV_P_inv"
+                )
+        for index, key, value in (
+            (9, "parent", "0" * 64),
+            (9, "methods", []),
+            (9, "boundaries", ["N,S,E,W=flux", "N,S,E,W=value"]),
+            (9, "full_make_world_phase_physical_checkpoint", True),
+            (10, "stages", []),
+            (10, "source_completed", False),
+            (10, "parent_identity", "0" * 64),
+            (10, "stream_before", {"synthetic_stream": "changed"}),
+            (10, "request_identity", "0" * 64),
+            (10, "capture_error", {"retained": True}),
+        ):
+            changed = copy.deepcopy(values)
+            changed[index][key] = value
+            with self.subTest(index=index, key=key), self.assertRaises(ValueError):
+                runner.capture_lineage(changed, {}, "lapENV_P_inv")
+
+    def test_poisson_exact_plan_and_release(self):
+        plan, grant, save = self.grant("lapENV_P_inv")
+        self.assertEqual(runner.verify(*save()), plan)
+        for key in ("capture_transport", "poisson_stages", "owned_poisson"):
+            before = plan.pop(key)
+            with self.subTest(key=key), self.assertRaises((ValueError, KeyError)):
+                runner.verify(*save())
+            plan[key] = before
+        grant["stop_after"] = "make_maskM"
+        with self.assertRaises(ValueError):
+            runner.verify(*save())
+
+    def test_poisson_all_sidecar_bytes_require_plan_binding(self):
+        plan, _, save = self.grant("lapENV_P_inv")
+        row = plan["saved_captures"][-1]
+        path = Path(row["path"])
+        value = runner.prior.read(path)
+        # This is a transport/lineage control, not a fake numerical cache.
+        value["synthetic_evidence"] = {"raw_bytes_hex": "00" * runner.payload.THRESHOLD}
+        path.unlink()
+        all_pins = runner.payload.write(path, value)
+        row["sha256"] = all_pins[0]["sha256"]
+        plan["owned_poisson"] = all_pins[0]
+        plan["external_inputs"] = [
+            r for r in plan["external_inputs"] if r["path"] != str(path)
+        ] + all_pins[:1]
+        with self.assertRaises(ValueError):
+            runner.verify(*save())
+        plan["external_inputs"] += all_pins[1:]
+        self.assertEqual(runner.verify(*save()), plan)
+        blob = Path(all_pins[1]["path"])
+        blob.write_bytes(b"x" + blob.read_bytes()[1:])
+        with self.assertRaises(ValueError):
+            runner.verify(*save())
+
+    def test_poisson_preparation_binds_eleven_captures_and_exact_inline_sites(self):
+        plan, diagnostic = self.prepare_synthetic("lapENV_P_inv")
+        self.assertEqual(plan["owned_poisson"], runner.prior.pin(diagnostic / "capture-0010.json"))
+        self.assertEqual(plan["capture_transport"], runner.payload.KIND)
+        self.assertEqual(plan["poisson_stages"], list(runner.native.POISSON_STAGES))
+        self.assertEqual(plan["inline_assignment_sites"], source_sites("lapENV_P_inv"))
+        self.assertNotIn("allow_one_native_reference", plan)
+
+    def test_poisson_preparation_binds_sidecars_without_expanding_numerical_values(self):
+        plan, diagnostic = self.prepare_synthetic("lapENV_P_inv", sidecar=True)
+        pins = runner.payload.files(diagnostic / "capture-0010.json")
+        self.assertEqual(len(pins), 2)
+        for pin in pins:
+            self.assertIn(pin, plan["external_inputs"])
 
 
 if __name__ == "__main__":

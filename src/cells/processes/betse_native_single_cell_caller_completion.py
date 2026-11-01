@@ -585,6 +585,22 @@ def _account_prefix(context, *, _source_modules=(), _entry_names=()):
     names.update(meshes.GUARDED_NATIVE_METHODS)
     names.update(_entry_names)
 
+    # These seven Cells inspection sites repeatedly check callable bindings;
+    # none executes the native descriptor factory/getter or a numerical body.
+    # Retain exact counts per site/phase/execution without spending one ordered
+    # source row per inspected atom. All other entries keep their original order
+    # and the existing row allowance. Native and child ledgers remain separate.
+    metadata_sites = {
+        "_atoms",
+        "_atoms.<locals>.visit",
+        "_module_bindings.<locals>.<genexpr>",
+        "_check_modules.<locals>.<genexpr>",
+        "_check_modules.<locals>.<genexpr>.<genexpr>",
+        "validate.<locals>.<genexpr>",
+        "_bindings.<locals>.<genexpr>",
+    }
+    metadata_rows = {}
+
     def execution(frame):
         ancestor = frame
         for _ in range(256):
@@ -615,19 +631,34 @@ def _account_prefix(context, *, _source_modules=(), _entry_names=()):
         module = frame.f_globals.get("__name__")
         name = frame.f_code.co_name
         if event == "call" and module in modules and (module in bodies or name in names):
-            if len(context.work) >= 100000:
-                raise ValueError("Bounded prefix work ledger exhausted")
+            execution_kind = execution(frame)
+            metadata = (
+                module == "cells.processes.betse_native_single_cell_grid_alias"
+                and frame.f_code.co_qualname in metadata_sites
+            )
+            key = (
+                module,
+                frame.f_code.co_qualname,
+                frame.f_code.co_filename,
+                frame.f_code.co_firstlineno,
+                context.stage,
+                execution_kind,
+            )
             layer = "body" if module in bodies else "driver"
             if layer != "body" and (
                 name in {"invoke", "guarded"} or frame.f_code.co_qualname.startswith("_Runtime.")
             ):
                 layer = "wrapper"
-            context.work.append(
-                dict(
+            if metadata and key in metadata_rows:
+                metadata_rows[key]["attempts"] += 1
+            else:
+                if len(context.work) >= 100000:
+                    raise ValueError("Bounded prefix work ledger exhausted")
+                row = dict(
                     sequence=len(context.work),
                     status="entered_not_success_credit",
                     phase=context.stage,
-                    execution=execution(frame),
+                    execution=execution_kind,
                     layer=layer,
                     module=module,
                     method=frame.f_code.co_qualname,
@@ -637,7 +668,15 @@ def _account_prefix(context, *, _source_modules=(), _entry_names=()):
                     source_file=frame.f_code.co_filename,
                     line=frame.f_code.co_firstlineno,
                 )
-            )
+                if metadata:
+                    row.update(
+                        layer="metadata_aggregate",
+                        attempts=1,
+                        aggregation="exact count; repeated metadata entry order not retained",
+                        native_body_credit=False,
+                    )
+                    metadata_rows[key] = row
+                context.work.append(row)
         if previous is not None:
             previous(frame, event, arg)
 

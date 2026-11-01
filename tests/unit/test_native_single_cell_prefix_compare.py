@@ -990,5 +990,461 @@ class EnvironmentComparisonTests(unittest.TestCase):
                     comparator.compare_environment(a, e, env, n)
 
 
+def canonical_cache(cache):
+    """Fixture-only re-encoder: allocate each source array occurrence separately."""
+    columns = {row["name"]: row["values"] for row in cache["columns"]}
+    saved = []
+
+    def encode(node):
+        node = copy.deepcopy(node)
+        kind = node["kind"]
+        if kind == "numeric_array":
+            old_name = node["column"]
+            node["column"] = f"column_{len(saved):05d}"
+            saved.append(dict(name=node["column"], values=copy.deepcopy(columns[old_name])))
+        elif kind == "dict":
+            node["items"] = [[encode(k), encode(v)] for k, v in node["items"]]
+        elif "items" in node:
+            node["items"] = [encode(v) for v in node["items"]]
+        return node
+
+    result = encode(json.loads(cache["descriptor_json"]))
+    return owned_cache(result, saved, finite=cache["all_finite"])
+
+
+def poisson_inputs(points=2):
+    geometry, ecm, env, native = environment_inputs()
+    shape = [25, 25] if points == 625 else [1, points]
+    # Only the new fixture gets the additional native grid shape field.
+    for cache in (ecm["cache"], env["before"], *(v for _, v in env["stages"]), env["cache"]):
+        tree = json.loads(cache["descriptor_json"])
+        roots = {k["value"]: v for k, v in tree["items"]}
+        roots["grid"]["items"].append(
+            [
+                scalar(value="cents_shape"),
+                dict(kind="tuple", items=[scalar("int", n) for n in shape]),
+            ]
+        )
+        for key, value in roots["caller"]["items"]:
+            if key["value"] == "xypts" and points != 2:
+                source = layout("<f8", [points, 2], [16, 8], f=False)
+                raw = struct.pack("<d", 0.0).hex() * (points * 2)
+                node, column = array(value["column"], source=source, raw=raw)
+                value.clear()
+                value.update(node)
+                cache["columns"] = [
+                    column if row["name"] == column["name"] else row for row in cache["columns"]
+                ]
+            elif key["value"] == "grid_len":
+                value["value"] = points
+        reseal(cache, tree)
+        updated = canonical_cache(cache)
+        cache.clear()
+        cache.update(updated)
+    native["ecm"]["cache"] = native_cache(ecm["cache"])
+    native["environment"].update(
+        before=native_cache(env["before"]),
+        stages=[[name, native_cache(cache)] for name, cache in env["stages"]],
+        cache=native_cache(env["cache"]),
+    )
+    env["identity"] = digest(b"synthetic completed ENV trial")
+    matrix_shape = [points, points]
+    material = []
+    for i, name in enumerate(comparator.POISSON_STAGES):
+        values = []
+        for j in range(3):
+            raw = struct.pack("<d", 1.0 + 3 * i + j).hex() * (points * points)
+            values.append(
+                array(
+                    name + "-" + str(j),
+                    source=layout("<f8", matrix_shape, [points * 8, 8], f=points == 1),
+                    raw=raw,
+                )
+            )
+        material.append(values)  # A, Ainv, mutated original zeros allocation.
+
+    def boundary(count):
+        environment = copy.deepcopy(env["cache"])
+        tree = json.loads(environment["descriptor_json"])
+        for i, key in enumerate(("lapENVinv", "lapENV_P_inv")[:count]):
+            node, column = copy.deepcopy(material[i][1])
+            environment["columns"].append(column)
+            tree["items"][0][1]["items"].append([scalar(value=key), node])
+        reseal(environment, tree)
+        environment = canonical_cache(environment)
+        results, helpers, columns = [], [], []
+        for i, stage in enumerate(comparator.POISSON_STAGES[:count]):
+            a, inv, zeros = material[i]
+            columns.extend(copy.deepcopy(v[1]) for v in (a, inv, zeros))
+            results.append(
+                dict(
+                    kind="tuple",
+                    items=[
+                        scalar(value=stage),
+                        dict(kind="tuple", items=[copy.deepcopy(a[0]), copy.deepcopy(inv[0])]),
+                    ],
+                )
+            )
+            helpers.extend(
+                [
+                    dict(
+                        kind="tuple",
+                        items=[scalar(value=stage), scalar(value="zeros"), copy.deepcopy(zeros[0])],
+                    ),
+                    dict(
+                        kind="tuple",
+                        items=[scalar(value=stage), scalar(value="pinv"), copy.deepcopy(inv[0])],
+                    ),
+                ]
+            )
+        outputs_tree = dict(
+            kind="dict",
+            items=[
+                [scalar(value="results"), dict(kind="list", items=results)],
+                [scalar(value="helpers"), dict(kind="list", items=helpers)],
+            ],
+        )
+        outputs = canonical_cache(owned_cache(outputs_tree, copy.deepcopy(columns)))
+        owned_tree = dict(
+            kind="dict",
+            items=[
+                [scalar(value="environment"), scalar(value=environment["identity"])],
+                *copy.deepcopy(outputs_tree["items"]),
+            ],
+        )
+        owned = canonical_cache(owned_cache(owned_tree, columns))
+        return owned, dict(environment=native_cache(environment), outputs=native_cache(outputs))
+
+    pairs = [boundary(count) for count in (0, 1, 2)]
+    poisson = dict(
+        source_completed=True,
+        failure_stage=None,
+        failure_type=None,
+        failure_message=None,
+        parent_identity=env["identity"],
+        before=pairs[0][0],
+        stages=[
+            [name, pair[0]] for name, pair in zip(comparator.POISSON_STAGES, pairs[1:], strict=True)
+        ],
+        cache=copy.deepcopy(pairs[-1][0]),
+        stream_before=copy.deepcopy(env["stream_after"]),
+        stream_after=copy.deepcopy(env["stream_after"]),
+    )
+    native.update(
+        stop_after="lapENV_P_inv",
+        poisson=dict(
+            before=pairs[0][1],
+            stages=[
+                [name, pair[1]]
+                for name, pair in zip(comparator.POISSON_STAGES, pairs[1:], strict=True)
+            ],
+            cache=copy.deepcopy(pairs[-1][1]),
+            stream_before=copy.deepcopy(env["stream_after"]),
+            stream_after=copy.deepcopy(env["stream_after"]),
+        ),
+    )
+    return geometry, ecm, env, poisson, native
+
+
+def poisson_output_tree(cache):
+    tree = json.loads(cache["descriptor_json"])
+    return tree, {k["value"]: v for k, v in tree["items"]}
+
+
+def native_outputs_from_owned(cache):
+    output = copy.deepcopy(cache)
+    tree = json.loads(output["descriptor_json"])
+    tree["items"] = tree["items"][1:]
+    reseal(output, tree)
+    return native_cache(output)
+
+
+class PoissonComparisonTests(unittest.TestCase):
+    def test_complete_four_boundaries_and_legacy_endpoint_are_distinct(self):
+        values = poisson_inputs()
+        untouched = copy.deepcopy(values)
+        result = comparator.compare_poisson(*values)
+        self.assertTrue(result["exact_match"], result["mismatches"])
+        self.assertEqual(result["cache_pairs_compared"], 22)
+        self.assertEqual(result["poisson_boundaries_compared"], 4)
+        self.assertEqual(result["poisson_stages_compared"], 2)
+        self.assertEqual(result["streams_compared"], 8)
+        self.assertEqual(result["lineage_checks"], 3)
+        self.assertEqual(values, untouched)
+        a, e, env, p, n = values
+        with self.assertRaisesRegex(ValueError, "make_maskM endpoint"):
+            comparator.compare_environment(a, e, env, n)
+
+    def test_canonical_hash_preserves_typed_scalars_keys_layouts_and_occurrences(self):
+        node, column = array("arbitrary", source=layout("<f8", [1], [8]))
+        column["values"]["raw_bytes_hex"] = struct.pack("<d", -0.0).hex()
+        node["sha256"] = digest(bytes.fromhex(column["values"]["raw_bytes_hex"]))
+        tree = dict(
+            kind="dict",
+            items=[
+                [
+                    scalar("int", 3),
+                    dict(kind="numpy_scalar", dtype="<f8", bits=struct.pack("<d", -0.0).hex()),
+                ],
+                [scalar(value="again"), dict(kind="tuple", items=[node, copy.deepcopy(node)])],
+            ],
+        )
+        cache = canonical_cache(owned_cache(tree, [column]))
+        parsed = comparator._Cache(cache, "fixture", True)
+        self.assertEqual(comparator._canonical_owned_identity(parsed.tree), cache["identity"])
+        changed = copy.deepcopy(parsed.tree)
+        changed["items"][0][0] = dict(type="str", value="3")
+        self.assertNotEqual(comparator._canonical_owned_identity(changed), cache["identity"])
+        changed = copy.deepcopy(parsed.tree)
+        changed["items"][0][1].pop("dtype")
+        changed["items"][0][1]["type"] = "float"
+        self.assertNotEqual(comparator._canonical_owned_identity(changed), cache["identity"])
+
+    def test_every_completion_failure_marker_prevents_poisson_credit(self):
+        for side, key, value in [
+            ("owned", "source_completed", False),
+            ("owned", "failure_stage", "environment_current"),
+            ("owned", "failure_type", "ValueError"),
+            ("owned", "failure_message", "raw failure"),
+            ("owned", "capture_error", "raw capture failure"),
+            ("native", "source_error", "raw failure"),
+            ("native", "capture_error", "raw capture"),
+            ("native", "status", "failed"),
+        ]:
+            with self.subTest(side=side, key=key):
+                a, e, env, p, n = poisson_inputs()
+                (p if side == "owned" else n)[key] = value
+                result = comparator.compare_poisson(a, e, env, p, n)
+                self.assertFalse(result["exact_match"])
+                self.assertEqual(result["poisson_boundaries_compared"], 0)
+        a, e, env, p, n = poisson_inputs()
+        p["source_completed"] = 1
+        with self.assertRaises(ValueError):
+            comparator.compare_poisson(a, e, env, p, n)
+
+    def test_missing_swapped_duplicate_stage_and_wrong_endpoint_refuse(self):
+        for side in ("owned", "native"):
+            for fault in ("missing", "swap", "duplicate"):
+                with self.subTest(side=side, fault=fault):
+                    a, e, env, p, n = poisson_inputs()
+                    target = p if side == "owned" else n["poisson"]
+                    if fault == "missing":
+                        target["stages"].pop()
+                    elif fault == "swap":
+                        target["stages"].reverse()
+                    else:
+                        target["stages"][1][0] = target["stages"][0][0]
+                    with self.assertRaises(ValueError):
+                        comparator.compare_poisson(a, e, env, p, n)
+        a, e, env, p, n = poisson_inputs()
+        n["stop_after"] = "make_maskM"
+        with self.assertRaises(ValueError):
+            comparator.compare_poisson(a, e, env, p, n)
+
+    def test_foreign_parent_and_equal_but_advanced_random_streams_refuse(self):
+        for fault in ("parent", "handoff", "advance"):
+            with self.subTest(fault=fault):
+                a, e, env, p, n = poisson_inputs()
+                if fault == "parent":
+                    p["parent_identity"] = digest(b"other ENV")
+                else:
+                    for target in (p, n["poisson"]):
+                        target["stream_after"] = stream(position=44)
+                        if fault == "handoff":
+                            target["stream_before"] = stream(position=44)
+                self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_matrix_bytes_and_layouts_must_match_the_independent_side(self):
+        for fault in ("bits", "layout", "inverse", "zeros"):
+            with self.subTest(fault=fault):
+                a, e, env, p, n = poisson_inputs()
+                cache = n["poisson"]["stages"][0][1]["outputs"]
+                fields = {k["value"]: v for k, v in cache["tree"]["values"]}
+                if fault == "zeros":
+                    node = fields["helpers"]["values"][0]["values"][2]
+                else:
+                    node = fields["results"]["values"][0]["values"][1]["values"][fault == "inverse"]
+                if fault == "layout":
+                    node["layout"].update(
+                        strides_bytes=[8, 16], C_contiguous=False, F_contiguous=True
+                    )
+                else:
+                    raw = cache["columns"][node["column"]]["raw_bytes_hex"]
+                    raw = struct.pack("<d", -0.0).hex() + raw[16:]
+                    cache["columns"][node["column"]]["raw_bytes_hex"] = raw
+                    node["sha256"] = digest(bytes.fromhex(raw))
+                self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_wrong_inverse_assignment_even_with_equal_outputs_refuses(self):
+        for fault in ("missing", "swap", "extra"):
+            with self.subTest(fault=fault):
+                a, e, env, p, n = poisson_inputs()
+                cache = n["poisson"]["cache"]["environment"]
+                caller = cache["tree"]["values"][0][1]["values"]
+                if fault == "missing":
+                    removed = caller.pop()
+                    del cache["columns"][removed[1]["column"]]
+                elif fault == "swap":
+                    caller[-1][1], caller[-2][1] = caller[-2][1], caller[-1][1]
+                else:
+                    caller.append(
+                        [dict(type="str", value="unrequested"), dict(type="int", value=1)]
+                    )
+                self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_wrong_canonical_environment_digest_cannot_claim_assignments(self):
+        a, e, env, p, n = poisson_inputs()
+        cache = p["stages"][0][1]
+        tree, fields = poisson_output_tree(cache)
+        fields["environment"]["value"] = env["cache"]["identity"]
+        reseal(cache, tree)
+        self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_noncanonical_owned_parent_column_names_are_not_source_identity(self):
+        a, e, env, p, n = poisson_inputs()
+        cache = env["cache"]
+        tree = json.loads(cache["descriptor_json"])
+        old = cache["columns"][0]["name"]
+        cache["columns"][0]["name"] = "renamed"
+
+        def visit(node):
+            if isinstance(node, dict):
+                if node.get("column") == old:
+                    node["column"] = "renamed"
+                for value in node.values():
+                    visit(value)
+            elif isinstance(node, list):
+                for value in node:
+                    visit(value)
+
+        visit(tree)
+        reseal(cache, tree)
+        self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_results_helpers_and_empty_before_have_exact_structural_rosters(self):
+        for fault in (
+            "missing matrix",
+            "list pair",
+            "wrong stage",
+            "helper swap",
+            "missing helper",
+            "before",
+        ):
+            with self.subTest(fault=fault):
+                a, e, env, p, n = poisson_inputs()
+                cache = p["stages"][0][1]
+                tree, fields = poisson_output_tree(cache)
+                if fault == "missing matrix":
+                    fields["results"]["items"][0]["items"][1]["items"].pop()
+                elif fault == "list pair":
+                    fields["results"]["items"][0]["items"][1]["kind"] = "list"
+                elif fault == "wrong stage":
+                    fields["results"]["items"][0]["items"][0]["value"] = "environment_current"
+                elif fault == "helper swap":
+                    fields["helpers"]["items"].reverse()
+                elif fault == "missing helper":
+                    fields["helpers"]["items"].pop()
+                else:
+                    p["before"] = copy.deepcopy(cache)
+                if fault != "before":
+                    edit_environment_cache(cache, lambda t, tree=tree: t.update(tree))
+                with self.assertRaises(ValueError):
+                    comparator.compare_poisson(a, e, env, p, n)
+
+    def test_pinv_helper_must_be_the_result_inverse(self):
+        a, e, env, p, n = poisson_inputs()
+        cache = p["stages"][0][1]
+        tree, fields = poisson_output_tree(cache)
+        row = fields["results"]["items"][0]["items"][1]["items"]
+        row[0], row[1] = row[1], row[0]
+        reseal(cache, tree)
+        n["poisson"]["stages"][0][1]["outputs"] = native_outputs_from_owned(cache)
+        self.assertFalse(comparator.compare_poisson(a, e, env, p, n)["exact_match"])
+
+    def test_coherently_changed_earlier_result_is_not_a_carried_prefix(self):
+        a, e, env, p, n = poisson_inputs()
+        for cache, target in (
+            (p["stages"][1][1], n["poisson"]["stages"][1][1]),
+            (p["cache"], n["poisson"]["cache"]),
+        ):
+            tree, fields = poisson_output_tree(cache)
+            node = fields["results"]["items"][0]["items"][1]["items"][0]
+            column = next(
+                row["values"] for row in cache["columns"] if row["name"] == node["column"]
+            )
+            raw = struct.pack("<dddd", 9.0, 8.0, 7.0, 6.0).hex()
+            column["raw_bytes_hex"], node["sha256"] = raw, digest(bytes.fromhex(raw))
+            reseal(cache, tree)
+            target["outputs"] = native_outputs_from_owned(cache)
+        result = comparator.compare_poisson(a, e, env, p, n)
+        self.assertFalse(result["exact_match"])
+        self.assertTrue(any("retained_results" in v["path"] for v in result["mismatches"]))
+
+    def test_matrix_shape_is_derived_from_original_grid(self):
+        for changed in (
+            dict(kind="list", items=[scalar("int", 1), scalar("int", 2)]),
+            dict(kind="tuple", items=[scalar("int", 0), scalar("int", 2)]),
+            dict(kind="tuple", items=[scalar("bool", True), scalar("int", 2)]),
+            dict(kind="tuple", items=[scalar("int", 1), scalar("int", 626)]),
+        ):
+            with self.subTest(changed=changed):
+                a, e, env, p, n = poisson_inputs()
+                # Both sides agree; earlier handoff consistency is maintained.
+                for cache in (
+                    e["cache"],
+                    env["before"],
+                    *(v for _, v in env["stages"]),
+                    env["cache"],
+                ):
+                    tree = json.loads(cache["descriptor_json"])
+                    roots = {k["value"]: v for k, v in tree["items"]}
+                    roots["grid"]["items"][-1][1] = copy.deepcopy(changed)
+                    reseal(cache, tree)
+                n["ecm"]["cache"] = native_cache(e["cache"])
+                n["environment"].update(
+                    before=native_cache(env["before"]),
+                    stages=[[name, native_cache(v)] for name, v in env["stages"]],
+                    cache=native_cache(env["cache"]),
+                )
+                with self.assertRaises(ValueError):
+                    comparator.compare_poisson(a, e, env, p, n)
+
+    def test_default_grid_matrix_capacity_is_scoped_and_legacy_bound_stays(self):
+        values = poisson_inputs(625)
+        result = comparator.compare_poisson(*values)
+        self.assertTrue(result["exact_match"], result["mismatches"])
+        self.assertEqual(comparator.MAX_ELEMENTS, 262144)
+        self.assertEqual(comparator.MAX_BYTES, 64 * 1024 * 1024)
+        with self.assertRaisesRegex(ValueError, "element bound"):
+            comparator._Cache(values[3]["stages"][0][1], "legacy", True)
+
+    def test_capacity_refuses_other_shapes_types_and_retains_byte_bound(self):
+        from unittest.mock import patch
+
+        shape = [625, 625]
+        for dtype, wrong in (("<i8", shape), ("<f4", shape), ("<f8", [513, 513])):
+            with self.subTest(dtype=dtype, shape=wrong):
+                width = int(dtype[2:])
+                count = wrong[0] * wrong[1]
+                node, column = array(
+                    source=layout(dtype, wrong, [wrong[1] * width, width], f=False),
+                    raw="00" * (count * width),
+                )
+                cache = owned_cache(node, [column])
+                with self.assertRaisesRegex(ValueError, "element bound"):
+                    comparator._Cache(cache, "Poisson", True, poisson_shape=shape)
+        with self.assertRaisesRegex(ValueError, "Poisson matrix shape"):
+            comparator._Cache(owned_cache(), "Poisson", True, poisson_shape=[626, 626])
+        with patch.object(comparator, "MAX_BYTES", 31):
+            node, column = array(source=layout("<f8", [2, 2], [16, 8], f=False), raw="00" * 32)
+            with self.assertRaisesRegex(ValueError, "numeric bytes"):
+                comparator._Cache(
+                    native_cache(owned_cache(node, [column])),
+                    "Poisson",
+                    False,
+                    poisson_shape=[2, 2],
+                )
+
+
 if __name__ == "__main__":
     unittest.main()

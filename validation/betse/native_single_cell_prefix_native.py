@@ -86,6 +86,8 @@ NATIVE_PINS = {
 }
 METHODS = ("cellVerts", "cellMatrices", "cell_vols", "mem_processing", "near_neigh")
 ENVIRONMENT_STAGES = ("environment", "assign_grid_len", "make_maskM")
+POISSON_STAGES = ("environment_voltage", "environment_current")
+POISSON_ASSIGNMENTS = ("lapENVinv", "lapENV_P_inv")
 # Independent observation schema only; no Cells runtime/tree adapter is used.
 TREE_FIELDS = ("data", "indices", "mins", "maxes", "n", "m", "leafsize", "boxsize")
 ECM_PINS = {
@@ -154,7 +156,12 @@ def digest(path):
 
 
 def methods_for(stop_after="near_neigh"):
-    if type(stop_after) is not str or stop_after not in ("near_neigh", "makeECM", "make_maskM"):
+    if type(stop_after) is not str or stop_after not in (
+        "near_neigh",
+        "makeECM",
+        "make_maskM",
+        "lapENV_P_inv",
+    ):
         raise ValueError("Unknown independent native endpoint")
     if stop_after == "near_neigh":
         return METHODS
@@ -307,9 +314,24 @@ def source_nodes(root, *, stop_after="near_neigh"):
         grid.body = [
             n
             for n in grid.body
-            if isinstance(n, ast.FunctionDef) and n.name in ("__init__", "cell_grid")
+            if isinstance(n, ast.FunctionDef)
+            and n.name
+            in (
+                ("__init__", "cell_grid", "makeLaplacian")
+                if stop_after == "lapENV_P_inv"
+                else ("__init__", "cell_grid")
+            )
         ]
         add(file, (grid,))
+        if stop_after == "lapENV_P_inv":
+            method = next(n for n in grid.body if n.name == "makeLaplacian")
+            sites[file + ":FiniteDiffSolver.makeLaplacian"] = dict(
+                first_line=method.lineno,
+                last_line=method.end_lineno,
+                ast_sha256=hashlib.sha256(
+                    ast.dump(method, include_attributes=False).encode()
+                ).hexdigest(),
+            )
     original = cls("betse/science/cells.py", "Cells")
     selected = (
         "__init__",
@@ -322,17 +344,29 @@ def source_nodes(root, *, stop_after="near_neigh"):
     cells = copy.deepcopy(original)
     cells.body = [n for n in cells.body if isinstance(n, ast.FunctionDef) and n.name in selected]
     make_world = next(n for n in cells.body if n.name == "make_world")
-    stop = next(
-        i
-        for i, n in enumerate(make_world.body)
-        if isinstance(n, ast.Expr)
-        and isinstance(n.value, ast.Call)
-        and isinstance(n.value.func, ast.Attribute)
-        and n.value.func.attr == stop_after
-    )
+    if stop_after == "lapENV_P_inv":
+        stop = next(
+            i
+            for i, n in enumerate(make_world.body)
+            if isinstance(n, ast.Assign)
+            and any(
+                isinstance(t, ast.Attribute) and t.attr == stop_after
+                for target in n.targets
+                for t in ast.walk(target)
+            )
+        )
+    else:
+        stop = next(
+            i
+            for i, n in enumerate(make_world.body)
+            if isinstance(n, ast.Expr)
+            and isinstance(n.value, ast.Call)
+            and isinstance(n.value.func, ast.Attribute)
+            and n.value.func.attr == stop_after
+        )
     make_world.body = make_world.body[: stop + 1]
     add("betse/science/cells.py", (cells,))
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         assignment = next(
             n
             for n in make_world.body
@@ -346,10 +380,22 @@ def source_nodes(root, *, stop_after="near_neigh"):
                 ast.dump(assignment, include_attributes=False).encode()
             ).hexdigest(),
         )
+    if stop_after == "lapENV_P_inv":
+        for line in (503, 504, 511, 512):
+            statement = next(n for n in make_world.body if n.lineno == line)
+            sites["betse/science/cells.py:make_world.assignment_" + str(line)] = dict(
+                first_line=statement.lineno,
+                last_line=statement.end_lineno,
+                ast_sha256=hashlib.sha256(
+                    ast.dump(statement, include_attributes=False).encode()
+                ).hexdigest(),
+            )
     parameters = cls("betse/science/parameters.py", "Parameters")
     stores = {n.lineno: n for n in ast.walk(parameters) if isinstance(n, ast.Assign)}
     wrapper = ast.parse("def store_parameters(self):\n    pass\n").body[0]
-    store_lines = (521, *STORE_LINES) if stop_after == "make_maskM" else STORE_LINES
+    store_lines = (
+        (521, *STORE_LINES) if stop_after in ("make_maskM", "lapENV_P_inv") else STORE_LINES
+    )
     wrapper.body = [copy.deepcopy(stores[line]) for line in store_lines]
     ast.fix_missing_locations(wrapper)
     add("betse/science/parameters.py", (wrapper,))
@@ -590,6 +636,45 @@ def observe_tree(constructor, args, kwargs, trees, events, capture, record_excep
     return tree
 
 
+def observe_poisson_helper(
+    original, name, stage, args, kwargs, helpers, events, capture, record_exception
+):
+    """Observe one unchanged helper call, retaining its immediate return bytes."""
+    row = dict(
+        kind="poisson_helper",
+        stage=stage,
+        name=name,
+        request=capture(dict(args=args, kwargs=kwargs)),
+    )
+    events.append(row)
+    try:
+        value = original(*args, **kwargs)
+    except Exception as error:
+        row["outcome"] = "raised"
+        try:
+            row["source_error"] = record_exception(error)
+        except Exception as secondary:
+            row["error_capture_failure"] = dict(
+                type=type(secondary).__name__, message=str(secondary)
+            )
+        raise
+    # Keep the original object; zeros is subsequently mutated by the literal
+    # method. Its immediate wire capture is distinct from later boundaries.
+    helpers.append((stage, name, value))
+    row["outcome"] = "returned"
+    row["output"] = capture(value)
+    return value
+
+
+def poisson_assignment(caller, stage, returned):
+    """Verify the actual native assignment, without copying or replacing it."""
+    index = POISSON_STAGES.index(stage)
+    if type(returned) is not tuple or len(returned) != 2:
+        raise ValueError("Original makeLaplacian return pair is missing")
+    if getattr(caller, POISSON_ASSIGNMENTS[index], None) is not returned[1]:
+        raise ValueError("Original Poisson inverse assignment identity changed")
+
+
 def evaluate(raw, configuration, native_root, *, record_exception, stop_after="near_neigh"):
     """One actual source execution; caller must own resource/release gates."""
     declared, image_path = inputs(raw, configuration, stop_after=stop_after)
@@ -600,7 +685,7 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
     from scipy.interpolate import RectBivariateSpline
     from scipy.spatial import ConvexHull, Delaunay, cKDTree
 
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         from scipy.interpolate import griddata
         from scipy.ndimage import gaussian_filter
 
@@ -719,7 +804,7 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
     )
     if stop_after != "near_neigh":
         namespace["fd"] = SimpleNamespace(FiniteDiffSolver=namespace["FiniteDiffSolver"])
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         namespace.update(interp=SimpleNamespace(griddata=griddata), gaussian_filter=gaussian_filter)
     recipe, controls, image = (declared[k] for k in ("seed_recipe", "controls", "image_recipe"))
     parameter_values = dict(
@@ -735,6 +820,8 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
     ecm = dict(before=None, cache=None, stream_before=None, stream_after=None)
     environment = dict(before=None, stages=[], cache=None, stream_before=None, stream_after=None)
     environment_trees = []
+    poisson = dict(before=None, stages=[], cache=None, stream_before=None, stream_after=None)
+    poisson_results, poisson_helpers = [], []
 
     def public(*, ecm=False):
         caller = state["caller"]
@@ -804,6 +891,98 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
             record_exception,
         )
 
+    def poisson_snapshot():
+        try:
+            return dict(
+                environment=wire.capture(public_environment()),
+                outputs=wire.capture(dict(results=poisson_results, helpers=poisson_helpers)),
+            )
+        except Exception as error:
+            state["capture_error"] = record_exception(error)
+            raise CaptureFailure("Native Poisson boundary capture failed") from error
+
+    def finish_poisson_assignment():
+        if len(poisson_results) == len(poisson["stages"]):
+            return
+        try:
+            if len(poisson_results) != len(poisson["stages"]) + 1:
+                raise ValueError("A native Poisson assignment boundary was missed")
+            stage, returned = poisson_results[-1]
+            poisson_assignment(state["caller"], stage, returned)
+            boundary = poisson_snapshot()
+        except CaptureFailure:
+            raise
+        except Exception as error:
+            state["capture_error"] = record_exception(error)
+            raise CaptureFailure("Native Poisson assignment observation failed") from error
+        poisson["stages"].append((stage, boundary))
+        poisson["cache"] = boundary
+        source_site = "betse/science/cells.py:make_world.assignment_" + (
+            "504" if stage == POISSON_STAGES[0] else "512"
+        )
+        events.append(
+            dict(
+                kind="inline_assignment_observed",
+                observed_at=(
+                    "next_original_callback"
+                    if stage == POISSON_STAGES[0]
+                    else "truncated_make_world_return"
+                ),
+                source_site=source_site,
+                site=sites[source_site],
+                original_inverse_identity=True,
+            )
+        )
+
+    if stop_after == "lapENV_P_inv":
+        original_grid_method = namespace["FiniteDiffSolver"].makeLaplacian
+        original_zeros, original_pinv = np.zeros, np.linalg.pinv
+
+        def poisson_helper(name, original, args, kwargs):
+            return observe_poisson_helper(
+                original,
+                name,
+                state["stage"],
+                args,
+                kwargs,
+                poisson_helpers,
+                events,
+                capture_environment,
+                record_exception,
+            )
+
+        def poisson_zeros(*args, **kwargs):
+            return poisson_helper("zeros", original_zeros, args, kwargs)
+
+        def poisson_pinv(*args, **kwargs):
+            return poisson_helper("pinv", original_pinv, args, kwargs)
+
+        def observed_laplacian(self, *args, **kwargs):
+            if len(poisson_results) >= len(POISSON_STAGES):
+                raise ValueError("Undeclared native Poisson call")
+            if self is not state["caller"].grid_obj:
+                raise ValueError("Native Poisson grid owner changed")
+            stage = POISSON_STAGES[len(poisson_results)]
+            state["stage"] = stage
+            if poisson["before"] is None:
+                poisson["stream_before"] = stream()
+                poisson["before"] = poisson_snapshot()
+            # Only the independently compiled grid method sees this narrow
+            # observer namespace. Each delegate is the original retained NumPy
+            # callable, called once with the original arguments.
+            prior_numpy = namespace["np"]
+            namespace["np"] = SimpleNamespace(
+                zeros=poisson_zeros, linalg=SimpleNamespace(pinv=poisson_pinv)
+            )
+            try:
+                returned = original_grid_method(self, *args, **kwargs)
+            finally:
+                namespace["np"] = prior_numpy
+            poisson_results.append((stage, returned))
+            return returned
+
+        namespace["FiniteDiffSolver"].makeLaplacian = observed_laplacian
+
     def geometry_aliases():
         caller = state["caller"]
         return dict(
@@ -868,6 +1047,10 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
         setattr(namespace["Cells"], name, observed)
 
     def callback(*args, **kwargs):
+        if stop_after == "lapENV_P_inv":
+            # Original line 507 follows the voltage assignment. Capturing here
+            # does not replace any original caller statement or matrix call.
+            finish_poisson_assignment()
         events.append(dict(kind="normalized_phase_callback", args=args, kwargs=kwargs))
 
     error, aliases = None, None
@@ -928,6 +1111,9 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
             state["caller"] = namespace["Cells"](parameter)
             state["stage"] = "make_world_prefix"
             state["caller"].make_world(phase)
+            if stop_after == "lapENV_P_inv":
+                finish_poisson_assignment()
+                poisson["stream_after"] = stream()
             if stop_after != "near_neigh" and metadata_records(native_root) != metadata:
                 raise ValueError("Native descriptor producers changed during source work")
         except Exception as exc:
@@ -947,9 +1133,22 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
                     environment["stream_after"] = stream()
                 except Exception as capture_error:
                     state["capture_error"] = record_exception(capture_error)
+            if poisson["stream_before"] is not None and poisson["stream_after"] is None:
+                try:
+                    poisson["stream_after"] = stream()
+                except Exception as capture_error:
+                    state["capture_error"] = record_exception(capture_error)
             try:
                 if state["caller"] is not None and hasattr(state["caller"], "mesh"):
-                    if stop_after == "make_maskM" and environment["stream_before"] is not None:
+                    if poisson["stream_before"] is not None:
+                        # ENV.cache is the retained pre-Poisson boundary. Do not
+                        # overwrite it with a later partial Poisson owner.
+                        poisson["cache"] = poisson_snapshot()
+                        partial = poisson["cache"]["environment"]
+                    elif (
+                        stop_after in ("make_maskM", "lapENV_P_inv")
+                        and environment["stream_before"] is not None
+                    ):
                         partial = wire.capture(public_environment())
                         environment["cache"] = partial
                     else:
@@ -995,7 +1194,7 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
         and [s[0] for s in stages] == ["before", *METHODS]
         and (stop_after == "near_neigh" or all(v is not None for v in ecm.values()))
         and (
-            stop_after != "make_maskM"
+            stop_after not in ("make_maskM", "lapENV_P_inv")
             or (
                 [s[0] for s in environment["stages"]] == list(ENVIRONMENT_STAGES)
                 and all(
@@ -1003,6 +1202,19 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
                     for k in ("before", "cache", "stream_before", "stream_after")
                 )
                 and len(environment_trees) == 3
+            )
+        )
+        and (
+            stop_after != "lapENV_P_inv"
+            or (
+                [s[0] for s in poisson["stages"]] == list(POISSON_STAGES)
+                and [s[0] for s in poisson_results] == list(POISSON_STAGES)
+                and [(s, n) for s, n, _ in poisson_helpers]
+                == [(stage, name) for stage in POISSON_STAGES for name in ("zeros", "pinv")]
+                and all(
+                    poisson[k] is not None
+                    for k in ("before", "cache", "stream_before", "stream_after")
+                )
             )
         )
     )
@@ -1031,7 +1243,7 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
     )
     if stop_after != "near_neigh":
         record.update(stop_after=stop_after, ecm=ecm, shared_native_metadata=metadata)
-    if stop_after == "make_maskM":
+    if stop_after in ("make_maskM", "lapENV_P_inv"):
         record.update(
             environment=environment,
             environment_observation=dict(
@@ -1046,6 +1258,18 @@ def evaluate(raw, configuration, native_root, *, record_exception, stop_after="n
                     "scipy.ndimage.gaussian_filter",
                     "copy.deepcopy",
                 ),
+            ),
+        )
+    if stop_after == "lapENV_P_inv":
+        record.update(
+            poisson=poisson,
+            poisson_observation=dict(
+                stages=POISSON_STAGES,
+                helpers=("numpy.zeros", "numpy.linalg.pinv"),
+                actual_return_objects_retained=True,
+                immediate_helper_returns_in_events=True,
+                extra_numerical_calls=0,
+                normalized_observers_are_native_methods=False,
             ),
         )
     return finalize(

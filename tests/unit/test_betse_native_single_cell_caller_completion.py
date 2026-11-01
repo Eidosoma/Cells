@@ -1006,3 +1006,158 @@ def test_software_primary_prefix_failure_keeps_entered_operator_work(
     assert entries[0]["status"] == "entered_not_success_credit"
     assert caught.value.partial["parents"]["parameter"] is h.state.parameter
     save(evidence, "failure", caught.value)
+
+
+def _synthetic_profile_entry(module, qualname, body="return None", **values):
+    namespace = dict(__name__=module, **values)
+    exec(
+        compile("def entry():\n    " + body + "\n", "<synthetic-work-profile>", "exec"),
+        namespace,
+    )
+    entry = namespace["entry"]
+    entry.__code__ = entry.__code__.replace(
+        co_name=qualname.rsplit(".", 1)[-1], co_qualname=qualname
+    )
+    return entry
+
+
+@pytest.mark.parametrize(
+    "site",
+    [
+        "_atoms",
+        "_atoms.<locals>.visit",
+        "_module_bindings.<locals>.<genexpr>",
+        "_check_modules.<locals>.<genexpr>",
+        "_check_modules.<locals>.<genexpr>.<genexpr>",
+        "validate.<locals>.<genexpr>",
+        "_bindings.<locals>.<genexpr>",
+    ],
+)
+def test_software_primary_metadata_counts_separate_sites_phases_and_executions(site, evidence):
+    module = "cells.processes.betse_native_single_cell_grid_alias"
+    helper = _synthetic_profile_entry(module, site)
+    wrapper = dict(__name__=meshes.__name__, helper=helper)
+    exec(
+        compile("def _execute(context):\n    helper()\n", "<synthetic-work-wrapper>", "exec"),
+        wrapper,
+    )
+    context = SimpleNamespace(stage="environment", work=[])
+    with done._account_prefix(context, _source_modules=(SimpleNamespace(__name__=module),)):
+        for phase in ("environment", "make_maskM"):
+            context.stage = phase
+            for execution_kind in ("authentication", "continuation"):
+                for _ in range(3):
+                    wrapper["_execute"](SimpleNamespace(phase=execution_kind))
+    save(evidence, "work", context.work)
+    rows = [r for r in context.work if r["module"] == module]
+    assert len(rows) == 4
+    assert {(r["phase"], r["execution"]): r["attempts"] for r in rows} == {
+        (phase, execution_kind): 3
+        for phase in ("environment", "make_maskM")
+        for execution_kind in ("authentication", "continuation")
+    }
+    assert all(r["layer"] == "metadata_aggregate" and not r["native_body_credit"] for r in rows)
+    assert [r["sequence"] for r in context.work] == list(range(len(context.work)))
+
+
+def test_software_primary_metadata_repetition_exceeds_old_row_count_without_dropping_work(evidence):
+    module = "cells.processes.betse_native_single_cell_grid_alias"
+    helper = _synthetic_profile_entry(module, "_atoms")
+    context = SimpleNamespace(stage="make_maskM", work=[])
+    try:
+        with done._account_prefix(context, _source_modules=(SimpleNamespace(__name__=module),)):
+            for _ in range(100005):
+                helper()
+    finally:
+        save(evidence, "ledger-size", dict(rows=len(context.work)))
+        save(evidence, "ledger-ends", context.work[:8] + context.work[-8:])
+    assert len(context.work) == 1
+    assert context.work[0]["attempts"] == 100005
+
+
+def test_software_primary_metadata_aggregation_preserves_factory_read_and_failed_body_order(
+    evidence,
+):
+    module = "cells.processes.betse_native_single_cell_grid_alias"
+    helper = _synthetic_profile_entry(module, "_atoms")
+    factory = _synthetic_profile_entry(module, "_descriptor_from_source")
+    getter = _synthetic_profile_entry(module, "__get__")
+    cause = SyntheticSourceCause("original synthetic operator cause")
+    error = SyntheticSourceFailure("failed synthetic operator")
+    operator = _synthetic_profile_entry(
+        core.lifecycle.source.__name__,
+        "create_core_operators",
+        "raise error from cause",
+        error=error,
+        cause=cause,
+    )
+    context = SimpleNamespace(stage="make_maskM", work=[])
+    with pytest.raises(SyntheticSourceFailure) as caught:
+        with done._account_prefix(context, _source_modules=(SimpleNamespace(__name__=module),)):
+            helper()
+            factory()
+            helper()
+            getter()
+            helper()
+            operator()
+    save(evidence, "work", context.work)
+    save(evidence, "primary-error", caught.value)
+    assert caught.value is error and caught.value.__cause__ is cause
+    assert [r["entry_method"] for r in context.work] == [
+        "_atoms",
+        "_descriptor_from_source",
+        "__get__",
+        "create_core_operators",
+    ]
+    assert context.work[0]["attempts"] == 3
+    assert all(r["layer"] == "body" and "attempts" not in r for r in context.work[1:])
+
+
+def test_software_primary_ordered_source_row_allowance_is_unchanged(evidence):
+    calls = []
+    operator = _synthetic_profile_entry(
+        core.lifecycle.source.__name__, "create_core_operators", "calls.append(1)", calls=calls
+    )
+    context = SimpleNamespace(stage="mesh", work=[None] * 100000)
+    previous = sys.getprofile()
+    with pytest.raises(ValueError, match="Bounded prefix work ledger exhausted") as caught:
+        with done._account_prefix(context):
+            operator()
+    save(evidence, "refusal", caught.value)
+    save(evidence, "counts", dict(rows=len(context.work), actual_body_calls=len(calls)))
+    assert not calls and len(context.work) == 100000
+    assert sys.getprofile() is previous
+
+
+def test_software_primary_metadata_aggregate_still_chains_previous_rejection(evidence):
+    module = "cells.processes.betse_native_single_cell_grid_alias"
+    calls = []
+    helper = _synthetic_profile_entry(module, "_atoms", "calls.append(1)", calls=calls)
+    previous = sys.getprofile()
+    error = SyntheticSourceFailure("outer source guard refusal")
+    attempts = []
+
+    def outer(frame, event, arg):
+        if event == "call" and frame.f_code is helper.__code__:
+            attempts.append(event)
+            if len(attempts) == 2:
+                raise error
+        if previous is not None:
+            previous(frame, event, arg)
+
+    context = SimpleNamespace(stage="make_maskM", work=[])
+    sys.setprofile(outer)
+    try:
+        with pytest.raises(SyntheticSourceFailure) as caught:
+            with done._account_prefix(context, _source_modules=(SimpleNamespace(__name__=module),)):
+                helper()
+                helper()
+        restored = sys.getprofile() is outer
+    finally:
+        sys.setprofile(previous)
+    save(evidence, "work", context.work)
+    save(evidence, "outer-error", caught.value)
+    save(evidence, "guard", dict(attempts=attempts, body_calls=calls, restored=restored))
+    assert caught.value is error and restored
+    assert len(attempts) == 2 and calls == [1]
+    assert len(context.work) == 1 and context.work[0]["attempts"] == 2
