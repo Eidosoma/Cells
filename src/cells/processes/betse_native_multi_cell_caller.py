@@ -56,6 +56,7 @@ _TOOL_METHODS = {
 }
 _ACTIVE, _ISSUED = WeakKeyDictionary(), WeakKeyDictionary()
 _FORWARDED = WeakKeyDictionary()
+_READ_LEASES = WeakKeyDictionary()
 _LOCK = RLock()
 _MASK_TOKEN_FIELDS = (
     "kind",
@@ -67,6 +68,25 @@ _MASK_TOKEN_FIELDS = (
     "clipcurve_m",
 )
 _MASK_BRIDGE = "cells.owned_image_mask_token_flipud_to_frozen_comparison@1"
+
+
+@dataclass(frozen=True, slots=True)
+class _ReadLease:
+    token: object
+    thread: int
+    check: object
+    invoke: object
+    callbacks: tuple
+
+
+def _lease_callbacks(check, invoke):
+    return (*atoms._atoms(check), *atoms._atoms(invoke))
+
+
+def _check_mapping_lease(lease):
+    if type(lease) is not _ReadLease or lease.thread != get_ident():
+        raise MultiCellRejected("Read-only mapping lease changed", stage="mapping_lease")
+    accounting._check_binding_identity(_lease_callbacks(lease.check, lease.invoke), lease.callbacks)
 
 
 @dataclass(frozen=True, slots=True)
@@ -341,6 +361,43 @@ def _context(obj):
     return context
 
 
+@contextmanager
+def _mapping_read_lease(caller, *, token, check, invoke):
+    """Lease this actual caller for selected read-only source method calls.
+
+    The issuer validates its typed continuing owner; this hook does not reopen
+    the already-consumed cell_index owner's numeric caches. No method is
+    installed on an instance and no geometry/parameter value is supplied.
+    """
+    with _LOCK:
+        if token is None or caller in _READ_LEASES or type(caller) is not _Caller:
+            raise MultiCellRejected("Read-only mapping lease unavailable", stage="mapping_lease")
+        from cells.processes import betse_native_multi_cell_tissue_to_grid as mappings
+
+        mappings._authorize_lease(caller, token, check, invoke)
+        check()
+        lease = _ReadLease(token, get_ident(), check, invoke, _lease_callbacks(check, invoke))
+        _READ_LEASES[caller] = lease
+        try:
+            yield lease
+            _check_mapping_lease(lease)
+            check()
+        finally:
+            if _READ_LEASES.get(caller) is lease:
+                _READ_LEASES.pop(caller)
+
+
+def _mapping_entry(caller, name, *args, **kwargs):
+    lease = _READ_LEASES.get(caller)
+    if lease is None or lease.thread != get_ident():
+        raise MultiCellRejected(
+            "Actual caller mapping source entry unavailable", stage="mapping_call_unavailable"
+        )
+    _check_mapping_lease(lease)
+    lease.check()
+    return lease.invoke(name, caller, *args, **kwargs)
+
+
 def _observe(context, kind, raw):
     try:
         context.events.append((kind, raw))
@@ -420,6 +477,10 @@ class _Caller(callers.source.CellsKernel):
         return value
 
     def __setattr__(self, name, value):
+        if self in _READ_LEASES:
+            raise MultiCellRejected(
+                "Caller mutation during a read-only mapping lease", stage="mapping_read_only"
+            )
         context = _ACTIVE.get(self)
         if name == "mesh" and context is not None and context.active:
             if not context.constructor_completed or value is not context.kernel:
@@ -430,6 +491,12 @@ class _Caller(callers.source.CellsKernel):
             _stop(context)
         else:
             object.__setattr__(self, name, value)
+
+    def map_cells_centre_to_grids_centre(self, *args, **kwargs):
+        return _mapping_entry(self, "map_cells_centre_to_grids_centre", *args, **kwargs)
+
+    def map_cells_centre_to_points(self, *args, **kwargs):
+        return _mapping_entry(self, "map_cells_centre_to_points", *args, **kwargs)
 
     def __reduce_ex__(self, protocol):
         raise TypeError("Live multi-cell caller authority cannot be serialized")
@@ -893,6 +960,12 @@ def _bindings():
         atoms._GridAlias.__set__,
         _new_parameters,
         _claim_for_environment,
+        _mapping_read_lease,
+        _mapping_entry,
+        _lease_callbacks,
+        _check_mapping_lease,
+        _Caller.map_cells_centre_to_grids_centre,
+        _Caller.map_cells_centre_to_points,
         *[getattr(_Runtime, name) for name in _NATIVE],
         *[getattr(_Tools, name) for name in _TOOL_METHODS],
         callers._Tape.rand,
@@ -909,12 +982,14 @@ def _bindings():
         _Parameters,
         _Tools,
         _Observer,
+        _ReadLease,
         callers._Tape,
         images._Tape,
         initial._Random,
         initial._Tree,
     )
     return (
+        _READ_LEASES,
         _MASK_TOKEN_FIELDS,
         _MASK_BRIDGE,
         np.ndarray,

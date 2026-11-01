@@ -171,29 +171,86 @@ def _file_bytes(image):
     return actual
 
 
+def _trace_spec():
+    keys = tuple(source.SITES)
+    sites = tuple((name, tuple(info.items())) for name, info in source.SITES.items())
+    methods = frozenset(keys) - {"type_check"}
+    methods = methods.union(
+        (
+            "__init__",
+            "get_image_mask",
+            "pick_cells",
+            "pick_cells_and_mems",
+            "get_clipped_points_index",
+        )
+    )
+    return (
+        source,
+        source.__file__,
+        source.SITES,
+        keys,
+        sites,
+        str(Path(source.__file__).resolve()),
+        methods,
+    )
+
+
+def _trace_bindings():
+    return (
+        Path,
+        Path.resolve,
+        getattr(Path.resolve, "__code__", None),
+        *tuple(
+            value
+            for fn in (
+                _trace_spec,
+                _trace_bindings,
+                _Tape.__init__,
+                _Tape.trace,
+                _Tape._check_trace_metadata,
+            )
+            for value in (fn, fn.__code__)
+        ),
+    )
+
+
 class _Tape:
     def __init__(self, image):
         self.image = image
         self.events, self.locals, self.splines, self.opened = [], {}, [], []
         self.picker = self.mask = self.hull = None
         self.descriptors, self.receipts, self.recovery_errors = [], [], []
+        self._trace_metadata = _trace_spec()
+        self._trace_callable_bindings = _trace_bindings()
+
+    def _check_trace_metadata(self):
+        current = _trace_bindings()
+        if len(current) != len(self._trace_callable_bindings) or any(
+            a is not b for a, b in zip(current, self._trace_callable_bindings, strict=True)
+        ):
+            raise ValueError("Image trace callable/code authority changed")
+        old, fresh = self._trace_metadata, _trace_spec()
+        if (
+            fresh[0] is not old[0]
+            or fresh[2] is not old[2]
+            or any(fresh[i] != old[i] for i in (1, 3, 4, 5, 6))
+        ):
+            raise ValueError("Image trace source metadata changed")
 
     def trace(self, frame, event, arg):
-        methods = set(source.SITES) - {"type_check"}
-        methods.update(
-            (
-                "__init__",
-                "get_image_mask",
-                "pick_cells",
-                "pick_cells_and_mems",
-                "get_clipped_points_index",
-            )
-        )
+        if event not in ("call", "return", "exception"):
+            return self.trace
+        metadata = self._trace_metadata
         if (
-            frame.f_code.co_filename == str(Path(source.__file__).resolve())
-            and frame.f_code.co_name in methods
-            and event in ("call", "return", "exception")
+            source is not metadata[0]
+            or source.__file__ != metadata[1]
+            or source.SITES is not metadata[2]
         ):
+            raise ValueError("Image trace source selectors changed")
+        if frame.f_code.co_filename != metadata[5]:
+            return self.trace
+        self._check_trace_metadata()
+        if frame.f_code.co_name in metadata[6]:
             name = frame.f_code.co_qualname
             self.locals[name] = dict(frame.f_locals)
             obj = frame.f_locals.get("self")
@@ -328,6 +385,7 @@ def _linear(mask):
 
 
 def _audit(tape, prelude):
+    tape._check_trace_metadata()
     mask = tape.mask
     local = tape.locals["TissuePickerImageMask.__init__"]
     linear = _linear(mask)
@@ -482,6 +540,8 @@ def _graph(tape):
             ("hull", tape.hull),
             ("locals", tape.locals),
             ("events", tape.events),
+            ("trace_metadata", getattr(tape, "_trace_metadata", None)),
+            ("trace_callable_bindings", getattr(tape, "_trace_callable_bindings", None)),
         )
     )
     return tuple(objects), dict(roots=roots, nodes=nodes)
