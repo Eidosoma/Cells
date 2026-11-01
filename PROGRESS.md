@@ -435,7 +435,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   One focused stub control passed in **3.27 seconds, 216.8 MiB sampled peak
   RSS**, proving that the same active recorder reaches setup and that primary
   errors survive cleanup. This does not rerun or extend the earlier 247 checks.
-  Key's separate independent original-source reference is under review.
+  Key's [independent original-source reference preparation is reviewed](/mnt/workspaces/Cells/molecule-kinetic-reload-reference-development-20261101-01/root-source-review.json).
+  [Saved-result review](/mnt/workspaces/Cells/molecule-kinetic-reload-reference-development-20261101-01/root-results-review.json)
+  verifies **73 blocked-source controls plus one producer check**, all 12
+  outcomes (nine completed, three failed), and 25 byte archives, including
+  one intentionally incomplete reader-error diagnostic. The final 73 took
+  **21.08 seconds, 246.5 MiB sampled peak RSS**. Before actual use, Key must
+  repair capture of legitimate retained column-array views and preserve the
+  exact bits of Python NaN scalars. The frozen reference retains its earlier
+  recorder dependencies; the separate forwarding fix does not recredit it.
   Static inspection also found that the inherited `tex_val = str` helper differs
   from BETSE's original formatter; full cached metadata must be compared without
   normalizing that difference away. No numerical mismatch has been observed.
