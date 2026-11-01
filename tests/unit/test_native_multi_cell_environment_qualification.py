@@ -596,6 +596,198 @@ def test_capture_metadata_plan_cannot_drop_or_widen_policy(tmp_path, monkeypatch
     assert snapshots == ["verified"]
 
 
+@pytest.mark.parametrize("wall_seconds", [480, 1800])
+def test_diagnostic_wall_allowance_changes_only_time(wall_seconds):
+    original = dict(q.shared.LIMITS)
+    limits = q._diagnostic_limits(wall_seconds)
+    assert limits == dict(original, timeout=wall_seconds)
+    assert limits is not q.shared.LIMITS and q.shared.LIMITS == original
+    assert q.prepare.__kwdefaults__["wall_seconds"] == 480
+
+
+@pytest.mark.parametrize("wall_seconds", [None, True, 480.0, 0, 60, 481, 1801, 3600])
+def test_diagnostic_wall_allowance_refuses_unknown_budget(wall_seconds):
+    with pytest.raises(ValueError, match="diagnostic wall allowance"):
+        q._diagnostic_limits(wall_seconds)
+
+
+@pytest.mark.parametrize(
+    "field,value", [("timeout", 3600), ("max_rss_bytes", 2**31), ("min_available_bytes", 0)]
+)
+def test_diagnostic_wall_plan_preserves_all_other_resource_guards(
+    tmp_path, monkeypatch, field, value
+):
+    plan = dict(
+        kind=q.KINDS[0],
+        purpose=q.PURPOSE,
+        cases=list(q.CASES),
+        configuration=q.configuration(),
+        fixture_controls=q.CONTROLS,
+        limits=q._diagnostic_limits(1800),
+        stop_after=q.ENDPOINT,
+        execution_stages=list(q.STAGES),
+        ordinary_methods=list(q.native.METHODS),
+        capture_transport=q.payload.KIND,
+        capture_policy=q.CAPTURE_POLICY,
+        source_review_required_before_release=True,
+        automatic_retry=False,
+        cpu=3,
+        snapshot_sha256="a" * 64,
+        runner_sha256="a" * 64,
+        external_inputs=[],
+        **q.shared.NO_CREDIT,
+    )
+    verified = []
+    monkeypatch.setattr(q.shared, "output_path", lambda p: p)
+    monkeypatch.setattr(q.source_snapshot, "digest", lambda p: "a" * 64)
+    monkeypatch.setattr(q.shared, "read", lambda p: plan)
+    monkeypatch.setattr(q.source_snapshot, "verify", lambda *a, **k: verified.append("snapshot"))
+    monkeypatch.setattr(q.shared, "verify_pins", lambda p: None)
+    monkeypatch.setattr(q, "_native_inputs", lambda p: {})
+    assert q.verify_plan(tmp_path, "a" * 64) is plan
+    assert verified == ["snapshot"]
+    plan["limits"][field] = value
+    with pytest.raises(ValueError, match="allowance|widened"):
+        q.verify_plan(tmp_path, "a" * 64)
+    assert verified == ["snapshot"]
+
+
+@pytest.mark.parametrize("after_output_creation", [False, True])
+def test_diagnostic_supervisor_retains_early_and_late_controller_failure(
+    tmp_path, monkeypatch, after_output_creation
+):
+    output = tmp_path / "diagnostic"
+    primary = OSError("controller failure")
+    cause = ValueError("original cause")
+
+    def fail(*args):
+        if after_output_creation:
+            output.mkdir()
+            (output / "earlier-evidence.txt").write_text("unchanged")
+        raise primary from cause
+
+    monkeypatch.setattr(q.shared, "execution_output", lambda path, *a: path)
+    monkeypatch.setattr(q, "verify_plan", lambda *a: {"runtime_paths": []})
+    monkeypatch.setattr(q, "launch", fail)
+    with pytest.raises(OSError) as caught:
+        q.supervised_launch(tmp_path / "prepared", "a" * 64, "release", q.CASES[0], output)
+    assert caught.value is primary and primary.__cause__ is cause
+    saved = q.shared.read(output / "controller-failure.json")
+    assert saved["status"] == "failed" and saved["stage"] == "controller"
+    graph = saved["failure"]
+    node = graph["nodes"][graph["root"]]
+    assert node["message"] == str(primary) and node["type"].endswith("OSError")
+    assert graph["nodes"][node["cause"]]["message"] == str(cause)
+    assert saved["automatic_retry"] is False
+    if after_output_creation:
+        assert (output / "earlier-evidence.txt").read_text() == "unchanged"
+
+
+def test_diagnostic_supervisor_preserves_success_and_refuses_existing_output(tmp_path, monkeypatch):
+    output = tmp_path / "diagnostic"
+    result = {"status": "completed_unqualified"}
+    entered = []
+
+    def complete(*args):
+        entered.append(True)
+        output.mkdir()
+        q.shared.write(output / "result.json", result)
+        return result
+
+    monkeypatch.setattr(q.shared, "execution_output", lambda path, *a: path)
+    monkeypatch.setattr(q, "verify_plan", lambda *a: {"runtime_paths": []})
+    monkeypatch.setattr(q, "launch", complete)
+    args = (tmp_path / "prepared", "a" * 64, "release", q.CASES[0], output)
+    assert q.supervised_launch(*args) is result
+    before = (output / "result.json").read_bytes()
+    with pytest.raises(ValueError, match="fresh supervised"):
+        q.supervised_launch(*args)
+    assert entered == [True] and (output / "result.json").read_bytes() == before
+    assert not (output / "controller-failure.json").exists()
+
+
+@pytest.mark.parametrize("target", ["safe", "overlay_child", "overlay_parent", "prepared"])
+def test_diagnostic_supervisor_real_output_domain_precedes_failure_writer(
+    tmp_path, monkeypatch, target
+):
+    prepared = tmp_path / "prepared"
+    overlay = tmp_path / "runtime" / "overlay"
+    prepared.mkdir()
+    overlay.mkdir(parents=True)
+    output = {
+        "safe": tmp_path / "run",
+        "overlay_child": overlay / "new-child",
+        "overlay_parent": overlay.parent,
+        "prepared": prepared / "new-child",
+    }[target]
+    calls = []
+    primary = OSError("startup failure")
+
+    def fail(*args):
+        calls.append(args)
+        raise primary
+
+    monkeypatch.setattr(q.shared, "BASE", tmp_path)
+    monkeypatch.setattr(q.shared, "NATIVE", tmp_path / "native")
+    monkeypatch.setattr(q, "verify_plan", lambda *a: {"runtime_paths": [str(overlay)]})
+    monkeypatch.setattr(q, "launch", fail)
+    before = sorted(str(p.relative_to(tmp_path)) for p in tmp_path.rglob("*"))
+    if target == "safe":
+        with pytest.raises(OSError) as caught:
+            q.supervised_launch(prepared, "a" * 64, "release", q.CASES[0], output)
+        assert caught.value is primary and len(calls) == 1
+        assert q.shared.read(output / "controller-failure.json")["stage"] == "controller"
+    else:
+        with pytest.raises(ValueError, match="overlaps"):
+            q.supervised_launch(prepared, "a" * 64, "release", q.CASES[0], output)
+        assert not calls
+        assert sorted(str(p.relative_to(tmp_path)) for p in tmp_path.rglob("*")) == before
+
+
+@pytest.mark.parametrize("failed_capture", ["mkdir", "encode", "write"])
+def test_diagnostic_supervisor_secondary_capture_never_replaces_primary(
+    tmp_path, monkeypatch, failed_capture
+):
+    output = tmp_path / "run"
+    primary, cause, secondary = OSError("primary"), ValueError("cause"), RuntimeError("capture")
+
+    def fail(*args):
+        raise primary from cause
+
+    def capture(*args, **kwargs):
+        raise secondary
+
+    monkeypatch.setattr(q.shared, "BASE", tmp_path)
+    monkeypatch.setattr(q.shared, "NATIVE", tmp_path / "native")
+    monkeypatch.setattr(q, "verify_plan", lambda *a: {"runtime_paths": []})
+    monkeypatch.setattr(q, "launch", fail)
+    if failed_capture == "mkdir":
+        original = type(output).mkdir
+
+        def mkdir(path, *args, **kwargs):
+            return capture() if path == output else original(path, *args, **kwargs)
+
+        monkeypatch.setattr(type(output), "mkdir", mkdir)
+    elif failed_capture == "encode":
+        monkeypatch.setattr(q.shared, "exception_record", capture)
+    else:
+        original_write = q.shared.write
+
+        def write(path, value):
+            return (
+                capture()
+                if path == output / "controller-failure.json"
+                else original_write(path, value)
+            )
+
+        monkeypatch.setattr(q.shared, "write", write)
+    with pytest.raises(OSError) as caught:
+        q.supervised_launch(tmp_path / "prepared", "a" * 64, "release", q.CASES[0], output)
+    assert caught.value is primary and primary.__cause__ is cause
+    assert primary.controller_capture_error is secondary
+    assert primary.__notes__ == ["Controller failure evidence could not be saved."]
+
+
 def chain(fail=None):
     calls, seen = [], {}
     initial_request, clip_request, life_request = object(), object(), object()

@@ -511,32 +511,78 @@ class WorkLog:
     @contextmanager
     def active(self):
         previous = sys.getprofile()
+        # Code objects are immutable. Retain their identities while cached so
+        # object-id reuse cannot change a recorded location. This cache only
+        # avoids metadata reconstruction; it never caches authority checks.
+        locations = {}
         with self.path.open("x") as stream:
 
             def profile(frame, event, arg):
                 if previous is not None:
                     previous(frame, event, arg)
-                filename = frame.f_code.co_filename
-                if event not in ("call", "c_call") or not filename.startswith(self.source):
+                if event not in ("call", "c_call"):
                     return
-                relative = filename[len(self.source) :]
-                if not relative.startswith(("src/cells/", "validation/betse/")) or relative == OWN:
-                    return
+                code = frame.f_code
+                location = locations.get(id(code))
+                if location is None or location[0] is not code or location[1] != self.source:
+                    filename = code.co_filename
+                    if not filename.startswith(self.source):
+                        return
+                    relative = filename[len(self.source) :]
+                    if (
+                        not relative.startswith(("src/cells/", "validation/betse/"))
+                        or relative == OWN
+                    ):
+                        return
+                    if len(locations) >= 4096:
+                        locations.clear()
+                    location = (
+                        code,
+                        self.source,
+                        relative,
+                        code.co_qualname,
+                        code.co_firstlineno,
+                        relative.endswith(("_source.py", "_kernel.py")),
+                    )
+                    locations[id(code)] = location
                 if self._retaining_failure:
                     self.failure_retention_entries += 1
                     return
-                row = dict(
-                    sequence=self.count,
-                    phase=self.phase,
-                    event=event,
-                    source=relative,
-                    function=frame.f_code.co_qualname,
-                    line=frame.f_code.co_firstlineno,
-                    c_callable=getattr(arg, "__qualname__", None) if event == "c_call" else None,
-                    entry_is_success_or_independent_case=False,
-                )
+                _, _, relative, function, line, literal = location
+                c_callable = getattr(arg, "__qualname__", None) if event == "c_call" else None
                 try:
-                    self.record(stream, row)
+                    key = (self.phase, event, relative, function, line, c_callable)
+                    record = self.record
+                    if (
+                        not literal
+                        and type(self) is WorkLog
+                        and getattr(record, "__func__", None) is _WORKLOG_RECORD
+                        and getattr(record, "__self__", None) is self
+                        and _WORKLOG_RECORD.__code__ is _WORKLOG_RECORD_CODE
+                        and self.phase in self.phases
+                        and key in self.counts
+                        and key[1:] in self.sites
+                    ):
+                        # Repeated nonliteral sites have no ordered row to
+                        # emit. Preserve record()'s mutation order exactly.
+                        counter = self.counts[key]
+                        counter["attempts"] += 1
+                        counter["last_sequence"] = self.count
+                        self.count += 1
+                    else:
+                        record(
+                            stream,
+                            dict(
+                                sequence=self.count,
+                                phase=self.phase,
+                                event=event,
+                                source=relative,
+                                function=function,
+                                line=line,
+                                c_callable=c_callable,
+                                entry_is_success_or_independent_case=False,
+                            ),
+                        )
                 except Exception as error:
                     if self.failure is None:
                         self.failure = exception_record(error)
@@ -558,6 +604,10 @@ class WorkLog:
                     self.failure = exception_record(error)
                     if primary is None:
                         raise
+
+
+_WORKLOG_RECORD = WorkLog.record
+_WORKLOG_RECORD_CODE = WorkLog.record.__code__
 
 
 def _steps(case, output, configuration, stop_after="near_neigh"):

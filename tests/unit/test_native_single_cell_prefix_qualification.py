@@ -829,6 +829,251 @@ def test_worklog_undeclared_phase_refuses_before_recording(tmp_path):
     assert work.summary() == before and not stream.getvalue()
 
 
+def _worklog_frame(source, filename="codec.py"):
+    namespace = {}
+    exec(
+        compile("def probe():\n    return 1\n", str(source / "src/cells" / filename), "exec"),
+        namespace,
+    )
+    return SimpleNamespace(f_code=namespace["probe"].__code__)
+
+
+def test_worklog_group_selection_ignores_parent_directory_and_parameter_keywords():
+    from validation.betse import native_multi_cell_environment_qualification as environment
+
+    wanted = SimpleNamespace(originalname="test_worklog_cached", name="test_worklog_cached[x]")
+    incidental = SimpleNamespace(
+        originalname="test_unrelated",
+        name="test_unrelated[worklog]",
+        nodeid="/worklog-output/test_module.py::test_unrelated[worklog]",
+    )
+    fallback = SimpleNamespace(originalname=None, name="test_stage_timing_capture[value]")
+    items = [wanted, incidental, fallback]
+    selected, deselected = environment._software_selection("worklog", items)
+    assert selected == [wanted, fallback] and deselected == [incidental]
+    assert items == [wanted, incidental, fallback]
+    assert environment._software_selection("all", items) == (items, [])
+
+
+def test_worklog_fast_repetitions_match_direct_record_and_literal_order(tmp_path):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("first", "second"))
+    reference = runner.WorkLog(tmp_path, source, phases=("first", "second"))
+    expected = io.StringIO()
+    metadata = _worklog_frame(source)
+    literal = _worklog_frame(source, "probe_kernel.py")
+    events = [
+        ("first", metadata, "call", None),
+        ("first", metadata, "c_call", len),
+        ("first", literal, "call", None),
+    ] * 100 + [
+        ("second", metadata, "call", None),
+        ("second", literal, "c_call", list.append),
+    ] * 50
+    with work.active():
+        for phase, frame, event, arg in events:
+            work.phase = reference.phase = phase
+            reference.record(
+                expected,
+                dict(
+                    sequence=reference.count,
+                    phase=phase,
+                    event=event,
+                    source="src/cells/" + frame.f_code.co_filename.rsplit("/", 1)[-1],
+                    function=frame.f_code.co_qualname,
+                    line=frame.f_code.co_firstlineno,
+                    c_callable=getattr(arg, "__qualname__", None) if event == "c_call" else None,
+                    entry_is_success_or_independent_case=False,
+                ),
+            )
+            work._active_profile(frame, event, arg)
+    assert work.summary() == reference.summary()
+    assert work.path.read_text() == expected.getvalue()
+    runner.write(tmp_path / "counter-comparison.json", work.summary())
+
+
+def test_worklog_cached_event_still_obeys_previous_hook_phase_source_and_retention(tmp_path):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("first", "second"))
+    frame = _worklog_frame(source)
+    before = sys.getprofile()
+    seen = []
+    change = []
+
+    def outer(current, event, arg):
+        if current is frame:
+            seen.append(event)
+            if change:
+                change.pop(0)()
+
+    sys.setprofile(outer)
+    try:
+        with work.active():
+            profile = work._active_profile
+            work.phase = "first"
+            profile(frame, "call", None)
+            change.append(lambda: setattr(work, "phase", "second"))
+            profile(frame, "return", None)
+            profile(frame, "call", None)
+            change.append(lambda: setattr(work, "_retaining_failure", 1))
+            profile(frame, "call", None)
+            change.append(lambda: setattr(work, "_retaining_failure", 0))
+            profile(frame, "exception", None)
+            old_source = work.source
+            change.append(lambda: setattr(work, "source", str(tmp_path / "other") + "/"))
+            profile(frame, "call", None)
+            change.append(lambda: setattr(work, "source", old_source))
+            profile(frame, "call", None)
+        assert sys.getprofile() is outer
+    finally:
+        sys.setprofile(before)
+    assert seen == ["call", "return", "call", "call", "exception", "call", "call"]
+    assert work.count == 3 and work.failure_retention_entries == 1
+    assert [(row["phase"], row["attempts"]) for row in work.counts.values()] == [
+        ("first", 1),
+        ("second", 2),
+    ]
+
+
+def test_worklog_location_cache_is_bounded_without_dropping_counts(tmp_path):
+    source = tmp_path / "source"
+    frame = _worklog_frame(source)
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
+    codes = []
+    with work.active():
+        work.phase = "native"
+        for _ in range(4100):
+            code = frame.f_code.replace()
+            codes.append(code)
+            work._active_profile(SimpleNamespace(f_code=code), "call", None)
+        closure = dict(
+            zip(
+                work._active_profile.__code__.co_freevars,
+                [cell.cell_contents for cell in work._active_profile.__closure__],
+                strict=True,
+            )
+        )
+        assert 0 < len(closure["locations"]) <= 4096
+    assert work.count == 4100 and work.trace_count == len(work.counts) == len(work.sites) == 1
+
+
+@pytest.mark.parametrize("replacement", ["instance", "class", "code"])
+def test_worklog_fast_path_never_bypasses_replaced_record(tmp_path, monkeypatch, replacement):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
+    frame = _worklog_frame(source)
+
+    def rejected(self, stream, row):
+        raise ValueError("replacement recorder rejection")
+
+    with work.active():
+        work.phase = "native"
+        work._active_profile(frame, "call", None)
+        if replacement == "instance":
+            monkeypatch.setattr(work, "record", lambda stream, row: rejected(work, stream, row))
+        elif replacement == "class":
+            monkeypatch.setattr(runner.WorkLog, "record", rejected)
+        else:
+            monkeypatch.setattr(runner.WorkLog.record, "__code__", rejected.__code__)
+        with pytest.raises(ValueError, match="replacement recorder rejection"):
+            work._active_profile(frame, "call", None)
+    assert work.count == 1 and work.failure is not None
+
+
+def test_worklog_fast_repetition_keeps_phase_and_trace_budget_failure_order(tmp_path):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
+    metadata, literal = _worklog_frame(source), _worklog_frame(source, "probe_source.py")
+    with work.active():
+        work.phase = "native"
+        work._active_profile(metadata, "call", None)
+        work.trace_count = 100000
+        work._active_profile(metadata, "call", None)
+        assert work.count == 2
+        work.phase = "undeclared"
+        with pytest.raises(RuntimeError, match="Undeclared"):
+            work._active_profile(metadata, "call", None)
+        assert work.count == 2
+        work.phase = "native"
+        with pytest.raises(RuntimeError, match="diagnostic allowance"):
+            work._active_profile(literal, "call", None)
+        assert work.count == 3 and work.trace_count == 100000
+        assert list(work.counts.values())[-1]["attempts"] == 1
+    assert work.failure is not None
+
+
+def test_worklog_bound_recorder_replacement_keeps_the_actual_receiver(tmp_path):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
+    other = runner.WorkLog(tmp_path / "other", source, phases=("native",))
+    frame = _worklog_frame(source)
+    with work.active():
+        work.phase = "native"
+        work._active_profile(frame, "call", None)
+        work.record = other.record
+        work._active_profile(frame, "call", None)
+        assert work.count == other.count == 1
+        other.phases = ("imports", "different")
+        with pytest.raises(RuntimeError, match="Undeclared diagnostic work phase"):
+            work._active_profile(frame, "call", None)
+        assert work.count == other.count == 1
+    assert work.failure is not None
+    runner.write(
+        tmp_path / "receiver-counters.json", dict(work=work.summary(), other=other.summary())
+    )
+
+
+@pytest.mark.parametrize("failed_operation", ["write", "flush"])
+def test_worklog_writer_failure_after_fast_repetitions_preserves_primary(
+    tmp_path, monkeypatch, failed_operation
+):
+    source = tmp_path / "source"
+    work = runner.WorkLog(tmp_path, source, phases=("native",))
+    metadata, literal = _worklog_frame(source), _worklog_frame(source, "probe_kernel.py")
+    original_open = type(work.path).open
+    fail = []
+    primary = ValueError("original source failure")
+
+    class Wrapped:
+        def __init__(self, raw):
+            self.raw = raw
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            self.raw.close()
+
+        def write(self, text):
+            if fail and failed_operation == "write":
+                raise OSError("record write failure")
+            return self.raw.write(text)
+
+        def flush(self):
+            if fail and failed_operation == "flush":
+                raise OSError("record flush failure")
+            return self.raw.flush()
+
+        def fileno(self):
+            return self.raw.fileno()
+
+    def open_path(path, *args, **kwargs):
+        raw = original_open(path, *args, **kwargs)
+        return Wrapped(raw) if path == work.path else raw
+
+    monkeypatch.setattr(type(work.path), "open", open_path)
+    with pytest.raises(ValueError) as saved, work.active():
+        work.phase = "native"
+        work._active_profile(metadata, "call", None)
+        work._active_profile(metadata, "call", None)
+        fail.append(True)
+        with pytest.raises(OSError, match="record " + failed_operation + " failure"):
+            work._active_profile(literal, "call", None)
+        assert work.count == 3 and work.trace_count == 1
+        raise primary
+    assert saved.value is primary and work.failure is not None
+
+
 @pytest.mark.parametrize(
     "phases", [(), ("same", "same"), ("imports",), tuple(map(str, range(12))), (1,), ("x" * 65,)]
 )

@@ -35,6 +35,7 @@ TESTS = tuple(
     for name in ("qualification", "native", "compare")
 )
 PAYLOAD_TEST = "tests/unit/test_native_single_cell_prefix_payload.py"
+WORKLOG_TEST = "tests/unit/test_native_single_cell_prefix_qualification.py"
 CASES, ENDPOINT = prior.CASES, native.ENDPOINT
 STAGES = (*prior.STAGES[:6], "ordinary_request", "cell_index", "make_maskM")
 KINDS = ("cells.multi_environment_diagnostic_plan@1", "cells.multi_environment_release@1")
@@ -61,6 +62,7 @@ SOFTWARE_GROUPS = {
     "source-repairs": "repair_c or numpy_helper",
     "capture-metadata": "capture_metadata or failed_capture_stops or repair_c5 or prefix_payload",
     "stage-timing": "stage_timing or failed_capture_stops or repair_c5",
+    "worklog": "",
 }
 
 
@@ -307,16 +309,23 @@ def _native_inputs(repository):
     return rows
 
 
-def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=()):
+def _diagnostic_limits(wall_seconds):
+    if type(wall_seconds) is not int or wall_seconds not in (480, 1800):
+        raise ValueError("Declare the 480-second or 1800-second diagnostic wall allowance")
+    return dict(shared.LIMITS, timeout=wall_seconds)
+
+
+def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=(), wall_seconds=480):
     """One-way current-checkout snapshot; original files are pinned, not copied."""
     repository = Path(repository).absolute()
     destination = shared.execution_output(destination, repository, {"runtime_paths": runtime_paths})
     if type(cpu) is not int or cpu not in os.sched_getaffinity(0):
         raise ValueError("Select an available single CPU")
+    limits = _diagnostic_limits(wall_seconds)
     destination.mkdir(parents=True, exist_ok=False)
     try:
         closure = runpy.run_path(str(repository / shared.CLOSURE))["closure"]
-        files = closure(repository, [*FILES, *TESTS, PAYLOAD_TEST])
+        files = closure(repository, [*FILES, *TESTS, PAYLOAD_TEST, WORKLOG_TEST])
         files[shared.CLOSURE] = source_snapshot.digest(repository / shared.CLOSURE)
         for parent in {Path(name).parent for name in files}:
             for path in (repository / parent).glob("*.json"):
@@ -349,7 +358,7 @@ def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=()):
             runtime_paths=overlays,
             interpreter=str(Path(sys.executable).absolute()),
             cpu=cpu,
-            limits=shared.LIMITS,
+            limits=limits,
             stop_after=ENDPOINT,
             execution_stages=list(STAGES),
             ordinary_methods=list(native.METHODS),
@@ -377,13 +386,15 @@ def verify_plan(prepared, expected_sha256):
     if source_snapshot.digest(prepared / "plan.json") != expected_sha256:
         raise ValueError("Changed ordinary diagnostic plan")
     plan = shared.read(prepared / "plan.json")
+    if type(plan.get("limits")) is not dict:
+        raise ValueError("Missing diagnostic resource limits")
     fixed = dict(
         kind=KINDS[0],
         purpose=PURPOSE,
         cases=list(CASES),
         configuration=configuration(),
         fixture_controls=CONTROLS,
-        limits=shared.LIMITS,
+        limits=_diagnostic_limits(plan["limits"].get("timeout")),
         stop_after=ENDPOINT,
         execution_stages=list(STAGES),
         ordinary_methods=list(native.METHODS),
@@ -675,6 +686,68 @@ def launch(prepared, digest, release, case, output):
     return result
 
 
+def supervised_launch(prepared, digest, release, case, output):
+    """Retain startup failures after authenticating the failure-output domain.
+
+    Invalid plans/output domains refuse before writing here; the detached
+    launcher's existing stdout/stderr logs retain those preflight failures.
+    """
+    plan = verify_plan(prepared, digest)
+    output = shared.execution_output(output, prepared, plan)
+    if output.exists():
+        raise ValueError("Use a fresh supervised diagnostic output")
+    try:
+        return launch(prepared, digest, release, case, output)
+    except BaseException as error:
+        try:
+            output.mkdir(parents=True, exist_ok=True)
+            failure = dict(
+                status="failed",
+                stage="controller",
+                failure=shared.exception_record(error),
+                traceback=traceback.format_exc(),
+                plan_sha256=digest,
+                automatic_retry=False,
+                **shared.NO_CREDIT,
+            )
+            shared.write(output / "controller-failure.json", failure)
+        except BaseException as capture_error:
+            # A full disk or failed metadata encoder cannot replace the
+            # controller's primary exception and its existing cause chain.
+            try:
+                error.controller_capture_error = capture_error
+                error.add_note("Controller failure evidence could not be saved.")
+            except BaseException:
+                pass
+        raise
+
+
+def _software_selection(group, items):
+    """Select by function name, excluding output-directory pytest keywords."""
+    if group != "worklog":
+        return list(items), []
+    selected, deselected = [], []
+    for item in items:
+        name = getattr(item, "originalname", None) or item.name.split("[", 1)[0]
+        destination = (
+            selected
+            if any(
+                term in name
+                for term in (
+                    "worklog",
+                    "recorder",
+                    "profiler",
+                    "recursive_helper_work",
+                    "literal_kernel_entries",
+                    "stage_timing",
+                )
+            )
+            else deselected
+        )
+        destination.append(item)
+    return selected, deselected
+
+
 def software_child(output, group="all"):
     """All controls run behind import and native-file entry blockades."""
     resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
@@ -709,6 +782,12 @@ def software_child(output, group="all"):
     (output / "case-reports").mkdir()
 
     class Reports:
+        def pytest_collection_modifyitems(self, config, items):
+            selected, deselected = _software_selection(group, items)
+            if deselected:
+                config.hook.pytest_deselected(items=deselected)
+                items[:] = selected
+
         def pytest_runtest_logreport(self, report):
             if report.when == "call" or report.failed:
                 key = hashlib.sha256((report.nodeid + report.when).encode()).hexdigest()
@@ -741,6 +820,8 @@ def software_child(output, group="all"):
             arguments += ["-k", SOFTWARE_GROUPS[group]]
         if group == "capture-metadata":
             arguments.append(str(ROOT / PAYLOAD_TEST))
+        if group == "worklog":
+            arguments.append(str(ROOT / WORKLOG_TEST))
         code = pytest.main(arguments, plugins=[Reports()])
     finally:
         sys.setprofile(previous)
@@ -815,11 +896,12 @@ def main():
     item.add_argument("--output", type=Path, required=True)
     item.add_argument("--cpu", type=int, default=6)
     item.add_argument("--runtime-path", type=Path, action="append", default=[])
+    item.add_argument("--wall-seconds", type=int, choices=(480, 1800), default=480)
     for name in ("software", "software-child"):
         item = sub.add_parser(name)
         item.add_argument("--output", type=Path, required=True)
         item.add_argument("--group", choices=SOFTWARE_GROUPS, default="all")
-    for name in ("launch", "worker"):
+    for name in ("launch", "worker", "supervise"):
         item = sub.add_parser(name)
         item.add_argument("--prepared", type=Path, required=True)
         item.add_argument("--plan-sha256", required=True)
@@ -829,7 +911,12 @@ def main():
     args = parser.parse_args()
     if args.command == "prepare":
         resource.setrlimit(resource.RLIMIT_AS, (512 * 2**20, 2**30))
-        prepare(args.output, cpu=args.cpu, runtime_paths=args.runtime_path)
+        prepare(
+            args.output,
+            cpu=args.cpu,
+            runtime_paths=args.runtime_path,
+            wall_seconds=args.wall_seconds,
+        )
     elif args.command == "software":
         return int(software(args.output, args.group)["status"] != "passed")
     elif args.command == "software-child":
@@ -837,8 +924,11 @@ def main():
     elif args.command == "worker":
         return worker(args.prepared, args.plan_sha256, args.release, args.case, args.output)
     else:
+        launcher = supervised_launch if args.command == "supervise" else launch
         return int(
-            launch(args.prepared, args.plan_sha256, args.release, args.case, args.output)["status"]
+            launcher(args.prepared, args.plan_sha256, args.release, args.case, args.output)[
+                "status"
+            ]
             != "completed_unqualified"
         )
     return 0
