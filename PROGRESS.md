@@ -49,6 +49,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **329.48 / 186.77 seconds**; no literal `cell_index` entry appears in the log.
   The next optimization target is caller authentication/observation overhead;
   entry counts alone cannot attribute CPU cost to a particular function.
+  Root's [narrow tracing repair](/mnt/workspaces/Cells/native-multi-cell-caller-trace-repair-20261101-01/root-review.json)
+  skips image-observer setup on irrelevant line/opcode events, while preserving
+  inherited tracing, source checks and call/return/exception evidence. Thirteen
+  focused controls passed in **3.04 seconds, 41.6 MiB sampled peak RSS**.
+  End-to-end speedup and completion within 480 seconds remain unmeasured.
   The fresh source includes a reviewed dormant mapping-dispatch hook, without
   qualifying the mapping feature. All three attempts remain failed and grant
   no nine-method continuation acceptance; numerical settings and guards stayed
@@ -73,13 +78,28 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   without reconstructing live ownership. The final focused image passed
   **17 checks, 38 deselected**, in **55.15 seconds**, with **297.1 MiB sampled
   peak RSS**. The [saved-result review](/mnt/workspaces/Cells/molecule-material-four-call-evidence-repair-20261101-01/root-software-review.json)
-  keeps the earlier 17-check image separate. Actual comparison needs a fresh
-  snapshot and later run; production equations and checkpoint ownership
-  restrictions remain unchanged. Key's new Simulator and
-  phase-callback source each need a focused inherited-observer failure-retention
-  repair. Their [43-control Simulator review](/mnt/workspaces/Cells/native-simulator-construction-development-20261101-01/root-review.json)
+  keeps the earlier 17-check image separate. A fresh packet preserves the same
+  declared input graph and numerical source. Its
+  [second actual attempt](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-02/root-review.json) stopped
+  after **277.11 seconds, 239.6 MiB sampled peak RSS**, when the original BETSE
+  return exposed an unsupported array backing object. The final failure archive
+  encountered the same restriction. The backing object's type was not saved;
+  a precise failure diagnosis and bounded evidence policy are still needed.
+  Seventeen archives retain the four Cells and three legacy updates; the BETSE
+  return remains unsaved, and Decimal/comparison work did not run.
+  Production equations and checkpoint ownership restrictions remain unchanged.
+  Key's new Simulator and phase-callback source now have
+  [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
+  seven focused controls passed for each, with all eight repair outcomes retained.
+  Their earlier [43-control Simulator review](/mnt/workspaces/Cells/native-simulator-construction-development-20261101-01/root-review.json)
   and [46-control callback review](/mnt/workspaces/Cells/native-phase-callbacks-development-20261101-01/root-review.json)
   retain all ten and five outcomes respectively; actual INIT/phase remains held.
+  The [unloaded parameter prerequisite review](/mnt/workspaces/Cells/native-parameters-observer-successor-20261101-01/root-review.json)
+  retains nine completed outcomes, with 32 earlier controls and seven successor
+  controls separately bound. Two source repairs remain: preserve the primary
+  exception when an internal stop signal coincides with an observer failure,
+  and retain the exact types of nested YAML objects. No YAML loading or native
+  phase authority is admitted.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator
