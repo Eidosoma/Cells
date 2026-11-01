@@ -41,12 +41,84 @@ def budget(**updates):
     return primitive.contract.budget(**values)
 
 
-def declared(**updates):
+def declared(*, cpu=0, **updates):
     return primitive.declare(
         budget(**updates),
         run_id="synthetic-standalone-4",
         provenance="Declared control inputs; no native derivation",
+        policy=replace(primitive.DEFAULT_POLICY, cpu=cpu),
     )
+
+
+@pytest.mark.parametrize("cpu", [0, 3])
+def test_cpu_policy_accepts_explicit_index_without_changing_other_guards(cpu):
+    policy = replace(primitive.DEFAULT_POLICY, cpu=cpu)
+    value = primitive.declare(
+        budget(), run_id="selected-cpu", provenance="software-only", policy=policy
+    )
+    primitive.verify_domain(value)
+    assert value.policy is policy and primitive.domain_record(value)[2] == (
+        cpu,
+        1,
+        2**30,
+        8 * 2**30,
+        True,
+    )
+    assert primitive.DEFAULT_POLICY.cpu == 0
+    other = primitive.declare(
+        budget(),
+        run_id="selected-cpu",
+        provenance="software-only",
+        policy=replace(policy, cpu=cpu + 1),
+    )
+    assert other.identity != value.identity
+
+
+@pytest.mark.parametrize("cpu", [-1, True, False, 3.0, "3"])
+def test_cpu_policy_invalid_selector_refuses_without_resource_or_source_probe(monkeypatch, cpu):
+    monkeypatch.setattr(
+        primitive, "resources", lambda *a: pytest.fail("Declaration performed a resource probe")
+    )
+    with pytest.raises(ValueError):
+        primitive.declare(
+            budget(),
+            run_id="cpu-refusal",
+            provenance="software-only",
+            policy=replace(primitive.DEFAULT_POLICY, cpu=cpu),
+        )
+
+
+@pytest.mark.parametrize("affinity", [{3}, {0}, {3, 4}])
+def test_cpu_policy_keeps_exact_singleton_affinity_enforcement(monkeypatch, affinity):
+    monkeypatch.setattr(primitive.os, "sched_getaffinity", lambda pid: affinity)
+    for name in (
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+    ):
+        monkeypatch.setenv(name, "1")
+    reads = []
+    original_read = primitive.Path.read_text
+
+    def read(path, *args, **kwargs):
+        if str(path) not in ("/proc/self/status", "/proc/meminfo"):
+            return original_read(path, *args, **kwargs)
+        reads.append(str(path))
+        if str(path) == "/proc/self/status":
+            return "VmRSS: 4096 kB\n"
+        assert str(path) == "/proc/meminfo"
+        return "MemAvailable: 16777216 kB\n"
+
+    monkeypatch.setattr(primitive.Path, "read_text", read)
+    policy = replace(primitive.DEFAULT_POLICY, cpu=3)
+    if affinity == {3}:
+        assert primitive.resources(policy) == dict(rss_bytes=4 * 2**20, available_bytes=16 * 2**30)
+        assert reads == ["/proc/self/status", "/proc/meminfo"]
+    else:
+        with pytest.raises(ValueError, match="Changed actual CPU affinity"):
+            primitive.resources(policy)
+        assert reads == []
 
 
 @pytest.fixture(autouse=True)
@@ -229,7 +301,11 @@ def fake_engine(monkeypatch):
 
 
 def begin(engine, **limits):
-    return primitive.begin(declared(**limits), engine.definition, engine.initial)
+    affinity = os.sched_getaffinity(0)
+    assert len(affinity) == 1, "Synthetic source controls require the external single-CPU guard"
+    return primitive.begin(
+        declared(cpu=next(iter(affinity)), **limits), engine.definition, engine.initial
+    )
 
 
 def original():
@@ -539,7 +615,7 @@ def test_actual_resource_policy_drift_refuses_before_source_dispatch(
     e = begin(fake_engine)
     parent = e.current
     if fault == "CPU":
-        monkeypatch.setattr(primitive.os, "sched_getaffinity", lambda _: {7})
+        monkeypatch.setattr(primitive.os, "sched_getaffinity", lambda _: {e.domain.policy.cpu + 1})
     elif fault == "threads":
         monkeypatch.setenv("OMP_NUM_THREADS", "2")
     else:

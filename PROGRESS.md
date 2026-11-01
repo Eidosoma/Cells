@@ -106,9 +106,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   checks its span before copying and retains detached bytes plus layout metadata.
   **46 focused software checks passed in 23.22 seconds, 229.1 MiB sampled peak
   RSS**, including ten new buffer controls. Checkpoint admission remains unchanged;
-  the full four-update comparison has not been rerun on this writer. Its
-  [fresh CPU 3 packet is prepared and held](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-03/preparation-review.json),
-  with the same input graph, equations and 480-second resource guard.
+  the complete original-return archive remains unqualified. The
+  [third full-comparison attempt](/mnt/workspaces/Cells/molecule-material-four-call-qualification-20261101-03/root-review.json)
+  refused after **10.10 seconds**, before material binding or any update:
+  its outer runner selected CPU 3 while the primitive still required CPU 0.
+  Both failure archives and the empty numerical-work ledger are retained.
+  A [source-reviewed CPU-policy repair](/mnt/workspaces/Cells/molecule-material-cpu-binding-repair-20261101-01/source-review.json)
+  carries the explicit CPU through the packet and primitive domain; exact
+  singleton affinity, one thread and all memory, time and reserve limits remain
+  enforced. The final focused image passed **73 software checks** (24 new,
+  49 affected) in **36.49 seconds, 233.2 MiB sampled peak RSS**. Its initial
+  setup failure and later 66-pass/seven-failure image are retained: those seven
+  older synthetic controls still assumed CPU 0, and their fixture now explicitly
+  uses the assigned singleton CPU. No equations or tolerances changed. The
+  failed actual attempt grants no numerical comparison or fourth-state credit.
   Key's new Simulator and phase-callback source now have
   [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
   seven focused controls passed for each, with all eight repair outcomes retained.

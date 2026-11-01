@@ -66,7 +66,7 @@ def validate_program(value):
     require(len({id(v) for v in value["steps"]}) == 4, "Distinct ordered packet objects required")
 
 
-def declared_domain():
+def declared_domain(*, cpu=0):
     return primitive.declare(
         primitive.contract.budget(
             source_calls=4,
@@ -79,7 +79,36 @@ def declared_domain():
         ),
         run_id="standalone-slow-explicit-four",
         provenance="One declared manufactured sequence; no native initialization authority",
+        policy=primitive.Policy(cpu=cpu),
     )
+
+
+def execution_domain(inputs):
+    """Bind the outer resource record to the primitive's actual typed policy."""
+    require(type(inputs) is dict, "Explicit execution packet required")
+    resources = inputs.get("resources")
+    require(
+        type(resources) is dict
+        and set(resources)
+        == {"cpu", "threads", "max_process_tree_bytes", "wall_seconds", "min_available_bytes"}
+        and all(type(value) is int for value in resources.values()),
+        "Exact integer execution resource record required",
+    )
+    domain = declared_domain(cpu=resources["cpu"])
+    require(
+        resources
+        == dict(
+            cpu=domain.policy.cpu,
+            threads=domain.policy.threads,
+            max_process_tree_bytes=domain.policy.max_rss_bytes,
+            wall_seconds=domain.budget.wall_seconds,
+            min_available_bytes=domain.policy.min_available_bytes,
+        )
+        and primitive.codec.fingerprint(primitive.domain_record(domain))
+        == primitive.codec.fingerprint(_tuples(inputs.get("domain"))),
+        "Execution resources and primitive domain disagree",
+    )
+    return domain
 
 
 def ref(path):
@@ -795,6 +824,7 @@ def prepare(repository, directory, *, cpu=0):
         "Current checkout and separate output required",
     )
     require(type(cpu) is int and cpu >= 0, "Explicit nonnegative CPU required")
+    domain = declared_domain(cpu=cpu)
     directory.mkdir(parents=True, exist_ok=False)
     value, plan = program(), source_plan()
     names = set(OWNED) | {"pyproject.toml", "tests/__init__.py"}
@@ -823,7 +853,7 @@ def prepare(repository, directory, *, cpu=0):
             source_plan=ref(directory / "source-plan.json"),
             expected_producer=producer,
             repository=str(repo),
-            domain=primitive.domain_record(declared_domain()),
+            domain=primitive.domain_record(domain),
             release_gates=list(reference.RELEASES),
             resources=dict(
                 cpu=cpu,
@@ -882,10 +912,7 @@ def packet_inputs(packet, packet_sha256):
     value = read_archive(packet / "program")
     validate_program(value)
     require(read_json(packet / "source-plan.json") == source_plan(), "Source/context drift")
-    require(
-        primitive.domain_record(declared_domain()) == _tuples(inputs["domain"]),
-        "Changed four-call domain",
-    )
+    execution_domain(inputs)
     return value, inputs
 
 
@@ -893,6 +920,7 @@ def worker(directory, *, packet, packet_sha256, enabled=False):
     reference.released(enabled)
     require(__debug__ and sys.flags.optimize == 0, "Assertion-enabled source comparisons required")
     value, inputs = packet_inputs(packet, packet_sha256)
+    domain = execution_domain(inputs)
     packet = Path(packet).resolve(strict=True)
     directory = Path(directory).resolve()
     for origin in (
@@ -952,7 +980,7 @@ def worker(directory, *, packet, packet_sha256, enabled=False):
         try:
             execution = take(
                 "primitive-begin",
-                lambda: primitive.begin(declared_domain(), value["definition"], value["initial"]),
+                lambda: primitive.begin(domain, value["definition"], value["initial"]),
                 lambda e: primitive_validation.evidence(e),
             )
             available["primitive"] = primitive_validation.evidence(execution)

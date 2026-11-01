@@ -573,9 +573,104 @@ def mock_packet(monkeypatch, tmp_path):
     packet = tmp_path / "packet"
     packet.mkdir()
     monkeypatch.setattr(
-        q, "packet_inputs", lambda *args: (q.program(), dict(repository=str(tmp_path / "repo")))
+        q,
+        "packet_inputs",
+        lambda *args: (q.program(), dict(repository=str(tmp_path / "repo"), **resource_packet(0))),
     )
     return packet
+
+
+def resource_packet(cpu):
+    return dict(
+        resources=dict(
+            cpu=cpu,
+            threads=1,
+            max_process_tree_bytes=2**30,
+            wall_seconds=480,
+            min_available_bytes=8 * 2**30,
+        ),
+        domain=q.primitive.domain_record(q.declared_domain(cpu=cpu)),
+    )
+
+
+@pytest.mark.parametrize("cpu", [0, 3])
+def test_cpu_selection_reaches_actual_begin_with_matching_versioned_policy(
+    monkeypatch, tmp_path, cpu
+):
+    packet = mock_packet(monkeypatch, tmp_path)
+    inputs = dict(repository=str(tmp_path / "repo"), **resource_packet(cpu))
+    # The JSON packet representation and its integer resource fields are preserved.
+    inputs = json.loads(json.dumps(inputs))
+    monkeypatch.setattr(q, "packet_inputs", lambda *a: (q.program(), inputs))
+    seen = []
+    fake_work(monkeypatch, seen)
+    stop = RuntimeError("synthetic stop before any material source")
+
+    def begin(domain, definition, initial):
+        assert domain.policy.cpu == cpu
+        assert q.primitive.domain_record(domain) == q._tuples(inputs["domain"])
+        assert domain.policy.threads == 1 and domain.budget.wall_seconds == 480
+        assert (
+            domain.policy.max_rss_bytes == 2**30 and domain.policy.min_available_bytes == 8 * 2**30
+        )
+        seen.append(("selected-policy", cpu))
+        raise stop
+
+    monkeypatch.setattr(q.primitive, "begin", begin)
+    with pytest.raises(RuntimeError) as caught:
+        q.worker(tmp_path / "worker", packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value is stop
+    assert seen == ["observer-start", ("selected-policy", cpu), "observer-stop"]
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "domain-cpu",
+        "selector-cpu",
+        "domain-float",
+        "domain-bool",
+        "bool",
+        "float",
+        "negative",
+        "threads",
+        "rss",
+        "reserve",
+        "wall",
+        "extra",
+    ],
+)
+def test_cpu_packet_resource_mismatch_refuses_before_output_or_begin(monkeypatch, tmp_path, fault):
+    packet = mock_packet(monkeypatch, tmp_path)
+    inputs = dict(repository=str(tmp_path / "repo"), **resource_packet(3))
+    if fault == "domain-cpu":
+        inputs["domain"] = resource_packet(0)["domain"]
+    elif fault == "selector-cpu":
+        inputs["resources"]["cpu"] = 0
+    elif fault in {"domain-float", "domain-bool"}:
+        if fault == "domain-bool":
+            inputs.update(resource_packet(1))
+        inputs["domain"] = json.loads(json.dumps(inputs["domain"]))
+        inputs["domain"][2][0] = 3.0 if fault == "domain-float" else True
+    elif fault in {"bool", "float", "negative"}:
+        inputs["resources"]["cpu"] = {"bool": True, "float": 3.0, "negative": -1}[fault]
+    else:
+        field, value = {
+            "threads": ("threads", 2),
+            "rss": ("max_process_tree_bytes", 2**31),
+            "reserve": ("min_available_bytes", 0),
+            "wall": ("wall_seconds", 481),
+            "extra": ("unknown", 1),
+        }[fault]
+        inputs["resources"][field] = value
+    monkeypatch.setattr(q, "packet_inputs", lambda *a: (q.program(), inputs))
+    monkeypatch.setattr(
+        q.primitive, "begin", lambda *a: pytest.fail("Mismatched resources reached begin")
+    )
+    output = tmp_path / "worker"
+    with pytest.raises(ValueError):
+        q.worker(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("mediated", [False, True])

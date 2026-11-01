@@ -63,7 +63,7 @@ def declare(budget, *, run_id, provenance, policy=DEFAULT_POLICY):
     require(type(policy) is Policy, "Typed standalone resource policy required")
     require(
         type(policy.cpu) is int
-        and policy.cpu == 0
+        and policy.cpu >= 0
         and type(policy.threads) is int
         and policy.threads == 1
         and type(policy.max_rss_bytes) is int
@@ -72,7 +72,7 @@ def declare(budget, *, run_id, provenance, policy=DEFAULT_POLICY):
         and policy.min_available_bytes >= 8 * 2**30
         and policy.outer_guard_required is True
         and budget.wall_seconds <= 480.0,
-        "Require the bounded CPU0/one-thread standalone process-guard policy",
+        "Require an explicit CPU/one-thread bounded standalone process-guard policy",
     )
     require(
         all(type(v) is str and bool(v.strip()) for v in (run_id, provenance)),
