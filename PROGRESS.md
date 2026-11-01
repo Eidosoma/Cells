@@ -32,6 +32,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   implementing native network loading, while Specialist is implementing the
   phase assembly prerequisite in separate Git paths.
 
+- **Phase constructor prefix:** [Source and saved results are reviewed](/mnt/workspaces/Cells/native-phase-assembly-20261101-01/root-review.json)
+  for the original statements through `self.sim`: prepared callbacks and a
+  typed parameter owner reach newly constructed Cells and Simulator objects
+  in native order. **30 blocked synthetic controls pass** in **281.07 seconds,
+  238.1 MiB sampled peak RSS**; the first image's one pass and one failed
+  endpoint assertion remain separate. All final source and loaded producer
+  bindings verify. Actual native construction is still unrun. The next
+  boundary is phase caches and their weak references to that same phase,
+  followed by tissue-handler attachment and complete initializer authority.
+
 - **Current parallel work (1 November):** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
