@@ -171,6 +171,7 @@ class Observation(prefix.Observation):
         super().__init__(capture, record_exception, stream)
         self.mapping_inputs, self.mapping_results = [], []
         self.mapping_raw_results = []
+        self.last_probe_result = None
         self.mapping_before = self.mapping_after = self.mapping_stream_before = None
         self.mapping_stream_after = None
         self.poisson_results, self.poisson_helpers = [], []
@@ -181,13 +182,19 @@ class Observation(prefix.Observation):
         self.mapping_warnings = []
         self.environment_aliases = {}
         self.pre_tail_cell_i = None
+        self.pre_tail_cell_i_values = None
+        self.tail_array_type = None
+        self.tail_array_state = None
         self.tail_asarray_returns = []
 
     def save(self, label):
         super().save(label)
         if label == "make_maskM":
             caller, grid = self.caller, self.grid
-            self.pre_tail_cell_i = caller.cell_i
+            self.pre_tail_cell_i = caller.all_points_cell_i
+            self.pre_tail_cell_i_values = (
+                tuple(self.pre_tail_cell_i) if type(self.pre_tail_cell_i) is list else None
+            )
             # These aliases describe the retained pre-tail environment snapshot.
             # The later literal np.asarray store intentionally breaks one alias.
             self.environment_aliases = dict(
@@ -212,6 +219,7 @@ class Observation(prefix.Observation):
     def install_world_tail(self, cls):
         original = cls.make_world
         numpy = original.__globals__["np"]
+        self.tail_array_type = numpy.ndarray
 
         def asarray(value, *args, **kwargs):
             self.stop()
@@ -221,12 +229,15 @@ class Observation(prefix.Observation):
                 or value is not self.pre_tail_cell_i
                 or self.caller.cell_i is not value
                 or self.caller.all_points_cell_i is not value
+                or not self._unchanged_tail_list()
             ):
                 raise ValueError("Original pre-tail cell-index list/alias changed")
             self.work.append(dict(phase="world_data_tail", event="asarray_attempt", is_case=False))
             returned = numpy.asarray(value, *args, **kwargs)
             # Retain the actual return before any observation can reject it.
             self.tail_asarray_returns.append((value, returned))
+            if type(returned) is self.tail_array_type:
+                self.tail_array_state = self._observe_array_state(returned)
             self.stop()
             return returned
 
@@ -236,18 +247,60 @@ class Observation(prefix.Observation):
             original, np=SimpleNamespace(asarray=asarray, ones=numpy.ones)
         )
 
+    @staticmethod
+    def array_state(value):
+        # Observation only: preserve the exact native return, never coerce it
+        # again, copy it into the caller, or normalize its dtype/layout/bits.
+        return (
+            value.dtype.str,
+            value.shape,
+            value.strides,
+            bool(value.flags.c_contiguous),
+            bool(value.flags.f_contiguous),
+            value.tobytes(),
+        )
+
+    def _unchanged_tail_list(self):
+        values, saved = self.pre_tail_cell_i, self.pre_tail_cell_i_values
+        return (
+            type(values) is list
+            and type(saved) is tuple
+            and len(values) == len(saved)
+            and all(type(a) is type(b) and a == b for a, b in zip(values, saved, strict=True))
+        )
+
+    def _observe_array_state(self, value):
+        try:
+            return self.array_state(value)
+        except Exception as error:
+            self.remember(error, "tail_asarray_state")
+            self.stop()
+
     def tail_aliases(self):
         rows = self.tail_asarray_returns
+        converted = rows[0][1] if len(rows) == 1 else None
+        values_valid = (
+            self.tail_array_type is not None
+            and type(converted) is self.tail_array_type
+            and converted.shape == (len(self.pre_tail_cell_i_values or ()),)
+            and all(
+                type(a) is type(b) and a == b
+                for a, b in zip(converted.tolist(), self.pre_tail_cell_i_values or (), strict=True)
+            )
+            and self._observe_array_state(converted) == self.tail_array_state
+        )
         return dict(
             all_points_cell_i_is_original=(
                 type(self.pre_tail_cell_i) is list
                 and self.caller.all_points_cell_i is self.pre_tail_cell_i
+                and self._unchanged_tail_list()
             ),
             cell_i_is_tail_asarray_return=(
                 len(rows) == 1
                 and rows[0][0] is self.pre_tail_cell_i
                 and rows[0][1] is self.caller.cell_i
                 and rows[0][1] is not self.pre_tail_cell_i
+                and values_valid
             ),
         )
 
@@ -312,6 +365,10 @@ def _execute(namespace, declared, configuration, **kwargs):
             prefix.source_observation(obs, kwargs["native_root"], "mapping_reference"),
         ):
             warnings.simplefilter("always")
+            if not all(obs.tail_aliases().values()):
+                raise ValueError(
+                    "Original pre-tail list and distinct tail ndarray transition required"
+                )
             obs.stage = "mapping_before"
             obs.mapping_before = obs.snapshot(caller_values(obs), obs.stage)
             obs.mapping_stream_before = obs.stream()
@@ -331,7 +388,13 @@ def _execute(namespace, declared, configuration, **kwargs):
                         interp_method=probe["interp_method"],
                         data_factor=probe["data_factor"],
                     )
-                obs.mapping_raw_results.append((probe["name"], value))
+                # A direct-return array need not occur in any original frame
+                # local. Keep the actual object before registration or capture.
+                obs.last_probe_result = (probe["name"], value)
+                try:
+                    obs.mapping_raw_results.append(obs.last_probe_result)
+                except Exception as capture:
+                    obs.remember(capture, "mapping_return_retention")
                 obs.stop()
                 obs.mapping_results.append((probe["name"], obs.snapshot(value, probe["name"])))
             obs.stage = "mapping_after"
@@ -431,7 +494,19 @@ def _finalize(obs, execution, descriptor_metadata, **kwargs):
     # Each successful source return is a separate forensic capture attempt,
     # even after an immediate snapshot/observer failed. Do not promote these
     # recovery records into completed mapping results.
-    for name, value in obs.mapping_raw_results:
+    retained = ()
+    try:
+        retained = prefix._guarded_call(lambda: tuple(obs.mapping_raw_results), guards)
+    except Exception as error:
+        obs.remember(error, "mapping_return_inventory")
+    finally:
+        prefix._restore_guards(guards)
+    # Registration/copy failure must not hide the most recent actual return.
+    # This is forensic recovery only; it never becomes a completed probe.
+    last = obs.last_probe_result
+    if last is not None and not any(row is last for row in retained):
+        retained = (*retained, last)
+    for name, value in retained:
         row = dict(name=name, status="unavailable", value=None, capture_error=None)
         try:
             row["value"] = prefix._guarded_call(lambda value=value: obs.capture(value), guards)

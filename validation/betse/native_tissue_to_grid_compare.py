@@ -89,6 +89,9 @@ ALIASES = (
     "mesh",
     "parameter",
     "mask",
+    # Positive witnesses describe two DISTINCT objects after the literal tail:
+    # the original Python list and the exact unchanged np.asarray return.
+    # all_points_cell_i is intentionally not the current caller.cell_i.
     "all_points_cell_i_is_original",
     "cell_i_is_tail_asarray_return",
 )

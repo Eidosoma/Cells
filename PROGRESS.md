@@ -263,10 +263,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   historical environment aliases and the actual list-to-array tail transition
   are checked separately, and actual mapping returns survive observation failure
   with independent forensic capture attempts. **100 blocked software controls**
-  pass at the current bytes (87 retained controls plus 13 new), in **59.68 seconds,
+  pass at that frozen image (87 retained controls plus 13 new), in **59.68 seconds,
   77.7 MiB sampled peak RSS**, with all saved results and producer hashes checked.
   Native source/equations/tolerances are unchanged. Fresh world construction is
   prerequisite work, not additional independent cases.
+  The [later tail-witness and return-retention changes are now reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/tail-contract-repairs-01/root-review.json).
+  Original lists and converted arrays retain their distinct identities and
+  scalar types; failed array observations remain capture errors, with raw
+  returns preserved for independent forensic attempts. **49 focused controls**
+  pass (41 affected plus eight new), in **5.03 seconds, 63.9 MiB sampled peak
+  RSS**. All six named outcomes are checked, including the earlier 110-pass,
+  three-failure image. The 27- and 41-control successors retain their own
+  bindings and are not added to the earlier 100 as independent cases.
   Actual mapping/reference execution remains held.
   Full phase/core/profile initialization remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)

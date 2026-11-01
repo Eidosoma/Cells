@@ -2,6 +2,7 @@
 
 import ast
 import copy
+import json
 from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -95,6 +96,8 @@ def test_probe_policy_retains_targets_and_both_original_input_ranks(count):
 
 
 def harness(monkeypatch, *, failure=None, capture_failure=None):
+    import numpy as np
+
     calls = []
     primary, cause = ValueError("original mapping primary"), RuntimeError("original cause")
 
@@ -123,8 +126,11 @@ def harness(monkeypatch, *, failure=None, capture_failure=None):
     obs.parameter = object()
     caller.all_points_cell_i = caller.cell_i
     obs.pre_tail_cell_i = caller.cell_i
-    caller.cell_i = tuple(caller.cell_i)
+    obs.pre_tail_cell_i_values = tuple(caller.cell_i)
+    obs.tail_array_type = np.ndarray
+    caller.cell_i = np.asarray(caller.cell_i)
     obs.tail_asarray_returns = [(obs.pre_tail_cell_i, caller.cell_i)]
+    obs.tail_array_state = obs.array_state(caller.cell_i)
     monkeypatch.setattr(n, "caller_values", lambda obs: dict(unchanged="source bytes"))
     monkeypatch.setattr(n.prefix, "source_observation", lambda *a, **k: nullcontext())
     base = dict(
@@ -216,7 +222,10 @@ def test_distinct_zero_scaled_inverse_roots_and_third_solve_refusal():
     assert len(obs.poisson_results) == 2
 
 
-def test_descriptor_factory_reaches_genuine_second_delegate_and_phase_stays_ordinary(monkeypatch):
+@pytest.mark.parametrize("drop_injection", [False, True])
+def test_descriptor_factory_reaches_genuine_second_delegate_and_phase_stays_ordinary(
+    monkeypatch, drop_injection
+):
     h = harness(monkeypatch)
     configuration = {"grid": 25}
     seen = []
@@ -249,6 +258,13 @@ def test_descriptor_factory_reaches_genuine_second_delegate_and_phase_stays_ordi
     )
     monkeypatch.setattr(n.prefix.legacy, "_execute", scope["delegate"])
     execute = n.prefix.clone(n._execute, SimpleNamespace=containers)
+    if drop_injection:
+        monkeypatch.setattr(n.prefix, "clone", lambda function, **kw: function)
+        with pytest.raises(AttributeError, match="grid_size"):
+            execute({}, {}, configuration, observation=h.obs, native_root=ROOT)
+        assert seen == [] and h.calls == []
+        assert scope["delegate"].__globals__["SimpleNamespace"] is NS
+        return
     result = execute({}, {}, configuration, observation=h.obs, native_root=ROOT)
     assert result["status"] == "source_completed"
     assert type(seen[0]) is Parameter and seen[0]._conf is configuration
@@ -257,15 +273,17 @@ def test_descriptor_factory_reaches_genuine_second_delegate_and_phase_stays_ordi
 
 
 def tail_harness(monkeypatch):
+    import numpy as np
+
     old = [0, 1]
-    returned = tuple(old)
     delegated = []
 
     def asarray(value):
         delegated.append(value)
-        return returned
+        h.returned = np.asarray(value)
+        return h.returned
 
-    numpy = NS(asarray=asarray, ones=lambda count: (1,) * count)
+    numpy = NS(asarray=asarray, ones=np.ones, ndarray=np.ndarray)
     scope = dict(np=numpy)
     exec(
         "def make_world(self, phase):\n"
@@ -295,15 +313,16 @@ def tail_harness(monkeypatch):
     )
     obs.save("make_maskM")
     obs.install_world_tail(cls)
-    return NS(
+    h = NS(
         obs=obs,
         caller=caller,
         old=old,
-        returned=returned,
+        returned=None,
         delegated=delegated,
         original=scope["make_world"],
         numpy=numpy,
     )
+    return h
 
 
 def test_original_tail_alias_transition_keeps_old_list_and_actual_delegate_return(monkeypatch):
@@ -312,6 +331,8 @@ def test_original_tail_alias_transition_keeps_old_list_and_actual_delegate_retur
     assert h.delegated == [h.old] and h.delegated[0] is h.old
     assert h.caller.all_points_cell_i is h.old
     assert h.caller.cell_i is h.returned and h.returned is not h.old
+    assert type(h.returned) is h.numpy.ndarray and h.returned.tolist() == h.old
+    assert h.caller.all_points_cell_i is not h.caller.cell_i
     assert h.obs.tail_asarray_returns[0][0] is h.old
     assert h.obs.tail_asarray_returns[0][1] is h.returned
     assert all(h.obs.tail_aliases().values()) and all(h.obs.environment_aliases.values())
@@ -322,11 +343,17 @@ def test_original_tail_alias_transition_keeps_old_list_and_actual_delegate_retur
     assert len(h.delegated) == 1
 
 
-@pytest.mark.parametrize("changed", ["input", "alias", "missing", "return"])
+@pytest.mark.parametrize(
+    "changed",
+    ["input", "alias", "missing", "return", "original_values", "returned_values", "post_alias"],
+)
 def test_tail_witness_rejects_equal_replacements_and_missing_conversion(monkeypatch, changed):
     h = tail_harness(monkeypatch)
-    if changed in {"input", "alias"}:
-        setattr(h.caller, "cell_i" if changed == "input" else "all_points_cell_i", list(h.old))
+    if changed in {"input", "alias", "original_values"}:
+        if changed == "original_values":
+            h.old[0] = 99
+        else:
+            setattr(h.caller, "cell_i" if changed == "input" else "all_points_cell_i", list(h.old))
         with pytest.raises(ValueError, match="pre-tail"):
             h.caller.make_world(None)
         assert not h.delegated
@@ -334,9 +361,124 @@ def test_tail_witness_rejects_equal_replacements_and_missing_conversion(monkeypa
         assert h.obs.tail_aliases()["cell_i_is_tail_asarray_return"] is False
     else:
         h.caller.make_world(None)
-        h.caller.cell_i = tuple(list(h.returned))
-        assert h.caller.cell_i == h.returned and h.caller.cell_i is not h.returned
-        assert h.obs.tail_aliases()["cell_i_is_tail_asarray_return"] is False
+        if changed == "return":
+            h.caller.cell_i = h.returned.copy()
+            assert h.obs.array_state(h.caller.cell_i) == h.obs.array_state(h.returned)
+            assert h.caller.cell_i is not h.returned
+        elif changed == "returned_values":
+            h.returned[0] = 99
+        else:
+            h.caller.all_points_cell_i = list(h.old)
+            assert h.caller.all_points_cell_i == h.old and h.caller.all_points_cell_i is not h.old
+        assert not all(h.obs.tail_aliases().values())
+
+
+@pytest.mark.parametrize("bad", ["tuple", "same_list", "float_array", "values", "rank"])
+def test_tail_ndarray_type_value_transition_refuses_bad_delegate_returns(monkeypatch, bad):
+    import numpy as np
+
+    h = tail_harness(monkeypatch)
+    values = {
+        "tuple": tuple(h.old),
+        "same_list": h.old,
+        "float_array": np.asarray(h.old, dtype=float),
+        "values": np.asarray([99, 1]),
+        "rank": np.asarray([h.old]),
+    }
+    h.numpy.asarray = lambda value: values[bad]
+    h.caller.make_world(None)
+    assert h.obs.tail_asarray_returns[0][1] is values[bad]
+    assert not all(h.obs.tail_aliases().values())
+
+
+@pytest.mark.parametrize("bad", ["retarget_list", "retarget_array", "mutate_return"])
+def test_tail_transition_drift_stops_before_first_mapping_delegate(monkeypatch, bad):
+    h = harness(monkeypatch)
+    if bad == "retarget_list":
+        h.obs.caller.all_points_cell_i = list(h.obs.pre_tail_cell_i)
+    elif bad == "retarget_array":
+        h.obs.caller.cell_i = h.obs.caller.cell_i.copy()
+    else:
+        h.obs.caller.cell_i[0] = 99
+    result = n._execute({}, {}, {}, observation=h.obs, native_root=ROOT)
+    assert result["status"] == "source_failed" and h.calls == []
+    assert h.obs.mapping_before is None and not h.obs.mapping_completed
+
+
+@pytest.mark.parametrize("replacement", [False, 0.0], ids=["bool", "float"])
+@pytest.mark.parametrize("boundary", ["before_tail", "before_mapping"])
+def test_tail_equal_valued_scalar_type_change_refuses(monkeypatch, replacement, boundary):
+    if boundary == "before_tail":
+        h = tail_harness(monkeypatch)
+        old_type = type(h.old[0])
+        h.old[0] = replacement
+        assert tuple(h.old) == h.obs.pre_tail_cell_i_values
+        assert type(h.old[0]) is not old_type
+        with pytest.raises(ValueError, match="pre-tail"):
+            h.caller.make_world(None)
+        assert h.delegated == [] and h.obs.tail_asarray_returns == []
+    else:
+        h = harness(monkeypatch)
+        before = h.obs.array_state(h.obs.caller.cell_i)
+        h.obs.pre_tail_cell_i[0] = replacement
+        assert tuple(h.obs.pre_tail_cell_i) == h.obs.pre_tail_cell_i_values
+        assert h.obs.array_state(h.obs.caller.cell_i) == before
+        assert h.obs.tail_aliases()["all_points_cell_i_is_original"] is False
+        execution = n._execute({}, {}, {}, observation=h.obs, native_root=ROOT)
+        assert execution["status"] == "source_failed" and h.calls == []
+        assert h.obs.mapping_before is None and not h.obs.mapping_completed
+
+
+@pytest.mark.parametrize("secondary", [False, True])
+@pytest.mark.parametrize("boundary", ["returned_state", "mapping_witness"])
+def test_tail_array_observation_failure_is_capture_and_retains_return(
+    monkeypatch, boundary, secondary
+):
+    error = OSError("tail state observation")
+    error.__cause__ = cause = LookupError("original observation cause")
+    if boundary == "returned_state":
+        h = tail_harness(monkeypatch)
+        obs = h.obs
+    else:
+        h = harness(monkeypatch)
+        obs = h.obs
+    obs.record_exception = n.prefix.legacy._fallback_error
+
+    def failed_state(value):
+        raise error
+
+    obs.array_state = failed_state
+    if boundary == "returned_state":
+        with pytest.raises(n.prefix.legacy.CaptureFailure) as caught:
+            h.caller.make_world(None)
+        assert caught.value.__context__ is error and error.__cause__ is cause
+        assert h.caller.cell_i is h.old and h.caller.all_points_cell_i is h.old
+        assert h.obs.tail_asarray_returns[0][1] is h.returned
+        execution = dict(source_body_completed=False, source_error=None, failed_stage="world_tail")
+    else:
+        execution = n._execute({}, {}, {}, observation=obs, native_root=ROOT)
+        assert execution["source_error"] is None and h.calls == []
+        assert not obs.mapping_completed
+    assert obs.capture_errors[0]["stage"] == "tail_asarray_state"
+    assert [row["type"] for row in obs.capture_error["chain"]] == ["OSError", "LookupError"]
+    actual = obs.tail_asarray_returns[0][1]
+    original_capture = obs.capture
+
+    def capture(value):
+        if secondary and value is obs.tail_asarray_returns:
+            raise OSError("secondary tail return archive")
+        return original_capture(value)
+
+    obs.capture = capture
+    result = finalize_stub(monkeypatch, obs, execution)
+    assert result["source_error"] is None and result["status"] == "source_failed"
+    assert obs.tail_asarray_returns[0][1] is actual
+    if secondary:
+        assert "tail_asarray_returns" not in result
+        assert result["capture_errors"][-1]["stage"] == "mapping_final_tail_asarray_returns"
+    else:
+        saved = result["tail_asarray_returns"][0][1]
+        assert type(saved) is type(actual) and saved.tobytes() == actual.tobytes()
 
 
 def finalize_stub(monkeypatch, obs, execution):
@@ -355,7 +497,11 @@ def test_environment_alias_is_historical_not_recomputed_after_tail(monkeypatch):
     result = finalize_stub(monkeypatch, h.obs, execution)
     assert result["environment"]["aliases"]["all_points_cell_i_is_cell_i"] is True
     assert h.caller.all_points_cell_i is not h.caller.cell_i
-    assert result["tail_asarray_returns"] == [(h.old, h.returned)]
+    rows = result["tail_asarray_returns"]
+    assert len(rows) == 1 and rows[0][0] == h.old
+    assert type(rows[0][1]) is h.numpy.ndarray
+    assert h.obs.array_state(rows[0][1]) == h.obs.array_state(h.returned)
+    assert h.obs.tail_asarray_returns[0][1] is h.returned
 
 
 @pytest.mark.parametrize("where", ["stop", "snapshot"])
@@ -427,4 +573,92 @@ def test_failed_forensic_return_capture_does_not_hide_other_returns_or_primary(m
     assert h.obs.mapping_primary is primary and primary.__cause__ is cause
     assert (
         result["source_error"] is execution["source_error"] and result["status"] == "source_failed"
+    )
+
+
+@pytest.mark.parametrize("where", ["stop", "snapshot", "registration"])
+@pytest.mark.parametrize("forensic_fails", [False, True])
+def test_direct_return_array_survives_observation_failure_with_independent_forensics(
+    monkeypatch, tmp_path, where, forensic_fails
+):
+    import numpy as np
+
+    h = harness(monkeypatch, capture_failure=where == "snapshot")
+
+    def direct(actual, data, **kwargs):
+        h.calls.append("grids")
+        return np.asarray(data)
+
+    monkeypatch.setattr(type(h.obs.caller), "map_cells_centre_to_grids_centre", direct)
+    initial = OSError("post-return " + where)
+    if where == "stop":
+        stop = h.obs.stop
+
+        def failed_stop():
+            if h.obs.last_probe_result is not None and h.obs.capture_error is None:
+                h.obs.remember(initial, "direct_return_stop")
+            stop()
+
+        h.obs.stop = failed_stop
+    elif where == "registration":
+
+        class FailedRegistration(list):
+            def append(self, value):
+                raise initial
+
+        h.obs.mapping_raw_results = FailedRegistration()
+    execution = n._execute({}, {}, {}, observation=h.obs, native_root=ROOT)
+    name, returned = h.obs.last_probe_result
+    assert type(returned) is np.ndarray and name == "grid_1d"
+    assert returned.tolist() == h.obs.mapping_inputs[0]["data"]
+    assert execution["status"] == "source_failed" and execution["source_error"] is None
+    assert h.calls == ["grids"] and h.obs.mapping_results == []
+    if where == "registration":
+        assert h.obs.mapping_raw_results == []
+    else:
+        assert h.obs.mapping_raw_results[0] is h.obs.last_probe_result
+    attempted = []
+    secondary = OSError("independent forensic capture")
+
+    def capture(value):
+        attempted.append(value)
+        if value is returned and forensic_fails:
+            raise secondary
+        return copy.deepcopy(value)
+
+    h.obs.capture = capture
+    result = finalize_stub(monkeypatch, h.obs, execution)
+    assert attempted[0] is returned
+    row = result["mapping_return_captures"][0]
+    assert row["name"] == name
+    if forensic_fails:
+        assert row["status"] == "unavailable" and row["capture_error"]["type"] == "OSError"
+        assert result["mapping_return_capture_gaps"] == [name]
+    else:
+        assert row["status"] == "saved" and type(row["value"]) is np.ndarray
+        assert h.obs.array_state(row["value"]) == h.obs.array_state(returned)
+        assert result["mapping_return_capture_gaps"] == []
+    assert result["status"] == "source_failed" and result["source_error"] is None
+    assert result["results"] == [] and h.obs.mapping_completed is False
+    (tmp_path / "direct-return-evidence.json").write_text(
+        json.dumps(
+            dict(
+                boundary=where,
+                forensic_failed=forensic_fails,
+                name=name,
+                raw_dtype=returned.dtype.str,
+                raw_shape=returned.shape,
+                raw_strides=returned.strides,
+                raw_bytes_hex=returned.tobytes().hex(),
+                last_result_is_actual_return=True,
+                no_later_probe=h.calls == ["grids"],
+                source_error=result["source_error"],
+                capture_error=result["capture_error"],
+                forensic_status=row["status"],
+                forensic_error=row["capture_error"],
+                completed_results=result["results"],
+            ),
+            sort_keys=True,
+            indent=2,
+        )
     )

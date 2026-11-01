@@ -33,7 +33,13 @@ ENDPOINT, CASES = native.ENDPOINT, prefix.CASES
 STAGES = (*prefix.STAGES, "world_data", "mapping_probes")
 KINDS = ("cells.tissue_to_grid_plan@2", "cells.tissue_to_grid_release@2")
 PURPOSE = "fresh_issued_multi_world_mapping_source_diagnostic"
-SOFTWARE_GROUPS = {"all": "", "ast": "source_ast", "focused": "not source_ast"}
+SOFTWARE_GROUPS = {
+    "all": "",
+    "ast": "source_ast",
+    "focused": "not source_ast",
+    "tail-transition": "",
+    "mapping-repairs": "",
+}
 CAPTURE_POLICY = copy.deepcopy(prefix.CAPTURE_POLICY)
 RESULT_KIND = "cells.issued_tissue_to_grid_capture@1"
 read_capture = prefix.read_capture
@@ -450,10 +456,65 @@ def supervised_launch(prepared, digest, release, case, output):
     )
 
 
+def _software_selection(group, items):
+    if group not in ("tail-transition", "mapping-repairs"):
+        return prefix._software_selection(group, items)
+    selected, deselected = [], []
+    for item in items:
+        name = getattr(item, "originalname", None) or item.name.split("[", 1)[0]
+        parts = ["tail", "dispatch_after_one_fresh", "exact_seven_cache_pairs"]
+        if group == "mapping-repairs":
+            parts += ["descriptor_factory", "return_retained", "forensic", "capture_after_return"]
+        destination = selected if any(part in name for part in parts) else deselected
+        destination.append(item)
+    return selected, deselected
+
+
 def software_child(output, group="all"):
-    return _retarget(
-        prefix.software_child, ROOT=ROOT, TESTS=TESTS, SOFTWARE_GROUPS=SOFTWARE_GROUPS
-    )(output, group)
+    # Only tiny synthetic list/ndarray conversions use NumPy. The inherited
+    # native-file/import blockade stays active; RNG and numerical operators
+    # are forbidden explicitly before any test can run.
+    resource.setrlimit(resource.RLIMIT_AS, (2**30, 2**30))
+    import numpy as np
+
+    saved, attempted = [], []
+
+    def forbidden(name):
+        def entry(*args, **kwargs):
+            attempted.append(name)
+            raise AssertionError("Actual RNG/operator forbidden: " + name)
+
+        return entry
+
+    for label, module in (("random", np.random), ("linalg", np.linalg)):
+        for name, value in tuple(vars(module).items()):
+            if (
+                not name.startswith("_")
+                and callable(value)
+                and not (isinstance(value, type) and issubclass(value, BaseException))
+            ):
+                saved.append((module, name, value))
+                setattr(module, name, forbidden(label + "." + name))
+    try:
+        result = _retarget(
+            prefix.software_child,
+            ROOT=ROOT,
+            TESTS=TESTS,
+            SOFTWARE_GROUPS=SOFTWARE_GROUPS,
+            _software_selection=_software_selection,
+        )(output, group)
+    finally:
+        for module, name, value in saved:
+            setattr(module, name, value)
+        shared.write(
+            output / "synthetic-array-guard.json",
+            dict(
+                allowed="small synthetic ndarray conversion and inspection only",
+                actual_rng_or_operator_attempts=attempted,
+                actual_source_reference_credit=0,
+            ),
+        )
+    return int(result) if not attempted else 1
 
 
 def software(output, group="all", *, cpu=6):

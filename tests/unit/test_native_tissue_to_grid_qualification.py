@@ -9,6 +9,21 @@ import pytest
 from validation.betse import native_tissue_to_grid_qualification as q
 
 
+def test_tail_group_selects_function_names_without_output_path_keywords():
+    items = [
+        NS(originalname=name, name=name, nodeid="tail-transition-01/source/" + name)
+        for name in (
+            "test_unrelated",
+            "test_tail_list_conversion",
+            "test_dispatch_after_one_fresh_prefix",
+            "test_exact_seven_cache_pairs_keep_source",
+        )
+    ]
+    selected, deselected = q._software_selection("tail-transition", items)
+    assert selected == items[1:] and deselected == items[:1]
+    assert q.SOFTWARE_GROUPS["tail-transition"] == ""
+
+
 def test_fixed_plan_binds_world_prerequisites_probe_policy_and_original_limits():
     value = q._fixed()
     assert value["world_owner_prerequisites"] == ["poisson", "six_store_data_tail"]

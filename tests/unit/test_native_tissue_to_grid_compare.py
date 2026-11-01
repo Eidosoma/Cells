@@ -2,6 +2,7 @@
 
 import copy
 import json
+import struct
 from types import SimpleNamespace as NS
 
 import pytest
@@ -35,7 +36,15 @@ def seal(capture):
 
 def pair():
     node, column = f.column("caller_values", values=(1.0, -0.0))
-    caller = f.mapping([("original_values", node)])
+    indices, indices_column = f.column("cell_i", (0.0, 1.0))
+    raw = struct.pack("<qq", 0, 1)
+    indices["source_layout"]["dtype"] = "<i8"
+    indices["sha256"] = f.digest(raw)
+    indices_column["values"].update(dtype="<i8", raw_bytes_hex=raw.hex())
+    retired = dict(kind="list", items=[f.scalar(0), f.scalar(1)])
+    caller = f.mapping(
+        [("original_values", node), ("cell_i", indices), ("all_points_cell_i", retired)]
+    )
     before = f.cache(
         f.mapping(
             [
@@ -45,7 +54,7 @@ def pair():
                 ("helpers", dict(kind="list", items=[])),
             ]
         ),
-        [column],
+        [column, indices_column],
     )
     probe_inputs = f.cache(
         dict(
@@ -115,7 +124,7 @@ def pair():
         work_is_not_independent_cases=True,
     )
     seal(owned)
-    native_caller = f.native_cache(f.cache(caller, [column]))
+    native_caller = f.native_cache(f.cache(caller, [column, indices_column]))
     reference = dict(
         kind=c.native.KIND,
         stop_after=c.ENDPOINT,
@@ -169,6 +178,28 @@ def test_old_alias_schema_cannot_claim_completed_tail_conversion():
     del reference["aliases"]["cell_i_is_tail_asarray_return"]
     with pytest.raises(ValueError):
         c.compare(owned, reference)
+
+
+@pytest.mark.parametrize("field", ["cell_i", "all_points_cell_i"])
+def test_tail_typed_cache_comparison_preserves_list_ndarray_distinction(field):
+    owned, reference = pair()
+    values = dict((k["value"], v) for k, v in reference["before"]["tree"]["values"])
+    assert values["cell_i"]["type"] == "array" and values["all_points_cell_i"]["type"] == "list"
+    other = "cell_i" if field == "all_points_cell_i" else "all_points_cell_i"
+    before = owned["trial"]["before"]
+    caller = next(
+        v for k, v in json.loads(before["descriptor_json"])["items"] if k["value"] == "caller"
+    )
+    typed = dict((k["value"], v) for k, v in caller["items"])
+    for entry in caller["items"]:
+        if entry[0]["value"] == field:
+            entry[1] = copy.deepcopy(typed[other])
+    # Re-encode the complete wrong source record with proper column traversal:
+    # the refusal must concern list/ndarray semantics, not orphaned columns.
+    wrong = f.native_cache(f.cache(caller, before["columns"]))
+    reference.update(before=wrong, after=copy.deepcopy(wrong))
+    result = c.compare(owned, reference)
+    assert not result["exact_match"] and result["differences"]
 
 
 @pytest.mark.parametrize(
