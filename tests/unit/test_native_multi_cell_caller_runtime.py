@@ -277,6 +277,88 @@ def test_import_hook_refuses_undeclared_requests_even_for_prepared_module(packag
         importer("betse.lib.numpy", fromlist=("nparray", "npscalar"))
 
 
+def cached_numpy(package, monkeypatch):
+    numpy, core, methods = (
+        ModuleType(name) for name in ("numpy", "numpy._core", "numpy._core._methods")
+    )
+    numpy.array = package.dependencies["numpy"].array
+    numpy.ndarray = package.dependencies["numpy"].ndarray
+    numpy.random = object()
+    numpy._core = core
+    core._methods = methods
+    for module in (numpy, core, methods):
+        monkeypatch.setitem(sys.modules, module.__name__, module)
+    package.dependencies["numpy"] = numpy
+    result = build(package)
+    namespace = result["modules"]["betse.science.cells"]
+    return numpy, core, methods, namespace
+
+
+def test_cached_numpy_c_api_request_uses_exact_objects_without_loading(package, monkeypatch):
+    numpy, core, methods, namespace = cached_numpy(package, monkeypatch)
+    importer = namespace["__builtins__"]["__import__"]
+    before = dict(sys.modules)
+    proxy = importer("numpy._core._methods", namespace, namespace, (), 0)
+    assert proxy is namespace["np"] and proxy._module is numpy
+    assert proxy.random is package.dependencies["rng"] and proxy.random is not numpy.random
+    assert proxy._core is core and core._methods is methods
+    assert sys.modules == before and package.calls == []
+
+
+@pytest.mark.parametrize(
+    "changed",
+    ["root_cache", "core_cache", "helper_cache", "core_alias", "helper_alias", "name", "proxy"],
+)
+def test_cached_numpy_c_api_request_rejects_identity_drift(package, monkeypatch, changed):
+    numpy, core, methods, namespace = cached_numpy(package, monkeypatch)
+    importer = namespace["__builtins__"]["__import__"]
+    assert importer("numpy._core._methods") is namespace["np"]
+    if changed in ("root_cache", "core_cache", "helper_cache"):
+        module = {"root_cache": numpy, "core_cache": core, "helper_cache": methods}[changed]
+        replacement = ModuleType(module.__name__)
+        replacement.__dict__.update(vars(module))
+        monkeypatch.setitem(sys.modules, module.__name__, replacement)
+    elif changed == "core_alias":
+        numpy._core = ModuleType(core.__name__)
+    elif changed == "helper_alias":
+        core._methods = ModuleType(methods.__name__)
+    elif changed == "name":
+        methods.__name__ = "numpy._core.not_methods"
+    else:
+        namespace["np"]._module = ModuleType("numpy")
+    with pytest.raises(ImportError, match="cached NumPy"):
+        importer("numpy._core._methods")
+    assert package.calls == []
+
+
+@pytest.mark.parametrize(
+    "name,fromlist,level",
+    [
+        ("numpy._core._methods", ("_mean",), 0),
+        ("numpy._core._methods", ("*",), 0),
+        ("numpy._core._methods", (), 1),
+        ("numpy._core._exceptions", (), 0),
+        ("numpy.core._methods", (), 0),
+        ("subprocess", (), 0),
+    ],
+)
+def test_cached_numpy_exception_does_not_widen_import_roster(
+    package, monkeypatch, name, fromlist, level
+):
+    _, _, _, namespace = cached_numpy(package, monkeypatch)
+    with pytest.raises(ImportError, match="independent import"):
+        namespace["__builtins__"]["__import__"](name, namespace, namespace, fromlist, level)
+    assert package.calls == []
+
+
+def test_cached_numpy_request_without_preloaded_helpers_refuses(package):
+    result = build(package)
+    importer = result["modules"]["betse.science.cells"]["__builtins__"]["__import__"]
+    with pytest.raises(ImportError, match="Unbound cached NumPy"):
+        importer("numpy._core._methods")
+    assert package.calls == []
+
+
 def test_original_file_line_ast_metadata_and_input_ast_are_retained(package):
     before = [
         [ast.dump(node, include_attributes=True) for node in nodes] for _, nodes in package.groups

@@ -20,11 +20,14 @@ import copy
 import hashlib
 import math
 import os.path
+import sys
 from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
 from types import GeneratorType, ModuleType, SimpleNamespace
+
+NUMPY_C_API_IMPORT = ("numpy._core._methods", (), 0)
 
 # Definition order, not scientific execution order. Lazy original imports use
 # these same private modules, including helpers added after the shared groups.
@@ -281,8 +284,15 @@ def compile_groups(groups, *, native_root):
             "stdlib abc, builtins, collections.abc, copy, enum, math, os.path, types",
         ],
         "import_policy": (
-            "exact declared imports into prepared private modules or supplied numpy only"
+            "exact declared imports into prepared private modules or supplied numpy; "
+            "one explicitly bound already-loaded NumPy C-API helper request"
         ),
+        "implicit_numpy_c_api_import": {
+            "name": NUMPY_C_API_IMPORT[0],
+            "fromlist": [],
+            "level": 0,
+            "policy": "same supplied NumPy/core/methods objects already in sys.modules; no loader",
+        },
         "unsupported_imports": [
             "matplotlib optional display branches",
             "betse.util.type.call.callers optional unimplemented-method exception",
@@ -312,9 +322,44 @@ def _private_modules(metadata):
     return modules
 
 
-def _importer(owner, requests, modules, numpy):
+def _cached_numpy_helpers(numpy):
+    """Retain preloaded helpers without importing or running numerical code."""
+    if type(numpy) is not ModuleType:
+        return None
+    core = vars(numpy).get("_core")
+    methods = vars(core).get("_methods") if type(core) is ModuleType else None
+    if type(methods) is not ModuleType:
+        return None
+    return numpy, core, methods
+
+
+def _check_numpy_helpers(binding, proxy):
+    if binding is None or type(proxy) is not _Numpy or proxy._module is not binding[0]:
+        raise ImportError("Unbound cached NumPy C-API helper")
+    numpy, core, methods = binding
+    if (
+        any(
+            sys.modules.get(name) is not module or vars(module).get("__name__") != name
+            for name, module in zip(
+                ("numpy", "numpy._core", NUMPY_C_API_IMPORT[0]), binding, strict=True
+            )
+        )
+        or vars(numpy).get("_core") is not core
+        or vars(core).get("_methods") is not methods
+    ):
+        raise ImportError("Changed cached NumPy C-API helper ownership")
+
+
+def _importer(owner, requests, modules, numpy, cached_helpers=None):
     def imports(name, globals=None, locals=None, fromlist=(), level=0):
         key = (name, tuple(fromlist or ()), level)
+        if key == NUMPY_C_API_IMPORT:
+            # ndarray.mean() calls this from the original caller's globals.
+            # Match an ordinary empty-fromlist import's root return. NumPy's
+            # C API then obtains the already-loaded helper from sys.modules.
+            # Retain the private RNG proxy and never invoke an import loader.
+            _check_numpy_helpers(cached_helpers, numpy)
+            return numpy
         if level or "*" in key[1] or key not in requests:
             raise ImportError("Undeclared independent import in " + owner + ": " + str(name))
         if name == "numpy":
@@ -336,6 +381,7 @@ def build(groups, *, native_root, numpy, image, spline, hull, delaunay, tree, rn
     codes, requests, metadata = compile_groups(groups, native_root=native_root)
     modules = _private_modules(metadata)
     proxy = _Numpy(numpy, rng)
+    cached_helpers = _cached_numpy_helpers(numpy)
     lattice = Enum("CellLatticeType", ("HEX", "SQUARE"))
     external = dict(
         ABCMeta=ABCMeta,
@@ -362,7 +408,8 @@ def build(groups, *, native_root, numpy, image, spline, hull, delaunay, tree, rn
         namespace = vars(modules[name])
         namespace.update(external)
         namespace["__builtins__"] = dict(
-            vars(builtins), __import__=_importer(name, requests[name], modules, proxy)
+            vars(builtins),
+            __import__=_importer(name, requests[name], modules, proxy, cached_helpers),
         )
         try:
             if name not in {"betse.exceptions", "betse.util.type.types"}:

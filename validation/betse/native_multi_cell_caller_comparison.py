@@ -434,6 +434,15 @@ def worker(prepared, plan_sha256, release, output):
         payload.write(output / "native-full.json", serialized)
         if "source_summary_capture_error" in outcome:
             raise RuntimeError("Source summary capture failed; complete reference retained")
+        if (
+            summary["status"] != "source_completed"
+            or summary["source_body_completed"] is not True
+            or summary["source_error"] is not None
+            or summary["capture_error"] is not None
+            or summary["capture_errors"]
+            or summary["failed_stage"] is not None
+        ):
+            raise RuntimeError("Original source or capture failed; complete reference retained")
         selected = native.comparison_record(serialized)
         payload.write(output / "native-comparison.json", selected)
         from validation.betse.native_multi_cell_caller_compare import compare

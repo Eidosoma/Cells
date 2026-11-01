@@ -506,8 +506,36 @@ def test_failed_native_source_keeps_complete_record_without_match(context, monke
         runner.payload.read(output / "native-full.json")["source_error"]
         == reference["source_error"]
     )
-    assert runner.shared.read(output / "comparison.json")["exact_match"] is False
+    assert not (output / "comparison.json").exists()
     assert runner.shared.read(output / "worker-result.json")["accepted_source_comparisons"] == 0
+
+
+@pytest.mark.parametrize("failure", ["source", "capture"])
+def test_incomplete_native_capture_keeps_primary_before_strict_comparator(
+    context, monkeypatch, failure
+):
+    digest, release, output, reference, _, _ = synthetic_worker(context, monkeypatch)
+    reference.update(status="source_failed", aliases=None, failed_stage="Cells_lattice")
+    if failure == "source":
+        reference.update(source_body_completed=False, source_error={"primary": "original cause"})
+    else:
+        reference.update(
+            capture_error={"secondary": "capture cause"}, capture_errors=[{"retained": True}]
+        )
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Incomplete capture must not enter comparison projection")
+
+    monkeypatch.setattr(runner.native, "comparison_record", forbidden)
+    assert runner.worker(context["prepared"], digest, release, output) == 1
+    result = runner.shared.read(output / "worker-result.json")
+    full = runner.payload.read(output / "native-full.json")
+    assert full["aliases"] is None and full["failed_stage"] == "Cells_lattice"
+    assert result["source_summary"][failure + "_error"] == reference[failure + "_error"]
+    assert "Original source or capture failed" in result["error"]["nodes"][0]["message"]
+    assert result["accepted_source_comparisons"] == 0
+    assert not (output / "native-comparison.json").exists()
+    assert not (output / "comparison.json").exists()
 
 
 def test_first_evidence_write_failure_preserves_returned_source_error(context, monkeypatch):

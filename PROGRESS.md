@@ -9,13 +9,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 
 ## Current position
 
-- **Current parallel work (1 November):** Root has completed the corrected
-  multi-cell caller diagnostic and prepared the repaired reference runtime.
-  Key Dev owns the current initialization/simulation/restart qualification path, including
-  two newly reviewed formatter-reference guards. Specialist owns the extended
-  multi-cell geometry/ECM/environment diagnostic and reference through
-  `make_maskM`. Existing runners and production code are reused; actual
-  numerical releases remain coordinated by Root.
+- **Current parallel work (1 November):** Root has completed the multi-cell
+  caller diagnostic; the second independent reference failed at a NumPy import
+  boundary. Its reviewed repair and fresh comparison snapshot are ready, with
+  execution held. Key Dev's continuity preparation and formatter guards are
+  reviewed and committed; Key is building the actual INIT-to-continuity bridge.
+  Specialist delivered the geometry/ECM/environment diagnostic and reference
+  through `make_maskM` for review and is checking the current dependency
+  integration. Existing runners and production code are reused; actual numerical
+  releases remain coordinated by Root.
 
 - **BETSE source comparisons (1 November):** the square input now matches original
   BETSE through environment and mask construction: **14 cache comparisons and
@@ -491,10 +493,21 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the earlier 37-pass/two-failure image. The strict text/data comparator and
   actual INIT prerequisites are unchanged. Source review found two remaining
   guards: global names can shadow formatter builtins, and equal-valued constants
-  of different types can pass the code-constant comparison. Key is repairing
-  these within the existing reference files and connecting the current
-  initialization/simulation/restart qualification route. No actual warm/native
-  reference was run.
+  of different types can pass the code-constant comparison. Both guards are now
+  repaired and [source/software reviewed](/mnt/workspaces/Cells/molecule-kinetic-formatter-source-guard-repair-20261101-01/root-integration-review.json):
+  **40 controls passed / 105 deselected**, comprising 23 new guard checks and
+  17 existing metadata checks. The intermediate 39-control image retains its
+  own source binding. All five guarded outcomes were reviewed. The separate
+  [current continuity preparation](/mnt/workspaces/Cells/molecule-current-source-continuity-preparation-20261101-01/root-saved-results-review.json)
+  passed **69 software controls**, with all three guarded outcomes reviewed.
+  It requires a genuinely exhausted typed INIT parent and an explicit SIM
+  declaration before comparing three uninterrupted steps with one step,
+  save/load, then two steps. These are six source calls plus nested work, not
+  independent cases. The six delivered code/test files are committed as
+  **8aca130**. Key is implementing the in-process bridge from the existing
+  actual INIT lifecycle. No actual INIT/SIM/native reference ran in these
+  preparations. The original style failure and mutable work-log pin exception
+  are retained; its exact delivered log prefix was recovered separately.
   Actual exhausted INIT, source correspondence and checkpoint continuity remain
   prerequisites; the software results grant none of those qualifications.
   Positive SIM checkpointing and uninterrupted-versus-restored continuation
@@ -792,13 +805,33 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   unchanged package files. The general file/library checks remain strict.
   Fresh `prepared-02` retains 864 unchanged source files, the 184 external
   inputs and all 2,504 runtime files; only the checker and its test changed.
-  It is prepared but unreleased, with no automatic reference retry. A fresh
-  reference attempt is next; full-package, physical and checkpoint admission
-  remain open.
+  The user-authorized [second reference attempt failed](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/square-reference-02/root-review.json)
+  in **17.58 seconds, 223.6 MiB sampled peak RSS**. Dependency preflight passed,
+  but original lattice construction called `ndarray.mean`, whose implicit
+  `numpy._core._methods` import was outside the private import policy. One
+  original-source attempt reached four recorded source entries; no comparison
+  passed. The primary import failure, secondary missing-alias capture failure,
+  partial bounds and advanced private random state remain saved. The local
+  lattice array was not captured. Root's [narrow repair is reviewed](/mnt/workspaces/Cells/native-multi-cell-caller-comparison-20261101-01/numpy-helper-repair-review.json):
+  **109 software checks passed in 13.84 seconds**, and two separate dependency
+  checks verified the actual cached-helper import request. Those checks allocate
+  an empty array and block or substitute the numerical helper; they are not
+  numerical source comparisons. The importer admits only the exact already-loaded
+  helper identity and retains the private RNG proxy. Failed source/capture
+  records are now rejected before strict comparison projection, after saving
+  full available evidence. Fresh `prepared-03` retains 863 unchanged files
+  among 866, all 184 external inputs and 2,504 runtime files. It is unreleased;
+  the next actual reference needs a new instruction. Full-package, physical
+  and checkpoint admission remain open.
   The ordinary multi-cell geometry/ECM/environment continuation is implemented
   through `make_maskM`, stopping before Poisson. It retains the same live
   caller, mesh, image, parameters and random stream, constructs the grid
   descriptor before parameter/caller birth, and consumes each parent once.
+  Specialist's [new diagnostic and independent-reference tools](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/source-result.json)
+  are delivered for Root review: **57 software controls**, followed by
+  [10 separate namespace-integration controls](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/runtime-integration-01/source-result.json).
+  The images retain separate dependency bindings. Actual source execution
+  remains held while source and saved-result review proceeds.
   [Saved-result review](/mnt/workspaces/Cells/native-multi-cell-environment-20261101-01/root-results-review.json)
   verifies the original **2-pass/64-failure** attempt, then **66 and 74 passes
   on their respective frozen versions**. The final child used **301.61 seconds
