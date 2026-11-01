@@ -389,6 +389,100 @@ def test_foreign_changed_or_omitted_fixture_authority_refuses(fault):
         q.validate_program(value)
 
 
+def synthetic_geometry():
+    actual = {
+        name: np.zeros((1, 1), dtype=np.float64)
+        for name in q.primitive.material.geometry_source.Geometry._fields
+    }
+    actual.update(shape=(1, 1), diagnostics=dict(synthetic_only=True))
+    return actual, {name: copy.deepcopy(actual[name]) for name in q.NATIVE_GEOMETRY_FIELDS}
+
+
+def test_geometry_roster_matches_original_transport_capture_AST_without_execution():
+    import ast
+
+    tree = ast.parse(q.reference.native.Path(q.reference.native.__file__).read_bytes())
+    function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "evaluate")
+    assignment = next(
+        n
+        for n in function.body
+        if isinstance(n, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "native_geometry" for t in n.targets)
+    )
+    assert tuple(k.arg for k in assignment.value.keywords) == q.NATIVE_GEOMETRY_FIELDS
+
+
+def test_geometry_projection_is_closed_exact_and_preserves_unmatched_fields(monkeypatch):
+    actual, native = synthetic_geometry()
+    actual["X_m"][:] = 27.0
+    before = q.primitive.codec.fingerprint(actual)
+    original, observed = q.checks.geometry_compare, []
+
+    def compare(left, right, **options):
+        observed.append((left, right, options))
+        assert set(left) == set(right) == {"geometry"}
+        assert all(left["geometry"][n] is actual[n] for n in q.NATIVE_GEOMETRY_FIELDS)
+        return original(left, right, **options)
+
+    monkeypatch.setattr(q.checks, "geometry_compare", compare)
+    report = q.compare_source_geometry(actual, native)
+    assert observed[0][2] == {"exact": True}
+    assert report["source_value_exact"] and report["byte_agreement"]
+    assert len(report["native_fields"]) == 9 and len(report["unmatched_cells_fields"]) == 9
+    assert "X_m" in report["unmatched_cells_fields"]
+    assert report["unmatched_fields_native_credit"] is False
+    assert q.primitive.codec.fingerprint(actual) == before
+
+
+@pytest.mark.parametrize("field", q.NATIVE_GEOMETRY_FIELDS)
+def test_geometry_missing_native_field_never_becomes_a_silent_intersection(field):
+    actual, native = synthetic_geometry()
+    native.pop(field)
+    with pytest.raises(ValueError, match="roster"):
+        q.compare_source_geometry(actual, native)
+
+
+@pytest.mark.parametrize("fault", ["extra-native", "missing-cells", "dtype", "shape", "value"])
+def test_geometry_schema_and_exact_values_refuse_before_history_comparison(fault):
+    actual, native = synthetic_geometry()
+    if fault == "extra-native":
+        native["foreign"] = np.zeros(1)
+    elif fault == "missing-cells":
+        actual.pop("X_m")
+    elif fault == "dtype":
+        native["grid_points_m"] = native["grid_points_m"].astype(np.float32)
+    elif fault == "shape":
+        native["grid_points_m"] = np.zeros(2)
+    else:
+        native["grid_points_m"][0, 0] = 1e-30  # even below a tolerance: source check is exact
+    with pytest.raises((ValueError, AssertionError)):
+        q.compare_source_geometry(actual, native)
+
+
+def test_geometry_signed_zero_reports_byte_difference_without_normalizing_values():
+    actual, native = synthetic_geometry()
+    native["grid_points_m"][0, 0] = -0.0
+    report = q.compare_source_geometry(actual, native)
+    assert report["source_value_exact"] and report["byte_agreement"] is False
+    assert report["byte_mismatches"] == ["grid_points_m"]
+    assert np.signbit(native["grid_points_m"][0, 0])
+    assert not np.signbit(actual["grid_points_m"][0, 0])
+
+
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
+@pytest.mark.parametrize("side", ["actual", "native", "both"])
+def test_geometry_exact_agreement_does_not_admit_nonfinite_values(bad, side):
+    actual, native = synthetic_geometry()
+    if side in {"actual", "both"}:
+        actual["grid_points_m"][0, 0] = bad
+    if side in {"native", "both"}:
+        native["grid_points_m"][0, 0] = bad
+    before = (actual["grid_points_m"].tobytes(), native["grid_points_m"].tobytes())
+    with pytest.raises(ValueError, match="Nonfinite"):
+        q.compare_source_geometry(actual, native)
+    assert before == (actual["grid_points_m"].tobytes(), native["grid_points_m"].tobytes())
+
+
 def synthetic_histories(monkeypatch):
     """Scalar comparison controls only, never material owner/trajectory evidence."""
     m = q.primitive.material
@@ -430,28 +524,24 @@ def synthetic_histories(monkeypatch):
             ],
         )
 
+    actual_geometry, native_geometry = synthetic_geometry()
     native = dict(
         history=[provider(r) for r in rows],
         failure=None,
         warnings=[],
         RNG_unchanged=True,
         native_source_sha256=q.source_plan()["native_source"]["source_sha256"],
-        geometry=dict(synthetic=True),
+        geometry=native_geometry,
     )
     first = dict(history=[provider(r) for r in rows])
     second = copy.deepcopy(first)
-    geometry = SimpleNamespace(_asdict=lambda: dict(synthetic=True))
+    geometry = SimpleNamespace(_asdict=lambda: actual_geometry)
     binding = SimpleNamespace(
         source=SimpleNamespace(
             geometry_binding=SimpleNamespace(
                 geometry=geometry, current_binding=SimpleNamespace(ion_ids=("Na",))
             )
         )
-    )
-    monkeypatch.setattr(
-        q.checks,
-        "geometry_compare",
-        lambda a, b: a == b or pytest.fail("Synthetic geometry differs"),
     )
     return rows, copy.deepcopy(rows[:3]), native, first, second, binding
 
@@ -572,6 +662,7 @@ def mock_packet(monkeypatch, tmp_path):
         monkeypatch.setenv(name, "1")
     packet = tmp_path / "packet"
     packet.mkdir()
+    (packet / "inputs.json").write_text(json.dumps(dict(synthetic_only=True)))
     monkeypatch.setattr(
         q,
         "packet_inputs",
@@ -678,6 +769,7 @@ def test_released_output_containment_refuses_before_any_evidence_or_model(
     monkeypatch, tmp_path, mediated
 ):
     packet = mock_packet(monkeypatch, tmp_path)
+    before = {p.name: p.read_bytes() for p in packet.iterdir()}
     target = packet / "output"
     if mediated:
         link = tmp_path / "link"
@@ -685,7 +777,7 @@ def test_released_output_containment_refuses_before_any_evidence_or_model(
         target = link / "output"
     with pytest.raises(ValueError, match="Output cannot modify"):
         q.worker(target, packet=packet, packet_sha256="synthetic", enabled=True)
-    assert list(packet.iterdir()) == []
+    assert {p.name: p.read_bytes() for p in packet.iterdir()} == before
 
 
 def fake_work(monkeypatch, seen):
@@ -935,7 +1027,7 @@ def test_source_failure_keeps_primary_chain_partial_and_accounting_on_secondary_
     old = q.archive
 
     def capture(path, payload):
-        if secondary and path.name == "primitive-begin":
+        if secondary and path.name == "available-source_exception_owned_fields":
             raise OSError("secondary diagnostic I/O")
         return old(path, payload)
 
@@ -947,13 +1039,12 @@ def test_source_failure_keeps_primary_chain_partial_and_accounting_on_secondary_
     assert seen == ["observer-start", "source-stub", "observer-stop"]
     assert not (output / "result.json").exists()
     if secondary:
-        assert any("secondary diagnostic I/O" in n for n in primary.__notes__)
+        index = json.loads((output / "failure/index.json").read_text())
+        assert not index["complete"]
+        assert any("available-source_exception_owned_fields" in n for n in primary.__notes__)
     else:
-        row = q.read_archive(output / "primitive-begin")
-        assert (
-            row["available"]["source_exception_owned_fields"]["partial"]["failed_trial"]
-            == "retained"
-        )
+        row = q.read_archive(output / "failure/available-source_exception_owned_fields")
+        assert row["value"]["partial"]["failed_trial"] == "retained"
 
 
 def test_array_view_failure_evidence_keeps_primary_cause_and_complete_base(monkeypatch, tmp_path):
@@ -975,14 +1066,17 @@ def test_array_view_failure_evidence_keeps_primary_cause_and_complete_base(monke
     with pytest.raises(ValueError) as caught:
         q.worker(output, packet=packet, packet_sha256="synthetic", enabled=True)
     assert caught.value is primary and primary.__cause__ is cause
-    value, observations = q.read_archive(output / "primitive-begin", with_array_observations=True)
-    observed = value["available"]["source_exception_owned_fields"]["partial"]
+    value, observations = q.read_archive(
+        output / "failure/available-source_exception_owned_fields", with_array_observations=True
+    )
+    observed = value["value"]["partial"]
     assert observed["view"] is observed["repeated"]
     row = next(r for r in observations if r["logical_snapshot"] is observed["view"])
     assert row["strides"] == list(view.strides)
     assert observations[row["base"]]["logical_snapshot"].tobytes() == original.tobytes()
     assert seen == ["observer-start", "observer-stop"]
-    assert (output / "failure/manifest.json").is_file() and not (output / "result.json").exists()
+    index = json.loads((output / "failure/index.json").read_text())
+    assert index["complete"] and index["primary_written"] and not (output / "result.json").exists()
 
 
 def test_successful_live_return_with_evidence_IO_error_does_not_advance_or_hide_return(
@@ -1009,9 +1103,136 @@ def test_successful_live_return_with_evidence_IO_error_does_not_advance_or_hide_
         q.worker(tmp_path / "output", packet=packet, packet_sha256="synthetic", enabled=True)
     assert caught.value.returned is marker and caught.value.__cause__ is io
     assert seen == ["observer-start", "observer-stop"]
-    assert q.read_archive(tmp_path / "output/failure")["available"]["last_returned"] == dict(
+    assert q.read_archive(tmp_path / "output/failure/available-last_returned")["value"] == dict(
         synthetic_only=True
     )
+    index = json.loads((tmp_path / "output/failure/index.json").read_text())
+    assert not index["complete"]  # the opaque marker is not serialized as an owner
+    assert any(
+        r["section"] == "raw-returned" and r["status"] == "incomplete" for r in index["sections"]
+    )
+
+
+def test_projection_failure_retains_original_numeric_return_before_last_returned_assignment(
+    monkeypatch, tmp_path
+):
+    packet = mock_packet(monkeypatch, tmp_path)
+    seen = []
+    fake_work(monkeypatch, seen)
+    root = np.arange(12.0)
+    returned = root.reshape(3, 4)[:, ::-1]
+    error = OSError("projection failed before assignment")
+    monkeypatch.setattr(q.primitive, "begin", lambda *a: returned)
+
+    def project(*args):
+        raise error
+
+    monkeypatch.setattr(q.primitive_validation, "evidence", project)
+    output = tmp_path / "output"
+    with pytest.raises(q.EvidenceRejected) as caught:
+        q.worker(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value.returned is returned and caught.value.__cause__ is error
+    raw, observations = q.read_archive(
+        output / "failure/raw-returned", with_array_observations=True
+    )
+    assert raw["value"].tobytes() == returned.tobytes()
+    row = next(r for r in observations if r["logical_snapshot"] is raw["value"])
+    assert row["strides"] == list(returned.strides)
+    assert observations[row["base"]]["logical_snapshot"].tobytes() == root.tobytes()
+    index = json.loads((output / "failure/index.json").read_text())
+    assert index["complete"] and not any(
+        r["section"] == "available-last_returned" for r in index["sections"]
+    )
+    assert seen == ["observer-start", "observer-stop"]
+
+
+@pytest.mark.parametrize("fault", ["projection", "archive"])
+def test_decimal_raw_return_survives_both_capture_boundaries(fault):
+    import ast
+    import inspect
+
+    # Exercise the actual nested callback without running any provider.
+    node = next(
+        n
+        for n in ast.walk(ast.parse(inspect.getsource(q.worker)))
+        if isinstance(n, ast.FunctionDef) and n.name == "keep_decimal"
+    )
+    raw, exact, calls = object(), {}, []
+    cause = OSError("raw Decimal observation failed")
+
+    def project(value):
+        assert value is raw
+        calls.append("projection")
+        if fault == "projection":
+            raise cause
+        return {"retained": "exact coefficient"}
+
+    def save(*args, **kwargs):
+        calls.append("archive")
+        raise cause
+
+    space = dict(
+        data=project,
+        exact=exact,
+        journal=SimpleNamespace(save=save),
+        EvidenceRejected=q.EvidenceRejected,
+    )
+    exec(compile(ast.Module(body=[node], type_ignores=[]), "<actual callback>", "exec"), space)
+    with pytest.raises(q.EvidenceRejected) as caught:
+        space["keep_decimal"](2, raw)
+    assert caught.value.returned is raw and caught.value.__cause__ is cause
+    assert caught.value.stage == "Decimal-raw-2"
+    assert calls == (["projection"] if fault == "projection" else ["projection", "archive"])
+    assert (2 in exact) is (fault == "archive")
+
+
+@pytest.mark.parametrize("capture_fails", [False, True])
+def test_failure_retains_fresh_primitive_counters_or_explicit_capture_failure(
+    monkeypatch, tmp_path, capture_fails
+):
+    packet = mock_packet(monkeypatch, tmp_path)
+    seen = []
+    fake_work(monkeypatch, seen)
+    current = SimpleNamespace(binding=SimpleNamespace(source=object()), counter=0)
+    primary = ValueError("source failed after new attempt")
+    primary.__cause__ = TypeError("source cause")
+    monkeypatch.setattr(q.primitive, "begin", lambda *a: current)
+
+    def evidence(value, error=None):
+        assert value is current
+        if capture_fails and current.counter:
+            raise OSError("current evidence failed")
+        record = {name: None for name in q.failure_evidence.PRIMITIVE_FIELDS}
+        record.update(
+            kind=q.primitive.KIND,
+            work=dict(counter=current.counter),
+            journal=[dict(counter=current.counter)],
+            attempts=[],
+            recovery_errors=[],
+        )
+        return record
+
+    def fail(source, raw):
+        assert source is current.binding.source
+        current.counter = 7
+        raise primary
+
+    monkeypatch.setattr(q.primitive_validation, "evidence", evidence)
+    monkeypatch.setattr(q.primitive.material, "drive", fail)
+    output = tmp_path / "output"
+    with pytest.raises(ValueError) as caught:
+        q.worker(output, packet=packet, packet_sha256="synthetic", enabled=True)
+    assert caught.value is primary and primary.__cause__.args == ("source cause",)
+    index = json.loads((output / "failure/index.json").read_text())
+    assert index["complete"] is (not capture_fails)
+    if capture_fails:
+        assert any(r["where"] == "current-primitive" for r in index["errors"])
+        errors = q.read_archive(output / "failure/evidence-errors")["value"]
+        assert errors[0]["stage"] == "current_primitive"
+    else:
+        assert q.read_archive(output / "failure/primitive-work")["value"]["counter"] == 7
+        assert q.read_archive(output / "failure/primitive-journal")["value"] == [dict(counter=7)]
+    assert seen == ["observer-start", "observer-stop"]
 
 
 @pytest.mark.parametrize("unwind", [False, True])

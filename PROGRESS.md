@@ -132,10 +132,23 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   absent from the original adapter's selected record. No per-step numerical
   comparisons ran. Both aggregate failure archives also exceeded the existing
   array-count limit; their incomplete status is explicit, and the individual
-  archives, primary traceback and work log remain intact. The next repair is
-  the established nine-field, exact native geometry comparison and bounded
-  failure evidence referencing completed archives. Equations, tolerances and
-  storage limits remain unchanged; this attempt grants no qualification.
+  archives, primary traceback and work log remain intact. The
+  [comparison and failure-evidence repair](/mnt/workspaces/Cells/molecule-material-comparison-repair-20261101-01/software-review.json)
+  now uses the established nine-field exact comparison, rejects nonfinite
+  selected geometry and preserves current failures in bounded sections or
+  verified archive references. Its first integrated image had 152 passes and
+  six fixture failures; eight focused successor checks cover those corrections
+  and the raw Decimal-return capture boundary. Earlier evidence keeps its own
+  source binding; numerical laws, tolerances and archive limits are unchanged.
+  The [separate saved-history assessment](/mnt/workspaces/Cells/molecule-material-comparison-repair-20261101-01/saved-assessment-01/root-review.json)
+  **passed all four updates**, with exact value and byte agreement on the
+  compared BETSE fields and the existing Decimal-reference budgets satisfied.
+  The largest reference discrepancy used **1.96% of its allowed error budget**;
+  concentrations stayed finite and positive, with accounting residuals retained.
+  The assessment took **66.06 seconds, 307.3 MiB sampled peak RSS**, with no
+  source or reference calculations repeated. Original attempt 04 remains failed.
+  This supports the standalone fourth-update component on one manufactured
+  sequence; it does not qualify coupled tissue dynamics, INIT or restart.
   Key's new Simulator and phase-callback source now have
   [reviewed inherited-observer repairs](/mnt/workspaces/Cells/native-phase-callbacks-return-hook-repair-20261101-01/root-review.json):
   seven focused controls passed for each, with all eight repair outcomes retained.
@@ -149,8 +162,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **25 focused checks passed** (five new, twenty affected), with all four
   guarded outcomes and fourteen diagnostics retained. Source exceptions remain
   primary when observation also fails, and nested objects retain exact type
-  identity. Key is continuing the separate YAML-read prefix; these repairs
-  grant no YAML loading or native phase authority.
+  identity. The [YAML-read prefix and same-object class repair](/mnt/workspaces/Cells/native-parameter-yaml-prefix-development-20261101-01/typed-parameter-boundary/root-review.json)
+  are now source-reviewed: all fifteen outcomes are checked, including the
+  retained lint and two-case failures. The final **21 focused controls** are
+  separate from earlier 65- and 72-control images. Actual YAML reading remains
+  unqualified. Key is implementing the same parameter object's configuration
+  upgrade and path setup, stopping before ion stores and phase initialization.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
   are now reviewed. Specialist delivered the post-world contact-operator

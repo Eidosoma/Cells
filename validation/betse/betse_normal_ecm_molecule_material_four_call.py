@@ -21,6 +21,7 @@ from cells.processes import betse_normal_ecm_molecule_material_primitive as prim
 from validation import source_snapshot as snapshot
 from validation.betse import betse_ecm_transport_checks as checks
 from validation.betse import betse_ecm_transport_fixtures as fixtures
+from validation.betse import betse_normal_ecm_molecule_material_failure_evidence as failure_evidence
 from validation.betse import betse_normal_ecm_molecule_material_four_call_reference as reference
 from validation.betse import betse_normal_ecm_molecule_material_primitive as primitive_validation
 from validation.betse.betse_normal_channel_join_runtime import inventory
@@ -37,6 +38,17 @@ OWNED = (
 FIXTURE_SHA256 = "477690ed585be18b1f87351027bd2ff481606ce612ea31029f5c7bc846339ac2"
 CHECKS_SHA256 = "c3bd2290e18f5a565af8694c6e7f5af08a14406e2b13ba9593a90e987d0b6122"
 require = primitive.require
+NATIVE_GEOMETRY_FIELDS = (
+    "shape",
+    "delta_m",
+    "grid_points_m",
+    "cell_to_grid",
+    "membrane_to_grid",
+    "membrane_area_per_site_m2",
+    "membrane_divergence_map_m2",
+    "true_environment_volume_m3",
+    "cell_to_environment_correction",
+)
 
 
 def program():
@@ -458,6 +470,12 @@ class EvidenceEncoder(primitive.codec.Encoder):
         return super().capture(dict(payload=value, array_observations=self.observations))
 
 
+def evidence_fingerprint(value):
+    """The existing bounded observation format; no writable-owner admission."""
+    encoder = EvidenceEncoder()
+    return encoder.seal(encoder.capture(data(value)))
+
+
 def archive(directory, value):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
@@ -692,7 +710,57 @@ class Work(Calls):
         return result
 
 
+def compare_source_geometry(geometry, native):
+    """The transport adapter's closed nine-field contract, not a key intersection.
+
+    Full Cells geometry remains in the original binding archive. The additional
+    fields have no counterpart in this native transport capture and receive no
+    native-comparison credit here. Exact value and byte agreement are distinct.
+    """
+    require(
+        type(geometry) is dict
+        and set(geometry) == set(primitive.material.geometry_source.Geometry._fields),
+        "Complete Cells geometry record required",
+    )
+    require(
+        type(native) is dict and set(native) == set(NATIVE_GEOMETRY_FIELDS),
+        "Exact original transport geometry roster required",
+    )
+    selected = {name: geometry[name] for name in NATIVE_GEOMETRY_FIELDS}
+    actual, expected = checks.flat(selected), checks.flat(native)
+    require(
+        all(np.isfinite(value).all() for side in (actual, expected) for value in side.values()),
+        "Nonfinite selected transport geometry",
+    )
+    # Match the established transport check, including its geometry prefix.
+    checks.geometry_compare(dict(geometry=selected), dict(geometry=native), exact=True)
+    byte_mismatches = [
+        name for name in actual if actual[name].tobytes() != expected[name].tobytes()
+    ]
+    return dict(
+        native_fields=NATIVE_GEOMETRY_FIELDS,
+        source_value_exact=True,
+        byte_agreement=not byte_mismatches,
+        byte_mismatches=byte_mismatches,
+        unmatched_cells_fields=tuple(name for name in geometry if name not in selected),
+        unmatched_fields_native_credit=False,
+    )
+
+
 def compare_histories(rows, legacy, native, first, second, binding):
+    return compare_history_data(
+        rows,
+        legacy,
+        native,
+        first,
+        second,
+        binding.source.geometry_binding.geometry._asdict(),
+        binding.source.geometry_binding.current_binding.ion_ids,
+    )
+
+
+def compare_history_data(rows, legacy, native, first, second, geometry, ion_ids):
+    """Compare retained numeric records; this function creates no live owner."""
     require(
         len(rows) == len(native["history"]) == len(first["history"]) == len(second["history"]) == 4
         and len(legacy) == 3,
@@ -706,8 +774,7 @@ def compare_histories(rows, legacy, native, first, second, binding):
         native["native_source_sha256"] == source_plan()["native_source"]["source_sha256"],
         "Wrong original source identities",
     )
-    geometry = binding.source.geometry_binding.geometry._asdict()
-    checks.geometry_compare(geometry, native["geometry"])
+    geometry_comparison = compare_source_geometry(geometry, native["geometry"])
     summaries = []
     for index, trial in enumerate(rows):
         original, coarse, fine = (
@@ -750,7 +817,7 @@ def compare_histories(rows, legacy, native, first, second, binding):
                 abs(oracle["balance_residual_mol"]) <= 1e-85,
                 "Existing conservative oracle residual exceeded",
             )
-            at = binding.source.geometry_binding.current_binding.ion_ids.index(oracle["ion_id"])
+            at = ion_ids.index(oracle["ion_id"])
             frame = next(
                 f
                 for f in trial.frames
@@ -771,6 +838,7 @@ def compare_histories(rows, legacy, native, first, second, binding):
                 parent_identity=trial.parent_identity,
                 candidate_identity=trial.candidate.identity,
                 source_value_exact=True,
+                geometry_comparison=geometry_comparison,
                 byte_agreement=all(byte_matches.values()),
                 byte_mismatches=[k for k, same in byte_matches.items() if not same],
                 independent_error_fraction=agreement,
@@ -934,42 +1002,26 @@ def worker(directory, *, packet, packet_sha256, enabled=False):
         )
     directory.mkdir(parents=True, exist_ok=False)
     available, errors, work = dict(inputs=value), [], None
+    execution = None
+    journal = failure_evidence.Journal(
+        directory,
+        archive=archive,
+        ref=ref,
+        exception_record=primitive_validation.checkpoint._exception_record,
+        fingerprint=evidence_fingerprint,
+        provenance=dict(packet=ref(packet / "inputs.json")),
+    )
 
     def take(name, action, projection=lambda v: v):
         work.stage = name
-        try:
-            result = action()
-        except BaseException as primary:
-            try:
-                if type(primary) is primitive.PrimitiveRejected:
-                    available["failed_primitive"] = primitive_validation.evidence(
-                        primary.execution, primary
-                    )
-                available["source_exception_owned_fields"] = {
-                    key: getattr(primary, key)
-                    for key in ("partial", "parent", "drive", "trial")
-                    if hasattr(primary, key)
-                }
-                archive(
-                    directory / name,
-                    dict(
-                        status="failed",
-                        failure=primitive_validation.checkpoint._exception_record(primary),
-                        available=available,
-                        source_partials=work.partials,
-                        capture_errors=work.capture_errors,
-                    ),
-                )
-            except BaseException as secondary:
-                errors.append(
-                    dict(stage=name, type=type(secondary).__name__, message=str(secondary))
-                )
-                primary.add_note("Four-call failure evidence also failed: " + repr(secondary))
-            raise
+        result = action()
         try:
             observed = projection(result)
             available["last_returned"] = observed
-            archive(directory / name, dict(status="returned", returned=observed))
+            selectors = dict(returned=observed)
+            if name.startswith("primitive-step-"):
+                selectors.update(state=observed[0], trial=observed[1])
+            journal.save(name, dict(status="returned", returned=observed), selectors=selectors)
         except BaseException as secondary:
             raise EvidenceRejected(name, result) from secondary
         return result
@@ -1024,11 +1076,17 @@ def worker(directory, *, packet, packet_sha256, enabled=False):
             exact = {}
 
             def keep_decimal(refinement, result):
-                exact[refinement] = data(result)
-                archive(
-                    directory / ("Decimal-raw-" + str(refinement)),
-                    dict(refinement=refinement, exact=exact[refinement]),
-                )
+                try:
+                    exact[refinement] = data(result)
+                    journal.save(
+                        "Decimal-raw-" + str(refinement),
+                        dict(refinement=refinement, exact=exact[refinement]),
+                        selectors=dict(exact=exact[refinement]),
+                    )
+                except BaseException as secondary:
+                    # The provider returned these exact coefficients before
+                    # observation failed; keep them even if no archive exists.
+                    raise EvidenceRejected("Decimal-raw-" + str(refinement), result) from secondary
 
             first = take(
                 "Decimal100",
@@ -1054,20 +1112,58 @@ def worker(directory, *, packet, packet_sha256, enabled=False):
                 lambda: compare_histories(rows, legacy, native, first, second, execution.binding),
             )
         except BaseException as primary:
+            current_primitive = failure_evidence.UNSET
+            raw_returned = failure_evidence.UNSET
+
+            def capture_error(stage, secondary):
+                row = dict(stage=stage, error_type=_diagnostic_type(secondary))
+                try:
+                    row["failure"] = primitive_validation.checkpoint._exception_record(secondary)
+                except BaseException:
+                    row["complete_exception_record"] = False
+                errors.append(row)
+                BaseException.add_note(
+                    primary,
+                    "Four-call capture failed at " + stage + ": " + json.dumps(row["error_type"]),
+                )
+
+            owned_fields = {}
+            for key in ("partial", "parent", "drive", "trial"):
+                try:
+                    if hasattr(primary, key):
+                        owned_fields[key] = getattr(primary, key)
+                except BaseException as secondary:
+                    capture_error("source_exception_" + key, secondary)
+            available["source_exception_owned_fields"] = owned_fields
+            if type(primary) is EvidenceRejected:
+                raw_returned = primary.returned
+            current = (
+                primary.execution
+                if type(primary) is primitive.PrimitiveRejected
+                else raw_returned
+                if type(raw_returned) is primitive.Execution
+                else execution
+            )
+            if current is not None:
+                try:
+                    current_primitive = primitive_validation.evidence(
+                        current, primary if type(primary) is primitive.PrimitiveRejected else None
+                    )
+                except BaseException as secondary:
+                    capture_error("current_primitive", secondary)
             try:
-                archive(
-                    directory / "failure",
-                    dict(
-                        status="failed",
-                        failure=primitive_validation.checkpoint._exception_record(primary),
-                        available=available,
-                        source_partials=work.partials,
-                        capture_errors=work.capture_errors,
-                        evidence_errors=errors,
-                    ),
+                journal.retain(
+                    primary,
+                    stage=primary.stage if type(primary) is EvidenceRejected else work.stage,
+                    available=available,
+                    current_primitive=current_primitive,
+                    raw_returned=raw_returned,
+                    source_partials=work.partials,
+                    capture_errors=work.capture_errors,
+                    evidence_errors=errors,
                 )
             except BaseException as secondary:
-                primary.add_note("Final four-call failure evidence also failed: " + repr(secondary))
+                capture_error("failure-index", secondary)
             raise
         finally:
             primary = sys.exception()
