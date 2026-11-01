@@ -202,8 +202,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and [all nine outcomes checked](/mnt/workspaces/Cells/native-parameter-paths-development-20261101-01/root-results-review.json):
   **48 blocked controls** and 17 diagnostics are retained; the original lint
   failure remains failed. Seven reviewed YAML/path files are committed, with
-  Key's newer working hook preserved. Key is now implementing the next genuine
-  subconfiguration construction/load boundary on that same parameter object.
+  Key's newer working hook preserved. The subsequent same-parameter
+  [seven-load subconfiguration evidence is checked](/mnt/workspaces/Cells/native-parameter-subconfigurations-development-20261101-01/root-results-review.json):
+  51 final blocked controls, with all eleven outcomes retained. Its
+  [source review found two blockers](/mnt/workspaces/Cells/native-parameter-subconfigurations-development-20261101-01/root-source-review.json):
+  final capture receives the wrong parent context, and fresh wrappers around
+  repeated input rows need construction-order identity checks. Key owns those
+  repairs and the next contiguous numeric-parameter prefix; no positive native
+  parameter-load execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
@@ -221,8 +227,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retains all five named worker outcomes: the latest batch completed three
   metadata checks, timed out in parent setup and left twelve controls unrun.
   The later observer/tracing repair and its exact evidence are reviewed above.
-  Specialist is now building independent original-source mapping qualification
-  tools, with fresh caller/world construction counted as prerequisite work.
+  Specialist's [independent mapping qualification tools are reviewed](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/root-review.json):
+  the final 61 blocked controls and earlier 44-control image are verified
+  separately, along with the preparation refusal. Three source blockers remain:
+  forwarding the genuine descriptor-backed constructor, checking the actual
+  list-to-array transition at the world tail, and retaining a returned mapping
+  array before observation can fail. Specialist is repairing these and the
+  recorder phase-count preflight; fresh world construction remains prerequisite
+  work, not additional independent cases.
   Actual mapping/reference execution remains held.
   Full phase/core/profile initialization remains a separate prerequisite.
   The [selected tissue-configuration prerequisite](/mnt/workspaces/Cells/native-tissue-configuration-20261101-01/root-review.json)
@@ -243,6 +255,24 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   failure isolation and retained native-baseline separation, in **9.60 seconds,
   182.7 MiB sampled peak RSS**. Those checks used small fixtures and did not run
   original BETSE. The subsequent retained-matrix calculation is described next.
+
+- **Physical rectangular-grid implementation (1 November):**
+  [Cells now has a separate x/y-spacing operator](src/cells/processes/rectangular_environment.py)
+  that retains supplied coordinates and vertices, builds a conservative
+  all-flux Laplacian and fixes its constant-voltage mode. The existing native
+  BETSE operators and uniform-grid path are unchanged. Its
+  [source review](/mnt/workspaces/Cells/rectangular-environment-development-20261101-01/source-review-02.json)
+  closes a translated-coordinate acceptance gap. Thirty small-grid checks pass:
+  25 arithmetic/domain checks, including independent exact rational solutions,
+  conservation, energy, units and incompatible forcing, plus five runtime
+  provenance checks. The first image's 20-pass/one-fixture-failure outcome is
+  preserved. Final execution took **3.79 seconds, 59.5 MiB sampled peak RSS**
+  under the existing CPU/1 GiB/480-second/8 GiB-reserve guard. The
+  [saved-result review](/mnt/workspaces/Cells/rectangular-environment-development-20261101-01/root-results-review.json)
+  binds the tested arrays and sources. Batched array kernels are implemented;
+  GPU/JIT execution, the retained 625-point geometry and live tissue integration
+  remain untested. Compatibility/finite flags do not assert residual accuracy
+  or physical tissue admission.
 
 - **Saved 625-point operator calculation (1 November):** the new explicit
   saved-grid runner has [15 reviewed orchestration checks](/mnt/workspaces/Cells/environment-compatible-gauge-saved-20261101-01/root-software-review.json).
