@@ -206,13 +206,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   [seven-load subconfiguration evidence is checked](/mnt/workspaces/Cells/native-parameter-subconfigurations-development-20261101-01/root-results-review.json):
   51 final blocked controls, with all eleven outcomes retained. Its
   [source review found two blockers](/mnt/workspaces/Cells/native-parameter-subconfigurations-development-20261101-01/root-source-review.json):
-  final capture receives the wrong parent context, and fresh wrappers around
-  repeated input rows need construction-order identity checks. Key owns those
-  repairs. The [next contiguous numeric-parameter prefix is source-reviewed](/mnt/workspaces/Cells/native-parameter-numeric-prefix-development-20261101-01/root-review.json):
+  final capture received the wrong parent context, and fresh wrappers around
+  repeated input rows needed construction-order identity checks. Both are
+  closed by the [reviewed subconfiguration successor](/mnt/workspaces/Cells/native-parameter-subconfiguration-repair-20261101-01/root-review.json):
+  58 blocked controls pass, with all seven outcomes and the pre-fix seven failed
+  controls retained. The [next contiguous numeric-parameter prefix is source-reviewed](/mnt/workspaces/Cells/native-parameter-numeric-prefix-development-20261101-01/root-review.json):
   39 final blocked controls and all nine terminal outcomes are checked, with
   the earlier 35-pass/four-failure image preserved. It remains bound to its
   original subconfiguration predecessor; later repairs require explicit
-  adoption. No positive native parameter-load execution is credited.
+  adoption. Key is building that adoption and the shared construction lease
+  for Specialist's fresh tissue-handler constructor. No positive native
+  parameter-load execution is credited.
   Ion stores, phase initialization and actual filesystem execution remain held.
   Specialist delivered the geometry/ECM/environment diagnostic and reference
   through `make_maskM`; all five source fixes and their focused software results
