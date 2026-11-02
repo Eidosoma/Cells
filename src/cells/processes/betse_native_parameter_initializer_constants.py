@@ -1,0 +1,832 @@
+"""Original same-p plotting/internal stores before geometric and ion loading.
+
+Only the literal Parameters.load[139:203] source may populate this successor.
+Metadata inspection is not permission to execute the source or to issue INIT.
+"""
+
+import ast
+import copy
+import hashlib
+import os
+import sys
+from contextlib import contextmanager
+from dataclasses import dataclass, replace
+from pathlib import Path
+from threading import Lock, get_ident
+from types import FunctionType, SimpleNamespace
+from weakref import WeakKeyDictionary
+
+from cells.processes import betse_native_parameter_colormap_load as previous
+
+LAW_ID = "betse_native_parameter_plotting_initializer_constants@1"
+PREVIOUS_SHA256 = "47d681438c40a98cc986516611d11e43aef19b896892622d39da836866aed669"
+RELEASE = "CELLS_NATIVE_PARAMETER_INITIALIZER_CONSTANTS_RELEASED"
+START, STOP, MAX_WORK = 139, 203, 20000
+_FLOAT = float
+prefix, claims = previous.prefix, previous.claims
+_LOCK, _ACTIVE = Lock(), []
+_ISSUED, _CONSUMED, _CLAIMED = (WeakKeyDictionary() for _ in range(3))
+CM_STORES = tuple(row[0] for row in previous.boundary.ROLES)
+
+
+class ConstantsRejected(ValueError):
+    def __init__(self, reason, *, stage, partial=None, source_error=None, capture_errors=()):
+        super().__init__(reason)
+        self.stage, self.partial, self.source_error = stage, partial, source_error
+        self.capture_errors = tuple(capture_errors)
+
+
+@dataclass(frozen=True, slots=True)
+class Trial:
+    parent_identity: str
+    before_identity: str
+    after_identity: str
+    source_identity: str
+    stores: tuple
+    work: tuple
+    metadata_work: tuple
+    source_completed: bool
+    identity: str
+
+
+class ConstantsOwner:
+    __slots__ = ("__weakref__",)
+
+    def __init__(self):
+        raise TypeError("Use released prepare from the actual colormap successor")
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("Live original parameter owners cannot be pickled")
+
+    @property
+    def parameters(self):
+        return _validate(self).p
+
+    @property
+    def trial(self):
+        return _validate(self).trial
+
+
+def _digest(value):
+    return previous._digest(value)
+
+
+def _ast():
+    path, cls, load, _ = previous.boundary._ast()
+    selected = load.body[START:STOP]
+    if (
+        len(selected) != 64
+        or ast.unparse(selected[0]) != "ro = self._conf['results options']"
+        or ast.unparse(selected[-1]) != "self.merge_cut_off = 1 / 50"
+        or ast.unparse(load.body[STOP]) != "self.d_cell = self.cell_radius * 2"
+    ):
+        raise ValueError("Original plotting/constants/geometry boundary changed")
+    return path, cls, load, selected
+
+
+def _historical():
+    """Keep original parent metadata/returns, replacing only old store extents."""
+    path = Path(previous.__file__)
+    if hashlib.sha256(path.read_bytes()).hexdigest() != PREVIOUS_SHA256:
+        raise ValueError("Explicit original four-colormap producer required")
+    tree = ast.parse(path.read_bytes())
+    functions, descriptions = {}, []
+    for name, trim in (("_history", "tail"), ("_outputs", "head")):
+        node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == name)
+        selected = copy.deepcopy(node)
+        if trim == "tail":
+            removed = [ast.unparse(n) for n in selected.body[-5:]]
+            if (
+                removed[:3]
+                != [
+                    "fields = vars(context.p)",
+                    "appended = tuple(fields)[len(context.before_names):]",
+                    "expected = tuple((row[0] for row in boundary.ROLES))",
+                ]
+                or "Old parameter layout or original four-store prefix changed" not in removed[3]
+                or "Unowned later parameter stores" not in removed[4]
+            ):
+                raise ValueError("Original historical field-boundary checks changed")
+            selected.body = selected.body[:-5]
+        else:
+            removed = [ast.unparse(n) for n in selected.body[:2]]
+            if (
+                removed[0] != "expected = tuple((row[0] for row in boundary.ROLES))"
+                or "All four original stores in literal order required" not in removed[1]
+            ):
+                raise ValueError("Original four-store completion check changed")
+            selected.body = selected.body[2:]
+        original = vars(previous)[name]
+        prefix._function_bindings(original)
+        code = previous.boundary._code(selected, str(path), name)
+        function = FunctionType(code, original.__globals__, name)
+        if function.__builtins__ is not original.__builtins__:
+            raise ValueError("Historical function cached builtins changed")
+        functions[name] = function
+        descriptions.append((name, _digest(ast.dump(selected)), tuple(removed)))
+    return functions, tuple(descriptions)
+
+
+def source_plan():
+    _, historical = _historical()
+    path, _, load, selected = _ast()
+    stores = tuple(n.targets[0].attr for n in selected if isinstance(n.targets[0], ast.Attribute))
+    casts = tuple(
+        n.lineno
+        for statement in selected
+        for n in ast.walk(statement)
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "float"
+    )
+    if len(stores) != 62 or len(set(stores)) != 62 or len(casts) != 10:
+        raise ValueError("Original constants store/conversion roster changed")
+    return dict(
+        law=LAW_ID,
+        previous_producer=PREVIOUS_SHA256,
+        previous=previous.source_plan(),
+        source=str(path),
+        statement_slice=(START, STOP),
+        source_lines=(1017, 1125),
+        source_body_ast=_digest(ast.dump(ast.Module(body=selected, type_ignores=[]))),
+        stores=stores,
+        native_float_sites=casts,
+        native_float_site_count=10,
+        float_work_scope=(
+            "Inside the exact source attempt; no independently completed-scalar claim."
+        ),
+        historical_functions=historical,
+        replacement_extent="Entire old p/data/colormap graph plus exact new-store prefix.",
+        next_source_line=load.body[STOP].lineno,
+        actual_owner_required=True,
+        same_parameter=True,
+        supplied_configuration=False,
+        geometry_ion_profile_phase_Simulator_INIT_admitted=False,
+        predecessor_source_acceptance_inferred=False,
+    )
+
+
+def _fields(context, *, complete=False):
+    names = tuple(vars(context.p)) if complete else context.before_names
+    return prefix.graphs.capture(
+        {name: vars(context.p)[name] for name in names if name not in CM_STORES},
+        yaml_base=context.parent.parent.birth.source.yaml,
+        runtime_types=context.parent.parent.runtime.runtime_types,
+    )
+
+
+def _cm_graph(parent):
+    # A capture view carries actual references, never a replacement p/owner.
+    view = SimpleNamespace(p=parent.p, bound=parent.bound, kinds=parent.kinds)
+    return previous._graph(view)
+
+
+def _same_cm(actual, saved):
+    if (
+        actual.identity != saved.identity
+        or len(actual.objects) != len(saved.objects)
+        or any(a is not b for a, b in zip(actual.objects, saved.objects, strict=True))
+        or saved.encoder.arrays is not saved.arrays
+        or saved.encoder.nodes is not saved.tree["nodes"]
+        or saved.encoder.seal(saved.tree) != saved.identity
+    ):
+        raise ValueError("Original returned colormap graph/data/aliases changed")
+
+
+def _plot(context):
+    # This actual loaded object is retained by the original GRN ancestry.
+    loaded = context.parent.parent.parent.authority.loaded
+    subconfigs = previous.mod.subconfigs
+    owner = loaded.owner
+    if subconfigs._ISSUED.get(owner) is not loaded or loaded.p is not context.p:
+        raise ValueError("Original loaded subconfiguration association absent")
+    cls = loaded.authority.classes["SimConfExportPlots"]
+    plot = loaded.authority.objects["plot"]
+    module = sys.modules.get(subconfigs.MODULES["SimConfExportPlots"])
+    native = prefix.parameters.inherited.tissue.aliases.NATIVE
+    expected_file = native / "betse/science/config/export/visual/confexpvisplot.py"
+    birth = loaded.parent.parent
+    frame = birth.locals.get((str(native / prefix.parameters.PARAMETERS), "Parameters.__init__"))
+    if (
+        vars(context.p).get("plot") is not plot
+        or type(plot) is not cls
+        or vars(plot).get("_conf") is not vars(context.p)["_conf"]
+        or module is None
+        or vars(module).get("SimConfExportPlots") is not cls
+        or Path(vars(module)["__file__"]).resolve() != expected_file
+        or type(frame) is not dict
+        or frame.get("self") is not context.p
+        or frame.get("SimConfExportPlots") is not cls
+        or frame.get("__class__") is not birth.source.cls
+        or birth.source_completed is not True
+        or birth.trial.source_completed is not True
+        or not any(value is plot for value in birth.graph[0])
+        or not any(value is plot for value in loaded.before_objects)
+    ):
+        raise ValueError("Actual same-p loaded plotting wrapper required")
+    prefix.parameters.inherited._same(subconfigs._native_bindings(loaded), loaded.native_bindings)
+    rows, refs = [], [loaded, owner, plot, cls, module, vars(module)]
+    for name in ("is_after_sim_show", "is_after_sim_save"):
+        descriptor = vars(cls).get(name)
+        if name in vars(plot) or descriptor is None:
+            raise ValueError("Original plot descriptor may not be supplied/shadowed")
+        function = vars(type(descriptor)).get("__get__")
+        if type(function) is not FunctionType:
+            raise ValueError("Actual source-backed plot descriptor getter required")
+        rows.append((name, descriptor, function))
+        refs.extend((descriptor, *prefix.parameters.inherited.tissue._surface(type(descriptor))))
+        refs.extend(prefix._function_bindings(function)[1])
+    return SimpleNamespace(plot=plot, cls=cls, rows=tuple(rows), bindings=((), tuple(refs)))
+
+
+def _compile(context):
+    original = context.parent.bound.original
+    prefix._function_bindings(original)
+    if "float" in original.__globals__ or original.__builtins__.get("float") is not _FLOAT:
+        raise ValueError("Original float lookup authority changed")
+    path, cls, _, selected = _ast()
+    cls = copy.deepcopy(cls)
+    prefix.parameters.inherited._method(cls, "load").body = copy.deepcopy(selected)
+    code = prefix.parameters._method_code(cls, "load", str(path))
+    if code.co_freevars:
+        raise ValueError("Unexpected closure in original plotting/constants slice")
+    function = FunctionType(code, original.__globals__, original.__name__, None, None)
+    if function.__builtins__ is not original.__builtins__:
+        raise ValueError("Original constants cached builtins changed")
+    return function
+
+
+def _stacks(context):
+    return ((_ACTIVE, context), *previous._stacks(context))
+
+
+def _parent_refs(parent):
+    return tuple((name, value) for name, value in vars(parent).items() if name != "invalid")
+
+
+def _parent(context):
+    parent = context.parent
+    if (
+        previous._ISSUED.get(context.parent_owner) is not parent
+        or parent.owner is not context.parent_owner
+        or parent.p is not context.p
+        or parent.invalid is not context.retired
+        or parent.active
+        or parent.validating
+        or parent.thread != get_ident()
+        or parent.guard.active
+        or parent.guard.invalid
+        or parent.source_completed is not True
+        or parent.source_error is not None
+        or parent.capture_errors
+        or parent.observation_errors
+        or previous._CONSUMED.get(parent.source_owner) is not parent
+        or previous._PARENTS.get(parent.parent_owner) is not parent
+        or parent.trial is not context.parent_trial
+        or parent.trial is not parent.original_trial
+        or _digest(previous.trial_record(parent.trial)) != parent.trial.identity
+        or parent.trial.work != tuple(parent.work)
+        or parent.trial.calls != tuple(parent.calls.items())
+    ):
+        raise ValueError("Original successful colormap owner/retirement/work association changed")
+    current = _parent_refs(parent)
+    if len(current) != len(context.parent_refs) or any(
+        a[0] != b[0] or a[1] is not b[1] for a, b in zip(current, context.parent_refs, strict=True)
+    ):
+        raise ValueError("Original parent context references changed")
+    prefix.parameters.inherited._same(previous._bindings(), parent.bindings)
+    prefix.parameters.inherited._same(
+        previous.runtime.bindings(previous.runtime.bind(parent.bound, parent.kinds)),
+        parent.runtime_bindings,
+    )
+    before = len(parent.observations)
+    context.historical["_history"](parent)
+    context.historical["_outputs"](parent)
+    observed = _cm_graph(parent)
+    _same_cm(observed, parent.after)
+    context.metadata_work.append(
+        (
+            "actual_historical_metadata_and_colormap_capture",
+            len(parent.observations) - before,
+            observed.array_copies,
+            observed.callbacks,
+        )
+    )
+    prefix.parameters.inherited._same(_plot(context).bindings, context.plot.bindings)
+    prefix.parameters.inherited._same_graph(_fields(context), context.before_graph)
+    fields = vars(context.p)
+    appended = tuple(fields)[len(context.before_names) :]
+    if (
+        tuple(fields)[: len(context.before_names)] != context.before_names
+        or appended != context.plan["stores"][: len(appended)]
+    ):
+        raise ValueError("Original field layout/new constants prefix changed")
+    if len(appended) > len(context.plan["stores"]):
+        raise ValueError("Unowned geometry/ion/later stores appeared")
+
+
+def _check(context):
+    if (
+        context.invalid
+        or context.guard.invalid
+        or context.thread != get_ident()
+        or not context.guard.audit_ready
+        or _CONSUMED.get(context.parent_owner) is not context
+        or _CLAIMED.get(context.parent.source_owner) is not context
+    ):
+        raise ValueError("Poisoned/foreign initializer-constants epoch")
+    if context.active and any(
+        not stack or stack[-1] is not value for stack, value in _stacks(context)
+    ):
+        raise ValueError("Shared constants exclusion changed")
+    if _digest(source_plan()) != context.source_identity:
+        raise ValueError("Issued constants source plan changed")
+    prefix.parameters.inherited._same(_bindings(), context.bindings)
+    prefix.parameters.inherited._same(
+        prefix._function_bindings(context.function), context.function_bindings
+    )
+    for name, function in context.historical.items():
+        prefix.parameters.inherited._same(
+            prefix._function_bindings(function), context.historical_bindings[name]
+        )
+    _parent(context)
+
+
+def _reserve(owner):
+    if type(owner) is not previous.ColormapsOwner or owner not in previous._ISSUED:
+        raise ConstantsRejected("Actual issued colormap successor required", stage="owner")
+    if not _LOCK.acquire(blocking=False):
+        raise ConstantsRejected("Constants reservation busy", stage="reservation")
+    try:
+        if _ACTIVE:
+            _ACTIVE[-1].invalid = True
+            raise ConstantsRejected("Reentrant constants attempt", stage="reentrant")
+        parent = previous._ISSUED[owner]
+        if owner in _CONSUMED or parent.source_owner in _CLAIMED:
+            raise ConstantsRejected("Original constants attempt consumed", stage="consumed")
+        context = SimpleNamespace(
+            parent_owner=owner,
+            parent=parent,
+            p=parent.p,
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            retired=False,
+            registered=False,
+            stage="admission",
+            source_completed=False,
+            source_error=None,
+            capture_errors=(),
+            observation_errors=(),
+            entries=0,
+            returns=0,
+            plot_entries=0,
+            plot_returns=[],
+            raw_returns=[],
+            raw_return=None,
+            locals={},
+            events=[],
+            work=[],
+            metadata_work=[],
+            validations=[],
+            validating=False,
+            source_return_graph=None,
+            failure_capture=None,
+            guard=SimpleNamespace(
+                thread=get_ident(),
+                active=True,
+                invalid=False,
+                audit_ready=False,
+                directory_depth=0,
+                directory_calls=0,
+                directory_targets=(),
+                filesystem=[],
+            ),
+        )
+        _CONSUMED[owner] = _CLAIMED[parent.source_owner] = context
+        _ACTIVE.append(context)
+        return context
+    finally:
+        _LOCK.release()
+
+
+@contextmanager
+def _claim(context):
+    primary = None
+    try:
+        if previous._validate(context.parent_owner) is not context.parent:
+            raise ValueError("Foreign initial colormap verification result")
+        context.plan = source_plan()
+        context.source_identity = _digest(context.plan)
+        context.parent_trial = context.parent.trial
+        context.before_names = tuple(vars(context.p))
+        if any(name in vars(context.p) for name in context.plan["stores"]):
+            raise ValueError("Existing plotting/constants stores cannot be retrofitted")
+        context.before_graph = _fields(context)
+        context.parent_refs = _parent_refs(context.parent)
+        context.historical, _ = _historical()
+        context.historical_bindings = {
+            name: prefix._function_bindings(function)
+            for name, function in context.historical.items()
+        }
+        context.plot = _plot(context)
+        context.function = _compile(context)
+        context.function_bindings = prefix._function_bindings(context.function)
+        context.bindings = _bindings()
+        with claims._registry(context.parent.parent_owner):
+            if any(stack for stack, _ in _stacks(context)[1:]):
+                claims._busy(context.parent.parent_owner, "constants_conflict")
+            for stack, value in _stacks(context)[1:]:
+                stack.append(value)
+            context.registered = True
+            previous.mod.subconfigs.paths._install_audit(context.guard)
+            _check(context)
+            context.parent.invalid = context.retired = True
+        context.stage = "original_plotting_constants"
+        _check(context)
+        yield
+    except BaseException as error:
+        primary = error
+        context.claim_error = error
+        raise
+    finally:
+        if context.registered:
+            try:
+                with claims._registry(context.parent.parent_owner):
+                    for stack, value in reversed(_stacks(context)[1:]):
+                        if not stack or stack[-1] is not value:
+                            raise ValueError("Constants registry changed at closure")
+                        stack.pop()
+            except BaseException as error:
+                context.capture_errors += (("claim_release", error),)
+        context.active = context.guard.active = False
+        if _ACTIVE and _ACTIVE[-1] is context:
+            _ACTIVE.pop()
+        else:
+            context.capture_errors += (
+                ("reservation_release", ValueError("Constants reservation changed")),
+            )
+        if primary is not None:
+            try:
+                primary.initializer_constants = context
+            except BaseException as error:
+                context.capture_errors += (("exception_attachment", error),)
+        elif context.capture_errors:
+            context.invalid = True
+            raise ConstantsRejected(
+                "Constants closure incomplete",
+                stage="closure",
+                partial=context,
+                capture_errors=context.capture_errors,
+            )
+
+
+def _copy_locals(frame):
+    return dict(frame.f_locals)
+
+
+def _returned(context, role, frame, value):
+    context.raw_return = (role, frame, value)
+    context.raw_returns.append(context.raw_return)
+    if role == "source":
+        context.returns += 1
+        context.locals = _copy_locals(frame)
+        context.source_return_graph = _fields(context, complete=True)
+    else:
+        context.plot_returns.append(value)
+    context.events.append((role, "return_or_unwind", _copy_locals(frame)))
+
+
+@contextmanager
+def _observe(context):
+    prior, trace = sys.getprofile(), sys.gettrace()
+    descriptor_codes = {row[2].__code__ for row in context.plot.rows}
+    native = str(prefix.parameters.inherited.tissue.aliases.NATIVE) + "/"
+
+    def profile(frame, event, arg):
+        source = frame.f_code is context.function.__code__
+        descriptor = frame.f_code in descriptor_codes
+        role = "source" if source else "plot_alias" if descriptor else None
+        if event == "call" and role is not None:
+            if context.invalid or context.guard.invalid or not context.active:
+                raise ValueError("Poisoned constants source entry")
+            if source:
+                context.entries += 1
+                if context.entries != 1 or frame.f_locals.get("self") is not context.p:
+                    raise ValueError("Duplicate/foreign constants source attempt")
+            else:
+                context.plot_entries += 1
+                index = context.plot_entries - 1
+                if index >= 2:
+                    raise ValueError("Duplicate plotting alias read")
+                row = context.plot.rows[index]
+                if (
+                    frame.f_code is not row[2].__code__
+                    or frame.f_locals.get("self_descriptor") is not row[1]
+                    or frame.f_locals.get("self") is not context.plot.plot
+                    or frame.f_locals.get("cls") is not context.plot.cls
+                ):
+                    raise ValueError("Original plotting descriptor/receiver/order changed")
+        if event == "call" and (role is not None or frame.f_code.co_filename.startswith(native)):
+            if len(context.work) >= MAX_WORK:
+                raise ValueError("Constants actual source work bound exceeded")
+            context.work.append(
+                (
+                    len(context.work),
+                    role or "nested_native",
+                    frame.f_code.co_filename,
+                    frame.f_code.co_qualname,
+                    "entered_not_case_credit",
+                )
+            )
+        if event == "return" and role is not None:
+            try:
+                _returned(context, role, frame, arg)
+            except BaseException as error:
+                context.observation_errors += ((role + "_return_capture", error),)
+        if prior is not None:
+            if event == "return":
+                try:
+                    prior(frame, event, arg)
+                except BaseException as error:
+                    context.observation_errors += (("inherited_return", error),)
+            else:
+                prior(frame, event, arg)
+
+    try:
+        sys.setprofile(profile)
+        yield
+    finally:
+        for name, setter, value in (
+            ("profile_restore", sys.setprofile, prior),
+            ("trace_restore", sys.settrace, trace),
+        ):
+            try:
+                setter(value)
+            except BaseException as error:
+                context.observation_errors += ((name, error),)
+
+
+def _invoke(context):
+    return context.function(context.p)
+
+
+def _outputs(context):
+    if tuple(vars(context.p))[len(context.before_names) :] != context.plan["stores"]:
+        raise ValueError("Complete original plotting/constants store order required")
+    if (
+        context.entries != 1
+        or context.returns != 1
+        or context.raw_return is None
+        or context.raw_return[0] != "source"
+        or context.raw_return[2] is not None
+        or context.plot_entries != 2
+        or len(context.plot_returns) != 2
+        or context.source_return_graph is None
+        or context.locals.get("self") is not context.p
+        or context.locals.get("ro") is not vars(context.p)["_conf"]["results options"]
+        or context.locals.get("iu") is not vars(context.p)["_conf"]["internal parameters"]
+    ):
+        raise ValueError("Complete source/plot-alias return/config associations required")
+    if (
+        vars(context.p)["turn_all_plots_off"] is not (not context.plot_returns[0])
+        or vars(context.p)["autosave"] is not context.plot_returns[1]
+    ):
+        raise ValueError("Actual plot-alias returns lost their original stores")
+    prefix.parameters.inherited._same_graph(
+        _fields(context, complete=True), context.source_return_graph
+    )
+
+
+def trial_record(value):
+    return dict(
+        law=LAW_ID,
+        parent=value.parent_identity,
+        before=value.before_identity,
+        after=value.after_identity,
+        source=value.source_identity,
+        stores=value.stores,
+        work=value.work,
+        metadata_work=value.metadata_work,
+        source_completed=value.source_completed,
+        source_lines=(1017, 1125),
+        next_line=1127,
+        biological_cases=0,
+        full_Parameters_ions_phase_INIT=False,
+    )
+
+
+def prepare(owner, *, law_id, enabled=False):
+    if enabled is not True or any(
+        os.environ.get(gate) != "1" for gate in (RELEASE, previous.RELEASE, previous.mod.RELEASE)
+    ):
+        raise ConstantsRejected("Original initializer constants remain held", stage="release")
+    if type(law_id) is not str or law_id != LAW_ID:
+        raise ConstantsRejected("Explicit original plotting/constants law required", stage="law")
+    context = _reserve(owner)
+    with _claim(context):
+        primary = None
+        try:
+            with _observe(context):
+                try:
+                    _invoke(context)
+                except BaseException as error:
+                    context.source_error = error
+                    raise
+            context.source_completed = True
+            if context.observation_errors:
+                raise ValueError("Original constants reached-output capture incomplete")
+            _check(context)
+            _outputs(context)
+            context.after_graph = _fields(context, complete=True)
+            value = Trial(
+                context.parent_trial.identity,
+                _digest(context.before_graph[1]),
+                _digest(context.after_graph[1]),
+                context.source_identity,
+                context.plan["stores"],
+                tuple(context.work),
+                tuple(context.metadata_work),
+                True,
+                "",
+            )
+            context.trial = replace(value, identity=_digest(trial_record(value)))
+            context.original_trial = context.trial
+            owner = object.__new__(ConstantsOwner)
+            context.owner = owner
+            _ISSUED[owner] = context
+            return owner
+        except BaseException as error:
+            primary = context.operation_error = error
+        try:
+            context.failure_capture = _fields(context, complete=True)
+        except BaseException as error:
+            context.capture_errors += (("failure_capture", error),)
+        context.invalid = True
+        raise ConstantsRejected(
+            "Original constants attempt issued no successor",
+            stage=context.stage,
+            partial=context,
+            source_error=context.source_error,
+            capture_errors=(*context.observation_errors, *context.capture_errors),
+        ) from primary
+
+
+def _validate(owner):
+    if type(owner) is not ConstantsOwner or owner not in _ISSUED:
+        raise ConstantsRejected("Actual issued initializer-constants owner required", stage="owner")
+    context = _ISSUED[owner]
+    if context.active or context.validating or _ACTIVE:
+        raise ConstantsRejected("Active/overlapping constants successor", stage="state")
+    context.validating = True
+    validation = SimpleNamespace(
+        invalid=False,
+        guard=SimpleNamespace(
+            thread=get_ident(),
+            active=True,
+            invalid=False,
+            audit_ready=False,
+            directory_depth=0,
+            directory_calls=0,
+            directory_targets=(),
+            filesystem=[],
+        ),
+    )
+    registered = False
+    primary = release_error = None
+    context.validations.append(("successor_validation", "attempted"))
+    try:
+        with claims._registry(context.parent.parent_owner):
+            if any(stack for stack, _ in _stacks(context)):
+                claims._busy(context.parent.parent_owner, "constants_validation_conflict")
+            for stack, _ in _stacks(context):
+                stack.append(
+                    validation.guard
+                    if stack is previous.mod.subconfigs.paths._ACTIVE
+                    else validation
+                )
+            registered = True
+            previous.mod.subconfigs.paths._install_audit(validation.guard)
+        if (
+            context.owner is not owner
+            or context.source_completed is not True
+            or context.source_error is not None
+            or context.capture_errors
+            or context.observation_errors
+            or context.trial is not context.original_trial
+            or context.trial.work != tuple(context.work)
+            or _digest(trial_record(context.trial)) != context.trial.identity
+        ):
+            raise ValueError("Original successful constants owner/completion/work changed")
+        _check(context)
+        _outputs(context)
+        prefix.parameters.inherited._same_graph(
+            _fields(context, complete=True), context.after_graph
+        )
+        if validation.invalid or validation.guard.invalid:
+            raise ValueError("Read-only constants validation poisoned")
+        context.validations.append(("successor_validation", "completed"))
+        return context
+    except BaseException as error:
+        primary = error
+        context.invalid = True
+        raise ConstantsRejected(
+            "Stale original initializer constants",
+            stage="drift",
+            partial=context,
+            source_error=error,
+        ) from error
+    finally:
+        if registered:
+            try:
+                with claims._registry(context.parent.parent_owner):
+                    for stack, _ in reversed(_stacks(context)):
+                        expected = (
+                            validation.guard
+                            if stack is previous.mod.subconfigs.paths._ACTIVE
+                            else validation
+                        )
+                        if not stack or stack[-1] is not expected:
+                            raise ValueError("Constants validation registry changed")
+                        stack.pop()
+            except BaseException as error:
+                release_error = error
+                context.invalid = True
+                context.capture_errors += (("validation_release", error),)
+        validation.guard.active = False
+        context.validating = False
+        if primary is None and release_error is not None:
+            raise ConstantsRejected(
+                "Constants validation closure incomplete",
+                stage="closure",
+                partial=context,
+                source_error=release_error,
+            ) from release_error
+
+
+def require_continuation(owner):
+    context = _validate(owner)
+    raise ConstantsRejected(
+        "Original geometry-derived settings/ion-profile prerequisite required",
+        stage="next_prerequisite",
+        partial=dict(next_line=1127, parent=context.trial.identity),
+    )
+
+
+def _bindings():
+    functions = (
+        _digest,
+        _ast,
+        _historical,
+        source_plan,
+        _fields,
+        _cm_graph,
+        _same_cm,
+        _plot,
+        _compile,
+        _stacks,
+        _parent_refs,
+        _parent,
+        _check,
+        _reserve,
+        _claim,
+        _claim.__wrapped__,
+        _copy_locals,
+        _returned,
+        _observe,
+        _observe.__wrapped__,
+        _invoke,
+        _outputs,
+        trial_record,
+        prepare,
+        _validate,
+        require_continuation,
+        _bindings,
+        ConstantsOwner.__init__,
+        ConstantsOwner.__reduce_ex__,
+        ConstantsOwner.parameters.fget,
+        ConstantsOwner.trial.fget,
+    )
+    return (), (
+        LAW_ID,
+        PREVIOUS_SHA256,
+        RELEASE,
+        START,
+        STOP,
+        MAX_WORK,
+        _FLOAT,
+        CM_STORES,
+        _LOCK,
+        _ACTIVE,
+        _ISSUED,
+        _CONSUMED,
+        _CLAIMED,
+        ConstantsOwner,
+        ConstantsRejected,
+        Trial,
+        get_ident,
+        *previous._bindings()[1],
+        *(
+            atom
+            for function in functions
+            for atom in prefix.parameters.inherited.tissue.aliases._atoms(function)
+        ),
+    )
