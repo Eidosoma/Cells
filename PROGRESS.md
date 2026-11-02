@@ -515,15 +515,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   loaded targets separate callable, descriptor, lineage and cache checks;
   the recorder, 32-target cap, production validation and numerical code are
   unchanged. The new image binds 828 payloads / 279 loaded producers with no
-  checkout drift. [Diagnostic 08 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-08/LAUNCH.json).
+  checkout drift. [Diagnostic 08 is terminal and reviewed](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/square-environment-diagnostic-08/root-review.json):
+  **1,800.04-second wall stop, 335.6 MiB sampled peak RSS**, with memory and
+  host-reserve limits respected. Eight captures completed through `cell_index`;
+  the ordinary geometry continuation did not finish. Its 402 timing snapshots
+  identify **916.15 seconds of inclusive lineage checking**, including
+  **557.29 seconds in 797,778 cache-validation entries**, within 1,001.20
+  seconds of caller checks. These intervals overlap and include observer costs;
+  they are neither additive nor a speedup measurement. Root is preparing a
+  bounded caller-local descriptor traversal optimization, retaining fresh
+  array-bit, shape, finite, source, owner and reference checks. Common cache
+  behavior and numerical bodies stay unchanged; no repeat diagnostic is released.
   Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
   verifies **828 frozen files / 609 external pins**; only the two reviewed
   timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
   1,800 seconds / 8 GiB reserve**, inputs and numerical code are unchanged.
   Metadata preparation passed in 76.36 seconds; a review-reader schema error
-  was retained and corrected before release. Durable result/failure artifacts
-  await a requested status check; no automatic polling, retry, speedup claim
-  or new parity credit.
+  was retained and corrected before release. All 454 saved artifacts are bound;
+  final runtime, geometry capture and hook-cleanup evidence are absent after
+  forced termination. No independent comparison or new parity credit follows.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
