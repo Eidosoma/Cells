@@ -40,13 +40,14 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   implemented the contiguous modulator/bitmap parameter block through line
   1000; source review found no production blocker. Its first software batch
   reached the wall limit. Key is fixing setup cleanup and merged attempt counts
-  in the consolidated test guard before further software acceptance. Specialist
-  has prepared the same-phase handler entry repair; review leaves one combined
-  refusal/capture-error classification fix, and validation remains pending.
+  in the consolidated test guard before further software acceptance. Specialist's
+  same-phase handler entry and error-precedence repairs are source-reviewed and
+  integrated with qualification still held.
   The relayed mapping alias
   notice is historical: all six current files match the reviewed
   [list-to-ndarray repair](/mnt/workspaces/Cells/native-tissue-to-grid-qualification-20261101-01/tail-contract-repairs-01/root-review.json),
-  including its 49 blocked software controls. Positive native/reference
+  including its 49 blocked software controls. Root owns those six tools/tests.
+  Positive native/reference
   executions remain held.
 
 - **Phase constructor prefix:** [Source and saved results are reviewed](/mnt/workspaces/Cells/native-phase-assembly-20261101-01/root-review.json)
@@ -87,6 +88,16 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   complete-cache acceptance and the handler consumer's own validation remain
   pending. Specialist has explicitly bound Key's reviewed closed-claim API
   without changing the running cache image.
+  The [same-phase tissue-handler consumer is now integrated as guarded source](/mnt/workspaces/Cells/native-phase-dyna-20261102-01/root-integration-review-01.json).
+  It retains the actual phase and parameter claim, rejects callback re-entry
+  before selected handler bodies execute, and preserves the first entry refusal
+  when observation also fails. All four files compile and pass lint/format;
+  the initial one-character line-length failure is preserved, and the formatting
+  correction has an identical syntax tree. **Eleven repair controls are written
+  but unrun; no native handler body or behavioural test was executed in this
+  integration.** Required cache-continuation hooks remain unavailable, so the
+  positive path still refuses. Cache completion review, consumer validation and
+  genuine phase/INIT qualification remain separate pending work.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
