@@ -121,10 +121,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   primary errors; trace/profile share admission before inherited callbacks;
   rejected direct calls retain attempt records; and cache checks retain the
   actual producer-issued `(context, role)` tuple and its identity. Preparation
-  04 binds those production repairs. The separately inspected live test adds
-  only the exception class required by its isolated metadata fixture; that
-  correction is not attributed to frozen preparation 04. **All controls remain
-  unrun.** No further source repair is requested for these six findings.
+  04 binds those production repairs. The separately inspected test adds only
+  the exception class required by its isolated metadata fixture.
+  [Preparation 05](/mnt/workspaces/Cells/native-phase-tail-20261102-01/source-preparation-05.json)
+  now freezes exactly those four already-reviewed files, including the fixture
+  correction; preparation 04 and prior evidence remain unchanged. **All controls
+  remain unrun.** No further source repair is requested for these six findings.
   Existing assembly/cache/dyna files and all execution gates remain held pending
   the upstream contracts and coordinated integration.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
