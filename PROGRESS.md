@@ -116,16 +116,25 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   kind change or additional native/physical admission is authorized by this
   source preparation.
   The four new tail files are present as unvalidated preparation. The
-  [bounded source review](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-02.json)
-  requests one repair batch: separate growing tail observations from unchanged
-  parent graphs; protect hook setup and both cleanup attempts; admit body entry
-  before trace as well as profile callbacks; and retain rejected direct-entry
-  work records. The second preparation adds runtime/registry checks but leaves
-  those four findings open. Its cache registry check also needs to retain the
-  actual `(context, role)` issuance tuple instead of expecting a bare context.
-  Specialist owns all five corrections in the same source/test batch. Both
-  preparation snapshots retain their exact source bindings; no tests, native
-  execution, cache query or source acceptance occurred.
+  [third preparation's source review](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-03.json)
+  closes the four source findings: stable ancestry excludes growing tail logs;
+  hook setup/cleanup preserves primary errors; trace/profile share admission
+  before inherited callbacks; and rejected direct calls retain attempt records.
+  Their controls remain unrun. Two corrections remain in that frozen image:
+  retain the cache registry's actual `(context, role)` tuple, and supply the
+  exception class required by an isolated metadata test fixture. Specialist
+  owns that source/test batch; later live edits are not credited to the reviewed
+  image. Existing assembly/cache/dyna files and all execution gates remain held.
+  Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
+  **46 distinct blocked controls pass across two batches (5 + 41)**, with 46
+  empty native guards and four complete diagnostics. The larger batch took
+  **78.74 seconds / 236.1 MiB sampled peak RSS**. All nine terminal outcomes,
+  including the initial lint failure, are recorded in the completion ledger.
+  Producer adoption remains blocked by one source finding: the successor must
+  retain all historical original-Lease guard and association checks without
+  invoking the stale pre-mutation state validator. Key owns that focused repair.
+  Root performed read-only source/evidence review; no new tests, native calls
+  or detached-job queries were made.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
