@@ -58,17 +58,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **24 blocked controls pass at that delivery's final source; 14 older-image
   passes remain separate.** All 18 terminal outcomes, four 532-file snapshots and 1,693
   selected loaded-producer bindings verify, including the preserved timeout
-  and lint failure. The [source repair successor is now reviewed](/mnt/workspaces/Cells/native-parameter-colormap-CM-L1-L5-source-repair-20261102-01/root-review.json):
-  its 532 payloads, four current owned files and declared AST changes verify.
-  **35 new declared controls remain unrun.** Metadata callable validation now
-  precedes invocation, closing CM-L1. Four narrower residuals remain: bind
-  undecorated helpers' actual outer code and NumPy's actual implementation
-  slot; reject inherited line-trace changes before foreign registry dispatch;
-  and protect error attachment plus final hook identities after evidence
-  callbacks. Key has sealed the WorldReady repair checkpoint and is closing
-  these together in the same four colormap files. State/constants keep
-  their historical producer pins; successor adoption and software remain held.
-  Synthetic helper substitutions do not establish actual library admission.
+  and lint failure. The [latest source repair is reviewed](/mnt/workspaces/Cells/native-parameter-colormap-residual-source-repair-20261102-01/root-review-02.json):
+  all 532 frozen payloads and four current owned files verify. Helper/code and
+  actual NumPy implementation-role binding are source-closed; inherited
+  registry mutation is checked before foreign dispatch. **35 prior plus 19
+  new controls remain unrun.** Three corrections remain: independently recover
+  hooks during source unwind, stop reporting callbacks when required hooks
+  cannot be restored, and assert the intended first-error precedence in one
+  control. Key will batch these with the related WorldReady cleanup below,
+  then run the affected blocked controls under unchanged limits. State/constants
+  keep their historical producer pins; no actual library or native admission
+  follows from synthetic helper controls.
   The subsequent
   [initializer-constant block's ten remaining software cases are reviewed](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/root-batch-01-review.json).
   **Nine completed; the skipped-store worker exceeded the 1-GiB RSS guard**
@@ -76,9 +76,12 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   guards and refusal archive are absent; the allocation cause is unproved.
   Static review found that the test expects a later store-order diagnostic,
   while production correctly rejects the incomplete field prefix earlier.
-  Key will correct that assertion and save the bounded refusal before asserting,
-  preserving production checks and limits. Earlier 23 executions / 22 distinct
-  controls remain separate. No retry was launched. Key has prepared the remaining parameter stores
+  The [test-only source correction is now accepted, unrun](/mnt/workspaces/Cells/native-parameter-constants-prefix-test-repair-20261102-01/root-review.json):
+  it asserts the exact earlier refusal and saves bounded evidence before any
+  assertion, preserving primary/cause when saving fails. Production checks and
+  limits are unchanged. All 535 frozen payloads verify. Earlier 23 executions /
+  22 distinct controls remain separate; no RSS retry was launched. Key has
+  prepared the remaining parameter stores
   and the fresh world-ready construction contract before phase birth. Their
   source review below requires repairs; actual native parameter construction
   remains held.
@@ -219,29 +222,30 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   `load.body[203:218]`: late world stores from line 1127 and the final native
   ion-profile call. The six new remainder/construction source, test and runner
   files retain their [original source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
-  The [consolidated repair successor is now source-reviewed](/mnt/workspaces/Cells/native-parameter-world-ready-WR-L1-L6-source-repair-20261102-01/root-review-02.json):
-  all 541 frozen payloads, six current owned pins and declared AST deltas verify.
-  **50 new parameterized WR controls across 14 new definitions remain unrun**;
-  35 colormap cases are separate, also unrun. The exact native load/profile
-  correspondence bodies remain unchanged. The irreversible SEED transition
-  and explicit frozen-worker authorization are source-closed. Two cleanup gaps
-  remain: protect the final recovery helper's entry from masking a primary
-  error, and resample both hooks after evidence writers. Key will batch these
-  after the four colormap residuals; inherited CM-L5 cleanup remains the same
-  assignment. The constants handoff, producer adoption and existing phase hook
-  windows remain closed.
+  The [cleanup successor is now source-reviewed](/mnt/workspaces/Cells/native-parameter-WR-cleanup-residual-source-repair-20261102-01/root-review.json):
+  all 541 frozen payloads and six current owned pins verify. **50 prior plus
+  27 new WR controls remain unrun.** Exact native load/profile bodies and the
+  three world-construction files are unchanged. Recovery-helper entry and
+  final post-writer hook sampling are repaired. One shared gap remains:
+  bookkeeping/probes/formatting can continue after an observer clears a hook,
+  before restoration. Key's combined CM/WR batch must confirm required hooks
+  before each callback and stop metadata continuation permanently if recovery
+  fails; final cleanup cannot rearm it. Focused blocked software is authorized
+  after the fixes and exact source freeze, starting with cheap guard controls.
+  The genuine constants-to-remainder handoff is still absent, with its producer
+  pin explicitly unbound; source and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
   reject any ancestral phase-construction attempt. Its exclusive claim would
   span fresh phase birth through SEED, allowing only native `_run_sim=False`
-  creation. This interface remains proposed, with adoption held. Native early
+  creation. Its public source contract is stable, with runtime adoption held. Native early
   world stores and late world/ion stores must precede phase/Cells birth on that
   same object; grid counts must retain their original position before the
   later dimension updates. Specialist owns four new `betse_native_seed_world_prefix` source,
   driver, test and runner paths for source-only preparation: original progress
   callback, SEED guard and non-SVG lattice on the exact phase's Cells, stopping
-  before `make_voronoi`. The new parameter handoff and later dispatch hook
-  window remain explicit prerequisites; the seven running-image files stay
-  fixed, with no new validation or batch query. This method boundary does not
+  before `make_voronoi`. The new parameter handoff and working same-instance
+  dispatch remain explicit execution prerequisites. Earlier frozen phase
+  images stay unchanged, with no batch query. This method boundary does not
   claim the runner's earlier `progress_ranged` history. Genuine ion/material
   ownership for `init_core` remains later work.
   The four world-prefix files are now present as
@@ -280,15 +284,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Only three metadata test bodies/imports changed. This closes the WPC harness
   repair without another run. The earlier 85-pass/two-failure image and the
   [19-pass worker with failed aggregate accounting](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/guard-policy-control-repair-01/root-review.json)
-  remain failed at their own source images. No actual owner construction is
-  authorized; Specialist's separate tail hook-recovery correction remains next.
-  Missing Key/stage producers remain explicit refusals, and the five existing
-  phase/world-prefix drivers' integration window stays closed. Existing
-  production hooks, legacy APIs and literals are outside this repair scope;
-  separate phase test/runner cost work remains disjoint. No native, reference
-  or scientific release follows from this source/software review.
-  Root owns integration, saved
-  result review and populated-tissue/electrical qualification.
+  remain failed at their own source images. The separate tail hook-recovery
+  correction is also closed, as recorded above. **Specialist's eight-path
+  source-only integration window is now open:** the five phase/world-prefix
+  drivers plus the coordinator driver/test/runner. It will implement an explicit
+  fresh-WorldReady route using the stable public single-claim contract, preserving
+  legacy routes, original classes/wrappers, weak cache links and literal bodies.
+  Key owns the separate parameter fixes and genuine predecessor handoff.
+  Unreviewed provider/stage pins remain unbound; no owner pilot, source/native
+  execution or scientific release is authorized. Both developers will deliver
+  consolidated batches; Root owns integration, saved-result review and
+  populated-tissue/electrical qualification.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
