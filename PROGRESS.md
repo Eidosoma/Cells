@@ -196,9 +196,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   checks and the transcript-only B009 failure retain their original image.
   The four-file review snapshot is not an execution closure. The parent gate
   remains unconditionally closed; no source or software execution is released
-  by this preparation. Specialist is now mapping the genuine consumer changes
-  required by Key's proposed construction claim, read-only; current phase
-  sources and all detached jobs remain untouched.
+  by this preparation. Specialist's consumer map is complete: the legacy
+  prefix closes its construction lease before caches, then dyna and the SEED
+  tail use separate claims. The proposed WorldReady route must instead retain
+  one active claim from before phase allocation through the constructor tail.
+  Source preparation is now assigned in three new
+  `betse_native_world_phase_construction` driver, test and runner files. The
+  coordinator must perform fallible phase sealing inside the claim and publish
+  a usable child only after exact successful closed-record validation against
+  the original owner, claim and parameter object. Missing producers and hooks
+  remain explicit refusals. The five existing phase and world-prefix drivers
+  are a deferred integration scope; their edit window is not
+  open. Legacy APIs, all literal modules, the accepted prefix and seven phase
+  batch files stay fixed. No software/native execution or detached-job query
+  is authorized by this source preparation.
   Root owns integration, saved
   result review and populated-tissue/electrical qualification.
 
