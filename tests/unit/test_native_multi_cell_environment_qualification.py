@@ -14,6 +14,767 @@ import pytest
 from validation.betse import native_multi_cell_environment_qualification as q
 
 
+def authority_rows(tmp_path):
+    return [q.shared.read(p) for p in sorted((tmp_path / "authority-timings").glob("*.json"))]
+
+
+def authority_fixture(tmp_path, namespace):
+    work = NS(failure=None, count=0, phase="make_maskM")
+    targets = tuple(("synthetic." + name, namespace, name) for name in namespace)
+    observer = q.AuthorityTimings(tmp_path, work, targets)
+    return observer, work
+
+
+def test_authority_timing_real_nested_counts_are_inclusive_not_success(tmp_path):
+    calls = []
+
+    class Opaque:
+        def __repr__(self):
+            raise AssertionError("Scientific values must not be inspected")
+
+    value = Opaque()
+
+    def inner(argument):
+        calls.append("inner")
+        return argument
+
+    def outer(argument):
+        assert inner(argument) is argument
+        return inner(argument)
+
+    observer, work = authority_fixture(tmp_path, dict(outer=outer, inner=inner))
+    previous, trace = sys.getprofile(), sys.gettrace()
+    with observer.active():
+        assert outer(value) is value
+        observer.checkpoint("completed-outer")
+    assert sys.getprofile() is previous and sys.gettrace() is trace and work.failure is None
+    rows = authority_rows(tmp_path)
+    final = rows[-1]
+    a, b = final["targets"]
+    assert (a["entries"], a["observed_returns"], b["entries"], b["observed_returns"]) == (
+        1,
+        1,
+        2,
+        2,
+    )
+    assert a["inclusive_wall_ns"] >= b["inclusive_wall_ns"] >= 0
+    assert a["inclusive_process_cpu_ns"] >= b["inclusive_process_cpu_ns"] >= 0
+    assert calls == ["inner", "inner"] and final["active_frames"] == []
+    assert final["return_event_is_success"] is False
+    assert final["inclusive_times_are_additive"] is False
+    assert final["scientific_values_observed"] is False
+    assert final["independent_case_credit"] == 0
+    assert any(len(row["active_frames"]) == 2 for row in rows)
+
+
+def test_authority_timing_durable_inflight_survives_without_completion(tmp_path):
+    saved = []
+
+    def target():
+        observer.checkpoint("in-flight")
+        saved.extend(authority_rows(tmp_path))
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    with observer.active():
+        target()
+    inflight = next(x for x in saved if x["reason"] == "in-flight")
+    assert inflight["targets"][0]["entries"] == 1
+    assert inflight["targets"][0]["observed_returns"] == 0
+    assert inflight["active_frames"][0]["target"] == "synthetic.target"
+    assert inflight["active_frames"][0]["elapsed_wall_ns"] >= 0
+    assert inflight["periodic_checkpoint_requires_profile_events"] is True
+
+
+@pytest.mark.parametrize("event", ["c_return", "c_exception"])
+def test_authority_timing_exact_C_identity_and_return_categories(tmp_path, monkeypatch, event):
+    observer, _ = authority_fixture(tmp_path, dict(target=len))
+    frame = NS(f_code=None, f_globals={})
+    clocks = iter(((100, 10), (160, 25)))
+    monkeypatch.setattr(observer, "_clock", lambda: next(clocks))
+    observer.last_checkpoint = 100
+    observer.rows[0]["entries"] = 1  # Avoid the separately tested first-entry writer.
+    observer._event(frame, "c_call", len)
+    observer._event(frame, event, len)
+    observer._event(frame, "c_call", abs)  # Equal names/types are never sufficient.
+    row = observer.rows[0]
+    assert row["entries"] == 2
+    assert row["observed_returns"] == (event == "c_return")
+    assert row["observed_c_exceptions"] == (event == "c_exception")
+    assert (row["inclusive_wall_ns"], row["inclusive_process_cpu_ns"]) == (60, 15)
+    assert observer.stack == []
+
+
+@pytest.mark.parametrize("change", ["callable", "code", "globals_clone"])
+def test_authority_timing_retained_binding_drift_refuses_before_action(tmp_path, change):
+    from types import FunctionType
+
+    calls = []
+
+    def target():
+        calls.append("forbidden")
+
+    def replacement():
+        return "replacement"
+
+    namespace = dict(target=target)
+    observer, work = authority_fixture(tmp_path, namespace)
+    old_code = target.__code__
+    try:
+        if change == "callable":
+            namespace["target"] = replacement
+        elif change == "code":
+            # Matching free-variable arity, deliberately different code.
+            def changed():
+                calls.append("different")
+
+            target.__code__ = changed.__code__
+        else:
+            namespace["target"] = FunctionType(
+                target.__code__, dict(target.__globals__), closure=target.__closure__
+            )
+        with pytest.raises(q.TimingObservationFailed, match="binding changed"):
+            with observer.active():
+                namespace["target"]()
+    finally:
+        target.__code__ = old_code
+    assert calls == [] and work.failure is not None
+
+
+def test_authority_timing_previous_profile_rejects_immediately_and_is_restored(tmp_path):
+    calls = []
+    original, trace = sys.getprofile(), sys.gettrace()
+    primary = ValueError("inherited native entry refusal")
+
+    def target():
+        calls.append("forbidden")
+
+    def guard(frame, event, arg):
+        if original is not None:
+            original(frame, event, arg)
+        if event == "call" and frame.f_code is target.__code__:
+            raise primary
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    sys.setprofile(guard)
+    try:
+        with pytest.raises(ValueError) as caught:
+            with observer.active():
+                target()
+        assert caught.value is primary and sys.getprofile() is guard and sys.gettrace() is trace
+    finally:
+        sys.setprofile(original)
+    assert calls == [] and observer.rows[0]["entries"] == 0
+    assert work.failure["origin"] == "previous_profile"
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+def test_authority_timing_hook_drift_refuses_and_restores_both(tmp_path, hook):
+    original, trace = sys.getprofile(), sys.gettrace()
+
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    with pytest.raises(q.TimingObservationFailed, match="hooks changed"):
+        with observer.active():
+            (sys.setprofile if hook == "profile" else sys.settrace)(lambda *a: None)
+            observer.checkpoint("outer-boundary")
+    assert sys.getprofile() is original and sys.gettrace() is trace
+
+
+def test_authority_timing_prior_trace_local_callback_is_unchanged(tmp_path):
+    original_trace = sys.gettrace()
+    seen = []
+
+    def target():
+        value = "unchanged"
+        return value
+
+    def local(frame, event, arg):
+        seen.append(event)
+        return local
+
+    def trace(frame, event, arg):
+        if original_trace is not None:
+            original_trace(frame, event, arg)
+        return local if frame.f_code is target.__code__ else trace
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    sys.settrace(trace)
+    try:
+        with observer.active():
+            assert target() == "unchanged"
+        assert sys.gettrace() is trace
+    finally:
+        sys.settrace(original_trace)
+    assert "line" in seen and "return" in seen
+
+
+@pytest.mark.parametrize("source_fails", [False, True])
+def test_authority_timing_capture_failure_preserves_primary_or_completed_return(
+    tmp_path, monkeypatch, source_fails
+):
+    value, calls = {"retained": "raw returned object"}, []
+    primary, cause = ValueError("source failed"), RuntimeError("source cause")
+
+    def target():
+        calls.append("target")
+        if source_fails:
+            raise primary from cause
+        return value
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    timings = q.StageTimings(tmp_path, work)
+    timings.authority = observer
+    writer = q.shared.write
+
+    def write(path, row):
+        if Path(path).parent == observer.folder and row["reason"] == "first-target-entry":
+            raise OSError("authority snapshot failed")
+        return writer(path, row)
+
+    monkeypatch.setattr(q.shared, "write", write)
+    with pytest.raises(ValueError if source_fails else q.TimingObservationFailed) as caught:
+        with observer.active():
+            timings.run(q.STAGES[-1], "action", target)
+    assert calls == ["target"] and work.failure is not None
+    if source_fails:
+        assert caught.value is primary and primary.__cause__ is cause
+    else:
+        assert caught.value.partial["returned"] is value
+    assert authority_rows(tmp_path)[-1]["observation_failed"] is True
+
+
+@pytest.mark.parametrize(
+    "limit", ["max_active", "max_events", "max_snapshots", "max_snapshot_bytes"]
+)
+def test_authority_timing_recorder_bounds_refuse_without_acceptance(tmp_path, limit):
+    def target(depth=0):
+        if depth:
+            return target(depth - 1)
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    observer.policy[limit] = 1
+    with pytest.raises(q.TimingObservationFailed, match="allowance"):
+        with observer.active():
+            target(2)
+            observer.checkpoint("outer-boundary")
+    assert work.failure is not None
+    assert len(list(observer.folder.glob("*.json"))) <= observer.policy["max_snapshots"]
+
+
+def test_authority_timing_periodic_summary_has_bounded_inflight_clock(tmp_path, monkeypatch):
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    frame = NS(f_code=target.__code__, f_globals=target.__globals__)
+    clocks = iter(((100, 10), (110, 15), (150, 30)))
+    monkeypatch.setattr(observer, "_clock", lambda: next(clocks))
+    observer.policy.update(periodic_ns=20, clock_stride=1)
+    observer._event(frame, "call", None)
+    observer._event(NS(f_code=None), "c_call", abs)
+    observer._event(NS(f_code=None), "c_call", abs)
+    rows = authority_rows(tmp_path)
+    assert [x["reason"] for x in rows] == ["first-target-entry", "periodic"]
+    active = rows[-1]["active_frames"][0]
+    assert (active["elapsed_wall_ns"], active["elapsed_process_cpu_ns"]) == (50, 20)
+    assert rows[-1]["targets"][0]["observed_returns"] == 0
+
+
+def test_authority_timing_duplicate_or_unavailable_targets_refuse(tmp_path):
+    def target():
+        return None
+
+    namespace = dict(target=target)
+    for targets in (
+        (),
+        (("a", namespace, "missing"),),
+        (("a", namespace, "target"), ("b", namespace, "target")),
+    ):
+        with pytest.raises(ValueError, match="targets|Unavailable|Ambiguous|Duplicate"):
+            q.AuthorityTimings(tmp_path, NS(failure=None), targets)
+
+
+def test_authority_timing_equal_but_distinct_code_is_not_the_retained_target(tmp_path):
+    from types import FunctionType
+
+    def target():
+        return "synthetic"
+
+    other_code = target.__code__.replace()
+    assert other_code == target.__code__ and other_code is not target.__code__
+    clone = FunctionType(other_code, target.__globals__)
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    with observer.active():
+        assert clone() == "synthetic"
+        assert target() == "synthetic"
+    assert observer.rows[0]["entries"] == observer.rows[0]["observed_returns"] == 1
+
+
+def test_authority_timing_loaded_target_roster_reads_only_named_bindings(monkeypatch):
+    prefix = "cells.processes.betse_native_multi_cell_"
+    multi = NS(__name__=prefix + "caller", _check=len, _verify_sources=abs)
+    env = NS(__name__=prefix + "environment", multi=multi, _TreeRuntime=type("Tree", (), {}))
+    monkeypatch.setitem(sys.modules, env.__name__, env)
+    monkeypatch.setitem(sys.modules, multi.__name__, multi)
+    targets = q._authority_targets()
+    assert len(targets) == 16
+    assert {x[2] for x in targets} >= {"_check", "_verify_sources", "_TREE_QUERY", "query"}
+    assert all(len(x) == 3 for x in targets)
+    monkeypatch.delitem(sys.modules, multi.__name__)
+    with pytest.raises(ValueError, match="loaded"):
+        q._authority_targets()
+
+
+def test_authority_timing_worker_uses_loaded_observer_before_mock_stage(tmp_path, monkeypatch):
+    prepared, output, baseline = repair_c5_worker(tmp_path, monkeypatch, "none")
+    assert q.worker(prepared, "a" * 64, "release", q.CASES[0], output) == 0
+    diagnostic = q.shared.read(output / "diagnostic.json")
+    assert diagnostic["completed_stages"] == baseline["completed_stages"]
+    assert diagnostic["authority_timing"]["initialized"] is True
+    final = authority_rows(output)[-1]
+    assert final["targets"][0]["entries"] == final["targets"][0]["observed_returns"] == 1
+    assert final["observation_failed"] is False
+    assert diagnostic["accepted_cases"] == 0
+
+
+def test_authority_timing_selection_is_function_scoped():
+    selected = NS(originalname="test_authority_timing_nested", name="x")
+    excluded = NS(originalname="test_unrelated", name="authority_timing")
+    assert q._software_selection("authority-timing", [selected, excluded]) == (
+        [selected],
+        [excluded],
+    )
+
+
+class FalseyTimingStop(BaseException):
+    def __bool__(self):
+        return False
+
+
+def test_authority_timing_cleanup_formatting_waits_for_real_cleared_hook_recovery(tmp_path):
+    original, trace, setter = sys.getprofile(), sys.gettrace(), sys.setprofile
+    armed, formatting, refused = [False], [], []
+    primary, cause = ValueError("source primary"), RuntimeError("source cause")
+
+    class RecordedFailure(FalseyTimingStop):
+        def __str__(self):
+            formatting.append((sys.getprofile() is guard, sys.gettrace() is trace))
+            return "recorded cleanup refusal"
+
+    fault = RecordedFailure()
+
+    def target():
+        return None
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+
+    def guard(frame, event, arg):
+        if original is not None:
+            original(frame, event, arg)
+        if (
+            armed[0]
+            and event == "c_call"
+            and arg is setter
+            and frame.f_code is q.AuthorityTimings._restore_hook.__code__
+        ):
+            armed[0] = False
+            refused.append(True)
+            raise fault
+
+    setter(guard)
+    try:
+        with pytest.raises(ValueError) as caught:
+            with observer.active():
+                target()
+                armed[0] = True
+                raise primary from cause
+        assert caught.value is primary and primary.__cause__ is cause
+        assert sys.getprofile() is guard and sys.gettrace() is trace
+    finally:
+        armed[0] = False
+        setter(original)
+    assert refused == [True] and formatting and all(a and b for a, b in formatting)
+    assert any(error is fault for _, error in observer.pending_cleanup_errors)
+    assert work.failure is not None and observer.lifecycle["final_capture_attempted"] is True
+
+
+@pytest.mark.parametrize("helper", ["_restore_hook", "_render_errors"])
+def test_authority_timing_cleanup_helper_entry_refusal_keeps_primary_and_other_hook(
+    tmp_path, helper
+):
+    original, trace, setter, trace_setter = (
+        sys.getprofile(),
+        sys.gettrace(),
+        sys.setprofile,
+        sys.settrace,
+    )
+    armed, formatting, entries = [False], [], []
+    primary, cause = ValueError("source primary"), RuntimeError("source cause")
+
+    class EntryFailure(FalseyTimingStop):
+        def __str__(self):
+            formatting.append(sys.getprofile())
+            return "cleanup helper entry refusal"
+
+    fault = EntryFailure()
+
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    code = getattr(q.AuthorityTimings, helper).__code__
+
+    def guard(frame, event, arg):
+        if original is not None:
+            original(frame, event, arg)
+        if armed[0] and event == "call" and frame.f_code is code:
+            armed[0] = False
+            entries.append(helper)
+            raise fault
+
+    setter(guard)
+    try:
+        with pytest.raises(ValueError) as caught:
+            with observer.active():
+                target()
+                trace_setter(lambda *args: None)
+                armed[0] = True
+                raise primary from cause
+        assert caught.value is primary and primary.__cause__ is cause
+        assert sys.getprofile() is guard and sys.gettrace() is trace
+    finally:
+        armed[0] = False
+        setter(original)
+        trace_setter(trace)
+    assert entries == [helper] and formatting == []
+    assert any(error is fault for _, error in observer.pending_cleanup_errors)
+    assert observer.lifecycle["hooks_after_cleanup"] == dict(profile="entry", trace="entry")
+    assert observer.lifecycle["raw_cleanup_errors"]
+
+
+def test_authority_timing_unrestorable_hook_never_formats_failure_wrapper(tmp_path, monkeypatch):
+    original, setter = sys.getprofile(), sys.setprofile
+    formatting = []
+
+    class Unrenderable(FalseyTimingStop):
+        def __str__(self):
+            formatting.append("must not format while unrestored")
+            return "unsafe formatting"
+
+    fault = Unrenderable()
+
+    def target():
+        return None
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+
+    def replace(value):
+        if value is original:
+            raise fault
+        return setter(value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "setprofile", replace)
+        try:
+            with pytest.raises(q.TimingObservationFailed) as caught:
+                with observer.active():
+                    target()
+            assert caught.value.capture_error is fault and caught.value.__cause__ is fault
+            assert any(error is fault for _, error in caught.value.raw_cleanup_errors)
+            assert str(caught.value) == "Authority timing cleanup failed; raw exception retained"
+        finally:
+            setter(original)
+    assert formatting == [] and work.failure is not None
+    assert observer.lifecycle["final_capture_blocked"] == "Inherited hooks not restored"
+    assert (
+        observer.lifecycle["raw_cleanup_error_count"] <= q.AUTHORITY_TIMING_POLICY["max_raw_errors"]
+    )
+
+
+def test_authority_timing_one_shot_bounds_cleanup_records_across_invocations(tmp_path):
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+    with observer.active():
+        target()
+    with pytest.raises(ValueError, match="reused"):
+        with observer.active():
+            raise AssertionError("No second observer invocation")
+
+
+@pytest.mark.parametrize("hook", ["profile", "trace"])
+@pytest.mark.parametrize("position", ["before", "after"])
+def test_authority_timing_cleanup_setter_fault_keeps_primary_and_independent_restore(
+    tmp_path, monkeypatch, hook, position
+):
+    original_profile, original_trace = sys.getprofile(), sys.gettrace()
+    set_profile, set_trace = sys.setprofile, sys.settrace
+    primary, cause = ValueError("source primary"), RuntimeError("source cause")
+    fault = FalseyTimingStop("cleanup setter refusal")
+    calls, armed = [], [True]
+
+    def target():
+        return None
+
+    def changed_trace(*args):
+        return None
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+
+    def setter(value):
+        expected = original_profile if hook == "profile" else original_trace
+        delegate = set_profile if hook == "profile" else set_trace
+        if armed[0] and value is expected:
+            armed[0] = False
+            calls.append(hook)
+            if position == "after":
+                delegate(value)
+            raise fault
+        return delegate(value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "set" + hook, setter)
+        try:
+            with pytest.raises(ValueError) as caught:
+                with observer.active():
+                    set_trace(changed_trace)
+                    target()
+                    raise primary from cause
+            assert caught.value is primary and primary.__cause__ is cause
+            assert sys.getprofile() is original_profile and sys.gettrace() is original_trace
+        finally:
+            armed[0] = False
+            set_profile(original_profile)
+            set_trace(original_trace)
+    assert calls == [hook] and work.failure is not None
+    assert observer.lifecycle["cleanup_errors"]
+    assert observer.lifecycle["final_capture_attempted"] is True
+    assert observer.lifecycle["hooks_after_cleanup"] == dict(profile="entry", trace="entry")
+    assert authority_rows(tmp_path)[-1]["observation_failed"] is True
+
+
+@pytest.mark.parametrize("position", ["before", "after"])
+def test_authority_timing_setup_setter_fault_never_enters_source(tmp_path, monkeypatch, position):
+    original_profile, original_trace = sys.getprofile(), sys.gettrace()
+    setter, calls = sys.setprofile, []
+    fault = FalseyTimingStop("setup setter refusal")
+
+    def target():
+        calls.append("forbidden")
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+
+    def replace(value):
+        if value is observer.active_profile:
+            if position == "after":
+                setter(value)
+            raise fault
+        return setter(value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "setprofile", replace)
+        try:
+            with pytest.raises(FalseyTimingStop) as caught:
+                with observer.active():
+                    target()
+            assert caught.value is fault
+            assert sys.getprofile() is original_profile and sys.gettrace() is original_trace
+        finally:
+            setter(original_profile)
+    assert calls == [] and work.failure is not None
+    assert observer.lifecycle["setup_error"] is not None
+    assert observer.lifecycle["hooks_after_cleanup"] == dict(profile="entry", trace="entry")
+
+
+def test_authority_timing_persistent_setter_fault_is_bounded_and_blocks_unguarded_capture(
+    tmp_path, monkeypatch
+):
+    original_profile, original_trace = sys.getprofile(), sys.gettrace()
+    set_profile, set_trace = sys.setprofile, sys.settrace
+    primary = ValueError("source primary")
+    calls = []
+
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+
+    def replace(value):
+        if value is original_profile:
+            calls.append("restore")
+            raise FalseyTimingStop("persistent restore refusal")
+        return set_profile(value)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "setprofile", replace)
+        try:
+            with pytest.raises(ValueError) as caught:
+                with observer.active():
+                    set_trace(lambda *args: None)
+                    raise primary
+            assert caught.value is primary and sys.gettrace() is original_trace
+            assert observer.lifecycle["hooks_after_cleanup"]["profile"] == "observer"
+        finally:
+            set_profile(original_profile)
+            set_trace(original_trace)
+    assert calls == ["restore"] * 4
+    assert observer.lifecycle["final_capture_attempted"] is False
+    assert observer.lifecycle["final_capture_blocked"] == "Inherited hooks not restored"
+    assert not any(row["reason"] == "observer-exit" for row in authority_rows(tmp_path))
+
+
+def test_authority_timing_real_profile_cleanup_rejection_recovers_chain_before_capture(tmp_path):
+    original, trace = sys.getprofile(), sys.gettrace()
+    set_profile = sys.setprofile
+    armed, refused, capture_entries = [False], [], []
+    primary, cause = ValueError("source primary"), RuntimeError("source cause")
+    fault = FalseyTimingStop("inherited cleanup rejection")
+
+    def target():
+        return None
+
+    observer, _ = authority_fixture(tmp_path, dict(target=target))
+
+    def guard(frame, event, arg):
+        if original is not None:
+            original(frame, event, arg)
+        if (
+            armed[0]
+            and event == "c_call"
+            and arg is set_profile
+            and frame.f_code is q.AuthorityTimings._restore_hook.__code__
+        ):
+            armed[0] = False
+            refused.append("actual c_call")
+            raise fault
+        if event == "call" and frame.f_code is q.AuthorityTimings._snapshot_record.__code__:
+            if frame.f_locals["reason"] == "observer-exit":
+                capture_entries.append(sys.getprofile() is guard)
+
+    set_profile(guard)
+    try:
+        with pytest.raises(ValueError) as caught:
+            with observer.active():
+                target()
+                armed[0] = True
+                raise primary from cause
+        assert caught.value is primary and primary.__cause__ is cause
+        assert sys.getprofile() is guard and sys.gettrace() is trace
+    finally:
+        armed[0] = False
+        set_profile(original)
+    assert refused == ["actual c_call"] and capture_entries == [True]
+    assert observer.lifecycle["hooks_after_cleanup"] == dict(profile="entry", trace="entry")
+
+
+@pytest.mark.parametrize("source_fails", [False, True])
+def test_authority_timing_falsey_BaseException_at_profile_return_retains_original(
+    tmp_path, monkeypatch, source_fails
+):
+    primary, cause = ValueError("source unwind"), RuntimeError("original cause")
+    fault, value = FalseyTimingStop("return observation failed"), {"raw": "same object"}
+
+    def target():
+        if source_fails:
+            raise primary from cause
+        return value
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    timings = q.StageTimings(tmp_path, work)
+    timings.authority = observer
+    event = observer._event
+
+    def observe(frame, kind, arg):
+        if kind == "return" and frame.f_code is target.__code__:
+            raise fault
+        return event(frame, kind, arg)
+
+    monkeypatch.setattr(observer, "_event", observe)
+    with pytest.raises(ValueError if source_fails else q.TimingObservationFailed) as caught:
+        with observer.active():
+            timings.run("make_maskM", "action", target)
+    assert observer.failure is fault and work.failure is not None
+    if source_fails:
+        assert caught.value is primary and primary.__cause__ is cause
+    else:
+        assert caught.value.partial["returned"] is value
+
+
+@pytest.mark.parametrize("source_fails", [False, True])
+def test_authority_timing_falsey_BaseException_final_capture_keeps_primary_and_hooks(
+    tmp_path, monkeypatch, source_fails
+):
+    original, trace = sys.getprofile(), sys.gettrace()
+    primary, cause = ValueError("source primary"), RuntimeError("source cause")
+    fault = FalseyTimingStop("final writer failure")
+
+    def target():
+        if source_fails:
+            raise primary from cause
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    writer = q.shared.write
+
+    def write(path, row):
+        if Path(path).parent == observer.folder and row["reason"] == "observer-exit":
+            raise fault
+        return writer(path, row)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(q.shared, "write", write)
+        with pytest.raises(ValueError if source_fails else q.TimingObservationFailed) as caught:
+            with observer.active():
+                target()
+    assert observer.failure is fault and work.failure is not None
+    if source_fails:
+        assert caught.value is primary and primary.__cause__ is cause
+    else:
+        assert caught.value.capture_error is fault
+    assert sys.getprofile() is original and sys.gettrace() is trace
+    assert observer.lifecycle["final_capture_error"] is not None
+
+
+@pytest.mark.parametrize("stride", [1, 4096])
+def test_authority_timing_active_real_clocks_do_not_reenter_bookkeeping(tmp_path, stride):
+    previous, trace = sys.getprofile(), sys.gettrace()
+    clock_events = []
+
+    def target():
+        observer.checkpoint("inside-target")
+
+    observer, work = authority_fixture(tmp_path, dict(target=target))
+    observer.policy["clock_stride"] = stride
+
+    def guard(frame, event, arg):
+        if previous is not None:
+            previous(frame, event, arg)
+        if event in ("c_call", "c_return") and arg in (q.time.monotonic_ns, q.time.process_time_ns):
+            clock_events.append((event, observer.bookkeeping_depth > 0))
+
+    sys.setprofile(guard)
+    try:
+        with observer.active():
+            # For4096, align the formerly dangerous wall-clock c_return.
+            observer.events = max(stride - 3, 0)
+            first = observer._clock()
+            target()
+            observer.checkpoint("outer-boundary")
+            last = observer._clock()
+            assert first[0] <= last[0] and first[1] <= last[1]
+        assert sys.getprofile() is guard and sys.gettrace() is trace
+    finally:
+        sys.setprofile(previous)
+    assert work.failure is None and observer.failure is None
+    assert observer.rows[0]["entries"] == observer.rows[0]["observed_returns"] == 1
+    assert any(protected for _, protected in clock_events)
+    assert observer.suppressed_own_events > 0
+    rows = authority_rows(tmp_path)
+    assert all(a["monotonic_ns"] <= b["monotonic_ns"] for a, b in zip(rows, rows[1:], strict=False))
+
+
 def timing_fixture(tmp_path):
     work = NS(failure=None, count=0, phase=None)
     timings = q.StageTimings(tmp_path, work)
@@ -573,6 +1334,7 @@ def test_capture_metadata_plan_cannot_drop_or_widen_policy(tmp_path, monkeypatch
         ordinary_methods=list(q.native.METHODS),
         capture_transport=q.payload.KIND,
         capture_policy=q.CAPTURE_POLICY,
+        authority_timing_policy=q.AUTHORITY_TIMING_POLICY,
         source_review_required_before_release=True,
         automatic_retry=False,
         cpu=3,
@@ -629,6 +1391,7 @@ def test_diagnostic_wall_plan_preserves_all_other_resource_guards(
         ordinary_methods=list(q.native.METHODS),
         capture_transport=q.payload.KIND,
         capture_policy=q.CAPTURE_POLICY,
+        authority_timing_policy=q.AUTHORITY_TIMING_POLICY,
         source_review_required_before_release=True,
         automatic_retry=False,
         cpu=3,
@@ -1025,6 +1788,10 @@ def repair_c5_worker(tmp_path, monkeypatch, where, source_kind="complete"):
         return copy.deepcopy(baseline)
 
     monkeypatch.setattr(q.shared, "run_stages", stages)
+    namespace = {"stages": stages}
+    monkeypatch.setattr(
+        q, "_authority_targets", lambda: (("synthetic.stages", namespace, "stages"),)
+    )
     monkeypatch.setattr(q.payload, "read", lambda *a: dict(cache={"synthetic": "cache"}))
 
     def domain(*args):

@@ -9,14 +9,17 @@ import argparse
 import copy
 import hashlib
 import importlib.abc
+import json
+import marshal
 import os
 import resource
 import runpy
 import sys
 import time
 import traceback
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
+from types import CodeType, MappingProxyType
 
 from validation import source_snapshot
 from validation.betse import native_multi_cell_caller_qualification as prior
@@ -63,12 +66,495 @@ SOFTWARE_GROUPS = {
     "capture-metadata": "capture_metadata or failed_capture_stops or repair_c5 or prefix_payload",
     "stage-timing": "stage_timing or failed_capture_stops or repair_c5",
     "worklog": "",
+    "authority-timing": "",
 }
+AUTHORITY_TIMING_POLICY = dict(
+    kind="cells.exact_function_timing@1",
+    max_targets=32,
+    max_active=64,
+    max_snapshots=512,
+    max_events=2**63 - 1,
+    max_snapshot_bytes=256 * 2**10,
+    clock_stride=4096,
+    periodic_ns=5 * 10**9,
+    max_raw_errors=32,
+)
+
+
+def _authority_targets():
+    """Read already-loaded bindings only; no imports, proxies or source calls."""
+    prefix = "cells.processes.betse_native_multi_cell_"
+    environment, multi = (sys.modules.get(prefix + name) for name in ("environment", "caller"))
+    if environment is None or multi is None or vars(environment).get("multi") is not multi:
+        raise ValueError("Actual loaded ordinary environment/caller modules required")
+    selected = []
+    for owner, names in (
+        (
+            environment,
+            (
+                "_check",
+                "_verify_sources",
+                "_immutable_graphs",
+                "_immutable_state",
+                "_active_tree",
+                "_new_tree",
+                "_tree_call",
+                "_operation",
+                "_TREE_INIT",
+                "_TREE_QUERY",
+                "_TREE_BALL",
+            ),
+        ),
+        (multi, ("_check", "_verify_sources")),
+    ):
+        namespace = vars(owner)
+        for name in names:
+            selected.append((owner.__name__ + "." + name, namespace, name))
+    tree = vars(environment).get("_TreeRuntime")
+    if not isinstance(tree, type):
+        raise ValueError("Actual loaded ordinary tree wrapper required")
+    for name in ("__init__", "query", "query_ball_point"):
+        selected.append((environment.__name__ + "._TreeRuntime." + name, vars(tree), name))
+    return tuple(selected)
+
+
+class AuthorityTimings:
+    """Bounded metadata observation of exact loaded bindings, never authority.
+
+    Python return events include exception unwinds. Inclusive durations overlap
+    and include observer/guard costs. Event-driven periodic writes cannot run
+    while a native call emits no profile events. No arguments/results are read.
+    Own observation failures are deferred to protected outer boundaries; the
+    prior profiler's rejections are always propagated immediately and unchanged.
+    """
+
+    def __init__(self, output, work, targets):
+        self.work, self.folder = work, Path(output) / "authority-timings"
+        self.policy = dict(AUTHORITY_TIMING_POLICY)
+        self.targets, self.by_code, self.by_callable = [], {}, {}
+        self.stack, self.rows, self.failure = [], [], None
+        self.events = self.sequence = 0
+        self.last_checkpoint = self.last_wall = self.last_cpu = None
+        self.active_profile = None
+        self.installed = False
+        self.used = False
+        self.ready = False
+        self.bookkeeping_depth = self.suppressed_own_events = 0
+        self.raw_errors, self.raw_records, self.pending_cleanup_errors = [], [], []
+        self.lifecycle = dict(
+            setup_error=None,
+            cleanup_errors=[],
+            cleanup_attempts=[],
+            hooks_before_cleanup=None,
+            hooks_after_cleanup=None,
+            final_capture_attempted=False,
+            final_capture_error=None,
+            final_capture_blocked=None,
+            raw_cleanup_error_count=0,
+        )
+        if type(targets) is not tuple or not 0 < len(targets) <= self.policy["max_targets"]:
+            raise ValueError("Bounded nonempty exact-function timing targets required")
+        labels = set()
+        for label, namespace, name in targets:
+            if (
+                type(label) is not str
+                or not 0 < len(label) <= 200
+                or label in labels
+                or type(name) is not str
+                or not 0 < len(name) <= 100
+                or type(namespace) not in (dict, MappingProxyType)
+            ):
+                raise ValueError("Invalid or duplicate timing target label")
+            labels.add(label)
+            value = namespace.get(name)
+            if not callable(value):
+                raise ValueError("Unavailable exact timing callable: " + label)
+            code = getattr(value, "__code__", None)
+            code = code if type(code) is CodeType else None
+            globals_ = getattr(value, "__globals__", None)
+            if code is not None and (id(code) in self.by_code or len(code.co_filename) > 1024):
+                raise ValueError("Ambiguous or overlong timing code target")
+            if id(value) in self.by_callable:
+                raise ValueError("Duplicate timing callable identity")
+            index = len(self.targets)
+            self.targets.append((namespace, name, value, code, globals_))
+            if code is not None and type(globals_) is dict:
+                self.by_code[id(code)] = index
+            self.by_callable[id(value)] = index
+            self.rows.append(
+                dict(
+                    target=label,
+                    callable_type=type(value).__module__ + "." + type(value).__qualname__,
+                    code_file=None if code is None else code.co_filename,
+                    code_line=None if code is None else code.co_firstlineno,
+                    code_sha256=None
+                    if code is None
+                    else hashlib.sha256(marshal.dumps(code)).hexdigest(),
+                    entries=0,
+                    observed_returns=0,
+                    observed_c_exceptions=0,
+                    inclusive_wall_ns=0,
+                    inclusive_process_cpu_ns=0,
+                )
+            )
+        self.folder.mkdir()
+
+    def _verify(self, index=None):
+        targets = self.targets if index is None else (self.targets[index],)
+        for namespace, name, value, code, globals_ in targets:
+            if (
+                namespace.get(name) is not value
+                or (code is not None and getattr(value, "__code__", None) is not code)
+                or getattr(value, "__globals__", None) is not globals_
+            ):
+                raise ValueError("Retained timing callable/code binding changed: " + name)
+
+    def _clock(self):
+        # An outer sample itself emits c_return events. Do not recursively
+        # update last_wall between its wall and CPU reads. The profile hook
+        # still invokes the inherited guard for every one of these events.
+        self.bookkeeping_depth += 1
+        try:
+            wall, cpu = time.monotonic_ns(), time.process_time_ns()
+            if (
+                type(wall) is not int
+                or type(cpu) is not int
+                or wall < 0
+                or cpu < 0
+                or (self.last_wall is not None and (wall < self.last_wall or cpu < self.last_cpu))
+            ):
+                raise ValueError("Invalid authority timing clocks")
+            self.last_wall, self.last_cpu = wall, cpu
+            return wall, cpu
+        finally:
+            self.bookkeeping_depth -= 1
+
+    def _error_record(self, error):
+        # No formatting, type-name lookup, repr or user callback here. This
+        # path also runs while CPython has cleared a rejecting profiler.
+        if len(self.raw_errors) >= self.policy["max_raw_errors"]:
+            return dict(raw_retention_limit_reached=True, exception_rendered=False)
+        record = dict(raw_error_index=len(self.raw_errors), exception_rendered=False)
+        self.raw_errors.append(error)
+        self.raw_records.append(record)
+        return record
+
+    def _render_errors(self, previous, trace):
+        # This is called only between independently protected restoration and
+        # capture. Check again around every potentially user-defined __str__.
+        for error, record in zip(self.raw_errors, self.raw_records, strict=True):
+            if record["exception_rendered"]:
+                continue
+            if sys.getprofile() is not previous or sys.gettrace() is not trace:
+                raise RuntimeError("Inherited hooks unavailable for exception formatting")
+            rendered = shared.exception_record(error)
+            if sys.getprofile() is not previous or sys.gettrace() is not trace:
+                raise RuntimeError("Inherited hooks changed during exception formatting")
+            record.update(error=rendered, exception_rendered=True)
+
+    def _failed(self, error, origin):
+        if self.failure is None:
+            self.failure = error
+            record = dict(origin=origin, error=self._error_record(error))
+            self.failure_record = record
+            if self.work.failure is None:
+                self.work.failure = record
+
+    def _snapshot(self, reason, now=None):
+        self.bookkeeping_depth += 1
+        try:
+            return self._snapshot_record(reason, now)
+        finally:
+            self.bookkeeping_depth -= 1
+
+    def _snapshot_record(self, reason, now):
+        if self.sequence >= self.policy["max_snapshots"]:
+            raise ValueError("Authority timing snapshot allowance exceeded")
+        if type(reason) is not str or not 0 < len(reason) <= 200:
+            raise ValueError("Invalid authority timing boundary")
+        self._verify()
+        wall, cpu = self._clock() if now is None else now
+        inflight = [
+            dict(
+                target=self.rows[index]["target"],
+                event=event,
+                entered_monotonic_ns=started[0],
+                entered_process_cpu_ns=started[1],
+                elapsed_wall_ns=wall - started[0],
+                elapsed_process_cpu_ns=cpu - started[1],
+            )
+            for frame, index, event, started in self.stack
+        ]
+        row = dict(
+            **self.policy,
+            sequence=self.sequence,
+            reason=reason,
+            phase=self.work.phase,
+            monotonic_ns=wall,
+            process_cpu_ns=cpu,
+            observed_profile_events=self.events,
+            targets=self.rows,
+            active_frames=inflight,
+            observation_failed=self.failure is not None,
+            observation_failure=getattr(self, "failure_record", None),
+            own_bookkeeping_profile_events_suppressed=self.suppressed_own_events,
+            hook_lifecycle=self.lifecycle,
+            return_event_is_success=False,
+            inclusive_times_are_additive=False,
+            includes_observer_and_chained_guard_cost=True,
+            periodic_checkpoint_requires_profile_events=True,
+            delegate_zero_events_is_execution_unknown=True,
+            python_identity_scope=(
+                "Retained callable binding plus observed code/global identity; identical "
+                "code/global clones are not distinguishable by profiling."
+            ),
+            scientific_values_observed=False,
+            independent_case_credit=0,
+        )
+        if len(json.dumps(row, allow_nan=False).encode()) > self.policy["max_snapshot_bytes"]:
+            raise ValueError("Authority timing metadata byte allowance exceeded")
+        path = self.folder / f"{self.sequence:04d}.json"
+        self.sequence += 1
+        shared.write(path, row)
+        self.last_checkpoint = wall
+
+    def checkpoint(self, reason):
+        try:
+            if self.failure is not None:
+                raise self.failure
+            if self.ready and (
+                sys.getprofile() is not self.active_profile
+                or sys.gettrace() is not self.entry_trace
+            ):
+                raise ValueError("Authority timing hooks changed at outer boundary")
+            self._snapshot(reason)
+        except BaseException as error:
+            self._failed(error, "boundary:" + reason)
+            raise TimingObservationFailed(
+                error, label=self.work.phase or "imports", operation="authority_timing"
+            ) from error
+
+    def _event(self, frame, event, arg):
+        if self.events >= self.policy["max_events"]:
+            raise ValueError("Authority timing event allowance exceeded")
+        self.events += 1
+        index = None
+        if event in ("call", "return"):
+            index = self.by_code.get(id(frame.f_code))
+            if index is not None and (
+                frame.f_code is not self.targets[index][3]
+                or frame.f_globals is not self.targets[index][4]
+            ):
+                raise ValueError("Timing code entered with foreign code/globals")
+        elif event in ("c_call", "c_return", "c_exception"):
+            index = self.by_callable.get(id(arg))
+            if index is not None and self.targets[index][2] is not arg:
+                raise ValueError("Timing callable identity changed")
+        now, first = None, False
+        if index is not None:
+            self._verify(index)
+            now = self._clock()
+            row = self.rows[index]
+            if event in ("call", "c_call"):
+                if len(self.stack) >= self.policy["max_active"]:
+                    raise ValueError("Authority timing active-frame allowance exceeded")
+                first = row["entries"] == 0
+                row["entries"] += 1
+                self.stack.append((frame, index, event, now))
+            else:
+                if not self.stack or self.stack[-1][:2] != (frame, index):
+                    raise ValueError("Unmatched authority timing return")
+                _, _, entered, started = self.stack.pop()
+                if (entered == "call") != (event == "return"):
+                    raise ValueError("Changed authority timing return category")
+                row["observed_returns"] += int(event != "c_exception")
+                row["observed_c_exceptions"] += int(event == "c_exception")
+                row["inclusive_wall_ns"] += now[0] - started[0]
+                row["inclusive_process_cpu_ns"] += now[1] - started[1]
+        if now is None and self.events % self.policy["clock_stride"] == 0:
+            now = self._clock()
+        if now is not None and (
+            first
+            or self.last_checkpoint is None
+            or now[0] - self.last_checkpoint >= self.policy["periodic_ns"]
+        ):
+            self._snapshot("first-target-entry" if first else "periodic", now)
+
+    @contextmanager
+    def active(self):
+        if self.installed or self.used:
+            raise ValueError("Authority timing observer cannot be reentered or reused")
+        self.used = True
+        previous, trace = sys.getprofile(), sys.gettrace()
+        self.entry_trace = trace
+
+        def profile(frame, event, arg):
+            if previous is not None:
+                try:
+                    previous(frame, event, arg)
+                except BaseException as primary:
+                    self._failed(primary, "previous_profile")
+                    raise
+            if self.bookkeeping_depth:
+                self.suppressed_own_events += 1
+            elif self.failure is None:
+                try:
+                    self._event(frame, event, arg)
+                except BaseException as error:
+                    # Do not turn a Python exception-unwind return into an
+                    # observer exception. Protected outer checkpoints stop
+                    # continuation and preserve any already returned object.
+                    self._failed(error, "profile_observation")
+
+        self.installed, self.active_profile = True, profile
+        primary, phase = None, "setup"
+        try:
+            self.checkpoint("observer-enter")
+            sys.setprofile(profile)
+            self.ready = True
+            phase = "source"
+            yield
+            phase = "returned"
+        except BaseException as error:
+            primary = error
+            if phase == "setup":
+                self.pending_cleanup_errors.append(("setup", error))
+                try:
+                    self.lifecycle["setup_error"] = self._error_record(error)
+                    self._failed(error, "setup")
+                except BaseException as recording:
+                    self.pending_cleanup_errors.append(("setup_recording", recording))
+                    self.lifecycle["setup_error"] = dict(recording_failed=True)
+            raise
+        finally:
+            self.bookkeeping_depth += 1
+            self.ready = False
+            try:
+                before = self._hook_state(previous, trace)
+                self.lifecycle["hooks_before_cleanup"] = before
+                if primary is None and (
+                    before["profile"] != "observer" or before["trace"] != "entry"
+                ):
+                    self.pending_cleanup_errors.append(
+                        ("profile_exit", ValueError("Authority timing profiler was not restored"))
+                    )
+            except BaseException as error:
+                self.pending_cleanup_errors.append(("entry_state", error))
+            # Each hook gets its own bounded restoration attempts, even if
+            # the other setter fails before OR after changing the real hook.
+            for name, expected in (("profile", previous), ("trace", trace)):
+                try:
+                    self._restore_hook(name, expected, "before_capture")
+                except BaseException as error:
+                    self.pending_cleanup_errors.append(("before_capture:" + name + ":entry", error))
+            try:
+                state = self._hook_state(previous, trace)
+                if state["profile"] != "entry" or state["trace"] != "entry":
+                    self.lifecycle["final_capture_blocked"] = "Inherited hooks not restored"
+                else:
+                    for origin, error in self.pending_cleanup_errors:
+                        record = dict(origin=origin, error=self._error_record(error))
+                        self.lifecycle["cleanup_errors"].append(record)
+                        if self.failure is None:
+                            self.failure, self.failure_record = error, record
+                        if self.work.failure is None:
+                            self.work.failure = record
+                    self._render_errors(previous, trace)
+                    self.lifecycle["final_capture_attempted"] = True
+                    self._snapshot("observer-exit")
+            except BaseException as error:
+                self.pending_cleanup_errors.append(("final_capture", error))
+                self.lifecycle["final_capture_error"] = dict(
+                    raw_cleanup_error_index=len(self.pending_cleanup_errors) - 1,
+                    exception_rendered=False,
+                )
+            # Capture itself can trigger a guard exception that clears a
+            # CPython hook. Recover from its observed state, never rerun it.
+            for name, expected in (("profile", previous), ("trace", trace)):
+                try:
+                    self._restore_hook(name, expected, "after_capture")
+                except BaseException as error:
+                    self.pending_cleanup_errors.append(("after_capture:" + name + ":entry", error))
+            try:
+                self.lifecycle["hooks_after_cleanup"] = self._hook_state(previous, trace)
+            except BaseException as error:
+                self.pending_cleanup_errors.append(("final_state", error))
+            # No fallible helper call is needed to retain errors when a
+            # helper was rejected before its body or hooks remain missing.
+            self.lifecycle["raw_cleanup_error_count"] = len(self.pending_cleanup_errors)
+            self.lifecycle["raw_cleanup_errors"] = []
+            for index, (origin, _error) in enumerate(self.pending_cleanup_errors):
+                self.lifecycle["raw_cleanup_errors"].append(
+                    dict(
+                        origin=origin,
+                        raw_cleanup_error_index=index,
+                        raw_exception_retained_in_process=True,
+                    )
+                )
+            if self.pending_cleanup_errors:
+                origin, error = self.pending_cleanup_errors[0]
+                if self.failure is None:
+                    self.failure = error
+                if self.work.failure is None:
+                    self.work.failure = dict(origin=origin, exception_rendered=False)
+            self.installed = False
+            self.bookkeeping_depth -= 1
+            if primary is None and self.failure is not None:
+                refusal = TimingObservationFailed(
+                    self.failure,
+                    label=self.work.phase or "imports",
+                    operation="authority_timing",
+                    message="Authority timing cleanup failed; raw exception retained",
+                )
+                refusal.raw_cleanup_errors = tuple(self.pending_cleanup_errors)
+                raise refusal from self.failure
+
+    def _hook_state(self, previous, trace):
+        current, current_trace = sys.getprofile(), sys.gettrace()
+        return dict(
+            profile="entry"
+            if current is previous
+            else "observer"
+            if current is self.active_profile
+            else "absent"
+            if current is None
+            else "other",
+            trace="entry"
+            if current_trace is trace
+            else "absent"
+            if current_trace is None
+            else "other",
+        )
+
+    def _restore_hook(self, name, expected, phase):
+        getter, setter = (
+            (sys.getprofile, sys.setprofile) if name == "profile" else (sys.gettrace, sys.settrace)
+        )
+        for attempt in range(2):
+            try:
+                if getter() is expected:
+                    break
+                self.lifecycle["cleanup_attempts"].append(
+                    dict(phase=phase, hook=name, attempt=attempt + 1)
+                )
+                setter(expected)
+            except BaseException as error:
+                self.pending_cleanup_errors.append((phase + ":" + name, error))
+        try:
+            if getter() is not expected:
+                self.pending_cleanup_errors.append(
+                    (
+                        phase + ":" + name + ":incomplete",
+                        RuntimeError("Inherited " + name + " hook remains unrestored"),
+                    )
+                )
+        except BaseException as error:
+            self.pending_cleanup_errors.append((phase + ":" + name + ":state", error))
 
 
 class TimingObservationFailed(RuntimeError):
-    def __init__(self, primary, *, label, operation, returned=None):
-        super().__init__(str(primary))
+    def __init__(self, primary, *, label, operation, returned=None, message=None):
+        super().__init__(str(primary) if message is None else message)
         self.capture_error = primary
         self.label, self.operation = label, operation
         self.stage = label + ":" + operation + ":timing"
@@ -88,11 +574,14 @@ class StageTimings:
         self.folder = self.output / "stage-timings"
         self.folder.mkdir()
         self.failures = []
+        self.authority = None
 
     def _checkpoint(self, label, operation, position, *, started=None, error=None, returned=None):
         try:
             if label not in STAGES or operation not in ("action", "capture"):
                 raise ValueError("Undeclared timed diagnostic boundary")
+            if self.authority is not None:
+                self.authority.checkpoint(label + ":" + operation + ":" + position)
             wall, cpu = time.monotonic_ns(), time.process_time_ns()
             row = dict(
                 kind="cells.diagnostic_stage_timing@1",
@@ -117,7 +606,7 @@ class StageTimings:
             self.sequence += 1
             shared.write(path, row)
             return wall, cpu
-        except Exception as failure:
+        except BaseException as failure:
             record = dict(
                 label=label,
                 operation=operation,
@@ -138,7 +627,7 @@ class StageTimings:
             started = self._checkpoint(label, operation, "start")
         except TimingObservationFailed:
             raise
-        except Exception as failure:
+        except BaseException as failure:
             raise self._entry_failure(failure, label, operation, "start") from failure
         try:
             value = action()
@@ -147,7 +636,7 @@ class StageTimings:
                 self._checkpoint(label, operation, "raised", started=started, error=primary)
             except TimingObservationFailed:
                 pass  # Keep the original source/capture exception and cause.
-            except Exception as failure:
+            except BaseException as failure:
                 self._entry_failure(failure, label, operation, "raised")
             raise
         position = "capture_saved" if operation == "capture" and value is True else "returned"
@@ -157,7 +646,7 @@ class StageTimings:
             self._checkpoint(label, operation, position, started=started, returned=value)
         except TimingObservationFailed:
             raise
-        except Exception as failure:
+        except BaseException as failure:
             raise self._entry_failure(failure, label, operation, position, value) from failure
         return value
 
@@ -364,6 +853,7 @@ def prepare(destination, *, repository=ROOT, cpu=6, runtime_paths=(), wall_secon
             ordinary_methods=list(native.METHODS),
             capture_transport=payload.KIND,
             capture_policy=CAPTURE_POLICY,
+            authority_timing_policy=AUTHORITY_TIMING_POLICY,
             source_review_required_before_release=True,
             automatic_retry=False,
             **shared.NO_CREDIT,
@@ -400,6 +890,7 @@ def verify_plan(prepared, expected_sha256):
         ordinary_methods=list(native.METHODS),
         capture_transport=payload.KIND,
         capture_policy=CAPTURE_POLICY,
+        authority_timing_policy=AUTHORITY_TIMING_POLICY,
         source_review_required_before_release=True,
         automatic_retry=False,
         **shared.NO_CREDIT,
@@ -535,11 +1026,16 @@ def worker(prepared, digest, release, case, output):
     timings = StageTimings(output, work)
     evidence = TimedEvidence(evidence, timings)
     result = None
+    authority = None
     stage = "source_execution"
     try:
         with work.active():
-            result = shared.run_stages(timings.steps(_steps(case, output)), evidence, work)
-            stage = "postprocessing.source_observer_finalization"
+            steps = _steps(case, output)
+            authority = AuthorityTimings(output, work, _authority_targets())
+            timings.authority = authority
+            with authority.active():
+                result = shared.run_stages(timings.steps(steps), evidence, work)
+                stage = "postprocessing.source_observer_finalization"
         stage = "postprocessing.saved_geometry_diagnostics"
         if result["status"] == "source_completed_unqualified":
             from validation.betse.native_multi_cell_environment_compare import (
@@ -605,6 +1101,17 @@ def worker(prepared, digest, release, case, output):
             plan_sha256=digest,
             stop_after=ENDPOINT,
             timing_observation_failures=timings.failures,
+            authority_timing=dict(
+                folder="authority-timings",
+                snapshots_attempted=0 if authority is None else authority.sequence,
+                observation_failure=None
+                if authority is None
+                else getattr(authority, "failure_record", None),
+                hook_lifecycle=None if authority is None else authority.lifecycle,
+                initialized=authority is not None,
+                inclusive_times_are_additive=False,
+                source_success_credit=False,
+            ),
             **result,
         ),
     )
@@ -724,26 +1231,24 @@ def supervised_launch(prepared, digest, release, case, output):
 
 def _software_selection(group, items):
     """Select by function name, excluding output-directory pytest keywords."""
-    if group != "worklog":
+    if group not in ("worklog", "authority-timing"):
         return list(items), []
+    terms = (
+        ("authority_timing", "stage_timing", "repair_c5")
+        if group == "authority-timing"
+        else (
+            "worklog",
+            "recorder",
+            "profiler",
+            "recursive_helper_work",
+            "literal_kernel_entries",
+            "stage_timing",
+        )
+    )
     selected, deselected = [], []
     for item in items:
         name = getattr(item, "originalname", None) or item.name.split("[", 1)[0]
-        destination = (
-            selected
-            if any(
-                term in name
-                for term in (
-                    "worklog",
-                    "recorder",
-                    "profiler",
-                    "recursive_helper_work",
-                    "literal_kernel_entries",
-                    "stage_timing",
-                )
-            )
-            else deselected
-        )
+        destination = selected if any(term in name for term in terms) else deselected
         destination.append(item)
     return selected, deselected
 
@@ -812,7 +1317,7 @@ def software_child(output, group="all"):
             "/dev/null",
             "-p",
             "no:cacheprovider",
-            *(str(ROOT / p) for p in TESTS),
+            *(str(ROOT / p) for p in (TESTS[:1] if group == "authority-timing" else TESTS)),
             "--junitxml=" + str(output / "tests.xml"),
             "--basetemp=" + str(output / "tmp"),
         ]

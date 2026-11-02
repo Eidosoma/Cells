@@ -189,7 +189,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   the reviewed network dependency. This accepts the source/software contracts;
   genuine parameter construction and complete native initialization remain open.
 
-- **Current parallel work (1 November):** The multi-cell original-source
+- **Populated tissue qualification:** The multi-cell original-source
   comparison through `cell_index` is now reviewed and accepted within that
   construction boundary: three final caches, two random-state records and
   five alias markers match, with runtime provenance verified. Root's first
@@ -292,9 +292,20 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   Final runtime/work-counter records and the active partial geometry are absent.
   Late durable rows show repeated tree-query/check cycles with about 4.10 million
   counted entries between consecutive native append observations. These counts
-  do not attribute CPU time or establish a speed comparison. Root is adding
-  bounded timing around the exact ownership/source/graph checks and tree calls,
-  preserving all existing guards, before selecting the next performance change.
+  do not attribute CPU time or establish a speed comparison. Root's bounded
+  timing observer for the exact ownership/source/graph checks and tree calls
+  is [source- and software-reviewed](/mnt/workspaces/Cells/native-multi-cell-authority-timing-20261102-01/root-source-review-02.json).
+  **68 blocked controls pass, 61 deselected, in 9.82 seconds / 137.0 MiB
+  sampled peak RSS**, with zero forbidden entries. All 828 frozen files,
+  279 loaded producer records and 113 timing snapshots verify. The repairs
+  protect hook cleanup independently, retain source errors during capture
+  failures, and exclude the observer's own clock bookkeeping from recursive
+  timing while preserving inherited guards. Earlier 49- and 63-pass images
+  and three lint failures remain separately bound. Inclusive timing contains
+  observer overhead and is non-additive; opaque C/Cython calls can remain
+  unobserved, and periodic durability requires profile events. The two Git
+  tools/tests are integrated for future diagnostic preparation; production
+  checks and numerical equations are unchanged.
   No actual retry has been launched; the earlier failed images remain unchanged.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
