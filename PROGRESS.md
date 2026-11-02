@@ -58,15 +58,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   **24 blocked controls pass at that delivery's final source; 14 older-image
   passes remain separate.** All 18 terminal outcomes, four 532-file snapshots and 1,693
   selected loaded-producer bindings verify, including the preserved timeout
-  and lint failure. The [latest source repair is reviewed](/mnt/workspaces/Cells/native-parameter-colormap-residual-source-repair-20261102-01/root-review-02.json):
-  all 532 frozen payloads and four current owned files verify. Helper/code and
+  and lint failure. The [earlier source repair is reviewed](/mnt/workspaces/Cells/native-parameter-colormap-residual-source-repair-20261102-01/root-review-02.json):
+  all 532 frozen payloads and four owned files verify at that image. Helper/code and
   actual NumPy implementation-role binding are source-closed; inherited
-  registry mutation is checked before foreign dispatch. **35 prior plus 19
-  new controls remain unrun.** Three corrections remain: independently recover
-  hooks during source unwind, stop reporting callbacks when required hooks
-  cannot be restored, and assert the intended first-error precedence in one
-  control. Key will batch these with the related WorldReady cleanup below,
-  then run the affected blocked controls under unchanged limits. State/constants
+  registry mutation is checked before foreign dispatch. Its 35 prior plus 19
+  written controls retain their original evidence scope. The subsequent
+  combined CM/WR cleanup repairs independent hook recovery, sticky reporting
+  stops and first-error precedence. The consolidated source review below
+  identifies three remaining seams; its new software batch is not yet accepted.
+  State/constants
   keep their historical producer pins; no actual library or native admission
   follows from synthetic helper controls.
   The subsequent
@@ -222,16 +222,18 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   `load.body[203:218]`: late world stores from line 1127 and the final native
   ion-profile call. The six new remainder/construction source, test and runner
   files retain their [original source review](/mnt/workspaces/Cells/native-parameter-world-ready-source-preparation-20261102-01/root-review.json).
-  The [cleanup successor is now source-reviewed](/mnt/workspaces/Cells/native-parameter-WR-cleanup-residual-source-repair-20261102-01/root-review.json):
-  all 541 frozen payloads and six current owned pins verify. **50 prior plus
-  27 new WR controls remain unrun.** Exact native load/profile bodies and the
-  three world-construction files are unchanged. Recovery-helper entry and
-  final post-writer hook sampling are repaired. One shared gap remains:
-  bookkeeping/probes/formatting can continue after an observer clears a hook,
-  before restoration. Key's combined CM/WR batch must confirm required hooks
-  before each callback and stop metadata continuation permanently if recovery
-  fails; final cleanup cannot rearm it. Focused blocked software is authorized
-  after the fixes and exact source freeze, starting with cheap guard controls.
+  The [earlier cleanup successor remains source-reviewed](/mnt/workspaces/Cells/native-parameter-WR-cleanup-residual-source-repair-20261102-01/root-review.json)
+  at its own 541-file image. Key's [combined CM/WR preparation](/mnt/workspaces/Cells/native-parameter-CM-WR-guarded-cleanup-repair-20261102-01/preparation.json)
+  declares **150 blocked controls across 39 exact groups**, with results pending.
+  Root's [consolidated source review](/mnt/workspaces/Cells/native-parameter-CM-WR-guarded-cleanup-repair-20261102-01/root-source-review.json)
+  confirms sticky stops before later reporting callbacks and independent
+  cleanup. Three corrections remain: retain the original CM exception in
+  `source_error` as well as its cause; create the launcher's directory before
+  guard entry; prevent cause-attribute dispatch after a hook-clearing formatter.
+  These are source findings, not inferred batch outcomes. One current terminal
+  artifact check is authorized before changing bound files, then one combined
+  repair batch starting with cheap blocked seam/launcher controls. Exact
+  selectors, limits, failure retention and native load/profile bodies stay fixed.
   The genuine constants-to-remainder handoff is still absent, with its producer
   pin explicitly unbound; source and native owner execution remain held.
   The world-ready owner must retain complete same-parameter load history and
@@ -471,8 +473,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   loaded targets separate callable, descriptor, lineage and cache checks;
   the recorder, 32-target cap, production validation and numerical code are
   unchanged. The new image binds 828 payloads / 279 loaded producers with no
-  checkout drift. No diagnostic retry, speedup claim or new parity credit;
-  a future actual diagnostic requires its own prepared image and review.
+  checkout drift. [Diagnostic 08 is now launched detached](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-08/LAUNCH.json).
+  Its [preflight review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-08.json)
+  verifies **828 frozen files / 609 external pins**; only the two reviewed
+  timing files differ from diagnostic 07. CPU 2, one thread, **1 GiB /
+  1,800 seconds / 8 GiB reserve**, inputs and numerical code are unchanged.
+  Metadata preparation passed in 76.36 seconds; a review-reader schema error
+  was retained and corrected before release. Durable result/failure artifacts
+  await a requested status check; no automatic polling, retry, speedup claim
+  or new parity credit.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
