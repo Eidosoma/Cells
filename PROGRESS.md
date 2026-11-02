@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-01 UTC.
+Last updated: 2026-11-02 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -29,11 +29,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   and is committed; its initial test-harness failure is preserved. Launch
   inputs and frozen source are verified. Terminal results have not been
   queried; Root owns their review on the next requested status check. Key's
-  network/GRN repairs are reviewed; Key is completing the constructor
-  continuation and closed-claim validation needed by Specialist's same-phase
-  tissue-handler attachment. The standalone handler attachment is already
+  network/GRN and closed-claim repairs are reviewed. Specialist can now bind
+  Key's tested constructor-continuation API for same-phase tissue-handler
+  attachment. The standalone handler attachment is already
   reviewed; its earlier scope message does not reopen that work.
-  Specialist's phase-cache results remain pending their requested review. The relayed
+  Specialist's requested cache status check found a controller failure after
+  13 passing controls; 31 were not launched. Controller repair and a fresh
+  continuation of those remaining checks are assigned. The relayed
   original mapping-tool handoff is historical; its reviewed replacements remain
   in Git, with positive native/reference executions held.
 
@@ -50,9 +52,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   controls](/mnt/workspaces/Cells/native-parameter-dyna-construction-development-20261101-01/root-review-01.json),
   **63.20 seconds / 239.5 MiB sampled peak RSS**. All nine outcomes are
   checked, including the preserved lint failure. Active claims retain the
-  original parameter/lease and consume failed attempts. Its closed record
-  alone does not validate later child use; Key's separate `validate_closed`
-  successor and Specialist's actual phase attachment remain pending.
+  original parameter/lease and consume failed attempts. The [closed-validator
+  successor is now reviewed](/mnt/workspaces/Cells/native-parameter-dyna-closed-validation-development-20261101-01/root-review.json):
+  **62 fresh blocked controls pass, ten new and 52 affected**, in **76.50
+  seconds / 247.4 MiB sampled peak RSS**. All five outcomes and 19 complete
+  diagnostics are checked. `validate_closed` checks the exact original lease,
+  retained record and current parameter/runtime relationships under read-only
+  inspection, without reopening construction. Specialist may explicitly adopt
+  this interface; its own cache ancestry, handler execution and phase attachment
+  remain separate prerequisites. The source-only intermediate and prior 52
+  controls retain their original evidence scope.
+  The [phase-cache batch disposition](/mnt/workspaces/Cells/native-phase-caches-20261101-01/source-result-02.json)
+  retains **13 passing controls and 31 unrun controls**: the controller failed
+  while writing its mutable progress receipt a second time. This is a software
+  orchestration failure, without completed cache or native-phase qualification.
+  The failed output is preserved; the assigned repair will use a fresh image
+  for the unrun controls.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
