@@ -134,11 +134,19 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   empty native guards and four complete diagnostics. The larger batch took
   **78.74 seconds / 236.1 MiB sampled peak RSS**. All nine terminal outcomes,
   including the initial lint failure, are recorded in the completion ledger.
-  Producer adoption remains blocked by one source finding: the successor must
-  retain all historical original-Lease guard and association checks without
-  invoking the stale pre-mutation state validator. Key owns that focused repair.
-  Root performed read-only source/evidence review; no new tests, native calls
-  or detached-job queries were made.
+  That image's historical original-Lease association finding is closed by the
+  [reviewed focused repair](/mnt/workspaces/Cells/native-parameter-SEED-lease-repair-20261102-01/root-review.json).
+  The sole production change reuses the existing metadata check without
+  invoking stale parameter-state validation. **20 controls pass, 18 new and
+  two affected**, in **58.35 seconds / 231.3 MiB sampled peak RSS**; all eight
+  outcomes are checked, including the preserved pre-fix counterexample.
+  Specialist may explicitly adopt the repaired producer and review. The prior
+  46 controls retain their own source binding; actual phase construction and
+  scientific release remain held. Key's next assignment is the next contiguous
+  parameter prerequisite after the modulator block, selected by inspection of
+  the genuine initialization path. Specialist owns the pending cache-result
+  disposition and subsequent cache/handler/tail integration. Root owns saved
+  result review, integration and the populated-tissue/electrical qualification.
 
 - **Network-file loading:** [All eight saved outcomes are reviewed](/mnt/workspaces/Cells/native-parameter-network-load-development-20261101-01/root-review.json),
   including the final **35 blocked controls** and the earlier **20-pass,
