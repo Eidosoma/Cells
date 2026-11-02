@@ -104,9 +104,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   confirms that Key's existing read-only closed claim cannot authorize this
   parameter mutation. After the current modulator checks, Key owns a separate
   one-shot mutation/closed-validation contract on the exact retained claim,
-  lease and parameter object. Specialist owns four new tail source/test/runner
-  files; Root owns integration and review. Existing cache and dyna files stay
-  fixed while their prerequisites remain pending. No tail execution, INIT/SIM
+  lease and parameter object. A second verified prerequisite is dispatch:
+  the actual phase's two helper wrappers still bind the closed assembly context.
+  Specialist owns four new tail source/test/runner files and, in a later
+  integration window, narrowly scoped assembly dispatch, dyna forwarding and
+  dependent cache/dyna producer-pin updates. The original phase instance,
+  runtime methods and registry relationships must be retained. Existing
+  assembly/cache/dyna files stay fixed until their pending source/software
+  prerequisites permit those changes; pin updates alone do not satisfy them.
+  Root owns integration and review. No tail execution, INIT/SIM
   kind change or additional native/physical admission is authorized by this
   source preparation.
 
