@@ -254,28 +254,26 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   tail use separate claims. The proposed WorldReady route must instead retain
   one active claim from before phase allocation through the constructor tail.
   The three new `betse_native_world_phase_construction` driver, test and runner
-  files now have a [source-reviewed residual repair successor](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/residual-repairs-01/root-review.json).
+  files now have a [source- and software-reviewed harness successor](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/harness-repairs-01/root-review.json).
   The draft performs fallible phase sealing inside the claim and requires
   exact successful closed-record validation before publication. All three
   residuals are source-closed: actual comparator name resolution plus an
   independent identity comparison; refusal after caught release-time reentry;
   and exact-token recovery after reservation-return observation failure.
-  The earlier 87-case image remains failed: 85 call passes, two call failures
-  and teardown errors on those same two cases; its 15 residual controls passed.
-  The [new probe-construction correction is reviewed](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/guard-policy-control-repair-01/root-review.json):
-  **all 19 selected cases pass all three phases, but the aggregate remains
-  failed because 21 ordinary-named guard receipts include two nested metadata
-  controls.** This is a 19-case image, not completion of the authorized 87-case
-  suite. The 15 residual cases are repeated, alongside four guard controls.
-  Root verified 555 artifact pins, 435 frozen files and 12 actual producers;
-  the worker completed in 9.862 seconds with 48,488,448 bytes sampled peak RSS.
-  Two deliberately rejected generated probes retain separate classified
-  receipts, while aggregate zero-entry certification remains unavailable.
-  Current test-only source also classifies passing callback, misleading-path
-  and cleanup-control receipts; it awaits its own result binding. The existing
-  one-run 87-case authorization continues without a duplicate launch. Production
-  and shared runners stay fixed; all earlier failures and source images remain
-  separate. No actual owner construction is authorized.
+  **The authorized same-87-case suite now passes**, with the original names,
+  order and selector, all 261 setup/call/teardown reports passing, and exactly
+  87 empty ordinary guard receipts. Eight nested metadata receipts and two
+  deliberately rejected generated probes are retained under separate names;
+  exact node and attempt assertions precede classification. The production
+  driver, runner, blockade fixture and shared collector are unchanged. Root
+  verified 845 artifact pins, 435 frozen files, 269 runtime origins and 12
+  actual producers. The worker took **10.383 seconds / 48,652,288 bytes sampled
+  peak RSS**, within unchanged limits; final hooks and aggregate guards pass.
+  Only three metadata test bodies/imports changed. This closes the WPC harness
+  repair without another run. The earlier 85-pass/two-failure image and the
+  [19-pass worker with failed aggregate accounting](/mnt/workspaces/Cells/native-world-phase-construction-20261102-01/guard-policy-control-repair-01/root-review.json)
+  remain failed at their own source images. No actual owner construction is
+  authorized; Specialist's separate tail hook-recovery correction remains next.
   Missing Key/stage producers remain explicit refusals, and the five existing
   phase/world-prefix drivers' integration window stays closed. Existing
   production hooks, legacy APIs and literals are outside this repair scope;

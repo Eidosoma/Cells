@@ -4,6 +4,7 @@ import json
 import os
 import sys
 from contextlib import contextmanager
+from types import CodeType, FunctionType
 from types import SimpleNamespace as NS
 
 import pytest
@@ -783,6 +784,11 @@ def test_actual_validation_reports_callback_is_allowed_by_exact_native_guard(tmp
         )
     assert not state.evidence_errors and state.primary is None
     assert len(list((directory / "reports").iterdir())) == 1
+    receipt = directory / "native-blocked.json"
+    saved = json.loads(receipt.read_text())
+    assert saved["nodeid"] == "metadata::actual_reports_callback"
+    assert saved["attempted"] == []
+    receipt.rename(directory / "callback-control-guard.json")
 
 
 @pytest.mark.parametrize("policy", ["native_path", "forbidden_module", "misleading_path"])
@@ -804,19 +810,47 @@ def test_exact_guard_distinguishes_native_root_from_metadata_labels(tmp_path, po
             else "validation.betse.metadata_probe"
         ),
     )
-    exec(compile("def probe():\n    calls.append('body')\n", filename, "exec"), namespace)
+    module_code = compile("def probe():\n    calls.append('body')\n", filename, "exec")
+    function_code = next(value for value in module_code.co_consts if type(value) is CodeType)
+    probe = FunctionType(function_code, namespace)
     if policy == "misleading_path":
         with _blockade(request, directory):
-            namespace["probe"]()
+            probe()
         assert calls == ["body"]
     else:
         with pytest.raises(AssertionError, match="entry forbidden"):
             with _blockade(request, directory):
-                namespace["probe"]()
+                probe()
         assert calls == []
-    saved = json.loads((directory / "native-blocked.json").read_text())
-    assert len(saved["attempted"]) == (0 if policy == "misleading_path" else 1)
+    # These nested generated-code controls are not ordinary per-case source
+    # guard receipts. Validate their exact known attempt before classifying;
+    # an unknown attempt stays an ordinary receipt and fails this test.
+    receipt = directory / "native-blocked.json"
+    saved = json.loads(receipt.read_text())
+    expected_attempts = [] if policy == "misleading_path" else [[filename, "probe"]]
+    assert saved["attempted"] == expected_attempts
+    assert saved["nodeid"] == "metadata::exact_guard::" + policy
     assert saved["source_native_or_scientific_credit"] == 0
+    receipt = receipt.rename(
+        directory
+        / (
+            "policy-control-guard.json"
+            if policy == "misleading_path"
+            else "synthetic-policy-attempt.json"
+        )
+    )
+    (directory / "policy-classification.json").write_text(
+        json.dumps(
+            dict(
+                generated_metadata_code=True,
+                policy=policy,
+                original_native_body_loaded_or_executed=False,
+                delegate_calls=calls,
+                guard_attempt_receipt=receipt.name,
+                expected_attempts=0 if policy == "misleading_path" else 1,
+            )
+        )
+    )
 
 
 @pytest.mark.parametrize("primary_kind", ["none", "normal", "falsey"])
@@ -871,8 +905,27 @@ def test_fixture_cleanup_receipt_failures_preserve_primary_and_attempt_both_hook
         assert state.hooks_restored is True
         assert state.cleanup_errors or state.evidence_errors
         assert getters[0]() is before[0] and getters[1]() is before[1]
+        receipt = directory / "native-blocked.json"
         if failure not in ("receipt", "all"):
-            assert (directory / "native-blocked.json").is_file()
+            saved = json.loads(receipt.read_text())
+            assert saved["nodeid"] == "metadata::fixture_cleanup"
+            assert saved["attempted"] == []
+            receipt.rename(directory / "cleanup-control-guard.json")
+        else:
+            assert not receipt.exists()
+        (directory / "cleanup-classification.json").write_text(
+            json.dumps(
+                dict(
+                    metadata_cleanup_control=True,
+                    primary_kind=primary_kind,
+                    injected_failure=failure,
+                    original_primary_preserved=(primary is None or caught.value is primary),
+                    final_hooks_restored=state.hooks_restored,
+                    cleanup_or_capture_errors_retained=True,
+                    native_source_credit=0,
+                )
+            )
+        )
     finally:
         setters[1](before[1])
         setters[0](before[0])
