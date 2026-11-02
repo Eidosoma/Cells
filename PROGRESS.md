@@ -46,10 +46,13 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   retain their attempted entries separately from ordinary empty guards. The
   unchanged production candidate and original 35-control image retain separate
   source/evidence scope. The three current files are integrated as guarded source.
-  Key is implementing the next four original colormap assignments at lines
-  1007–1014. The current prerequisite captures the selected registry entries'
-  arrays, aliases and callback source without evaluating callbacks; genuine
-  lookup/result ownership and actual execution remain held.
+  Key reports delivery of the four original colormap assignments at lines
+  1007–1014; their source/result review remains pending. The subsequent
+  [initializer-constant block through line 1125 is implemented with ten
+  remaining software cases detached](/mnt/workspaces/Cells/native-parameter-initializer-constants-development-20261102-01/pending.json).
+  That job remains unqueried. Key is inspecting the remaining parameter stores
+  and the fresh world-ready construction contract before phase birth; actual
+  native parameter construction remains held.
   Specialist's
   same-phase handler entry and error-precedence repairs are source-reviewed and
   integrated with qualification still held.
@@ -319,7 +322,17 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   unobserved, and periodic durability requires profile events. The two Git
   tools/tests are integrated for future diagnostic preparation; production
   checks and numerical equations are unchanged.
-  No actual retry has been launched; the earlier failed images remain unchanged.
+  The [sixth tissue diagnostic is now launched, unqueried](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-launch-06/LAUNCH.json).
+  Its [exact preparation review](/mnt/workspaces/Cells/native-multi-cell-environment-qualification-20261101-01/root-preparation-review-06.json)
+  verifies all 828 payloads against the reviewed timing-software image and all
+  609 unchanged external inputs. One square-tissue case runs detached on CPU 2,
+  one thread, with the unchanged **1,800-second / 1-GiB / 8-GiB reserve** limits
+  and 12-GiB launch gate. Inputs, equations and the `make_maskM` endpoint are
+  unchanged. The added timing records target the unresolved authority-check
+  cost; they do not themselves establish a performance or parity result.
+  Durable result/failure and timing evidence will be reviewed on a requested
+  status check; no automatic polling or retry. The earlier failed images stay
+  unchanged, and this launch grants no scientific or physical acceptance.
   Key Dev's INIT-to-continuity evidence repair is reviewed with 155 focused
   software passes; actual INIT/SIM qualification remains held. Key delivered
   the standalone material primitive beyond three calls with 51 arithmetic-blocked
