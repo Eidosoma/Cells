@@ -96,57 +96,40 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   1 GiB / 480-second / 8 GiB-reserve guards: **1200.54 seconds total worker
   time, 240.4 MiB maximum sampled RSS**, no forbidden native entries. Root
   verified 93 setup/call/teardown reports, 31 guard/refusal pairs, eight frozen
-  snapshots and all five current owned files. The earlier 13 and remaining 31
+  snapshots and all five then-current owned files. The earlier 13 and remaining 31
   cover the original 44 controls across retained images, not one new run.
   Six groups retain the older runtime-inventory implementation; only the last
   uses the reviewed streaming successor. Historical Git/checkout notices in
   two groups remain distinct from passed frozen execution. This clears the
-  cache software prerequisite; actual native construction and the new
-  handler/tail consumer's own validation remain held.
-  The [same-phase tissue-handler consumer is now integrated as guarded source](/mnt/workspaces/Cells/native-phase-dyna-20261102-01/root-integration-review-01.json).
-  It retains the actual phase and parameter claim, rejects callback re-entry
-  before selected handler bodies execute, and preserves the first entry refusal
-  when observation also fails. All four files compile and pass lint/format;
-  the initial one-character line-length failure is preserved, and the formatting
-  correction has an identical syntax tree. **Eleven repair controls are written
-  but unrun; no native handler body or behavioural test was executed in this
-  integration.** Required cache-continuation hooks are now assigned in the
-  coordinated seven-file integration; the positive path remains held until
-  those hooks and the consumer controls are complete.
-  The next source feature is the **SEED constructor tail**: the original helpers
-  attach `sim.dyna`, create `p._run_sim = False`, return before temporal stores,
-  and retain `p.init_export_dirname` as the phase export path. Source inspection
-  confirms that Key's existing read-only closed claim cannot authorize this
-  parameter mutation. Key's separately reviewed one-shot mutation and closed
-  validation contract now supplies that prerequisite on the exact retained
-  claim, lease and parameter object. A second verified prerequisite is dispatch:
-  the actual phase's two helper wrappers still bind the closed assembly context.
-  Specialist owns four new tail source/test/runner files and, in a later
-  integration window, narrowly scoped assembly dispatch, dyna forwarding and
-  dependent cache/dyna producer-pin updates. The original phase instance,
-  runtime methods and registry relationships must be retained. The cache batch
-  is now terminal and the repaired Key interface is reviewed. Specialist has an
-  explicit implementation window for the minimal coordinated hooks and producer
-  bindings, followed by isolated controls and a valid issued synthetic-chain
-  pilot. Historical execution images stay fixed; pin updates alone do not
-  satisfy the runtime prerequisites.
-  Root owns integration and review. No tail execution, INIT/SIM
-  kind change or additional native/physical admission is authorized by this
-  source preparation.
-  The four new tail files are present as unvalidated preparation. The
-  [consolidated source review closes TAIL-S1 through TAIL-S6](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-04.json):
-  stable ancestry excludes growing tail logs; hook setup/cleanup preserves
-  primary errors; trace/profile share admission before inherited callbacks;
-  rejected direct calls retain attempt records; and cache checks retain the
-  actual producer-issued `(context, role)` tuple and its identity. Preparation
-  04 binds those production repairs. The separately inspected test adds only
-  the exception class required by its isolated metadata fixture.
-  [Preparation 05](/mnt/workspaces/Cells/native-phase-tail-20261102-01/source-preparation-05.json)
-  now freezes exactly those four already-reviewed files, including the fixture
-  correction; preparation 04 and prior evidence remain unchanged. **All controls
-  remain unrun.** No further source repair is requested for these six findings.
-  Coordinated assembly/cache/dyna source integration is now assigned to Specialist;
-  native execution and scientific gates remain held.
+  cache software prerequisite; actual native construction remains held.
+  The [seven-file phase continuation is now integrated as reviewed guarded source](/mnt/workspaces/Cells/native-phase-integration-20261102-01/root-review-01.json).
+  Assembly dispatch, cache-to-handler retirement and handler-to-SEED-tail
+  forwarding retain the original phase, classes, wrappers, delegates, cache
+  tuples and registry relationships. Key's repaired mutation API is explicitly
+  bound. The original helpers attach `sim.dyna`, create `p._run_sim = False`,
+  return before temporal stores, and retain the exact `p.init_export_dirname`
+  reference. No stale pre-mutation parameter validator is reopened.
+  The earlier [TAIL-S1 through TAIL-S6 source repairs](/mnt/workspaces/Cells/native-phase-tail-20261102-01/root-source-review-04.json)
+  remain intact: stable ancestry, protected hook restoration, shared entry
+  admission, retained rejected attempts and actual producer-issued cache tuple
+  identities. Their preparation images remain preserved separately.
+  [Saved integration evidence is reviewed](/mnt/workspaces/Cells/native-phase-integration-20261102-01/root-saved-evidence-review-01.json):
+  **18 distinct isolated controls across their retained images**, one genuine
+  issued synthetic-chain pilot (**263.69 seconds / 232.2 MiB sampled RSS**),
+  and the final metadata dispatch control pass with zero recorded native
+  entries in those completed groups. The five current production files match
+  the passed pilot exactly; later test/runner images retain separate bindings.
+  The initial selector timeout, isolated fixture failure and controller
+  pre-launch refusal remain preserved. The timeout has no complete aggregate
+  zero-entry certification. Lint and format checks pass.
+  **Full software acceptance remains pending.** Detached integration batch 02
+  declares 73 single-control groups: 62 tail controls plus 11 original dyna
+  repair controls, under unchanged CPU 6, one-thread, 1 GiB / 480-second /
+  8 GiB-reserve guards. Only launch/controller metadata has been reviewed;
+  no terminal or per-group status was queried. All seven selected source bytes
+  stay fixed during the batch, with no automatic polling or retry. This is
+  SEED-only source/software work; INIT/SIM, actual native construction, full
+  phase, physical and checkpoint admission remain held.
   Key's [new SEED mutation API source and saved results are reviewed](/mnt/workspaces/Cells/native-parameter-SEED-tail-development-20261102-01/root-review.json):
   **46 distinct blocked controls pass across two batches (5 + 41)**, with 46
   empty native guards and four complete diagnostics. The larger batch took
@@ -158,8 +141,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   invoking stale parameter-state validation. **20 controls pass, 18 new and
   two affected**, in **58.35 seconds / 231.3 MiB sampled peak RSS**; all eight
   outcomes are checked, including the preserved pre-fix counterexample.
-  Specialist may explicitly adopt the repaired producer and review. The prior
-  46 controls retain their own source binding; actual phase construction and
+  Specialist explicitly adopted the repaired producer and review in the
+  integrated tail. The prior 46 controls retain their own source binding;
+  actual phase construction and
   scientific release remain held. Key's next assignment is the next contiguous
   parameter prerequisite after the modulator block, selected by inspection of
   the genuine initialization path. Specialist owns the cleared

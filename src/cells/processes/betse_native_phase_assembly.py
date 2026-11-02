@@ -11,6 +11,7 @@ import builtins
 import hashlib
 import importlib
 import os
+import sys
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -46,6 +47,8 @@ FIELDS = ("callbacks", "cells", "kind", "p", "sim")
 _PREFIX = source.PhaseConstructorPrefix.construct
 _REQUESTS, _CONSUMED, _CLAIMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(5))
 _FORWARDED = WeakKeyDictionary()
+_TAIL_ROUTES = WeakKeyDictionary()
+TAIL_METHODS = ("_init_kludge", "_init_kludge_time")
 _LOCK, _ACTIVE = RLock(), []
 _DESCRIPTORS = WeakSet()
 
@@ -208,6 +211,9 @@ def _bindings():
         _native_bindings,
         _guard,
         _check,
+        _check_runtime_authority,
+        _tail_route,
+        _claim_tail_route,
         _native_call,
         _import_native,
         _namespace,
@@ -239,6 +245,8 @@ def _bindings():
         _ISSUED,
         _OBJECTS,
         _FORWARDED,
+        _TAIL_ROUTES,
+        TAIL_METHODS,
         _LOCK,
         _ACTIVE,
         LAW_ID,
@@ -293,6 +301,26 @@ def _native_bindings(context):
 
 
 def _guard(context):
+    if not context.active and (
+        hasattr(context, "tail_transition") or getattr(context, "phase", None) in _TAIL_ROUTES
+    ):
+        tail, _, transition = _tail_route(context, active=True)
+        caller = sys._getframe(1)
+        wrapper = caller.f_back if caller.f_code is _native_call.__code__ else caller
+        method = wrapper.f_locals.get("method")
+        member = vars(type(context.phase)).get(method)
+        if (
+            method not in TAIL_METHODS
+            or type(member) is not FunctionType
+            or wrapper.f_code is not member.__code__
+            or wrapper.f_locals.get("context") is not context
+            or wrapper.f_locals.get("actual") is not context.phase
+            or wrapper.f_locals.get("name") != "SimPhase"
+            or wrapper.f_locals.get("delegate")
+            is not getattr(context.factories["SimPhase"], method)
+        ):
+            tail._reject_entry(transition, None, "Unadmitted inherited phase entry")
+        return
     inherited._stop(context)
     if (
         not context.active
@@ -304,7 +332,64 @@ def _guard(context):
         raise AssemblyRejected("Phase-prefix native entry unavailable", stage="entry")
 
 
-def _check(context):
+def _tail_route(context, *, active=False):
+    transition = getattr(context, "tail_transition", None)
+    tail = sys.modules.get("cells.processes.betse_native_phase_tail")
+    dyna = sys.modules.get("cells.processes.betse_native_phase_dyna")
+    if (
+        transition is None
+        or _TAIL_ROUTES.get(context.phase) is not transition
+        or tail is None
+        or dyna is None
+        or type(transition.request) is not tail.Request
+        or tail._CONSUMED.get(transition.request) is not transition
+        or tail._REQUESTS.get(transition.request) is not transition.refs
+        or dyna._ISSUED.get(transition.request.dyna_owner) is not transition.parent
+        or dyna._FORWARDED.get(transition.request.dyna_owner) is not transition
+        or getattr(transition.parent, "tail_transition", None) is not transition
+        or transition.parent.parent.parent is not context
+        or transition.phase is not context.phase
+        or transition.p is not context.p
+        or transition.refs[8] is not context
+        or transition.thread != context.thread
+        or context.thread != get_ident()
+    ):
+        raise ValueError("Actual same-phase tail route/retirement changed")
+    if active:
+        tail._guard(transition)
+    return tail, dyna, transition
+
+
+def _claim_tail_route(context, *, transition):
+    """Bind the retired actual phase; never replace wrappers/classes/globals."""
+    with _LOCK:
+        if hasattr(context, "tail_transition") or context.phase in _TAIL_ROUTES:
+            raise AssemblyRejected("SEED tail route already consumed", stage="tail_consumed")
+        dyna = sys.modules.get("cells.processes.betse_native_phase_dyna")
+        tail = sys.modules.get("cells.processes.betse_native_phase_tail")
+        if (
+            dyna is None
+            or tail is None
+            or transition.parent.parent.parent is not context
+            or type(transition.request) is not tail.Request
+            or tail._CONSUMED.get(transition.request) is not transition
+            or dyna._ISSUED.get(transition.request.dyna_owner) is not transition.parent
+            or dyna._FORWARDED.get(transition.request.dyna_owner) is not transition
+            or getattr(transition.parent, "tail_transition", None) is not transition
+            or transition.phase is not context.phase
+            or transition.p is not context.p
+            or context.active
+            or context.invalid
+            or transition.thread != get_ident()
+        ):
+            raise AssemblyRejected("Issued one-shot SEED tail route required", stage="tail_owner")
+        # Either marker alone prevents rearming a partial publication.
+        context.tail_transition = transition
+        _TAIL_ROUTES[context.phase] = transition
+        _tail_route(context, active=True)
+
+
+def _check_runtime_authority(context):
     if (
         context.invalid
         or context.thread != get_ident()
@@ -316,10 +401,10 @@ def _check(context):
         or _CLAIMED.get(context.request.parameters) is not context
     ):
         raise ValueError("Phase prefix one-shot claim changed")
-    parent = previous._validate(context.request.parameters)
+    parent = context.parents[0]
     callback = callbacks._validate(context.request.callbacks)
     if (
-        parent is not context.parents[0]
+        previous._ISSUED.get(context.request.parameters) is not parent
         or parent.p is not context.p
         or parent.trial is not context.parents[2]
         or parent.graph is not context.parents[3]
@@ -372,10 +457,41 @@ def _check(context):
             or claims._CONSTRUCTED.get(context.request.parameters) is not True
         ):
             raise ValueError("Closed successful source lease changed")
+    if hasattr(context, "phase"):
+        if any(
+            type(actual) is not context.runtime_types[role]
+            for role, actual in (
+                ("SimPhase", context.phase),
+                ("Cells", context.constructed.get("Cells")),
+                ("Simulator", context.constructed.get("Simulator")),
+            )
+            if actual is not None
+        ):
+            raise ValueError("Actual original phase runtime type changed")
+        for name, expected in (
+            ("callbacks", context.callback),
+            ("p", context.p),
+            ("kind", getattr(context, "kind", None)),
+            ("cells", context.constructed.get("Cells")),
+            ("sim", context.constructed.get("Simulator")),
+        ):
+            if name in vars(context.phase) and vars(context.phase)[name] is not expected:
+                raise ValueError("Original phase prefix alias changed: " + name)
+        if hasattr(context, "tail_transition") or context.phase in _TAIL_ROUTES:
+            _tail_route(context)
+
+
+def _check(context):
+    _check_runtime_authority(context)
+    if previous._validate(context.request.parameters) is not context.parents[0]:
+        raise ValueError("Original parameter source association changed")
 
 
 def _native_call(context, label, delegate, *args, **kwargs):
     _guard(context)
+    if not context.active:
+        _, dyna, _ = _tail_route(context, active=True)
+        return dyna._dispatch_tail(context, label, delegate, *args, **kwargs)
     _check(context)
     if label not in ("Cells.__init__", "Simulator.__init__"):
         raise AssemblyRejected("Method outside selected constructor prefix", stage="method")

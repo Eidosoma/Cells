@@ -27,7 +27,7 @@ from cells.processes import betse_native_tissue_handler_attachment as handler
 literal, aliases, core = handler.literal, handler.aliases, handler.core
 LAW_ID = "betse_same_issued_phase_selected_dyna_attachment@1"
 RELEASE = "CELLS_NATIVE_PHASE_DYNA_RELEASED"
-CACHE_SHA256 = "cbc1a5000a2674dae15937308414701e76671c32461d1ece7f1c81446b9a72b4"
+CACHE_SHA256 = "c8c6298b55d7eb0c41f3aedce411d275462135ef75d5f8a7a193285368d77a16"
 HANDLER_SHA256 = "c0d9b1f5375620464167c13bc07815c996284e1d78eb753942c560f80a15470b"
 KEY_MODULE = "cells.processes.betse_native_parameter_dyna_construction"
 KEY_FILE = "src/cells/processes/betse_native_parameter_dyna_construction.py"
@@ -52,6 +52,7 @@ BODY_CHILDREN = {
 _NATIVE = dict(handler._NATIVE)
 _ATTACH = source.PhaseDynaContinuation.attach
 _REQUESTS, _CONSUMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 _DESCRIPTOR_TYPES = WeakSet()
 
@@ -236,6 +237,10 @@ def _bindings():
         _bindings,
         _key_bindings,
         _check,
+        _check_runtime_authority,
+        _validate_completed,
+        _claim_for_tail,
+        _dispatch_tail,
         _guard,
         _closed_claim,
         _claim,
@@ -272,6 +277,7 @@ def _bindings():
         _CONSUMED,
         _ISSUED,
         _OBJECTS,
+        _FORWARDED,
         _LOCK,
         _ACTIVE,
         _DESCRIPTOR_TYPES,
@@ -342,7 +348,7 @@ def _closed_claim(context):
         raise ValueError("Original closed dyna claim record changed")
 
 
-def _check(context):
+def _check_runtime_authority(context):
     if (
         context.invalid
         or context.thread != get_ident()
@@ -378,12 +384,6 @@ def _check(context):
     if _key_api() is not context.key:
         raise ValueError("Key producer identity changed")
     literal._same(_key_bindings(context.key), context.key_bindings)
-    if hasattr(context, "before") and _old_snapshot(context).identity != context.before.identity:
-        raise ValueError("A field outside phase.dyna changed")
-    current = _old_graph(context)
-    literal._same(current[0], context.old_graph[0])
-    if current[1] != context.old_graph[1]:
-        raise ValueError("Inherited phase/cache reference edges changed")
     if "dyna" in vars(context.phase) and (
         not context.constructor_completed or context.phase.dyna is not context.handler
     ):
@@ -405,6 +405,20 @@ def _check(context):
             raise ValueError("Original dyna/factory object issuance changed")
     for name, cls in context.runtime_types.items():
         literal._same(_surface(cls), context.runtime_bindings[name])
+    if hasattr(context, "constructor_claim") and (
+        type(context.constructor_claim) is not getattr(context.key, KEY_CLAIM_TYPE)
+    ):
+        raise ValueError("Original typed dyna constructor claim changed")
+
+
+def _check(context):
+    _check_runtime_authority(context)
+    if hasattr(context, "before") and _old_snapshot(context).identity != context.before.identity:
+        raise ValueError("A field outside phase.dyna changed")
+    current = _old_graph(context)
+    literal._same(current[0], context.old_graph[0])
+    if current[1] != context.old_graph[1]:
+        raise ValueError("Inherited phase/cache reference edges changed")
     if hasattr(context, "constructor_claim"):
         if context.active:
             context.constructor_claim.check()
@@ -1028,26 +1042,18 @@ def _validate(owner):
     if type(owner) is not PhaseDynaOwner or owner not in _ISSUED:
         raise DynaRejected("Actual issued dyna child required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "tail_transition"):
+        raise DynaRejected(
+            "Dyna epoch consumed by SEED tail",
+            stage="forwarded",
+            request=context.request,
+            trial=context.trial,
+            partial=context,
+        )
     try:
         if context.active or context.owner is not owner:
             raise ValueError("Active/replaced dyna child")
-        _check(context)
-        if (
-            tuple(vars(context.phase)) != (*caches.previous.FIELDS, "cache", "dyna")
-            or context.phase.dyna is not context.handler
-            or not context.constructor_completed
-            or tuple(context.stages) != RETURN_ORDER
-            or context.method_stack
-            or set(context.method_claims) != set(METHODS)
-            or _entry_document(context) != context.trial.method_entries
-            or _snapshot(context).identity != context.trial.cache.identity
-            or _digest(trial_record(context.trial)) != context.trial.identity
-        ):
-            raise ValueError("Completed same-phase dyna state changed")
-        actual = _graph(context)
-        literal._same(actual[0], context.graph[0])
-        if actual[1] != context.graph[1]:
-            raise ValueError("Dyna reference edges changed")
+        _validate_completed(context)
     except BaseException as error:
         context.invalid = True
         raise DynaRejected(
@@ -1059,6 +1065,89 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _validate_completed(context):
+    _check(context)
+    if (
+        tuple(vars(context.phase)) != (*caches.previous.FIELDS, "cache", "dyna")
+        or context.phase.dyna is not context.handler
+        or not context.constructor_completed
+        or tuple(context.stages) != RETURN_ORDER
+        or context.method_stack
+        or set(context.method_claims) != set(METHODS)
+        or _entry_document(context) != context.trial.method_entries
+        or _snapshot(context).identity != context.trial.cache.identity
+        or _digest(trial_record(context.trial)) != context.trial.identity
+    ):
+        raise ValueError("Completed same-phase dyna state changed")
+    actual = _graph(context)
+    literal._same(actual[0], context.graph[0])
+    if actual[1] != context.graph[1]:
+        raise ValueError("Dyna reference edges changed")
+
+
+def _claim_for_tail(owner, *, expected, transition, entries):
+    with _LOCK:
+        context = _ISSUED.get(owner) if type(owner) is PhaseDynaOwner else None
+        if context is None or context is not expected or context.active or context.invalid:
+            raise DynaRejected("Actual closed dyna owner required", stage="dyna_owner")
+        if owner in _FORWARDED or hasattr(context, "tail_transition"):
+            raise DynaRejected("SEED tail attempt consumed", stage="forwarded")
+        tail = sys.modules.get("cells.processes.betse_native_phase_tail")
+        if (
+            tail is None
+            or type(transition.request) is not tail.Request
+            or (
+                tail._CONSUMED.get(transition.request) is not transition
+                or tail._REQUESTS.get(transition.request) is not transition.refs
+                or transition.parent is not context
+                or transition.request.dyna_owner is not owner
+                or entries is not transition.entries
+                or tuple(entries) != caches.previous.TAIL_METHODS
+                or transition.thread != get_ident()
+            )
+        ):
+            raise DynaRejected("Actual issued SEED tail attempt required", stage="tail_owner")
+        for name, function in entries.items():
+            if type(function) is not FunctionType or function.__globals__ is not vars(tail):
+                raise DynaRejected("Actual owned tail entry required", stage="tail_entry")
+            cells = dict(
+                zip(function.__code__.co_freevars, function.__closure__ or (), strict=True)
+            )
+            if (
+                cells.get("context") is None
+                or cells["context"].cell_contents is not transition
+                or (cells.get("name") is None or cells["name"].cell_contents != name)
+            ):
+                raise DynaRejected("Tail entry closure changed", stage="tail_entry")
+        context.tail_transition = transition
+        _FORWARDED[owner] = transition
+        _validate_completed(context)
+        if transition.invalid:
+            raise DynaRejected("Tail poisoned during authentication", stage="tail_owner")
+        caches.previous._claim_tail_route(context.parent.parent, transition=transition)
+        return context
+
+
+def _dispatch_tail(prefix, label, delegate, actual, *args, **kwargs):
+    tail, module, transition = caches.previous._tail_route(prefix, active=True)
+    method = label.removeprefix("SimPhase.")
+    caller = sys._getframe(1)
+    if (
+        module is not sys.modules[__name__]
+        or caller.f_code is not caches.previous._native_call.__code__
+        or caller.f_locals.get("context") is not prefix
+        or label != "SimPhase." + method
+        or method not in caches.previous.TAIL_METHODS
+        or actual is not prefix.phase
+        or args
+        or kwargs
+        or delegate is not getattr(prefix.factories["SimPhase"], method)
+    ):
+        tail._reject_entry(transition, None, "Unadmitted inherited tail dispatch")
+    wrapper = caller.f_back
+    return transition.entries[method](actual, source_frame=wrapper.f_back)
 
 
 def prepare(request, *, enabled=False):

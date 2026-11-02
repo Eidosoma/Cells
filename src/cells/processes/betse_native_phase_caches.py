@@ -27,7 +27,7 @@ aliases, core = previous.aliases, previous.core
 LAW_ID = "betse_same_live_phase_cache_constructors@1"
 MODE = "prepared_callback_seven_load_phase_cache_prefix"
 RELEASE = "CELLS_NATIVE_PHASE_CACHES_RELEASED"
-PARENT_SHA256 = "b19c4d7d96189e57cc05ab7b1b0855e610a14223c3e047ecd8f0ef74f41c1338"
+PARENT_SHA256 = "dd43316e55ff4d7f39aad4cb7bee87512c969633a513f1df95020a14f1a6e140"
 MODULES = {
     "SimPhaseCaches": "betse.science.math.cache.cacheabc",
     "SimPhaseCacheABC": "betse.science.math.cache.cacheabc",
@@ -54,6 +54,7 @@ _METHODS = dict(
     proxy=source.proxy_weak,
 )
 _REQUESTS, _CONSUMED, _ISSUED, _OBJECTS = (WeakKeyDictionary() for _ in range(4))
+_FORWARDED = WeakKeyDictionary()
 _LOCK, _ACTIVE = RLock(), []
 
 
@@ -250,6 +251,8 @@ def _bindings():
         _bindings,
         _guard,
         _check,
+        _check_runtime_authority,
+        _cache_relationships,
         _acquire,
         _native_bindings,
         _runtime_type,
@@ -266,6 +269,8 @@ def _bindings():
         _old_graph,
         _graph,
         _validate,
+        _validate_completed,
+        _claim_for_dyna,
         prepare,
         trial_record,
         require_phase,
@@ -284,6 +289,7 @@ def _bindings():
         _CONSUMED,
         _ISSUED,
         _OBJECTS,
+        _FORWARDED,
         _LOCK,
         _ACTIVE,
         LAW_ID,
@@ -313,7 +319,7 @@ def _guard(context):
         raise CacheConstructionRejected("Native cache entry unavailable", stage="source_entry")
 
 
-def _check(context):
+def _check_runtime_authority(context):
     if (
         context.invalid
         or context.thread != get_ident()
@@ -326,7 +332,7 @@ def _check(context):
         raise ValueError("Original phase-cache issuance/irreversible claim changed")
     # This retains original constructor/callback/parameter/closed-Lease checks.
     # The consumed prefix cache validator is deliberately not reopened.
-    previous._check(context.parent)
+    previous._check_runtime_authority(context.parent)
     if "cache" in vars(context.phase) and (
         not context.factory_returns
         or context.factory_returns[-1] != "SimPhaseCaches"
@@ -342,22 +348,27 @@ def _check(context):
     ):
         raise ValueError("Original phase/source/trial association changed")
     literal._same(_bindings(), context.bindings)
-    if _old_snapshot(context).identity != context.before.identity:
-        raise ValueError("A field outside the single cache assignment changed")
-    current = _old_graph(context)
-    literal._same(current[0], context.old_graph[0])
-    if current[1] != context.old_graph[1]:
-        raise ValueError("Original prefix reference edges changed")
     if hasattr(context, "native_bindings"):
         literal._same(_native_bindings(context), context.native_bindings)
     if hasattr(context, "scope_bindings"):
         literal._same(_scope_bindings(context), context.scope_bindings)
     for role, cls in context.runtime_types.items():
         literal._same(previous._surface(cls), context.runtime_bindings[role])
-    for role, obj in context.objects:
+    for index, (role, obj) in enumerate(context.objects):
         issued = _OBJECTS.get(obj)
-        if issued is None or issued[0] is not context or issued[1] != role:
+        if (
+            type(issued) is not tuple
+            or len(issued) != 2
+            or issued[0] is not context
+            or issued[1] != role
+        ):
             raise ValueError("Raw cache constructor object issuance changed")
+        if hasattr(context, "object_issuance") and (
+            index >= len(context.object_issuance) or issued is not context.object_issuance[index]
+        ):
+            raise ValueError("Original cache issuance tuple reference changed")
+    if hasattr(context, "object_issuance") and len(context.objects) != len(context.object_issuance):
+        raise ValueError("Original cache raw object roster changed")
     if hasattr(context, "modules"):
         aliases._check_modules()
         now = aliases._module_records()
@@ -365,6 +376,17 @@ def _check(context):
             actual = now.get(name)
             if type(actual) is not tuple or actual[0] is not record[0] or actual[1:] != record[1:]:
                 raise ValueError("Original cache import identity changed")
+
+
+def _check(context):
+    _check_runtime_authority(context)
+    previous._check(context.parent)
+    if _old_snapshot(context).identity != context.before.identity:
+        raise ValueError("A field outside the single cache assignment changed")
+    current = _old_graph(context)
+    literal._same(current[0], context.old_graph[0])
+    if current[1] != context.old_graph[1]:
+        raise ValueError("Original prefix reference edges changed")
 
 
 def _acquire(context):
@@ -480,8 +502,10 @@ def _make(context, role, /, *args, **kwargs):
     context.factory_attempts.append(role)
     cls = _runtime_type(context, role)
     actual = object.__new__(cls)
-    _OBJECTS[actual] = (context, role)
+    issued = (context, role)
+    _OBJECTS[actual] = issued
     context.objects.append((role, actual))
+    context.object_issuance.append(issued)
     context.constructed[role] = actual
     context.work.append(
         dict(
@@ -622,7 +646,7 @@ def _scope_bindings(context):
     return tuple(result)
 
 
-def _associations(context):
+def _cache_relationships(context):
     phase, made = context.phase, context.constructed
     body_order = (
         ("SimPhaseCaches", "SimPhaseCaches"),
@@ -633,7 +657,7 @@ def _associations(context):
         ("SimPhaseCacheABC", "SimPhaseCacheVectorFieldCells"),
     )
     if (
-        tuple(vars(phase)) != (*previous.FIELDS, "cache")
+        tuple(vars(phase))[: len(previous.FIELDS) + 1] != (*previous.FIELDS, "cache")
         or phase.cache is not made.get("SimPhaseCaches")
         or tuple(context.factory_attempts) != ROLES
         or tuple(context.factory_returns)
@@ -657,6 +681,22 @@ def _associations(context):
         or len(context.proxy_returns) != 4
     ):
         raise ValueError("Original phase-cache construction/assignment incomplete")
+    extra = tuple(vars(phase))[len(previous.FIELDS) + 1 :]
+    if extra:
+        dyna = getattr(context, "dyna_transition", None)
+        if (
+            dyna is None
+            or _FORWARDED.get(context.owner) is not dyna
+            or (
+                dyna.phase is not phase
+                or not dyna.constructor_completed
+                or phase.dyna is not dyna.handler
+                or extra not in (("dyna",), ("dyna", "export_dirname"))
+            )
+        ):
+            raise ValueError("Unowned phase extension after cache construction")
+        if len(extra) == 2:
+            previous._tail_route(context.parent)
     top, vector = phase.cache, made["SimPhaseCacheVectorCells"]
     if tuple(vars(top)) != ("upscaled", "vector", "vector_field") or (
         top.upscaled is not made["SimPhaseCacheUpscaled"]
@@ -679,6 +719,12 @@ def _associations(context):
             raise ValueError("Subcache no longer holds a real weak proxy to this phase")
     if vector.layer._phase is not vector._phase:
         raise ValueError("Existing vector proxy was not preserved by layer construction")
+
+
+def _associations(context):
+    if tuple(vars(context.phase)) != (*previous.FIELDS, "cache"):
+        raise ValueError("Default cache phase fields changed")
+    _cache_relationships(context)
 
 
 def _old_snapshot(context):
@@ -821,20 +867,18 @@ def _validate(owner):
     if type(owner) is not PhaseCachesOwner or owner not in _ISSUED:
         raise CacheConstructionRejected("Actual issued cache owner required", stage="owner")
     context = _ISSUED[owner]
+    if owner in _FORWARDED or hasattr(context, "dyna_transition"):
+        raise CacheConstructionRejected(
+            "Cache epoch consumed by dyna continuation",
+            stage="forwarded",
+            request=context.request,
+            trial=context.trial,
+            partial=context,
+        )
     try:
         if context.active or context.owner is not owner:
             raise ValueError("Active/replaced cache owner")
-        _check(context)
-        _associations(context)
-        if (
-            _snapshot(context).identity != context.trial.cache.identity
-            or previous.previous._digest(trial_record(context.trial)) != context.trial.identity
-        ):
-            raise ValueError("Cache constructor trial changed")
-        graph = _graph(context)
-        literal._same(graph[0], context.graph[0])
-        if graph[1] != context.graph[1]:
-            raise ValueError("Cache reference edges changed")
+        _validate_completed(context)
     except BaseException as error:
         context.invalid = True
         raise CacheConstructionRejected(
@@ -846,6 +890,55 @@ def _validate(owner):
             source_error=error,
         ) from error
     return context
+
+
+def _validate_completed(context):
+    _check(context)
+    _associations(context)
+    if _snapshot(context).identity != context.trial.cache.identity or (
+        previous.previous._digest(trial_record(context.trial)) != context.trial.identity
+    ):
+        raise ValueError("Cache constructor trial changed")
+    graph = _graph(context)
+    literal._same(graph[0], context.graph[0])
+    if graph[1] != context.graph[1]:
+        raise ValueError("Cache reference edges changed")
+
+
+def _claim_for_dyna(owner, *, expected, transition):
+    with _LOCK:
+        context = _ISSUED.get(owner) if type(owner) is PhaseCachesOwner else None
+        if context is None or context is not expected or context.active or context.invalid:
+            raise CacheConstructionRejected(
+                "Actual closed cache owner required", stage="cache_owner"
+            )
+        if owner in _FORWARDED or hasattr(context, "dyna_transition"):
+            raise CacheConstructionRejected("Cache dyna attempt consumed", stage="forwarded")
+        module = sys.modules.get("cells.processes.betse_native_phase_dyna")
+        if (
+            module is None
+            or type(transition.request) is not module.Request
+            or (
+                module._CONSUMED.get(transition.request) is not transition
+                or module._REQUESTS.get(transition.request) is not transition.refs
+                or transition.parent is not context
+                or transition.request.cache_owner is not owner
+                or transition.thread != get_ident()
+            )
+        ):
+            raise CacheConstructionRejected(
+                "Actual issued dyna attempt required", stage="dyna_owner"
+            )
+        context.dyna_transition = transition
+        _FORWARDED[owner] = transition
+        # Still pre-dyna/pre-SEED-mutation authentication. Failure keeps both
+        # irreversible markers rather than reopening the old owner.
+        _validate_completed(context)
+        if transition.invalid:
+            raise CacheConstructionRejected(
+                "Dyna attempt poisoned during authentication", stage="dyna_owner"
+            )
+        return context
 
 
 def prepare(request, *, enabled=False):
@@ -885,6 +978,7 @@ def prepare(request, *, enabled=False):
             invalid=False,
             stage="parent_preflight",
             objects=[],
+            object_issuance=[],
             constructed={},
             runtime_types={},
             runtime_bindings={},
@@ -1011,6 +1105,7 @@ def prepare(request, *, enabled=False):
             _check(context)
             _associations(context)
             context.graph = _graph(context)
+            context.object_issuance = tuple(context.object_issuance)
             context.owner = object.__new__(PhaseCachesOwner)
             _ISSUED[context.owner] = context
             return context.owner
